@@ -69,6 +69,12 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    shops: Shop;
+    batches: Batch;
+    products: Product;
+    categories: Category;
+    stock: Stock;
+    suppliers: Supplier;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,12 +83,18 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    shops: ShopsSelect<false> | ShopsSelect<true>;
+    batches: BatchesSelect<false> | BatchesSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    stock: StockSelect<false> | StockSelect<true>;
+    suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
@@ -118,7 +130,22 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  fullName: string;
+  countryCode: string;
+  phoneNumber: string;
+  role?: ('admin' | 'vendor' | 'shop_attendant') | null;
+  rolePermissions?:
+    | (
+        | 'user_shop_management'
+        | 'product_service_inventory_management'
+        | 'sales_orders'
+        | 'refunds'
+        | 'expense_management'
+        | 'reporting'
+        | 'transactions'
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -142,7 +169,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -158,23 +185,254 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops".
+ */
+export interface Shop {
+  id: number;
+  name: string;
+  location: string;
+  owner: number | User;
+  shopType?: ('retail' | 'wholesale' | 'service') | null;
+  shopCategory?:
+    | (
+        | 'grocery'
+        | 'electronics'
+        | 'clothing'
+        | 'pharmacy'
+        | 'hardware'
+        | 'furniture'
+        | 'automotive'
+        | 'beauty_personal_care'
+        | 'sports_outdoors'
+        | 'toys_games'
+        | 'books_stationery'
+        | 'pet_supplies'
+        | 'home_garden'
+        | 'health_wellness'
+        | 'barbering'
+        | 'other'
+      )
+    | null;
+  countryCode: string;
+  contactNumber: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "batches".
+ */
+export interface Batch {
+  id: number;
+  batchNumber: string;
+  expiryDate: string;
+  /**
+   * This field is automatically updated based on the product inventory from stock updates.
+   */
+  quantity?: number | null;
+  stockAlert: number;
+  product?: (number | null) | Product;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  shop: number | Shop;
+  /**
+   * Upload an image for the product
+   */
+  image?: (number | null) | Media;
+  name: string;
+  barcode?: string | null;
+  category: number | Category;
+  description?: string | null;
+  prodSellingType: 'retail' | 'wholesale';
+  /**
+   * e.g. Bottle, Piece, Bowl Pack, Box, etc.
+   */
+  unit?: string | null;
+  /**
+   * e.g. 1 pack = 12 bottles
+   */
+  quantityPerWholesaleUnit?: number | null;
+  costPricePerUnit: number;
+  sellingPricePerUnit: number;
+  trackInventory?: boolean | null;
+  /**
+   * Enable this if the product has an expiry date
+   */
+  trackExpiry?: boolean | null;
+  inventory?: {
+    /**
+     * This field is automatically updated based on the product inventory from stock updates.
+     */
+    quantity?: number | null;
+    /**
+     * Alert when stock falls below this level
+     */
+    stockAlert: number;
+  };
+  /**
+   * Link to batches for inventory and expiry tracking
+   */
+  batches?: (number | Batch)[] | null;
+  status?: ('active' | 'inactive') | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  /**
+   * The name of the category, e.g., Electronics, Clothing, etc.
+   */
+  name: string;
+  /**
+   * A brief description of the category.
+   */
+  description?: string | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock".
+ */
+export interface Stock {
+  id: number;
+  /**
+   * Select the supplier for this stock entry.
+   */
+  supplier?: (number | null) | Supplier;
+  product: number | Product;
+  /**
+   * Select the batch associated with this stock entry. Required for products with expiry tracking.
+   */
+  batch?: string | null;
+  /**
+   * This will update product inventory and batch quantities automatically.
+   */
+  quantity: number;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliers".
+ */
+export interface Supplier {
+  id: number;
+  /**
+   * The name of the supplier.
+   */
+  name: string;
+  contactInfo: {
+    /**
+     * Email address of the supplier.
+     */
+    email?: string | null;
+    /**
+     * Phone number of the supplier.
+     */
+    phone: string;
+  };
+  /**
+   * Physical address of the supplier.
+   */
+  address?: string | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'shops';
+        value: number | Shop;
+      } | null)
+    | ({
+        relationTo: 'batches';
+        value: number | Batch;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'stock';
+        value: number | Stock;
+      } | null)
+    | ({
+        relationTo: 'suppliers';
+        value: number | Supplier;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -184,10 +442,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -207,7 +465,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -218,6 +476,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  fullName?: T;
+  countryCode?: T;
+  phoneNumber?: T;
+  role?: T;
+  rolePermissions?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -252,6 +515,111 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops_select".
+ */
+export interface ShopsSelect<T extends boolean = true> {
+  name?: T;
+  location?: T;
+  owner?: T;
+  shopType?: T;
+  shopCategory?: T;
+  countryCode?: T;
+  contactNumber?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "batches_select".
+ */
+export interface BatchesSelect<T extends boolean = true> {
+  batchNumber?: T;
+  expiryDate?: T;
+  quantity?: T;
+  stockAlert?: T;
+  product?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  shop?: T;
+  image?: T;
+  name?: T;
+  barcode?: T;
+  category?: T;
+  description?: T;
+  prodSellingType?: T;
+  unit?: T;
+  quantityPerWholesaleUnit?: T;
+  costPricePerUnit?: T;
+  sellingPricePerUnit?: T;
+  trackInventory?: T;
+  trackExpiry?: T;
+  inventory?:
+    | T
+    | {
+        quantity?: T;
+        stockAlert?: T;
+      };
+  batches?: T;
+  status?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock_select".
+ */
+export interface StockSelect<T extends boolean = true> {
+  supplier?: T;
+  product?: T;
+  batch?: T;
+  quantity?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliers_select".
+ */
+export interface SuppliersSelect<T extends boolean = true> {
+  name?: T;
+  contactInfo?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
+  address?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,0 +1,47 @@
+import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+import { CollectionConfig } from 'payload'
+import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+
+const Categories: CollectionConfig = {
+  slug: 'categories',
+  admin: {
+    useAsTitle: 'name',
+  },
+  access: {
+    read: () => true,
+  },
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+      unique: true,
+      admin: {
+        description: 'The name of the category, e.g., Electronics, Clothing, etc.',
+      },
+    },
+    {
+      name: 'description',
+      type: 'textarea',
+      required: false,
+      admin: {
+        description: 'A brief description of the category.',
+      },
+    },
+    ...CREATED_UPDATED_BY_FIELDS,
+  ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        // Automatically set createdBy to the current user
+        return seteCreatedUpdatedBy({
+          data,
+          operation,
+          userId: req.user ? req.user.id : null,
+        })
+      },
+    ],
+  },
+}
+
+export default Categories
