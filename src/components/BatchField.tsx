@@ -1,10 +1,9 @@
 'use client'
 
+import { fetcher } from '@/lib/utils/fetch'
 import { SelectInput, useField, useFormFields } from '@payloadcms/ui'
 import { useEffect } from 'react'
 import useSWR from 'swr'
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function BatchField({ path }: { path: string }) {
   const { value, initialValue, setValue } = useField({ path })
@@ -28,12 +27,14 @@ export default function BatchField({ path }: { path: string }) {
 
   if (!options.length) return null
 
+  const selectValue = value || initialValue || ''
+
   return (
     <SelectInput
       label={'Batch'}
       path={path}
       name="batch"
-      value={(value as string) || (initialValue as string)}
+      value={String(selectValue)}
       onChange={(e) => {
         setValue(Array.isArray(e) ? e[0]?.value : String(e?.value))
       }}

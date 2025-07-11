@@ -1,5 +1,5 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
-import type { CollectionConfig } from 'payload'
+import { type CollectionConfig } from 'payload'
 import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
 
 export const Batches: CollectionConfig = {
@@ -36,6 +36,9 @@ export const Batches: CollectionConfig = {
         readOnly: true, // Prevent manual editing of quantity
         description:
           'This field is automatically updated based on the product inventory from stock updates.',
+        components: {
+          Cell: './components/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
+        },
       },
     },
     {

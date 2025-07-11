@@ -11,6 +11,7 @@ const Stock: CollectionConfig = {
   access: {
     read: () => true,
     update: () => false, // Allow updates to stock
+    delete: () => false, // Prevent deletion of stock entries
   },
   fields: [
     {
@@ -43,6 +44,7 @@ const Stock: CollectionConfig = {
           'Select the batch associated with this stock entry. Required for products with expiry tracking.',
         components: {
           Field: './components/BatchField',
+          Cell: './components/BatchCell', // Assuming you have a PriceCell component for displaying batch prices
         },
       },
     },
@@ -52,6 +54,9 @@ const Stock: CollectionConfig = {
       required: true,
       admin: {
         description: 'This will update product inventory and batch quantities automatically.',
+        components: {
+          Cell: './components/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
+        },
       },
     },
     ...CREATED_UPDATED_BY_FIELDS,
@@ -82,6 +87,57 @@ const Stock: CollectionConfig = {
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error'
             throw new APIError('Error validating product settings: ' + errorMessage, 400)
+          }
+        }
+      },
+    ],
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        // Automatically update product inventory and batch quantities
+        if ((doc?.product || doc?.batch) && req?.payload) {
+          try {
+            const stock = await req.payload.find({
+              collection: 'stock',
+              where: {
+                product: {
+                  equals: doc.product,
+                },
+                batch: {
+                  equals: doc.batch,
+                },
+              },
+            })
+
+            const quantity =
+              doc?.quantity +
+                stock?.docs?.reduce((total, item) => total + (item.quantity || 0), 0) || 0
+
+            if (doc?.batch) {
+              // Update batch quantity
+              await req.payload.update({
+                collection: 'batches',
+                id: doc.batch,
+                data: {
+                  quantity,
+                },
+                req,
+              })
+            } else {
+              // Update product inventory
+              await req.payload.update({
+                collection: 'products',
+                id: doc.product,
+                data: {
+                  inventory: {
+                    quantity,
+                  },
+                },
+                req,
+              })
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new APIError('Error updating stock quantities: ' + errorMessage, 500)
           }
         }
       },
