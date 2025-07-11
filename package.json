@@ -23,14 +23,19 @@
     "@payloadcms/payload-cloud": "3.46.0",
     "@payloadcms/richtext-lexical": "3.46.0",
     "@payloadcms/ui": "3.46.0",
+    "@tailwindcss/postcss": "^4.1.11",
+    "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
     "next": "15.3.2",
     "payload": "3.46.0",
+    "postcss": "^8.5.6",
     "react": "19.1.0",
     "sharp": "0.34.2",
-    "swr": "^2.3.4"
+    "swr": "^2.3.4",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@playwright/test": "1.50.0",
