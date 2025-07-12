@@ -254,6 +254,10 @@ export interface Product {
    * Upload an image for the product
    */
   image?: (number | null) | Media;
+  /**
+   * A color code for the category, e.g., #FF5733 for red.
+   */
+  color?: string | null;
   name: string;
   barcode?: string | null;
   category: number | Category;
@@ -311,6 +315,14 @@ export interface Category {
    */
   name: string;
   /**
+   * Upload an image for the category. This is optional.
+   */
+  image?: (number | null) | Media;
+  /**
+   * A color code for the category, e.g., #FF5733 for red.
+   */
+  color?: string | null;
+  /**
    * A brief description of the category.
    */
   description?: string | null;
@@ -344,6 +356,14 @@ export interface Stock {
    * This will update product inventory and batch quantities automatically.
    */
   quantity: number;
+  /**
+   * Select the shop from which this stock entry originates.
+   */
+  fromShop?: (number | null) | Shop;
+  /**
+   * Select the shop to which this stock entry is being transferred.
+   */
+  toShop?: (number | null) | Shop;
   /**
    * The user who created this batch.
    */
@@ -553,6 +573,7 @@ export interface BatchesSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   shop?: T;
   image?: T;
+  color?: T;
   name?: T;
   barcode?: T;
   category?: T;
@@ -583,6 +604,8 @@ export interface ProductsSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
+  image?: T;
+  color?: T;
   description?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -598,6 +621,8 @@ export interface StockSelect<T extends boolean = true> {
   product?: T;
   batch?: T;
   quantity?: T;
+  fromShop?: T;
+  toShop?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;

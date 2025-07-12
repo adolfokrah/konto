@@ -28,6 +28,20 @@ const Products: CollectionConfig = {
       },
     },
     {
+      name: 'color',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'A color code for the category, e.g., #FF5733 for red.',
+        components: {
+          Cell: './components/ColorCell', // Assuming you have a ColorCell component for displaying colors
+        },
+        condition: (data, siblingData) => {
+          return !siblingData.image
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,

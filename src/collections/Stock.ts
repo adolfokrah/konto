@@ -59,6 +59,24 @@ const Stock: CollectionConfig = {
         },
       },
     },
+    {
+      name: 'fromShop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: false,
+      admin: {
+        description: 'Select the shop from which this stock entry originates.',
+      },
+    },
+    {
+      name: 'toShop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: false,
+      admin: {
+        description: 'Select the shop to which this stock entry is being transferred.',
+      },
+    },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {

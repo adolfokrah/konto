@@ -21,6 +21,29 @@ const Categories: CollectionConfig = {
       },
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media', // Assuming you have a media collection for images
+      required: false,
+      admin: {
+        description: 'Upload an image for the category. This is optional.',
+      },
+    },
+    {
+      name: 'color',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'A color code for the category, e.g., #FF5733 for red.',
+        components: {
+          Cell: './components/ColorCell', // Assuming you have a ColorCell component for displaying colors
+        },
+        condition: (data, siblingData) => {
+          return !siblingData.image
+        },
+      },
+    },
+    {
       name: 'description',
       type: 'textarea',
       required: false,
