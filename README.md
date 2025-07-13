@@ -53,35 +53,26 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
    
    Update the following variables in your `.env` file:
    ```env
-   MONGODB_URI=your_mongodb_connection_string
+   DATABASE_URI=your_mongodb_connection_string
+   DATABASE_URI_TEST=your_mongodb_conection_string_for_runing_test
    PAYLOAD_SECRET=your-secret-key-32-characters-long
-   NODE_ENV=development
    ```
 
 4. **Set up MongoDB Database**
+
    
-   **Option A: Local MongoDB**
-   ```bash
-   # Install MongoDB locally or use Docker
-   docker run --name mongodb -d -p 27017:27017 mongo:latest
-   ```
-   
-   **Option B: MongoDB Atlas (Cloud)**
+   **Option A: MongoDB Atlas (Cloud)**
    - Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
    - Create a new cluster
    - Get your connection string and update `MONGODB_URI` in `.env`
 
-5. **Generate Payload types**
-   ```bash
-   pnpm generate:types
-   ```
 
-6. **Start the development server**
+65. **Start the development server**
    ```bash
    pnpm dev
    ```
 
-7. **Access the application**
+6. **Access the application**
    - Frontend: `http://localhost:3000`
    - Admin Panel: `http://localhost:3000/admin`
 
