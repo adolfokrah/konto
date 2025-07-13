@@ -1,4 +1,4 @@
-name: Run Integration Tests
+name: Integration Tests with Supabase DB
 
 on:
   push:
@@ -10,16 +10,30 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: supabase/postgres
+        ports:
+          - 54322:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:Vp7okjXlcMUumXox@db.lozskhsokwmfegnrzbsy.supabase.co:5432/postgres
+      DATABASE_URL: postgres://postgres:postgres@localhost:54322/postgres
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -27,10 +41,10 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pnpm install
 
-      - name: Build (if needed)
+      - name: Build
         run: pnpm build
 
       - name: Run Tests
