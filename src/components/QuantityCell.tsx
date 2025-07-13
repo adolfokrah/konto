@@ -12,7 +12,7 @@ export default async function QuantityCell({
   }
 
   const stockAlert = rowData?.stockAlert || rowData?.inventory?.stockAlert || null
-  const isLowStock = stockAlert && Number(cellData) < Number(stockAlert)
+  const isLowStock = stockAlert && Number(cellData) <= Number(stockAlert)
 
   return (
     <div
