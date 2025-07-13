@@ -7,6 +7,19 @@ const Products: CollectionConfig = {
   slug: 'products',
   admin: {
     useAsTitle: 'name',
+    defaultColumns: [
+      'id',
+      'name',
+      'image',
+      'color',
+      'shop',
+      'trackInventory',
+      'trackExpiry',
+      'batch',
+      'inventory > quantity',
+      'inventory > stockAlert',
+      'status',
+    ],
   },
   access: {
     read: () => true,
@@ -164,7 +177,7 @@ const Products: CollectionConfig = {
       type: 'relationship',
       relationTo: 'batches',
       hasMany: true,
-      filterOptions: ({ id }) => {
+      filterOptions: ({ id, siblingData }) => {
         // Filter to show only batches that are either unlinked or already linked to this product
         const filters: { or: any } = {
           or: [
@@ -173,6 +186,11 @@ const Products: CollectionConfig = {
                 exists: false, // Show batches that are not linked to any product
               },
             },
+            {
+              shop: {
+                equals: (siblingData as any)?.shop, // Filter by the current shop
+              }
+            }
           ],
         }
         // Only add product filter if ID is valid

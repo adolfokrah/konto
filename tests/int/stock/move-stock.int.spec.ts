@@ -263,7 +263,7 @@ describe('Move Stock API Integration Tests', () => {
       const mockReq = {
         json: async () => [
           {
-            fromShopId: "99999", // Non-existent shop
+            fromShopId: '99999', // Non-existent shop
             toShopId: toShop.id,
             productId: productWithoutExpiry.id,
             quantity: 5,

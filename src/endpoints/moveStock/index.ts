@@ -100,8 +100,8 @@ export const moveStock: Endpoint = {
           continue
         }
 
-        if (!foundProduct?.trackExpiry && foundProduct?.inventory?.quantity) {
-          if (foundProduct?.inventory?.quantity < quantity) {
+        if (!foundProduct?.trackExpiry) {
+          if (foundProduct?.inventory?.quantity && foundProduct?.inventory?.quantity < quantity) {
             errors.push(
               `Insufficient stock for product ${foundProduct?.name} in shop ${fromShop?.docs[0].name}. Available: ${foundProduct?.inventory?.quantity}, Requested: ${quantity}`,
             )
@@ -140,7 +140,7 @@ export const moveStock: Endpoint = {
 
           if (!foundBatch) {
             errors.push(
-              `Batch with ID ${batchId} not found in product ${foundProduct.name} batches`,
+              `Batch with ID ${batchId} not found in product ${foundProduct.name} batches of shop ${fromShop?.docs[0].name}`,
             )
             continue
           }
@@ -176,6 +176,7 @@ export const moveStock: Endpoint = {
               },
               req,
             })
+
 
             // Add to toShop
             await req.payload.create({

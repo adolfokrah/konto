@@ -127,24 +127,20 @@ const Stock: CollectionConfig = {
         // Automatically update product inventory and batch quantities
         if ((doc?.product || doc?.batch) && req?.payload) {
           try {
-            const stock = await req.payload.find({
-              collection: 'stock',
-              where: {
-                product: {
-                  equals: typeof doc.product == 'object' ? doc.product.id : doc.product,
-                },
-                batch: {
-                  equals: doc.batch,
-                },
-              },
+            const foundProduct = await req.payload.findByID({
+              collection: 'products',
+              id: typeof doc.product == 'object' ? doc.product.id : doc.product,
             })
-
-            const quantity =
-              doc?.quantity +
-                stock?.docs?.reduce((total, item) => total + (item.quantity || 0), 0) || 0
 
             if (doc?.batch) {
               // Update batch quantity
+              const foundBatch = await req.payload.findByID({
+                collection: 'batches',
+                id: doc.batch,
+              })
+
+              const quantity = doc.quantity + foundBatch?.quantity || 0
+
               await req.payload.update({
                 collection: 'batches',
                 id: doc.batch,
@@ -154,6 +150,7 @@ const Stock: CollectionConfig = {
                 req,
               })
             } else {
+              const quantity = doc.quantity + foundProduct?.inventory?.quantity || 0
               // Update product inventory
               await req.payload.update({
                 collection: 'products',

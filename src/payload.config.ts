@@ -20,8 +20,8 @@ import { moveStock } from './endpoints/moveStock'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-
-const dbUrl = process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
+const dbUrl =
+  process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -36,7 +36,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url:  dbUrl || '',
+    url: dbUrl || '',
   }),
   sharp,
   plugins: [
