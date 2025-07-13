@@ -62,6 +62,21 @@ export const Shops: CollectionConfig = {
       ],
     },
     {
+      name: 'currency',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Ghanaian Cedi (GHS)', value: 'GHS' },
+        { label: 'US Dollar (USD)', value: 'USD' },
+        { label: 'Euro (EUR)', value: 'EUR' },
+        { label: 'British Pound (GBP)', value: 'GBP' },
+        { label: 'Nigerian Naira (NGN)', value: 'NGN' },
+        { label: 'South African Rand (ZAR)', value: 'ZAR' },
+        // Add more currencies as needed
+      ],
+      defaultValue: 'GHS', // Default to Ghanaian Cedi
+    },
+    {
       name: 'countryCode',
       type: 'text',
       required: true,

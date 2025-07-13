@@ -189,8 +189,8 @@ const Products: CollectionConfig = {
             {
               shop: {
                 equals: (siblingData as any)?.shop, // Filter by the current shop
-              }
-            }
+              },
+            },
           ],
         }
         // Only add product filter if ID is valid

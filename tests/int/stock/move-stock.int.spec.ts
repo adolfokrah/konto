@@ -66,6 +66,7 @@ describe('Move Stock API Integration Tests', () => {
         shopCategory: 'grocery',
         countryCode: '+233',
         contactNumber: '+233123456789',
+        currency: 'GHS',
       },
     })
 
@@ -80,6 +81,7 @@ describe('Move Stock API Integration Tests', () => {
         shopCategory: 'grocery',
         countryCode: '+233',
         contactNumber: '+233987654321',
+        currency: 'GHS',
       },
     })
 

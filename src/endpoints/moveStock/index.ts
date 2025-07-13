@@ -177,7 +177,6 @@ export const moveStock: Endpoint = {
               req,
             })
 
-
             // Add to toShop
             await req.payload.create({
               collection: 'stock',

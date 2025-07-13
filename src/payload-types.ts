@@ -75,6 +75,7 @@ export interface Config {
     categories: Category;
     stock: Stock;
     suppliers: Supplier;
+    services: Service;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +90,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     stock: StockSelect<false> | StockSelect<true>;
     suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -213,6 +215,7 @@ export interface Shop {
         | 'other'
       )
     | null;
+  currency: 'GHS' | 'USD' | 'EUR' | 'GBP' | 'NGN' | 'ZAR';
   countryCode: string;
   contactNumber: string;
   updatedAt: string;
@@ -420,6 +423,32 @@ export interface Supplier {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: string;
+  /**
+   * Select the shop associated with this service.
+   */
+  shop: string | Shop;
+  name: string;
+  /**
+   * A brief description of the service.
+   */
+  description?: string | null;
+  /**
+   * Upload an image for the service.
+   */
+  image?: (string | null) | Media;
+  /**
+   * The price of the service.
+   */
+  price: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -456,6 +485,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'suppliers';
         value: string | Supplier;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: string | Service;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -554,6 +587,7 @@ export interface ShopsSelect<T extends boolean = true> {
   owner?: T;
   shopType?: T;
   shopCategory?: T;
+  currency?: T;
   countryCode?: T;
   contactNumber?: T;
   updatedAt?: T;
@@ -653,6 +687,19 @@ export interface SuppliersSelect<T extends boolean = true> {
   address?: T;
   createdBy?: T;
   updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  shop?: T;
+  name?: T;
+  description?: T;
+  image?: T;
+  price?: T;
   updatedAt?: T;
   createdAt?: T;
 }

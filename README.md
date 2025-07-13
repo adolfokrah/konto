@@ -5,6 +5,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ## Features
 
 ### Core Functionality
+
 - **Multi-Shop Management**: Manage inventory across multiple retail/wholesale shops
 - **Product Management**: Track products with categories, pricing, and specifications
 - **Batch & Expiry Tracking**: Monitor product batches with expiry dates for perishable items
@@ -12,6 +13,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 - **Supplier Management**: Track supplier information and relationships
 
 ### Advanced Features
+
 - **Inventory Tracking**: Real-time inventory quantities with stock alerts
 - **Dual Tracking Modes**: Simple inventory tracking or advanced batch-based tracking
 - **Stock Movement API**: RESTful API for programmatic stock transfers
@@ -19,6 +21,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 - **Audit Trails**: Complete history of all stock movements and changes
 
 ### Technical Features
+
 - **Built with Payload CMS**: Powerful headless CMS with admin interface
 - **Next.js Frontend**: Modern React-based frontend
 - **MongoDB Database**: Robust NoSQL database for flexible data storage
@@ -29,6 +32,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18 or higher
 - pnpm package manager
 - MongoDB database (local or cloud)
@@ -36,22 +40,26 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ### Local Development Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd konto
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    ```
-   
+
    Update the following variables in your `.env` file:
+
    ```env
    DATABASE_URI=your_mongodb_connection_string
    DATABASE_URI_TEST=your_mongodb_conection_string_for_runing_test
@@ -60,17 +68,16 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 
 4. **Set up MongoDB Database**
 
-   
    **Option A: MongoDB Atlas (Cloud)**
    - Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
    - Create a new cluster
    - Get your connection string and update `MONGODB_URI` in `.env`
 
+5. **Start the development server**
 
-65. **Start the development server**
-   ```bash
-   pnpm dev
-   ```
+```bash
+pnpm dev
+```
 
 6. **Access the application**
    - Frontend: `http://localhost:3000`
@@ -108,6 +115,7 @@ src/
 ## API Endpoints
 
 ### Stock Movement API
+
 ```http
 POST /api/move-stock
 Content-Type: application/json
@@ -115,7 +123,7 @@ Content-Type: application/json
 [
   {
     "fromShopId": "shop_id_1",
-    "toShopId": "shop_id_2", 
+    "toShopId": "shop_id_2",
     "productId": "product_id",
     "quantity": 10,
     "batchId": "batch_id" // Optional, for batch-tracked products
@@ -126,6 +134,7 @@ Content-Type: application/json
 ## Testing
 
 ### Run Integration Tests
+
 ```bash
 # Run all tests
 pnpm test
@@ -138,7 +147,9 @@ pnpm test:watch
 ```
 
 ### Test Coverage
+
 The project includes comprehensive integration tests covering:
+
 - Stock movement validation and business logic
 - Inventory quantity updates
 - Batch tracking and expiry management
@@ -148,6 +159,7 @@ The project includes comprehensive integration tests covering:
 ## Database Schema
 
 The system uses the following main collections:
+
 - **Users**: Authentication and user management
 - **Shops**: Store locations and details
 - **Categories**: Product categorization
@@ -159,12 +171,14 @@ The system uses the following main collections:
 ## Production Deployment
 
 ### Using Docker
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
 ```
 
 ### Environment Variables for Production
+
 ```env
 NODE_ENV=production
 MONGODB_URI=your_production_mongodb_connection_string
@@ -198,6 +212,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For questions, issues, or contributions:
+
 - Create an issue in the GitHub repository
 - Check the documentation in the `/docs` folder
 - Review the test files for usage examples
