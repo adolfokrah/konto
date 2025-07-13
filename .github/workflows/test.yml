@@ -24,7 +24,7 @@ jobs:
     env:
       NODE_ENV: test
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-      DATABASE_URI: mongodb://localhost:27017/payload-test
+      DATABASE_URI_TEST: mongodb://localhost:27017/payload-test
       NODE_OPTIONS: "--no-deprecation --max-old-space-size=4096"
 
     steps:
@@ -51,5 +51,5 @@ jobs:
       - name: Run Integration Tests
         run: |
           echo "Running integration tests..."
-          pnpm test:int:ci
+          pnpm test:int
         timeout-minutes: 10

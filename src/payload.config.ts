@@ -6,7 +6,6 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import dotenv from 'dotenv'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -22,6 +21,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 
+const dbUrl = process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -36,7 +36,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url: process.env.DATABASE_URI || '',
+    url:  dbUrl || '',
   }),
   sharp,
   plugins: [
