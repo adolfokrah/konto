@@ -12,7 +12,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      PAYLOAD_SECRET: a8d2b015e45209cfabfe8db1
       NODE_OPTIONS: "--no-deprecation --max-old-space-size=4096"
 
     steps:
@@ -50,6 +50,7 @@ jobs:
         run: |
           echo "DATABASE_URI=postgresql://postgres:postgres@localhost:54322/postgres" >> $GITHUB_ENV
           echo "NODE_ENV=test" >> $GITHUB_ENV
+          echo "PAYLOAD_SECRET=a8d2b015e45209cfabfe8db1" >> $GITHUB_ENV
 
       - name: Pre-generate Payload types
         run: |
@@ -59,7 +60,7 @@ jobs:
       - name: Run Integration Tests
         run: |
           echo "Running integration tests..."
-          pnpm test:int --reporter=basic --no-coverage
+          pnpm test:int
         timeout-minutes: 10
 
       - name: Stop Supabase
