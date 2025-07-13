@@ -131,6 +131,65 @@ export const moveStock: Endpoint = {
             },
             req,
           })
+        } else if (foundProduct?.trackExpiry && batchId) {
+          // Check if batch exists in fromShop
+
+          const foundBatch = foundProduct.batches?.find(
+            (batch) => typeof batch === 'object' && batch.id === batchId,
+          )
+
+          if (!foundBatch) {
+            errors.push(
+              `Batch with ID ${batchId} not found in product ${foundProduct.name} batches`,
+            )
+            continue
+          }
+
+          if (typeof foundBatch == 'object') {
+            const foundBatchInToShopProducts = toShopProduct.docs[0].batches?.find(
+              (batch) => typeof batch === 'object' && batch.batchNumber === foundBatch.batchNumber,
+            )
+
+            if (!foundBatchInToShopProducts) {
+              errors.push(
+                `Batch with batch number ${foundBatch.batchNumber} not found in product ${toShopProduct.docs[0].name} batches in shop ${toShop?.docs[0].name}`,
+              )
+              continue
+            }
+
+            if (typeof foundBatchInToShopProducts != 'object') {
+              errors.push(
+                `Batch with batch number ${foundBatch.batchNumber} in product ${toShopProduct.docs[0].name} in shop ${toShop?.docs[0].name} is not a valid object`,
+              )
+              continue
+            }
+
+            // // Deduct from fromShop
+            await req.payload.create({
+              collection: 'stock',
+              data: {
+                shop: fromShopId,
+                toShop: toShopId,
+                product: foundProduct.id,
+                quantity: -quantity,
+                batch: String(batchId),
+              },
+              req,
+            })
+
+            // Add to toShop
+            await req.payload.create({
+              collection: 'stock',
+              data: {
+                shop: toShopId,
+                fromShop: fromShopId,
+                product: toShopProduct.docs[0].id,
+                quantity,
+                batch: String(foundBatchInToShopProducts.id),
+              },
+              req,
+            })
+          }
         }
       }
 

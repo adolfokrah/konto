@@ -231,6 +231,10 @@ export interface Batch {
    */
   quantity?: number | null;
   stockAlert: number;
+  /**
+   * Select the shop associated with this stock entry.
+   */
+  shop: number | Shop;
   product?: (number | null) | Product;
   /**
    * The user who created this batch.
@@ -564,6 +568,7 @@ export interface BatchesSelect<T extends boolean = true> {
   expiryDate?: T;
   quantity?: T;
   stockAlert?: T;
+  shop?: T;
   product?: T;
   createdBy?: T;
   updatedBy?: T;

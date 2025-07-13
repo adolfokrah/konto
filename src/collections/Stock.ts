@@ -47,12 +47,6 @@ const Stock: CollectionConfig = {
             equals: (siblingData as any)?.shop,
           },
         }
-        // Only add product filter if ID is valid
-        // if (id && id !== 'undefined' && !isNaN(Number(id))) {
-        //   filters.shop = {
-        //     equals: (siblingData as any)?.shop,
-        //   }
-        // }
         return filters
       },
     },

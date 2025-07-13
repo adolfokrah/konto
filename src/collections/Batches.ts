@@ -53,6 +53,15 @@ export const Batches: CollectionConfig = {
       },
     },
     {
+      name: 'shop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: true,
+      admin: {
+        description: 'Select the shop associated with this stock entry.',
+      },
+    },
+    {
       name: 'product',
       type: 'relationship',
       relationTo: 'products',
