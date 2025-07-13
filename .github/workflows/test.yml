@@ -51,5 +51,5 @@ jobs:
       - name: Run Integration Tests
         run: |
           echo "Running integration tests..."
-          pnpm test:int
+          pnpm test:int:ci
         timeout-minutes: 10
