@@ -24,16 +24,36 @@ const Stock: CollectionConfig = {
       },
     },
     {
+      name: 'shop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: true,
+      admin: {
+        description: 'Select the shop associated with this stock entry.',
+      },
+    },
+    {
       name: 'product',
       type: 'relationship',
       relationTo: 'products',
       required: true,
       hasMany: false,
-      filterOptions: {
-        // Filter by products which has trackInventory enabled
-        trackInventory: {
-          equals: true,
-        },
+      filterOptions: ({ id, siblingData }) => {
+        const filters: Record<any, any> = {
+          trackInventory: {
+            equals: true,
+          },
+          shop: {
+            equals: (siblingData as any)?.shop,
+          },
+        }
+        // Only add product filter if ID is valid
+        // if (id && id !== 'undefined' && !isNaN(Number(id))) {
+        //   filters.shop = {
+        //     equals: (siblingData as any)?.shop,
+        //   }
+        // }
+        return filters
       },
     },
     {
@@ -82,12 +102,11 @@ const Stock: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, req, operation }) => {
-        // Check if product has trackExpiry enabled
         if (data?.product && req?.payload) {
           try {
             const product = await req.payload.findByID({
               collection: 'products',
-              id: data.product,
+              id: typeof data.product === 'object' ? data.product.id : data.product,
             })
 
             // If product has trackExpiry, batch is required
@@ -118,7 +137,7 @@ const Stock: CollectionConfig = {
               collection: 'stock',
               where: {
                 product: {
-                  equals: doc.product,
+                  equals: typeof doc.product == 'object' ? doc.product.id : doc.product,
                 },
                 batch: {
                   equals: doc.batch,
@@ -144,7 +163,7 @@ const Stock: CollectionConfig = {
               // Update product inventory
               await req.payload.update({
                 collection: 'products',
-                id: doc.product,
+                id: typeof doc.product == 'object' ? doc.product.id : doc.product,
                 data: {
                   inventory: {
                     quantity,

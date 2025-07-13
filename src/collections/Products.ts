@@ -49,7 +49,7 @@ const Products: CollectionConfig = {
     {
       name: 'barcode',
       type: 'text',
-      unique: true,
+      required: true,
     },
     {
       name: 'category',

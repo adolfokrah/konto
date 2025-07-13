@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils/twMerge'
+import { cn } from '@/lib/utils/tw-merge'
 
 export default async function QuantityCell({
   cellData,

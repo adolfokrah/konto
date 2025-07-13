@@ -259,7 +259,7 @@ export interface Product {
    */
   color?: string | null;
   name: string;
-  barcode?: string | null;
+  barcode: string;
   category: number | Category;
   description?: string | null;
   prodSellingType: 'retail' | 'wholesale';
@@ -347,6 +347,10 @@ export interface Stock {
    * Select the supplier for this stock entry.
    */
   supplier?: (number | null) | Supplier;
+  /**
+   * Select the shop associated with this stock entry.
+   */
+  shop: number | Shop;
   product: number | Product;
   /**
    * Select the batch associated with this stock entry. Required for products with expiry tracking.
@@ -618,6 +622,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface StockSelect<T extends boolean = true> {
   supplier?: T;
+  shop?: T;
   product?: T;
   batch?: T;
   quantity?: T;

@@ -15,6 +15,7 @@ import Products from './collections/Products'
 import Categories from './collections/Categories'
 import Stock from './collections/Stock'
 import Suppliers from './collections/Suppliers'
+import { moveStock } from './endpoints/moveStock'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,4 +43,5 @@ export default buildConfig({
     payloadCloudPlugin(),
     // storage-adapter-placeholder
   ],
+  endpoints: [moveStock],
 })
