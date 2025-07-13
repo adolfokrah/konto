@@ -31,16 +31,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Supabase CLI
-        run: |
-          curl -sL https://github.com/supabase/cli/releases/download/v1.161.0/supabase_linux_amd64.tar.gz | tar -xz
-          sudo mv supabase /usr/local/bin/supabase
-
       - name: Start Supabase services
-        run: |
-          cd supabase
-          # Start only essential services for testing
-          supabase start --ignore-health-check
+        run: pnpx supabase start
 
       - name: Wait for Supabase to be ready
         run: |
