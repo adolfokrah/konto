@@ -94,7 +94,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   globals: {};
   globalsSelect: {};
@@ -130,7 +130,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   fullName: string;
   countryCode: string;
   phoneNumber: string;
@@ -169,7 +169,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -188,10 +188,10 @@ export interface Media {
  * via the `definition` "shops".
  */
 export interface Shop {
-  id: number;
+  id: string;
   name: string;
   location: string;
-  owner: number | User;
+  owner: string | User;
   shopType?: ('retail' | 'wholesale' | 'service') | null;
   shopCategory?:
     | (
@@ -223,7 +223,7 @@ export interface Shop {
  * via the `definition` "batches".
  */
 export interface Batch {
-  id: number;
+  id: string;
   batchNumber: string;
   expiryDate: string;
   /**
@@ -234,16 +234,16 @@ export interface Batch {
   /**
    * Select the shop associated with this stock entry.
    */
-  shop: number | Shop;
-  product?: (number | null) | Product;
+  shop: string | Shop;
+  product?: (string | null) | Product;
   /**
    * The user who created this batch.
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   /**
    * The user who created this batch.
    */
-  updatedBy?: (number | null) | User;
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -252,19 +252,19 @@ export interface Batch {
  * via the `definition` "products".
  */
 export interface Product {
-  id: number;
-  shop: number | Shop;
+  id: string;
+  shop: string | Shop;
   /**
    * Upload an image for the product
    */
-  image?: (number | null) | Media;
+  image?: (string | null) | Media;
   /**
    * A color code for the category, e.g., #FF5733 for red.
    */
   color?: string | null;
   name: string;
   barcode: string;
-  category: number | Category;
+  category: string | Category;
   description?: string | null;
   prodSellingType: 'retail' | 'wholesale';
   /**
@@ -295,16 +295,16 @@ export interface Product {
   /**
    * Link to batches for inventory and expiry tracking
    */
-  batches?: (number | Batch)[] | null;
+  batches?: (string | Batch)[] | null;
   status?: ('active' | 'inactive') | null;
   /**
    * The user who created this batch.
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   /**
    * The user who created this batch.
    */
-  updatedBy?: (number | null) | User;
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -313,7 +313,7 @@ export interface Product {
  * via the `definition` "categories".
  */
 export interface Category {
-  id: number;
+  id: string;
   /**
    * The name of the category, e.g., Electronics, Clothing, etc.
    */
@@ -321,7 +321,7 @@ export interface Category {
   /**
    * Upload an image for the category. This is optional.
    */
-  image?: (number | null) | Media;
+  image?: (string | null) | Media;
   /**
    * A color code for the category, e.g., #FF5733 for red.
    */
@@ -333,11 +333,11 @@ export interface Category {
   /**
    * The user who created this batch.
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   /**
    * The user who created this batch.
    */
-  updatedBy?: (number | null) | User;
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -346,16 +346,16 @@ export interface Category {
  * via the `definition` "stock".
  */
 export interface Stock {
-  id: number;
+  id: string;
   /**
    * Select the supplier for this stock entry.
    */
-  supplier?: (number | null) | Supplier;
+  supplier?: (string | null) | Supplier;
   /**
    * Select the shop associated with this stock entry.
    */
-  shop: number | Shop;
-  product: number | Product;
+  shop: string | Shop;
+  product: string | Product;
   /**
    * Select the batch associated with this stock entry. Required for products with expiry tracking.
    */
@@ -367,19 +367,19 @@ export interface Stock {
   /**
    * Select the shop from which this stock entry originates.
    */
-  fromShop?: (number | null) | Shop;
+  fromShop?: (string | null) | Shop;
   /**
    * Select the shop to which this stock entry is being transferred.
    */
-  toShop?: (number | null) | Shop;
+  toShop?: (string | null) | Shop;
   /**
    * The user who created this batch.
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   /**
    * The user who created this batch.
    */
-  updatedBy?: (number | null) | User;
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -388,7 +388,7 @@ export interface Stock {
  * via the `definition` "suppliers".
  */
 export interface Supplier {
-  id: number;
+  id: string;
   /**
    * The name of the supplier.
    */
@@ -410,11 +410,11 @@ export interface Supplier {
   /**
    * The user who created this batch.
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   /**
    * The user who created this batch.
    */
-  updatedBy?: (number | null) | User;
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -423,44 +423,44 @@ export interface Supplier {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'shops';
-        value: number | Shop;
+        value: string | Shop;
       } | null)
     | ({
         relationTo: 'batches';
-        value: number | Batch;
+        value: string | Batch;
       } | null)
     | ({
         relationTo: 'products';
-        value: number | Product;
+        value: string | Product;
       } | null)
     | ({
         relationTo: 'categories';
-        value: number | Category;
+        value: string | Category;
       } | null)
     | ({
         relationTo: 'stock';
-        value: number | Stock;
+        value: string | Stock;
       } | null)
     | ({
         relationTo: 'suppliers';
-        value: number | Supplier;
+        value: string | Supplier;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -470,10 +470,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -493,7 +493,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;

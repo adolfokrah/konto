@@ -5,7 +5,7 @@ export const seteCreatedUpdatedBy = ({
 }: {
   data: any
   operation: 'create' | 'update'
-  userId?: number | null
+  userId?: string | null
 }) => {
   if (operation === 'create' && userId) {
     return {
