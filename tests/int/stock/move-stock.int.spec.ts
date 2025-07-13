@@ -343,7 +343,35 @@ describe('Move Stock API Integration Tests', () => {
         },
       })
 
-      expect(stockEntries.docs.length).toBeGreaterThanOrEqual(2) // At least deduction and addition entries
+      expect(stockEntries.docs.length).toBeGreaterThanOrEqual(2)
+
+      // Verify inventory quantities were updated correctly
+      const updatedFromProduct = await payload.findByID({
+        collection: 'products',
+        id: productWithoutExpiry.id,
+      })
+
+      // Find the corresponding product in toShop by barcode
+      const toShopProducts = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            { shop: { equals: toShop.id } },
+            { barcode: { equals: productWithoutExpiry.barcode } },
+          ],
+        },
+      })
+
+      expect(toShopProducts.docs.length).toBe(1)
+      const updatedToProduct = toShopProducts.docs[0]
+
+      // Verify from shop product inventory decreased
+      expect(updatedFromProduct.inventory).toBeDefined()
+      expect(updatedFromProduct.inventory!.quantity).toBe(100 - moveQuantity) // Original 100 - 10 moved
+
+      // Verify to shop product inventory increased
+      expect(updatedToProduct.inventory).toBeDefined()
+      expect(updatedToProduct.inventory!.quantity).toBe(50 + moveQuantity) // Original 50 + 10 moved // At least deduction and addition entries
     })
 
     it('should successfully move stock for products with expiry tracking', async () => {
@@ -385,6 +413,29 @@ describe('Move Stock API Integration Tests', () => {
       expect(deductionEntry).toBeDefined()
       expect(deductionEntry!.quantity).toBe(-moveQuantity)
       expect(deductionEntry!.batch).toBe(String(testBatch.id))
+
+      // Verify batch quantity was decreased
+      const updatedFromBatch = await payload.findByID({
+        collection: 'batches',
+        id: testBatch.id,
+      })
+
+      expect(updatedFromBatch.quantity).toBe(50 - moveQuantity) // Original 50 - 5 moved
+
+      // Find the corresponding batch in toShop by batch number
+      const toShopBatches = await payload.find({
+        collection: 'batches',
+        where: {
+          and: [
+            { shop: { equals: toShop.id } },
+            { batchNumber: { equals: testBatch.batchNumber } },
+          ],
+        },
+      })
+
+      expect(toShopBatches.docs.length).toBe(1)
+      const updatedToBatch = toShopBatches.docs[0]
+      expect(updatedToBatch.quantity).toBe(20 + moveQuantity) // Original 20 + 5 moved
     })
   })
 
