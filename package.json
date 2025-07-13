@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "3.46.0",
-    "@payloadcms/db-postgres": "3.46.0",
     "@payloadcms/next": "3.46.0",
     "@payloadcms/payload-cloud": "3.46.0",
     "@payloadcms/richtext-lexical": "3.46.0",

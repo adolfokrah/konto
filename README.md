@@ -1,67 +1,212 @@
-# Payload Blank Template
+# Konto - Inventory Management System
 
-This template comes configured with the bare minimum to get started on anything you need.
+A comprehensive inventory management system built with Payload CMS and Next.js, designed for multi-shop inventory tracking with advanced features like batch management, expiry tracking, and stock movement operations.
 
-## Quick start
+## Features
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+### Core Functionality
+- **Multi-Shop Management**: Manage inventory across multiple retail/wholesale shops
+- **Product Management**: Track products with categories, pricing, and specifications
+- **Batch & Expiry Tracking**: Monitor product batches with expiry dates for perishable items
+- **Stock Movement**: Transfer inventory between shops with detailed audit trails
+- **Supplier Management**: Track supplier information and relationships
 
-## Quick Start - local setup
+### Advanced Features
+- **Inventory Tracking**: Real-time inventory quantities with stock alerts
+- **Dual Tracking Modes**: Simple inventory tracking or advanced batch-based tracking
+- **Stock Movement API**: RESTful API for programmatic stock transfers
+- **User Management**: Role-based access control (vendors, admins)
+- **Audit Trails**: Complete history of all stock movements and changes
 
-To spin up this template locally, follow these steps:
+### Technical Features
+- **Built with Payload CMS**: Powerful headless CMS with admin interface
+- **Next.js Frontend**: Modern React-based frontend
+- **MongoDB Database**: Robust NoSQL database for flexible data storage
+- **TypeScript**: Full type safety across the application
+- **Comprehensive Testing**: Integration tests for critical business logic
+- **CI/CD Pipeline**: Automated testing with GitHub Actions
 
-### Clone
+## Quick Start
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+### Prerequisites
+- Node.js 18 or higher
+- pnpm package manager
+- MongoDB database (local or cloud)
 
-### Development
+### Local Development Setup
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd konto
+   ```
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update the following variables in your `.env` file:
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   PAYLOAD_SECRET=your-secret-key-32-characters-long
+   NODE_ENV=development
+   ```
 
-#### Docker (Optional)
+4. **Set up MongoDB Database**
+   
+   **Option A: Local MongoDB**
+   ```bash
+   # Install MongoDB locally or use Docker
+   docker run --name mongodb -d -p 27017:27017 mongo:latest
+   ```
+   
+   **Option B: MongoDB Atlas (Cloud)**
+   - Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
+   - Create a new cluster
+   - Get your connection string and update `MONGODB_URI` in `.env`
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+5. **Generate Payload types**
+   ```bash
+   pnpm generate:types
+   ```
 
-To do so, follow these steps:
+6. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
 
-- Modify the `MONGODB_URI` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URI` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+7. **Access the application**
+   - Frontend: `http://localhost:3000`
+   - Admin Panel: `http://localhost:3000/admin`
 
-## How it works
+### First Time Setup
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+1. Create your first admin user by visiting `/admin`
+2. Set up your first shop in the admin panel
+3. Add product categories and suppliers
+4. Start adding products and managing inventory
 
-### Collections
+## Project Structure
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+```
+src/
+├── collections/           # Payload CMS collections
+│   ├── Products.ts       # Product management
+│   ├── Stock.ts          # Stock movement tracking
+│   ├── Batches.ts        # Batch/expiry tracking
+│   ├── Shops.ts          # Shop management
+│   ├── Suppliers.ts      # Supplier management
+│   ├── Categories.ts     # Product categories
+│   └── Users.ts          # User management
+├── endpoints/            # Custom API endpoints
+│   └── moveStock/        # Stock movement API
+├── lib/
+│   └── utils/           # Utility functions
+├── components/          # Reusable components
+└── app/                # Next.js app router
+    ├── (frontend)/     # Public frontend
+    └── (payload)/      # Admin panel
+```
 
-- #### Users (Authentication)
+## API Endpoints
 
-  Users are auth-enabled collections that have access to the admin panel.
+### Stock Movement API
+```http
+POST /api/move-stock
+Content-Type: application/json
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+[
+  {
+    "fromShopId": "shop_id_1",
+    "toShopId": "shop_id_2", 
+    "productId": "product_id",
+    "quantity": 10,
+    "batchId": "batch_id" // Optional, for batch-tracked products
+  }
+]
+```
 
-- #### Media
+## Testing
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+### Run Integration Tests
+```bash
+# Run all tests
+pnpm test
 
-### Docker
+# Run integration tests only
+pnpm test:int
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+# Run tests in watch mode
+pnpm test:watch
+```
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+### Test Coverage
+The project includes comprehensive integration tests covering:
+- Stock movement validation and business logic
+- Inventory quantity updates
+- Batch tracking and expiry management
+- Multi-shop operations
+- API endpoint validation
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+## Database Schema
 
-## Questions
+The system uses the following main collections:
+- **Users**: Authentication and user management
+- **Shops**: Store locations and details
+- **Categories**: Product categorization
+- **Suppliers**: Vendor information
+- **Products**: Product catalog with pricing and specs
+- **Batches**: Batch tracking for expiry management
+- **Stock**: Stock movement transaction history
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+## Production Deployment
+
+### Using Docker
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+### Environment Variables for Production
+```env
+NODE_ENV=production
+MONGODB_URI=your_production_mongodb_connection_string
+PAYLOAD_SECRET=your-production-secret-key
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **CMS**: Payload CMS 3.0
+- **Database**: MongoDB
+- **Language**: TypeScript
+- **Styling**: CSS Modules
+- **Testing**: Vitest + Playwright
+- **CI/CD**: GitHub Actions
+- **Package Manager**: pnpm
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For questions, issues, or contributions:
+- Create an issue in the GitHub repository
+- Check the documentation in the `/docs` folder
+- Review the test files for usage examples
