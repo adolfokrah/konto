@@ -12,7 +12,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      DATABASE_URL: postgresql://postgres:Vp7okjXlcMUumXox@db.lozskhsokwmfegnrzbsy.supabase.co:5432/postgres
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
     steps:
