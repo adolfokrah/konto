@@ -23,7 +23,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      PAYLOAD_SECRET: a8d2b015e45209cfabfe8db1
       DATABASE_URI: mongodb://localhost:27017/payload-test
       NODE_OPTIONS: "--no-deprecation --max-old-space-size=4096"
 
