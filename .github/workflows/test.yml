@@ -1,4 +1,4 @@
-name: Integration Tests with Supabase DB
+name: Run Integration Tests
 
 on:
   push:
@@ -12,10 +12,11 @@ jobs:
 
     services:
       postgres:
-        image: supabase/postgres
+        image: postgres:15
         ports:
           - 54322:5432
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         options: >-
@@ -28,9 +29,9 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgres://postgres:postgres@localhost:54322/postgres
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-
+      
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -41,11 +42,17 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Build
+      - name: Build (if needed)
         run: pnpm build
 
-      - name: Run Tests
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for Postgres to be ready..."
+          until pg_isready -h localhost -p 54322; do sleep 1; done
+          echo "Postgres is ready!"
+
+      - name: Run Integration Tests
         run: pnpm test:int
