@@ -21,10 +21,6 @@ import { moveStock } from './endpoints/moveStock'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// Only load test env for test runs
-if (process.env.NODE_ENV === 'test') {
-  dotenv.config({ path: '.env.test', override: true })
-}
 
 export default buildConfig({
   admin: {

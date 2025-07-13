@@ -12,7 +12,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      PAYLOAD_SECRET:  ${{ secrets.PAYLOAD_SECRET }}
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
       NODE_OPTIONS: "--no-deprecation --max-old-space-size=4096"
 
     steps:
@@ -22,7 +22,7 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Setup Node.js with pnpm cache
+      - name: Set up Node.js with pnpm cache
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -30,6 +30,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker-compose -y
+          docker-compose version
 
       - name: Start Supabase services
         run: pnpx supabase start
