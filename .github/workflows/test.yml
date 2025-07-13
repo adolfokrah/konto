@@ -21,12 +21,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    env:
-      NODE_ENV: test
-      PAYLOAD_SECRET: a8d2b015e45209cfabfe8db1
-      DATABASE_URI: mongodb://localhost:27017/payload-test
-      NODE_OPTIONS: "--no-deprecation --max-old-space-size=4096"
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,7 +40,13 @@ jobs:
       - name: Pre-generate Payload types
         run: |
           echo "Generating Payload types to avoid slow schema pulling..."
-          pnpm generate:types
+          pnpm generate:
+      
+      - name: Set up test environment
+        run: |
+          echo "DATABASE_URI=mongodb://localhost:27017/payload-tests" >> $GITHUB_ENV
+          echo "NODE_ENV=test" >> $GITHUB_ENV
+          echo "PAYLOAD_SECRET=${{ secrets.PAYLOAD_SECRET }}" >> $GITHUB_ENV
 
       - name: Run Integration Tests
         run: |
