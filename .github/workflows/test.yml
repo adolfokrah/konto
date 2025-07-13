@@ -40,7 +40,7 @@ jobs:
       - name: Pre-generate Payload types
         run: |
           echo "Generating Payload types to avoid slow schema pulling..."
-          pnpm generate:
+          pnpm generate:types
       
       - name: Set up test environment
         run: |
