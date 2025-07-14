@@ -39,15 +39,11 @@ export const Orders: CollectionConfig = {
             {
               name: 'type',
               type: 'text',
-              defaultValue: 'product',
               required: true,
               admin: {
                 description: 'Select the type of item for this order.',
                 components: {
                   Field: './components/OrderItemServiceTypeSelector.tsx',
-                },
-                condition: (_, siblingData) => {
-                  return !siblingData?.product && !siblingData?.service
                 },
               },
             },

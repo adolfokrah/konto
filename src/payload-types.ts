@@ -525,7 +525,7 @@ export interface Order {
         /**
          * Select the type of item for this order.
          */
-        type?: string | null;
+        type: string;
         /**
          * Select the service for this order item.
          */

@@ -12,7 +12,7 @@ export default function OrderItemServiceField({ path, field }: { path: string; f
   if (isLoading) return <div>loading...</div>
 
   if (initialValue && !data?.errors) {
-    return <TextInput label={'Service'} path={path} value={data?.name} readOnly={true} />
+    return <TextInput label={'Item'} path={path} value={data?.name} readOnly={true} />
   }
 
   return <RelationshipField path={path} field={field} />

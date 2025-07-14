@@ -5,7 +5,7 @@ import { TextInput, useField, useFormFields } from '@payloadcms/ui'
 export default function OrderItemUnitPriceField({ path }: { path: string }) {
   const { value, initialValue, setValue } = useField({ path })
 
-  const quantity = String(initialValue || value || '1')
+  const quantity = String(initialValue || value || '')
   return (
     <TextInput
       label={'Quantity'}
