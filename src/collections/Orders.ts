@@ -396,9 +396,12 @@ export const Orders: CollectionConfig = {
               }
             }
           } else if (operation === 'update' && req) {
+
+           
+
             const order = await req.payload.findByID({
               collection: 'orders',
-              id: typeof req.routeParams?.id === 'string' ? req.routeParams?.id : '',
+              id: originalDoc?.id,
               depth: 0,
             })
             if (!order) {
