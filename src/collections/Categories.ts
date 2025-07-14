@@ -9,6 +9,7 @@ const Categories: CollectionConfig = {
   },
   access: {
     read: () => true,
+    delete: () => false, // Prevent deletion of categories
   },
   fields: [
     {
@@ -49,6 +50,18 @@ const Categories: CollectionConfig = {
       required: false,
       admin: {
         description: 'A brief description of the category.',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' }, // Assuming you want to keep this option
+      ],
+      defaultValue: 'active',
+      admin: {
+        description: 'The status of the service.',
       },
     },
     ...CREATED_UPDATED_BY_FIELDS,

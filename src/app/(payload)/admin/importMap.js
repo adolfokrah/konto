@@ -2,6 +2,9 @@ import { default as default_6fb07d7c146c3c1e170d992088d27e01 } from '../../../co
 import { default as default_144f27b2136581e4946d0e4661b7157a } from '../../../components/ColorCell'
 import { default as default_43c4897a2ab6ccf4407f5b2b89f14c93 } from '../../../components/BatchCell'
 import { default as default_20e586c77b66c416773d198108644bdf } from '../../../components/BatchField'
+import { default as default_4e4b90028eaf01cb949a8d8c85e3a86e } from '../../../components/OrderItemServiceTypeSelector.tsx'
+import { default as default_a3a98ab29ceec6d01b662257c74d3c63 } from '../../../components/OrderItemServiceField.tsx'
+import { default as default_98df0f160fb5c68bba114e660c355693 } from '../../../components/OrderItemProductField.tsx'
 import { default as default_b5d1f05e74c9742632a77e402da83ef5 } from '../../../components/OrderItemBatchField.tsx'
 import { default as default_5e659f3431389f7f81694dafa615f9e8 } from '../../../components/OrderItemQuantityField.tsx'
 import { default as default_f9e083cb604730d252c42cf9e71849b8 } from '../../../components/OrderItemUnitPriceField.tsx'
@@ -12,6 +15,9 @@ export const importMap = {
   "./components/ColorCell#default": default_144f27b2136581e4946d0e4661b7157a,
   "./components/BatchCell#default": default_43c4897a2ab6ccf4407f5b2b89f14c93,
   "./components/BatchField#default": default_20e586c77b66c416773d198108644bdf,
+  "./components/OrderItemServiceTypeSelector.tsx#default": default_4e4b90028eaf01cb949a8d8c85e3a86e,
+  "./components/OrderItemServiceField.tsx#default": default_a3a98ab29ceec6d01b662257c74d3c63,
+  "./components/OrderItemProductField.tsx#default": default_98df0f160fb5c68bba114e660c355693,
   "./components/OrderItemBatchField.tsx#default": default_b5d1f05e74c9742632a77e402da83ef5,
   "./components/OrderItemQuantityField.tsx#default": default_5e659f3431389f7f81694dafa615f9e8,
   "./components/OrderItemUnitPriceField.tsx#default": default_f9e083cb604730d252c42cf9e71849b8,

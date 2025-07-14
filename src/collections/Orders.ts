@@ -38,18 +38,17 @@ export const Orders: CollectionConfig = {
           fields: [
             {
               name: 'type',
-              type: 'select',
+              type: 'text',
               defaultValue: 'product',
-              options: [
-                { label: 'Product', value: 'product' },
-                { label: 'Service', value: 'service' },
-              ],
               required: true,
               admin: {
                 description: 'Select the type of item for this order.',
+                components: {
+                  Field: './components/OrderItemServiceTypeSelector.tsx',
+                },
                 condition: (_, siblingData) => {
-                    return !siblingData?.productName && !siblingData?.serviceName
-                }
+                  return !siblingData?.product && !siblingData?.service
+                },
               },
             },
             {
@@ -62,94 +61,17 @@ export const Orders: CollectionConfig = {
                   shop: {
                     equals: (data as any).shop,
                   },
+                  status: {
+                    equals: 'active',
+                  }
                 }
               },
               admin: {
                 description: 'Select the service for this order item.',
-                condition: (_, siblingData) => {
-                  return siblingData?.type == 'service' && !siblingData?.serviceName
-                },
-              },
-            },
-            {
-              name: 'serviceName',
-              type: 'text',
-              admin: {
-                condition: (_, siblingData) => siblingData?.type == 'service' && siblingData?.serviceName,
-                readOnly: true,
-              },
-              hooks: {
-                beforeChange: [
-                  async ({ siblingData, req }) => {
-                    if (siblingData.type && siblingData?.type == 'service') {
-                      const service = await req.payload.findByID({
-                        collection: 'services',
-                        id: siblingData.service,
-                      })
-                      if (!service) {
-                        throw new APIError(
-                          'Service not found. Please select a valid service first.',
-                          400,
-                        )
-                      }
-                      siblingData.serviceName = service.name
-                    }
-                  },
-                ],
-              },
-            },
-            {
-              name: 'productName',
-              type: 'text',
-              admin: {
-                condition: (_, siblingData) => siblingData?.type == 'product' && siblingData?.productName,
-                readOnly: true,
-              },
-              hooks: {
-                beforeChange: [
-                  async ({ siblingData, req }) => {
-                    if (siblingData.type && siblingData?.type == 'product' && siblingData?.product) {
-                      const product = await req.payload.findByID({
-                        collection: 'products',
-                        id: siblingData.product,
-                      })
-                      if (!product) {
-                        throw new APIError(
-                          'Product not found. Please select a valid service first.',
-                          400,
-                        )
-                      }
-                      siblingData.productName = product.name
-                    }
-                  },
-                ],
-              },
-            },
-            {
-              name: 'batchName',
-              type: 'text',
-              admin: {
-                 condition: (_, siblingData) => siblingData?.type == 'product' && siblingData?.batchName,
-                 readOnly: true,
-              },
-              hooks: {
-                beforeChange: [
-                  async ({ siblingData, req }) => {
-                    if (siblingData.type && siblingData?.type == 'product' && siblingData?.batch) {
-                      const batch = await req.payload.findByID({
-                        collection: 'batches',
-                        id: siblingData.batch,
-                      })
-                      if (!batch) {
-                        throw new APIError(
-                          'Batch not found. Please select a valid service first.',
-                          400,
-                        )
-                      }
-                      siblingData.batchName = batch.batchNumber
-                    }
-                  },
-                ],
+                condition: (_, siblingData) => siblingData?.type == 'service',
+                components: {
+                    Field: './components/OrderItemServiceField.tsx',
+                }
               },
             },
             {
@@ -162,14 +84,17 @@ export const Orders: CollectionConfig = {
                   shop: {
                     equals: (data as any).shop,
                   },
+                    status: {
+                        equals: 'active',
+                    }
                 }
               },
               admin: {
                 description: 'Select the product for this order item.',
-                condition: (_, siblingData) => {
-                   
-                  return siblingData?.type == 'product' && !siblingData?.productName
-                },
+                condition: (_, siblingData) => siblingData?.type == 'product',
+                components: {
+                    Field: './components/OrderItemProductField.tsx',
+                }
               },
               hooks: {
                 beforeChange: [
@@ -180,17 +105,26 @@ export const Orders: CollectionConfig = {
                     ) {
                       throw new APIError('You cannot update the prouduct once created', 400)
                     }
-                    
                   },
                 ],
               },
             },
             {
               name: 'batch',
-              type: 'text',
+              type: 'relationship',
+              relationTo: 'batches',
+              filterOptions: ({ data, siblingData }) => {
+                return {
+                    product: {
+                        equals: (siblingData as any).product,
+                    },
+                    status: {
+                      equals: 'active',
+                    },
+                }
+              },
               admin: {
                 description: 'Enter the batch number for this product.',
-                condition: (_, siblingData) => siblingData?.type == 'product' && !siblingData?.batchName,
                 components: {
                   Cell: './components/BatchCell',
                   Field: './components/OrderItemBatchField.tsx',
@@ -246,8 +180,8 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'Enter the quantity of the product ordered.',
                 components: {
-                    Field: './components/OrderItemQuantityField.tsx',
-                }
+                  Field: './components/OrderItemQuantityField.tsx',
+                },
               },
               validate: (value: number | null | undefined) => {
                 if (!value || value <= 0) {

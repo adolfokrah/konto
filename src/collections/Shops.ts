@@ -5,6 +5,10 @@ export const Shops: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  access: {
+    read: () => true,
+    delete: () => false, // Prevent deletion of shops
+  },
   fields: [
     {
       name: 'name',

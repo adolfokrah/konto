@@ -244,6 +244,10 @@ export interface Batch {
   shop: string | Shop;
   product?: (string | null) | Product;
   /**
+   * The status of the service.
+   */
+  status?: ('active' | 'inactive') | null;
+  /**
    * The user who created this batch.
    */
   createdBy?: (string | null) | User;
@@ -337,6 +341,10 @@ export interface Category {
    * A brief description of the category.
    */
   description?: string | null;
+  /**
+   * The status of the service.
+   */
+  status?: ('active' | 'inactive') | null;
   /**
    * The user who created this batch.
    */
@@ -488,6 +496,10 @@ export interface Service {
    */
   price: number;
   /**
+   * The status of the service.
+   */
+  status?: ('active' | 'inactive') | null;
+  /**
    * The user who created this batch.
    */
   createdBy?: (string | null) | User;
@@ -513,14 +525,11 @@ export interface Order {
         /**
          * Select the type of item for this order.
          */
-        type?: ('product' | 'service') | null;
+        type?: string | null;
         /**
          * Select the service for this order item.
          */
         service?: (string | null) | Service;
-        serviceName?: string | null;
-        productName?: string | null;
-        batchName?: string | null;
         /**
          * Select the product for this order item.
          */
@@ -528,7 +537,7 @@ export interface Order {
         /**
          * Enter the batch number for this product.
          */
-        batch?: string | null;
+        batch?: (string | null) | Batch;
         /**
          * Enter the quantity of the product ordered.
          */
@@ -744,6 +753,7 @@ export interface BatchesSelect<T extends boolean = true> {
   stockAlert?: T;
   shop?: T;
   product?: T;
+  status?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -790,6 +800,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   image?: T;
   color?: T;
   description?: T;
+  status?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -859,6 +870,7 @@ export interface ServicesSelect<T extends boolean = true> {
   image?: T;
   color?: T;
   price?: T;
+  status?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -875,9 +887,6 @@ export interface OrdersSelect<T extends boolean = true> {
     | {
         type?: T;
         service?: T;
-        serviceName?: T;
-        productName?: T;
-        batchName?: T;
         product?: T;
         batch?: T;
         quantity?: T;

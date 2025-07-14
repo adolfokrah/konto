@@ -6,6 +6,7 @@ export const Batches: CollectionConfig = {
   slug: 'batches',
   access: {
     read: () => true,
+    delete: () => false, // Prevent deletion of batches
   },
   admin: {
     useAsTitle: 'batchNumber',
@@ -67,6 +68,18 @@ export const Batches: CollectionConfig = {
       relationTo: 'products',
       admin: {
         readOnly: true, // Prevent editing the product after batch creation
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' }, // Assuming you want to keep this option
+      ],
+      defaultValue: 'active',
+      admin: {
+        description: 'The status of the service.',
       },
     },
     ...CREATED_UPDATED_BY_FIELDS,

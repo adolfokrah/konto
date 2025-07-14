@@ -23,6 +23,7 @@ const Products: CollectionConfig = {
   },
   access: {
     read: () => true,
+    delete: () => false,
   },
   fields: [
     {
