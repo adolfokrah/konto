@@ -551,6 +551,14 @@ export interface Order {
    */
   paymentMothod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
   customer?: (string | null) | Customer;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -861,6 +869,8 @@ export interface OrdersSelect<T extends boolean = true> {
   fullAmountDueOn?: T;
   paymentMothod?: T;
   customer?: T;
+  createdBy?: T;
+  updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
