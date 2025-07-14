@@ -48,18 +48,17 @@ export const Orders: CollectionConfig = {
                 description: 'Select the product for this order item.',
               },
               hooks: {
-                 beforeChange: [
+                beforeChange: [
                   async ({ data, siblingData, operation, previousSiblingDoc }) => {
-
-                    if (operation === 'update' && previousSiblingDoc?.product != siblingData?.product) {
-                      throw new APIError(
-                        'You cannot update the prouduct once created',
-                        400,
-                      )
+                    if (
+                      operation === 'update' &&
+                      previousSiblingDoc?.product != siblingData?.product
+                    ) {
+                      throw new APIError('You cannot update the prouduct once created', 400)
                     }
                   },
                 ],
-              }
+              },
             },
             {
               name: 'batch',
@@ -79,27 +78,26 @@ export const Orders: CollectionConfig = {
                       if (!siblingData?.product) {
                         return data // Skip validation if no product selected yet
                       }
-                      
+
                       try {
                         const product = await req.payload.findByID({
                           collection: 'products',
                           id: siblingData.product,
                         })
-                        
+
                         if (!product) {
                           throw new APIError(
                             'Product not found. Please select a valid product first.',
                             400,
                           )
                         }
-                        
+
                         if (product.trackExpiry && !siblingData?.batch) {
                           throw new APIError(
                             `Batch field is required for product ${product?.name} that tracks expiry.`,
                             400,
                           )
                         }
-                         
                       } catch (error) {
                         // If product lookup fails, skip batch validation for now
                         if (error instanceof APIError) {
@@ -129,17 +127,64 @@ export const Orders: CollectionConfig = {
               },
               hooks: {
                 beforeChange: [
-                  async ({ data, siblingData, operation, previousSiblingDoc }) => {
+                  async ({ data, siblingData, operation, previousSiblingDoc, req }) => {
+                    if (
+                      operation === 'update' &&
+                      previousSiblingDoc?.quantity != siblingData?.quantity
+                    ) {
+                      throw new APIError('You cannot update the quantity once created', 400)
+                    }
 
-                    if (operation === 'update' && previousSiblingDoc?.quantity != siblingData?.quantity) {
+                    const product = await req.payload.findByID({
+                      collection: 'products',
+                      id: siblingData.product,
+                    })
+
+                    if (!product) {
                       throw new APIError(
-                        'You cannot update the quantity once created',
+                        'Product not found. Please select a valid product first.',
                         400,
                       )
                     }
+
+                    if (
+                      !product?.trackExpiry &&
+                      product?.trackInventory &&
+                      (product?.inventory?.quantity || 0) < siblingData?.quantity
+                    ) {
+                      throw new APIError(
+                        `Insufficient stock for product ${product?.name}. Available stock: ${product?.inventory?.quantity || 0}`,
+                        400,
+                      )
+                    }
+
+                    if (product?.trackExpiry && product?.trackInventory) {
+                      const foundBatch = product?.batches?.find((batch: any) => {
+                        return batch.id === siblingData?.batch
+                      })
+
+                      if (!foundBatch) {
+                        throw new APIError(
+                          `Batch not found for product ${product?.name}. Please select a valid batch.`,
+                          400,
+                        )
+                      }
+                      if (typeof foundBatch !== 'object') {
+                        throw new APIError(
+                          `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                          400,
+                        )
+                      }
+                      if ((foundBatch?.quantity || 0) < siblingData?.quantity) {
+                        throw new APIError(
+                          `Insufficient stock for batch ${foundBatch?.batchNumber} of product ${product?.name}. Available stock: ${foundBatch?.quantity}`,
+                          400,
+                        )
+                      }
+                    }
                   },
                 ],
-              }
+              },
             },
             {
               name: 'unitPrice',
@@ -164,18 +209,21 @@ export const Orders: CollectionConfig = {
                 },
               },
             },
-             {
+            {
               name: 'isReturned',
               type: 'checkbox',
               defaultValue: false,
               admin: {
                 description: 'Check if this item was returned.',
               },
-               hooks: {
-                 beforeChange: [
+              hooks: {
+                beforeChange: [
                   async ({ data, siblingData, operation, previousSiblingDoc }) => {
-
-                    if (operation === 'update' && previousSiblingDoc?.isReturned  && !siblingData?.isReturned) {
+                    if (
+                      operation === 'update' &&
+                      previousSiblingDoc?.isReturned &&
+                      !siblingData?.isReturned
+                    ) {
                       throw new APIError(
                         'You cannot un-return an item once it has been marked as returned',
                         400,
@@ -183,23 +231,23 @@ export const Orders: CollectionConfig = {
                     }
                   },
                 ],
-              }
+              },
             },
           ],
         },
       ],
-          hooks:{
-            beforeChange: [
-              async ({ data, siblingData, operation, previousSiblingDoc }) => {
-                if (operation === 'update' && previousSiblingDoc?.items.length != siblingData?.items.length) {
-                  throw new APIError(
-                    'You cannot update the list of items once created',
-                    400,
-                  )
-                }
-              },
-            ],
-          }
+      hooks: {
+        beforeChange: [
+          async ({ data, siblingData, operation, previousSiblingDoc }) => {
+            if (
+              operation === 'update' &&
+              previousSiblingDoc?.items.length != siblingData?.items.length
+            ) {
+              throw new APIError('You cannot update the list of items once created', 400)
+            }
+          },
+        ],
+      },
     },
     {
       name: 'payment',
@@ -212,18 +260,18 @@ export const Orders: CollectionConfig = {
       ],
       hooks: {
         beforeChange: [
-            async ({ data, siblingData, operation }) => {
-                if(siblingData?.payment === 'un_paid'){
-                    siblingData.amountPaid = 0
-                }
-                if(siblingData?.payment === 'paid'){
-                    siblingData.amountPaid = siblingData?.items?.reduce((acc:number, item: any) => {
-                      return acc + (item.quantity * item.unitPrice)
-                    }, 0)
-                }
+          async ({ data, siblingData, operation }) => {
+            if (siblingData?.payment === 'un_paid') {
+              siblingData.amountPaid = 0
             }
-        ]
-      }
+            if (siblingData?.payment === 'paid') {
+              siblingData.amountPaid = siblingData?.items?.reduce((acc: number, item: any) => {
+                return acc + item.quantity * item.unitPrice
+              }, 0)
+            }
+          },
+        ],
+      },
     },
     {
       name: 'amountPaid',
@@ -238,20 +286,23 @@ export const Orders: CollectionConfig = {
       hooks: {
         beforeChange: [
           async ({ data, siblingData, operation }) => {
-            const orederItems = siblingData?.items as Order['items'] 
-            const items = orederItems?.filter((item)=>!item?.isReturned).map((item)=>item.quantity * item.unitPrice) || []
+            const orederItems = siblingData?.items as Order['items']
+            const items =
+              orederItems
+                ?.filter((item) => !item?.isReturned)
+                .map((item) => item.quantity * item.unitPrice) || []
             const totalAmount = items.reduce((acc, item) => acc + item, 0)
-                if (siblingData.amountPaid > totalAmount) {
-                    throw new APIError(
-                    `Amount paid cannot be greater or same as the total order amount of ${totalAmount}`,
-                    400,
-                    )
-                }else if (siblingData.amountPaid == totalAmount) {
-                    siblingData.payment = 'paid'
-                }
+            if (siblingData.amountPaid > totalAmount) {
+              throw new APIError(
+                `Amount paid cannot be greater or same as the total order amount of ${totalAmount}`,
+                400,
+              )
+            } else if (siblingData.amountPaid == totalAmount) {
+              siblingData.payment = 'paid'
+            }
           },
         ],
-      }
+      },
     },
     {
       name: 'fullAmountDueOn',
