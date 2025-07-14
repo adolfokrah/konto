@@ -17,6 +17,8 @@ import Stock from './collections/Stock'
 import Suppliers from './collections/Suppliers'
 import { moveStock } from './endpoints/moveStock'
 import { Services } from './collections/Services'
+import Customers from './collections/Customer'
+import { Orders } from './collections/Orders'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -30,7 +32,19 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Shops, Batches, Products, Categories, Stock, Suppliers, Services],
+  collections: [
+    Users,
+    Media,
+    Shops,
+    Batches,
+    Products,
+    Categories,
+    Stock,
+    Suppliers,
+    Customers,
+    Services,
+    Orders,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

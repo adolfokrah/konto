@@ -75,7 +75,9 @@ export interface Config {
     categories: Category;
     stock: Stock;
     suppliers: Supplier;
+    customers: Customer;
     services: Service;
+    orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -90,7 +92,9 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     stock: StockSelect<false> | StockSelect<true>;
     suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
+    customers: CustomersSelect<false> | CustomersSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -423,6 +427,37 @@ export interface Supplier {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers".
+ */
+export interface Customer {
+  id: string;
+  /**
+   * The name of the supplier.
+   */
+  name: string;
+  contactInfo?: {
+    /**
+     * Email address of the supplier.
+     */
+    email?: string | null;
+    /**
+     * Phone number of the supplier.
+     */
+    phone?: string | null;
+  };
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "services".
  */
 export interface Service {
@@ -452,6 +487,70 @@ export interface Service {
    * The price of the service.
    */
   price: number;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  /**
+   * Select the shop associated with this order.
+   */
+  shop: string | Shop;
+  items?:
+    | {
+        /**
+         * Select the product for this order item.
+         */
+        product: string | Product;
+        /**
+         * Enter the batch number for this product.
+         */
+        batch?: string | null;
+        /**
+         * Enter the quantity of the product ordered.
+         */
+        quantity: number;
+        /**
+         * Enter the price of the product per unit.
+         */
+        unitPrice: number;
+        /**
+         * Enter the price of the product at the time of order.
+         */
+        totalPrice?: number | null;
+        /**
+         * Check if this item was returned.
+         */
+        isReturned?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  payment: 'paid' | 'partial' | 'un_paid';
+  /**
+   * Enter the amount paid for this order.
+   */
+  amountPaid?: number | null;
+  /**
+   * Enter the date when the full amount is due.
+   */
+  fullAmountDueOn?: string | null;
+  /**
+   * Select the payment method for this order.
+   */
+  paymentMothod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
+  customer?: (string | null) | Customer;
   updatedAt: string;
   createdAt: string;
 }
@@ -495,8 +594,16 @@ export interface PayloadLockedDocument {
         value: string | Supplier;
       } | null)
     | ({
+        relationTo: 'customers';
+        value: string | Customer;
+      } | null)
+    | ({
         relationTo: 'services';
         value: string | Service;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -700,6 +807,23 @@ export interface SuppliersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers_select".
+ */
+export interface CustomersSelect<T extends boolean = true> {
+  name?: T;
+  contactInfo?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "services_select".
  */
 export interface ServicesSelect<T extends boolean = true> {
@@ -710,6 +834,33 @@ export interface ServicesSelect<T extends boolean = true> {
   image?: T;
   color?: T;
   price?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  shop?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        batch?: T;
+        quantity?: T;
+        unitPrice?: T;
+        totalPrice?: T;
+        isReturned?: T;
+        id?: T;
+      };
+  payment?: T;
+  amountPaid?: T;
+  fullAmountDueOn?: T;
+  paymentMothod?: T;
+  customer?: T;
   updatedAt?: T;
   createdAt?: T;
 }

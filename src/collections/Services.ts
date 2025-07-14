@@ -1,4 +1,6 @@
+import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import type { CollectionConfig } from 'payload'
+import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
 
 export const Services: CollectionConfig = {
   slug: 'services',
@@ -19,16 +21,15 @@ export const Services: CollectionConfig = {
         description: 'Select the shop associated with this service.',
       },
     },
-    
     {
-        name: 'category',
-        type: 'relationship',
-        relationTo: 'categories', // Assuming you have a Categories collection
-        required: true,
-        hasMany: false,
-        admin: {
-            description: 'Select the category for this service.',
-        },
+      name: 'category',
+      type: 'relationship',
+      relationTo: 'categories', // Assuming you have a Categories collection
+      required: true,
+      hasMany: false,
+      admin: {
+        description: 'Select the category for this service.',
+      },
     },
     {
       name: 'name',
@@ -73,5 +74,18 @@ export const Services: CollectionConfig = {
         description: 'The price of the service.',
       },
     },
+    ...CREATED_UPDATED_BY_FIELDS,
   ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        // Automatically set createdBy to the current user
+        return seteCreatedUpdatedBy({
+          data,
+          operation,
+          userId: req.user ? req.user.id : null,
+        })
+      },
+    ],
+  },
 }

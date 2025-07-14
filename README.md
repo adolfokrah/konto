@@ -5,6 +5,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ## 🚀 Features
 
 ### 📦 Core Inventory Management
+
 - **Multi-Shop Operations**: Manage inventory across multiple retail/wholesale locations
 - **Product Catalog**: Complete product management with categories, pricing, and specifications
 - **Batch & Expiry Tracking**: Monitor product batches with expiry dates for perishable goods
@@ -13,8 +14,9 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 - **Service Management**: Manage services alongside products
 
 ### 📊 Advanced Inventory Features
+
 - **Real-time Inventory Tracking**: Live inventory quantities with configurable stock alerts
-- **Dual Tracking Modes**: 
+- **Dual Tracking Modes**:
   - Simple inventory tracking for basic products
   - Advanced batch-based tracking for products with expiry dates
 - **Stock Movement API**: RESTful API for programmatic stock transfers and automation
@@ -22,11 +24,13 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 - **Comprehensive Audit Trail**: Complete history of all stock movements and changes
 
 ### 👥 User & Access Management
+
 - **Role-based Access Control**: Vendors, admins, and custom user roles
 - **Multi-tenant Architecture**: Each shop can have its own users and permissions
 - **Secure Authentication**: Built-in user management with Payload CMS
 
 ### 🔧 Technical Features
+
 - **Payload CMS Admin Panel**: Intuitive admin interface for all operations
 - **Next.js Frontend**: Modern React-based user interface
 - **MongoDB Database**: Flexible NoSQL database for scalable data storage
@@ -38,6 +42,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ## 🛠️ Quick Start
 
 ### Prerequisites
+
 - **Node.js** 18 or higher
 - **pnpm** package manager
 - **MongoDB** database (local or MongoDB Atlas)
@@ -45,22 +50,26 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 ### 🚀 Local Development Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd konto
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    ```
-   
+
    Update the following variables in your `.env` file:
+
    ```env
    MONGODB_URI=your_mongodb_connection_string
    MONGODB_URI_TEST=your_mongodb_connection_string_for_testing
@@ -69,24 +78,27 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
    ```
 
 4. **Set up MongoDB Database**
-   
+
    **Option A: MongoDB Atlas (Recommended)**
    - Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
    - Create a new cluster
    - Get your connection string and update `MONGODB_URI` in `.env`
-   
+
    **Option B: Local MongoDB with Docker**
+
    ```bash
    docker run --name mongodb -d -p 27017:27017 mongo:latest
    # Use: mongodb://localhost:27017/konto
    ```
 
 5. **Generate Payload types**
+
    ```bash
    pnpm generate:types
    ```
 
 6. **Start the development server**
+
    ```bash
    pnpm dev
    ```
@@ -132,6 +144,7 @@ src/
 ## 🔌 API Endpoints
 
 ### Stock Movement API
+
 Transfer inventory between shops programmatically:
 
 ```http
@@ -151,6 +164,7 @@ Authorization: Bearer <your-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -158,7 +172,7 @@ Authorization: Bearer <your-token>
   "data": [
     {
       "productId": "product_id",
-      "fromShopId": "shop_id_1", 
+      "fromShopId": "shop_id_1",
       "toShopId": "shop_id_2",
       "quantity": 10,
       "status": "completed"
@@ -168,6 +182,7 @@ Authorization: Bearer <your-token>
 ```
 
 ### Other Available APIs
+
 - **Products API**: `/api/products` - CRUD operations for products
 - **Shops API**: `/api/shops` - Shop management
 - **Batches API**: `/api/batches` - Batch tracking
@@ -178,6 +193,7 @@ Authorization: Bearer <your-token>
 ## 🧪 Testing
 
 ### Run Tests
+
 ```bash
 # Run all tests (integration + e2e)
 pnpm test
@@ -185,7 +201,7 @@ pnpm test
 # Run integration tests only
 pnpm test:int
 
-# Run end-to-end tests only  
+# Run end-to-end tests only
 pnpm test:e2e
 
 # Run tests in watch mode (development)
@@ -193,7 +209,9 @@ pnpm test:int --watch
 ```
 
 ### Test Coverage
+
 Comprehensive integration tests covering:
+
 - ✅ **Stock Movement Logic**: Validation, business rules, and inventory updates
 - ✅ **Inventory Tracking**: Quantity calculations and stock alerts
 - ✅ **Batch Management**: Expiry tracking and batch-based movements
@@ -204,6 +222,7 @@ Comprehensive integration tests covering:
 ## 📊 Database Schema
 
 ### Core Collections
+
 - **Users** 👥: Authentication, user roles, and permissions
 - **Shops** 🏪: Store locations, contact info, and settings
 - **Categories** 📂: Product categorization and organization
@@ -215,6 +234,7 @@ Comprehensive integration tests covering:
 - **Media** 🖼️: File uploads for product images and documents
 
 ### Relationship Overview
+
 ```
 Shops ←→ Products ←→ Categories
   ↓         ↓
@@ -226,12 +246,14 @@ Users (Created/Updated tracking)
 ## 🚀 Production Deployment
 
 ### Using Docker
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build -d
 ```
 
 ### Environment Variables for Production
+
 ```env
 NODE_ENV=production
 MONGODB_URI=your_production_mongodb_connection_string
@@ -240,6 +262,7 @@ NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
 ```
 
 ### Deployment Checklist
+
 - [ ] Set up production MongoDB database
 - [ ] Configure environment variables
 - [ ] Set up SSL certificates
@@ -262,6 +285,7 @@ We welcome contributions! Please follow these steps:
 8. **Open** a Pull Request
 
 ### Development Guidelines
+
 - Follow TypeScript best practices
 - Add integration tests for new features
 - Update documentation for API changes
@@ -286,7 +310,7 @@ We welcome contributions! Please follow these steps:
 ```json
 {
   "@payloadcms/db-mongodb": "3.46.0",
-  "@payloadcms/next": "3.46.0", 
+  "@payloadcms/next": "3.46.0",
   "@payloadcms/richtext-lexical": "3.46.0",
   "next": "15.3.2",
   "react": "19.1.0",
@@ -302,12 +326,14 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🆘 Support & Documentation
 
 ### Getting Help
+
 - 📖 **Documentation**: Check the `/docs` folder for detailed guides
 - 🐛 **Issues**: [Create an issue](https://github.com/your-repo/konto/issues) for bugs or feature requests
 - 💬 **Discussions**: Join our [GitHub Discussions](https://github.com/your-repo/konto/discussions)
 - 📧 **Email**: Contact the maintainers for enterprise support
 
 ### Useful Resources
+
 - 🔗 **Payload CMS Docs**: [https://payloadcms.com/docs](https://payloadcms.com/docs)
 - 🔗 **Next.js Docs**: [https://nextjs.org/docs](https://nextjs.org/docs)
 - 📝 **Test Examples**: Review test files in `/tests` for usage examples

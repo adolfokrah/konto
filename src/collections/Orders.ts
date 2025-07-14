@@ -1,0 +1,288 @@
+import { Order } from '@/payload-types'
+import { APIError, type CollectionConfig } from 'payload'
+
+export const Orders: CollectionConfig = {
+  slug: 'orders',
+  access: {
+    read: () => true,
+  },
+  admin: {
+    useAsTitle: 'id',
+  },
+  fields: [
+    {
+      name: 'shop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: true,
+      admin: {
+        description: 'Select the shop associated with this order.',
+      },
+    },
+    {
+      name: 'items',
+      type: 'array',
+      required: true,
+      admin: {
+        condition: ({ shop }) => {
+          return Boolean(shop)
+        },
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'product',
+              type: 'relationship',
+              relationTo: 'products',
+              required: true,
+              filterOptions: ({ data }) => {
+                return {
+                  shop: {
+                    equals: (data as any).shop,
+                  },
+                }
+              },
+              admin: {
+                description: 'Select the product for this order item.',
+              },
+              hooks: {
+                 beforeChange: [
+                  async ({ data, siblingData, operation, previousSiblingDoc }) => {
+
+                    if (operation === 'update' && previousSiblingDoc?.product != siblingData?.product) {
+                      throw new APIError(
+                        'You cannot update the prouduct once created',
+                        400,
+                      )
+                    }
+                  },
+                ],
+              }
+            },
+            {
+              name: 'batch',
+              type: 'text',
+              admin: {
+                description: 'Enter the batch number for this product.',
+                components: {
+                  Cell: './components/BatchCell',
+                  Field: './components/OrderItemBatchField.tsx',
+                },
+              },
+              hooks: {
+                beforeChange: [
+                  async ({ data, siblingData, operation, req }) => {
+                    if (operation === 'create' || operation === 'update') {
+                      // Only validate if product is provided and valid
+                      if (!siblingData?.product) {
+                        return data // Skip validation if no product selected yet
+                      }
+                      
+                      try {
+                        const product = await req.payload.findByID({
+                          collection: 'products',
+                          id: siblingData.product,
+                        })
+                        
+                        if (!product) {
+                          throw new APIError(
+                            'Product not found. Please select a valid product first.',
+                            400,
+                          )
+                        }
+                        
+                        if (product.trackExpiry && !siblingData?.batch) {
+                          throw new APIError(
+                            `Batch field is required for product ${product?.name} that tracks expiry.`,
+                            400,
+                          )
+                        }
+                         
+                      } catch (error) {
+                        // If product lookup fails, skip batch validation for now
+                        if (error instanceof APIError) {
+                          throw error
+                        }
+                        // Skip validation if product lookup fails due to other reasons
+                        console.warn('Failed to validate batch field:', error)
+                      }
+                    }
+                  },
+                ],
+              },
+            },
+            {
+              name: 'quantity',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              admin: {
+                description: 'Enter the quantity of the product ordered.',
+              },
+              validate: (value: number | null | undefined) => {
+                if (!value || value <= 0) {
+                  return 'Quantity must be greater than zero.'
+                }
+                return true
+              },
+              hooks: {
+                beforeChange: [
+                  async ({ data, siblingData, operation, previousSiblingDoc }) => {
+
+                    if (operation === 'update' && previousSiblingDoc?.quantity != siblingData?.quantity) {
+                      throw new APIError(
+                        'You cannot update the quantity once created',
+                        400,
+                      )
+                    }
+                  },
+                ],
+              }
+            },
+            {
+              name: 'unitPrice',
+              type: 'number',
+              required: true,
+              admin: {
+                description: 'Enter the price of the product per unit.',
+                readOnly: true,
+                components: {
+                  Field: './components/OrderItemUnitPriceField.tsx',
+                },
+              },
+            },
+            {
+              name: 'totalPrice',
+              type: 'number',
+              admin: {
+                description: 'Enter the price of the product at the time of order.',
+                readOnly: true,
+                components: {
+                  Field: './components/OrderItemTotalPriceField.tsx',
+                },
+              },
+            },
+             {
+              name: 'isReturned',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Check if this item was returned.',
+              },
+               hooks: {
+                 beforeChange: [
+                  async ({ data, siblingData, operation, previousSiblingDoc }) => {
+
+                    if (operation === 'update' && previousSiblingDoc?.isReturned  && !siblingData?.isReturned) {
+                      throw new APIError(
+                        'You cannot un-return an item once it has been marked as returned',
+                        400,
+                      )
+                    }
+                  },
+                ],
+              }
+            },
+          ],
+        },
+      ],
+          hooks:{
+            beforeChange: [
+              async ({ data, siblingData, operation, previousSiblingDoc }) => {
+                if (operation === 'update' && previousSiblingDoc?.items.length != siblingData?.items.length) {
+                  throw new APIError(
+                    'You cannot update the list of items once created',
+                    400,
+                  )
+                }
+              },
+            ],
+          }
+    },
+    {
+      name: 'payment',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Paid', value: 'paid' },
+        { label: 'Partial', value: 'partial' },
+        { label: 'Un Paid', value: 'un_paid' },
+      ],
+      hooks: {
+        beforeChange: [
+            async ({ data, siblingData, operation }) => {
+                if(siblingData?.payment === 'un_paid'){
+                    siblingData.amountPaid = 0
+                }
+                if(siblingData?.payment === 'paid'){
+                    siblingData.amountPaid = siblingData?.items?.reduce((acc:number, item: any) => {
+                      return acc + (item.quantity * item.unitPrice)
+                    }, 0)
+                }
+            }
+        ]
+      }
+    },
+    {
+      name: 'amountPaid',
+      type: 'number',
+      required: true,
+      admin: {
+        description: 'Enter the amount paid for this order.',
+        condition: ({ payment }) => {
+          return payment === 'partial'
+        },
+      },
+      hooks: {
+        beforeChange: [
+          async ({ data, siblingData, operation }) => {
+            const orederItems = siblingData?.items as Order['items'] 
+            const items = orederItems?.filter((item)=>!item?.isReturned).map((item)=>item.quantity * item.unitPrice) || []
+            const totalAmount = items.reduce((acc, item) => acc + item, 0)
+                if (siblingData.amountPaid > totalAmount) {
+                    throw new APIError(
+                    `Amount paid cannot be greater or same as the total order amount of ${totalAmount}`,
+                    400,
+                    )
+                }else if (siblingData.amountPaid == totalAmount) {
+                    siblingData.payment = 'paid'
+                }
+          },
+        ],
+      }
+    },
+    {
+      name: 'fullAmountDueOn',
+      type: 'date',
+      required: true,
+      admin: {
+        description: 'Enter the date when the full amount is due.',
+        condition: ({ payment }) => payment === 'partial' || payment === 'un_paid',
+      },
+    },
+    {
+      name: 'paymentMothod',
+      type: 'select',
+      options: [
+        { label: 'Cash', value: 'cash' },
+        { label: 'Card', value: 'card' },
+        { label: 'Mobile Money', value: 'mobile-money' },
+        { label: 'Bank Transfer', value: 'bank-transfer' },
+      ],
+      required: true,
+      admin: {
+        description: 'Select the payment method for this order.',
+        condition: ({ payment }) => {
+          return payment === 'paid' || payment === 'partial'
+        },
+      },
+    },
+    {
+      name: 'customer',
+      type: 'relationship',
+      relationTo: 'customers',
+    },
+  ],
+}
