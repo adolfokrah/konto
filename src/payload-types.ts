@@ -537,6 +537,11 @@ export interface Order {
         id?: string | null;
       }[]
     | null;
+  disountType?: ('percentage' | 'fixed') | null;
+  /**
+   * Enter the discount amount for this order.
+   */
+  discount?: number | null;
   payment: 'paid' | 'partial' | 'un_paid';
   /**
    * Enter the amount paid for this order.
@@ -864,6 +869,8 @@ export interface OrdersSelect<T extends boolean = true> {
         isReturned?: T;
         id?: T;
       };
+  disountType?: T;
+  discount?: T;
   payment?: T;
   amountPaid?: T;
   fullAmountDueOn?: T;

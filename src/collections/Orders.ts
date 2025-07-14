@@ -2,6 +2,7 @@ import { Order } from '@/payload-types'
 import { APIError, type CollectionConfig } from 'payload'
 import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+import { calculateDiscount } from '@/lib/utils/calculateDiscount'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -188,93 +189,95 @@ export const Orders: CollectionConfig = {
                   },
                 ],
                 afterChange: [
-                    async ({ siblingData, operation, previousSiblingDoc, req }) => {
+                  async ({ siblingData, operation, previousSiblingDoc, req }) => {
+                    const product = await req.payload.findByID({
+                      collection: 'products',
+                      id: siblingData.product,
+                    })
+                    if (!product) {
+                      throw new APIError(
+                        'Product not found. Please select a valid product first.',
+                        400,
+                      )
+                    }
 
-                        const product = await req.payload.findByID({
+                    if (
+                      operation === 'update' &&
+                      !previousSiblingDoc?.isReturned &&
+                      siblingData?.isReturned
+                    ) {
+                      const quantity = siblingData?.quantity || 0
+                      if (product?.trackInventory && product?.inventory?.quantity) {
+                        const newQuantity = product.inventory.quantity + quantity
+                        await req.payload.update({
                           collection: 'products',
-                          id: siblingData.product,
+                          id: product.id,
+                          data: {
+                            inventory: {
+                              quantity: newQuantity,
+                            },
+                          },
                         })
-                        if (!product) {
+                      }
+                      if (product?.trackExpiry && product?.trackInventory) {
+                        const foundBatch = product?.batches?.find((batch: any) => {
+                          return batch.id === siblingData?.batch
+                        })
+                        if (typeof foundBatch !== 'object') {
                           throw new APIError(
-                            'Product not found. Please select a valid product first.',
+                            `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
                             400,
                           )
                         }
-
-                        if(operation === 'update' && !previousSiblingDoc?.isReturned && siblingData?.isReturned) {
-                            const quantity = siblingData?.quantity || 0
-                            if (product?.trackInventory && product?.inventory?.quantity) {
-                                const newQuantity = product.inventory.quantity + quantity
-                                await req.payload.update({
-                                  collection: 'products',
-                                  id: product.id,
-                                  data: {
-                                    inventory: {
-                                      quantity: newQuantity,
-                                    },
-                                  },
-                                })
-                            }
-                            if (product?.trackExpiry && product?.trackInventory) {
-                                const foundBatch = product?.batches?.find((batch: any) => {
-                                  return batch.id === siblingData?.batch
-                                })
-                                if(typeof foundBatch !== 'object') {
-                                  throw new APIError(
-                                    `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
-                                    400,
-                                  )
-                                }
-                                if (foundBatch && foundBatch.quantity) {
-                                  const newBatchQuantity = foundBatch.quantity + quantity
-                                  await req.payload.update({
-                                    collection: 'batches',
-                                    id: siblingData.batch,
-                                    data: {
-                                      quantity: newBatchQuantity,
-                                    },
-                                  })
-                                }
-                            }
-                        } else if (operation === 'create'){
-                            if (product?.trackInventory && product?.inventory?.quantity) {
-                                const quantity = siblingData?.quantity || 0
-                                const newQuantity = product.inventory.quantity - quantity
-                                await req.payload.update({
-                                  collection: 'products',
-                                  id: product.id,
-                                  data: {
-                                    inventory: {
-                                      quantity: newQuantity,
-                                    },
-                                  },
-                                })
-                            }
-                            if (product?.trackExpiry && product?.trackInventory) {
-                                const foundBatch = product?.batches?.find((batch: any) => {
-                                  return batch.id === siblingData?.batch
-                                })
-                                if(typeof foundBatch !== 'object') {
-                                  throw new APIError(
-                                    `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
-                                    400,
-                                  )
-                                }
-                                if (foundBatch && foundBatch.quantity) {
-                                  const quantity = siblingData?.quantity || 0
-                                  const newBatchQuantity = foundBatch.quantity - quantity
-                                  await req.payload.update({
-                                    collection: 'batches',
-                                    id: siblingData.batch,
-                                    data: {
-                                      quantity: newBatchQuantity,
-                                    },
-                                  })
-                                }
-                            }
+                        if (foundBatch && foundBatch.quantity) {
+                          const newBatchQuantity = foundBatch.quantity + quantity
+                          await req.payload.update({
+                            collection: 'batches',
+                            id: siblingData.batch,
+                            data: {
+                              quantity: newBatchQuantity,
+                            },
+                          })
                         }
-                         
-                    },
+                      }
+                    } else if (operation === 'create') {
+                      if (product?.trackInventory && product?.inventory?.quantity) {
+                        const quantity = siblingData?.quantity || 0
+                        const newQuantity = product.inventory.quantity - quantity
+                        await req.payload.update({
+                          collection: 'products',
+                          id: product.id,
+                          data: {
+                            inventory: {
+                              quantity: newQuantity,
+                            },
+                          },
+                        })
+                      }
+                      if (product?.trackExpiry && product?.trackInventory) {
+                        const foundBatch = product?.batches?.find((batch: any) => {
+                          return batch.id === siblingData?.batch
+                        })
+                        if (typeof foundBatch !== 'object') {
+                          throw new APIError(
+                            `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                            400,
+                          )
+                        }
+                        if (foundBatch && foundBatch.quantity) {
+                          const quantity = siblingData?.quantity || 0
+                          const newBatchQuantity = foundBatch.quantity - quantity
+                          await req.payload.update({
+                            collection: 'batches',
+                            id: siblingData.batch,
+                            data: {
+                              quantity: newBatchQuantity,
+                            },
+                          })
+                        }
+                      }
+                    }
+                  },
                 ],
               },
             },
@@ -325,7 +328,7 @@ export const Orders: CollectionConfig = {
                 ],
               },
             },
-          ]
+          ],
         },
       ],
       hooks: {
@@ -339,6 +342,27 @@ export const Orders: CollectionConfig = {
             }
           },
         ],
+      },
+    },
+    {
+      name: 'disountType',
+      type: 'select',
+      options: [
+        { label: 'Percentage', value: 'percentage' },
+        { label: 'Fixed Amount', value: 'fixed' },
+      ],
+      required: false,
+    },
+    {
+      name: 'discount',
+      type: 'number',
+      required: true,
+      defaultValue: 0,
+      admin: {
+        description: 'Enter the discount amount for this order.',
+        condition: ({ disountType }) => {
+          return disountType === 'fixed' || disountType === 'percentage'
+        },
       },
     },
     {
@@ -357,9 +381,17 @@ export const Orders: CollectionConfig = {
               siblingData.amountPaid = 0
             }
             if (siblingData?.payment === 'paid') {
-              siblingData.amountPaid = siblingData?.items?.reduce((acc: number, item: any) => {
-                return acc + item.quantity * item.unitPrice
-              }, 0)
+              siblingData.amountPaid =
+                siblingData?.items?.reduce((acc: number, item: any) => {
+                  return acc + item.quantity * item.unitPrice
+                }, 0) -
+                calculateDiscount(
+                  siblingData?.discount || 0,
+                  siblingData?.disountType,
+                  siblingData?.items?.reduce((acc: number, item: any) => {
+                    return acc + item.quantity * item.unitPrice
+                  }, 0),
+                )
             }
           },
         ],
@@ -383,10 +415,14 @@ export const Orders: CollectionConfig = {
               orederItems
                 ?.filter((item) => !item?.isReturned)
                 .map((item) => item.quantity * item.unitPrice) || []
-            const totalAmount = items.reduce((acc, item) => acc + item, 0)
+            let totalAmount = items.reduce((acc, item) => acc + item, 0)
+            totalAmount =
+              totalAmount -
+              calculateDiscount(siblingData?.discount || 0, siblingData?.disountType, totalAmount)
+
             if (siblingData.amountPaid > totalAmount) {
               throw new APIError(
-                `Amount paid cannot be greater or same as the total order amount of ${totalAmount}`,
+                `Amount paid cannot be greater than order amount of ${totalAmount}`,
                 400,
               )
             } else if (siblingData.amountPaid == totalAmount) {
@@ -439,6 +475,6 @@ export const Orders: CollectionConfig = {
           userId: req.user ? req.user.id : null,
         })
       },
-    ]
+    ],
   },
 }
