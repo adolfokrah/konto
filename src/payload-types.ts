@@ -431,6 +431,10 @@ export interface Service {
    * Select the shop associated with this service.
    */
   shop: string | Shop;
+  /**
+   * Select the category for this service.
+   */
+  category: string | Category;
   name: string;
   /**
    * A brief description of the service.
@@ -440,6 +444,10 @@ export interface Service {
    * Upload an image for the service.
    */
   image?: (string | null) | Media;
+  /**
+   * A color code for the category, e.g., #FF5733 for red.
+   */
+  color?: string | null;
   /**
    * The price of the service.
    */
@@ -696,9 +704,11 @@ export interface SuppliersSelect<T extends boolean = true> {
  */
 export interface ServicesSelect<T extends boolean = true> {
   shop?: T;
+  category?: T;
   name?: T;
   description?: T;
   image?: T;
+  color?: T;
   price?: T;
   updatedAt?: T;
   createdAt?: T;

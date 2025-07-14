@@ -19,6 +19,7 @@ export const Services: CollectionConfig = {
         description: 'Select the shop associated with this service.',
       },
     },
+    
     {
         name: 'category',
         type: 'relationship',
@@ -48,6 +49,20 @@ export const Services: CollectionConfig = {
       required: false,
       admin: {
         description: 'Upload an image for the service.',
+      },
+    },
+    {
+      name: 'color',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'A color code for the category, e.g., #FF5733 for red.',
+        components: {
+          Cell: './components/ColorCell', // Assuming you have a ColorCell component for displaying colors
+        },
+        condition: (data, siblingData) => {
+          return !siblingData.image
+        },
       },
     },
     {
