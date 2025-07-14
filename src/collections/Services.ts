@@ -20,6 +20,16 @@ export const Services: CollectionConfig = {
       },
     },
     {
+        name: 'category',
+        type: 'relationship',
+        relationTo: 'categories', // Assuming you have a Categories collection
+        required: true,
+        hasMany: false,
+        admin: {
+            description: 'Select the category for this service.',
+        },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,
