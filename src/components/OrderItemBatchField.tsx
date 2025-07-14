@@ -21,7 +21,7 @@ export default function OrderItemUnitPriceField({ path }: { path: string }) {
 
   if (isLoading) return <div>loading...</div>
 
-  if (error || !data || !data?.batches?.length || type?.value == 'service') return null
+  if (!data || !data?.batches?.length || type?.value == 'service') return null
   return (
     <SelectInput
       label={'Batch'}

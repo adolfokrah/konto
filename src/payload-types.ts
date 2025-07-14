@@ -513,11 +513,14 @@ export interface Order {
         /**
          * Select the type of item for this order.
          */
-        type: 'product' | 'service';
+        type?: ('product' | 'service') | null;
         /**
          * Select the service for this order item.
          */
         service?: (string | null) | Service;
+        serviceName?: string | null;
+        productName?: string | null;
+        batchName?: string | null;
         /**
          * Select the product for this order item.
          */
@@ -550,6 +553,7 @@ export interface Order {
    * Enter the discount amount for this order.
    */
   discount?: number | null;
+  totalCost?: number | null;
   payment: 'paid' | 'partial' | 'un_paid';
   /**
    * Enter the amount paid for this order.
@@ -871,6 +875,9 @@ export interface OrdersSelect<T extends boolean = true> {
     | {
         type?: T;
         service?: T;
+        serviceName?: T;
+        productName?: T;
+        batchName?: T;
         product?: T;
         batch?: T;
         quantity?: T;
@@ -881,6 +888,7 @@ export interface OrdersSelect<T extends boolean = true> {
       };
   disountType?: T;
   discount?: T;
+  totalCost?: T;
   payment?: T;
   amountPaid?: T;
   fullAmountDueOn?: T;

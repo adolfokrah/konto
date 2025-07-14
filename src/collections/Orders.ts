@@ -37,36 +37,120 @@ export const Orders: CollectionConfig = {
           type: 'row',
           fields: [
             {
-                name: 'type',
-                type: 'select',
-                defaultValue: 'product',
-                options: [
-                  { label: 'Product', value: 'product' },
-                  { label: 'Service', value: 'service' },
-                ],
-                required: true,
-                admin: {
-                  description: 'Select the type of item for this order.',
+              name: 'type',
+              type: 'select',
+              defaultValue: 'product',
+              options: [
+                { label: 'Product', value: 'product' },
+                { label: 'Service', value: 'service' },
+              ],
+              required: true,
+              admin: {
+                description: 'Select the type of item for this order.',
+                condition: (_, siblingData) => {
+                    return !siblingData?.productName && !siblingData?.serviceName
                 }
+              },
             },
             {
-                name: 'service',
-                type: 'relationship',
-                relationTo: 'services',
-                required: true,
-                filterOptions: ({ data }) => {
-                  return {
-                    shop: {
-                      equals: (data as any).shop,
-                    },
-                  }
+              name: 'service',
+              type: 'relationship',
+              relationTo: 'services',
+              required: true,
+              filterOptions: ({ data }) => {
+                return {
+                  shop: {
+                    equals: (data as any).shop,
+                  },
+                }
+              },
+              admin: {
+                description: 'Select the service for this order item.',
+                condition: (_, siblingData) => {
+                  return siblingData?.type == 'service' && !siblingData?.serviceName
                 },
-                admin: {
-                  description: 'Select the service for this order item.',
-                  condition: (_, siblingData) => {
-                    return siblingData?.type == 'service'
-                  }
-                },
+              },
+            },
+            {
+              name: 'serviceName',
+              type: 'text',
+              admin: {
+                condition: (_, siblingData) => siblingData?.type == 'service' && siblingData?.serviceName,
+                readOnly: true,
+              },
+              hooks: {
+                beforeChange: [
+                  async ({ siblingData, req }) => {
+                    if (siblingData.type && siblingData?.type == 'service') {
+                      const service = await req.payload.findByID({
+                        collection: 'services',
+                        id: siblingData.service,
+                      })
+                      if (!service) {
+                        throw new APIError(
+                          'Service not found. Please select a valid service first.',
+                          400,
+                        )
+                      }
+                      siblingData.serviceName = service.name
+                    }
+                  },
+                ],
+              },
+            },
+            {
+              name: 'productName',
+              type: 'text',
+              admin: {
+                condition: (_, siblingData) => siblingData?.type == 'product' && siblingData?.productName,
+                readOnly: true,
+              },
+              hooks: {
+                beforeChange: [
+                  async ({ siblingData, req }) => {
+                    if (siblingData.type && siblingData?.type == 'product' && siblingData?.product) {
+                      const product = await req.payload.findByID({
+                        collection: 'products',
+                        id: siblingData.product,
+                      })
+                      if (!product) {
+                        throw new APIError(
+                          'Product not found. Please select a valid service first.',
+                          400,
+                        )
+                      }
+                      siblingData.productName = product.name
+                    }
+                  },
+                ],
+              },
+            },
+            {
+              name: 'batchName',
+              type: 'text',
+              admin: {
+                 condition: (_, siblingData) => siblingData?.type == 'product' && siblingData?.batchName,
+                 readOnly: true,
+              },
+              hooks: {
+                beforeChange: [
+                  async ({ siblingData, req }) => {
+                    if (siblingData.type && siblingData?.type == 'product' && siblingData?.batch) {
+                      const batch = await req.payload.findByID({
+                        collection: 'batches',
+                        id: siblingData.batch,
+                      })
+                      if (!batch) {
+                        throw new APIError(
+                          'Batch not found. Please select a valid service first.',
+                          400,
+                        )
+                      }
+                      siblingData.batchName = batch.batchNumber
+                    }
+                  },
+                ],
+              },
             },
             {
               name: 'product',
@@ -83,18 +167,20 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'Select the product for this order item.',
                 condition: (_, siblingData) => {
-                  return siblingData?.type == 'product'
+                   
+                  return siblingData?.type == 'product' && !siblingData?.productName
                 },
               },
               hooks: {
                 beforeChange: [
-                  async ({ data, siblingData, operation, previousSiblingDoc }) => {
+                  async ({ data, siblingData, operation, previousSiblingDoc, req }) => {
                     if (
                       operation === 'update' &&
                       previousSiblingDoc?.product != siblingData?.product
                     ) {
                       throw new APIError('You cannot update the prouduct once created', 400)
                     }
+                    
                   },
                 ],
               },
@@ -104,6 +190,7 @@ export const Orders: CollectionConfig = {
               type: 'text',
               admin: {
                 description: 'Enter the batch number for this product.',
+                condition: (_, siblingData) => siblingData?.type == 'product' && !siblingData?.batchName,
                 components: {
                   Cell: './components/BatchCell',
                   Field: './components/OrderItemBatchField.tsx',
@@ -112,38 +199,40 @@ export const Orders: CollectionConfig = {
               hooks: {
                 beforeChange: [
                   async ({ data, siblingData, operation, req }) => {
-                    if (operation === 'create' || operation === 'update') {
-                      // Only validate if product is provided and valid
-                      if (!siblingData?.product) {
-                        return data // Skip validation if no product selected yet
-                      }
-
-                      try {
-                        const product = await req.payload.findByID({
-                          collection: 'products',
-                          id: siblingData.product,
-                        })
-
-                        if (!product) {
-                          throw new APIError(
-                            'Product not found. Please select a valid product first.',
-                            400,
-                          )
+                    if (siblingData.type && siblingData?.type == 'product') {
+                      if (operation === 'create' || operation === 'update') {
+                        // Only validate if product is provided and valid
+                        if (!siblingData?.product) {
+                          return data // Skip validation if no product selected yet
                         }
 
-                        if (product.trackExpiry && !siblingData?.batch) {
-                          throw new APIError(
-                            `Batch field is required for product ${product?.name} that tracks expiry.`,
-                            400,
-                          )
+                        try {
+                          const product = await req.payload.findByID({
+                            collection: 'products',
+                            id: siblingData.product,
+                          })
+
+                          if (!product) {
+                            throw new APIError(
+                              'Product not found. Please select a valid product first.',
+                              400,
+                            )
+                          }
+
+                          if (product.trackExpiry && !siblingData?.batch) {
+                            throw new APIError(
+                              `Batch field is required for product ${product?.name} that tracks expiry.`,
+                              400,
+                            )
+                          }
+                        } catch (error) {
+                          // If product lookup fails, skip batch validation for now
+                          if (error instanceof APIError) {
+                            throw error
+                          }
+                          // Skip validation if product lookup fails due to other reasons
+                          console.warn('Failed to validate batch field:', error)
                         }
-                      } catch (error) {
-                        // If product lookup fails, skip batch validation for now
-                        if (error instanceof APIError) {
-                          throw error
-                        }
-                        // Skip validation if product lookup fails due to other reasons
-                        console.warn('Failed to validate batch field:', error)
                       }
                     }
                   },
@@ -154,9 +243,11 @@ export const Orders: CollectionConfig = {
               name: 'quantity',
               type: 'number',
               required: true,
-              defaultValue: 1,
               admin: {
                 description: 'Enter the quantity of the product ordered.',
+                components: {
+                    Field: './components/OrderItemQuantityField.tsx',
+                }
               },
               validate: (value: number | null | undefined) => {
                 if (!value || value <= 0) {
@@ -167,156 +258,157 @@ export const Orders: CollectionConfig = {
               hooks: {
                 beforeChange: [
                   async ({ data, siblingData, operation, previousSiblingDoc, req }) => {
-                    if (!siblingData?.type || siblingData?.type !== 'product'   ) {
-                      siblingData.batch = null
-                      siblingData.product = null
-                      return;
-                    }
-                    if (
-                      operation === 'update' &&
-                      previousSiblingDoc?.quantity != siblingData?.quantity
-                    ) {
-                      throw new APIError('You cannot update the quantity once created', 400)
-                    }
+                    if (siblingData.type && siblingData?.type == 'product') {
+                      if (
+                        operation === 'update' &&
+                        previousSiblingDoc?.quantity != siblingData?.quantity
+                      ) {
+                        throw new APIError('You cannot update the quantity once created', 400)
+                      }
 
-                    const product = await req.payload.findByID({
-                      collection: 'products',
-                      id: siblingData.product,
-                    })
-
-                    if (!product) {
-                      throw new APIError(
-                        'Product not found. Please select a valid product first.',
-                        400,
-                      )
-                    }
-
-                    if (
-                      !product?.trackExpiry &&
-                      product?.trackInventory &&
-                      (product?.inventory?.quantity || 0) < siblingData?.quantity
-                    ) {
-                      throw new APIError(
-                        `Insufficient stock for product ${product?.name}. Available stock: ${product?.inventory?.quantity || 0}`,
-                        400,
-                      )
-                    }
-
-                    if (product?.trackExpiry && product?.trackInventory) {
-                      const foundBatch = product?.batches?.find((batch: any) => {
-                        return batch.id === siblingData?.batch
+                      const product = await req.payload.findByID({
+                        collection: 'products',
+                        id: siblingData.product,
                       })
 
-                      if (!foundBatch) {
+                      if (!product) {
                         throw new APIError(
-                          `Batch not found for product ${product?.name}. Please select a valid batch.`,
+                          'Product not found. Please select a valid product first.',
                           400,
                         )
                       }
-                      if (typeof foundBatch !== 'object') {
+
+                      if (
+                        !product?.trackExpiry &&
+                        product?.trackInventory &&
+                        (product?.inventory?.quantity || 0) < siblingData?.quantity
+                      ) {
                         throw new APIError(
-                          `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                          `Insufficient stock for product ${product?.name}. Available stock: ${product?.inventory?.quantity || 0}`,
                           400,
                         )
                       }
-                      if ((foundBatch?.quantity || 0) < siblingData?.quantity) {
-                        throw new APIError(
-                          `Insufficient stock for batch ${foundBatch?.batchNumber} of product ${product?.name}. Available stock: ${foundBatch?.quantity}`,
-                          400,
-                        )
+
+                      if (product?.trackExpiry && product?.trackInventory) {
+                        const foundBatch = product?.batches?.find((batch: any) => {
+                          return batch.id === siblingData?.batch
+                        })
+
+                        if (!foundBatch) {
+                          throw new APIError(
+                            `Batch not found for product ${product?.name}. Please select a valid batch.`,
+                            400,
+                          )
+                        }
+                        if (typeof foundBatch !== 'object') {
+                          throw new APIError(
+                            `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                            400,
+                          )
+                        }
+                        if ((foundBatch?.quantity || 0) < siblingData?.quantity) {
+                          throw new APIError(
+                            `Insufficient stock for batch ${foundBatch?.batchNumber} of product ${product?.name}. Available stock: ${foundBatch?.quantity}`,
+                            400,
+                          )
+                        }
+                        console.log('Validating batch for product:', product?.name)
                       }
+                    } else {
+                      console.log('Skipping batch validation for service type')
+                      siblingData.batch = undefined
+                      siblingData.product = undefined
                     }
                   },
                 ],
                 afterChange: [
                   async ({ siblingData, operation, previousSiblingDoc, req }) => {
-                    if (!siblingData?.type || siblingData?.type !== 'product') {
-                      return 
-                    }
-                    const product = await req.payload.findByID({
-                      collection: 'products',
-                      id: siblingData.product,
-                    })
-                    if (!product) {
-                      throw new APIError(
-                        'Product not found. Please select a valid product first.',
-                        400,
-                      )
-                    }
+                    if (siblingData?.type && siblingData?.type == 'product') {
+                      const product = await req.payload.findByID({
+                        collection: 'products',
+                        id: siblingData.product,
+                      })
+                      if (!product) {
+                        throw new APIError(
+                          'Product not found. Please select a valid product first.',
+                          400,
+                        )
+                      }
 
-                    if (
-                      operation === 'update' &&
-                      !previousSiblingDoc?.isReturned &&
-                      siblingData?.isReturned
-                    ) {
-                      const quantity = siblingData?.quantity || 0
-                      if (product?.trackInventory && product?.inventory?.quantity) {
-                        const newQuantity = product.inventory.quantity + quantity
-                        await req.payload.update({
-                          collection: 'products',
-                          id: product.id,
-                          data: {
-                            inventory: {
-                              quantity: newQuantity,
-                            },
-                          },
-                        })
-                      }
-                      if (product?.trackExpiry && product?.trackInventory) {
-                        const foundBatch = product?.batches?.find((batch: any) => {
-                          return batch.id === siblingData?.batch
-                        })
-                        if (typeof foundBatch !== 'object') {
-                          throw new APIError(
-                            `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
-                            400,
-                          )
-                        }
-                        if (foundBatch && foundBatch.quantity) {
-                          const newBatchQuantity = foundBatch.quantity + quantity
-                          await req.payload.update({
-                            collection: 'batches',
-                            id: siblingData.batch,
-                            data: {
-                              quantity: newBatchQuantity,
-                            },
-                          })
-                        }
-                      }
-                    } else if (operation === 'create') {
-                      if (product?.trackInventory && product?.inventory?.quantity) {
+                      if (
+                        operation === 'update' &&
+                        !previousSiblingDoc?.isReturned &&
+                        siblingData?.isReturned
+                      ) {
                         const quantity = siblingData?.quantity || 0
-                        const newQuantity = product.inventory.quantity - quantity
-                        await req.payload.update({
-                          collection: 'products',
-                          id: product.id,
-                          data: {
-                            inventory: {
-                              quantity: newQuantity,
-                            },
-                          },
-                        })
-                      }
-                      if (product?.trackExpiry && product?.trackInventory) {
-                        const foundBatch = product?.batches?.find((batch: any) => {
-                          return batch.id === siblingData?.batch
-                        })
-                        if (typeof foundBatch !== 'object') {
-                          throw new APIError(
-                            `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
-                            400,
-                          )
-                        }
-                        if (foundBatch && foundBatch.quantity) {
-                          const quantity = siblingData?.quantity || 0
-                          const newBatchQuantity = foundBatch.quantity - quantity
+                        if (product?.trackInventory && product?.inventory?.quantity) {
+                          const newQuantity = product.inventory.quantity + quantity
                           await req.payload.update({
-                            collection: 'batches',
-                            id: siblingData.batch,
+                            collection: 'products',
+                            id: product.id,
                             data: {
-                              quantity: newBatchQuantity,
+                              inventory: {
+                                quantity: newQuantity,
+                              },
                             },
                           })
+                        }
+                        if (product?.trackExpiry && product?.trackInventory) {
+                          const foundBatch = product?.batches?.find((batch: any) => {
+                            return batch.id === siblingData?.batch
+                          })
+                          if (typeof foundBatch !== 'object') {
+                            throw new APIError(
+                              `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                              400,
+                            )
+                          }
+                          if (foundBatch && foundBatch.quantity) {
+                            const newBatchQuantity = foundBatch.quantity + quantity
+                            await req.payload.update({
+                              collection: 'batches',
+                              id: siblingData.batch,
+                              data: {
+                                quantity: newBatchQuantity,
+                              },
+                            })
+                          }
+                        }
+                      } else if (operation === 'create') {
+                        if (product?.trackInventory && product?.inventory?.quantity) {
+                          const quantity = siblingData?.quantity || 0
+                          const newQuantity = product.inventory.quantity - quantity
+                          await req.payload.update({
+                            collection: 'products',
+                            id: product.id,
+                            data: {
+                              inventory: {
+                                quantity: newQuantity,
+                              },
+                            },
+                          })
+                        }
+                        if (product?.trackExpiry && product?.trackInventory) {
+                          const foundBatch = product?.batches?.find((batch: any) => {
+                            return batch.id === siblingData?.batch
+                          })
+                          if (typeof foundBatch !== 'object') {
+                            throw new APIError(
+                              `Invalid batch data for product ${product?.name}. Please select a valid batch.`,
+                              400,
+                            )
+                          }
+                          if (foundBatch && foundBatch.quantity) {
+                            const quantity = siblingData?.quantity || 0
+                            const newBatchQuantity = foundBatch.quantity - quantity
+                            await req.payload.update({
+                              collection: 'batches',
+                              id: siblingData.batch,
+                              data: {
+                                quantity: newBatchQuantity,
+                              },
+                            })
+                          }
                         }
                       }
                     }
@@ -355,7 +447,7 @@ export const Orders: CollectionConfig = {
                 description: 'Check if this item was returned.',
                 condition: (_, siblingData) => {
                   return siblingData?.type === 'product'
-                }
+                },
               },
               hooks: {
                 beforeChange: [
@@ -409,6 +501,30 @@ export const Orders: CollectionConfig = {
         condition: ({ disountType }) => {
           return disountType === 'fixed' || disountType === 'percentage'
         },
+      },
+    },
+    {
+      name: 'totalCost',
+      type: 'number',
+      admin: {
+        readOnly: true,
+      },
+      hooks: {
+        beforeChange: [
+          async ({ siblingData }) => {
+            const orederItems = siblingData?.items as Order['items']
+            const items =
+              orederItems
+                ?.filter((item) => !item?.isReturned)
+                .map((item) => item.quantity * item.unitPrice) || []
+            let totalAmount = items.reduce((acc, item) => acc + item, 0)
+            totalAmount =
+              totalAmount -
+              calculateDiscount(siblingData?.discount || 0, siblingData?.disountType, totalAmount)
+
+            siblingData.totalCost = totalAmount
+          },
+        ],
       },
     },
     {
