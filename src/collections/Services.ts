@@ -6,7 +6,7 @@ export const Services: CollectionConfig = {
   slug: 'services',
   access: {
     read: () => true,
-    delete: () => false, // Prevent deletion of services  
+    delete: () => false, // Prevent deletion of services
   },
   admin: {
     useAsTitle: 'name',

@@ -2,10 +2,11 @@
 
 import { fetcher } from '@/lib/utils/fetch'
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
+import { useEffect } from 'react'
 import useSWR from 'swr'
 
 export default function OrderItemBatchField({ path, field }: { path: string; field: any }) {
-  const { value, initialValue } = useField({ path })
+  const { value, initialValue, setValue } = useField({ path })
   const product = useField({ path: path.replace('batch', 'product') })
 
   const { data, isLoading, error } = useSWR(`/api/products/${product?.value}`, fetcher)

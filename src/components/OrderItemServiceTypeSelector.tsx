@@ -14,7 +14,7 @@ export default function OrderItemProductField({ path }: { path: string; field: a
         { label: 'Product', value: 'product' },
         { label: 'Service', value: 'service' },
       ]}
-      value={String(value || '')}
+      value={String(initialValue || value || '')}
       onChange={(e) => {
         setValue(Array.isArray(e) ? e[0]?.value : String(e?.value))
       }}
