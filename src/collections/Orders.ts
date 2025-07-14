@@ -1,5 +1,7 @@
 import { Order } from '@/payload-types'
 import { APIError, type CollectionConfig } from 'payload'
+import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -335,5 +337,18 @@ export const Orders: CollectionConfig = {
       type: 'relationship',
       relationTo: 'customers',
     },
+    ...CREATED_UPDATED_BY_FIELDS,
   ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        // Automatically set createdBy to the current user
+        return seteCreatedUpdatedBy({
+          data,
+          operation,
+          userId: req.user ? req.user.id : null,
+        })
+      },
+    ],
+  }
 }
