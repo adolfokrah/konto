@@ -37,6 +37,38 @@ export const Orders: CollectionConfig = {
           type: 'row',
           fields: [
             {
+                name: 'type',
+                type: 'select',
+                defaultValue: 'product',
+                options: [
+                  { label: 'Product', value: 'product' },
+                  { label: 'Service', value: 'service' },
+                ],
+                required: true,
+                admin: {
+                  description: 'Select the type of item for this order.',
+                }
+            },
+            {
+                name: 'service',
+                type: 'relationship',
+                relationTo: 'services',
+                required: true,
+                filterOptions: ({ data }) => {
+                  return {
+                    shop: {
+                      equals: (data as any).shop,
+                    },
+                  }
+                },
+                admin: {
+                  description: 'Select the service for this order item.',
+                  condition: (_, siblingData) => {
+                    return siblingData?.type == 'service'
+                  }
+                },
+            },
+            {
               name: 'product',
               type: 'relationship',
               relationTo: 'products',
@@ -50,6 +82,9 @@ export const Orders: CollectionConfig = {
               },
               admin: {
                 description: 'Select the product for this order item.',
+                condition: (_, siblingData) => {
+                  return siblingData?.type == 'product'
+                },
               },
               hooks: {
                 beforeChange: [
@@ -132,6 +167,11 @@ export const Orders: CollectionConfig = {
               hooks: {
                 beforeChange: [
                   async ({ data, siblingData, operation, previousSiblingDoc, req }) => {
+                    if (!siblingData?.type || siblingData?.type !== 'product'   ) {
+                      siblingData.batch = null
+                      siblingData.product = null
+                      return;
+                    }
                     if (
                       operation === 'update' &&
                       previousSiblingDoc?.quantity != siblingData?.quantity
@@ -190,6 +230,9 @@ export const Orders: CollectionConfig = {
                 ],
                 afterChange: [
                   async ({ siblingData, operation, previousSiblingDoc, req }) => {
+                    if (!siblingData?.type || siblingData?.type !== 'product') {
+                      return 
+                    }
                     const product = await req.payload.findByID({
                       collection: 'products',
                       id: siblingData.product,
@@ -310,6 +353,9 @@ export const Orders: CollectionConfig = {
               defaultValue: false,
               admin: {
                 description: 'Check if this item was returned.',
+                condition: (_, siblingData) => {
+                  return siblingData?.type === 'product'
+                }
               },
               hooks: {
                 beforeChange: [

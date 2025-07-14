@@ -511,9 +511,17 @@ export interface Order {
   items?:
     | {
         /**
+         * Select the type of item for this order.
+         */
+        type: 'product' | 'service';
+        /**
+         * Select the service for this order item.
+         */
+        service?: (string | null) | Service;
+        /**
          * Select the product for this order item.
          */
-        product: string | Product;
+        product?: (string | null) | Product;
         /**
          * Enter the batch number for this product.
          */
@@ -861,6 +869,8 @@ export interface OrdersSelect<T extends boolean = true> {
   items?:
     | T
     | {
+        type?: T;
+        service?: T;
         product?: T;
         batch?: T;
         quantity?: T;

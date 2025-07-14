@@ -7,6 +7,7 @@ import useSWR from 'swr'
 export default function OrderItemUnitPriceField({ path }: { path: string }) {
   const { value, initialValue, setValue } = useField({ path })
   const product = useField({ path: path.replace('batch', 'product') })
+  const type = useField({ path: path.replace('batch', 'type') })
 
   const { data, isLoading, error } = useSWR(`/api/products/${product?.value}`, fetcher)
 
@@ -20,7 +21,7 @@ export default function OrderItemUnitPriceField({ path }: { path: string }) {
 
   if (isLoading) return <div>loading...</div>
 
-  if (error || !data || !data?.batches?.length) return null
+  if (error || !data || !data?.batches?.length || type?.value == 'service') return null
   return (
     <SelectInput
       label={'Batch'}
