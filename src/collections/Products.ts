@@ -260,6 +260,9 @@ const Products: CollectionConfig = {
       async ({ data, req, operation, originalDoc}) => {
         // Automatically set createdBy to the current user
 
+        if(data?.status === 'inactive') {
+          data.batches = [] // Clear batches if product is inactive
+        }
         
         return seteCreatedUpdatedBy({
           data,
@@ -269,7 +272,7 @@ const Products: CollectionConfig = {
       },
     ],
     afterChange: [
-      async ({ doc, operation, req }) => {
+      async ({ doc, operation, req, previousDoc }) => {
        
         
         // Custom logic after product change
@@ -285,9 +288,28 @@ const Products: CollectionConfig = {
 
           // Get all batches linked to this product
           const batches = Array.isArray(doc.batches) ? doc.batches : [doc.batches]
+          const previousBatches = Array.isArray(previousDoc?.batches) ? previousDoc.batches : [previousDoc?.batches]
+          
 
           // Update each batch to set the product reference
-          for (const batch of batches) {
+          if(doc.status === 'inactive' && operation === 'update') {
+            for (const batch of previousBatches) {
+              const batchId = typeof batch === 'string' ? batch : batch.id
+              try {
+                await payload.update({
+                  collection: 'batches',
+                  id: batchId,
+                  data: {
+                    product: null, // Clear product reference if product is inactive
+                  },
+                  req,
+                })
+              } catch (error) {
+                console.error(`Failed to clear product reference for batch ${batchId}:`, error)
+              }
+            }
+          }else{
+            for (const batch of batches) {
               const batchId = typeof batch === 'string' ? batch : batch.id
               try {
                 await payload.update({
@@ -301,6 +323,7 @@ const Products: CollectionConfig = {
               } catch (error) {
                 console.error(`Failed to update batch ${batchId}:`, error)
               }
+          }
           }
         }
       },
