@@ -2,7 +2,7 @@ import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import { moveStock } from '@/endpoints/moveStock'
 import { describe, it, beforeAll, afterAll, expect, beforeEach } from 'vitest'
-import { clearAllCollections } from '@/lib/utils/testCleanUp'
+import { clearAllCollections } from 'tests/int/utils/testCleanUp'
 
 let payload: Payload
 

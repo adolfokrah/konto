@@ -12,7 +12,7 @@ import type {
   Category,
   Supplier,
 } from '@/payload-types'
-import { clearAllCollections } from '@/lib/utils/testCleanUp'
+import { clearAllCollections } from 'tests/int/utils/testCleanUp'
 
 let payload: Payload
 

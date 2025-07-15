@@ -3,7 +3,7 @@ import config from '@/payload.config'
 import { describe, it, beforeAll, afterEach, expect, beforeEach, afterAll } from 'vitest'
 import type { Product, Shop, User, Category, Batch } from '@/payload-types'
 import { v4 as uuidv4 } from 'uuid'
-import { clearAllCollections } from '@/lib/utils/testCleanUp'
+import { clearAllCollections } from 'tests/int/utils/testCleanUp'
 
 let payload: Payload
 
