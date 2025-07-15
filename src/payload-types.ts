@@ -535,7 +535,7 @@ export interface Order {
          */
         product?: (string | null) | Product;
         /**
-         * Enter the batch number for this product.
+         * Select a batch for this product. Batches are sorted by expiry date (FIFO - First to expire first).
          */
         batch?: (string | null) | Batch;
         /**

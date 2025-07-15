@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import useSWR from 'swr'
 
 export default function OrderItemBatchField({ path, field }: { path: string; field: any }) {
-  const { value, initialValue, setValue } = useField({ path })
+  const { initialValue } = useField({ path })
   const product = useField({ path: path.replace('batch', 'product') })
 
   const { data, isLoading, error } = useSWR(`/api/products/${product?.value}`, fetcher)
@@ -17,10 +17,8 @@ export default function OrderItemBatchField({ path, field }: { path: string; fie
     return null
   }
 
-  if (initialValue && !data?.errors) {
-    const name =
-      data?.batches?.find((batch: any) => batch.id === initialValue)?.batchNumber || 'Unknown Batch'
-    return <TextInput label={'Batch'} path={path} value={name} readOnly={true} />
+  if (initialValue) {
+    return <TextInput label={'Batch'} path={path} value={String(initialValue)} readOnly={true} />
   }
 
   return <RelationshipField path={path} field={field} />

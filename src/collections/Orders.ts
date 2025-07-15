@@ -105,14 +105,20 @@ export const Orders: CollectionConfig = {
                   status: {
                     equals: 'active',
                   },
+                  expiryDate: {
+                    greater_than: new Date().toISOString(), // Filter out expired batches
+                  },
                 }
               },
               admin: {
-                description: 'Enter the batch number for this product.',
+                description:
+                  'Select a batch for this product. Batches are sorted by expiry date (FIFO - First to expire first).',
                 components: {
                   Cell: './components/BatchCell',
                   Field: './components/OrderItemBatchField.tsx',
                 },
+                // Note: FIFO sorting (earliest expiry first) should be implemented in the custom Field component
+                // or by modifying the Batches collection's default sort order
               },
             },
             {
@@ -372,12 +378,21 @@ export const Orders: CollectionConfig = {
 
                 if (product.trackExpiry && product.trackInventory) {
                   const foundBatch = product.batches?.find((batch: any) => batch.id === item.batch)
+
                   if (!foundBatch || typeof foundBatch !== 'object') {
                     throw new APIError(
                       `Invalid batch data for product ${product.name}. Please select a valid batch.`,
                       400,
                     )
                   }
+
+                  if (new Date(foundBatch.expiryDate) < new Date()) {
+                    throw new APIError(
+                      `Batch ${foundBatch.batchNumber} of product ${product.name} has expired.`,
+                      400,
+                    )
+                  }
+
                   if ((foundBatch.quantity || 0) < item.quantity) {
                     throw new APIError(
                       `Insufficient stock for batch ${foundBatch.batchNumber} of product ${product.name}. Available stock: ${foundBatch.quantity}`,
@@ -396,9 +411,6 @@ export const Orders: CollectionConfig = {
               }
             }
           } else if (operation === 'update' && req) {
-
-           
-
             const order = await req.payload.findByID({
               collection: 'orders',
               id: originalDoc?.id,

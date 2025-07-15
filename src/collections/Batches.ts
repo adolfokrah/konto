@@ -11,6 +11,7 @@ export const Batches: CollectionConfig = {
   admin: {
     useAsTitle: 'batchNumber',
   },
+  defaultSort: 'expiryDate', // FIFO sorting - earliest expiry date first
   fields: [
     {
       name: 'batchNumber',
@@ -21,18 +22,20 @@ export const Batches: CollectionConfig = {
       name: 'expiryDate',
       type: 'date',
       required: true,
-      validate: (data: any) => {
-        const today = new Date()
-        const expiry = new Date(data)
-        if (expiry < today) {
-          return 'Expiry date cannot be in the past.'
-        }
-        return true
+      hooks: {
+        beforeValidate: [
+          async ({ data, operation }) => {
+            if (operation === 'create' && new Date(data?.expiryDate) < new Date()) {
+              throw new Error('Expiry date cannot be in the past.')
+            }
+          },
+        ],
       },
     },
     {
       name: 'quantity',
       type: 'number',
+      defaultValue: 0,
       admin: {
         readOnly: true, // Prevent manual editing of quantity
         description:

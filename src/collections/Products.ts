@@ -148,6 +148,7 @@ const Products: CollectionConfig = {
         {
           name: 'quantity',
           type: 'number',
+          defaultValue: 0,
           admin: {
             readOnly: true, // Prevent manual editing of quantity
             description:
