@@ -2,6 +2,7 @@ import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import { describe, it, beforeAll, afterEach, expect, beforeEach } from 'vitest'
 import type { Order, Product, Service, Batch, Customer, Shop, User, Category, Supplier } from '@/payload-types'
+import { v4 as uuidv4 } from 'uuid';
 
 let payload: Payload
 
@@ -16,6 +17,8 @@ let productWithoutExpiry: Product
 let productWithExpiry: Product
 let testBatch: Batch
 
+// Counter to ensure unique barcodes
+
 describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   beforeAll(async () => {
     const payloadConfig = await config
@@ -23,6 +26,8 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   })
 
   beforeEach(async () => {
+    // Increment counter for unique barcodes
+    
     // Create test user
     testUser = await payload.create({
       collection: 'users',
@@ -102,7 +107,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       data: {
         shop: testShop.id,
         name: `Test Product No Expiry ${Date.now()}`,
-        barcode: `BC${Date.now()}`,
+        barcode: `BC${uuidv4()}`,
         category: testCategory.id,
         prodSellingType: 'retail' as const,
         unit: 'piece' as const,
@@ -124,7 +129,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       data: {
         shop: testShop.id,
         name: `Test Product With Expiry ${Date.now()}`,
-        barcode: `BCE${Date.now()}`,
+        barcode: `BCE${uuidv4()}`,
         category: testCategory.id,
         prodSellingType: 'retail' as const,
         unit: 'piece' as const,
@@ -583,7 +588,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         data: {
           shop: testShop.id,
           name: 'Another Product',
-          barcode: 'ANOTHER123',
+          barcode: `ANOTHER${uuidv4()}`,
           category: testCategory.id,
           prodSellingType: 'retail' as const,
           unit: 'piece' as const,

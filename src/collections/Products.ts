@@ -64,6 +64,32 @@ const Products: CollectionConfig = {
       name: 'barcode',
       type: 'text',
       required: true,
+      hooks: {
+        beforeValidate: [
+          async ({ data, req, originalDoc }) => {
+            // Ensure barcode is unique across products
+            const existingProduct = await req.payload.find({
+              collection: 'products',
+              where: {
+                barcode: {
+                  equals: data?.barcode,
+                },
+                shop: {
+                  equals: (data as any)?.shop, // Ensure the barcode is unique per shop
+                },
+                status: {
+                  equals: 'active', // Only check active products
+                },
+              },
+            })
+
+
+            if (existingProduct?.docs.length) {
+              throw new Error(`Barcode ${data?.barcode} already exists.`)
+            }
+          },
+        ],
+      }
     },
     {
       name: 'category',
@@ -193,6 +219,11 @@ const Products: CollectionConfig = {
                 equals: (siblingData as any)?.shop, // Filter by the current shop
               },
             },
+            {
+              status: {
+                equals: 'active', // Show only active batches
+              }
+            }
           ],
         }
         // Only add product filter if ID is valid
