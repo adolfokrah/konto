@@ -20,7 +20,7 @@ describe('Move Stock API Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
-    clearAllCollections(payload);
+    await clearAllCollections(payload)
   })
 
   beforeEach(async () => {

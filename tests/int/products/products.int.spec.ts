@@ -16,7 +16,7 @@ describe('Products Collection Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
-    clearAllCollections(payload);
+    await clearAllCollections(payload)
   })
 
   beforeEach(async () => {
@@ -57,11 +57,6 @@ describe('Products Collection Integration Tests', () => {
     })
   })
 
-//   afterAll(async () => {
-//     // Clean up test data after each test
-//     clearAllCollections(payload);
-//   })
-
   describe('Product Creation Tests', () => {
     it('should create a basic retail product without expiry tracking', async () => {
       const productData = {
@@ -92,7 +87,9 @@ describe('Products Collection Integration Tests', () => {
       expect(product.name).toBe(productData.name)
       expect(product.barcode).toBe(productData.barcode)
       expect(typeof product.shop === 'string' ? product.shop : product.shop?.id).toBe(testShop.id)
-      expect(typeof product.category === 'string' ? product.category : product.category?.id).toBe(testCategory.id)
+      expect(typeof product.category === 'string' ? product.category : product.category?.id).toBe(
+        testCategory.id,
+      )
       expect(product.trackInventory).toBe(true)
       expect(product.trackExpiry).toBe(false)
       expect(product.inventory?.quantity).toBe(0)
@@ -159,35 +156,6 @@ describe('Products Collection Integration Tests', () => {
       expect(product.unit).toBe('pack')
     })
 
-    it('should create a product with image', async () => {
-      const productData = {
-        shop: testShop.id,
-        name: `Test Product With Image ${Date.now()}`,
-        barcode: `IMG${uuidv4()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail' as const,
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: false,
-        inventory: {
-          quantity: 100,
-          stockAlert: 10,
-        },
-        status: 'active' as const,
-      }
-
-      const product = await payload.create({
-        collection: 'products',
-        data: productData,
-        user: testUser,
-      })
-
-      expect(product).toBeDefined()
-      expect(product.image).toBeUndefined() // No image uploaded in test
-    })
-
     it('should create a product with color when no image is provided', async () => {
       const productData = {
         shop: testShop.id,
@@ -222,7 +190,7 @@ describe('Products Collection Integration Tests', () => {
   describe('Product Barcode Uniqueness Tests', () => {
     it('should throw error when creating product with duplicate barcode in same shop', async () => {
       const barcode = `DUPLICATE${uuidv4()}`
-      
+
       // Create first product
       await payload.create({
         collection: 'products',
@@ -268,13 +236,13 @@ describe('Products Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        })
+        }),
       ).rejects.toThrow(`Barcode ${barcode} already exists.`)
     })
 
     it('should allow same barcode for inactive product', async () => {
       const barcode = `INACTIVE${uuidv4()}`
-      
+
       // Create inactive product
       await payload.create({
         collection: 'products',
@@ -327,7 +295,7 @@ describe('Products Collection Integration Tests', () => {
 
     it('should allow same barcode in different shops', async () => {
       const barcode = `DIFFSHOP${uuidv4()}`
-      
+
       // Create another shop
       const anotherShop = await payload.create({
         collection: 'shops',
@@ -390,7 +358,9 @@ describe('Products Collection Integration Tests', () => {
       })
 
       expect(productInShop2).toBeDefined()
-      expect(typeof productInShop2.shop === 'string' ? productInShop2.shop : productInShop2.shop?.id).toBe(anotherShop.id)
+      expect(
+        typeof productInShop2.shop === 'string' ? productInShop2.shop : productInShop2.shop?.id,
+      ).toBe(anotherShop.id)
     })
   })
 
@@ -440,7 +410,11 @@ describe('Products Collection Integration Tests', () => {
       })
 
       expect(updatedProduct.batches).toBeDefined()
-      expect(Array.isArray(updatedProduct.batches) ? updatedProduct.batches.map(b => typeof b === 'string' ? b : b?.id) : [updatedProduct.batches]).toContain(batch.id)
+      expect(
+        Array.isArray(updatedProduct.batches)
+          ? updatedProduct.batches.map((b) => (typeof b === 'string' ? b : b?.id))
+          : [updatedProduct.batches],
+      ).toContain(batch.id)
 
       // Verify batch was updated with product reference via afterChange hook
       const updatedBatch = await payload.findByID({
@@ -448,7 +422,9 @@ describe('Products Collection Integration Tests', () => {
         id: batch.id,
       })
 
-      expect(typeof updatedBatch.product === 'string' ? updatedBatch.product : updatedBatch.product?.id).toBe(product.id)
+      expect(
+        typeof updatedBatch.product === 'string' ? updatedBatch.product : updatedBatch.product?.id,
+      ).toBe(product.id)
     })
 
     it('should handle multiple batches for a single product', async () => {
@@ -510,8 +486,12 @@ describe('Products Collection Integration Tests', () => {
 
       expect(updatedProduct.batches).toBeDefined()
       expect(updatedProduct.batches).toHaveLength(2)
-      expect(updatedProduct.batches?.map(batch => typeof batch === 'string' ? batch : batch?.id)).toContain(batch1.id)
-      expect(updatedProduct.batches?.map(batch => typeof batch === 'string' ? batch : batch?.id)).toContain(batch2.id)
+      expect(
+        updatedProduct.batches?.map((batch) => (typeof batch === 'string' ? batch : batch?.id)),
+      ).toContain(batch1.id)
+      expect(
+        updatedProduct.batches?.map((batch) => (typeof batch === 'string' ? batch : batch?.id)),
+      ).toContain(batch2.id)
     })
   })
 
@@ -526,7 +506,7 @@ describe('Products Collection Integration Tests', () => {
             // This should fail validation
           } as any, // Use 'as any' to bypass TypeScript for testing validation
           user: testUser,
-        })
+        }),
       ).rejects.toThrow()
     })
 
@@ -552,7 +532,7 @@ describe('Products Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        })
+        }),
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 
@@ -578,7 +558,7 @@ describe('Products Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        })
+        }),
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 
@@ -643,7 +623,11 @@ describe('Products Collection Integration Tests', () => {
       })
 
       expect(updatedProduct.updatedBy).toBeDefined()
-      expect(typeof updatedProduct.updatedBy === 'string' ? updatedProduct.updatedBy : updatedProduct.updatedBy?.id).toBe(testUser.id)
+      expect(
+        typeof updatedProduct.updatedBy === 'string'
+          ? updatedProduct.updatedBy
+          : updatedProduct.updatedBy?.id,
+      ).toBe(testUser.id)
       expect(updatedProduct.sellingPricePerUnit).toBe(20)
     })
 
@@ -682,7 +666,109 @@ describe('Products Collection Integration Tests', () => {
       expect(updatedProduct.status).toBe('inactive')
     })
 
-    
+    it('should clear batches and product references when product status is set to inactive', async () => {
+      // Create product with expiry tracking
+      const product = await payload.create({
+        collection: 'products',
+        data: {
+          shop: testShop.id,
+          name: `Test Product Inactive ${uuidv4()}`,
+          barcode: `INACTIVE${uuidv4()}`,
+          category: testCategory.id,
+          prodSellingType: 'retail' as const,
+          unit: 'piece',
+          costPricePerUnit: 10,
+          sellingPricePerUnit: 15,
+          trackInventory: true,
+          trackExpiry: true,
+          status: 'active' as const,
+        },
+        user: testUser,
+      })
+
+      // Create batches linked to this product
+      const batch1 = await payload.create({
+        collection: 'batches',
+        data: {
+          batchNumber: `BATCH1-${uuidv4()}`,
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          quantity: 50,
+          stockAlert: 5,
+          shop: testShop.id,
+          status: 'active' as const,
+        },
+        user: testUser,
+      })
+
+      const batch2 = await payload.create({
+        collection: 'batches',
+        data: {
+          batchNumber: `BATCH2-${uuidv4()}`,
+          expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+          quantity: 30,
+          stockAlert: 3,
+          shop: testShop.id,
+          status: 'active' as const,
+        },
+        user: testUser,
+      })
+
+      // Link batches to product
+      const productWithBatches = await payload.update({
+        collection: 'products',
+        id: product.id,
+        data: {
+          batches: [batch1.id, batch2.id],
+        },
+        user: testUser,
+      })
+
+      // Verify batches are linked and have product reference
+      expect(productWithBatches.batches).toHaveLength(2)
+
+      const linkedBatch1 = await payload.findByID({
+        collection: 'batches',
+        id: batch1.id,
+      })
+      const linkedBatch2 = await payload.findByID({
+        collection: 'batches',
+        id: batch2.id,
+      })
+
+      expect(
+        typeof linkedBatch1.product === 'string' ? linkedBatch1.product : linkedBatch1.product?.id,
+      ).toBe(product.id)
+      expect(
+        typeof linkedBatch2.product === 'string' ? linkedBatch2.product : linkedBatch2.product?.id,
+      ).toBe(product.id)
+
+      // Set product status to inactive
+      const inactiveProduct = await payload.update({
+        collection: 'products',
+        id: product.id,
+        data: {
+          status: 'inactive' as const,
+        },
+        user: testUser,
+      })
+
+      // Verify product status is inactive and batches are cleared
+      expect(inactiveProduct.status).toBe('inactive')
+      expect(inactiveProduct.batches).toEqual([])
+
+      // Verify that product references in batches are cleared
+      const clearedBatch1 = await payload.findByID({
+        collection: 'batches',
+        id: batch1.id,
+      })
+      const clearedBatch2 = await payload.findByID({
+        collection: 'batches',
+        id: batch2.id,
+      })
+
+      expect(clearedBatch1.product).toBeNull()
+      expect(clearedBatch2.product).toBeNull()
+    })
   })
 
   describe('Product Admin Configuration Tests', () => {

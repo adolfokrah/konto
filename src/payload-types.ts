@@ -231,6 +231,10 @@ export interface Shop {
  */
 export interface Batch {
   id: string;
+  /**
+   * Select the shop associated with this stock entry.
+   */
+  shop: string | Shop;
   batchNumber: string;
   expiryDate: string;
   /**
@@ -238,10 +242,6 @@ export interface Batch {
    */
   quantity?: number | null;
   stockAlert: number;
-  /**
-   * Select the shop associated with this stock entry.
-   */
-  shop: string | Shop;
   product?: (string | null) | Product;
   /**
    * The status of the service.
@@ -747,11 +747,11 @@ export interface ShopsSelect<T extends boolean = true> {
  * via the `definition` "batches_select".
  */
 export interface BatchesSelect<T extends boolean = true> {
+  shop?: T;
   batchNumber?: T;
   expiryDate?: T;
   quantity?: T;
   stockAlert?: T;
-  shop?: T;
   product?: T;
   status?: T;
   createdBy?: T;

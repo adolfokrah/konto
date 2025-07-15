@@ -10,5 +10,12 @@ export default defineConfig({
     include: ['tests/int/**/*.int.spec.ts'],
     testTimeout: 60000, // ⏱ for individual tests
     hookTimeout: 60000, // ⏱ for beforeEach / afterEach / beforeAll
+    poolOptions: {
+      forks: {
+        singleFork: true, // Force sequential execution
+      },
+    },
+    // OR set maxConcurrency to 1
+    maxConcurrency: 1,
   },
 })

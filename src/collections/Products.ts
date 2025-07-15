@@ -1,6 +1,6 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
-import { CollectionConfig, FilterOptions } from 'payload'
+import { APIError, CollectionConfig, FilterOptions } from 'payload'
 import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
 
 const Products: CollectionConfig = {
@@ -66,7 +66,7 @@ const Products: CollectionConfig = {
       required: true,
       hooks: {
         beforeValidate: [
-          async ({ data, req, originalDoc }) => {
+          async ({ data, req }) => {
             // Ensure barcode is unique across products
             const existingProduct = await req.payload.find({
               collection: 'products',
@@ -83,13 +83,12 @@ const Products: CollectionConfig = {
               },
             })
 
-
             if (existingProduct?.docs.length) {
-              throw new Error(`Barcode ${data?.barcode} already exists.`)
+              throw new APIError(`Barcode ${data?.barcode} already exists.`, 400)
             }
           },
         ],
-      }
+      },
     },
     {
       name: 'category',
@@ -222,8 +221,8 @@ const Products: CollectionConfig = {
             {
               status: {
                 equals: 'active', // Show only active batches
-              }
-            }
+              },
+            },
           ],
         }
         // Only add product filter if ID is valid
@@ -257,13 +256,13 @@ const Products: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      async ({ data, req, operation, originalDoc}) => {
+      async ({ data, req, operation, originalDoc }) => {
         // Automatically set createdBy to the current user
 
-        if(data?.status === 'inactive') {
+        if (data?.status === 'inactive') {
           data.batches = [] // Clear batches if product is inactive
         }
-        
+
         return seteCreatedUpdatedBy({
           data,
           operation,
@@ -273,8 +272,6 @@ const Products: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, operation, req, previousDoc }) => {
-       
-        
         // Custom logic after product change
         if (
           (operation === 'update' || operation === 'create') &&
@@ -282,17 +279,17 @@ const Products: CollectionConfig = {
           doc.trackExpiry &&
           doc.batches
         ) {
-         
           // Update the product field in all linked batches
           const payload = req.payload
 
           // Get all batches linked to this product
           const batches = Array.isArray(doc.batches) ? doc.batches : [doc.batches]
-          const previousBatches = Array.isArray(previousDoc?.batches) ? previousDoc.batches : [previousDoc?.batches]
-          
+          const previousBatches = Array.isArray(previousDoc?.batches)
+            ? previousDoc.batches
+            : [previousDoc?.batches]
 
           // Update each batch to set the product reference
-          if(doc.status === 'inactive' && operation === 'update') {
+          if (doc.status === 'inactive' && operation === 'update') {
             for (const batch of previousBatches) {
               const batchId = typeof batch === 'string' ? batch : batch.id
               try {
@@ -308,7 +305,7 @@ const Products: CollectionConfig = {
                 console.error(`Failed to clear product reference for batch ${batchId}:`, error)
               }
             }
-          }else{
+          } else {
             for (const batch of batches) {
               const batchId = typeof batch === 'string' ? batch : batch.id
               try {
@@ -323,7 +320,7 @@ const Products: CollectionConfig = {
               } catch (error) {
                 console.error(`Failed to update batch ${batchId}:`, error)
               }
-          }
+            }
           }
         }
       },
