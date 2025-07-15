@@ -2,7 +2,7 @@ import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import { describe, it, beforeAll, afterEach, expect, beforeEach } from 'vitest'
 import type { Order, Product, Service, Batch, Customer, Shop, User, Category, Supplier } from '@/payload-types'
-import { v4 as uuidv4 } from 'uuid';
+import { clearAllCollections } from '@/lib/utils/testCleanUp'
 
 let payload: Payload
 
@@ -17,17 +17,14 @@ let productWithoutExpiry: Product
 let productWithExpiry: Product
 let testBatch: Batch
 
-// Counter to ensure unique barcodes
-
 describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    clearAllCollections(payload);
   })
 
   beforeEach(async () => {
-    // Increment counter for unique barcodes
-    
     // Create test user
     testUser = await payload.create({
       collection: 'users',
@@ -107,7 +104,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       data: {
         shop: testShop.id,
         name: `Test Product No Expiry ${Date.now()}`,
-        barcode: `BC${uuidv4()}`,
+        barcode: `BC${Date.now()}`,
         category: testCategory.id,
         prodSellingType: 'retail' as const,
         unit: 'piece' as const,
@@ -129,7 +126,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       data: {
         shop: testShop.id,
         name: `Test Product With Expiry ${Date.now()}`,
-        barcode: `BCE${uuidv4()}`,
+        barcode: `BCE${Date.now()}`,
         category: testCategory.id,
         prodSellingType: 'retail' as const,
         unit: 'piece' as const,
@@ -165,17 +162,17 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
     })
   })
 
-  afterEach(async () => {
-    // Clean up test data after each test
-    try {
-      const orders = await payload.find({ collection: 'orders', limit: 1000 })
-      for (const order of orders.docs) {
-        await payload.delete({ collection: 'orders', id: order.id })
-      }
-    } catch (error) {
-      console.warn('Cleanup failed:', error)
-    }
-  })
+  // afterEach(async () => {
+  //   // Clean up test data after each test
+  //   try {
+  //     const orders = await payload.find({ collection: 'orders', limit: 1000 })
+  //     for (const order of orders.docs) {
+  //       await payload.delete({ collection: 'orders', id: order.id })
+  //     }
+  //   } catch (error) {
+  //     console.warn('Cleanup failed:', error)
+  //   }
+  // })
 
   describe('Order Creation - beforeValidate Hook Tests', () => {
     it('should create order with valid product items', async () => {
@@ -588,7 +585,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         data: {
           shop: testShop.id,
           name: 'Another Product',
-          barcode: `ANOTHER${uuidv4()}`,
+          barcode: 'ANOTHER123',
           category: testCategory.id,
           prodSellingType: 'retail' as const,
           unit: 'piece' as const,

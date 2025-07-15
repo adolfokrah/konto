@@ -1,0 +1,37 @@
+import { Payload } from "payload";
+
+export async function clearAllCollections(payload: Payload) {
+  try {
+    // Get all collection names from payload config
+    const collections = [
+    "users",
+    "media",
+    "shops",
+    "batches",
+    "products",
+    "categories",
+    "stock",
+    "suppliers",
+    "customers",
+    "services",
+    "orders"
+];
+    
+    for (const collection of collections) {
+         try {
+            await payload.delete({
+                collection: collection as any,
+                where: {}
+            })
+                    
+            } catch (error) {
+            console.warn('Cleanup failed:', error)
+            }
+    }
+    
+    console.log('✅ All collections cleared');
+  } catch (error) {
+    console.error('❌ Failed to clear collections:', error);
+    throw error;
+  }
+}

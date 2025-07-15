@@ -257,8 +257,10 @@ const Products: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      async ({ data, req, operation }) => {
+      async ({ data, req, operation, originalDoc}) => {
         // Automatically set createdBy to the current user
+
+        
         return seteCreatedUpdatedBy({
           data,
           operation,
@@ -268,6 +270,8 @@ const Products: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, operation, req }) => {
+       
+        
         // Custom logic after product change
         if (
           (operation === 'update' || operation === 'create') &&
@@ -275,15 +279,16 @@ const Products: CollectionConfig = {
           doc.trackExpiry &&
           doc.batches
         ) {
+         
           // Update the product field in all linked batches
           const payload = req.payload
 
           // Get all batches linked to this product
-          const batchIds = Array.isArray(doc.batches) ? doc.batches : [doc.batches]
+          const batches = Array.isArray(doc.batches) ? doc.batches : [doc.batches]
 
           // Update each batch to set the product reference
-          for (const batchId of batchIds) {
-            if (typeof batchId === 'string' || typeof batchId === 'number') {
+          for (const batch of batches) {
+              const batchId = typeof batch === 'string' ? batch : batch.id
               try {
                 await payload.update({
                   collection: 'batches',
@@ -296,7 +301,6 @@ const Products: CollectionConfig = {
               } catch (error) {
                 console.error(`Failed to update batch ${batchId}:`, error)
               }
-            }
           }
         }
       },

@@ -2,6 +2,7 @@ import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import { moveStock } from '@/endpoints/moveStock'
 import { describe, it, beforeAll, afterAll, expect, beforeEach } from 'vitest'
+import { clearAllCollections } from '@/lib/utils/testCleanUp'
 
 let payload: Payload
 
@@ -19,6 +20,7 @@ describe('Move Stock API Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    clearAllCollections(payload);
   })
 
   beforeEach(async () => {
