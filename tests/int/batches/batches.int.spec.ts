@@ -3,9 +3,11 @@ import config from '@/payload.config'
 import { describe, it, beforeAll, afterEach, expect, beforeEach } from 'vitest'
 import type { Batch, Shop, User, Category, Product } from '@/payload-types'
 import { v4 as uuidv4 } from 'uuid'
-import { clearAllCollections } from 'tests/int/utils/testCleanUp'
+import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
+let factory: TestFactory
 
 // Test data variables
 let testUser: User
@@ -17,96 +19,20 @@ describe('Batches Collection Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    factory = new TestFactory(payload)
     await clearAllCollections(payload) // Clear collections before tests
   })
 
   beforeEach(async () => {
-    // Create test user
-    testUser = await payload.create({
-      collection: 'users',
-      data: {
-        email: `vendor-${uuidv4()}@test.com`,
-        password: 'password123',
-        fullName: 'Test Vendor User',
-        countryCode: '+233',
-        phoneNumber: '1234567890',
-        role: 'vendor' as const,
-      },
-    })
-
-    // Create test shop
-    testShop = await payload.create({
-      collection: 'shops',
-      data: {
-        name: `Test Shop ${uuidv4()}`,
-        location: 'Test Location',
-        owner: testUser.id,
-        shopType: 'retail' as const,
-        shopCategory: 'grocery' as const,
-        countryCode: '+233',
-        contactNumber: '+233123456789',
-        currency: 'GHS' as const,
-      },
-    })
-
-    // Create test category
-    testCategory = await payload.create({
-      collection: 'categories',
-      data: {
-        name: `Test Category ${uuidv4()}`,
-      },
-    })
-
-    // Create test product with expiry tracking
-    testProduct = await payload.create({
-      collection: 'products',
-      data: {
-        shop: testShop.id,
-        name: `Test Product ${uuidv4()}`,
-        barcode: `BC${uuidv4()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail' as const,
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: true,
-        status: 'active' as const,
-      },
-      user: testUser,
-    })
+    const setup = await factory.createCompleteSetup()
+    testUser = setup.user
+    testShop = setup.shop
+    testCategory = setup.category
+    testProduct = setup.product
   })
 
   afterEach(async () => {
-    // Clean up test data after each test
-    try {
-      const batches = await payload.find({ collection: 'batches', limit: 1000 })
-      for (const batch of batches.docs) {
-        await payload.delete({ collection: 'batches', id: batch.id })
-      }
-
-      const products = await payload.find({ collection: 'products', limit: 1000 })
-      for (const product of products.docs) {
-        await payload.delete({ collection: 'products', id: product.id })
-      }
-
-      const categories = await payload.find({ collection: 'categories', limit: 1000 })
-      for (const category of categories.docs) {
-        await payload.delete({ collection: 'categories', id: category.id })
-      }
-
-      const shops = await payload.find({ collection: 'shops', limit: 1000 })
-      for (const shop of shops.docs) {
-        await payload.delete({ collection: 'shops', id: shop.id })
-      }
-
-      const users = await payload.find({ collection: 'users', limit: 1000 })
-      for (const user of users.docs) {
-        await payload.delete({ collection: 'users', id: user.id })
-      }
-    } catch (error) {
-      console.warn('Cleanup failed:', error)
-    }
+    await clearAllCollections(payload)
   })
 
   describe('Batch Creation Tests', () => {

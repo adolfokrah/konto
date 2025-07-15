@@ -1,10 +1,12 @@
 import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import { moveStock } from '@/endpoints/moveStock'
-import { describe, it, beforeAll, afterAll, expect, beforeEach } from 'vitest'
-import { clearAllCollections } from 'tests/int/utils/testCleanUp'
+import { describe, it, beforeAll, afterAll, expect, beforeEach, afterEach } from 'vitest'
+import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
+let factory: TestFactory
 
 // Test data variables
 let testUser: any
@@ -20,32 +22,57 @@ describe('Move Stock API Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    factory = new TestFactory(payload)
     await clearAllCollections(payload)
   })
 
   beforeEach(async () => {
-    // Create test user (vendor)
-    testUser = await payload.create({
-      collection: 'users',
-      data: {
-        email: `vendor-${Date.now()}@test.com`,
-        password: 'password123',
-        fullName: 'Test Vendor User',
-        countryCode: '+233',
-        phoneNumber: '1234567890',
-        role: 'vendor',
-      },
+    const setup = await factory.createCompleteSetup()
+    testUser = setup.user
+    fromShop = setup.shop
+    testCategory = setup.category
+    productWithoutExpiry = await factory.createProduct(fromShop.id, testCategory.id, testUser, {
+      trackExpiry: false,
+      inventory: { quantity: 100, stockAlert: 10 },
+    })
+    productWithExpiry = await factory.createProduct(fromShop.id, testCategory.id, testUser, {
+      trackExpiry: true,
+      inventory: { quantity: 50, stockAlert: 5 },
+      batches: [
+        await factory.createBatch(fromShop.id, testUser, {
+          quantity: 50,
+          stockAlert: 5,
+        }),
+      ],
     })
 
-    // Create test category
-    testCategory = await payload.create({
-      collection: 'categories',
-      data: {
-        name: `Test Category ${Date.now()}`,
-      },
+    // Create toShop
+    toShop = await factory.createShop(testUser.id, {
+      name: `To Shop ${Date.now()}`,
+      location: 'To Location',
     })
 
-    // Create test supplier
+    // Create corresponding products in toShop with same barcodes
+    await factory.createProduct(toShop.id, testCategory.id, testUser, {
+      barcode: productWithoutExpiry.barcode,
+      trackExpiry: false,
+      inventory: { quantity: 50, stockAlert: 10 },
+    })
+
+    await factory.createProduct(toShop.id, testCategory.id, testUser, {
+      barcode: productWithExpiry.barcode,
+      trackExpiry: true,
+      inventory: { quantity: 20, stockAlert: 5 },
+      batches: [
+        await factory.createBatch(toShop.id, testUser, {
+          batchNumber: productWithExpiry.batches[0].batchNumber,
+          quantity: 20,
+          stockAlert: 5,
+        }),
+      ],
+    })
+    
+    testBatch = productWithExpiry.batches[0]
     testSupplier = await payload.create({
       collection: 'suppliers',
       data: {
@@ -56,150 +83,10 @@ describe('Move Stock API Integration Tests', () => {
         },
       },
     })
-
-    // Create from shop
-    fromShop = await payload.create({
-      collection: 'shops',
-      data: {
-        name: `From Shop ${Date.now()}`,
-        location: 'From Location',
-        owner: testUser.id,
-        shopType: 'retail',
-        shopCategory: 'grocery',
-        countryCode: '+233',
-        contactNumber: '+233123456789',
-        currency: 'GHS',
-      },
-    })
-
-    // Create to shop
-    toShop = await payload.create({
-      collection: 'shops',
-      data: {
-        name: `To Shop ${Date.now()}`,
-        location: 'To Location',
-        owner: testUser.id,
-        shopType: 'retail',
-        shopCategory: 'grocery',
-        countryCode: '+233',
-        contactNumber: '+233987654321',
-        currency: 'GHS',
-      },
-    })
-
-    // Create product without expiry tracking
-    productWithoutExpiry = await payload.create({
-      collection: 'products',
-      data: {
-        shop: fromShop.id,
-        name: `Test Product No Expiry ${Date.now()}`,
-        barcode: `BC${Date.now()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail',
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: false,
-        inventory: {
-          quantity: 100,
-          stockAlert: 10,
-        },
-        status: 'active',
-      },
-    })
-
-    // Create corresponding product in toShop
-    await payload.create({
-      collection: 'products',
-      data: {
-        shop: toShop.id,
-        name: `Test Product No Expiry ${Date.now()}`,
-        barcode: productWithoutExpiry.barcode, // Same barcode
-        category: testCategory.id,
-        prodSellingType: 'retail',
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: false,
-        inventory: {
-          quantity: 50,
-          stockAlert: 10,
-        },
-        status: 'active',
-      },
-    })
-
-    // Create batch for expiry tracking tests
-    testBatch = await payload.create({
-      collection: 'batches',
-      data: {
-        batchNumber: `BATCH${Date.now()}`,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-        quantity: 50,
-        stockAlert: 5,
-        shop: fromShop.id,
-      },
-    })
-
-    // Create product with expiry tracking
-    productWithExpiry = await payload.create({
-      collection: 'products',
-      data: {
-        shop: fromShop.id,
-        name: `Test Product With Expiry ${Date.now()}`,
-        barcode: `BCE${Date.now()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail',
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: true,
-        batches: [testBatch.id],
-        status: 'active',
-      },
-    })
-
-    // Create corresponding batch in toShop
-    const toShopBatch = await payload.create({
-      collection: 'batches',
-      data: {
-        batchNumber: testBatch.batchNumber, // Same batch number
-        expiryDate: testBatch.expiryDate,
-        quantity: 20,
-        stockAlert: 5,
-        shop: toShop.id,
-      },
-    })
-
-    // Create corresponding product with expiry in toShop
-    await payload.create({
-      collection: 'products',
-      data: {
-        shop: toShop.id,
-        name: `Test Product With Expiry ${Date.now()}`,
-        barcode: productWithExpiry.barcode, // Same barcode
-        category: testCategory.id,
-        prodSellingType: 'retail',
-        unit: 'piece',
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: true,
-        batches: [toShopBatch.id],
-        status: 'active',
-      },
-    })
   })
 
-  afterAll(async () => {
-    // Clean up test data
-    if (payload) {
-      // Note: In a real test environment, you might want to use a test database
-      // that gets reset between test runs instead of manual cleanup
-    }
+  afterEach(async () => {
+    await clearAllCollections(payload)
   })
 
   describe('Input Validation', () => {

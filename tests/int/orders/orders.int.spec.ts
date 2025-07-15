@@ -12,9 +12,11 @@ import type {
   Category,
   Supplier,
 } from '@/payload-types'
-import { clearAllCollections } from 'tests/int/utils/testCleanUp'
+import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
+let factory: TestFactory
 
 // Test data variables
 let testUser: User
@@ -31,158 +33,26 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    factory = new TestFactory(payload)
     await clearAllCollections(payload)
   })
 
   beforeEach(async () => {
-    // Create test user
-    testUser = await payload.create({
-      collection: 'users',
-      data: {
-        email: `vendor-${Date.now()}@test.com`,
-        password: 'password123',
-        fullName: 'Test Vendor User',
-        countryCode: '+233',
-        phoneNumber: '1234567890',
-        role: 'vendor' as const,
-      },
-    })
-
-    // Create test shop
-    testShop = await payload.create({
-      collection: 'shops',
-      data: {
-        name: `Test Shop ${Date.now()}`,
-        location: 'Test Location',
-        owner: testUser.id,
-        shopType: 'retail' as const,
-        shopCategory: 'grocery' as const,
-        countryCode: '+233',
-        contactNumber: '+233123456789',
-        currency: 'GHS' as const,
-      },
-    })
-
-    // Create test category
-    testCategory = await payload.create({
-      collection: 'categories',
-      data: {
-        name: `Test Category ${Date.now()}`,
-      },
-    })
-
-    // Create test supplier
-    testSupplier = await payload.create({
-      collection: 'suppliers',
-      data: {
-        name: `Test Supplier ${Date.now()}`,
-        contactInfo: {
-          email: 'test@supplier.com',
-          phone: '+233123456789',
-        },
-      },
-    })
-
-    // Create test customer
-    testCustomer = await payload.create({
-      collection: 'customers',
-      data: {
-        name: `Test Customer ${Date.now()}`,
-        contactInfo: {
-          email: `customer-${Date.now()}@test.com`,
-          phone: '+233987654321',
-        },
-      },
-    })
-
-    // Create test service
-    testService = await payload.create({
-      collection: 'services',
-      data: {
-        shop: testShop.id,
-        category: testCategory.id,
-        name: `Test Service ${Date.now()}`,
-        description: 'Test service description',
-        price: 50,
-        status: 'active' as const,
-      },
-    })
-
-    // Create product without expiry tracking
-    productWithoutExpiry = await payload.create({
-      collection: 'products',
-      data: {
-        shop: testShop.id,
-        name: `Test Product No Expiry ${Date.now()}`,
-        barcode: `BC${Date.now()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail' as const,
-        unit: 'piece' as const,
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: false,
-        inventory: {
-          quantity: 100,
-          stockAlert: 10,
-        },
-        status: 'active' as const,
-      },
-    })
-
-    // Create product with expiry tracking first
-    productWithExpiry = await payload.create({
-      collection: 'products',
-      data: {
-        shop: testShop.id,
-        name: `Test Product With Expiry ${Date.now()}`,
-        barcode: `BCE${Date.now()}`,
-        category: testCategory.id,
-        prodSellingType: 'retail' as const,
-        unit: 'piece' as const,
-        costPricePerUnit: 10,
-        sellingPricePerUnit: 15,
-        trackInventory: true,
-        trackExpiry: true,
-        status: 'active' as const,
-      },
-    })
-
-    // Create batch for expiry tracking with product reference
-    testBatch = await payload.create({
-      collection: 'batches',
-      data: {
-        batchNumber: `BATCH${Date.now()}`,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        quantity: 50,
-        stockAlert: 5,
-        shop: testShop.id,
-        product: productWithExpiry.id,
-        status: 'active' as const,
-      },
-    })
-
-    // Update the product to include the batch in its batches array
-    productWithExpiry = await payload.update({
-      collection: 'products',
-      id: productWithExpiry.id,
-      data: {
-        batches: [testBatch.id],
-      },
-    })
+    const setup = await factory.createOrdersTestSetup()
+    testUser = setup.user
+    testShop = setup.shop
+    testCategory = setup.category
+    testSupplier = setup.supplier
+    testCustomer = setup.customer
+    testService = setup.service
+    productWithoutExpiry = setup.productWithoutExpiry
+    productWithExpiry = setup.productWithExpiry
+    testBatch = setup.batch
   })
 
-  // afterEach(async () => {
-  //   // Clean up test data after each test
-  //   try {
-  //     const orders = await payload.find({ collection: 'orders', limit: 1000 })
-  //     for (const order of orders.docs) {
-  //       await payload.delete({ collection: 'orders', id: order.id })
-  //     }
-  //   } catch (error) {
-  //     console.warn('Cleanup failed:', error)
-  //   }
-  // })
+  afterEach(async () => {
+    await clearAllCollections(payload)
+  })
 
   describe('Order Creation - beforeValidate Hook Tests', () => {
     it('should create order with valid product items', async () => {
@@ -599,25 +469,16 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       })
 
       // Create another product
-      const anotherProduct = await payload.create({
-        collection: 'products',
-        data: {
-          shop: testShop.id,
-          name: 'Another Product',
-          barcode: 'ANOTHER123',
-          category: testCategory.id,
-          prodSellingType: 'retail' as const,
-          unit: 'piece' as const,
-          costPricePerUnit: 8,
-          sellingPricePerUnit: 12,
-          trackInventory: true,
-          trackExpiry: false,
-          inventory: {
-            quantity: 50,
-            stockAlert: 5,
-          },
-          status: 'active' as const,
+      const anotherProduct = await factory.createProduct(testShop.id, testCategory.id, testUser, {
+        name: 'Another Product',
+        barcode: 'ANOTHER123',
+        trackExpiry: false,
+        inventory: {
+          quantity: 50,
+          stockAlert: 5,
         },
+        costPricePerUnit: 8,
+        sellingPricePerUnit: 12,
       })
 
       // Try to update the product in the order
