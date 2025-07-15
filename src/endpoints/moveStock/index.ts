@@ -146,15 +146,25 @@ export const moveStock: Endpoint = {
           }
 
           if (typeof foundBatch == 'object') {
-            const foundBatchInToShopProducts = toShopProduct.docs[0].batches?.find(
+            let foundBatchInToShopProducts = toShopProduct.docs[0].batches?.find(
               (batch) => typeof batch === 'object' && batch.batchNumber === foundBatch.batchNumber,
             )
 
             if (!foundBatchInToShopProducts) {
-              errors.push(
-                `Batch with batch number ${foundBatch.batchNumber} not found in product ${toShopProduct.docs[0].name} batches in shop ${toShop?.docs[0].name}`,
-              )
-              continue
+              // Create batch in toShop if it doesn't exist
+              const newBatch = await req.payload.create({
+                collection: 'batches',
+                data: {
+                  shop: toShopId,
+                  batchNumber: foundBatch.batchNumber,
+                  expiryDate: foundBatch.expiryDate,
+                  stockAlert: foundBatch.stockAlert,
+                  status: foundBatch.status,
+                },
+                req,
+              })
+
+              foundBatchInToShopProducts = newBatch
             }
 
             if (typeof foundBatchInToShopProducts != 'object') {
