@@ -1,5 +1,7 @@
 'use client'
+
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
+
 export default function OrderItemProductField({ path, field }: { path: string; field: any }) {
   const { value: customerMetadataAtPurchase } = useField({
     path: 'customerMetadataAtPurchase',

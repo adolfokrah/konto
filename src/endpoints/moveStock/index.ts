@@ -1,10 +1,11 @@
 import { Endpoint } from 'payload'
+
 import { type MoveStockData, moveStockSchema } from './schema'
 
 export const moveStock: Endpoint = {
   path: '/move-stock',
   method: 'put',
-  handler: async (req) => {
+  handler: async req => {
     try {
       if (!req.user) {
         return Response.json({ message: 'Unauthorized', status: 401 })
@@ -21,7 +22,7 @@ export const moveStock: Endpoint = {
             message: 'Validation failed',
             errors: validationResult.error.issues,
           },
-          { status: 400 },
+          { status: 400 }
         )
       }
 
@@ -95,7 +96,7 @@ export const moveStock: Endpoint = {
 
         if (!toShopProduct.docs.length) {
           errors.push(
-            `Product with barcode ${foundProduct?.barcode} not found in the products of shop ${toShop?.docs[0].name}`,
+            `Product with barcode ${foundProduct?.barcode} not found in the products of shop ${toShop?.docs[0].name}`
           )
           continue
         }
@@ -103,7 +104,7 @@ export const moveStock: Endpoint = {
         if (!foundProduct?.trackExpiry) {
           if (foundProduct?.inventory?.quantity && foundProduct?.inventory?.quantity < quantity) {
             errors.push(
-              `Insufficient stock for product ${foundProduct?.name} in shop ${fromShop?.docs[0].name}. Available: ${foundProduct?.inventory?.quantity}, Requested: ${quantity}`,
+              `Insufficient stock for product ${foundProduct?.name} in shop ${fromShop?.docs[0].name}. Available: ${foundProduct?.inventory?.quantity}, Requested: ${quantity}`
             )
             continue
           }
@@ -137,19 +138,19 @@ export const moveStock: Endpoint = {
           // Check if batch exists in fromShop
 
           const foundBatch = foundProduct.batches?.find(
-            (batch) => typeof batch === 'object' && batch.id === batchId,
+            batch => typeof batch === 'object' && batch.id === batchId
           )
 
           if (!foundBatch) {
             errors.push(
-              `Batch with ID ${batchId} not found in product ${foundProduct.name} batches of shop ${fromShop?.docs[0].name}`,
+              `Batch with ID ${batchId} not found in product ${foundProduct.name} batches of shop ${fromShop?.docs[0].name}`
             )
             continue
           }
 
           if (typeof foundBatch == 'object') {
             let foundBatchInToShopProducts = toShopProduct.docs[0].batches?.find(
-              (batch) => typeof batch === 'object' && batch.batchNumber === foundBatch.batchNumber,
+              batch => typeof batch === 'object' && batch.batchNumber === foundBatch.batchNumber
             )
 
             if (!foundBatchInToShopProducts) {
@@ -171,7 +172,7 @@ export const moveStock: Endpoint = {
 
             if (typeof foundBatchInToShopProducts != 'object') {
               errors.push(
-                `Batch with batch number ${foundBatch.batchNumber} in product ${toShopProduct.docs[0].name} in shop ${toShop?.docs[0].name} is not a valid object`,
+                `Batch with batch number ${foundBatch.batchNumber} in product ${toShopProduct.docs[0].name} in shop ${toShop?.docs[0].name} is not a valid object`
               )
               continue
             }
@@ -214,7 +215,7 @@ export const moveStock: Endpoint = {
             message: 'An error occurred while moving stock',
             errors,
           },
-          { status: 404 },
+          { status: 404 }
         )
       }
 
@@ -230,7 +231,7 @@ export const moveStock: Endpoint = {
           message: 'Internal server error',
           error: error instanceof Error ? error.message : 'Unknown error',
         },
-        { status: 500 },
+        { status: 500 }
       )
     }
   },

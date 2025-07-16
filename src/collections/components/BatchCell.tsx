@@ -1,4 +1,5 @@
 import Link from 'next/link'
+
 import { Payload } from 'payload'
 
 export default async function BatchCell({

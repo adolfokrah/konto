@@ -1,9 +1,11 @@
-import { getPayload, Payload } from 'payload'
+import type { Product, Shop, User } from '@/payload-types'
 import config from '@/payload.config'
-import { describe, it, beforeAll, afterEach, expect, beforeEach } from 'vitest'
-import type { Batch, Shop, User, Category, Product } from '@/payload-types'
-import { v4 as uuidv4 } from 'uuid'
+
+import { Payload, getPayload } from 'payload'
 import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { v4 as uuidv4 } from 'uuid'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
@@ -12,7 +14,6 @@ let factory: TestFactory
 // Test data variables
 let testUser: User
 let testShop: Shop
-let testCategory: Category
 let testProduct: Product
 
 describe('Batches Collection Integration Tests', () => {
@@ -27,7 +28,6 @@ describe('Batches Collection Integration Tests', () => {
     const setup = await factory.createCompleteSetup()
     testUser = setup.user
     testShop = setup.shop
-    testCategory = setup.category
     testProduct = setup.product
   })
 
@@ -81,7 +81,7 @@ describe('Batches Collection Integration Tests', () => {
 
       expect(batch).toBeDefined()
       expect(typeof batch.product === 'string' ? batch.product : batch.product?.id).toBe(
-        testProduct.id,
+        testProduct.id
       )
     })
 
@@ -112,7 +112,7 @@ describe('Batches Collection Integration Tests', () => {
             batchNumber: 'Test Batch',
           } as any,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow()
     })
 
@@ -128,7 +128,7 @@ describe('Batches Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Stock')
     })
 
@@ -144,7 +144,7 @@ describe('Batches Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Stock')
     })
 
@@ -162,7 +162,7 @@ describe('Batches Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Expiry date cannot be in the past.')
     })
   })
@@ -196,7 +196,7 @@ describe('Batches Collection Integration Tests', () => {
             status: 'active' as const,
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow(`Batch ${batchNumber} already exists.`)
     })
 
@@ -246,7 +246,7 @@ describe('Batches Collection Integration Tests', () => {
 
       expect(batchInShop2).toBeDefined()
       expect(
-        typeof batchInShop2.shop === 'string' ? batchInShop2.shop : batchInShop2.shop?.id,
+        typeof batchInShop2.shop === 'string' ? batchInShop2.shop : batchInShop2.shop?.id
       ).toBe(anotherShop.id)
     })
   })
@@ -295,7 +295,7 @@ describe('Batches Collection Integration Tests', () => {
       expect(
         typeof updatedBatch.updatedBy === 'string'
           ? updatedBatch.updatedBy
-          : updatedBatch.updatedBy?.id,
+          : updatedBatch.updatedBy?.id
       ).toBe(testUser.id)
       expect(updatedBatch.stockAlert).toBe(15)
     })
@@ -394,18 +394,18 @@ describe('Batches Collection Integration Tests', () => {
       expect(batches.docs.length).toBeGreaterThanOrEqual(3)
 
       // Find our specific batches and verify sorting
-      const ourBatches = batches.docs.filter((batch) =>
-        [batch1.id, batch2.id, batch3.id].includes(batch.id),
+      const ourBatches = batches.docs.filter(batch =>
+        [batch1.id, batch2.id, batch3.id].includes(batch.id)
       )
 
       expect(ourBatches).toHaveLength(3)
 
       // Should be sorted: batch2 (30 days), batch3 (45 days), batch1 (60 days)
       expect(new Date(ourBatches[0].expiryDate).getTime()).toBeLessThan(
-        new Date(ourBatches[1].expiryDate).getTime(),
+        new Date(ourBatches[1].expiryDate).getTime()
       )
       expect(new Date(ourBatches[1].expiryDate).getTime()).toBeLessThan(
-        new Date(ourBatches[2].expiryDate).getTime(),
+        new Date(ourBatches[2].expiryDate).getTime()
       )
     })
   })

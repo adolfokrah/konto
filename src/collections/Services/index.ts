@@ -1,5 +1,7 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
 import type { CollectionConfig } from 'payload'
+
 import { setCreatedUpdatedBy } from './hooks/index'
 
 export const Services: CollectionConfig = {

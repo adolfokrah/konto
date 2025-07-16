@@ -1,5 +1,6 @@
-import { type CollectionBeforeValidateHook } from 'payload'
 import { seteCreatedUpdatedBy } from '@/lib/utils/set_created_updated_by'
+
+import { type CollectionBeforeValidateHook } from 'payload'
 
 export const setCreatedUpdatedBy: CollectionBeforeValidateHook = async ({
   data,

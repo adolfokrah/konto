@@ -1,5 +1,6 @@
-import { type CollectionBeforeValidateHook, type CollectionAfterChangeHook } from 'payload'
 import { seteCreatedUpdatedBy } from '@/lib/utils/set_created_updated_by'
+
+import { type CollectionAfterChangeHook, type CollectionBeforeValidateHook } from 'payload'
 
 export const setCreatedUpdatedByAndResetProductWhenInactive: CollectionBeforeValidateHook = async ({
   data,

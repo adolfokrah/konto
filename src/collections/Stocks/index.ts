@@ -1,9 +1,11 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
 import { type CollectionConfig } from 'payload'
+
 import {
-  validateProductBatchAndSetCreatedUpdatedBy,
   updateInventoryAndBatchQuantities,
+  validateProductBatchAndSetCreatedUpdatedBy,
 } from './hooks'
 
 const Stock: CollectionConfig = {

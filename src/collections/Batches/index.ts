@@ -1,12 +1,14 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
 import { type CollectionConfig } from 'payload'
+
 import { validateUniqueBatchNumber } from './hooks/batchNumber'
 import { validateExpiryDate } from './hooks/expiryDate'
-import { validateStockAlert } from './hooks/stockAlert'
 import {
-  setCreatedUpdatedByAndResetProductWhenInactive,
   clearProductReferenceWhenInactive,
+  setCreatedUpdatedByAndResetProductWhenInactive,
 } from './hooks/index'
+import { validateStockAlert } from './hooks/stockAlert'
 
 export const Batches: CollectionConfig = {
   slug: 'batches',

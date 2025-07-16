@@ -1,6 +1,7 @@
+import type { Category, Customer, Product, Service, Shop, Supplier, User } from '@/payload-types'
+
 import { Payload } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
-import type { User, Shop, Category, Product, Customer, Supplier, Service } from '@/payload-types'
 
 export class TestFactory {
   constructor(private payload: Payload) {}
@@ -78,7 +79,7 @@ export class TestFactory {
   async createService(
     shopId: string,
     categoryId: string,
-    overrides: Partial<Service> = {},
+    overrides: Partial<Service> = {}
   ): Promise<Service> {
     return this.payload.create({
       collection: 'services',
@@ -98,7 +99,7 @@ export class TestFactory {
     shopId: string,
     categoryId: string,
     user: User,
-    overrides: Partial<Product> = {},
+    overrides: Partial<Product> = {}
   ): Promise<Product> {
     return this.payload.create({
       collection: 'products',

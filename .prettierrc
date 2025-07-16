@@ -5,5 +5,19 @@
   "trailingComma": "es5",
   "printWidth": 100,
   "endOfLine": "lf",
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": [
+    "^react$",
+    "^next",
+    "^@",
+    "^[a-zA-Z]",
+    "^\\.\\.(?!/?$)",
+    "^\\.\\./?$",
+    "^\\./(?=.*/)(?!/?$)",
+    "^\\.(?!/?$)",
+    "^\\./?$"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

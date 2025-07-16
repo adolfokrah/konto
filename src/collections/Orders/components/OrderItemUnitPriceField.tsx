@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { fetcher } from '@/lib/utils/fetch'
 import { TextInput, useField } from '@payloadcms/ui'
-import { useEffect } from 'react'
+
 import useSWR from 'swr'
 
 export default function OrderItemUnitPriceField({ path }: { path: string }) {
@@ -15,7 +17,7 @@ export default function OrderItemUnitPriceField({ path }: { path: string }) {
     type?.value == 'service'
       ? `/api/services/${service?.value}`
       : `/api/products/${product?.value}`,
-    fetcher,
+    fetcher
   )
 
   const price = data?.sellingPricePerUnit || data?.price || '0'

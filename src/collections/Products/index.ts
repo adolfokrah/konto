@@ -1,12 +1,14 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
 import { CollectionConfig } from 'payload'
+
 import { validateUniqueBarcode } from './hooks/barcode'
-import { validateStockAlert } from './hooks/stockAlert'
 import {
   setCreatedUpdatedByAndClearBatchesWhenInactive,
   syncBatchProductReferences,
 } from './hooks/index'
+import { validateStockAlert } from './hooks/stockAlert'
 
 const Products: CollectionConfig = {
   slug: 'products',

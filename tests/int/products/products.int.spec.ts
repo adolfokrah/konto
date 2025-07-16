@@ -1,9 +1,11 @@
-import { getPayload, Payload } from 'payload'
+import type { Category, Shop, User } from '@/payload-types'
 import config from '@/payload.config'
-import { describe, it, beforeAll, afterEach, expect, beforeEach, afterAll } from 'vitest'
-import type { Product, Shop, User, Category, Batch } from '@/payload-types'
-import { v4 as uuidv4 } from 'uuid'
+
+import { Payload, getPayload } from 'payload'
 import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { v4 as uuidv4 } from 'uuid'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
@@ -46,7 +48,7 @@ describe('Products Collection Integration Tests', () => {
       expect(product.barcode).toBeDefined()
       expect(typeof product.shop === 'string' ? product.shop : product.shop?.id).toBe(testShop.id)
       expect(typeof product.category === 'string' ? product.category : product.category?.id).toBe(
-        testCategory.id,
+        testCategory.id
       )
       expect(product.trackInventory).toBe(true)
       expect(product.trackExpiry).toBe(false)
@@ -117,7 +119,7 @@ describe('Products Collection Integration Tests', () => {
           barcode, // Same barcode
           trackExpiry: false,
           inventory: { quantity: 100, stockAlert: 10 },
-        }),
+        })
       ).rejects.toThrow(`Barcode ${barcode} already exists.`)
     })
 
@@ -174,12 +176,12 @@ describe('Products Collection Integration Tests', () => {
           barcode, // Same barcode, different shop
           trackExpiry: false,
           inventory: { quantity: 100, stockAlert: 10 },
-        },
+        }
       )
 
       expect(productInShop2).toBeDefined()
       expect(
-        typeof productInShop2.shop === 'string' ? productInShop2.shop : productInShop2.shop?.id,
+        typeof productInShop2.shop === 'string' ? productInShop2.shop : productInShop2.shop?.id
       ).toBe(anotherShop.id)
     })
   })
@@ -212,8 +214,8 @@ describe('Products Collection Integration Tests', () => {
       expect(updatedProduct.batches).toBeDefined()
       expect(
         Array.isArray(updatedProduct.batches)
-          ? updatedProduct.batches.map((b) => (typeof b === 'string' ? b : b?.id))
-          : [updatedProduct.batches],
+          ? updatedProduct.batches.map(b => (typeof b === 'string' ? b : b?.id))
+          : [updatedProduct.batches]
       ).toContain(batch.id)
 
       // Verify batch was updated with product reference via afterChange hook
@@ -223,7 +225,7 @@ describe('Products Collection Integration Tests', () => {
       })
 
       expect(
-        typeof updatedBatch.product === 'string' ? updatedBatch.product : updatedBatch.product?.id,
+        typeof updatedBatch.product === 'string' ? updatedBatch.product : updatedBatch.product?.id
       ).toBe(product.id)
     })
 
@@ -261,10 +263,10 @@ describe('Products Collection Integration Tests', () => {
       expect(updatedProduct.batches).toBeDefined()
       expect(updatedProduct.batches).toHaveLength(2)
       expect(
-        updatedProduct.batches?.map((batch) => (typeof batch === 'string' ? batch : batch?.id)),
+        updatedProduct.batches?.map(batch => (typeof batch === 'string' ? batch : batch?.id))
       ).toContain(batch1.id)
       expect(
-        updatedProduct.batches?.map((batch) => (typeof batch === 'string' ? batch : batch?.id)),
+        updatedProduct.batches?.map(batch => (typeof batch === 'string' ? batch : batch?.id))
       ).toContain(batch2.id)
     })
   })
@@ -280,7 +282,7 @@ describe('Products Collection Integration Tests', () => {
             // This should fail validation
           } as any, // Use 'as any' to bypass TypeScript for testing validation
           user: testUser,
-        }),
+        })
       ).rejects.toThrow()
     })
 
@@ -293,7 +295,7 @@ describe('Products Collection Integration Tests', () => {
             quantity: 100,
             stockAlert: 0, // Invalid stock alert
           },
-        }),
+        })
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 
@@ -306,7 +308,7 @@ describe('Products Collection Integration Tests', () => {
             quantity: 100,
             stockAlert: 0,
           },
-        }),
+        })
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 
@@ -345,7 +347,7 @@ describe('Products Collection Integration Tests', () => {
       expect(
         typeof updatedProduct.updatedBy === 'string'
           ? updatedProduct.updatedBy
-          : updatedProduct.updatedBy?.id,
+          : updatedProduct.updatedBy?.id
       ).toBe(testUser.id)
       expect(updatedProduct.sellingPricePerUnit).toBe(20)
     })
@@ -415,10 +417,10 @@ describe('Products Collection Integration Tests', () => {
       })
 
       expect(
-        typeof linkedBatch1.product === 'string' ? linkedBatch1.product : linkedBatch1.product?.id,
+        typeof linkedBatch1.product === 'string' ? linkedBatch1.product : linkedBatch1.product?.id
       ).toBe(product.id)
       expect(
-        typeof linkedBatch2.product === 'string' ? linkedBatch2.product : linkedBatch2.product?.id,
+        typeof linkedBatch2.product === 'string' ? linkedBatch2.product : linkedBatch2.product?.id
       ).toBe(product.id)
 
       // Set product status to inactive

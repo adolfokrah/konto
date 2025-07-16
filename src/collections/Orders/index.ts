@@ -1,10 +1,12 @@
-import { type CollectionConfig } from 'payload'
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
+import { type CollectionConfig } from 'payload'
+
+import { validateAmountPaid } from './hooks/amountPaid'
+import { createStockRecordsForSales, validateOrderItemsAndSetCreatedUpdatedBy } from './hooks/index'
+import { handlePaymentChange } from './hooks/payment'
 import { validateQuantity } from './hooks/quantity'
 import { calculateTotalCost } from './hooks/totalCost'
-import { handlePaymentChange } from './hooks/payment'
-import { validateAmountPaid } from './hooks/amountPaid'
-import { validateOrderItemsAndSetCreatedUpdatedBy, createStockRecordsForSales } from './hooks/index'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',

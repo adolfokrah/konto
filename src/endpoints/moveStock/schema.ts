@@ -8,7 +8,7 @@ export const moveStockSchema = z.array(
     batchId: z.string().optional(),
     productId: z.string('Product ID must be a provided'),
     quantity: z.number().positive('Quantity must be a provided'),
-  }),
+  })
 )
 
 // Type inference from the schema

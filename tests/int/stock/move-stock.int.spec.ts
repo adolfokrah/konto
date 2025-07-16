@@ -1,8 +1,10 @@
-import { getPayload, Payload } from 'payload'
-import config from '@/payload.config'
 import { moveStock } from '@/endpoints/moveStock'
-import { describe, it, beforeAll, afterAll, expect, beforeEach, afterEach } from 'vitest'
+import config from '@/payload.config'
+
+import { Payload, getPayload } from 'payload'
 import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
@@ -15,7 +17,6 @@ let toShop: any
 let testCategory: any
 let productWithoutExpiry: any
 let productWithExpiry: any
-let testSupplier: any
 let testBatch: any
 
 describe('Move Stock API Integration Tests', () => {
@@ -73,7 +74,7 @@ describe('Move Stock API Integration Tests', () => {
     })
 
     testBatch = productWithExpiry.batches[0]
-    testSupplier = await payload.create({
+    await payload.create({
       collection: 'suppliers',
       data: {
         name: `Test Supplier ${Date.now()}`,
@@ -300,7 +301,7 @@ describe('Move Stock API Integration Tests', () => {
       expect(stockEntries.docs.length).toBeGreaterThanOrEqual(1)
 
       // Check that we have a deduction entry with negative quantity
-      const deductionEntry = stockEntries.docs.find((entry) => entry.quantity < 0)
+      const deductionEntry = stockEntries.docs.find(entry => entry.quantity < 0)
       expect(deductionEntry).toBeDefined()
       expect(deductionEntry!.quantity).toBe(-moveQuantity)
       expect(deductionEntry!.batch).toBe(String(testBatch.id))

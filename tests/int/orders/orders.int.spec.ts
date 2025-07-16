@@ -1,18 +1,10 @@
-import { getPayload, Payload } from 'payload'
+import type { Batch, Category, Customer, Product, Service, Shop, User } from '@/payload-types'
 import config from '@/payload.config'
-import { describe, it, beforeAll, afterEach, expect, beforeEach } from 'vitest'
-import type {
-  Order,
-  Product,
-  Service,
-  Batch,
-  Customer,
-  Shop,
-  User,
-  Category,
-  Supplier,
-} from '@/payload-types'
+
+import { Payload, getPayload } from 'payload'
 import { clearAllCollections } from 'tests/utils/testCleanUp'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 import { TestFactory } from '../../utils/testFactory'
 
 let payload: Payload
@@ -22,7 +14,6 @@ let factory: TestFactory
 let testUser: User
 let testShop: Shop
 let testCategory: Category
-let testSupplier: Supplier
 let testCustomer: Customer
 let testService: Service
 let productWithoutExpiry: Product
@@ -42,7 +33,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
     testUser = setup.user
     testShop = setup.shop
     testCategory = setup.category
-    testSupplier = setup.supplier
     testCustomer = setup.customer
     testService = setup.service
     productWithoutExpiry = setup.productWithoutExpiry
@@ -86,7 +76,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       expect(
         typeof order.items![0].product === 'string'
           ? order.items![0].product
-          : order.items![0].product?.id,
+          : order.items![0].product?.id
       ).toBe(productWithoutExpiry.id)
       expect(order.totalCost).toBe(75)
       expect(order.createdBy).toBeDefined()
@@ -115,7 +105,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Product is required for order items of type "product"')
     })
 
@@ -142,7 +132,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Product not found. Please select a valid product first')
     })
 
@@ -170,7 +160,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Batch field is required for product')
     })
 
@@ -197,7 +187,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Insufficient stock for product')
     })
 
@@ -225,7 +215,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Insufficient stock for batch')
     })
 
@@ -253,7 +243,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Invalid batch data for product')
     })
 
@@ -288,7 +278,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         collection: 'products',
         id: productWithoutExpiry.id,
       })
-
 
       expect(updatedProduct.inventory?.quantity).toBe(initialQuantity - 10)
     })
@@ -358,7 +347,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       expect(
         typeof order.items![0].service === 'string'
           ? order.items![0].service
-          : order.items![0].service?.id,
+          : order.items![0].service?.id
       ).toBe(testService.id)
       expect(order.totalCost).toBe(100)
     })
@@ -389,7 +378,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
       expect(order.createdBy).toBeDefined()
       expect(typeof order.createdBy === 'string' ? order.createdBy : order.createdBy?.id).toBe(
-        testUser.id,
+        testUser.id
       )
     })
   })
@@ -443,7 +432,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             ],
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('You cannot change the number of items in an order')
     })
 
@@ -501,7 +490,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             ],
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('You cannot change the product of an order item')
     })
 
@@ -546,7 +535,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             ],
           },
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('You cannot un-return an item once it has been marked as returned')
     })
 
@@ -615,7 +604,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         // If the order ID access fails, skip this test
         console.warn(
           'Test skipped due to order ID access limitation in beforeValidate hook:',
-          error,
+          error
         )
         expect(true).toBe(true) // Mark test as passed
       }
@@ -681,7 +670,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         // If the order ID access fails, skip this test
         console.warn(
           'Test skipped due to order ID access limitation in beforeValidate hook:',
-          error,
+          error
         )
         expect(true).toBe(true) // Mark test as passed
       }
@@ -723,13 +712,13 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         expect(
           typeof updatedOrder.updatedBy === 'string'
             ? updatedOrder.updatedBy
-            : updatedOrder.updatedBy?.id,
+            : updatedOrder.updatedBy?.id
         ).toBe(testUser.id)
       } catch (error) {
         // If the order ID access fails in beforeValidate, skip this test
         console.warn(
           'Test skipped due to order ID access limitation in beforeValidate hook:',
-          error,
+          error
         )
         expect(true).toBe(true) // Mark test as passed
       }
@@ -760,7 +749,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           id: 'non-existent-order-id',
           data: orderData,
           user: testUser,
-        }),
+        })
       ).rejects.toThrow('Not Found')
     })
   })
@@ -784,7 +773,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         paymentMothod: 'cash' as const,
       }
 
-      const order = await payload.create({
+      await payload.create({
         collection: 'orders',
         data: orderData,
         user: testUser,
@@ -806,8 +795,12 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       expect(stockRecords.docs).toHaveLength(1)
       const stockRecord = stockRecords.docs[0]
       expect(stockRecord.quantity).toBe(-5) // Negative for sale
-      expect(typeof stockRecord.product === 'string' ? stockRecord.product : stockRecord.product?.id).toBe(productWithoutExpiry.id)
-      expect(typeof stockRecord.shop === 'string' ? stockRecord.shop : stockRecord.shop?.id).toBe(testShop.id)
+      expect(
+        typeof stockRecord.product === 'string' ? stockRecord.product : stockRecord.product?.id
+      ).toBe(productWithoutExpiry.id)
+      expect(typeof stockRecord.shop === 'string' ? stockRecord.shop : stockRecord.shop?.id).toBe(
+        testShop.id
+      )
       expect(stockRecord.type).toBe('sale')
     })
 
@@ -830,7 +823,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         paymentMothod: 'cash' as const,
       }
 
-      const order = await payload.create({
+      await payload.create({
         collection: 'orders',
         data: orderData,
         user: testUser,
@@ -852,9 +845,13 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       expect(stockRecords.docs).toHaveLength(1)
       const stockRecord = stockRecords.docs[0]
       expect(stockRecord.quantity).toBe(-3) // Negative for sale
-      expect(typeof stockRecord.product === 'string' ? stockRecord.product : stockRecord.product?.id).toBe(productWithExpiry.id)
+      expect(
+        typeof stockRecord.product === 'string' ? stockRecord.product : stockRecord.product?.id
+      ).toBe(productWithExpiry.id)
       expect(stockRecord.batch).toBe(testBatch.id)
-      expect(typeof stockRecord.shop === 'string' ? stockRecord.shop : stockRecord.shop?.id).toBe(testShop.id)
+      expect(typeof stockRecord.shop === 'string' ? stockRecord.shop : stockRecord.shop?.id).toBe(
+        testShop.id
+      )
       expect(stockRecord.type).toBe('sale')
     })
 
@@ -875,7 +872,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         paymentMothod: 'card' as const,
       }
 
-      const order = await payload.create({
+      await payload.create({
         collection: 'orders',
         data: orderData,
         user: testUser,
@@ -928,7 +925,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         paymentMothod: 'cash' as const,
       }
 
-      const order = await payload.create({
+      await payload.create({
         collection: 'orders',
         data: orderData,
         user: testUser,
@@ -948,18 +945,22 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       })
 
       expect(stockRecords.docs).toHaveLength(2) // Only for the 2 product items
-      
+
       // Check first product stock record
-      const productRecord = stockRecords.docs.find(record => 
-        (typeof record.product === 'string' ? record.product : record.product?.id) === productWithoutExpiry.id
+      const productRecord = stockRecords.docs.find(
+        record =>
+          (typeof record.product === 'string' ? record.product : record.product?.id) ===
+          productWithoutExpiry.id
       )
       expect(productRecord).toBeDefined()
       expect(productRecord!.quantity).toBe(-2)
       expect(productRecord!.batch).toBeUndefined()
 
       // Check batch product stock record
-      const batchRecord = stockRecords.docs.find(record => 
-        (typeof record.product === 'string' ? record.product : record.product?.id) === productWithExpiry.id
+      const batchRecord = stockRecords.docs.find(
+        record =>
+          (typeof record.product === 'string' ? record.product : record.product?.id) ===
+          productWithExpiry.id
       )
       expect(batchRecord).toBeDefined()
       expect(batchRecord!.quantity).toBe(-1)
@@ -1031,11 +1032,17 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
         expect(returnRecord).toBeDefined()
         expect(returnRecord!.quantity).toBe(5) // Positive for return
-        expect(typeof returnRecord!.product === 'string' ? returnRecord!.product : returnRecord!.product?.id).toBe(productWithoutExpiry.id)
+        expect(
+          typeof returnRecord!.product === 'string'
+            ? returnRecord!.product
+            : returnRecord!.product?.id
+        ).toBe(productWithoutExpiry.id)
         expect(returnRecord!.type).toBe('return')
-
       } catch (error) {
-        console.warn('Test skipped due to order ID access limitation in beforeValidate hook:', error)
+        console.warn(
+          'Test skipped due to order ID access limitation in beforeValidate hook:',
+          error
+        )
         expect(true).toBe(true) // Mark test as passed if update fails due to known limitation
       }
     })
@@ -1108,12 +1115,18 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
         expect(returnRecord).toBeDefined()
         expect(returnRecord!.quantity).toBe(3) // Positive for return
-        expect(typeof returnRecord!.product === 'string' ? returnRecord!.product : returnRecord!.product?.id).toBe(productWithExpiry.id)
+        expect(
+          typeof returnRecord!.product === 'string'
+            ? returnRecord!.product
+            : returnRecord!.product?.id
+        ).toBe(productWithExpiry.id)
         expect(returnRecord!.batch).toBe(testBatch.id)
         expect(returnRecord!.type).toBe('return')
-
       } catch (error) {
-        console.warn('Test skipped due to order ID access limitation in beforeValidate hook:', error)
+        console.warn(
+          'Test skipped due to order ID access limitation in beforeValidate hook:',
+          error
+        )
         expect(true).toBe(true) // Mark test as passed if update fails due to known limitation
       }
     })
@@ -1202,10 +1215,14 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
         const returnRecord = returnRecords[0]
         expect(returnRecord.quantity).toBe(5) // Positive for return
-        expect(typeof returnRecord.product === 'string' ? returnRecord.product : returnRecord.product?.id).toBe(productWithoutExpiry.id)
-
+        expect(
+          typeof returnRecord.product === 'string' ? returnRecord.product : returnRecord.product?.id
+        ).toBe(productWithoutExpiry.id)
       } catch (error) {
-        console.warn('Test skipped due to order ID access limitation in beforeValidate hook:', error)
+        console.warn(
+          'Test skipped due to order ID access limitation in beforeValidate hook:',
+          error
+        )
         expect(true).toBe(true) // Mark test as passed if update fails due to known limitation
       }
     })
@@ -1357,7 +1374,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         // If the order ID access fails, skip this test
         console.warn(
           'Test skipped due to order ID access limitation in beforeValidate hook:',
-          error,
+          error
         )
         expect(true).toBe(true) // Mark test as passed
       }

@@ -1,9 +1,10 @@
-import {
-  type CollectionBeforeValidateHook,
-  type CollectionAfterChangeHook,
-  APIError,
-} from 'payload'
 import { seteCreatedUpdatedBy } from '@/lib/utils/set_created_updated_by'
+
+import {
+  APIError,
+  type CollectionAfterChangeHook,
+  type CollectionBeforeValidateHook,
+} from 'payload'
 
 export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateHook = async ({
   data,
@@ -56,7 +57,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
           if (product.trackExpiry && !item.batch) {
             throw new APIError(
               `Batch field is required for product ${product.name} that tracks expiry.`,
-              400,
+              400
             )
           }
 
@@ -64,7 +65,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
             if (item.quantity > product.inventory?.quantity) {
               throw new APIError(
                 `Insufficient stock for product ${product.name}. Available stock: ${product.inventory?.quantity || 0}`,
-                400,
+                400
               )
             } else {
               //after change will insert stock record
@@ -77,7 +78,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
             if (!foundBatch || typeof foundBatch !== 'object') {
               throw new APIError(
                 `Invalid batch data for product ${product.name}. Please select a valid batch.`,
-                400,
+                400
               )
             }
             //keep batch data for history audit
@@ -86,14 +87,14 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
             if (new Date(foundBatch.expiryDate) < new Date()) {
               throw new APIError(
                 `Batch ${foundBatch.batchNumber} of product ${product.name} has expired.`,
-                400,
+                400
               )
             }
 
             if ((foundBatch.quantity || 0) < item.quantity) {
               throw new APIError(
                 `Insufficient stock for batch ${foundBatch.batchNumber} of product ${product.name}. Available stock: ${foundBatch.quantity}`,
-                400,
+                400
               )
             }
             //afeter change will insert stock record
@@ -135,7 +136,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
             if (foundPreviousItem?.isReturned) {
               throw new APIError(
                 'You cannot un-return an item once it has been marked as returned',
-                400,
+                400
               )
             }
           }

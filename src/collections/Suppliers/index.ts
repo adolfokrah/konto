@@ -1,5 +1,7 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
+
 import { CollectionConfig } from 'payload'
+
 import { setCreatedUpdatedBy } from './hooks'
 
 const Suppliers: CollectionConfig = {
