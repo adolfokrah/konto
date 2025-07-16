@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Generated files
+payload-types.ts
+
+# Test reports
+playwright-report/
+test-results/
+
+# Environment files
+.env*
+
+# Other
+*.md
