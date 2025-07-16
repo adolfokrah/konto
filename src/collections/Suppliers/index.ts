@@ -1,6 +1,6 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { CollectionConfig } from 'payload'
-import { beforeValidateHook } from './hooks'
+import { setCreatedUpdatedBy } from './hooks'
 
 const Suppliers: CollectionConfig = {
   slug: 'suppliers',
@@ -50,7 +50,7 @@ const Suppliers: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [beforeValidateHook],
+    beforeValidate: [setCreatedUpdatedBy],
   },
 }
 export default Suppliers

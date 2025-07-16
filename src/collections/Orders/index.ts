@@ -5,7 +5,7 @@ import { validateQuantity } from './hooks/quantity'
 import { calculateTotalCost } from './hooks/totalCost'
 import { handlePaymentChange } from './hooks/payment'
 import { validateAmountPaid } from './hooks/amountPaid'
-import { beforeValidateHook, afterChangeHook } from './hooks/index'
+import { validateOrderItemsAndSetCreatedUpdatedBy, createStockRecordsForSales } from './hooks/index'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -312,7 +312,7 @@ export const Orders: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    afterChange: [afterChangeHook],
-    beforeValidate: [beforeValidateHook],
+    afterChange: [createStockRecordsForSales],
+    beforeValidate: [validateOrderItemsAndSetCreatedUpdatedBy],
   },
 }

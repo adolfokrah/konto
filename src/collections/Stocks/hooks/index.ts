@@ -1,7 +1,7 @@
 import { CollectionBeforeValidateHook, CollectionAfterChangeHook, APIError } from 'payload'
 import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 
-export const beforeValidateHook: CollectionBeforeValidateHook = async ({ data, req, operation }) => {
+export const validateProductBatchAndSetCreatedUpdatedBy: CollectionBeforeValidateHook = async ({ data, req, operation }) => {
   if (data?.product && req?.payload) {
     try {
       const product = await req.payload.findByID({
@@ -28,7 +28,7 @@ export const beforeValidateHook: CollectionBeforeValidateHook = async ({ data, r
   }
 }
 
-export const afterChangeHook: CollectionAfterChangeHook = async ({ doc, req }) => {
+export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = async ({ doc, req }) => {
   // Automatically update product inventory and batch quantities
   if ((doc?.product || doc?.batch) && req?.payload) {
     try {

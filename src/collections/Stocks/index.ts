@@ -1,7 +1,7 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { type CollectionConfig } from 'payload'
-import { beforeValidateHook, afterChangeHook } from './hooks'
+import { validateProductBatchAndSetCreatedUpdatedBy, updateInventoryAndBatchQuantities } from './hooks'
 
 const Stock: CollectionConfig = {
   slug: 'stock',
@@ -123,8 +123,8 @@ const Stock: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [beforeValidateHook],
-    afterChange: [afterChangeHook],
+    beforeValidate: [validateProductBatchAndSetCreatedUpdatedBy],
+    afterChange: [updateInventoryAndBatchQuantities],
   },
 }
 

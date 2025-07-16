@@ -3,7 +3,7 @@ import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { CollectionConfig } from 'payload'
 import { validateUniqueBarcode } from './hooks/barcode'
 import { validateStockAlert } from './hooks/stockAlert'
-import { beforeValidateHook, afterChangeHook } from './hooks/index'
+import { setCreatedUpdatedByAndClearBatchesWhenInactive, syncBatchProductReferences } from './hooks/index'
 
 const Products: CollectionConfig = {
   slug: 'products',
@@ -230,8 +230,8 @@ const Products: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [beforeValidateHook],
-    afterChange: [afterChangeHook],
+    beforeValidate: [setCreatedUpdatedByAndClearBatchesWhenInactive],
+    afterChange: [syncBatchProductReferences],
   },
 }
 

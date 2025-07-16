@@ -1,7 +1,7 @@
 import { type CollectionBeforeValidateHook, type CollectionAfterChangeHook, APIError } from 'payload'
 import { seteCreatedUpdatedBy } from '@/collections/hooks/set_created_updated_by'
 
-export const beforeValidateHook: CollectionBeforeValidateHook = async ({ data, req, operation, originalDoc }) => {
+export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateHook = async ({ data, req, operation, originalDoc }) => {
   if (data?.items && data?.items.length > 0) {
     if (operation === 'create') {
       for (const item of data.items) {
@@ -206,7 +206,7 @@ export const beforeValidateHook: CollectionBeforeValidateHook = async ({ data, r
   })
 }
 
-export const afterChangeHook: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
+export const createStockRecordsForSales: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation === 'create') {
      for (const item of doc.items) {
         if(item?.type == 'product'){
