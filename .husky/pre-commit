@@ -1,8 +1,5 @@
 # Run type checking
 pnpm run type-check
 
-# Run integration tests
-pnpm run test:int
-
 # Run lint-staged for formatting and linting
 npx lint-staged

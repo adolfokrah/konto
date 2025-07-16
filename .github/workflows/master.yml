@@ -123,6 +123,31 @@ jobs:
           echo "version=$new_version" >> $GITHUB_OUTPUT
           echo "tag=v$new_version" >> $GITHUB_OUTPUT
 
+      - name: Get latest release tag
+        id: latest-tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Get commit messages since last release
+        id: commits
+        run: |
+          if [ -n "${{ steps.latest-tag.outputs.latest_tag }}" ]; then
+            # Get commits since last tag
+            commits=$(git log ${{ steps.latest-tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            # If no previous tag, get last 10 commits
+            commits=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+          fi
+          
+          # Handle multiline output for GitHub Actions
+          {
+            echo 'commits<<EOF'
+            echo "$commits"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
       - name: Create Git Tag
         run: |
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
@@ -137,15 +162,14 @@ jobs:
           release_name: "Release ${{ steps.version.outputs.tag }}"
           body: |
             ## What's Changed
-            - Automated release after successful staging deployment
-            - Version bumped to ${{ steps.version.outputs.tag }}
+            ${{ steps.commits.outputs.commits }}
             
             ## Deployment
             - ✅ Integration tests passed
             - ✅ Staging deployment successful
             - ⏳ Production deployment pending approval
             
-            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ steps.version.outputs.tag }}
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest-tag.outputs.latest_tag }}...${{ steps.version.outputs.tag }}
           draft: false
           prerelease: false
 
