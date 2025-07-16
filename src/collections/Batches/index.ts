@@ -1,6 +1,9 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
-import { APIError, type CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
+import { type CollectionConfig } from 'payload'
+import { validateUniqueBatchNumber } from './hooks/batchNumber'
+import { validateExpiryDate } from './hooks/expiryDate'
+import { validateStockAlert } from './hooks/stockAlert'
+import { beforeValidateHook, afterChangeHook } from './hooks/index'
 
 export const Batches: CollectionConfig = {
   slug: 'batches',
@@ -27,29 +30,7 @@ export const Batches: CollectionConfig = {
       type: 'text',
       required: true,
       hooks: {
-        beforeValidate: [
-          async ({ data, req }) => {
-            // Ensure batch is unique across batches
-            const existingBatch = await req.payload.find({
-              collection: 'batches',
-              where: {
-                batchNumber: {
-                  equals: data?.batchNumber,
-                },
-                shop: {
-                  equals: (data as any)?.shop, // Ensure the batchNumber is unique per shop
-                },
-                status: {
-                  equals: 'active', // Only check active batches
-                },
-              },
-            })
-
-            if (existingBatch?.docs.length) {
-              throw new APIError(`Batch ${data?.batchNumber} already exists.`, 400)
-            }
-          },
-        ],
+        beforeValidate: [validateUniqueBatchNumber],
       },
     },
     {
@@ -57,13 +38,7 @@ export const Batches: CollectionConfig = {
       type: 'date',
       required: true,
       hooks: {
-        beforeValidate: [
-          async ({ data, operation }) => {
-            if (operation === 'create' && new Date(data?.expiryDate) < new Date()) {
-              throw new Error('Expiry date cannot be in the past.')
-            }
-          },
-        ],
+        beforeValidate: [validateExpiryDate],
       },
     },
     {
@@ -83,12 +58,7 @@ export const Batches: CollectionConfig = {
       name: 'stockAlert',
       type: 'number',
       required: true,
-      validate: (data: any) => {
-        if (data <= 0) {
-          return 'Stock alert must be greater than zero.'
-        }
-        return true
-      },
+      validate: validateStockAlert,
     },
     {
       name: 'product',
@@ -113,40 +83,7 @@ export const Batches: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [
-      async ({ data, req, operation }) => {
-        if (data?.status === 'inactive') {
-          data.product = null // Reset product relationship if batch is inactive
-        }
-        // Automatically set createdBy to the current user
-        return seteCreatedUpdatedBy({
-          data,
-          operation,
-          userId: req.user ? req.user.id : null,
-        })
-      },
-    ],
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation === 'create' || operation === 'update') {
-          if (doc?.status == 'inactive' && doc?.product) {
-            const product = await req.payload.findByID({
-              collection: 'products',
-              id: doc.product,
-            })
-            if (product) {
-              // Reset the product reference in the batch
-              await req.payload.update({
-                collection: 'batches',
-                id: doc.id,
-                data: {
-                  product: null,
-                },
-              })
-            }
-          }
-        }
-      },
-    ],
+    beforeValidate: [beforeValidateHook],
+    afterChange: [afterChangeHook],
   },
 }

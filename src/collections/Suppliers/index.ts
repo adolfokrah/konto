@@ -1,6 +1,6 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
+import { beforeValidateHook } from './hooks'
 
 const Suppliers: CollectionConfig = {
   slug: 'suppliers',
@@ -50,16 +50,7 @@ const Suppliers: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [
-      async ({ data, req, operation }) => {
-        // Automatically set createdBy to the current user
-        return seteCreatedUpdatedBy({
-          data,
-          operation,
-          userId: req.user ? req.user.id : null,
-        })
-      },
-    ],
+    beforeValidate: [beforeValidateHook],
   },
 }
 export default Suppliers

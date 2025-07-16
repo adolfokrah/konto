@@ -1,7 +1,9 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
-import { APIError, CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
+import { CollectionConfig } from 'payload'
+import { validateUniqueBarcode } from './hooks/barcode'
+import { validateStockAlert } from './hooks/stockAlert'
+import { beforeValidateHook, afterChangeHook } from './hooks/index'
 
 const Products: CollectionConfig = {
   slug: 'products',
@@ -65,29 +67,7 @@ const Products: CollectionConfig = {
       type: 'text',
       required: true,
       hooks: {
-        beforeValidate: [
-          async ({ data, req }) => {
-            // Ensure barcode is unique across products
-            const existingProduct = await req.payload.find({
-              collection: 'products',
-              where: {
-                barcode: {
-                  equals: data?.barcode,
-                },
-                shop: {
-                  equals: (data as any)?.shop, // Ensure the barcode is unique per shop
-                },
-                status: {
-                  equals: 'active', // Only check active products
-                },
-              },
-            })
-
-            if (existingProduct?.docs.length) {
-              throw new APIError(`Barcode ${data?.barcode} already exists.`, 400)
-            }
-          },
-        ],
+        beforeValidate: [validateUniqueBarcode],
       },
     },
     {
@@ -190,12 +170,7 @@ const Products: CollectionConfig = {
           admin: {
             description: 'Alert when stock falls below this level',
           },
-          validate: (data: any) => {
-            if (data <= 0) {
-              return 'Stock alert must be greater than zero.'
-            }
-            return true
-          },
+          validate: validateStockAlert,
         },
       ],
     },
@@ -255,76 +230,8 @@ const Products: CollectionConfig = {
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    beforeValidate: [
-      async ({ data, req, operation }) => {
-        // Automatically set createdBy to the current user
-
-        if (data?.status === 'inactive') {
-          data.batches = [] // Clear batches if product is inactive
-        }
-
-        return seteCreatedUpdatedBy({
-          data,
-          operation,
-          userId: req.user ? req.user.id : null,
-        })
-      },
-    ],
-    afterChange: [
-      async ({ doc, operation, req, previousDoc }) => {
-        // Custom logic after product change
-        if (
-          (operation === 'update' || operation === 'create') &&
-          doc.trackInventory &&
-          doc.trackExpiry &&
-          doc.batches
-        ) {
-          // Update the product field in all linked batches
-          const payload = req.payload
-
-          // Get all batches linked to this product
-          const batches = Array.isArray(doc.batches) ? doc.batches : [doc.batches]
-          const previousBatches = Array.isArray(previousDoc?.batches)
-            ? previousDoc.batches
-            : [previousDoc?.batches]
-
-          // Update each batch to set the product reference
-          if (doc.status === 'inactive' && operation === 'update') {
-            for (const batch of previousBatches) {
-              const batchId = typeof batch === 'string' ? batch : batch.id
-              try {
-                await payload.update({
-                  collection: 'batches',
-                  id: batchId,
-                  data: {
-                    product: null, // Clear product reference if product is inactive
-                  },
-                  req,
-                })
-              } catch (error) {
-                console.error(`Failed to clear product reference for batch ${batchId}:`, error)
-              }
-            }
-          } else {
-            for (const batch of batches) {
-              const batchId = typeof batch === 'string' ? batch : batch.id
-              try {
-                await payload.update({
-                  collection: 'batches',
-                  id: batchId,
-                  data: {
-                    product: doc.id,
-                  },
-                  req,
-                })
-              } catch (error) {
-                console.error(`Failed to update batch ${batchId}:`, error)
-              }
-            }
-          }
-        }
-      },
-    ],
+    beforeValidate: [beforeValidateHook],
+    afterChange: [afterChangeHook],
   },
 }
 
