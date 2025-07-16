@@ -37,7 +37,16 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 - **TypeScript**: Full type safety across the entire application
 - **RESTful APIs**: Well-documented APIs for integration and automation
 - **Comprehensive Testing**: Integration tests for critical business logic
-- **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
+- **Advanced CI/CD Pipeline**: 
+  - Automated testing with GitHub Actions
+  - Smart semantic versioning based on commit messages
+  - Staging deployment with automatic version bumping
+  - Production deployment with manual approval gates
+  - Automated release creation with changelog generation
+- **Deployment Pipeline**:
+  - Integration tests → Staging deploy → Version bump → Release creation → Production approval → Production deploy
+  - Vercel hosting with separate staging and production environments
+  - Git tags and GitHub releases automatically created
 
 ## 🛠️ Quick Start
 
@@ -246,14 +255,53 @@ Users (Created/Updated tracking)
 
 ## 🚀 Production Deployment
 
-### Using Docker
+### Automated CI/CD Pipeline
+
+This project features a sophisticated deployment pipeline with GitHub Actions:
+
+#### **🔄 Deployment Flow**
+1. **Integration Tests** - Comprehensive test suite with MongoDB
+2. **Staging Deployment** - Automatic deployment to Vercel staging environment
+3. **Smart Version Bumping** - Semantic versioning based on commit messages
+4. **Release Creation** - Automatic Git tags and GitHub releases with changelog
+5. **Production Approval** - Manual approval gate for production deployments
+6. **Production Deployment** - Deployment to Vercel production after approval
+
+#### **📋 Pipeline Features**
+- ✅ **Pre-commit hooks** with linting, formatting, and integration tests
+- ✅ **Smart semantic versioning** using conventional commits
+- ✅ **Automated changelogs** from commit messages
+- ✅ **Staging environment** for testing before production
+- ✅ **Manual approval gates** for production releases
+- ✅ **Separate Vercel environments** (staging/production)
+- ✅ **Git tag creation** with proper release management
+
+#### **🔐 Required Secrets**
+Set up these secrets in your GitHub repository:
+
+```env
+# Payload CMS
+PAYLOAD_SECRET=your-production-secret-key-32-chars-min
+
+# Vercel Deployment
+VERCEL_TOKEN=your-vercel-api-token
+ORG_ID=your-vercel-organization-id
+PROJECT_ID=your-vercel-project-id
+
+# GitHub (automatically provided)
+GITHUB_TOKEN=automatically-provided-by-github
+```
+
+### Manual Deployment
+
+#### Using Docker
 
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build -d
 ```
 
-### Environment Variables for Production
+#### Environment Variables for Production
 
 ```env
 NODE_ENV=production
@@ -264,8 +312,11 @@ NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
 
 ### Deployment Checklist
 
+- [ ] Set up GitHub repository secrets
+- [ ] Configure Vercel project with staging/production environments
 - [ ] Set up production MongoDB database
-- [ ] Configure environment variables
+- [ ] Configure GitHub environment protection rules
+- [ ] Test the complete CI/CD pipeline
 - [ ] Set up SSL certificates
 - [ ] Configure backup strategy
 - [ ] Set up monitoring and logging
@@ -281,16 +332,65 @@ We welcome contributions! Please follow these steps:
 3. **Make** your changes
 4. **Add** tests for new functionality
 5. **Ensure** all tests pass (`pnpm test`)
-6. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. **Commit** your changes using conventional commit format (see below)
 7. **Push** to the branch (`git push origin feature/amazing-feature`)
 8. **Open** a Pull Request
+
+### 📝 Conventional Commit Guidelines
+
+This project uses conventional commits for automatic semantic versioning. Your commit messages determine how the version number is bumped:
+
+#### **🚀 Major Version Bump** (`feat:`)
+Use for new features and breaking changes:
+```bash
+feat: add user authentication system
+feat: implement batch tracking for inventory
+feat: add multi-currency support
+```
+**Result**: `1.0.0` → `2.0.0`
+
+#### **🔧 Minor Version Bump** (`chore:`, `dependency:`, `devops:`)
+Use for maintenance, dependencies, and infrastructure:
+```bash
+chore: update dependencies to latest versions
+dependency: bump react to v19
+devops: improve CI/CD pipeline performance
+chore: refactor database connection logic
+```
+**Result**: `1.0.0` → `1.1.0`
+
+#### **🐛 Patch Version Bump** (`fix:`)
+Use for bug fixes and small improvements:
+```bash
+fix: resolve stock calculation error
+fix: correct user permission validation
+fix: handle edge case in batch expiry
+```
+**Result**: `1.0.0` → `1.0.1`
+
+#### **📚 Other Prefixes** (Patch bump)
+```bash
+docs: update API documentation
+test: add integration tests for stock movement
+style: fix code formatting issues
+refactor: improve product search performance
+```
+
+#### **⚠️ Non-Conventional Commits**
+If you don't use prefixes, the system will analyze your commit content:
+- Keywords like "breaking", "new feature" → Major bump
+- Keywords like "update", "dependency", "improve" → Minor bump  
+- Keywords like "fix", "bug", "resolve" → Patch bump
+- Default → Patch bump
 
 ### Development Guidelines
 
 - Follow TypeScript best practices
 - Add integration tests for new features
 - Update documentation for API changes
-- Use conventional commit messages
+- Use conventional commit messages for proper versioning
+- Test locally before pushing (`pnpm test`)
+- Ensure pre-commit hooks pass (includes linting and type checking)
 
 ## 🛠️ Tech Stack
 
@@ -302,7 +402,10 @@ We welcome contributions! Please follow these steps:
 - **Testing**: Vitest (Integration) + Playwright (E2E)
 - **Build Tool**: Next.js built-in tooling
 - **Package Manager**: pnpm
-- **CI/CD**: GitHub Actions
+- **CI/CD**: GitHub Actions with automated semantic versioning
+- **Deployment**: Vercel with staging/production environments
+- **Version Control**: Git with conventional commits and automated releases
+- **Pre-commit Hooks**: Husky with linting, formatting, and testing
 - **Validation**: Zod schemas
 - **Authentication**: Built-in Payload CMS auth
 
