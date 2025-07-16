@@ -116,6 +116,7 @@ export const moveStock: Endpoint = {
               toShop: toShopId,
               product: foundProduct.id,
               quantity: -quantity,
+              type: 'transfer',
             },
             req,
           })
@@ -128,6 +129,7 @@ export const moveStock: Endpoint = {
               fromShop: fromShopId,
               product: toShopProduct.docs[0].id,
               quantity,
+              type: 'transfer',
             },
             req,
           })
@@ -183,6 +185,7 @@ export const moveStock: Endpoint = {
                 product: foundProduct.id,
                 quantity: -quantity,
                 batch: String(batchId),
+                type: 'transfer',
               },
               req,
             })
@@ -196,6 +199,7 @@ export const moveStock: Endpoint = {
                 product: toShopProduct.docs[0].id,
                 quantity,
                 batch: String(foundBatchInToShopProducts.id),
+                type: 'transfer',
               },
               req,
             })

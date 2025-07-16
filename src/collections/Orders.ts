@@ -21,6 +21,9 @@ export const Orders: CollectionConfig = {
       required: true,
       admin: {
         description: 'Select the shop associated with this order.',
+        components: {
+          Field: './components/OrderItemShopField.tsx',
+        },
       },
     },
     {
@@ -172,14 +175,14 @@ export const Orders: CollectionConfig = {
                 },
               },
             },
-           {
+            {
               name: 'productMetadataAtPurchase',
               type: 'json',
               admin: {
                 description: 'The name of the product at the time of purchase.',
-                readOnly: true, 
-                condition: ()=>false
-              }
+                readOnly: true,
+                condition: () => false,
+              },
             },
             {
               name: 'serviceMetadataAtPurchase',
@@ -187,17 +190,18 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'The name of the service at the time of purchase.',
                 readOnly: true,
-                condition: ()=>false
-              }
+                condition: () => false,
+              },
             },
             {
               name: 'batchMetadataAtPurchase',
               type: 'json',
               admin: {
-                description: 'The batch number and expiry date of the product at the time of purchase.',
+                description:
+                  'The batch number and expiry date of the product at the time of purchase.',
                 readOnly: true,
-                condition: ()=>false
-              }
+                condition: () => false,
+              },
             },
           ],
         },
@@ -350,8 +354,8 @@ export const Orders: CollectionConfig = {
         description: 'Select the customer associated with this order.',
         components: {
           Field: './components/OrderItemCustomerField.tsx',
-        }
-      }
+        },
+      },
     },
     {
       name: 'customerMetadataAtPurchase',
@@ -359,18 +363,62 @@ export const Orders: CollectionConfig = {
       admin: {
         description: 'The customer details at the time of purchase.',
         readOnly: true,
-        condition: () => false, // This field is not editable in the UI 
-      }
+        condition: () => false, // This field is not editable in the UI
+      },
     },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+           for (const item of doc.items) {
+              if(item?.type == 'product'){
+                 const product = await req.payload.findByID({
+                  collection: 'products', 
+                  id: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
+                })
+                if(!product) continue;
+
+                 if(product?.trackInventory){
+                  if(item?.batch){
+                     await req.payload.create({
+                      collection: 'stock',
+                      data: {
+                        shop: doc.shop,
+                        product: product.id,
+                        type: 'sale',
+                        quantity: -Number(item.quantity),
+                        orderReference: doc.id,
+                        batch: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
+                      },
+                      req,
+                    })
+                  }else{
+                      await req.payload.create({
+                        collection: 'stock',
+                        data: {
+                          shop: doc.shop,
+                          product: product.id,
+                          type: 'sale',
+                          quantity: -Number(item.quantity),
+                          orderReference: doc.id,
+                        },
+                        req,
+                      })
+                  }
+                 }
+              }
+           }
+        }
+      }
+    ],
     beforeValidate: [
       async ({ data, req, operation, originalDoc }) => {
         if (data?.items && data?.items.length > 0) {
           if (operation === 'create') {
             for (const item of data.items) {
-              if(item?.type === 'service') {
+              if (item?.type === 'service') {
                 const service = await req.payload.findByID({
                   collection: 'services',
                   id: item.service,
@@ -379,7 +427,7 @@ export const Orders: CollectionConfig = {
                   throw new APIError('Service not found. Please select a valid service first.', 400)
                 }
                 //keep service data for history audit
-                item.serviceMetadataAtPurchase = {...service}
+                item.serviceMetadataAtPurchase = { ...service }
               }
               if (item?.type === 'product') {
                 if (!item?.product) {
@@ -390,7 +438,7 @@ export const Orders: CollectionConfig = {
                   collection: 'products',
                   where: {
                     id: {
-                      equals: item.product,
+                      equals: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
                     },
                     status: {
                       equals: 'active',
@@ -404,8 +452,7 @@ export const Orders: CollectionConfig = {
                 }
 
                 //keep product data for history audit
-                item.productMetadataAtPurchase = {...product}
-
+                item.productMetadataAtPurchase = { ...product }
 
                 if (product.trackExpiry && !item.batch) {
                   throw new APIError(
@@ -421,22 +468,13 @@ export const Orders: CollectionConfig = {
                       400,
                     )
                   } else {
-                    await req.payload.update({
-                      collection: 'products',
-                      id: product.id,
-                      data: {
-                        inventory: {
-                          quantity: Number(product.inventory.quantity) - Number(item.quantity),
-                        },
-                      },
-                    })
+                    //after change will insert stock record
                   }
                 }
 
                 if (product.trackExpiry && product.trackInventory) {
                   const foundBatch = product.batches?.find((batch: any) => batch.id === item.batch)
 
-                
                   if (!foundBatch || typeof foundBatch !== 'object') {
                     throw new APIError(
                       `Invalid batch data for product ${product.name}. Please select a valid batch.`,
@@ -444,7 +482,7 @@ export const Orders: CollectionConfig = {
                     )
                   }
                   //keep batch data for history audit
-                  item.batchMetadataAtPurchase = {...foundBatch}
+                  item.batchMetadataAtPurchase = { ...foundBatch }
 
                   if (new Date(foundBatch.expiryDate) < new Date()) {
                     throw new APIError(
@@ -459,19 +497,12 @@ export const Orders: CollectionConfig = {
                       400,
                     )
                   }
-
-                  await req.payload.update({
-                    collection: 'batches',
-                    id: item.batch,
-                    data: {
-                      quantity: Number(foundBatch.quantity) - Number(item.quantity),
-                    },
-                  })
+                  //afeter change will insert stock record
                 }
               }
             }
 
-            if(data.customer){
+            if (data.customer) {
               const customer = await req.payload.findByID({
                 collection: 'customers',
                 id: data.customer,
@@ -480,7 +511,7 @@ export const Orders: CollectionConfig = {
                 throw new APIError('Customer not found. Please select a valid customer first.', 400)
               }
               //keep customer data for history audit
-              data.customerMetadataAtPurchase = {...customer}
+              data.customerMetadataAtPurchase = { ...customer }
             }
           } else if (operation === 'update' && req) {
             const order = await req.payload.findByID({
@@ -522,7 +553,7 @@ export const Orders: CollectionConfig = {
                       collection: 'products',
                       where: {
                         id: {
-                          equals: item.product,
+                          equals: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
                         },
                         status: {
                           equals: 'active',
@@ -536,14 +567,18 @@ export const Orders: CollectionConfig = {
                     }
 
                     if (product.trackInventory && product.inventory?.quantity) {
-                      await req.payload.update({
-                        collection: 'products',
-                        id: product.id,
+                    
+
+                      await req.payload.create({
+                        collection: 'stock',
                         data: {
-                          inventory: {
-                            quantity: Number(product.inventory.quantity) + Number(item.quantity),
-                          },
+                          shop: data.shop,
+                          product: product.id,
+                          type: 'return',
+                          quantity: Number(item.quantity),
+                          orderReference: originalDoc.id,
                         },
+                        req,
                       })
                     }
 
@@ -554,12 +589,19 @@ export const Orders: CollectionConfig = {
                       if (!foundBatch || typeof foundBatch !== 'object') {
                         continue
                       }
-                      await req.payload.update({
-                        collection: 'batches',
-                        id: item.batch,
+                    
+
+                       await req.payload.create({
+                        collection: 'stock',
                         data: {
-                          quantity: Number(foundBatch.quantity) + Number(item.quantity),
+                          shop: data.shop,
+                          product: product.id,
+                          type: 'return',
+                          quantity: Number(item.quantity),
+                          orderReference: originalDoc.id,
+                          batch: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
                         },
+                        req,
                       })
                     }
                   }
@@ -568,7 +610,6 @@ export const Orders: CollectionConfig = {
             }
           }
         }
-
 
         // Automatically set createdBy to the current user
         return seteCreatedUpdatedBy({

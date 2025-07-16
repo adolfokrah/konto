@@ -33,6 +33,34 @@ const Stock: CollectionConfig = {
       },
     },
     {
+      name: 'type',
+      type: 'select',
+      options: [
+        { label: 'Transfer', value: 'transfer' },
+        { label: 'Sale', value: 'sale' },
+        { label: 'Purchase', value: 'purchase' },
+        { label: 'Adjustment', value: 'adjustment' },
+        { label: 'Return', value: 'return' },
+      ],
+      required: true,
+      defaultValue: 'purchase',
+      admin: {
+        description: 'Select the type of stock entry.',
+      },
+    },
+    {
+      name: 'orderReference',
+      type: 'relationship',
+      relationTo: 'orders',
+      required: false,
+      admin: {
+        description: 'Select the order associated with this stock entry, if applicable.',
+        condition: ({ siblingData }) => {
+          return siblingData?.type === 'purchase'
+        },
+      },
+    },
+    {
       name: 'product',
       type: 'relationship',
       relationTo: 'products',

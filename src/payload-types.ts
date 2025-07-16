@@ -370,6 +370,14 @@ export interface Stock {
    * Select the shop associated with this stock entry.
    */
   shop: string | Shop;
+  /**
+   * Select the type of stock entry.
+   */
+  type: 'transfer' | 'sale' | 'purchase' | 'adjustment' | 'return';
+  /**
+   * Select the order associated with this stock entry, if applicable.
+   */
+  orderReference?: (string | null) | Order;
   product: string | Product;
   /**
    * Select the batch associated with this stock entry. Required for products with expiry tracking.
@@ -422,83 +430,6 @@ export interface Supplier {
    * Physical address of the supplier.
    */
   address?: string | null;
-  /**
-   * The user who created this batch.
-   */
-  createdBy?: (string | null) | User;
-  /**
-   * The user who created this batch.
-   */
-  updatedBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "customers".
- */
-export interface Customer {
-  id: string;
-  /**
-   * The name of the supplier.
-   */
-  name: string;
-  contactInfo?: {
-    /**
-     * Email address of the supplier.
-     */
-    email?: string | null;
-    /**
-     * Phone number of the supplier.
-     */
-    phone?: string | null;
-  };
-  /**
-   * The user who created this batch.
-   */
-  createdBy?: (string | null) | User;
-  /**
-   * The user who created this batch.
-   */
-  updatedBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "services".
- */
-export interface Service {
-  id: string;
-  /**
-   * Select the shop associated with this service.
-   */
-  shop: string | Shop;
-  /**
-   * Select the category for this service.
-   */
-  category: string | Category;
-  name: string;
-  /**
-   * A brief description of the service.
-   */
-  description?: string | null;
-  /**
-   * Upload an image for the service.
-   */
-  image?: (string | null) | Media;
-  /**
-   * A color code for the category, e.g., #FF5733 for red.
-   */
-  color?: string | null;
-  /**
-   * The price of the service.
-   */
-  price: number;
-  /**
-   * The status of the service.
-   */
-  status?: ('active' | 'inactive') | null;
   /**
    * The user who created this batch.
    */
@@ -628,6 +559,83 @@ export interface Order {
     | number
     | boolean
     | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: string;
+  /**
+   * Select the shop associated with this service.
+   */
+  shop: string | Shop;
+  /**
+   * Select the category for this service.
+   */
+  category: string | Category;
+  name: string;
+  /**
+   * A brief description of the service.
+   */
+  description?: string | null;
+  /**
+   * Upload an image for the service.
+   */
+  image?: (string | null) | Media;
+  /**
+   * A color code for the category, e.g., #FF5733 for red.
+   */
+  color?: string | null;
+  /**
+   * The price of the service.
+   */
+  price: number;
+  /**
+   * The status of the service.
+   */
+  status?: ('active' | 'inactive') | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers".
+ */
+export interface Customer {
+  id: string;
+  /**
+   * The name of the supplier.
+   */
+  name: string;
+  contactInfo?: {
+    /**
+     * Email address of the supplier.
+     */
+    email?: string | null;
+    /**
+     * Phone number of the supplier.
+     */
+    phone?: string | null;
+  };
   /**
    * The user who created this batch.
    */
@@ -864,6 +872,8 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface StockSelect<T extends boolean = true> {
   supplier?: T;
   shop?: T;
+  type?: T;
+  orderReference?: T;
   product?: T;
   batch?: T;
   quantity?: T;

@@ -1,8 +1,5 @@
 'use client'
-
-import { fetcher } from '@/lib/utils/fetch'
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
-import useSWR from 'swr'
 
 export default function OrderItemProductField({ path, field }: { path: string; field: any }) {
   const { value: productMetadataAtPurchase } = useField({
