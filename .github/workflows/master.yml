@@ -24,7 +24,7 @@ jobs:
     env:
       NODE_ENV: test
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-      DATABASE_URI_TEST: mongodb://localhost:27017/payload-test
+      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
       NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
@@ -74,3 +74,72 @@ jobs:
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--target=staging'
           # Deploy to preview/staging (no --prod flag)
+
+  update-version:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Update package.json version
+        run: |
+          # Get current version
+          current_version=$(node -p "require('./package.json').version")
+          echo "Current version: $current_version"
+          
+          # Increment patch version
+          npm version patch --no-git-tag-version
+          
+          # Get new version
+          new_version=$(node -p "require('./package.json').version")
+          echo "New version: $new_version"
+
+      - name: Commit version update
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to $(node -p "require('./package.json').version") [skip ci]"
+          git push
+
+  approval-production:
+    needs: update-version
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: 
+      name: production
+
+    steps:
+      - name: Wait for Production Approval
+        run: echo "Production deployment approved! Proceeding to deploy..."
+
+  deploy-production:
+    needs: approval-production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--prod'
