@@ -55,7 +55,7 @@ export const syncBatchProductReferences: CollectionAfterChangeHook = async ({
             req,
           })
         } catch (error) {
-          console.error(`Failed to clear product reference for batch ${batchId}:`, error)
+          console.warn(`Failed to clear product reference for batch ${batchId}:`, error)
         }
       }
     } else {
@@ -71,7 +71,7 @@ export const syncBatchProductReferences: CollectionAfterChangeHook = async ({
             req,
           })
         } catch (error) {
-          console.error(`Failed to update batch ${batchId}:`, error)
+          console.warn(`Failed to update batch ${batchId}:`, error)
         }
       }
     }

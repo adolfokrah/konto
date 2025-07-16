@@ -11,9 +11,7 @@ afterAll(async () => {
   try {
     await mongoose.connect(uri)
     await mongoose.connection.dropDatabase()
-    console.log('✅ Dropped test MongoDB database.')
   } catch (err) {
-    console.error('❌ Failed to drop test database:', err)
     process.exit(1)
   } finally {
     await mongoose.disconnect()

@@ -37,7 +37,6 @@ export default function OrderItemUnitPriceField({ path }: { path: string }) {
       path={path}
       value={unitPrice}
       onChange={(e: any) => {
-        console.log('unit price changed', e.target.value)
         setValue(e.target.value)
       }}
       required
