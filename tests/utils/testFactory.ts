@@ -75,7 +75,11 @@ export class TestFactory {
     })
   }
 
-  async createService(shopId: string, categoryId: string, overrides: Partial<Service> = {}): Promise<Service> {
+  async createService(
+    shopId: string,
+    categoryId: string,
+    overrides: Partial<Service> = {},
+  ): Promise<Service> {
     return this.payload.create({
       collection: 'services',
       data: {
@@ -90,7 +94,12 @@ export class TestFactory {
     })
   }
 
-  async createProduct(shopId: string, categoryId: string, user: User, overrides: Partial<Product> = {}): Promise<Product> {
+  async createProduct(
+    shopId: string,
+    categoryId: string,
+    user: User,
+    overrides: Partial<Product> = {},
+  ): Promise<Product> {
     return this.payload.create({
       collection: 'products',
       data: {

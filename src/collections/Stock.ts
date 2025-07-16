@@ -56,7 +56,7 @@ const Stock: CollectionConfig = {
       admin: {
         description: 'Select the order associated with this stock entry, if applicable.',
         condition: ({ siblingData }) => {
-          return siblingData?.type === 'purchase'
+          return siblingData?.type === 'sale'
         },
       },
     },

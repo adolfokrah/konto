@@ -117,7 +117,7 @@ describe('Products Collection Integration Tests', () => {
           barcode, // Same barcode
           trackExpiry: false,
           inventory: { quantity: 100, stockAlert: 10 },
-        })
+        }),
       ).rejects.toThrow(`Barcode ${barcode} already exists.`)
     })
 
@@ -165,12 +165,17 @@ describe('Products Collection Integration Tests', () => {
       })
 
       // Should be able to create product with same barcode in different shop
-      const productInShop2 = await factory.createProduct(anotherShop.id, testCategory.id, testUser, {
-        name: 'Product in Shop 2',
-        barcode, // Same barcode, different shop
-        trackExpiry: false,
-        inventory: { quantity: 100, stockAlert: 10 },
-      })
+      const productInShop2 = await factory.createProduct(
+        anotherShop.id,
+        testCategory.id,
+        testUser,
+        {
+          name: 'Product in Shop 2',
+          barcode, // Same barcode, different shop
+          trackExpiry: false,
+          inventory: { quantity: 100, stockAlert: 10 },
+        },
+      )
 
       expect(productInShop2).toBeDefined()
       expect(
@@ -288,7 +293,7 @@ describe('Products Collection Integration Tests', () => {
             quantity: 100,
             stockAlert: 0, // Invalid stock alert
           },
-        })
+        }),
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 
@@ -301,7 +306,7 @@ describe('Products Collection Integration Tests', () => {
             quantity: 100,
             stockAlert: 0,
           },
-        })
+        }),
       ).rejects.toThrow('The following field is invalid: Inventory > Stock Alert')
     })
 

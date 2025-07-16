@@ -71,7 +71,7 @@ describe('Move Stock API Integration Tests', () => {
         }),
       ],
     })
-    
+
     testBatch = productWithExpiry.batches[0]
     testSupplier = await payload.create({
       collection: 'suppliers',
