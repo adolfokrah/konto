@@ -74,32 +74,3 @@ jobs:
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--target=staging'
           # Deploy to preview/staging (no --prod flag)
-
-  approval-production:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: 
-      name: production
-
-    steps:
-      - name: Wait for Production Approval
-        run: echo "Production deployment approved! Proceeding to deploy..."
-
-  deploy-production:
-    needs: approval-production
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel Production
-        id: deploy
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod'
