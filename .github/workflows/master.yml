@@ -117,23 +117,55 @@ jobs:
           echo "Analyzing commits for version bump type:"
           echo "$commits"
           
+          # Count conventional commits
+          feat_count=$(echo "$commits" | grep -c "^feat:" || true)
+          minor_count=$(echo "$commits" | grep -cE "^(chore:|dependency:|devops:)" || true)
+          fix_count=$(echo "$commits" | grep -c "^fix:" || true)
+          total_commits=$(echo "$commits" | wc -l | tr -d ' ')
+          conventional_commits=$((feat_count + minor_count + fix_count))
+          
+          echo "Commit analysis:"
+          echo "- feat: $feat_count"
+          echo "- chore/dependency/devops: $minor_count" 
+          echo "- fix: $fix_count"
+          echo "- total commits: $total_commits"
+          echo "- conventional commits: $conventional_commits"
+          
           # Determine version bump type based on commit messages
           bump_type="patch"  # default
           
           # Check for major version bumps (feat:)
-          if echo "$commits" | grep -q "^feat:"; then
+          if [ $feat_count -gt 0 ]; then
             bump_type="major"
             echo "Found feat: commits - using major version bump"
           # Check for minor version bumps (chore:, dependency:, devops:)
-          elif echo "$commits" | grep -qE "^(chore:|dependency:|devops:)"; then
+          elif [ $minor_count -gt 0 ]; then
             bump_type="minor"
             echo "Found chore:/dependency:/devops: commits - using minor version bump"
           # Check for patch version bumps (fix:)
-          elif echo "$commits" | grep -q "^fix:"; then
+          elif [ $fix_count -gt 0 ]; then
             bump_type="patch"
             echo "Found fix: commits - using patch version bump"
+          # Handle non-conventional commits
           else
-            echo "No conventional commits found - using default patch version bump"
+            echo "No conventional commits found ($conventional_commits/$total_commits)"
+            echo "All commits appear to be non-conventional"
+            
+            # Analyze commit content for keywords to guess intent
+            if echo "$commits" | grep -qiE "(breaking|major|new feature|add.*feature)"; then
+              bump_type="major"
+              echo "Detected major changes from commit content - using major version bump"
+            elif echo "$commits" | grep -qiE "(update|upgrade|dependency|dependencies|chore|refactor|improve)"; then
+              bump_type="minor"
+              echo "Detected minor changes from commit content - using minor version bump"
+            elif echo "$commits" | grep -qiE "(fix|bug|issue|resolve|patch)"; then
+              bump_type="patch"
+              echo "Detected fixes from commit content - using patch version bump"
+            else
+              bump_type="patch"
+              echo "Could not determine intent - defaulting to patch version bump"
+              echo "💡 Tip: Use conventional commits (feat:, fix:, chore:) for better version control"
+            fi
           fi
           
           # Increment version based on determined type
