@@ -1,4 +1,4 @@
-name: Run Integration Tests
+name: Test and Deploy
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  integration-tests:
     runs-on: ubuntu-latest
 
     services:
@@ -53,3 +53,31 @@ jobs:
           echo "Running integration tests..."
           pnpm test:int
         timeout-minutes: 10
+
+  approval:
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: 
+      name: production
+
+    steps:
+      - name: Wait for approval
+        run: echo "Deployment approved! Proceeding to deploy..."
+
+  deploy:
+    needs: approval
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          echo "Triggering Vercel deployment..."
+          response=$(curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_XvKQcdf1oAuW1Lh5JUooKnZhZDMh/I33LeZPISf")
+          echo "Deployment triggered successfully"
+          echo "Response: $response"
