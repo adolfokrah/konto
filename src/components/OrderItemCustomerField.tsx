@@ -1,20 +1,18 @@
 'use client'
 
-import { fetcher } from '@/lib/utils/fetch'
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
-import useSWR from 'swr'
 
 export default function OrderItemProductField({ path, field }: { path: string; field: any }) {
-  const { value: productMetadataAtPurchase } = useField({
-    path: path.replace('product', 'productMetadataAtPurchase'),
+  const { value: customerMetadataAtPurchase } = useField({
+    path: 'customerMetadataAtPurchase',
   })
 
-  if (productMetadataAtPurchase) {
+  if (customerMetadataAtPurchase) {
     return (
       <TextInput
         label={'Item'}
         path={path}
-        value={(productMetadataAtPurchase as any)?.name}
+        value={(customerMetadataAtPurchase as any)?.name}
         readOnly={true}
       />
     )

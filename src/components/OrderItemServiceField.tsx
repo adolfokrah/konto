@@ -1,18 +1,21 @@
 'use client'
 
-import { fetcher } from '@/lib/utils/fetch'
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
-import useSWR from 'swr'
 
 export default function OrderItemServiceField({ path, field }: { path: string; field: any }) {
-  const { value, initialValue } = useField({ path })
+  const { value: serviceMetadataAtPurchase } = useField({
+    path: path.replace('service', 'serviceMetadataAtPurchase'),
+  })
 
-  const { data, isLoading, error } = useSWR(`/api/services/${initialValue}`, fetcher)
-
-  if (isLoading) return <div>loading...</div>
-
-  if (initialValue && !data?.errors) {
-    return <TextInput label={'Item'} path={path} value={data?.name} readOnly={true} />
+  if (serviceMetadataAtPurchase) {
+    return (
+      <TextInput
+        label={'Item'}
+        path={path}
+        value={(serviceMetadataAtPurchase as any).name}
+        readOnly={true}
+      />
+    )
   }
 
   return <RelationshipField path={path} field={field} />

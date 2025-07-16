@@ -172,6 +172,33 @@ export const Orders: CollectionConfig = {
                 },
               },
             },
+           {
+              name: 'productMetadataAtPurchase',
+              type: 'json',
+              admin: {
+                description: 'The name of the product at the time of purchase.',
+                readOnly: true, 
+                condition: ()=>false
+              }
+            },
+            {
+              name: 'serviceMetadataAtPurchase',
+              type: 'json',
+              admin: {
+                description: 'The name of the service at the time of purchase.',
+                readOnly: true,
+                condition: ()=>false
+              }
+            },
+            {
+              name: 'batchMetadataAtPurchase',
+              type: 'json',
+              admin: {
+                description: 'The batch number and expiry date of the product at the time of purchase.',
+                readOnly: true,
+                condition: ()=>false
+              }
+            },
           ],
         },
       ],
@@ -319,6 +346,21 @@ export const Orders: CollectionConfig = {
       name: 'customer',
       type: 'relationship',
       relationTo: 'customers',
+      admin: {
+        description: 'Select the customer associated with this order.',
+        components: {
+          Field: './components/OrderItemCustomerField.tsx',
+        }
+      }
+    },
+    {
+      name: 'customerMetadataAtPurchase',
+      type: 'json',
+      admin: {
+        description: 'The customer details at the time of purchase.',
+        readOnly: true,
+        condition: () => false, // This field is not editable in the UI 
+      }
     },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
@@ -328,6 +370,17 @@ export const Orders: CollectionConfig = {
         if (data?.items && data?.items.length > 0) {
           if (operation === 'create') {
             for (const item of data.items) {
+              if(item?.type === 'service') {
+                const service = await req.payload.findByID({
+                  collection: 'services',
+                  id: item.service,
+                })
+                if (!service) {
+                  throw new APIError('Service not found. Please select a valid service first.', 400)
+                }
+                //keep service data for history audit
+                item.serviceMetadataAtPurchase = {...service}
+              }
               if (item?.type === 'product') {
                 if (!item?.product) {
                   throw new APIError('Product is required for order items of type "product".', 400)
@@ -349,6 +402,10 @@ export const Orders: CollectionConfig = {
                 if (!product) {
                   throw new APIError('Product not found. Please select a valid product first.', 400)
                 }
+
+                //keep product data for history audit
+                item.productMetadataAtPurchase = {...product}
+
 
                 if (product.trackExpiry && !item.batch) {
                   throw new APIError(
@@ -379,12 +436,15 @@ export const Orders: CollectionConfig = {
                 if (product.trackExpiry && product.trackInventory) {
                   const foundBatch = product.batches?.find((batch: any) => batch.id === item.batch)
 
+                
                   if (!foundBatch || typeof foundBatch !== 'object') {
                     throw new APIError(
                       `Invalid batch data for product ${product.name}. Please select a valid batch.`,
                       400,
                     )
                   }
+                  //keep batch data for history audit
+                  item.batchMetadataAtPurchase = {...foundBatch}
 
                   if (new Date(foundBatch.expiryDate) < new Date()) {
                     throw new APIError(
@@ -409,6 +469,18 @@ export const Orders: CollectionConfig = {
                   })
                 }
               }
+            }
+
+            if(data.customer){
+              const customer = await req.payload.findByID({
+                collection: 'customers',
+                id: data.customer,
+              })
+              if (!customer) {
+                throw new APIError('Customer not found. Please select a valid customer first.', 400)
+              }
+              //keep customer data for history audit
+              data.customerMetadataAtPurchase = {...customer}
             }
           } else if (operation === 'update' && req) {
             const order = await req.payload.findByID({
@@ -496,6 +568,7 @@ export const Orders: CollectionConfig = {
             }
           }
         }
+
 
         // Automatically set createdBy to the current user
         return seteCreatedUpdatedBy({

@@ -554,6 +554,42 @@ export interface Order {
          * Check if this item was returned.
          */
         isReturned?: boolean | null;
+        /**
+         * The name of the product at the time of purchase.
+         */
+        productMetadataAtPurchase?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        /**
+         * The name of the service at the time of purchase.
+         */
+        serviceMetadataAtPurchase?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        /**
+         * The batch number and expiry date of the product at the time of purchase.
+         */
+        batchMetadataAtPurchase?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -576,7 +612,22 @@ export interface Order {
    * Select the payment method for this order.
    */
   paymentMothod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
+  /**
+   * Select the customer associated with this order.
+   */
   customer?: (string | null) | Customer;
+  /**
+   * The customer details at the time of purchase.
+   */
+  customerMetadataAtPurchase?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * The user who created this batch.
    */
@@ -893,6 +944,9 @@ export interface OrdersSelect<T extends boolean = true> {
         unitPrice?: T;
         totalPrice?: T;
         isReturned?: T;
+        productMetadataAtPurchase?: T;
+        serviceMetadataAtPurchase?: T;
+        batchMetadataAtPurchase?: T;
         id?: T;
       };
   disountType?: T;
@@ -903,6 +957,7 @@ export interface OrdersSelect<T extends boolean = true> {
   fullAmountDueOn?: T;
   paymentMothod?: T;
   customer?: T;
+  customerMetadataAtPurchase?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;

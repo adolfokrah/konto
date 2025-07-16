@@ -1,6 +1,6 @@
 'use client'
 
-import { TextInput, useField, useFormFields } from '@payloadcms/ui'
+import { TextInput, useField } from '@payloadcms/ui'
 
 export default function OrderItemUnitPriceField({ path }: { path: string }) {
   const { value, initialValue, setValue } = useField({ path })
