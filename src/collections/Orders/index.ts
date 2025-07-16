@@ -1,4 +1,3 @@
-import { Order } from '@/payload-types'
 import { type CollectionConfig } from 'payload'
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { validateQuantity } from './hooks/quantity'
