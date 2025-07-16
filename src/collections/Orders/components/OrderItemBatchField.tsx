@@ -10,7 +10,7 @@ export default function OrderItemBatchField({ path, field }: { path: string; fie
     path: path.replace('batch', 'batchMetadataAtPurchase'),
   })
 
-  const { data, isLoading, error } = useSWR(`/api/products/${product?.value}`, fetcher)
+  const { data, isLoading } = useSWR(`/api/products/${product?.value}`, fetcher)
 
   if (isLoading) return <div>loading...</div>
 

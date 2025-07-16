@@ -25,7 +25,7 @@ export const Shops: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      filterOptions: (data: any) => {
+      filterOptions: () => {
         // Filter to show only users with the 'vendor' role
         return {
           role: {

@@ -1,6 +1,6 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import type { CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 
 export const Services: CollectionConfig = {
   slug: 'services',
@@ -60,7 +60,7 @@ export const Services: CollectionConfig = {
       admin: {
         description: 'A color code for the category, e.g., #FF5733 for red.',
         components: {
-          Cell: './components/ColorCell', // Assuming you have a ColorCell component for displaying colors
+          Cell: '@collectionComponents/ColorCell', // Assuming you have a ColorCell component for displaying colors
         },
         condition: (data, siblingData) => {
           return !siblingData.image

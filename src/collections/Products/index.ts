@@ -1,7 +1,7 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
-import { APIError, CollectionConfig, FilterOptions } from 'payload'
-import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { APIError, CollectionConfig } from 'payload'
+import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 
 const Products: CollectionConfig = {
   slug: 'products',
@@ -48,7 +48,7 @@ const Products: CollectionConfig = {
       admin: {
         description: 'A color code for the category, e.g., #FF5733 for red.',
         components: {
-          Cell: './components/ColorCell', // Assuming you have a ColorCell component for displaying colors
+          Cell: '@collectionComponents/ColorCell', // Assuming you have a ColorCell component for displaying colors
         },
         condition: (data, siblingData) => {
           return !siblingData.image
@@ -179,7 +179,7 @@ const Products: CollectionConfig = {
             description:
               'This field is automatically updated based on the product inventory from stock updates.',
             components: {
-              Cell: './components/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
+              Cell: '@collectionComponents/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
             },
           },
         },
@@ -256,7 +256,7 @@ const Products: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      async ({ data, req, operation, originalDoc }) => {
+      async ({ data, req, operation }) => {
         // Automatically set createdBy to the current user
 
         if (data?.status === 'inactive') {

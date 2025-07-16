@@ -1,6 +1,6 @@
 import { Order } from '@/payload-types'
 import { APIError, type CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { calculateDiscount } from '@/lib/utils/calculateDiscount'
 
@@ -22,7 +22,7 @@ export const Orders: CollectionConfig = {
       admin: {
         description: 'Select the shop associated with this order.',
         components: {
-          Field: './components/OrderItemShopField.tsx',
+          Field: '@collections/Orders/components/OrderItemShopField.tsx',
         },
       },
     },
@@ -46,7 +46,7 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'Select the type of item for this order.',
                 components: {
-                  Field: './components/OrderItemServiceTypeSelector.tsx',
+                  Field: '@collections/Orders/components/OrderItemServiceTypeSelector.tsx',
                 },
               },
             },
@@ -69,7 +69,7 @@ export const Orders: CollectionConfig = {
                 description: 'Select the service for this order item.',
                 condition: (_, siblingData) => siblingData?.type == 'service',
                 components: {
-                  Field: './components/OrderItemServiceField.tsx',
+                  Field: '@collections/Orders/components/OrderItemServiceField.tsx',
                 },
               },
             },
@@ -92,7 +92,7 @@ export const Orders: CollectionConfig = {
                 description: 'Select the product for this order item.',
                 condition: (_, siblingData) => siblingData?.type == 'product',
                 components: {
-                  Field: './components/OrderItemProductField.tsx',
+                  Field: '@collections/Orders/components/OrderItemProductField.tsx',
                 },
               },
             },
@@ -100,7 +100,7 @@ export const Orders: CollectionConfig = {
               name: 'batch',
               type: 'relationship',
               relationTo: 'batches',
-              filterOptions: ({ data, siblingData }) => {
+              filterOptions: ({ siblingData }) => {
                 return {
                   product: {
                     equals: (siblingData as any).product,
@@ -117,8 +117,8 @@ export const Orders: CollectionConfig = {
                 description:
                   'Select a batch for this product. Batches are sorted by expiry date (FIFO - First to expire first).',
                 components: {
-                  Cell: './components/BatchCell',
-                  Field: './components/OrderItemBatchField.tsx',
+                  Cell: '@collections/components/BatchCell',
+                  Field: '@collections/Orders/components/OrderItemBatchField.tsx',
                 },
                 // Note: FIFO sorting (earliest expiry first) should be implemented in the custom Field component
                 // or by modifying the Batches collection's default sort order
@@ -131,7 +131,7 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'Enter the quantity of the product ordered.',
                 components: {
-                  Field: './components/OrderItemQuantityField.tsx',
+                  Field: '@collections/Orders/components/OrderItemQuantityField.tsx',
                 },
               },
               validate: (value: number | null | undefined) => {
@@ -149,7 +149,7 @@ export const Orders: CollectionConfig = {
                 description: 'Enter the price of the product per unit.',
                 readOnly: true,
                 components: {
-                  Field: './components/OrderItemUnitPriceField.tsx',
+                  Field: '@collections/Orders/components/OrderItemUnitPriceField.tsx',
                 },
               },
             },
@@ -160,7 +160,7 @@ export const Orders: CollectionConfig = {
                 description: 'Enter the price of the product at the time of order.',
                 readOnly: true,
                 components: {
-                  Field: './components/OrderItemTotalPriceField.tsx',
+                  Field: '@collections/Orders/components/OrderItemTotalPriceField.tsx',
                 },
               },
             },
@@ -263,7 +263,7 @@ export const Orders: CollectionConfig = {
       ],
       hooks: {
         beforeChange: [
-          async ({ data, siblingData, operation }) => {
+          async ({ siblingData }) => {
             if (siblingData?.payment === 'un_paid') {
               siblingData.amountPaid = 0
             }
@@ -274,7 +274,7 @@ export const Orders: CollectionConfig = {
                   ?.filter((item) => !item?.isReturned)
                   .map((item) => item.quantity * item.unitPrice) || []
 
-              let totalAmount = items.reduce((acc, item) => acc + item, 0)
+              const totalAmount = items.reduce((acc, item) => acc + item, 0)
 
               siblingData.amountPaid =
                 totalAmount -
@@ -296,7 +296,7 @@ export const Orders: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          async ({ data, siblingData, operation }) => {
+          async ({ siblingData }) => {
             const orederItems = siblingData?.items as Order['items']
             const items =
               orederItems
@@ -353,7 +353,7 @@ export const Orders: CollectionConfig = {
       admin: {
         description: 'Select the customer associated with this order.',
         components: {
-          Field: './components/OrderItemCustomerField.tsx',
+          Field: '@collections/Orders/components/OrderItemCustomerField.tsx',
         },
       },
     },

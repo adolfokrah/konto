@@ -1,7 +1,7 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { type CollectionConfig, APIError } from 'payload'
-import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 
 const Stock: CollectionConfig = {
   slug: 'stock',
@@ -67,7 +67,7 @@ const Stock: CollectionConfig = {
       relationTo: 'products',
       required: true,
       hasMany: false,
-      filterOptions: ({ id, siblingData }) => {
+      filterOptions: ({  siblingData }) => {
         const filters: Record<any, any> = {
           trackInventory: {
             equals: true,
@@ -86,8 +86,8 @@ const Stock: CollectionConfig = {
         description:
           'Select the batch associated with this stock entry. Required for products with expiry tracking.',
         components: {
-          Field: './components/BatchField',
-          Cell: './components/BatchCell', // Assuming you have a PriceCell component for displaying batch prices
+          Field: '@collectionComponents/BatchField',
+          Cell: '@collectionComponents/BatchCell', // Assuming you have a PriceCell component for displaying batch prices
         },
       },
     },
@@ -98,7 +98,7 @@ const Stock: CollectionConfig = {
       admin: {
         description: 'This will update product inventory and batch quantities automatically.',
         components: {
-          Cell: './components/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
+          Cell: '@collectionComponents/QuantityCell', // Assuming you have a QuantityCell component for displaying quantities
         },
       },
     },
@@ -152,7 +152,7 @@ const Stock: CollectionConfig = {
       },
     ],
     afterChange: [
-      async ({ doc, operation, req }) => {
+      async ({ doc, req }) => {
         // Automatically update product inventory and batch quantities
         if ((doc?.product || doc?.batch) && req?.payload) {
           try {

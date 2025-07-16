@@ -1,9 +1,9 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { CollectionConfig } from 'payload'
-import { seteCreatedUpdatedBy } from './hooks/set_created_updated_by'
+import { seteCreatedUpdatedBy } from '@collectionHooks/set_created_updated_by'
 
-const Customers: CollectionConfig = {
-  slug: 'customers',
+const Suppliers: CollectionConfig = {
+  slug: 'suppliers',
   admin: {
     useAsTitle: 'name',
   },
@@ -32,12 +32,20 @@ const Customers: CollectionConfig = {
         {
           name: 'phone',
           type: 'text',
-          required: false,
+          required: true,
           admin: {
             description: 'Phone number of the supplier.',
           },
         },
       ],
+    },
+    {
+      name: 'address',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'Physical address of the supplier.',
+      },
     },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
@@ -54,4 +62,4 @@ const Customers: CollectionConfig = {
     ],
   },
 }
-export default Customers
+export default Suppliers

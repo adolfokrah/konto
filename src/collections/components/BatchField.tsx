@@ -19,7 +19,7 @@ export default function BatchField({ path }: { path: string }) {
 
   useEffect(() => {
     setValue(null)
-  }, [product])
+  }, [product, setValue])
 
   if (isLoading) return <div>loading....</div>
 

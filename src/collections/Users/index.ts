@@ -1,4 +1,3 @@
-import { PHONE_NUMBER_COUNTRY_CODES } from '@/constants/users'
 import type { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {

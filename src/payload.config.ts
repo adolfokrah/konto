@@ -1,4 +1,3 @@
-// storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -7,18 +6,19 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
-import { Shops } from './collections/Shops'
-import { Batches } from './collections/Batches'
-import Products from './collections/Products'
-import Categories from './collections/Categories'
-import Stock from './collections/Stock'
-import Suppliers from './collections/Suppliers'
-import { moveStock } from './endpoints/moveStock'
-import { Services } from './collections/Services'
-import Customers from './collections/Customer'
-import { Orders } from './collections/Orders'
+import { Users } from '@collections/Users'
+import { Media } from '@collections/Media'
+import { Shops } from '@collections/Shops'
+import { Batches } from '@collections/Batches'
+import Products from '@collections/Products'
+import Categories from '@collections/Categories'
+import Stock from '@collections/Stocks'
+import Suppliers from '@collections/Suppliers'
+import { Services } from '@collections/Services'
+import Customers from '@collections/Customers'
+import { Orders } from '@collections/Orders'
+import { moveStock } from '@/endpoints/moveStock'
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -56,7 +56,6 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
   ],
   endpoints: [moveStock],
 })

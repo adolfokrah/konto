@@ -1,7 +1,7 @@
 'use client'
 
 import { fetcher } from '@/lib/utils/fetch'
-import { TextInput, useField, useFormFields } from '@payloadcms/ui'
+import { TextInput, useField } from '@payloadcms/ui'
 import { useEffect } from 'react'
 import useSWR from 'swr'
 
@@ -11,7 +11,7 @@ export default function OrderItemUnitPriceField({ path }: { path: string }) {
   const type = useField({ path: path.replace('unitPrice', 'type') })
   const service = useField({ path: path.replace('unitPrice', 'service') })
 
-  const { data, isLoading, error } = useSWR(
+  const { data, isLoading } = useSWR(
     type?.value == 'service'
       ? `/api/services/${service?.value}`
       : `/api/products/${product?.value}`,
