@@ -1,7 +1,16 @@
-import { type CollectionBeforeValidateHook, type CollectionAfterChangeHook, APIError } from 'payload'
-import { seteCreatedUpdatedBy } from '@/collections/hooks/set_created_updated_by'
+import {
+  type CollectionBeforeValidateHook,
+  type CollectionAfterChangeHook,
+  APIError,
+} from 'payload'
+import { seteCreatedUpdatedBy } from '@/lib/utils/set_created_updated_by'
 
-export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateHook = async ({ data, req, operation, originalDoc }) => {
+export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateHook = async ({
+  data,
+  req,
+  operation,
+  originalDoc,
+}) => {
   if (data?.items && data?.items.length > 0) {
     if (operation === 'create') {
       for (const item of data.items) {
@@ -25,7 +34,10 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
             collection: 'products',
             where: {
               id: {
-                equals: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
+                equals:
+                  typeof item.product === 'string'
+                    ? item.product
+                    : item.product?.id || item.product,
               },
               status: {
                 equals: 'active',
@@ -117,9 +129,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
 
       for (const item of data.items) {
         if (item?.type === 'product') {
-          const foundPreviousItem = previousItems.find(
-            (prevItem: any) => prevItem.id === item.id,
-          )
+          const foundPreviousItem = previousItems.find((prevItem: any) => prevItem.id === item.id)
 
           if (operation === 'update' && !item.isReturned) {
             if (foundPreviousItem?.isReturned) {
@@ -140,7 +150,10 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
                 collection: 'products',
                 where: {
                   id: {
-                    equals: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
+                    equals:
+                      typeof item.product === 'string'
+                        ? item.product
+                        : item.product?.id || item.product,
                   },
                   status: {
                     equals: 'active',
@@ -154,8 +167,6 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
               }
 
               if (product.trackInventory && product.inventory?.quantity) {
-              
-
                 await req.payload.create({
                   collection: 'stock',
                   data: {
@@ -170,15 +181,12 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
               }
 
               if (product.trackExpiry && product.trackInventory) {
-                const foundBatch = product.batches?.find(
-                  (batch: any) => batch.id === item.batch,
-                )
+                const foundBatch = product.batches?.find((batch: any) => batch.id === item.batch)
                 if (!foundBatch || typeof foundBatch !== 'object') {
                   continue
                 }
-              
 
-                 await req.payload.create({
+                await req.payload.create({
                   collection: 'stock',
                   data: {
                     shop: data.shop,
@@ -186,7 +194,8 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
                     type: 'return',
                     quantity: Number(item.quantity),
                     orderReference: originalDoc.id,
-                    batch: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
+                    batch:
+                      typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
                   },
                   req,
                 })
@@ -206,45 +215,49 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
   })
 }
 
-export const createStockRecordsForSales: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
+export const createStockRecordsForSales: CollectionAfterChangeHook = async ({
+  doc,
+  operation,
+  req,
+}) => {
   if (operation === 'create') {
-     for (const item of doc.items) {
-        if(item?.type == 'product'){
-           const product = await req.payload.findByID({
-            collection: 'products', 
-            id: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
-          })
-          if(!product) continue;
+    for (const item of doc.items) {
+      if (item?.type == 'product') {
+        const product = await req.payload.findByID({
+          collection: 'products',
+          id: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
+        })
+        if (!product) continue
 
-           if(product?.trackInventory){
-            if(item?.batch){
-               await req.payload.create({
-                collection: 'stock',
-                data: {
-                  shop: doc.shop,
-                  product: product.id,
-                  type: 'sale',
-                  quantity: -Number(item.quantity),
-                  orderReference: doc.id,
-                  batch: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
-                },
-                req,
-              })
-            }else{
-                await req.payload.create({
-                  collection: 'stock',
-                  data: {
-                    shop: doc.shop,
-                    product: product.id,
-                    type: 'sale',
-                    quantity: -Number(item.quantity),
-                    orderReference: doc.id,
-                  },
-                  req,
-                })
-            }
-           }
+        if (product?.trackInventory) {
+          if (item?.batch) {
+            await req.payload.create({
+              collection: 'stock',
+              data: {
+                shop: doc.shop,
+                product: product.id,
+                type: 'sale',
+                quantity: -Number(item.quantity),
+                orderReference: doc.id,
+                batch: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
+              },
+              req,
+            })
+          } else {
+            await req.payload.create({
+              collection: 'stock',
+              data: {
+                shop: doc.shop,
+                product: product.id,
+                type: 'sale',
+                quantity: -Number(item.quantity),
+                orderReference: doc.id,
+              },
+              req,
+            })
+          }
         }
-     }
+      }
+    }
   }
 }

@@ -80,6 +80,7 @@ A comprehensive inventory management system built with Payload CMS and Next.js, 
 4. **Set up MongoDB Database**
 
    **Option A: MongoDB Atlas (Recommended)**
+
    - Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
    - Create a new cluster
    - Get your connection string and update `MONGODB_URI` in `.env`

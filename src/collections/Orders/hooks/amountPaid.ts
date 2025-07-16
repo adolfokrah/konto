@@ -15,10 +15,7 @@ export const validateAmountPaid: FieldHook = async ({ siblingData }) => {
     calculateDiscount(siblingData?.discount || 0, siblingData?.disountType, totalAmount)
 
   if (siblingData.amountPaid > totalAmount) {
-    throw new APIError(
-      `Amount paid cannot be greater than order amount of ${totalAmount}`,
-      400,
-    )
+    throw new APIError(`Amount paid cannot be greater than order amount of ${totalAmount}`, 400)
   } else if (siblingData.amountPaid == totalAmount) {
     siblingData.payment = 'paid'
   }

@@ -1,7 +1,10 @@
 // collections/Products.ts
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 import { type CollectionConfig } from 'payload'
-import { validateProductBatchAndSetCreatedUpdatedBy, updateInventoryAndBatchQuantities } from './hooks'
+import {
+  validateProductBatchAndSetCreatedUpdatedBy,
+  updateInventoryAndBatchQuantities,
+} from './hooks'
 
 const Stock: CollectionConfig = {
   slug: 'stock',
@@ -67,7 +70,7 @@ const Stock: CollectionConfig = {
       relationTo: 'products',
       required: true,
       hasMany: false,
-      filterOptions: ({  siblingData }) => {
+      filterOptions: ({ siblingData }) => {
         const filters: Record<any, any> = {
           trackInventory: {
             equals: true,

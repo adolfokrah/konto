@@ -1,7 +1,11 @@
 import { type CollectionBeforeValidateHook, type CollectionAfterChangeHook } from 'payload'
-import { seteCreatedUpdatedBy } from '@/collections/hooks/set_created_updated_by'
+import { seteCreatedUpdatedBy } from '@/lib/utils/set_created_updated_by'
 
-export const setCreatedUpdatedByAndClearBatchesWhenInactive: CollectionBeforeValidateHook = async ({ data, req, operation }) => {
+export const setCreatedUpdatedByAndClearBatchesWhenInactive: CollectionBeforeValidateHook = async ({
+  data,
+  req,
+  operation,
+}) => {
   // Automatically set createdBy to the current user
 
   if (data?.status === 'inactive') {
@@ -15,7 +19,12 @@ export const setCreatedUpdatedByAndClearBatchesWhenInactive: CollectionBeforeVal
   })
 }
 
-export const syncBatchProductReferences: CollectionAfterChangeHook = async ({ doc, operation, req, previousDoc }) => {
+export const syncBatchProductReferences: CollectionAfterChangeHook = async ({
+  doc,
+  operation,
+  req,
+  previousDoc,
+}) => {
   // Custom logic after product change
   if (
     (operation === 'update' || operation === 'create') &&

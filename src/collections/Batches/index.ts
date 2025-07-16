@@ -3,7 +3,10 @@ import { type CollectionConfig } from 'payload'
 import { validateUniqueBatchNumber } from './hooks/batchNumber'
 import { validateExpiryDate } from './hooks/expiryDate'
 import { validateStockAlert } from './hooks/stockAlert'
-import { setCreatedUpdatedByAndResetProductWhenInactive, clearProductReferenceWhenInactive } from './hooks/index'
+import {
+  setCreatedUpdatedByAndResetProductWhenInactive,
+  clearProductReferenceWhenInactive,
+} from './hooks/index'
 
 export const Batches: CollectionConfig = {
   slug: 'batches',

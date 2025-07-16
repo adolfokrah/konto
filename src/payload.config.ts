@@ -19,7 +19,6 @@ import Customers from '@collections/Customers'
 import { Orders } from '@collections/Orders'
 import { moveStock } from '@/endpoints/moveStock'
 
-
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -54,8 +53,6 @@ export default buildConfig({
     url: dbUrl || '',
   }),
   sharp,
-  plugins: [
-    payloadCloudPlugin(),
-  ],
+  plugins: [payloadCloudPlugin()],
   endpoints: [moveStock],
 })
