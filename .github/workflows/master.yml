@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  integration-tests:
+  test:
     runs-on: ubuntu-latest
 
     services:
@@ -54,21 +54,13 @@ jobs:
           pnpm test:int
         timeout-minutes: 10
 
-  approval:
-    needs: integration-tests
+  deploy:
+    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: 
       name: production
-
-    steps:
-      - name: Wait for approval
-        run: echo "Deployment approved! Proceeding to deploy..."
-
-  deploy:
-    needs: approval
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -76,8 +68,9 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy
-        run: |
-          echo "Triggering Vercel deployment..."
-          response=$(curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_XvKQcdf1oAuW1Lh5JUooKnZhZDMh/I33LeZPISf")
-          echo "Deployment triggered successfully"
-          echo "Response: $response"
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--prod'
