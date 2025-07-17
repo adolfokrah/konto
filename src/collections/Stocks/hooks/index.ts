@@ -47,26 +47,25 @@ export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = asyn
       })
 
       let quantity = 0
-
       if (doc?.batch) {
         // Update batch quantity
         const foundBatch = await req.payload.findByID({
           collection: 'batches',
-          id: doc.batch,
+          id: typeof doc.batch == 'object' ? doc.batch.id : doc.batch,
         })
 
-        quantity = doc.quantity + foundBatch?.quantity || 0
+        quantity = doc.quantity + (foundBatch?.quantity || 0)
 
         await req.payload.update({
           collection: 'batches',
-          id: doc.batch,
+          id: typeof doc.batch == 'object' ? doc.batch.id : doc.batch,
           data: {
             quantity,
           },
           req,
         })
       } else {
-        quantity = doc.quantity + foundProduct?.inventory?.quantity || 0
+        quantity = doc.quantity + (foundProduct?.inventory?.quantity || 0)
         // Update product inventory
         await req.payload.update({
           collection: 'products',

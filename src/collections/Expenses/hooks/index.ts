@@ -85,9 +85,8 @@ export const setProductAndBatchMetadata: CollectionBeforeValidateHook = async ({
           item.batchMetadataAtPurchase = null
         }
       } catch (error) {
-        console.error('Error fetching product:', error)
         // If product is not found, throw our custom error message
-        throw new APIError('Product not found', 404)
+        throw new APIError('Product not found ' + error, 404)
       }
     }
   }

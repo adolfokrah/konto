@@ -15,8 +15,8 @@ const Stock: CollectionConfig = {
   },
   access: {
     read: () => true,
-    update: () => false, // Allow updates to stock
-    delete: () => false, // Prevent deletion of stock entries
+    update: () => false,
+    delete: () => false,
   },
   fields: [
     {
@@ -123,7 +123,8 @@ const Stock: CollectionConfig = {
       type: 'number',
       required: false,
       admin: {
-        description: 'This field is automatically updated with the new quantity after stock entry.',
+        description:
+          'This field is automatically calculated with the new quantity after stock entry.',
         readOnly: true,
       },
     },

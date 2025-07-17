@@ -394,7 +394,7 @@ export interface Stock {
    */
   quantity: number;
   /**
-   * This field is automatically updated with the new quantity after stock entry.
+   * This field is automatically calculated with the new quantity after stock entry.
    */
   newQuantity?: number | null;
   /**

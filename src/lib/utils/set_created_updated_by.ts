@@ -10,12 +10,16 @@ export const seteCreatedUpdatedBy = ({
   if (operation === 'create' && userId) {
     return {
       ...data,
-      createdBy: userId ? userId : null,
+      createdBy: userId,
+      updatedBy: userId, // Set updatedBy for create as well
     }
   } else if (operation === 'update' && userId) {
     return {
       ...data,
-      updatedBy: userId ? userId : null,
+      updatedBy: userId,
     }
   }
+
+  // Return data unchanged if no userId or conditions not met
+  return data
 }
