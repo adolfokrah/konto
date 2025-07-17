@@ -5,7 +5,7 @@ import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
 
 import useSWR from 'swr'
 
-export default function OrderItemBatchField({ path, field }: { path: string; field: any }) {
+export default function ItemBatchField({ path, field }: { path: string; field: any }) {
   const product = useField({ path: path.replace('batch', 'product') })
   const { value: batchMetadataAtPurchase } = useField({
     path: path.replace('batch', 'batchMetadataAtPurchase'),

@@ -82,6 +82,7 @@ describe('Move Stock API Integration Tests', () => {
           email: 'test@supplier.com',
           phone: '+233123456789',
         },
+        shop: fromShop.id,
       },
     })
   })

@@ -59,7 +59,7 @@ jobs:
     needs: update-version
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: 
+    environment:
       name: staging
 
     steps:
@@ -102,10 +102,10 @@ jobs:
           # Get current version
           current_version=$(node -p "require('./package.json').version")
           echo "Current version: $current_version"
-          
+
           # Get latest release tag to determine commits since last release
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
+
           if [ -n "$latest_tag" ]; then
             # Get commits since last tag
             commits=$(git log $latest_tag..HEAD --pretty=format:"%s" --no-merges)
@@ -113,27 +113,27 @@ jobs:
             # If no previous tag, get last 10 commits
             commits=$(git log --pretty=format:"%s" --no-merges -10)
           fi
-          
+
           echo "Analyzing commits for version bump type:"
           echo "$commits"
-          
+
           # Count conventional commits
           feat_count=$(echo "$commits" | grep -c "^feat:" || true)
           minor_count=$(echo "$commits" | grep -cE "^(chore:|dependency:|devops:)" || true)
           fix_count=$(echo "$commits" | grep -c "^fix:" || true)
           total_commits=$(echo "$commits" | wc -l | tr -d ' ')
           conventional_commits=$((feat_count + minor_count + fix_count))
-          
+
           echo "Commit analysis:"
           echo "- feat: $feat_count"
           echo "- chore/dependency/devops: $minor_count" 
           echo "- fix: $fix_count"
           echo "- total commits: $total_commits"
           echo "- conventional commits: $conventional_commits"
-          
+
           # Determine version bump type based on commit messages
           bump_type="patch"  # default
-          
+
           # Check for major version bumps (feat:)
           if [ $feat_count -gt 0 ]; then
             bump_type="major"
@@ -167,10 +167,10 @@ jobs:
               echo "💡 Tip: Use conventional commits (feat:, fix:, chore:) for better version control"
             fi
           fi
-          
+
           # Increment version based on determined type
           npm version $bump_type --no-git-tag-version
-          
+
           # Get new version
           new_version=$(node -p "require('./package.json').version")
           echo "New version: $new_version (bump type: $bump_type)"
@@ -205,7 +205,7 @@ jobs:
             # If no previous tag, get last 10 commits
             commits=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
           fi
-          
+
           # Handle multiline output for GitHub Actions
           {
             echo 'commits<<EOF'
@@ -222,17 +222,17 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: "Release ${{ steps.version.outputs.tag }}"
+          name: 'Release ${{ steps.version.outputs.tag }}'
           body: |
             ## What's Changed
             ${{ steps.commits.outputs.commits }}
-            
+
             ## Deployment
             - ✅ Integration tests passed
             - ✅ Version bumped to ${{ steps.version.outputs.tag }}
             - ⏳ Staging deployment in progress
             - ⏳ Production deployment pending approval
-            
+
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest-tag.outputs.latest_tag }}...${{ steps.version.outputs.tag }}
           draft: false
           prerelease: false
@@ -242,7 +242,7 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: 
+    environment:
       name: production
 
     steps:

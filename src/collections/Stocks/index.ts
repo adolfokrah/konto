@@ -66,6 +66,18 @@ const Stock: CollectionConfig = {
       },
     },
     {
+      name: 'expenseReference',
+      type: 'relationship',
+      relationTo: 'expenses',
+      required: false,
+      admin: {
+        description: 'Select the order associated with this stock entry, if applicable.',
+        condition: ({ type }) => {
+          return type === 'purchase'
+        },
+      },
+    },
+    {
       name: 'product',
       type: 'relationship',
       relationTo: 'products',

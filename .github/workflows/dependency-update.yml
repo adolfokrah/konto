@@ -13,10 +13,10 @@ on:
         default: 'all'
         type: choice
         options:
-        - 'all'
-        - 'patch'
-        - 'minor'
-        - 'major'
+          - 'all'
+          - 'patch'
+          - 'minor'
+          - 'major'
 
 permissions:
   contents: write
@@ -29,7 +29,6 @@ jobs:
       has-updates: ${{ steps.check.outputs.has-updates }}
       update-type: ${{ steps.check.outputs.update-type }}
 
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,11 +46,11 @@ jobs:
         id: check
         run: |
           echo "Checking for outdated dependencies..."
-          
+
           # Get outdated packages
           outdated_output=$(pnpm outdated --format json 2>/dev/null || echo '{}')
           echo "Outdated packages: $outdated_output"
-          
+
           # Check if there are any updates
           if [ "$outdated_output" = "{}" ] || [ -z "$outdated_output" ]; then
             echo "No outdated dependencies found"
@@ -59,9 +58,9 @@ jobs:
             echo "update-type=none" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "has-updates=true" >> $GITHUB_OUTPUT
-          
+
           # Analyze update types (simplified check)
           if echo "$outdated_output" | grep -q "major"; then
             echo "update-type=major" >> $GITHUB_OUTPUT
@@ -93,10 +92,10 @@ jobs:
           --health-retries 5
 
     env:
-        NODE_ENV: test
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
-        NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+      NODE_ENV: test
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
       - name: Checkout code
@@ -122,15 +121,15 @@ jobs:
         id: update
         run: |
           echo "Updating patch-level dependencies..."
-          
+
           # Create branch
           branch_name="dependency/patch-updates-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$branch_name"
           echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
-          
+
           # Update all patch-level dependencies
           pnpm update --latest --save-exact
-          
+
           # Check if there are changes
           if git diff --quiet package.json pnpm-lock.yaml; then
             echo "No changes to commit"
@@ -156,7 +155,7 @@ jobs:
           gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
           gh label create "patch-update" --description "Patch-level dependency updates" --color "28a745" --force || true
           gh label create "auto-merge" --description "PRs that will be automatically merged" --color "fbca04" --force || true
-          
+
           # Create PR
           gh pr create \
             --title "🔧 Automated patch dependency updates" \
@@ -210,10 +209,10 @@ jobs:
           --health-retries 5
 
     env:
-        NODE_ENV: test
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
-        NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+      NODE_ENV: test
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
       - name: Checkout code
@@ -240,35 +239,35 @@ jobs:
         run: |
           update_type="${{ needs.check-dependencies.outputs.update-type }}"
           echo "Updating $update_type dependencies..."
-          
+
           # Create branch
           branch_name="dependency/${update_type}-updates-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$branch_name"
           echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
           echo "update-type=$update_type" >> $GITHUB_OUTPUT
-          
+
           # Update dependencies
           pnpm update --latest
-          
+
           # Check if there are changes
           if git diff --quiet package.json pnpm-lock.yaml; then
             echo "changes-made=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "changes-made=true" >> $GITHUB_OUTPUT
-          
+
           # Install and test
           pnpm install --frozen-lockfile
           pnpm generate:types
-          
+
           # Test (don't fail if tests break)
           if pnpm test:int; then
             echo "tests-passing=true" >> $GITHUB_OUTPUT
           else
             echo "tests-passing=false" >> $GITHUB_OUTPUT
           fi
-          
+
           # Commit and push
           git add package.json pnpm-lock.yaml
           git commit -m "dependency: update $update_type dependencies
@@ -284,7 +283,7 @@ jobs:
           gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
           gh label create "${{ steps.update.outputs.update-type }}-update" --description "${{ steps.update.outputs.update-type }}-level dependency updates" --color "d73a49" --force || true
           gh label create "review-required" --description "PRs that require manual review" --color "e99695" --force || true
-          
+
           # Create PR
           gh pr create \
             --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)" \
@@ -329,7 +328,7 @@ jobs:
     needs: [check-dependencies, update-patch-dependencies, update-major-minor-dependencies]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: Workflow Summary
         run: |

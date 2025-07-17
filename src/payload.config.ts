@@ -2,6 +2,7 @@ import { moveStock } from '@/endpoints/moveStock'
 import { Batches } from '@collections/Batches'
 import Categories from '@collections/Categories'
 import Customers from '@collections/Customers'
+import Expenses from '@collections/Expenses'
 import { Media } from '@collections/Media'
 import { Orders } from '@collections/Orders'
 import Products from '@collections/Products'
@@ -41,6 +42,7 @@ export default buildConfig({
     Stock,
     Suppliers,
     Customers,
+    Expenses,
     Services,
     Orders,
   ],

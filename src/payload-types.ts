@@ -76,6 +76,7 @@ export interface Config {
     stock: Stock;
     suppliers: Supplier;
     customers: Customer;
+    expenses: Expense;
     services: Service;
     orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
@@ -93,6 +94,7 @@ export interface Config {
     stock: StockSelect<false> | StockSelect<true>;
     suppliers: SuppliersSelect<false> | SuppliersSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    expenses: ExpensesSelect<false> | ExpensesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -378,6 +380,10 @@ export interface Stock {
    * Select the order associated with this stock entry, if applicable.
    */
   orderReference?: (string | null) | Order;
+  /**
+   * Select the order associated with this stock entry, if applicable.
+   */
+  expenseReference?: (string | null) | Expense;
   product: string | Product;
   /**
    * Select the batch associated with this stock entry. Required for products with expiry tracking.
@@ -431,6 +437,11 @@ export interface Supplier {
    */
   address?: string | null;
   /**
+   * Select the shop associated with this supplier.
+   */
+  shop: string | Shop;
+  status?: ('active' | 'inactive') | null;
+  /**
    * The user who created this batch.
    */
   createdBy?: (string | null) | User;
@@ -451,6 +462,10 @@ export interface Order {
    * Select the shop associated with this order.
    */
   shop: string | Shop;
+  /**
+   * Enter the date when the order was placed.
+   */
+  date: string;
   items?:
     | {
         /**
@@ -542,7 +557,7 @@ export interface Order {
   /**
    * Select the payment method for this order.
    */
-  paymentMothod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
+  paymentMethod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
   /**
    * Select the customer associated with this order.
    */
@@ -637,6 +652,125 @@ export interface Customer {
     phone?: string | null;
   };
   /**
+   * Select the shop associated with this customer.
+   */
+  shop: string | Shop;
+  status?: ('active' | 'inactive') | null;
+  /**
+   * The user who created this batch.
+   */
+  createdBy?: (string | null) | User;
+  /**
+   * The user who created this batch.
+   */
+  updatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expenses".
+ */
+export interface Expense {
+  id: string;
+  /**
+   * Date when the expense was incurred.
+   */
+  date: string;
+  /**
+   * Shop where the expense was incurred.
+   */
+  shop: string | Shop;
+  /**
+   * Brief description of the expense.
+   */
+  description: string;
+  /**
+   * Type of the expense.
+   */
+  type: 'office-supplies' | 'utilities' | 'marketing' | 'travel' | 'equipment' | 'maintenance' | 'inventory' | 'other';
+  /**
+   * List of items associated with the expense.
+   */
+  items?:
+    | {
+        /**
+         * Select the product for this order item.
+         */
+        product: string | Product;
+        /**
+         * Select a batch for this product. Batches are sorted by expiry date (FIFO - First to expire first).
+         */
+        batch?: (string | null) | Batch;
+        /**
+         * Enter the quantity of the product ordered.
+         */
+        quantity: number;
+        /**
+         * Enter the price of the product at the time of order.
+         */
+        cost: number;
+        /**
+         * Select the supplier for this product.
+         */
+        supplier?: (string | null) | Supplier;
+        /**
+         * The name of the product at the time of purchase.
+         */
+        productMetadataAtPurchase?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        /**
+         * The batch number and expiry date of the product at the time of purchase.
+         */
+        batchMetadataAtPurchase?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Update stock levels for the purchased items.
+   */
+  updateStock?: boolean | null;
+  /**
+   * Amount spent.
+   */
+  amount?: number | null;
+  payment: 'paid' | 'partial' | 'un_paid';
+  /**
+   * Enter the amount paid for this order.
+   */
+  amountPaid?: number | null;
+  /**
+   * Enter the date when the full amount is due.
+   */
+  fullAmountDueOn?: string | null;
+  /**
+   * Select the payment method for this order.
+   */
+  paymentMethod?: ('cash' | 'card' | 'mobile-money' | 'bank-transfer') | null;
+  /**
+   * Upload receipt or supporting document.
+   */
+  receipt?: (string | null) | Media;
+  /**
+   * Additional notes about the expense.
+   */
+  notes?: string | null;
+  /**
    * The user who created this batch.
    */
   createdBy?: (string | null) | User;
@@ -689,6 +823,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: string | Customer;
+      } | null)
+    | ({
+        relationTo: 'expenses';
+        value: string | Expense;
       } | null)
     | ({
         relationTo: 'services';
@@ -874,6 +1012,7 @@ export interface StockSelect<T extends boolean = true> {
   shop?: T;
   type?: T;
   orderReference?: T;
+  expenseReference?: T;
   product?: T;
   batch?: T;
   quantity?: T;
@@ -897,6 +1036,8 @@ export interface SuppliersSelect<T extends boolean = true> {
         phone?: T;
       };
   address?: T;
+  shop?: T;
+  status?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -914,6 +1055,42 @@ export interface CustomersSelect<T extends boolean = true> {
         email?: T;
         phone?: T;
       };
+  shop?: T;
+  status?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expenses_select".
+ */
+export interface ExpensesSelect<T extends boolean = true> {
+  date?: T;
+  shop?: T;
+  description?: T;
+  type?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        batch?: T;
+        quantity?: T;
+        cost?: T;
+        supplier?: T;
+        productMetadataAtPurchase?: T;
+        batchMetadataAtPurchase?: T;
+        id?: T;
+      };
+  updateStock?: T;
+  amount?: T;
+  payment?: T;
+  amountPaid?: T;
+  fullAmountDueOn?: T;
+  paymentMethod?: T;
+  receipt?: T;
+  notes?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -943,6 +1120,7 @@ export interface ServicesSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   shop?: T;
+  date?: T;
   items?:
     | T
     | {
@@ -965,7 +1143,7 @@ export interface OrdersSelect<T extends boolean = true> {
   payment?: T;
   amountPaid?: T;
   fullAmountDueOn?: T;
-  paymentMothod?: T;
+  paymentMethod?: T;
   customer?: T;
   customerMetadataAtPurchase?: T;
   createdBy?: T;

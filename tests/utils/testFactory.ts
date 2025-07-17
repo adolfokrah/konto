@@ -48,10 +48,11 @@ export class TestFactory {
     })
   }
 
-  async createCustomer(overrides: Partial<Customer> = {}): Promise<Customer> {
+  async createCustomer(shopId: string, overrides: Partial<Customer> = {}): Promise<Customer> {
     return this.payload.create({
       collection: 'customers',
       data: {
+        shop: shopId,
         name: `Test Customer ${uuidv4().slice(0, 8)}`,
         contactInfo: {
           email: `customer-${uuidv4().slice(0, 8)}@test.com`,
@@ -62,10 +63,11 @@ export class TestFactory {
     })
   }
 
-  async createSupplier(overrides: Partial<Supplier> = {}): Promise<Supplier> {
+  async createSupplier(shopId: string, overrides: Partial<Supplier> = {}): Promise<Supplier> {
     return this.payload.create({
       collection: 'suppliers',
       data: {
+        shop: shopId,
         name: `Test Supplier ${uuidv4().slice(0, 8)}`,
         contactInfo: {
           email: `supplier-${uuidv4().slice(0, 8)}@test.com`,
@@ -153,8 +155,8 @@ export class TestFactory {
     const user = await this.createUser()
     const shop = await this.createShop(user.id)
     const category = await this.createCategory()
-    const customer = await this.createCustomer()
-    const supplier = await this.createSupplier()
+    const customer = await this.createCustomer(shop.id)
+    const supplier = await this.createSupplier(shop.id)
     const service = await this.createService(shop.id, category.id)
 
     const productWithoutExpiry = await this.createProduct(shop.id, category.id, user, {

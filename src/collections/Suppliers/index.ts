@@ -49,6 +49,29 @@ const Suppliers: CollectionConfig = {
         description: 'Physical address of the supplier.',
       },
     },
+    {
+      name: 'shop',
+      type: 'relationship',
+      relationTo: 'shops',
+      required: true,
+      admin: {
+        description: 'Select the shop associated with this supplier.',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        {
+          label: 'Active',
+          value: 'active',
+        },
+        {
+          label: 'Inactive',
+          value: 'inactive',
+        },
+      ],
+    },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {

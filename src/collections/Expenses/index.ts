@@ -1,44 +1,85 @@
 import { CREATED_UPDATED_BY_FIELDS } from '@/constants/users'
 
-import { type CollectionConfig } from 'payload'
+import { CollectionConfig } from 'payload'
 
 import { validateAmountPaid } from './hooks/amountPaid'
-import { createStockRecordsForSales, validateOrderItemsAndSetCreatedUpdatedBy } from './hooks/index'
-import { handlePaymentChange } from './hooks/payment'
-import { validateQuantity } from './hooks/quantity'
-import { calculateTotalCost } from './hooks/totalCost'
+import { setProductAndBatchMetadata, updateProductStockAndCostPrice } from './hooks/index'
 
-export const Orders: CollectionConfig = {
-  slug: 'orders',
-  access: {
-    read: () => true,
-    delete: () => false,
-  },
+const Expenses: CollectionConfig = {
+  slug: 'expenses',
   admin: {
-    useAsTitle: 'id',
+    useAsTitle: 'description',
+    defaultColumns: ['id', 'description', 'amount', 'category', 'date', 'shop'],
   },
   fields: [
+    {
+      name: 'date',
+      type: 'date',
+      required: true,
+      admin: {
+        description: 'Date when the expense was incurred.',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+    },
     {
       name: 'shop',
       type: 'relationship',
       relationTo: 'shops',
       required: true,
       admin: {
-        description: 'Select the shop associated with this order.',
-        components: {
-          Field: '@collections/Orders/components/OrderItemShopField.tsx',
-        },
+        description: 'Shop where the expense was incurred.',
       },
     },
     {
-      name: 'date',
-      type: 'date',
+      name: 'description',
+      type: 'text',
       required: true,
       admin: {
-        description: 'Enter the date when the order was placed.',
-        date: {
-          pickerAppearance: 'dayAndTime',
+        description: 'Brief description of the expense.',
+      },
+    },
+    {
+      name: 'type',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'Office Supplies',
+          value: 'office-supplies',
         },
+        {
+          label: 'Utilities',
+          value: 'utilities',
+        },
+        {
+          label: 'Marketing',
+          value: 'marketing',
+        },
+        {
+          label: 'Travel',
+          value: 'travel',
+        },
+        {
+          label: 'Equipment',
+          value: 'equipment',
+        },
+        {
+          label: 'Maintenance',
+          value: 'maintenance',
+        },
+        {
+          label: 'Inventory',
+          value: 'inventory',
+        },
+        {
+          label: 'Other',
+          value: 'other',
+        },
+      ],
+      admin: {
+        description: 'Type of the expense.',
       },
     },
     {
@@ -46,48 +87,16 @@ export const Orders: CollectionConfig = {
       type: 'array',
       required: true,
       admin: {
-        condition: ({ shop }) => {
-          return Boolean(shop)
+        description: 'List of items associated with the expense.',
+        condition: ({ type }) => {
+          return type === 'inventory'
         },
       },
       fields: [
         {
           type: 'row',
+          required: true,
           fields: [
-            {
-              name: 'type',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Select the type of item for this order.',
-                components: {
-                  Field: '@collections/Orders/components/OrderItemServiceTypeSelector.tsx',
-                },
-              },
-            },
-            {
-              name: 'service',
-              type: 'relationship',
-              relationTo: 'services',
-              required: true,
-              filterOptions: ({ data }) => {
-                return {
-                  shop: {
-                    equals: (data as any).shop,
-                  },
-                  status: {
-                    equals: 'active',
-                  },
-                }
-              },
-              admin: {
-                description: 'Select the service for this order item.',
-                condition: (_, siblingData) => siblingData?.type == 'service',
-                components: {
-                  Field: '@collections/Orders/components/OrderItemServiceField.tsx',
-                },
-              },
-            },
             {
               name: 'product',
               type: 'relationship',
@@ -105,7 +114,6 @@ export const Orders: CollectionConfig = {
               },
               admin: {
                 description: 'Select the product for this order item.',
-                condition: (_, siblingData) => siblingData?.type == 'product',
                 components: {
                   Field: '@collections/components/ItemProductField.tsx',
                 },
@@ -149,40 +157,37 @@ export const Orders: CollectionConfig = {
                   Field: '@collections/components/ItemQuantityField.tsx',
                 },
               },
-              validate: validateQuantity,
+              validate: (value: number | null | undefined) => {
+                if (!value || value <= 0) {
+                  return 'Quantity must be greater than zero.'
+                }
+                return true
+              },
             },
             {
-              name: 'unitPrice',
+              name: 'cost',
               type: 'number',
               required: true,
               admin: {
-                description: 'Enter the price of the product per unit.',
-                readOnly: true,
-                components: {
-                  Field: '@collections/Orders/components/OrderItemUnitPriceField.tsx',
-                },
-              },
-            },
-            {
-              name: 'totalPrice',
-              type: 'number',
-              admin: {
                 description: 'Enter the price of the product at the time of order.',
-                readOnly: true,
-                components: {
-                  Field: '@collections/Orders/components/OrderItemTotalPriceField.tsx',
-                },
               },
             },
             {
-              name: 'isReturned',
-              type: 'checkbox',
-              defaultValue: false,
+              name: 'supplier',
+              type: 'relationship',
+              relationTo: 'suppliers',
+              filterOptions: ({ data }) => {
+                return {
+                  shop: {
+                    equals: (data as any).shop,
+                  },
+                  status: {
+                    equals: 'active',
+                  },
+                }
+              },
               admin: {
-                description: 'Check if this item was returned.',
-                condition: (_, siblingData) => {
-                  return siblingData?.type === 'product'
-                },
+                description: 'Select the supplier for this product.',
               },
             },
             {
@@ -190,15 +195,6 @@ export const Orders: CollectionConfig = {
               type: 'json',
               admin: {
                 description: 'The name of the product at the time of purchase.',
-                readOnly: true,
-                condition: () => false,
-              },
-            },
-            {
-              name: 'serviceMetadataAtPurchase',
-              type: 'json',
-              admin: {
-                description: 'The name of the service at the time of purchase.',
                 readOnly: true,
                 condition: () => false,
               },
@@ -218,34 +214,27 @@ export const Orders: CollectionConfig = {
       ],
     },
     {
-      name: 'disountType',
-      type: 'select',
-      options: [
-        { label: 'Percentage', value: 'percentage' },
-        { label: 'Fixed Amount', value: 'fixed' },
-      ],
-      required: false,
-    },
-    {
-      name: 'discount',
-      type: 'number',
-      required: true,
-      defaultValue: 0,
+      name: 'updateStock',
+      type: 'checkbox',
+      defaultValue: true,
       admin: {
-        description: 'Enter the discount amount for this order.',
-        condition: ({ disountType }) => {
-          return disountType === 'fixed' || disountType === 'percentage'
+        description: 'Update stock levels for the purchased items.',
+        condition: ({ type }) => {
+          return type === 'inventory'
         },
       },
     },
     {
-      name: 'totalCost',
+      name: 'amount',
       type: 'number',
+      required: true,
+      min: 0,
       admin: {
-        readOnly: true,
-      },
-      hooks: {
-        beforeChange: [calculateTotalCost],
+        description: 'Amount spent.',
+        step: 0.01,
+        condition: ({ type }) => {
+          return type !== 'inventory'
+        },
       },
     },
     {
@@ -257,9 +246,6 @@ export const Orders: CollectionConfig = {
         { label: 'Partial', value: 'partial' },
         { label: 'Un Paid', value: 'un_paid' },
       ],
-      hooks: {
-        beforeChange: [handlePaymentChange],
-      },
     },
     {
       name: 'amountPaid',
@@ -302,29 +288,28 @@ export const Orders: CollectionConfig = {
       },
     },
     {
-      name: 'customer',
-      type: 'relationship',
-      relationTo: 'customers',
+      name: 'receipt',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
       admin: {
-        description: 'Select the customer associated with this order.',
-        components: {
-          Field: '@collections/Orders/components/OrderItemCustomerField.tsx',
-        },
+        description: 'Upload receipt or supporting document.',
       },
     },
     {
-      name: 'customerMetadataAtPurchase',
-      type: 'json',
+      name: 'notes',
+      type: 'textarea',
+      required: false,
       admin: {
-        description: 'The customer details at the time of purchase.',
-        readOnly: true,
-        condition: () => false, // This field is not editable in the UI
+        description: 'Additional notes about the expense.',
       },
     },
     ...CREATED_UPDATED_BY_FIELDS,
   ],
   hooks: {
-    afterChange: [createStockRecordsForSales],
-    beforeValidate: [validateOrderItemsAndSetCreatedUpdatedBy],
+    afterChange: [updateProductStockAndCostPrice],
+    beforeValidate: [setProductAndBatchMetadata],
   },
 }
+
+export default Expenses

@@ -47,6 +47,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   describe('Order Creation - beforeValidate Hook Tests', () => {
     it('should create order with valid product items', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -60,7 +61,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
         customer: testCustomer.id,
       }
 
@@ -84,6 +85,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when product is missing for product type items', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -97,7 +99,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -111,6 +113,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when product is not found or inactive', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -124,7 +127,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -138,6 +141,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when batch is required but missing', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -152,7 +156,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -166,6 +170,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when insufficient product inventory', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -179,7 +184,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 2250,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -193,6 +198,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when insufficient batch inventory', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -207,7 +213,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 900,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -221,6 +227,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should throw error when batch data is invalid', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -235,7 +242,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -251,6 +258,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const initialQuantity = productWithoutExpiry.inventory?.quantity || 0
 
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -264,7 +272,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 150,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await payload.create({
@@ -286,6 +294,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const initialBatchQuantity = testBatch.quantity || 0
 
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -300,7 +309,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await payload.create({
@@ -320,6 +329,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should create order with service items without inventory checks', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -332,7 +342,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 100,
-        paymentMothod: 'card' as const,
+        paymentMethod: 'card' as const,
         customer: testCustomer.id,
       }
 
@@ -354,6 +364,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should set createdBy field during creation', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -367,7 +378,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 15,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       const order = await payload.create({
@@ -388,6 +399,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -401,7 +413,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 75,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -412,6 +424,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -440,6 +453,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -453,7 +467,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 75,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -477,6 +491,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -498,6 +513,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -511,7 +527,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 0,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -522,6 +538,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -553,6 +570,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -566,7 +584,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 75,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -577,6 +595,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -617,6 +636,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -631,7 +651,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 75,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -642,6 +662,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -680,6 +701,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -693,7 +715,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 15,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -703,7 +725,8 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
-            paymentMothod: 'card' as const, // Simple update
+            date: new Date().toISOString(),
+            paymentMethod: 'card' as const, // Simple update
           },
           user: testUser,
         })
@@ -728,6 +751,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       // This test simulates when req.routeParams?.id might be invalid
       // The beforeValidate hook should handle this case
       const orderData = {
+        date: new Date().toISOString(),
         items: [
           {
             type: 'product',
@@ -740,7 +764,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 15,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await expect(
@@ -757,6 +781,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   describe('Stock Management - afterChange Hook Tests', () => {
     it('should create negative stock record when order with product is created', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -770,7 +795,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await payload.create({
@@ -806,6 +831,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should create negative stock record with batch when batch-tracked order is created', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -820,7 +846,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 45,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await payload.create({
@@ -857,6 +883,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should not create stock record for service items', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -869,7 +896,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 100,
-        paymentMothod: 'card' as const,
+        paymentMethod: 'card' as const,
       }
 
       await payload.create({
@@ -893,6 +920,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should create multiple stock records for orders with multiple product items', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -922,7 +950,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 95,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       await payload.create({
@@ -972,6 +1000,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -985,7 +1014,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 75,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -996,6 +1025,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -1052,6 +1082,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -1066,7 +1097,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 45,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -1077,6 +1108,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -1136,6 +1168,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -1158,7 +1191,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 105,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -1169,6 +1202,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,
@@ -1231,6 +1265,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
   describe('Complex Scenarios - beforeValidate Hook Tests', () => {
     it('should handle mixed product and service orders correctly', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -1251,7 +1286,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 80,
-        paymentMothod: 'card' as const,
+        paymentMethod: 'card' as const,
         customer: testCustomer.id,
       }
 
@@ -1270,6 +1305,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
 
     it('should handle multiple product items with different batch requirements', async () => {
       const orderData = {
+        date: new Date().toISOString(),
         shop: testShop.id,
         items: [
           {
@@ -1292,7 +1328,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         ],
         payment: 'paid' as const,
         amountPaid: 75,
-        paymentMothod: 'cash' as const,
+        paymentMethod: 'cash' as const,
       }
 
       const order = await payload.create({
@@ -1310,6 +1346,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
       const order = await payload.create({
         collection: 'orders',
         data: {
+          date: new Date().toISOString(),
           shop: testShop.id,
           items: [
             {
@@ -1331,7 +1368,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           ],
           payment: 'paid' as const,
           amountPaid: 120,
-          paymentMothod: 'cash' as const,
+          paymentMethod: 'cash' as const,
         },
         user: testUser,
       })
@@ -1342,6 +1379,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           collection: 'orders',
           id: order.id,
           data: {
+            date: new Date().toISOString(),
             items: [
               {
                 id: order.items![0].id,

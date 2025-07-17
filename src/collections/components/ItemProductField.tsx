@@ -2,7 +2,7 @@
 
 import { RelationshipField, TextInput, useField } from '@payloadcms/ui'
 
-export default function OrderItemProductField({ path, field }: { path: string; field: any }) {
+export default function ItemProductField({ path, field }: { path: string; field: any }) {
   const { value: productMetadataAtPurchase } = useField({
     path: path.replace('product', 'productMetadataAtPurchase'),
   })
