@@ -119,12 +119,33 @@ const Stock: CollectionConfig = {
       },
     },
     {
+      name: 'newQuantity',
+      type: 'number',
+      required: false,
+      admin: {
+        description: 'This field is automatically updated with the new quantity after stock entry.',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'reason',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'Provide a reason for this stock entry, if applicable.',
+        condition: ({ type }) => {
+          return type === 'adjustment'
+        },
+      },
+    },
+    {
       name: 'fromShop',
       type: 'relationship',
       relationTo: 'shops',
       required: false,
       admin: {
         description: 'Select the shop from which this stock entry originates.',
+        condition: () => false,
       },
     },
     {
@@ -134,6 +155,7 @@ const Stock: CollectionConfig = {
       required: false,
       admin: {
         description: 'Select the shop to which this stock entry is being transferred.',
+        condition: () => false,
       },
     },
     ...CREATED_UPDATED_BY_FIELDS,

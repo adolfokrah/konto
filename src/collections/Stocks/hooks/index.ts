@@ -36,14 +36,17 @@ export const validateProductBatchAndSetCreatedUpdatedBy: CollectionBeforeValidat
 export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = async ({
   doc,
   req,
+  operation,
 }) => {
   // Automatically update product inventory and batch quantities
-  if ((doc?.product || doc?.batch) && req?.payload) {
+  if ((doc?.product || doc?.batch) && req?.payload && operation === 'create') {
     try {
       const foundProduct = await req.payload.findByID({
         collection: 'products',
         id: typeof doc.product == 'object' ? doc.product.id : doc.product,
       })
+
+      let quantity = 0
 
       if (doc?.batch) {
         // Update batch quantity
@@ -52,7 +55,7 @@ export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = asyn
           id: doc.batch,
         })
 
-        const quantity = doc.quantity + foundBatch?.quantity || 0
+        quantity = doc.quantity + foundBatch?.quantity || 0
 
         await req.payload.update({
           collection: 'batches',
@@ -63,7 +66,7 @@ export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = asyn
           req,
         })
       } else {
-        const quantity = doc.quantity + foundProduct?.inventory?.quantity || 0
+        quantity = doc.quantity + foundProduct?.inventory?.quantity || 0
         // Update product inventory
         await req.payload.update({
           collection: 'products',
@@ -76,6 +79,15 @@ export const updateInventoryAndBatchQuantities: CollectionAfterChangeHook = asyn
           req,
         })
       }
+
+      await req.payload.update({
+        collection: 'stock',
+        id: doc.id,
+        data: {
+          newQuantity: quantity,
+        },
+        req,
+      })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       throw new APIError('Error updating stock quantities: ' + errorMessage, 500)

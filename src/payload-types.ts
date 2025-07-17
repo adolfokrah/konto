@@ -394,6 +394,14 @@ export interface Stock {
    */
   quantity: number;
   /**
+   * This field is automatically updated with the new quantity after stock entry.
+   */
+  newQuantity?: number | null;
+  /**
+   * Provide a reason for this stock entry, if applicable.
+   */
+  reason?: string | null;
+  /**
    * Select the shop from which this stock entry originates.
    */
   fromShop?: (string | null) | Shop;
@@ -1016,6 +1024,8 @@ export interface StockSelect<T extends boolean = true> {
   product?: T;
   batch?: T;
   quantity?: T;
+  newQuantity?: T;
+  reason?: T;
   fromShop?: T;
   toShop?: T;
   createdBy?: T;
