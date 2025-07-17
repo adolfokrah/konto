@@ -30,11 +30,6 @@ jobs:
       has-updates: ${{ steps.check.outputs.has-updates }}
       update-type: ${{ steps.check.outputs.update-type }}
 
-    env:
-        NODE_ENV: test
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
-        NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
     
     steps:
       - name: Checkout code
@@ -84,6 +79,12 @@ jobs:
     needs: check-dependencies
     runs-on: ubuntu-latest
     if: needs.check-dependencies.outputs.has-updates == 'true' && needs.check-dependencies.outputs.update-type == 'patch'
+
+    env:
+        NODE_ENV: test
+        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+        NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
       - name: Checkout code
@@ -178,6 +179,12 @@ jobs:
     needs: check-dependencies
     runs-on: ubuntu-latest
     if: needs.check-dependencies.outputs.has-updates == 'true' && (needs.check-dependencies.outputs.update-type == 'major' || needs.check-dependencies.outputs.update-type == 'minor')
+
+    env:
+        NODE_ENV: test
+        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+        NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
       - name: Checkout code
