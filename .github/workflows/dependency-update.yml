@@ -153,6 +153,12 @@ jobs:
       - name: Create Pull Request (Auto-merge)
         if: steps.update.outputs.changes-made == 'true'
         run: |
+          # Create labels if they don't exist
+          gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
+          gh label create "patch-update" --description "Patch-level dependency updates" --color "28a745" --force || true
+          gh label create "auto-merge" --description "PRs that will be automatically merged" --color "fbca04" --force || true
+          
+          # Create PR
           gh pr create \
             --title "🔧 Automated patch dependency updates" \
             --body "## 🔧 Automated Patch Dependency Updates
@@ -275,6 +281,12 @@ jobs:
       - name: Create Pull Request (Manual Review)
         if: steps.update.outputs.changes-made == 'true'
         run: |
+          # Create labels if they don't exist
+          gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
+          gh label create "${{ steps.update.outputs.update-type }}-update" --description "${{ steps.update.outputs.update-type }}-level dependency updates" --color "d73a49" --force || true
+          gh label create "review-required" --description "PRs that require manual review" --color "e99695" --force || true
+          
+          # Create PR
           gh pr create \
             --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)" \
             --body "## 📦 ${{ steps.update.outputs.update-type }} Dependency Updates
