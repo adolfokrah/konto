@@ -152,34 +152,32 @@ jobs:
 
       - name: Create Pull Request (Auto-merge)
         if: steps.update.outputs.changes-made == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.update.outputs.branch-name }}
-          title: "🔧 Automated patch dependency updates"
-          body: |
-            ## 🔧 Automated Patch Dependency Updates
-            
-            This PR contains patch-level dependency updates that are considered safe and will be automatically merged after tests pass.
-            
-            ### Changes Made
-            - ✅ Updated patch-level dependencies
-            - ✅ Tests passed successfully
-            - ✅ No breaking changes expected
-            
-            ### Auto-merge Policy
-            This PR will be automatically merged because:
-            - Only patch-level updates (bug fixes)
-            - Tests are passing
-            - Low risk of breaking changes
-            
-            ---
-            *This is an automated PR created by the dependency update workflow*
-          labels: |
-            dependencies
-            patch-update
-            auto-merge
-          assignees: ${{ github.actor }}
+        run: |
+          gh pr create \
+            --title "🔧 Automated patch dependency updates" \
+            --body "## 🔧 Automated Patch Dependency Updates
+
+          This PR contains patch-level dependency updates that are considered safe and will be automatically merged after tests pass.
+
+          ### Changes Made
+          - ✅ Updated patch-level dependencies
+          - ✅ Tests passed successfully
+          - ✅ No breaking changes expected
+
+          ### Auto-merge Policy
+          This PR will be automatically merged because:
+          - Only patch-level updates (bug fixes)
+          - Tests are passing
+          - Low risk of breaking changes
+
+          ---
+          *This is an automated PR created by the dependency update workflow*" \
+            --label "dependencies,patch-update,auto-merge" \
+            --assignee "${{ github.actor }}" \
+            --head "${{ steps.update.outputs.branch-name }}" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable auto-merge
         if: steps.update.outputs.changes-made == 'true'
@@ -276,47 +274,45 @@ jobs:
 
       - name: Create Pull Request (Manual Review)
         if: steps.update.outputs.changes-made == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.update.outputs.branch-name }}
-          title: "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)"
-          body: |
-            ## 📦 ${{ steps.update.outputs.update-type }} Dependency Updates
-            
-            This PR contains **${{ steps.update.outputs.update-type }}** dependency updates that require careful review.
-            
-            ### Update Details
-            - **Type**: ${{ steps.update.outputs.update-type }} updates
-            - **Tests**: ${{ steps.update.outputs.tests-passing == 'true' && '✅ Passing' || '❌ Failing - needs attention' }}
-            - **Risk Level**: ${{ steps.update.outputs.update-type == 'major' && 'High' || 'Medium' }}
-            
-            ### ⚠️ Manual Review Required
-            
-            This PR will **NOT** be automatically merged and requires manual approval because:
-            - Contains ${{ steps.update.outputs.update-type }}-level updates
-            - Potential for breaking changes
-            - Manual testing recommended
-            
-            ### Review Checklist
-            - [ ] Review changelog/release notes for updated packages
-            - [ ] Test the application locally
-            - [ ] Verify no breaking changes
-            - [ ] Check for deprecated features usage
-            - [ ] Ensure all tests pass
-            
-            ### Changes Made
-            - Updated ${{ steps.update.outputs.update-type }}-level dependencies
-            - Dependencies locked to specific versions
-            - Tests ${{ steps.update.outputs.tests-passing == 'true' && 'are passing' || 'need attention' }}
-            
-            ---
-            *This is an automated PR created by the dependency update workflow*
-          labels: |
-            dependencies
-            ${{ steps.update.outputs.update-type }}-update
-            review-required
-          assignees: ${{ github.actor }}
+        run: |
+          gh pr create \
+            --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)" \
+            --body "## 📦 ${{ steps.update.outputs.update-type }} Dependency Updates
+
+          This PR contains **${{ steps.update.outputs.update-type }}** dependency updates that require careful review.
+
+          ### Update Details
+          - **Type**: ${{ steps.update.outputs.update-type }} updates
+          - **Tests**: ${{ steps.update.outputs.tests-passing == 'true' && '✅ Passing' || '❌ Failing - needs attention' }}
+          - **Risk Level**: ${{ steps.update.outputs.update-type == 'major' && 'High' || 'Medium' }}
+
+          ### ⚠️ Manual Review Required
+
+          This PR will **NOT** be automatically merged and requires manual approval because:
+          - Contains ${{ steps.update.outputs.update-type }}-level updates
+          - Potential for breaking changes
+          - Manual testing recommended
+
+          ### Review Checklist
+          - [ ] Review changelog/release notes for updated packages
+          - [ ] Test the application locally
+          - [ ] Verify no breaking changes
+          - [ ] Check for deprecated features usage
+          - [ ] Ensure all tests pass
+
+          ### Changes Made
+          - Updated ${{ steps.update.outputs.update-type }}-level dependencies
+          - Dependencies locked to specific versions
+          - Tests ${{ steps.update.outputs.tests-passing == 'true' && 'are passing' || 'need attention' }}
+
+          ---
+          *This is an automated PR created by the dependency update workflow*" \
+            --label "dependencies,${{ steps.update.outputs.update-type }}-update,review-required" \
+            --assignee "${{ github.actor }}" \
+            --head "${{ steps.update.outputs.branch-name }}" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     needs: [check-dependencies, update-patch-dependencies, update-major-minor-dependencies]
