@@ -58,23 +58,37 @@ export const setProductAndBatchMetadata: CollectionBeforeValidateHook = async ({
   }
   if (data?.items && data?.items.length > 0) {
     for (const item of data.items) {
-      const product = await req.payload.findByID({
-        collection: 'products',
-        id: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
-      })
-      if (!product) {
+      try {
+        const product = await req.payload.findByID({
+          collection: 'products',
+          id: typeof item.product === 'string' ? item.product : item.product?.id || item.product,
+        })
+        if (!product) {
+          throw new APIError('Product not found', 404)
+        }
+
+        item.productMetadataAtPurchase = { ...product }
+
+        // If the product tracks expiry and a batch is specified, fetch the batch metadata
+        if (product?.trackExpiry && item.batch) {
+          try {
+            const batch = await req.payload.findByID({
+              collection: 'batches',
+              id: typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,
+            })
+            item.batchMetadataAtPurchase = batch ? { ...batch } : null
+          } catch (error) {
+            console.error('Error fetching batch:', error)
+            item.batchMetadataAtPurchase = null
+          }
+        } else {
+          item.batchMetadataAtPurchase = null
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error)
+        // If product is not found, throw our custom error message
         throw new APIError('Product not found', 404)
       }
-
-      item.productMetadataAtPurchase = { ...product }
-      item.batchMetadataAtPurchase =
-        product?.trackExpiry && item.batch
-          ? product?.batches?.find(
-              batch =>
-                (typeof batch === 'string' ? batch : batch.id) ==
-                (typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch)
-            )
-          : null
     }
   }
 
