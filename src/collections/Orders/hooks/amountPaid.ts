@@ -5,8 +5,7 @@ import { APIError, type FieldHook } from 'payload'
 
 export const validateAmountPaid: FieldHook = async ({ siblingData }) => {
   const orederItems = siblingData?.items as Order['items']
-  const items =
-    orederItems?.filter(item => !item?.isReturned).map(item => item.quantity * item.unitPrice) || []
+  const items = orederItems?.map(item => item.quantity * item.unitPrice) || []
 
   let totalAmount = items.reduce((acc, item) => acc + item, 0)
   totalAmount =

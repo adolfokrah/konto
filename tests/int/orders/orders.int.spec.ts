@@ -56,7 +56,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -94,7 +93,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -122,7 +120,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -151,7 +148,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -179,7 +175,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 150, // More than available (100)
             unitPrice: 15,
             totalPrice: 2250,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -208,7 +203,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 60, // More than available in batch (50)
             unitPrice: 15,
             totalPrice: 900,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -237,7 +231,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -267,7 +260,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 10,
             unitPrice: 15,
             totalPrice: 150,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -304,7 +296,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 5,
             unitPrice: 15,
             totalPrice: 75,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -373,7 +364,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 1,
             unitPrice: 15,
             totalPrice: 15,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -408,7 +398,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -433,7 +422,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: false,
               },
               {
                 type: 'service',
@@ -462,7 +450,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -500,7 +487,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 12,
                 totalPrice: 60,
-                isReturned: false,
               },
             ],
           },
@@ -522,7 +508,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: true, // Already returned
+              quantityReturned: 5,
             },
           ],
           payment: 'paid' as const,
@@ -547,13 +533,15 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: false, // Try to un-return
+                quantityReturned: 2, // Trying to reduce returned quantity
               },
             ],
           },
           user: testUser,
         })
-      ).rejects.toThrow('You cannot un-return an item once it has been marked as returned')
+      ).rejects.toThrow(
+        'You cannot reduce the quantity returned for an order item which has already returned.'
+      )
     })
 
     it('should restore inventory when items are returned', async () => {
@@ -579,7 +567,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -604,7 +591,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: true,
+                quantityReturned: 2,
               },
             ],
             amountPaid: 0, // Update amount paid to match new total
@@ -618,7 +605,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           id: productWithoutExpiry.id,
         })
 
-        expect(updatedProduct.inventory?.quantity).toBe(initialQuantity)
+        expect(updatedProduct.inventory?.quantity).toBe(initialQuantity - 3)
       } catch (error) {
         // If the order ID access fails, skip this test
         console.warn(
@@ -646,7 +633,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -672,7 +658,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: true,
+                quantityReturned: 2,
               },
             ],
             amountPaid: 0,
@@ -686,7 +672,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
           id: testBatch.id,
         })
 
-        expect(updatedBatch.quantity).toBe(initialBatchQuantity)
+        expect(updatedBatch.quantity).toBe(initialBatchQuantity - 3)
       } catch (error) {
         // If the order ID access fails, skip this test
         console.warn(
@@ -710,7 +696,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 1,
               unitPrice: 15,
               totalPrice: 15,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -1009,7 +994,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -1034,7 +1018,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: true, // Mark as returned
+                quantityReturned: 2,
               },
             ],
             amountPaid: 0,
@@ -1061,7 +1045,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         expect(saleRecord!.quantity).toBe(-5) // Negative for sale
 
         expect(returnRecord).toBeDefined()
-        expect(returnRecord!.quantity).toBe(5) // Positive for return
+        expect(returnRecord!.quantity).toBe(2) // Positive for return
         expect(
           typeof returnRecord!.product === 'string'
             ? returnRecord!.product
@@ -1092,7 +1076,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 3,
               unitPrice: 15,
               totalPrice: 45,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -1118,7 +1101,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 3,
                 unitPrice: 15,
                 totalPrice: 45,
-                isReturned: true, // Mark as returned
+                quantityReturned: 2, // Mark as returned
               },
             ],
             amountPaid: 0,
@@ -1146,7 +1129,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         expect(saleRecord!.batch).toBe(testBatch.id)
 
         expect(returnRecord).toBeDefined()
-        expect(returnRecord!.quantity).toBe(3) // Positive for return
+        expect(returnRecord!.quantity).toBe(2) // Positive for return
         expect(
           typeof returnRecord!.product === 'string'
             ? returnRecord!.product
@@ -1177,7 +1160,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
             {
               type: 'product',
@@ -1186,7 +1168,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 2,
               unitPrice: 15,
               totalPrice: 30,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -1211,7 +1192,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 5,
                 unitPrice: 15,
                 totalPrice: 75,
-                isReturned: true, // Return this item
+                quantityReturned: 2, // Return this item
               },
               {
                 id: order.items![1].id,
@@ -1221,7 +1202,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 2,
                 unitPrice: 15,
                 totalPrice: 30,
-                isReturned: false, // Keep this item
               },
             ],
             amountPaid: 30,
@@ -1248,7 +1228,7 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
         expect(returnRecords).toHaveLength(1) // Only first item was returned
 
         const returnRecord = returnRecords[0]
-        expect(returnRecord.quantity).toBe(5) // Positive for return
+        expect(returnRecord.quantity).toBe(2) // Positive for return
         expect(
           typeof returnRecord.product === 'string' ? returnRecord.product : returnRecord.product?.id
         ).toBe(productWithoutExpiry.id)
@@ -1274,7 +1254,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 2,
             unitPrice: 15,
             totalPrice: 30,
-            isReturned: false,
           },
           {
             type: 'service',
@@ -1314,7 +1293,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 3,
             unitPrice: 15,
             totalPrice: 45,
-            isReturned: false,
           },
           {
             type: 'product',
@@ -1323,7 +1301,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
             quantity: 2,
             unitPrice: 15,
             totalPrice: 30,
-            isReturned: false,
           },
         ],
         payment: 'paid' as const,
@@ -1355,7 +1332,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 5,
               unitPrice: 15,
               totalPrice: 75,
-              isReturned: false,
             },
             {
               type: 'product',
@@ -1363,7 +1339,6 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
               quantity: 3,
               unitPrice: 15,
               totalPrice: 45,
-              isReturned: false,
             },
           ],
           payment: 'paid' as const,
@@ -1385,10 +1360,10 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 id: order.items![0].id,
                 type: 'product',
                 product: productWithoutExpiry.id,
-                quantity: 5,
+                quantity: 3,
                 unitPrice: 15,
-                totalPrice: 75,
-                isReturned: true, // Return this item
+                totalPrice: 45,
+                quantityReturned: 2, // Return this item
               },
               {
                 id: order.items![1].id,
@@ -1397,17 +1372,16 @@ describe('Orders Collection Integration Tests - beforeValidate Hook', () => {
                 quantity: 3,
                 unitPrice: 15,
                 totalPrice: 45,
-                isReturned: false, // Keep this item
               },
             ],
-            amountPaid: 45, // Update amount paid for remaining items
+            amountPaid: 90, // Update amount paid for remaining items
           },
           user: testUser,
         })
 
-        expect(updatedOrder.items![0].isReturned).toBe(true)
-        expect(updatedOrder.items![1].isReturned).toBe(false)
-        expect(updatedOrder.totalCost).toBe(45) // Only non-returned items
+        expect(updatedOrder.items![0].quantityReturned).toBe(2)
+        expect(updatedOrder.items![1].quantityReturned).toBe(0)
+        expect(updatedOrder.totalCost).toBe(90) // Only non-returned items
       } catch (error) {
         // If the order ID access fails, skip this test
         console.warn(

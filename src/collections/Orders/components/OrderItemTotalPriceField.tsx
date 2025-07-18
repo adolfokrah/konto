@@ -9,7 +9,7 @@ export default function OrderItemTotalPriceField({ path }: { path: string }) {
 
   const price = unitPrice?.value || '0'
 
-  const totalPrice = Number(initialValue || value || price) * Number(quantity?.value || 1)
+  const totalPrice = Number(initialValue || value || price) * Number(quantity?.value)
 
   return (
     <TextInput

@@ -146,10 +146,12 @@ export const Orders: CollectionConfig = {
               admin: {
                 description: 'Enter the quantity of the product ordered.',
                 components: {
-                  Field: '@collections/components/ItemQuantityField.tsx',
+                  Field: '@collections/Orders/components/OrderItemQuantityField.tsx',
                 },
               },
-              validate: validateQuantity,
+              hooks: {
+                beforeChange: [validateQuantity],
+              },
             },
             {
               name: 'unitPrice',
@@ -174,15 +176,39 @@ export const Orders: CollectionConfig = {
                 },
               },
             },
+            // {
+            //   name: 'isReturned',
+            //   type: 'checkbox',
+            //   defaultValue: false,
+            //   admin: {
+            //     description: 'Check if this item was returned.',
+            //     condition: (_, siblingData) => {
+            //       return siblingData?.type === 'product'
+            //     },
+            //   },
+            // },
             {
-              name: 'isReturned',
-              type: 'checkbox',
-              defaultValue: false,
+              name: 'quantityReturned',
+              type: 'number',
+              required: false,
+              defaultValue: 0,
               admin: {
-                description: 'Check if this item was returned.',
+                description: 'Enter the quantity of the product returned.',
+                components: {
+                  Field: '@collections/Orders/components/OrderItemReturnField.tsx',
+                },
                 condition: (_, siblingData) => {
                   return siblingData?.type === 'product'
-                },
+                }, // Only show if type is product
+              },
+            },
+            {
+              name: 'originalQuantityAtPurchase',
+              type: 'number',
+              required: false,
+              admin: {
+                description: 'The original quantity of the product at the time of purchase.',
+                readOnly: true,
               },
             },
             {

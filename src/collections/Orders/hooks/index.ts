@@ -53,6 +53,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
 
           //keep product data for history audit
           item.productMetadataAtPurchase = { ...product }
+          item.originalQuantityAtPurchase = item.quantity
 
           if (product.trackExpiry && !item.batch) {
             throw new APIError(
@@ -132,21 +133,40 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
         if (item?.type === 'product') {
           const foundPreviousItem = previousItems.find((prevItem: any) => prevItem.id === item.id)
 
-          if (operation === 'update' && !item.isReturned) {
-            if (foundPreviousItem?.isReturned) {
-              throw new APIError(
-                'You cannot un-return an item once it has been marked as returned',
-                400
-              )
-            }
-          }
+          // if (!item.isReturned) {
+          //   if (foundPreviousItem?.isReturned) {
+          //     throw new APIError(
+          //       'You cannot un-return an item once it has been marked as returned',
+          //       400
+          //     )
+          //   }
+          // }
 
           if (foundPreviousItem?.product !== item.product) {
             throw new APIError('You cannot change the product of an order item.', 400)
           }
 
-          if (operation === 'update' && item?.isReturned) {
-            if (!foundPreviousItem?.isReturned) {
+          if (item?.quantityReturned) {
+            if (item?.quantityReturned != foundPreviousItem?.quantityReturned) {
+              const quantityReturned =
+                item?.quantityReturned - (foundPreviousItem?.quantityReturned || 0)
+              item.quantity =
+                item?.originalQuantityAtPurchase -
+                (quantityReturned + (foundPreviousItem?.quantityReturned || 0))
+
+              if (item?.quantityReturned < (foundPreviousItem?.quantityReturned || 0)) {
+                throw new APIError(
+                  'You cannot reduce the quantity returned for an order item which has already returned.',
+                  400
+                )
+              }
+              if (item?.quantityReturned > item?.originalQuantityAtPurchase) {
+                throw new APIError(
+                  'Quantity returned cannot be greater than the total quantity of the order item.',
+                  400
+                )
+              }
+
               const productList = await req.payload.find({
                 collection: 'products',
                 where: {
@@ -174,7 +194,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
                     shop: data.shop,
                     product: product.id,
                     type: 'return',
-                    quantity: Number(item.quantity),
+                    quantity: quantityReturned,
                     orderReference: originalDoc.id,
                   },
                   req,
@@ -193,7 +213,7 @@ export const validateOrderItemsAndSetCreatedUpdatedBy: CollectionBeforeValidateH
                     shop: data.shop,
                     product: product.id,
                     type: 'return',
-                    quantity: Number(item.quantity),
+                    quantity: quantityReturned,
                     orderReference: originalDoc.id,
                     batch:
                       typeof item.batch === 'string' ? item.batch : item.batch?.id || item.batch,

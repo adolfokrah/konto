@@ -2,7 +2,7 @@
 
 import { TextInput, useField } from '@payloadcms/ui'
 
-export default function OrderItemUnitPriceField({ path }: { path: string }) {
+export default function ItemQuantityField({ path }: { path: string }) {
   const { value, initialValue, setValue } = useField({ path })
 
   const quantity = String(initialValue || value || '')

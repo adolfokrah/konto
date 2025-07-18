@@ -505,9 +505,13 @@ export interface Order {
          */
         totalPrice?: number | null;
         /**
-         * Check if this item was returned.
+         * Enter the quantity of the product returned.
          */
-        isReturned?: boolean | null;
+        quantityReturned?: number | null;
+        /**
+         * The original quantity of the product at the time of purchase.
+         */
+        originalQuantityAtPurchase?: number | null;
         /**
          * The name of the product at the time of purchase.
          */
@@ -1141,7 +1145,8 @@ export interface OrdersSelect<T extends boolean = true> {
         quantity?: T;
         unitPrice?: T;
         totalPrice?: T;
-        isReturned?: T;
+        quantityReturned?: T;
+        originalQuantityAtPurchase?: T;
         productMetadataAtPurchase?: T;
         serviceMetadataAtPurchase?: T;
         batchMetadataAtPurchase?: T;

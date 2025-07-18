@@ -154,7 +154,7 @@ const Expenses: CollectionConfig = {
               admin: {
                 description: 'Enter the quantity of the product ordered.',
                 components: {
-                  Field: '@collections/components/ItemQuantityField.tsx',
+                  Field: '@collections/Expenses/components/ItemQuantityField.tsx',
                 },
               },
               validate: (value: number | null | undefined) => {
