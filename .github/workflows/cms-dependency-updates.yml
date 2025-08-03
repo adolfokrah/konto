@@ -1,9 +1,9 @@
 name: Automated Dependency Updates In CMS
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    # Run dependency checks daily at 3 AM UTC
+    - cron: '0 3 * * *'
   workflow_dispatch:
     # Allow manual triggering
     inputs:
