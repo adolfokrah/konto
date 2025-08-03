@@ -2,13 +2,18 @@ import { getPayload, Payload } from 'payload'
 import { describe, it, beforeAll, expect, beforeEach } from 'vitest'
 
 import config from '@/payload.config'
+import { clearAllCollections } from 'tests/utils/testCleanup'
 
 let payload: Payload
+
+const generateUniqueEmail = (prefix: string = 'test') =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@example.com`
 
 describe('Users Collection Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+    await clearAllCollections(payload) // Clear collections before tests
   })
 
   beforeEach(async () => {
@@ -33,7 +38,7 @@ describe('Users Collection Integration Tests', () => {
   describe('User Creation', () => {
     it('should create a user with required fields', async () => {
       const userData = {
-        email: 'test@example.com',
+        email: generateUniqueEmail('test'),
         password: 'testPassword123',
         fullName: 'John Doe',
         phoneNumber: '+233541234567',
@@ -122,7 +127,7 @@ describe('Users Collection Integration Tests', () => {
 
     it('should fail to create user with duplicate email', async () => {
       const userData = {
-        email: 'duplicate@example.com',
+        email: generateUniqueEmail('duplicate'),
         password: 'testPassword123',
         fullName: 'First User',
         phoneNumber: '+233541234567',
