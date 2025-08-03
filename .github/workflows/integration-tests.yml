@@ -1,0 +1,83 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cms/**'
+      - '.github/workflows/integration-tests.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'cms/**'
+      - '.github/workflows/integration-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_DATABASE: konto-test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: 'cms/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        working-directory: ./cms
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..20}; do
+            if mongosh --host localhost:27017 --eval "db.runCommand({ping: 1})" &>/dev/null; then
+              echo "MongoDB is ready!"
+              break
+            fi
+            echo "Waiting for MongoDB... ($i/20)"
+            sleep 3
+          done
+
+      - name: Run integration tests
+        working-directory: ./cms
+        run: pnpm run test:int
+        env:
+          NODE_ENV: test
+          DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+          PAYLOAD_SECRET: test-secret-for-github-actions
+          NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+          NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+          CI: true
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: cms/test-results/
+          retention-days: 3
