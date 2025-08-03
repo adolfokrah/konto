@@ -1,49 +1,49 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-backend/node_modules/
-backend/.pnp
-backend/.pnp.js
-backend/.yarn/install-state.gz
+cms/node_modules/
+cms/.pnp
+cms/.pnp.js
+cms/.yarn/install-state.gz
 
-backend/.idea/*
-!backend/.idea/runConfigurations
+cms/.idea/*
+!cms/.idea/runConfigurations
 
 # testing
-backend/coverage
+cms/coverage
 
 # next.js
-backend/.next/
-backend/out/
+cms/.next/
+cms/out/
 
 # production
-backend/build
+cms/build
 
 # misc
-backend/.DS_Store
-backend/*.pem
+cms/.DS_Store
+cms/*.pem
 
 # debug
-backend/npm-debug.log*
-backend/yarn-debug.log*
-backend/yarn-error.log*
+cms/npm-debug.log*
+cms/yarn-debug.log*
+cms/yarn-error.log*
 
 # local env files
-backend/.env*.local
+cms/.env*.local
 
 # vercel
-backend/.vercel
+cms/.vercel
 
 # typescript
-backend/*.tsbuildinfo
-backend/next-env.d.ts
+cms/*.tsbuildinfo
+cms/next-env.d.ts
 
-backend/.env
+cms/.env
 
-backend/media
+cms/media
 
 # Playwright
-backend/test-results/
-backend/playwright-report/
-backend/blob-report/
-backend/playwright/.cache/
+cms/test-results/
+cms/playwright-report/
+cms/blob-report/
+cms/playwright/.cache/
