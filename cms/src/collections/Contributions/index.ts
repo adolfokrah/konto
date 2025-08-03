@@ -110,6 +110,7 @@ export const Contributions: CollectionConfig = {
             },
           }
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Error filtering collector options:', error)
           return false
         }

@@ -13,14 +13,15 @@ export const generatePaymentLink: CollectionAfterChangeHook = async ({ doc, oper
 
     // Update the document with the generated payment link
     try {
-      const updatedDoc = await req.payload.update({
-        collection: 'jars' as any,
+      const _updatedDoc = await req.payload.update({
+        collection: 'jars',
         id: doc.id,
         data: { paymentLink },
       })
       // Update the current doc object to reflect the change
       doc.paymentLink = paymentLink
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to update payment link:', error)
     }
   }

@@ -81,7 +81,7 @@ export const Jars: CollectionConfig = {
       relationTo: 'users',
       required: true,
       hasMany: false,
-      filterOptions: ({ req }) => {
+      filterOptions: ({ req: _req }) => {
         // This filter can be customized based on the request context
         return {
           isKYCVerified: { equals: true },
@@ -97,6 +97,7 @@ export const Jars: CollectionConfig = {
       relationTo: 'users',
       hasMany: true,
       filterOptions: ({ data }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const filters: any = {}
 
         if (data?.creator) {
