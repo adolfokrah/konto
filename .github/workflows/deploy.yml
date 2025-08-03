@@ -1,0 +1,228 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Integration Tests"]
+    types:
+      - completed
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check-integration-tests:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    
+    steps:
+      - name: Integration Tests Passed
+        run: |
+          echo "✅ Integration tests passed successfully"
+          echo "Proceeding with deployment pipeline..."
+
+  update-version:
+    needs: check-integration-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Update package.json version
+        run: |
+          # Get current version
+          current_version=$(node -p "require('./package.json').version")
+          echo "Current version: $current_version"
+
+          # Get latest release tag to determine commits since last release
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$latest_tag" ]; then
+            # Get commits since last tag
+            commits=$(git log $latest_tag..HEAD --pretty=format:"%s" --no-merges)
+          else
+            # If no previous tag, get last 10 commits
+            commits=$(git log --pretty=format:"%s" --no-merges -10)
+          fi
+
+          echo "Analyzing commits for version bump type:"
+          echo "$commits"
+
+          # Count conventional commits
+          feat_count=$(echo "$commits" | grep -c "^feat:" || true)
+          minor_count=$(echo "$commits" | grep -cE "^(chore:|dependency:|devops:)" || true)
+          fix_count=$(echo "$commits" | grep -c "^fix:" || true)
+          total_commits=$(echo "$commits" | wc -l | tr -d ' ')
+          conventional_commits=$((feat_count + minor_count + fix_count))
+
+          echo "Commit analysis:"
+          echo "- feat: $feat_count"
+          echo "- chore/dependency/devops: $minor_count" 
+          echo "- fix: $fix_count"
+          echo "- total commits: $total_commits"
+          echo "- conventional commits: $conventional_commits"
+
+          # Determine version bump type based on commit messages
+          bump_type="patch"  # default
+
+          # Check for major version bumps (feat:)
+          if [ $feat_count -gt 0 ]; then
+            bump_type="major"
+            echo "Found feat: commits - using major version bump"
+          # Check for minor version bumps (chore:, dependency:, devops:)
+          elif [ $minor_count -gt 0 ]; then
+            bump_type="minor"
+            echo "Found chore:/dependency:/devops: commits - using minor version bump"
+          # Check for patch version bumps (fix:)
+          elif [ $fix_count -gt 0 ]; then
+            bump_type="patch"
+            echo "Found fix: commits - using patch version bump"
+          # Handle non-conventional commits
+          else
+            echo "No conventional commits found ($conventional_commits/$total_commits)"
+            echo "All commits appear to be non-conventional"
+            
+            # Analyze commit content for keywords to guess intent
+            if echo "$commits" | grep -qiE "(breaking|major|new feature|add.*feature)"; then
+              bump_type="major"
+              echo "Detected major changes from commit content - using major version bump"
+            elif echo "$commits" | grep -qiE "(update|upgrade|dependency|dependencies|chore|refactor|improve)"; then
+              bump_type="minor"
+              echo "Detected minor changes from commit content - using minor version bump"
+            elif echo "$commits" | grep -qiE "(fix|bug|issue|resolve|patch)"; then
+              bump_type="patch"
+              echo "Detected fixes from commit content - using patch version bump"
+            else
+              bump_type="patch"
+              echo "Could not determine intent - defaulting to patch version bump"
+              echo "💡 Tip: Use conventional commits (feat:, fix:, chore:) for better version control"
+            fi
+          fi
+
+          # Increment version based on determined type
+          npm version $bump_type --no-git-tag-version
+
+          # Get new version
+          new_version=$(node -p "require('./package.json').version")
+          echo "New version: $new_version (bump type: $bump_type)"
+
+      - name: Commit version update
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to $(node -p "require('./package.json').version") [skip ci]"
+          git push
+
+      - name: Get new version
+        id: version
+        run: |
+          new_version=$(node -p "require('./package.json').version")
+          echo "version=$new_version" >> $GITHUB_OUTPUT
+          echo "tag=v$new_version" >> $GITHUB_OUTPUT
+
+      - name: Get latest release tag
+        id: latest-tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Get commit messages since last release
+        id: commits
+        run: |
+          if [ -n "${{ steps.latest-tag.outputs.latest_tag }}" ]; then
+            # Get commits since last tag
+            commits=$(git log ${{ steps.latest-tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            # If no previous tag, get last 10 commits
+            commits=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+          fi
+
+          # Handle multiline output for GitHub Actions
+          {
+            echo 'commits<<EOF'
+            echo "$commits"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Create Git Tag
+        run: |
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: 'Release ${{ steps.version.outputs.tag }}'
+          body: |
+            ## What's Changed
+            ${{ steps.commits.outputs.commits }}
+
+            ## Deployment
+            - ✅ Integration tests passed
+            - ✅ Version bumped to ${{ steps.version.outputs.tag }}
+            - ⏳ Staging deployment in progress
+            - ⏳ Production deployment pending approval
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest-tag.outputs.latest_tag }}...${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-staging:
+    needs: update-version
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Staging
+        id: deploy-staging
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--target=staging'
+          # Deploy to preview/staging (no --prod flag)
+
+  approval-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Wait for Production Approval
+        run: echo "Production deployment approved! Proceeding to deploy..."
+
+  deploy-production:
+    needs: approval-production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--prod'
