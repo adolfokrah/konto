@@ -40,8 +40,10 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Update package.json version
-        working-directory: ./cms
         run: |
+          # Change to cms directory
+          cd ./cms
+          
           # Get current version
           current_version=$(node -p "require('./package.json').version")
           echo "Current version: $current_version"
@@ -126,8 +128,8 @@ jobs:
 
       - name: Get new version
         id: version
-        working-directory: ./cms
         run: |
+          cd ./cms
           new_version=$(node -p "require('./package.json').version")
           echo "version=$new_version" >> $GITHUB_OUTPUT
           echo "tag=v$new_version" >> $GITHUB_OUTPUT
