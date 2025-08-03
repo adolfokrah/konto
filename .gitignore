@@ -47,3 +47,4 @@ cms/test-results/
 cms/playwright-report/
 cms/blob-report/
 cms/playwright/.cache/
+.vercel
