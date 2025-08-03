@@ -94,7 +94,7 @@ jobs:
     env:
       NODE_ENV: test
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      DATABASE_URI: mongodb://localhost:27017/konto-test
       NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
@@ -214,7 +214,7 @@ jobs:
     env:
       NODE_ENV: test
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      DATABASE_URI: mongodb://localhost:27017/konto-test
       NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
 
     steps:
