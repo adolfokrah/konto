@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+
 import { setPaymentStatus } from './hooks'
 
 export const Contributions: CollectionConfig = {
@@ -92,7 +93,7 @@ export const Contributions: CollectionConfig = {
 
           // Add collectors to allowed users
           if (jar.collectors && Array.isArray(jar.collectors)) {
-            jar.collectors.forEach((collector) => {
+            jar.collectors.forEach(collector => {
               // Handle both ObjectId string and populated object
               const collectorId = typeof collector === 'string' ? collector : collector.id
               allowedUserIds.push(collectorId)

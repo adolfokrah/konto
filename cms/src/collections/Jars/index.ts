@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+
 import { generatePaymentLink } from './hooks'
 
 export const Jars: CollectionConfig = {
@@ -54,7 +55,7 @@ export const Jars: CollectionConfig = {
       required: true,
       admin: {
         description: 'Accepted contribution amount for fixed contributions',
-        condition: (data) => data.isFixedContribution,
+        condition: data => data.isFixedContribution,
       },
     },
     {
