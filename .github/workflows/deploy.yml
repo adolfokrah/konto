@@ -40,6 +40,7 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Update package.json version
+        working-directory: ./cms
         run: |
           # Get current version
           current_version=$(node -p "require('./package.json').version")
@@ -119,12 +120,13 @@ jobs:
 
       - name: Commit version update
         run: |
-          git add package.json
-          git commit -m "chore: bump version to $(node -p "require('./package.json').version") [skip ci]"
+          git add cms/package.json
+          git commit -m "chore: bump version to $(node -p "require('./cms/package.json').version") [skip ci]"
           git push
 
       - name: Get new version
         id: version
+        working-directory: ./cms
         run: |
           new_version=$(node -p "require('./package.json').version")
           echo "version=$new_version" >> $GITHUB_OUTPUT
