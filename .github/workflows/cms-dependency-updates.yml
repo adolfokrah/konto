@@ -41,6 +41,7 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
+          cache-dependency-path: ./cms/pnpm-lock.yaml
 
       - name: Check for outdated dependencies
         id: check
