@@ -2,7 +2,8 @@ name: Integration Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+        - main
     paths:
       - 'cms/**'
       - '.github/workflows/integration-tests.yml'
