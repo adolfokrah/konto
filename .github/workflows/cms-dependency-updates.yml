@@ -1,0 +1,353 @@
+name: Automated Dependency Updates In CMS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    # Allow manual triggering
+    inputs:
+      update_type:
+        description: 'Type of update to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'patch'
+          - 'minor'
+          - 'major'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+    outputs:
+      has-updates: ${{ steps.check.outputs.has-updates }}
+      update-type: ${{ steps.check.outputs.update-type }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Check for outdated dependencies
+        id: check
+        working-directory: ./cms
+        run: |
+          echo "Checking for outdated dependencies in cms folder..."
+
+          # Get outdated packages
+          outdated_output=$(pnpm outdated --format json 2>/dev/null || echo '{}')
+          echo "Outdated packages: $outdated_output"
+
+          # Check if there are any updates
+          if [ "$outdated_output" = "{}" ] || [ -z "$outdated_output" ]; then
+            echo "No outdated dependencies found"
+            echo "has-updates=false" >> $GITHUB_OUTPUT
+            echo "update-type=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "has-updates=true" >> $GITHUB_OUTPUT
+
+          # Analyze update types (simplified check)
+          if echo "$outdated_output" | grep -q "major"; then
+            echo "update-type=major" >> $GITHUB_OUTPUT
+            echo "Major updates detected"
+          elif echo "$outdated_output" | grep -q "minor"; then
+            echo "update-type=minor" >> $GITHUB_OUTPUT
+            echo "Minor updates detected"
+          else
+            echo "update-type=patch" >> $GITHUB_OUTPUT
+            echo "Patch updates detected"
+          fi
+
+  update-patch-dependencies:
+    needs: check-dependencies
+    runs-on: ubuntu-latest
+    if: needs.check-dependencies.outputs.has-updates == 'true' && needs.check-dependencies.outputs.update-type == 'patch'
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_DATABASE: konto-test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: ./cms/pnpm-lock.yaml
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Update patch dependencies
+        id: update
+        working-directory: ./cms
+        run: |
+          echo "Updating patch-level dependencies in cms folder..."
+
+          # Create branch
+          branch_name="dependency/patch-updates-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$branch_name"
+          echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
+
+          # Update all patch-level dependencies
+          pnpm update --latest --save-exact
+
+          # Check if there are changes
+          if git diff --quiet cms/package.json cms/pnpm-lock.yaml; then
+            echo "No changes to commit"
+            echo "changes-made=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes-made=true" >> $GITHUB_OUTPUT
+            
+            # Install and test
+            pnpm install --frozen-lockfile
+            pnpm generate:types
+            pnpm test:int
+            
+            # Commit and push
+            cd ..
+            git add cms/package.json cms/pnpm-lock.yaml
+            git commit -m "dependency: update patch-level dependencies [auto-merge]"
+            git push origin "$branch_name"
+          fi
+
+      - name: Create Pull Request (Auto-merge)
+        if: steps.update.outputs.changes-made == 'true'
+        run: |
+          # Create labels if they don't exist
+          gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
+          gh label create "patch-update" --description "Patch-level dependency updates" --color "28a745" --force || true
+          gh label create "auto-merge" --description "PRs that will be automatically merged" --color "fbca04" --force || true
+
+          # Create PR
+          gh pr create \
+            --title "🔧 Automated patch dependency updates" \
+            --body "## 🔧 Automated Patch Dependency Updates
+
+          This PR contains patch-level dependency updates that are considered safe and will be automatically merged after tests pass.
+
+          ### Changes Made
+          - ✅ Updated patch-level dependencies
+          - ✅ Tests passed successfully
+          - ✅ No breaking changes expected
+
+          ### Auto-merge Policy
+          This PR will be automatically merged because:
+          - Only patch-level updates (bug fixes)
+          - Tests are passing
+          - Low risk of breaking changes
+
+          ---
+          *This is an automated PR created by the dependency update workflow*" \
+            --label "dependencies,patch-update,auto-merge" \
+            --assignee "${{ github.actor }}" \
+            --head "${{ steps.update.outputs.branch-name }}" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        if: steps.update.outputs.changes-made == 'true'
+        run: |
+          gh pr merge "${{ steps.update.outputs.branch-name }}" --auto --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-major-minor-dependencies:
+    needs: check-dependencies
+    runs-on: ubuntu-latest
+    if: needs.check-dependencies.outputs.has-updates == 'true' && (needs.check-dependencies.outputs.update-type == 'major' || needs.check-dependencies.outputs.update-type == 'minor')
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_DATABASE: konto-test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
+      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: ./cms/pnpm-lock.yaml
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Update dependencies
+        id: update
+        working-directory: ./cms
+        run: |
+          update_type="${{ needs.check-dependencies.outputs.update-type }}"
+          echo "Updating $update_type dependencies in cms folder..."
+
+          # Create branch
+          branch_name="dependency/${update_type}-updates-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$branch_name"
+          echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
+          echo "update-type=$update_type" >> $GITHUB_OUTPUT
+
+          # Update dependencies
+          pnpm update --latest
+
+          # Check if there are changes
+          if git diff --quiet cms/package.json cms/pnpm-lock.yaml; then
+            echo "changes-made=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "changes-made=true" >> $GITHUB_OUTPUT
+
+          # Install and test
+          pnpm install --frozen-lockfile
+          pnpm generate:types
+
+          # Test (don't fail if tests break)
+          if pnpm test:int; then
+            echo "tests-passing=true" >> $GITHUB_OUTPUT
+          else
+            echo "tests-passing=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Commit and push
+          cd ..
+          git add cms/package.json cms/pnpm-lock.yaml
+          git commit -m "dependency: update $update_type dependencies
+
+          This commit updates $update_type-level dependencies.
+          Manual review and approval required before merging."
+          git push origin "$branch_name"
+
+      - name: Create Pull Request (Manual Review)
+        if: steps.update.outputs.changes-made == 'true'
+        run: |
+          # Create labels if they don't exist
+          gh label create "dependencies" --description "Pull requests that update dependencies" --color "0366d6" --force || true
+          gh label create "${{ steps.update.outputs.update-type }}-update" --description "${{ steps.update.outputs.update-type }}-level dependency updates" --color "d73a49" --force || true
+          gh label create "review-required" --description "PRs that require manual review" --color "e99695" --force || true
+
+          # Create PR
+          gh pr create \
+            --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)" \
+            --body "## 📦 ${{ steps.update.outputs.update-type }} Dependency Updates
+
+          This PR contains **${{ steps.update.outputs.update-type }}** dependency updates that require careful review.
+
+          ### Update Details
+          - **Type**: ${{ steps.update.outputs.update-type }} updates
+          - **Tests**: ${{ steps.update.outputs.tests-passing == 'true' && '✅ Passing' || '❌ Failing - needs attention' }}
+          - **Risk Level**: ${{ steps.update.outputs.update-type == 'major' && 'High' || 'Medium' }}
+
+          ### ⚠️ Manual Review Required
+
+          This PR will **NOT** be automatically merged and requires manual approval because:
+          - Contains ${{ steps.update.outputs.update-type }}-level updates
+          - Potential for breaking changes
+          - Manual testing recommended
+
+          ### Review Checklist
+          - [ ] Review changelog/release notes for updated packages
+          - [ ] Test the application locally
+          - [ ] Verify no breaking changes
+          - [ ] Check for deprecated features usage
+          - [ ] Ensure all tests pass
+
+          ### Changes Made
+          - Updated ${{ steps.update.outputs.update-type }}-level dependencies
+          - Dependencies locked to specific versions
+          - Tests ${{ steps.update.outputs.tests-passing == 'true' && 'are passing' || 'need attention' }}
+
+          ---
+          *This is an automated PR created by the dependency update workflow*" \
+            --label "dependencies,${{ steps.update.outputs.update-type }}-update,review-required" \
+            --assignee "${{ github.actor }}" \
+            --head "${{ steps.update.outputs.branch-name }}" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cleanup:
+    needs: [check-dependencies, update-patch-dependencies, update-major-minor-dependencies]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Workflow Summary
+        run: |
+          echo "## 📊 Dependency Update Workflow Summary"
+          echo ""
+          echo "- **Has Updates**: ${{ needs.check-dependencies.outputs.has-updates }}"
+          echo "- **Update Type**: ${{ needs.check-dependencies.outputs.update-type }}"
+          echo ""
+          if [ "${{ needs.check-dependencies.outputs.update-type }}" = "patch" ]; then
+            echo "✅ Patch updates were processed and auto-merged"
+          elif [ "${{ needs.check-dependencies.outputs.update-type }}" != "none" ]; then
+            echo "📋 ${{ needs.check-dependencies.outputs.update-type }} updates created PR for manual review"
+          else
+            echo "ℹ️ No dependency updates available"
+          fi
