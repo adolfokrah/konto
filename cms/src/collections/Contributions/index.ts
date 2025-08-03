@@ -47,6 +47,9 @@ export const Contributions: CollectionConfig = {
       type: 'select',
       admin: {
         readOnly: true,
+        components: {
+          Cell: '@collections/Contributions/components/PaymentStatus.tsx',
+        },
       },
       options: [
         { label: 'Pending', value: 'pending' },
