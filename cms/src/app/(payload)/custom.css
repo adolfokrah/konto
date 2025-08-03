@@ -1,0 +1,7 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+/* @import 'tailwindcss/preflight.css' layer(base); */
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Support Payload’s dark mode toggle by adding a custom variant */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));

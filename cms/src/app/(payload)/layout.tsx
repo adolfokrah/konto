@@ -8,7 +8,7 @@ import React from 'react'
 import config from '@payload-config'
 
 import { importMap } from './admin/importMap.js'
-import './custom.scss'
+import './custom.css'
 
 type Args = {
   children: React.ReactNode

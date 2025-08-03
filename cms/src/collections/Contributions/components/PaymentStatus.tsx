@@ -11,7 +11,10 @@ export default function PaymentStatus({ cellData }: { cellData: string }) {
 
   return (
     <span
-      className={cn('inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold', style)}
+      className={cn(
+        'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ',
+        style,
+      )}
     >
       {cellData.charAt(0).toUpperCase() + cellData.slice(1)}
     </span>
