@@ -133,7 +133,7 @@ jobs:
           pnpm update --latest --save-exact
 
           # Check if there are changes
-          if git diff --quiet cms/package.json cms/pnpm-lock.yaml; then
+          if git diff --quiet package.json pnpm-lock.yaml; then
             echo "No changes to commit"
             echo "changes-made=false" >> $GITHUB_OUTPUT
           else
@@ -144,7 +144,7 @@ jobs:
             pnpm generate:types
             pnpm test:int
             
-            # Commit and push
+            # Commit and push (go back to root for git operations)
             cd ..
             git add cms/package.json cms/pnpm-lock.yaml
             git commit -m "dependency: update patch-level dependencies [auto-merge]"
@@ -255,7 +255,7 @@ jobs:
           pnpm update --latest
 
           # Check if there are changes
-          if git diff --quiet cms/package.json cms/pnpm-lock.yaml; then
+          if git diff --quiet package.json pnpm-lock.yaml; then
             echo "changes-made=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -273,7 +273,7 @@ jobs:
             echo "tests-passing=false" >> $GITHUB_OUTPUT
           fi
 
-          # Commit and push
+          # Commit and push (go back to root for git operations)
           cd ..
           git add cms/package.json cms/pnpm-lock.yaml
           git commit -m "dependency: update $update_type dependencies
