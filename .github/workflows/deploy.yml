@@ -34,6 +34,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Configure Git
         run: |

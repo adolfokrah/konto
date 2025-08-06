@@ -45,19 +45,16 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-          cache-dependency-path: ./cms/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./cms
         run: pnpm install --frozen-lockfile
 
       - name: Generate types
-        working-directory: ./cms
-        run: pnpm generate:types
+        run: pnpm --filter @konto/cms generate:types
 
       - name: Run integration tests
-        working-directory: ./cms
-        run: pnpm test:int
+        run: pnpm --filter @konto/cms test:int
         env:
           CI: true
 
