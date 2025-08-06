@@ -6,14 +6,13 @@ import {
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
+  const someVariables = 'This is a new variable for testing purposes';
   const colorScheme = useColorScheme();
-  const [loadingPage, setLoadingPage] = useState(true);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
