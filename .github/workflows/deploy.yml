@@ -122,7 +122,29 @@ jobs:
           fi
 
           # Increment version based on determined type
-          pnpm version $bump_type --no-git-tag-version
+          # Use Node.js to directly update the version to avoid workspace issues
+          node -e "
+            const fs = require('fs');
+            const path = './package.json';
+            const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const currentVersion = pkg.version;
+            const versionParts = currentVersion.split('.').map(Number);
+            
+            if ('$bump_type' === 'major') {
+              versionParts[0]++;
+              versionParts[1] = 0;
+              versionParts[2] = 0;
+            } else if ('$bump_type' === 'minor') {
+              versionParts[1]++;
+              versionParts[2] = 0;
+            } else {
+              versionParts[2]++;
+            }
+            
+            pkg.version = versionParts.join('.');
+            fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
+            console.log('Updated version from', currentVersion, 'to', pkg.version);
+          "
 
           # Get new version
           new_version=$(node -p "require('./package.json').version")
