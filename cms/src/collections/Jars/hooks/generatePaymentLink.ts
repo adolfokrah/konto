@@ -13,7 +13,7 @@ export const generatePaymentLink: CollectionAfterChangeHook = async ({ doc, oper
 
     // Update the document with the generated payment link
     try {
-      const _updatedDoc = await req.payload.update({
+       await req.payload.update({
         collection: 'jars',
         id: doc.id,
         data: { paymentLink },

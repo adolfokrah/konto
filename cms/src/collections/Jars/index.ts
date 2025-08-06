@@ -94,7 +94,7 @@ export const Jars: CollectionConfig = {
       relationTo: 'users',
       required: true,
       hasMany: false,
-      filterOptions: ({ req: _req }) => {
+      filterOptions: () => {
         // This filter can be customized based on the request context
         return {
           isKYCVerified: { equals: true },
