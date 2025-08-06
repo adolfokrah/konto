@@ -48,6 +48,7 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Update package.json version
+        id: update-version
         run: |
           # Change to cms directory
           cd ./cms
@@ -58,6 +59,18 @@ jobs:
 
           # Get latest release tag to determine commits since last release
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Check if there are commits since the last tag
+          if [ -n "$latest_tag" ]; then
+            commits_since_tag=$(git rev-list ${latest_tag}..HEAD --count)
+            echo "Commits since last tag ($latest_tag): $commits_since_tag"
+            
+            if [ "$commits_since_tag" -eq "0" ]; then
+              echo "No commits since last tag. Skipping version bump."
+              echo "version_updated=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
 
           if [ -n "$latest_tag" ]; then
             # Get commits since last tag
@@ -149,14 +162,17 @@ jobs:
           # Get new version
           new_version=$(node -p "require('./package.json').version")
           echo "New version: $new_version (bump type: $bump_type)"
+          echo "version_updated=true" >> $GITHUB_OUTPUT
 
       - name: Commit version update
+        if: steps.update-version.outputs.version_updated == 'true'
         run: |
           git add cms/package.json
           git commit -m "chore: bump version to $(node -p "require('./cms/package.json').version") [skip ci]"
           git push
 
       - name: Get new version
+        if: steps.update-version.outputs.version_updated == 'true'
         id: version
         run: |
           cd ./cms
@@ -165,6 +181,7 @@ jobs:
           echo "tag=v$new_version" >> $GITHUB_OUTPUT
 
       - name: Get latest release tag
+        if: steps.update-version.outputs.version_updated == 'true'
         id: latest-tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -172,6 +189,7 @@ jobs:
         continue-on-error: true
 
       - name: Get commit messages since last release
+        if: steps.update-version.outputs.version_updated == 'true'
         id: commits
         run: |
           if [ -n "${{ steps.latest-tag.outputs.latest_tag }}" ]; then
@@ -190,11 +208,30 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Create Git Tag
+        if: steps.update-version.outputs.version_updated == 'true'
+        id: create-tag
         run: |
-          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
+          # Check if tag already exists locally
+          if git tag -l "${{ steps.version.outputs.tag }}" | grep -q "${{ steps.version.outputs.tag }}"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists locally, deleting it"
+            git tag -d "${{ steps.version.outputs.tag }}"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.version.outputs.tag }}$"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists on remote"
+            echo "Skipping tag creation as it already exists"
+            echo "tag_created=false" >> $GITHUB_OUTPUT
+          else
+            echo "Creating new tag ${{ steps.version.outputs.tag }}"
+            git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}"
+            echo "Tag created and pushed successfully"
+            echo "tag_created=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
+        if: steps.update-version.outputs.version_updated == 'true' && steps.create-tag.outputs.tag_created == 'true'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
