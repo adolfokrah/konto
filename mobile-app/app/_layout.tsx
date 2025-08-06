@@ -12,6 +12,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
   const someVariables = 'This is a new variable for testing purposes';
+  const anotherUnusedVar = 'This should trigger pre-commit';
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
