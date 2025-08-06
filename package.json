@@ -36,12 +36,12 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@types/node": "^24.1.0",
-    "chalk": "^4.1.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
-    "prettier": "^3.6.2",
-    "typescript": "^5.6.2"
+    "@types/node": "24.1.0",
+    "chalk": "4.1.2",
+    "husky": "9.1.7",
+    "lint-staged": "16.1.2",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2"
   },
   "lint-staged": {
     "{cms,mobile-app}/**/*.{js,jsx,ts,tsx}": [
