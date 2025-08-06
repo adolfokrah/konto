@@ -1,0 +1,75 @@
+{
+  "name": "konto-monorepo",
+  "version": "1.1.2",
+  "description": "A modern contribution and donation platform with web and mobile applications",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=18.20.2",
+    "pnpm": ">=9.0.0"
+  },
+  "workspaces": [
+    "cms",
+    "mobile-app",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:parallel": "pnpm --parallel run dev",
+    "dev:cms": "pnpm --filter cms dev",
+    "dev:mobile": "pnpm --filter mobile-app dev",
+    "dev:mobile-tunnel": "pnpm --filter mobile-app dev -- --tunnel",
+    "dev:shared": "pnpm --filter \"@konto/shared-*\" --parallel run dev",
+    "build": "pnpm --parallel run build",
+    "build:cms": "pnpm --filter cms build",
+    "build:mobile": "pnpm --filter mobile-app build",
+    "build:shared": "pnpm --filter \"@konto/shared-*\" run build",
+    "lint": "pnpm --parallel run lint",
+    "lint:fix": "pnpm --parallel run lint:fix",
+    "format": "pnpm --parallel run format",
+    "type-check": "pnpm --parallel run type-check",
+    "test": "pnpm --parallel run test",
+    "test:cms": "pnpm --filter cms test",
+    "clean": "pnpm --parallel run clean && rm -rf node_modules",
+    "clean:deps": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+    "install:all": "pnpm install",
+    "postinstall": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "chalk": "^4.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.6.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "donation",
+    "fundraising",
+    "payloadcms",
+    "nextjs",
+    "react-native",
+    "expo",
+    "monorepo",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Adolphus Okrah",
+  "homepage": "https://github.com/adolfokrah/konto#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adolfokrah/konto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adolfokrah/konto/issues"
+  }
+}

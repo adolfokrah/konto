@@ -1,0 +1,7 @@
+packages:
+  # Backend application
+  - 'cms'
+  # Mobile application
+  - 'mobile-app'
+  # Shared packages
+  - 'packages/*'

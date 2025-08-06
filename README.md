@@ -1,36 +1,71 @@
 # Konto
 
-A modern contribution and donation platform built with PayloadCMS and Next.js. Konto allows users to create donation "jars" and manage contributions with integrated payment processing.
+A modern contribution and donation platform built with PayloadCMS, Next.js, and React Native/Expo. Konto allows users to create donation "jars" and manage contributions with integrated payment processing across web and mobile platforms.
+
+This is a **monorepo** managed with **pnpm workspaces**, containing shared packages, backend CMS, and mobile application.
 
 ## 🚀 Features
 
+- **Monorepo Architecture**: Shared code and utilities across web and mobile platforms
+- **Cross-Platform Access**: Web admin dashboard and mobile app for contributors
+- **Shared Type Safety**: TypeScript types shared between all applications
 - **Donation Jars**: Create and manage fundraising campaigns with images and descriptions
+- **Mobile-First Contributions**: Native mobile app for easy donation experiences
 - **Contributions Management**: Track donations with contributor phone numbers and amounts
 - **Payment Integration**: Automated payment link generation with status tracking
-- **Payment Status Components**: Visual status indicators (pending, completed, failed) with Tailwind CSS styling
-- **User Management**: Admin authentication and user roles
+- **Payment Status Components**: Visual status indicators (pending, completed, failed) with modern styling
+- **User Management**: Admin authentication and user roles across platforms
 - **Media Management**: Image upload and management system for jar campaigns
 - **Admin Dashboard**: Full-featured PayloadCMS interface for content management
-- **Type Safety**: Full TypeScript implementation with generated types
-- **Modern UI**: Tailwind CSS v4 with custom utility classes and responsive design
+- **Native Mobile UI**: Expo Router-based navigation with React Native components
+- **Shared Utilities**: Common functions for formatting, validation, and business logic
+- **Modern UI**: Tailwind CSS v4 for web, React Native styling for mobile
 
 ## 🛠 Tech Stack
 
+### Monorepo & Tooling
+- **Monorepo**: pnpm workspaces for efficient dependency management
+- **Package Manager**: pnpm with workspace protocol
+- **Shared Packages**: TypeScript types and utilities across platforms
+- **Code Quality**: ESLint, Prettier, Husky, lint-staged
+
+### Backend & Web
 - **Framework**: Next.js 15.4.5
-- **CMS**: PayloadCMS 3.49.1
+- **CMS**: PayloadCMS 3.50.0
 - **Database**: MongoDB
-- **Runtime**: Node.js 18+
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4.1.11 + SCSS
 - **UI Utils**: clsx + tailwind-merge for class management
-- **Testing**: Vitest + Playwright
-- **Package Manager**: pnpm
+
+### Mobile
+- **Framework**: React Native 0.79.5 + Expo ~53.0.20
+- **Navigation**: Expo Router 5.1.4 with tab-based architecture
+- **UI Components**: React Native with Expo Vector Icons
+- **Animations**: React Native Reanimated 3.17.4
+- **Language**: TypeScript 5.8.3
+
+### Development & Testing
+- **Runtime**: Node.js 18+
+- **Testing**: Vitest + Playwright (web), Jest (mobile)
+- **Package Manager**: pnpm with workspaces
+- **Linting**: ESLint with Expo config
 
 ## 📁 Project Structure
 
 ```
-konto/
-├── cms/                    # PayloadCMS backend application
+konto/                      # Monorepo root
+├── packages/               # Shared packages
+│   ├── shared-types/      # TypeScript types shared across platforms
+│   │   ├── src/
+│   │   │   └── index.ts   # Jar, Contribution, User, Payment types
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── shared-utils/      # Utility functions shared across platforms
+│       ├── src/
+│       │   └── index.ts   # Currency, phone, validation utilities
+│       ├── package.json
+│       └── tsconfig.json
+├── cms/                    # PayloadCMS backend application (@konto/cms)
 │   ├── src/
 │   │   ├── collections/    # PayloadCMS collections
 │   │   │   ├── Jars/      # Donation jar management with payment links
@@ -51,6 +86,24 @@ konto/
 │   ├── tailwind.config.js # Tailwind CSS v4 configuration
 │   ├── package.json
 │   └── README.md          # CMS-specific documentation
+├── mobile-app/             # React Native Expo mobile application (@konto/mobile-app)
+│   ├── app/               # Expo Router app directory
+│   │   ├── (tabs)/       # Tab-based navigation screens
+│   │   │   ├── index.tsx # Home screen
+│   │   │   └── explore.tsx # Explore/Browse jars screen
+│   │   ├── _layout.tsx   # Root layout configuration
+│   │   └── +not-found.tsx # 404 screen
+│   ├── components/        # Reusable React Native components
+│   ├── constants/         # App constants and configuration
+│   ├── hooks/            # Custom React hooks for mobile
+│   ├── assets/           # Images, icons, and static files
+│   ├── scripts/          # Build and development scripts
+│   ├── app.json          # Expo configuration
+│   ├── package.json
+│   └── README.md          # Mobile app documentation
+├── package.json            # Root monorepo configuration
+├── pnpm-workspace.yaml    # pnpm workspace configuration
+├── tsconfig.json          # Root TypeScript configuration
 └── README.md              # This file
 ```
 
@@ -59,10 +112,11 @@ konto/
 ### Prerequisites
 
 - Node.js 18+ 
-- pnpm (recommended) or npm
+- pnpm 9+ (for workspace support)
 - MongoDB database
+- For mobile development: iOS Simulator (macOS) or Android Studio
 
-### Installation
+### Monorepo Setup
 
 1. **Clone the repository**
    ```bash
@@ -70,17 +124,24 @@ konto/
    cd konto
    ```
 
-2. **Navigate to the CMS directory**
-   ```bash
-   cd cms
-   ```
-
-3. **Install dependencies**
+2. **Install all dependencies** (root + all workspaces)
    ```bash
    pnpm install
    ```
 
-4. **Set up environment variables**
+3. **Build shared packages**
+   ```bash
+   pnpm --filter "@konto/shared-*" build
+   ```
+
+### Backend Setup
+
+1. **Navigate to the CMS directory**
+   ```bash
+   cd cms
+   ```
+
+2. **Set up environment variables**
    ```bash
    cp .env.example .env
    ```
@@ -90,14 +151,68 @@ konto/
    - PayloadCMS secret (`PAYLOAD_SECRET`)
    - Any payment gateway credentials
 
-5. **Start the development server**
+3. **Start the development server**
    ```bash
-   pnpm dev
+   # From root
+   pnpm dev:cms
+   
+   # Or from cms directory
+   cd cms && pnpm dev
    ```
 
-6. **Access the application**
+4. **Access the web application**
    - Frontend: http://localhost:3000
    - Admin Panel: http://localhost:3000/admin
+
+### Mobile App Setup
+
+1. **Start the Expo development server**
+   ```bash
+   # From root
+   pnpm dev:mobile
+   
+   # Or from mobile-app directory
+   cd mobile-app && pnpm dev
+   ```
+
+2. **Run on device/simulator**
+   ```bash
+   # From mobile-app directory
+   cd mobile-app
+   
+   # iOS (requires macOS and Xcode)
+   pnpm ios
+   
+   # Android (requires Android Studio)
+   pnpm android
+   
+   # Web browser
+   pnpm web
+   ```
+
+3. **Use Expo Go app** (Alternative)
+   - Install Expo Go on your mobile device
+   - Scan the QR code from the terminal
+
+### Development Workflow
+
+**Start everything:**
+```bash
+# Start all apps in parallel
+pnpm dev
+```
+
+**Work on specific parts:**
+```bash
+# Backend only
+pnpm dev:cms
+
+# Mobile only
+pnpm dev:mobile
+
+# Build shared packages when you modify them
+pnpm --filter "@konto/shared-*" build
+```
 
 ### Docker Setup (Optional)
 
@@ -155,6 +270,45 @@ pnpm test:e2e
 
 ## 🏗 Development Scripts
 
+### Monorepo Commands (from root)
+```bash
+# Install all dependencies
+pnpm install
+
+# Start all applications
+pnpm dev
+
+# Build all applications
+pnpm build
+
+# Lint all code
+pnpm lint
+
+# Format all code
+pnpm format
+
+# Type check all code
+pnpm type-check
+
+# Clean all build artifacts
+pnpm clean
+
+# Clean all node_modules
+pnpm clean:deps
+
+# Specific workspace commands
+pnpm dev:cms              # Start CMS only
+pnpm dev:mobile           # Start mobile app only
+pnpm build:cms            # Build CMS only
+pnpm build:mobile         # Build mobile app only
+pnpm test:cms             # Test CMS only
+
+# Shared packages
+pnpm --filter "@konto/shared-*" build    # Build all shared packages
+pnpm --filter "@konto/shared-types" dev  # Watch shared types
+```
+
+### Backend (CMS)
 ```bash
 cd cms
 
@@ -178,6 +332,40 @@ pnpm format           # Prettier formatting
 pnpm format:check     # Check formatting
 pnpm format:lint      # Format and lint together
 pnpm type-check       # TypeScript type checking
+pnpm clean            # Clean build artifacts
+```
+
+### Mobile App
+```bash
+cd mobile-app
+
+# Development
+pnpm dev              # Start Expo dev server
+pnpm android          # Run on Android
+pnpm ios              # Run on iOS
+pnpm web              # Run in web browser
+
+# Building
+pnpm build            # Export for production
+
+# Utilities
+pnpm lint             # ESLint check
+pnpm type-check       # TypeScript check
+pnpm reset-project    # Reset Expo project
+pnpm clean            # Clean build artifacts
+```
+
+### Shared Packages
+```bash
+# From root, build all shared packages
+pnpm --filter packages/* build
+
+# Build specific package
+pnpm --filter @konto/shared-types build
+pnpm --filter @konto/shared-utils build
+
+# Watch mode for development
+pnpm --filter @konto/shared-types dev
 ```
 
 ## 🔧 Configuration
@@ -203,11 +391,38 @@ Required environment variables:
 
 ## 🚀 Deployment
 
-The application can be deployed to various platforms:
+### Backend Deployment
+The PayloadCMS backend can be deployed to various platforms:
 
 1. **PayloadCMS Cloud**: Direct deployment with managed MongoDB
 2. **Vercel/Netlify**: For the Next.js application
 3. **Docker**: Using the provided Dockerfile and docker-compose.yml
+
+### Mobile App Deployment
+
+1. **Expo Application Services (EAS)**
+   ```bash
+   cd mobile-app
+   
+   # Build for iOS/Android
+   npx eas build --platform all
+   
+   # Submit to app stores
+   npx eas submit --platform all
+   ```
+
+2. **Web Deployment**
+   ```bash
+   cd mobile-app
+   pnpm web
+   npx expo export:web
+   ```
+
+3. **Over-the-Air Updates**
+   ```bash
+   cd mobile-app
+   npx eas update
+   ```
 
 ## 🤝 Contributing
 
@@ -224,14 +439,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 For support and questions:
-- Check the [CMS README](./cms/README.md) for technical details
+- Check the [CMS README](./cms/README.md) for backend technical details
+- Check the [Mobile App README](./mobile-app/README.md) for mobile development details
 - Review the [PayloadCMS documentation](https://payloadcms.com/docs)
+- Review the [Expo documentation](https://docs.expo.dev/)
 - Open an issue for bugs or feature requests
 
 ## 🔄 Version History
 
-- **v1.1.2**: Current version with enhanced UI components and Tailwind CSS integration
-  - Added PaymentStatus component with visual status indicators
+- **v1.1.2**: Added mobile app with React Native/Expo
+  - Native mobile application with Expo Router navigation
+  - Cross-platform support (iOS, Android, Web)
+  - Tab-based mobile UI architecture
+  - React Native animations and gestures
+  - Enhanced UI components with visual status indicators
   - Integrated Tailwind CSS v4 with custom utility functions
   - Enhanced admin panel styling with custom SCSS
   - Improved TypeScript configuration and linting
@@ -239,4 +460,4 @@ For support and questions:
 
 ---
 
-Built with ❤️ using PayloadCMS and Next.js
+Built with ❤️ using PayloadCMS, Next.js, and React Native/Expo

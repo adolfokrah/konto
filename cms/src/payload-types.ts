@@ -194,6 +194,7 @@ export interface Jar {
    * Description of the jar
    */
   description?: string | null;
+  jarGroup?: (string | null) | JarGroup;
   /**
    * Upload an image for the jar
    */
@@ -218,7 +219,6 @@ export interface Jar {
    * Deadline for contributions to this jar
    */
   deadline?: string | null;
-  jarGroup?: (string | null) | JarGroup;
   currency: 'ghc' | 'ngn';
   /**
    * User who created the jar
@@ -414,13 +414,13 @@ export interface MediaSelect<T extends boolean = true> {
 export interface JarsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  jarGroup?: T;
   image?: T;
   isActive?: T;
   isFixedContribution?: T;
   acceptedContributionAmount?: T;
   goalAmount?: T;
   deadline?: T;
-  jarGroup?: T;
   currency?: T;
   creator?: T;
   collectors?: T;
