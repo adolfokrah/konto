@@ -45,12 +45,10 @@
   },
   "lint-staged": {
     "cms/**/*.{js,jsx,ts,tsx}": [
-      "cd cms && pnpm run lint",
-      "prettier --write"
+      "bash -c 'cd cms && pnpm run lint || exit 1'"
     ],
     "mobile-app/**/*.{js,jsx,ts,tsx}": [
-      "cd mobile-app && pnpm run lint",
-      "prettier --write"
+      "bash -c 'cd mobile-app && pnpm run lint || exit 1'"
     ],
     "packages/**/*.{js,jsx,ts,tsx}": [
       "prettier --write"
