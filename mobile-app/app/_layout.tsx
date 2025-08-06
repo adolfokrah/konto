@@ -12,7 +12,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { loading, setLoading } = useState(true);
+  const [loading, setLoading] = useState(true);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
