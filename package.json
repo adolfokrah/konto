@@ -45,9 +45,11 @@
   },
   "lint-staged": {
     "cms/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
     "mobile-app/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
     "packages/**/*.{js,jsx,ts,tsx}": [
