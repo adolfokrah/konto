@@ -1,7 +1,9 @@
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { FlatCompat } from '@eslint/eslintrc'
+import { createRequire } from 'module'
 
+const require = createRequire(import.meta.url)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -9,40 +11,21 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 })
 
+// Import shared config
+const { baseConfig } = require('../eslint.config.js')
+
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  baseConfig,
   {
     rules: {
-      // TypeScript specific rules
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      '@typescript-eslint/no-empty-object-type': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          args: 'after-used',
-          ignoreRestSiblings: false,
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          destructuredArrayIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^(_|ignore)',
-        },
-      ],
+      // Next.js specific overrides
+      '@next/next/no-img-element': 'warn',
       
-      // General code quality rules
-      'no-console': 'warn',
-      'prefer-const': 'error',
-      'no-var': 'error',
-      'object-shorthand': 'error',
-      'prefer-template': 'error',
+      // Additional CMS-specific rules
+      'react/display-name': 'off', // PayloadCMS components often don't need display names
       
-      // React specific rules
-      'react/jsx-boolean-value': ['error', 'never'],
-      'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
-      'react/self-closing-comp': 'error',
-      
-      // Import rules
+      // Import rules for better organization
       'import/order': [
         'error',
         {
