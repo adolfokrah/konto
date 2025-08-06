@@ -25,6 +25,11 @@ export const Jars: CollectionConfig = {
       },
     },
     {
+      name: 'jarGroup',
+      type: 'relationship',
+      relationTo: 'jar-groups',
+    },
+    {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
@@ -64,6 +69,14 @@ export const Jars: CollectionConfig = {
       required: false,
       admin: {
         description: 'Target amount for the jar',
+      },
+    },
+    {
+      name: 'deadline',
+      type: 'date',
+      required: false,
+      admin: {
+        description: 'Deadline for contributions to this jar',
       },
     },
     {

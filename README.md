@@ -4,22 +4,25 @@ A modern contribution and donation platform built with PayloadCMS and Next.js. K
 
 ## 🚀 Features
 
-- **Donation Jars**: Create and manage fundraising campaigns
-- **Contributions Management**: Track donations and contributors
-- **Payment Integration**: Automated payment link generation
-- **User Management**: Admin and contributor user roles
-- **Media Management**: Handle images and files for campaigns
-- **Real-time Updates**: Payment status tracking and notifications
-- **Admin Dashboard**: Full-featured CMS for content management
+- **Donation Jars**: Create and manage fundraising campaigns with images and descriptions
+- **Contributions Management**: Track donations with contributor phone numbers and amounts
+- **Payment Integration**: Automated payment link generation with status tracking
+- **Payment Status Components**: Visual status indicators (pending, completed, failed) with Tailwind CSS styling
+- **User Management**: Admin authentication and user roles
+- **Media Management**: Image upload and management system for jar campaigns
+- **Admin Dashboard**: Full-featured PayloadCMS interface for content management
+- **Type Safety**: Full TypeScript implementation with generated types
+- **Modern UI**: Tailwind CSS v4 with custom utility classes and responsive design
 
 ## 🛠 Tech Stack
 
-- **Framework**: Next.js 15.4.4
+- **Framework**: Next.js 15.4.5
 - **CMS**: PayloadCMS 3.49.1
 - **Database**: MongoDB
-- **Runtime**: Node.js
+- **Runtime**: Node.js 18+
 - **Language**: TypeScript
-- **Styling**: CSS/SCSS
+- **Styling**: Tailwind CSS 4.1.11 + SCSS
+- **UI Utils**: clsx + tailwind-merge for class management
 - **Testing**: Vitest + Playwright
 - **Package Manager**: pnpm
 
@@ -30,15 +33,22 @@ konto/
 ├── cms/                    # PayloadCMS backend application
 │   ├── src/
 │   │   ├── collections/    # PayloadCMS collections
-│   │   │   ├── Jars/      # Donation jar management
-│   │   │   ├── Contributions/ # Donation tracking
-│   │   │   ├── Users/     # User management
-│   │   │   └── Media/     # File uploads
+│   │   │   ├── Jars/      # Donation jar management with payment links
+│   │   │   ├── Contributions/ # Donation tracking with status components
+│   │   │   ├── Users/     # User authentication and management
+│   │   │   └── Media/     # File uploads and media library
 │   │   ├── app/           # Next.js app directory
 │   │   │   ├── (frontend)/ # Public frontend routes
-│   │   │   └── (payload)/ # Admin panel routes
+│   │   │   └── (payload)/ # Admin panel routes with custom styling
+│   │   ├── lib/           # Utility functions
+│   │   │   └── utils/     # Tailwind CSS utilities (cn function)
 │   │   └── payload.config.ts # PayloadCMS configuration
 │   ├── tests/             # E2E and integration tests
+│   │   ├── e2e/          # End-to-end tests with Playwright
+│   │   ├── int/          # Integration tests with Vitest
+│   │   └── utils/        # Test utilities and cleanup
+│   ├── postcss.config.mjs # PostCSS configuration for Tailwind
+│   ├── tailwind.config.js # Tailwind CSS v4 configuration
 │   ├── package.json
 │   └── README.md          # CMS-specific documentation
 └── README.md              # This file
@@ -103,21 +113,28 @@ pnpm dev
 
 ### Jars
 - **Purpose**: Fundraising campaigns/donation jars
-- **Features**: Name, description, target amount, payment links
-- **Hooks**: Automatic payment link generation
+- **Features**: Name, description, target amount, image uploads
+- **Fields**: Name, description, image (media upload), target amount, currency
+- **Hooks**: Automatic payment link generation on creation
+- **Admin**: Uses name as title, organized display
 
 ### Contributions
 - **Purpose**: Individual donations to jars
-- **Features**: Amount tracking, contributor info, payment status
-- **Hooks**: Payment status updates, notifications
+- **Features**: Amount tracking, contributor info, payment status with visual indicators
+- **Fields**: Jar relationship, contributor name, phone number, amount, payment status
+- **Components**: Custom PaymentStatus component with Tailwind CSS styling
+- **Hooks**: Payment status updates and validation
+- **Admin**: Uses contributor phone number as title
 
 ### Users
-- **Purpose**: System users (admins, contributors)
-- **Features**: Authentication, role management
+- **Purpose**: System authentication and user management
+- **Features**: Admin authentication, role-based access control
+- **Fields**: Standard PayloadCMS user fields with custom extensions
 
 ### Media
-- **Purpose**: File and image management
-- **Features**: Upload handling, media library
+- **Purpose**: File and image management for jar campaigns
+- **Features**: Upload handling, media library integration
+- **Usage**: Referenced by jars for campaign images
 
 ## 🧪 Testing
 
@@ -156,16 +173,27 @@ pnpm generate:importmap # Generate import map
 
 # Code Quality
 pnpm lint             # ESLint check
+pnpm lint:fix         # ESLint auto-fix
+pnpm format           # Prettier formatting
+pnpm format:check     # Check formatting
+pnpm format:lint      # Format and lint together
+pnpm type-check       # TypeScript type checking
 ```
 
 ## 🔧 Configuration
 
 ### PayloadCMS Configuration
 The main configuration is in `/cms/src/payload.config.ts`:
-- Database connection
-- Collections setup
-- Admin panel customization
-- Authentication settings
+- Database connection (MongoDB)
+- Collections setup (Jars, Contributions, Users, Media)
+- Admin panel customization with custom SCSS
+- Authentication settings and user roles
+
+### Tailwind CSS Configuration
+- **Version**: Tailwind CSS v4.1.11 with modern CSS features
+- **Config**: `tailwind.config.js` for content paths and customization
+- **Custom SCSS**: `/cms/src/app/(payload)/custom.scss` for admin panel styling
+- **Utilities**: Custom `cn()` function in `/cms/src/lib/utils/tw-merge.ts` for class merging
 
 ### Environment Variables
 Required environment variables:
@@ -202,6 +230,11 @@ For support and questions:
 
 ## 🔄 Version History
 
+- **v1.1.2**: Current version with enhanced UI components and Tailwind CSS integration
+  - Added PaymentStatus component with visual status indicators
+  - Integrated Tailwind CSS v4 with custom utility functions
+  - Enhanced admin panel styling with custom SCSS
+  - Improved TypeScript configuration and linting
 - **v1.0.0**: Initial release with core donation platform features
 
 ---

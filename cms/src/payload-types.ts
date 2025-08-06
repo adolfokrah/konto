@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     jars: Jar;
+    'jar-groups': JarGroup;
     contributions: Contribution;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +81,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     jars: JarsSelect<false> | JarsSelect<true>;
+    'jar-groups': JarGroupsSelect<false> | JarGroupsSelect<true>;
     contributions: ContributionsSelect<false> | ContributionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -212,6 +214,11 @@ export interface Jar {
    * Target amount for the jar
    */
   goalAmount?: number | null;
+  /**
+   * Deadline for contributions to this jar
+   */
+  deadline?: string | null;
+  jarGroup?: (string | null) | JarGroup;
   currency: 'ghc' | 'ngn';
   /**
    * User who created the jar
@@ -230,6 +237,19 @@ export interface Jar {
    * Payment methods accepted for contributions to this jar
    */
   acceptedPaymentMethods: ('mobile-money' | 'bank-transfer' | 'cash')[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jar-groups".
+ */
+export interface JarGroup {
+  id: string;
+  /**
+   * Name of the jar group
+   */
+  name: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -277,6 +297,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'jars';
         value: string | Jar;
+      } | null)
+    | ({
+        relationTo: 'jar-groups';
+        value: string | JarGroup;
       } | null)
     | ({
         relationTo: 'contributions';
@@ -395,12 +419,23 @@ export interface JarsSelect<T extends boolean = true> {
   isFixedContribution?: T;
   acceptedContributionAmount?: T;
   goalAmount?: T;
+  deadline?: T;
+  jarGroup?: T;
   currency?: T;
   creator?: T;
   collectors?: T;
   paymentLink?: T;
   acceptAnonymousContributions?: T;
   acceptedPaymentMethods?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jar-groups_select".
+ */
+export interface JarGroupsSelect<T extends boolean = true> {
+  name?: T;
   updatedAt?: T;
   createdAt?: T;
 }
