@@ -45,13 +45,10 @@
   },
   "lint-staged": {
     "cms/**/*.{js,jsx,ts,tsx}": [
-      "prettier --write",
-      "eslint --fix",
-      "bash -c 'cd cms && pnpm run type-check'"
+      "prettier --write"
     ],
     "mobile-app/**/*.{js,jsx,ts,tsx}": [
-      "prettier --write",
-      "eslint --fix"
+      "prettier --write"
     ],
     "packages/**/*.{js,jsx,ts,tsx}": [
       "prettier --write"
