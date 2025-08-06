@@ -44,11 +44,8 @@
     "typescript": "^5.6.2"
   },
   "lint-staged": {
-    "cms/**/*.{js,jsx,ts,tsx}": [
-      "bash -c 'cd cms && pnpm run lint || exit 1'"
-    ],
-    "mobile-app/**/*.{js,jsx,ts,tsx}": [
-      "bash -c 'cd mobile-app && pnpm run lint || exit 1'"
+    "{cms,mobile-app}/**/*.{js,jsx,ts,tsx}": [
+      "./scripts/lint-all.sh"
     ],
     "packages/**/*.{js,jsx,ts,tsx}": [
       "prettier --write"
