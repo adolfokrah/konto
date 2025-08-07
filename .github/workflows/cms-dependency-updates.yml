@@ -455,6 +455,7 @@ jobs:
           echo ""
           echo "- **Has Updates**: ${{ needs.check-dependencies.outputs.has-updates }}"
           echo "- **Update Type**: ${{ needs.check-dependencies.outputs.update-type }}"
+          echo "- **Workspaces**: ${{ needs.check-dependencies.outputs.workspaces-with-updates }}"
           echo ""
           if [ "${{ needs.check-dependencies.outputs.update-type }}" = "patch" ]; then
             echo "✅ Patch updates were processed and auto-merged"
@@ -462,4 +463,14 @@ jobs:
             echo "📋 ${{ needs.check-dependencies.outputs.update-type }} updates created PR for manual review"
           else
             echo "ℹ️ No dependency updates available"
+          fi
+          
+          echo ""
+          echo "### Job Status:"
+          echo "- **Dependency Check**: ${{ needs.check-dependencies.result }}"
+          if [ "${{ needs.update-patch-dependencies.result }}" != "skipped" ]; then
+            echo "- **Patch Updates**: ${{ needs.update-patch-dependencies.result }}"
+          fi
+          if [ "${{ needs.update-major-minor-dependencies.result }}" != "skipped" ]; then
+            echo "- **Major/Minor Updates**: ${{ needs.update-major-minor-dependencies.result }}"
           fi

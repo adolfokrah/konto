@@ -353,11 +353,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: version-updated
-          client-payload: |
+          client-payload: >-
             {
               "version": "${{ needs.update-version.outputs.new_version }}",
               "tag": "${{ needs.update-version.outputs.new_tag }}",
-              "commits": "${{ needs.update-version.outputs.commits }}"
+              "commits": ${{ toJSON(needs.update-version.outputs.commits) }}
             }
 
   summary:
