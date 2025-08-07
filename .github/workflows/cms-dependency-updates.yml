@@ -1,6 +1,9 @@
-name: Automated Dependency Updates In CMS
+name: Automated Dependency Updates (Monorepo)
 
 on:
+  push:
+    branches: [ main ]
+    # Run after code is pushed to main branch
   schedule:
     # Run dependency checks daily at 3 AM UTC
     - cron: '0 3 * * *'
@@ -28,6 +31,7 @@ jobs:
     outputs:
       has-updates: ${{ steps.check.outputs.has-updates }}
       update-type: ${{ steps.check.outputs.update-type }}
+      workspaces-with-updates: ${{ steps.check.outputs.workspaces-with-updates }}
 
     steps:
       - name: Checkout code
@@ -44,34 +48,66 @@ jobs:
 
       - name: Check for outdated dependencies
         id: check
-        working-directory: ./cms
         run: |
-          echo "Checking for outdated dependencies in cms folder..."
+          echo "Checking for outdated dependencies in monorepo..."
 
-          # Get outdated packages
-          outdated_output=$(pnpm outdated --format json 2>/dev/null || echo '{}')
-          echo "Outdated packages: $outdated_output"
+          # Check each workspace for outdated dependencies
+          has_updates=false
+          update_types=""
 
-          # Check if there are any updates
-          if [ "$outdated_output" = "{}" ] || [ -z "$outdated_output" ]; then
-            echo "No outdated dependencies found"
+          # Check root workspace
+          echo "Checking root workspace..."
+          root_outdated=$(pnpm outdated --format json 2>/dev/null || echo '{}')
+          if [ "$root_outdated" != "{}" ] && [ -n "$root_outdated" ]; then
+            has_updates=true
+            update_types="$update_types root"
+          fi
+
+          # Check CMS workspace
+          echo "Checking CMS workspace..."
+          cms_outdated=$(pnpm --filter @konto/cms outdated --format json 2>/dev/null || echo '{}')
+          if [ "$cms_outdated" != "{}" ] && [ -n "$cms_outdated" ]; then
+            has_updates=true
+            update_types="$update_types cms"
+          fi
+
+          # Check mobile-app workspace  
+          echo "Checking mobile-app workspace..."
+          mobile_outdated=$(pnpm --filter mobile-app outdated --format json 2>/dev/null || echo '{}')
+          if [ "$mobile_outdated" != "{}" ] && [ -n "$mobile_outdated" ]; then
+            has_updates=true
+            update_types="$update_types mobile"
+          fi
+
+          # Check shared packages
+          echo "Checking shared packages..."
+          shared_outdated=$(pnpm --filter "@konto/shared-*" outdated --format json 2>/dev/null || echo '{}')
+          if [ "$shared_outdated" != "{}" ] && [ -n "$shared_outdated" ]; then
+            has_updates=true
+            update_types="$update_types shared"
+          fi
+
+          if [ "$has_updates" = "false" ]; then
+            echo "No outdated dependencies found in any workspace"
             echo "has-updates=false" >> $GITHUB_OUTPUT
             echo "update-type=none" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "has-updates=true" >> $GITHUB_OUTPUT
+          echo "workspaces-with-updates=$update_types" >> $GITHUB_OUTPUT
 
-          # Analyze update types (simplified check)
-          if echo "$outdated_output" | grep -q "major"; then
+          # Determine update type based on all outdated packages
+          all_outdated="$root_outdated $cms_outdated $mobile_outdated $shared_outdated"
+          if echo "$all_outdated" | grep -q "major"; then
             echo "update-type=major" >> $GITHUB_OUTPUT
-            echo "Major updates detected"
-          elif echo "$outdated_output" | grep -q "minor"; then
+            echo "Major updates detected across workspaces"
+          elif echo "$all_outdated" | grep -q "minor"; then
             echo "update-type=minor" >> $GITHUB_OUTPUT
-            echo "Minor updates detected"
+            echo "Minor updates detected across workspaces"
           else
             echo "update-type=patch" >> $GITHUB_OUTPUT
-            echo "Patch updates detected"
+            echo "Patch updates detected across workspaces"
           fi
 
   update-patch-dependencies:
@@ -120,34 +156,48 @@ jobs:
 
       - name: Update patch dependencies
         id: update
-        working-directory: ./cms
         run: |
-          echo "Updating patch-level dependencies in cms folder..."
+          echo "Updating patch-level dependencies across monorepo..."
 
           # Create branch
           branch_name="dependency/patch-updates-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$branch_name"
           echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
 
-          # Update all patch-level dependencies
+          # Update dependencies in all workspaces
+          echo "Updating root dependencies..."
           pnpm update --latest --save-exact
 
+          echo "Updating CMS dependencies..."
+          pnpm --filter @konto/cms update --latest --save-exact
+
+          echo "Updating mobile-app dependencies..."
+          pnpm --filter mobile-app update --latest --save-exact
+
+          echo "Updating shared packages dependencies..."
+          pnpm --filter "@konto/shared-*" update --latest --save-exact
+
           # Check if there are changes
-          if git diff --quiet package.json pnpm-lock.yaml; then
+          if git diff --quiet; then
             echo "No changes to commit"
             echo "changes-made=false" >> $GITHUB_OUTPUT
           else
             echo "changes-made=true" >> $GITHUB_OUTPUT
             
-            # Install and test
+            # Install and verify builds
             pnpm install --frozen-lockfile
-            pnpm generate:types
-            pnpm test:int
+            pnpm --filter @konto/cms generate:types
             
-            # Commit and push (go back to root for git operations)
-            cd ..
-            git add cms/package.json cms/pnpm-lock.yaml
-            git commit -m "dependency: update patch-level dependencies [auto-merge]"
+            # Ensure all workspaces build successfully
+            echo "Building all workspaces..."
+            pnpm build
+            
+            # Run integration tests
+            pnpm --filter @konto/cms test:int
+            
+            # Commit and push
+            git add .
+            git commit -m "dependency: update patch-level dependencies across monorepo [auto-merge]"
             git push origin "$branch_name"
           fi
 
@@ -161,13 +211,17 @@ jobs:
 
           # Create PR
           gh pr create \
-            --title "🔧 Automated patch dependency updates" \
+            --title "🔧 Automated patch dependency updates (Monorepo)" \
             --body "## 🔧 Automated Patch Dependency Updates
 
-          This PR contains patch-level dependency updates that are considered safe and will be automatically merged after tests pass.
+          This PR contains patch-level dependency updates across the entire monorepo that are considered safe and will be automatically merged after tests pass.
+
+          ### Workspaces Updated
+          ${{ needs.check-dependencies.outputs.workspaces-with-updates }}
 
           ### Changes Made
-          - ✅ Updated patch-level dependencies
+          - ✅ Updated patch-level dependencies in all workspaces
+          - ✅ All workspaces build successfully
           - ✅ Tests passed successfully
           - ✅ No breaking changes expected
 
@@ -239,10 +293,9 @@ jobs:
 
       - name: Update dependencies
         id: update
-        working-directory: ./cms
         run: |
           update_type="${{ needs.check-dependencies.outputs.update-type }}"
-          echo "Updating $update_type dependencies in cms folder..."
+          echo "Updating $update_type dependencies across monorepo..."
 
           # Create branch
           branch_name="dependency/${update_type}-updates-$(date +%Y%m%d-%H%M%S)"
@@ -250,34 +303,53 @@ jobs:
           echo "branch-name=$branch_name" >> $GITHUB_OUTPUT
           echo "update-type=$update_type" >> $GITHUB_OUTPUT
 
-          # Update dependencies
+          # Update dependencies in all workspaces
+          echo "Updating root dependencies..."
           pnpm update --latest
 
+          echo "Updating CMS dependencies..."
+          pnpm --filter @konto/cms update --latest
+
+          echo "Updating mobile-app dependencies..."
+          pnpm --filter mobile-app update --latest
+
+          echo "Updating shared packages dependencies..."
+          pnpm --filter "@konto/shared-*" update --latest
+
           # Check if there are changes
-          if git diff --quiet package.json pnpm-lock.yaml; then
+          if git diff --quiet; then
             echo "changes-made=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "changes-made=true" >> $GITHUB_OUTPUT
 
-          # Install and test
+          # Install and verify builds
           pnpm install --frozen-lockfile
-          pnpm generate:types
+          pnpm --filter @konto/cms generate:types
+
+          # Test builds before running tests
+          echo "Building all workspaces to verify compatibility..."
+          if pnpm build; then
+            echo "builds-passing=true" >> $GITHUB_OUTPUT
+          else
+            echo "builds-passing=false" >> $GITHUB_OUTPUT
+            echo "❌ Build failed after dependency updates"
+            exit 1
+          fi
 
           # Test (don't fail if tests break)
-          if pnpm test:int; then
+          if pnpm --filter @konto/cms test:int; then
             echo "tests-passing=true" >> $GITHUB_OUTPUT
           else
             echo "tests-passing=false" >> $GITHUB_OUTPUT
           fi
 
-          # Commit and push (go back to root for git operations)
-          cd ..
-          git add cms/package.json cms/pnpm-lock.yaml
-          git commit -m "dependency: update $update_type dependencies
+          # Commit and push
+          git add .
+          git commit -m "dependency: update $update_type dependencies across monorepo
 
-          This commit updates $update_type-level dependencies.
+          This commit updates $update_type-level dependencies in all workspaces.
           Manual review and approval required before merging."
           git push origin "$branch_name"
 
@@ -291,33 +363,40 @@ jobs:
 
           # Create PR
           gh pr create \
-            --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Review Required)" \
+            --title "🔄 ${{ steps.update.outputs.update-type }} dependency updates (Monorepo - Review Required)" \
             --body "## 📦 ${{ steps.update.outputs.update-type }} Dependency Updates
 
-          This PR contains **${{ steps.update.outputs.update-type }}** dependency updates that require careful review.
+          This PR contains **${{ steps.update.outputs.update-type }}** dependency updates across the monorepo that require careful review.
+
+          ### Workspaces Updated
+          Multiple workspaces in the monorepo have been updated with ${{ steps.update.outputs.update-type }}-level dependency changes.
 
           ### Update Details
           - **Type**: ${{ steps.update.outputs.update-type }} updates
+          - **Builds**: ${{ steps.update.outputs.builds-passing == 'true' && '✅ Passing' || '❌ Failing - needs attention' }}
           - **Tests**: ${{ steps.update.outputs.tests-passing == 'true' && '✅ Passing' || '❌ Failing - needs attention' }}
           - **Risk Level**: ${{ steps.update.outputs.update-type == 'major' && 'High' || 'Medium' }}
 
           ### ⚠️ Manual Review Required
 
           This PR will **NOT** be automatically merged and requires manual approval because:
-          - Contains ${{ steps.update.outputs.update-type }}-level updates
+          - Contains ${{ steps.update.outputs.update-type }}-level updates across multiple workspaces
           - Potential for breaking changes
           - Manual testing recommended
 
           ### Review Checklist
           - [ ] Review changelog/release notes for updated packages
-          - [ ] Test the application locally
-          - [ ] Verify no breaking changes
+          - [ ] Verify all workspaces build successfully locally
+          - [ ] Test the CMS application locally
+          - [ ] Test the mobile app locally  
+          - [ ] Verify no breaking changes in shared packages
           - [ ] Check for deprecated features usage
           - [ ] Ensure all tests pass
 
           ### Changes Made
-          - Updated ${{ steps.update.outputs.update-type }}-level dependencies
+          - Updated ${{ steps.update.outputs.update-type }}-level dependencies across monorepo
           - Dependencies locked to specific versions
+          - Builds ${{ steps.update.outputs.builds-passing == 'true' && 'are passing' || 'need attention' }}
           - Tests ${{ steps.update.outputs.tests-passing == 'true' && 'are passing' || 'need attention' }}
 
           ---
