@@ -14,7 +14,7 @@
     "@konto/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.6.2"
+    "typescript": "^5.9.2"
   },
   "files": [
     "dist",
