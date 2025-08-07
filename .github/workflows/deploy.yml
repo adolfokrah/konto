@@ -40,7 +40,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Configure Git
         run: |
@@ -170,6 +170,7 @@ jobs:
           git add cms/package.json
           git commit -m "chore: bump version to $(node -p "require('./cms/package.json').version") [skip ci]"
           git push
+          rm -rf node_modules pnpm-lock.yaml && pnpm install && vercel build
 
       - name: Get new version
         if: steps.update-version.outputs.version_updated == 'true'
