@@ -1,0 +1,53 @@
+{
+  "cli": {
+    "version": ">= 3.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "cache": {
+        "disabled": false
+      },
+      "env": {
+        "NODE_ENV": "development",
+        "SKIP_ENV_VALIDATION": "1",
+        "CI": "true"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "cache": {
+        "disabled": false
+      },
+      "env": {
+        "NODE_ENV": "development",
+        "SKIP_ENV_VALIDATION": "1",
+        "CI": "true"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "cache": {
+        "disabled": false
+      },
+      "env": {
+        "NODE_ENV": "development",
+        "SKIP_ENV_VALIDATION": "1",
+        "CI": "true"
+      }
+    }
+  }
+}

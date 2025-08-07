@@ -32,7 +32,7 @@
     "clean": "pnpm --parallel run clean && rm -rf node_modules",
     "clean:deps": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
     "install:all": "pnpm install",
-    "prepare": "husky"
+    "prepare": "if [ \"$CI\" != \"true\" ] && [ \"$NODE_ENV\" != \"production\" ]; then husky; fi"
   },
   "devDependencies": {
     "@types/node": "24.2.0",
@@ -80,8 +80,8 @@
       "unrs-resolver"
     ],
     "overrides": {
-      "@types/react": "19.1.8",
-      "@types/react-dom": "19.1.6"
+      "react": "19.0.0",
+      "react-dom": "19.0.0"
     }
   }
 }
