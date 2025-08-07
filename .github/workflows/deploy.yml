@@ -1,259 +1,24 @@
 name: Deploy
 
 on:
-  workflow_run:
-    workflows: ["Integration Tests"]
-    types:
-      - completed
-    branches: 
-        - main
+  repository_dispatch:
+    types: [version-updated]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
+      tag:
+        description: 'Git tag to deploy'
+        required: false
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
-  check-integration-tests:
-    runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
-    
-    steps:
-      - name: Integration Tests Passed
-        run: |
-          echo "✅ Integration tests passed successfully"
-          echo "Proceeding with deployment pipeline..."
-
-  update-version:
-    needs: check-integration-tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Configure Git
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-      - name: Update package.json version
-        id: update-version
-        run: |
-          # Change to cms directory
-          cd ./cms
-          
-          # Get current version
-          current_version=$(node -p "require('./package.json').version")
-          echo "Current version: $current_version"
-
-          # Get latest release tag to determine commits since last release
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
-          # Check if there are commits since the last tag
-          if [ -n "$latest_tag" ]; then
-            commits_since_tag=$(git rev-list ${latest_tag}..HEAD --count)
-            echo "Commits since last tag ($latest_tag): $commits_since_tag"
-            
-            if [ "$commits_since_tag" -eq "0" ]; then
-              echo "No commits since last tag. Skipping version bump."
-              echo "version_updated=false" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          fi
-
-          if [ -n "$latest_tag" ]; then
-            # Get commits since last tag
-            commits=$(git log $latest_tag..HEAD --pretty=format:"%s" --no-merges)
-          else
-            # If no previous tag, get last 10 commits
-            commits=$(git log --pretty=format:"%s" --no-merges -10)
-          fi
-
-          echo "Analyzing commits for version bump type:"
-          echo "$commits"
-
-          # Count conventional commits
-          feat_count=$(echo "$commits" | grep -c "^feat:" || true)
-          minor_count=$(echo "$commits" | grep -cE "^(chore:|dependency:|devops:)" || true)
-          fix_count=$(echo "$commits" | grep -c "^fix:" || true)
-          total_commits=$(echo "$commits" | wc -l | tr -d ' ')
-          conventional_commits=$((feat_count + minor_count + fix_count))
-
-          echo "Commit analysis:"
-          echo "- feat: $feat_count"
-          echo "- chore/dependency/devops: $minor_count" 
-          echo "- fix: $fix_count"
-          echo "- total commits: $total_commits"
-          echo "- conventional commits: $conventional_commits"
-
-          # Determine version bump type based on commit messages
-          bump_type="patch"  # default
-
-          # Check for major version bumps (feat:)
-          if [ $feat_count -gt 0 ]; then
-            bump_type="major"
-            echo "Found feat: commits - using major version bump"
-          # Check for minor version bumps (chore:, dependency:, devops:)
-          elif [ $minor_count -gt 0 ]; then
-            bump_type="minor"
-            echo "Found chore:/dependency:/devops: commits - using minor version bump"
-          # Check for patch version bumps (fix:)
-          elif [ $fix_count -gt 0 ]; then
-            bump_type="patch"
-            echo "Found fix: commits - using patch version bump"
-          # Handle non-conventional commits
-          else
-            echo "No conventional commits found ($conventional_commits/$total_commits)"
-            echo "All commits appear to be non-conventional"
-            
-            # Analyze commit content for keywords to guess intent
-            if echo "$commits" | grep -qiE "(breaking|major|new feature|add.*feature)"; then
-              bump_type="major"
-              echo "Detected major changes from commit content - using major version bump"
-            elif echo "$commits" | grep -qiE "(update|upgrade|dependency|dependencies|chore|refactor|improve)"; then
-              bump_type="minor"
-              echo "Detected minor changes from commit content - using minor version bump"
-            elif echo "$commits" | grep -qiE "(fix|bug|issue|resolve|patch)"; then
-              bump_type="patch"
-              echo "Detected fixes from commit content - using patch version bump"
-            else
-              bump_type="patch"
-              echo "Could not determine intent - defaulting to patch version bump"
-              echo "💡 Tip: Use conventional commits (feat:, fix:, chore:) for better version control"
-            fi
-          fi
-
-          # Increment version based on determined type
-          # Use Node.js to directly update the version to avoid workspace issues
-          node -e "
-            const fs = require('fs');
-            const path = './package.json';
-            const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
-            const currentVersion = pkg.version;
-            const versionParts = currentVersion.split('.').map(Number);
-            
-            if ('$bump_type' === 'major') {
-              versionParts[0]++;
-              versionParts[1] = 0;
-              versionParts[2] = 0;
-            } else if ('$bump_type' === 'minor') {
-              versionParts[1]++;
-              versionParts[2] = 0;
-            } else {
-              versionParts[2]++;
-            }
-            
-            pkg.version = versionParts.join('.');
-            fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
-            console.log('Updated version from', currentVersion, 'to', pkg.version);
-          "
-
-          # Get new version
-          new_version=$(node -p "require('./package.json').version")
-          echo "New version: $new_version (bump type: $bump_type)"
-          echo "version_updated=true" >> $GITHUB_OUTPUT
-
-      - name: Commit version update
-        if: steps.update-version.outputs.version_updated == 'true'
-        run: |
-          git add cms/package.json
-          git commit -m "chore: bump version to $(node -p "require('./cms/package.json').version") [skip ci]"
-          git push
-          rm -rf node_modules pnpm-lock.yaml && pnpm install && pnpm build
-
-      - name: Get new version
-        if: steps.update-version.outputs.version_updated == 'true'
-        id: version
-        run: |
-          cd ./cms
-          new_version=$(node -p "require('./package.json').version")
-          echo "version=$new_version" >> $GITHUB_OUTPUT
-          echo "tag=v$new_version" >> $GITHUB_OUTPUT
-
-      - name: Get latest release tag
-        if: steps.update-version.outputs.version_updated == 'true'
-        id: latest-tag
-        run: |
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
-        continue-on-error: true
-
-      - name: Get commit messages since last release
-        if: steps.update-version.outputs.version_updated == 'true'
-        id: commits
-        run: |
-          if [ -n "${{ steps.latest-tag.outputs.latest_tag }}" ]; then
-            # Get commits since last tag
-            commits=$(git log ${{ steps.latest-tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          else
-            # If no previous tag, get last 10 commits
-            commits=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
-          fi
-
-          # Handle multiline output for GitHub Actions
-          {
-            echo 'commits<<EOF'
-            echo "$commits"
-            echo EOF
-          } >> $GITHUB_OUTPUT
-
-      - name: Create Git Tag
-        if: steps.update-version.outputs.version_updated == 'true'
-        id: create-tag
-        run: |
-          # Check if tag already exists locally
-          if git tag -l "${{ steps.version.outputs.tag }}" | grep -q "${{ steps.version.outputs.tag }}"; then
-            echo "Tag ${{ steps.version.outputs.tag }} already exists locally, deleting it"
-            git tag -d "${{ steps.version.outputs.tag }}"
-          fi
-          
-          # Check if tag exists on remote
-          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.version.outputs.tag }}$"; then
-            echo "Tag ${{ steps.version.outputs.tag }} already exists on remote"
-            echo "Skipping tag creation as it already exists"
-            echo "tag_created=false" >> $GITHUB_OUTPUT
-          else
-            echo "Creating new tag ${{ steps.version.outputs.tag }}"
-            git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
-            git push origin "${{ steps.version.outputs.tag }}"
-            echo "Tag created and pushed successfully"
-            echo "tag_created=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create GitHub Release
-        if: steps.update-version.outputs.version_updated == 'true' && steps.create-tag.outputs.tag_created == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: 'Release ${{ steps.version.outputs.tag }}'
-          body: |
-            ## What's Changed
-            ${{ steps.commits.outputs.commits }}
-
-            ## Deployment
-            - ✅ Integration tests passed
-            - ✅ Version bumped to ${{ steps.version.outputs.tag }}
-            - ⏳ Staging deployment in progress
-            - ⏳ Production deployment pending approval
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest-tag.outputs.latest_tag }}...${{ steps.version.outputs.tag }}
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   deploy-staging:
-    needs: update-version
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -261,6 +26,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
+
+      - name: Deploy Info
+        run: |
+          echo "🚀 Deploying to staging..."
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 Version: ${{ github.event.client_payload.version }}"
+            echo "🏷️ Tag: ${{ github.event.client_payload.tag }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 Version: ${{ github.event.inputs.version }}"
+            echo "🏷️ Tag: ${{ github.event.inputs.tag }}"
+          else
+            echo "📦 Deploying from main branch"
+          fi
 
       - name: Deploy to Vercel Staging
         id: deploy-staging
@@ -270,7 +50,6 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--target=staging'
-          # Deploy to preview/staging (no --prod flag)
 
   approval-production:
     needs: deploy-staging
@@ -280,7 +59,14 @@ jobs:
 
     steps:
       - name: Wait for Production Approval
-        run: echo "Production deployment approved! Proceeding to deploy..."
+        run: |
+          echo "✅ Staging deployment completed successfully!"
+          echo "⏳ Waiting for production deployment approval..."
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 Version ready for production: ${{ github.event.client_payload.version }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 Version ready for production: ${{ github.event.inputs.version }}"
+          fi
 
   deploy-production:
     needs: approval-production
@@ -289,6 +75,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
       - name: Deploy to Vercel Production
         id: deploy
@@ -298,3 +86,22 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--prod'
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🎉 Production Deployment Complete"
+          echo ""
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.client_payload.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.client_payload.tag }}"
+            echo "📝 **Changes**: See release notes for ${{ github.event.client_payload.tag }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.inputs.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.inputs.tag }}"
+          else
+            echo "📦 **Deployed from**: main branch"
+          fi
+          echo ""
+          echo "✅ **Staging**: Completed"
+          echo "✅ **Production**: Completed"
+          echo "🌐 **Live**: Application is now live in production"

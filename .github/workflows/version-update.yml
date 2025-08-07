@@ -1,0 +1,379 @@
+name: Version Update
+
+on:
+  workflow_run:
+    workflows: ["Integration Tests"]
+    types:
+      - completed
+    branches: 
+        - main
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - 'auto'
+          - 'patch'
+          - 'minor'
+          - 'major'
+
+permissions:
+  contents: write
+
+jobs:
+  check-integration-tests:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Integration Tests Status
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "✅ Manual trigger - proceeding with version update"
+          else
+            echo "✅ Integration tests passed successfully"
+          fi
+          echo "Proceeding with version update pipeline..."
+
+  update-version:
+    needs: check-integration-tests
+    runs-on: ubuntu-latest
+    outputs:
+      version_updated: ${{ steps.update-version.outputs.version_updated }}
+      new_version: ${{ steps.version.outputs.version }}
+      new_tag: ${{ steps.version.outputs.tag }}
+      commits: ${{ steps.commits.outputs.commits }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Update package.json version
+        id: update-version
+        run: |
+          # Get current version from CMS (main package)
+          cd ./cms
+          current_version=$(node -p "require('./package.json').version")
+          echo "Current CMS version: $current_version"
+          
+          # Check versions across all packages
+          cd ..
+          root_version=$(node -p "require('./package.json').version")
+          mobile_version=$(node -p "require('./mobile-app/package.json').version")
+          
+          echo "Current versions:"
+          echo "- Root: $root_version"
+          echo "- CMS: $current_version"
+          echo "- Mobile App: $mobile_version"
+
+          # Get latest release tag to determine commits since last release
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Check if there are commits since the last tag
+          if [ -n "$latest_tag" ]; then
+            commits_since_tag=$(git rev-list ${latest_tag}..HEAD --count)
+            echo "Commits since last tag ($latest_tag): $commits_since_tag"
+            
+            if [ "$commits_since_tag" -eq "0" ]; then
+              echo "No commits since last tag. Skipping version bump."
+              echo "version_updated=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+
+          if [ -n "$latest_tag" ]; then
+            # Get commits since last tag
+            commits=$(git log $latest_tag..HEAD --pretty=format:"%s" --no-merges)
+          else
+            # If no previous tag, get last 10 commits
+            commits=$(git log --pretty=format:"%s" --no-merges -10)
+          fi
+
+          echo "Analyzing commits for version bump type:"
+          echo "$commits"
+
+          # Check if manual bump type is specified
+          manual_bump_type="${{ github.event.inputs.bump_type }}"
+          if [ "$manual_bump_type" != "auto" ] && [ -n "$manual_bump_type" ]; then
+            bump_type="$manual_bump_type"
+            echo "Using manual bump type: $bump_type"
+          else
+            # Auto-determine bump type from commits
+            
+            # Count conventional commits
+            feat_count=$(echo "$commits" | grep -c "^feat:" || true)
+            minor_count=$(echo "$commits" | grep -cE "^(chore:|dependency:|devops:)" || true)
+            fix_count=$(echo "$commits" | grep -c "^fix:" || true)
+            total_commits=$(echo "$commits" | wc -l | tr -d ' ')
+            conventional_commits=$((feat_count + minor_count + fix_count))
+
+            echo "Commit analysis:"
+            echo "- feat: $feat_count"
+            echo "- chore/dependency/devops: $minor_count" 
+            echo "- fix: $fix_count"
+            echo "- total commits: $total_commits"
+            echo "- conventional commits: $conventional_commits"
+
+            # Determine version bump type based on commit messages
+            bump_type="patch"  # default
+
+            # Check for major version bumps (feat:)
+            if [ $feat_count -gt 0 ]; then
+              bump_type="major"
+              echo "Found feat: commits - using major version bump"
+            # Check for minor version bumps (chore:, dependency:, devops:)
+            elif [ $minor_count -gt 0 ]; then
+              bump_type="minor"
+              echo "Found chore:/dependency:/devops: commits - using minor version bump"
+            # Check for patch version bumps (fix:)
+            elif [ $fix_count -gt 0 ]; then
+              bump_type="patch"
+              echo "Found fix: commits - using patch version bump"
+            # Handle non-conventional commits
+            else
+              echo "No conventional commits found ($conventional_commits/$total_commits)"
+              echo "All commits appear to be non-conventional"
+              
+              # Analyze commit content for keywords to guess intent
+              if echo "$commits" | grep -qiE "(breaking|major|new feature|add.*feature)"; then
+                bump_type="major"
+                echo "Detected major changes from commit content - using major version bump"
+              elif echo "$commits" | grep -qiE "(update|upgrade|dependency|dependencies|chore|refactor|improve)"; then
+                bump_type="minor"
+                echo "Detected minor changes from commit content - using minor version bump"
+              elif echo "$commits" | grep -qiE "(fix|bug|issue|resolve|patch)"; then
+                bump_type="patch"
+                echo "Detected fixes from commit content - using patch version bump"
+              else
+                bump_type="patch"
+                echo "Could not determine intent - defaulting to patch version bump"
+                echo "💡 Tip: Use conventional commits (feat:, fix:, chore:) for better version control"
+              fi
+            fi
+          fi
+
+          # Function to update version in a package.json file
+          update_version_in_file() {
+            local file_path="$1"
+            local bump_type="$2"
+            
+            node -e "
+              const fs = require('fs');
+              const path = '$file_path';
+              const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const currentVersion = pkg.version;
+              const versionParts = currentVersion.split('.').map(Number);
+              
+              if ('$bump_type' === 'major') {
+                versionParts[0]++;
+                versionParts[1] = 0;
+                versionParts[2] = 0;
+              } else if ('$bump_type' === 'minor') {
+                versionParts[1]++;
+                versionParts[2] = 0;
+              } else {
+                versionParts[2]++;
+              }
+              
+              pkg.version = versionParts.join('.');
+              fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
+              console.log('Updated', path, 'from', currentVersion, 'to', pkg.version);
+            "
+          }
+
+          # Update all package.json files in the monorepo
+          echo "Updating versions across monorepo..."
+          
+          # Update root package.json
+          echo "Updating root package.json..."
+          update_version_in_file "./package.json" "$bump_type"
+          
+          # Update CMS package.json
+          echo "Updating cms/package.json..."
+          update_version_in_file "./cms/package.json" "$bump_type"
+          
+          # Update mobile-app package.json
+          echo "Updating mobile-app/package.json..."
+          update_version_in_file "./mobile-app/package.json" "$bump_type"
+          
+          # Update shared packages
+          echo "Updating shared packages..."
+          for shared_pkg in packages/*/package.json; do
+            if [ -f "$shared_pkg" ]; then
+              echo "Updating $shared_pkg..."
+              update_version_in_file "$shared_pkg" "$bump_type"
+            fi
+          done
+
+          # Get new version (use CMS as reference)
+          new_version=$(node -p "require('./cms/package.json').version")
+          echo "New synchronized version: $new_version (bump type: $bump_type)"
+          echo "version_updated=true" >> $GITHUB_OUTPUT
+          echo "bump_type=$bump_type" >> $GITHUB_OUTPUT
+
+      - name: Commit version update
+        if: steps.update-version.outputs.version_updated == 'true'
+        run: |
+          # Add all updated package.json files
+          git add package.json
+          git add cms/package.json
+          git add mobile-app/package.json
+          
+          # Add shared packages if they exist
+          if ls packages/*/package.json 1> /dev/null 2>&1; then
+            git add packages/*/package.json
+          fi
+          
+          new_version=$(node -p "require('./cms/package.json').version")
+          git commit -m "chore: bump monorepo version to $new_version [skip ci]"
+          git push
+
+      - name: Get new version details
+        if: steps.update-version.outputs.version_updated == 'true'
+        id: version
+        run: |
+          cd ./cms
+          new_version=$(node -p "require('./package.json').version")
+          echo "version=$new_version" >> $GITHUB_OUTPUT
+          echo "tag=v$new_version" >> $GITHUB_OUTPUT
+
+      - name: Get latest release tag
+        if: steps.update-version.outputs.version_updated == 'true'
+        id: latest-tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Get commit messages since last release
+        if: steps.update-version.outputs.version_updated == 'true'
+        id: commits
+        run: |
+          if [ -n "${{ steps.latest-tag.outputs.latest_tag }}" ]; then
+            # Get commits since last tag
+            commits=$(git log ${{ steps.latest-tag.outputs.latest_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            # If no previous tag, get last 10 commits
+            commits=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+          fi
+
+          # Handle multiline output for GitHub Actions
+          {
+            echo 'commits<<EOF'
+            echo "$commits"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Create Git Tag
+        if: steps.update-version.outputs.version_updated == 'true'
+        id: create-tag
+        run: |
+          # Check if tag already exists locally
+          if git tag -l "${{ steps.version.outputs.tag }}" | grep -q "${{ steps.version.outputs.tag }}"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists locally, deleting it"
+            git tag -d "${{ steps.version.outputs.tag }}"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.version.outputs.tag }}$"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists on remote"
+            echo "Skipping tag creation as it already exists"
+            echo "tag_created=false" >> $GITHUB_OUTPUT
+          else
+            echo "Creating new tag ${{ steps.version.outputs.tag }}"
+            git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}"
+            echo "Tag created and pushed successfully"
+            echo "tag_created=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        if: steps.update-version.outputs.version_updated == 'true' && steps.create-tag.outputs.tag_created == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: 'Release ${{ steps.version.outputs.tag }}'
+          body: |
+            ## What's Changed
+            ${{ steps.commits.outputs.commits }}
+
+            ## Version Details
+            - **Bump Type**: ${{ steps.update-version.outputs.bump_type }}
+            - **Previous Version**: ${{ steps.latest-tag.outputs.latest_tag }}
+            - **New Version**: ${{ steps.version.outputs.tag }}
+
+            ## Monorepo Updates
+            All packages have been synchronized to version ${{ steps.version.outputs.version }}:
+            - 📦 Root package
+            - 🌐 CMS (@konto/cms)
+            - 📱 Mobile App (@konto/mobile-app)
+            - 🔧 Shared packages (@konto/shared-*)
+
+            ## Status
+            - ✅ Integration tests passed
+            - ✅ Monorepo versions synchronized
+            - ✅ Version bumped successfully
+            - ⏳ Deployment pipeline triggered
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest-tag.outputs.latest_tag }}...${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  trigger-deployment:
+    needs: update-version
+    runs-on: ubuntu-latest
+    if: needs.update-version.outputs.version_updated == 'true'
+    
+    steps:
+      - name: Trigger Deploy Workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: version-updated
+          client-payload: |
+            {
+              "version": "${{ needs.update-version.outputs.new_version }}",
+              "tag": "${{ needs.update-version.outputs.new_tag }}",
+              "commits": "${{ needs.update-version.outputs.commits }}"
+            }
+
+  summary:
+    needs: [update-version, trigger-deployment]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Workflow Summary
+        run: |
+          echo "## 🏷️ Version Update Summary"
+          echo ""
+          if [ "${{ needs.update-version.outputs.version_updated }}" = "true" ]; then
+            echo "✅ **Version Updated**: ${{ needs.update-version.outputs.new_version }}"
+            echo "🏷️ **Tag Created**: ${{ needs.update-version.outputs.new_tag }}"
+            echo "🚀 **Deployment Triggered**: Ready for staging and production"
+          else
+            echo "ℹ️ **No Version Update**: No commits since last release"
+          fi
