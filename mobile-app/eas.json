@@ -28,7 +28,7 @@
         "simulator": true
       },
       "cache": {
-        "disabled": false
+        "disabled": true
       },
       "env": {
         "NODE_ENV": "development",
