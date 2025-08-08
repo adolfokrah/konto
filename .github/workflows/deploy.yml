@@ -57,38 +57,34 @@ jobs:
       name: staging
 
     steps:
-      - name: Checkout code
+      - name: 🏗 Setup repo
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
+      - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
 
-      - name: Setup Expo CLI
-        run: npm install -g @expo/cli
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Setup EAS CLI
-        run: npm install -g eas-cli
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           cd mobile-app
           pnpm install
 
-      - name: Authenticate with Expo
-        run: |
-          cd mobile-app
-          expo login --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build and Submit to App Stores (Preview)
+      - name: 🚀 Build mobile app for staging
         run: |
           cd mobile-app
           echo "🚀 Building mobile app for staging..."
@@ -217,38 +213,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 🏗 Setup repo
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
+      - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'pnpm'
+          cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
 
-      - name: Setup Expo CLI
-        run: npm install -g @expo/cli
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Setup EAS CLI
-        run: npm install -g eas-cli
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           cd mobile-app
           pnpm install
 
-      - name: Authenticate with Expo
-        run: |
-          cd mobile-app
-          expo login --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build and Submit to App Stores (Production)
+      - name: 🚀 Build and Submit to App Stores (Production)
         run: |
           cd mobile-app
           echo "🚀 Building mobile app for production..."
