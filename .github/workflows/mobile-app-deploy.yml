@@ -44,7 +44,16 @@ jobs:
           cd mobile-app
           pnpm install
 
-      - name: 🔍 Verify EAS configuration
+      - name: � Fix autolinking
+        run: |
+          cd mobile-app
+          # Clear autolinking cache
+          rm -rf android/app/build/generated/autolinking || true
+          rm -rf node_modules/.expo || true
+          # Regenerate autolinking
+          npx expo install --fix || true
+
+      - name: �🔍 Verify EAS configuration
         run: |
           cd mobile-app
           eas build:configure --non-interactive || echo "EAS already configured"
@@ -107,7 +116,16 @@ jobs:
           cd mobile-app
           pnpm install
 
-      - name: 🔍 Verify EAS configuration
+      - name: � Fix autolinking
+        run: |
+          cd mobile-app
+          # Clear autolinking cache
+          rm -rf android/app/build/generated/autolinking || true
+          rm -rf node_modules/.expo || true
+          # Regenerate autolinking
+          npx expo install --fix || true
+
+      - name: �🔍 Verify EAS configuration
         run: |
           cd mobile-app
           eas build:configure --non-interactive || echo "EAS already configured"
