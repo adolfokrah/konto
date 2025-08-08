@@ -70,7 +70,6 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-          cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
@@ -226,7 +225,6 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-          cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
