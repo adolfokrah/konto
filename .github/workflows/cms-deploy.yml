@@ -162,6 +162,19 @@ jobs:
 
       - name: Create Git Tag
         run: |
+          # Check if tag already exists locally
+          if git tag -l "${{ steps.version.outputs.tag }}" | grep -q "${{ steps.version.outputs.tag }}"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists locally, deleting it"
+            git tag -d "${{ steps.version.outputs.tag }}"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.version.outputs.tag }}"; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists on remote, deleting it"
+            git push --delete origin "${{ steps.version.outputs.tag }}" || true
+          fi
+          
+          # Create new tag
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
 
