@@ -1,0 +1,67 @@
+name: Mobile App Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile-app/**'
+      - 'shared/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile-app/**'
+      - 'shared/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Deploy to EAS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          cd mobile-app
+          pnpm install
+
+      - name: 🔍 Verify EAS configuration
+        run: |
+          cd mobile-app
+          eas build:configure --non-interactive || echo "EAS already configured"
+
+      - name: 🚀 Build iOS Simulator Preview
+        run: |
+          cd mobile-app
+          eas build --platform ios --profile preview --non-interactive
+
+      - name: 📱 Build Android Preview (APK)
+        run: |
+          cd mobile-app
+          eas build --platform android --profile preview --non-interactive
+
+      - name: 📋 Get build info
+        id: build-info
+        run: |
+          cd mobile-app
+          echo "Build completed successfully!"
+          echo "Check your Expo dashboard for download links"
