@@ -5,6 +5,30 @@ on:
     types: [version-updated]
   workflow_dispatch:
     inputs:
+      - name: 🛠️ Setup iOS build environment
+        run: |
+          cd mobile-app
+          # Clear any problematic iOS build cache
+          rm -rf ios/Pods ios/Podfile.lock
+          
+          # Fix React Native Reanimated Podfile issues
+          if [ -f "node_modules/react-native-reanimated/RNReanimated.podspec" ]; then
+            echo "Patching React Native Reanimated for CI build..."
+            # This addresses the podspec path resolution issue in CI
+            sed -i.bak 's/find_config()/find_config() rescue {}/g' node_modules/react-native-reanimated/RNReanimated.podspec || true
+          fi
+          
+          # Ensure metro cache is clear
+          npx expo install --fix
+          
+          # Run prebuild to ensure iOS project is properly configured
+name: Deploy
+
+on:
+  repository_dispatch:
+    types: [version-updated]
+  workflow_dispatch:
+    inputs:
       version:
         description: 'Version to deploy'
         required: false
@@ -85,7 +109,7 @@ jobs:
           rm -f yarn.lock package-lock.json
           pnpm install
 
-      - name: 🛠️ Setup iOS build environment
+      - name: �️ Setup iOS build environment
         run: |
           cd mobile-app
           # Clear any problematic iOS build cache
@@ -101,11 +125,7 @@ jobs:
           # Ensure metro cache is clear
           npx expo install --fix
           
-          # Run prebuild to ensure iOS project is properly configured
-          echo "Running Expo prebuild for iOS..."
-          npx expo prebuild --platform ios --clean || echo "Prebuild failed, continuing with existing configuration"
-
-      - name: 🚀 Build mobile app for staging
+      - name: �🚀 Build mobile app for staging
         run: |
           cd mobile-app
           echo "🚀 Building mobile app for staging..."
@@ -262,7 +282,7 @@ jobs:
           rm -f yarn.lock package-lock.json
           pnpm install
 
-      - name: 🛠️ Setup iOS build environment
+      - name: �️ Setup iOS build environment
         run: |
           cd mobile-app
           # Clear any problematic iOS build cache
@@ -278,7 +298,7 @@ jobs:
           # Ensure metro cache is clear
           npx expo install --fix
 
-      - name: 🚀 Build and Submit to App Stores (Production)
+      - name: �🚀 Build and Submit to App Stores (Production)
         run: |
           cd mobile-app
           echo "🚀 Building mobile app for production..."
