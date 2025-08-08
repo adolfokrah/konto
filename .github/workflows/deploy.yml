@@ -62,15 +62,15 @@ jobs:
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'pnpm'
           cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
-
-      - name: 🏗 Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
@@ -218,15 +218,15 @@ jobs:
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'pnpm'
           cache-dependency-path: 'mobile-app/pnpm-lock.yaml'
-
-      - name: 🏗 Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
