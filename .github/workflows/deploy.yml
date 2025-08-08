@@ -62,24 +62,24 @@ jobs:
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: |
-          cd mobile-app
-          pnpm install
 
       - name: Setup Expo CLI
         run: npm install -g @expo/cli
 
       - name: Setup EAS CLI
         run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: |
+          cd mobile-app
+          pnpm install
 
       - name: Authenticate with Expo
         run: |
@@ -137,28 +137,46 @@ jobs:
           echo "Creating EAS Update for preview..."
           eas update --branch preview --message "Staging deployment v${{ github.event.client_payload.version || 'latest' }}" || echo "EAS Update not configured or failed - continuing without update"
 
-  approval-production:
-    needs: [deploy-staging, deploy-mobile-staging]
+  approval-web-production:
+    needs: deploy-staging
     runs-on: ubuntu-latest
     environment:
       name: production
 
     steps:
-      - name: Wait for Production Approval
+      - name: Wait for Web Production Approval
         run: |
-          echo "✅ Staging deployments completed successfully!"
+          echo "✅ Web staging deployment completed successfully!"
           echo "   • Web application deployed to staging"
-          echo "   • Mobile app built and published to preview channel"
           echo ""
-          echo "⏳ Waiting for production deployment approval..."
+          echo "⏳ Waiting for web production deployment approval..."
           if [ -n "${{ github.event.client_payload.version }}" ]; then
             echo "📦 Version ready for production: ${{ github.event.client_payload.version }}"
           elif [ -n "${{ github.event.inputs.version }}" ]; then
             echo "📦 Version ready for production: ${{ github.event.inputs.version }}"
           fi
 
-  deploy-production:
-    needs: approval-production
+  approval-mobile-production:
+    needs: deploy-mobile-staging
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Wait for Mobile Production Approval
+        run: |
+          echo "✅ Mobile staging deployment completed successfully!"
+          echo "   • Mobile app built and published to preview channel"
+          echo ""
+          echo "⏳ Waiting for mobile production deployment approval..."
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 Version ready for production: ${{ github.event.client_payload.version }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 Version ready for production: ${{ github.event.inputs.version }}"
+          fi
+
+  deploy-web-production:
+    needs: approval-web-production
     runs-on: ubuntu-latest
 
     steps:
@@ -176,8 +194,26 @@ jobs:
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--prod'
 
+      - name: Web Deployment Summary
+        run: |
+          echo "## 🌐 Web Production Deployment Complete"
+          echo ""
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.client_payload.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.client_payload.tag }}"
+            echo "📝 **Changes**: See release notes for ${{ github.event.client_payload.tag }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.inputs.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.inputs.tag }}"
+          else
+            echo "📦 **Deployed from**: main branch"
+          fi
+          echo ""
+          echo "✅ **Web Production**: Completed"
+          echo "🌐 **Live**: Web application is now live in production"
+
   deploy-mobile-production:
-    needs: approval-production
+    needs: approval-mobile-production
     runs-on: ubuntu-latest
 
     steps:
@@ -186,24 +222,24 @@ jobs:
         with:
           ref: ${{ github.event.client_payload.tag || github.event.inputs.tag || 'main' }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: |
-          cd mobile-app
-          pnpm install
 
       - name: Setup Expo CLI
         run: npm install -g @expo/cli
 
       - name: Setup EAS CLI
         run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: |
+          cd mobile-app
+          pnpm install
 
       - name: Authenticate with Expo
         run: |
@@ -260,9 +296,9 @@ jobs:
           echo "Creating EAS Update for production..."
           eas update --branch production --message "Production deployment v${{ github.event.client_payload.version || 'latest' }}" || echo "EAS Update not configured or failed - continuing without update"
 
-      - name: Deployment Summary
+      - name: Mobile Deployment Summary
         run: |
-          echo "## 🎉 Production Deployment Complete"
+          echo "## 📱 Mobile Production Deployment Complete"
           echo ""
           if [ -n "${{ github.event.client_payload.version }}" ]; then
             echo "📦 **Version**: ${{ github.event.client_payload.version }}"
@@ -275,8 +311,32 @@ jobs:
             echo "📦 **Deployed from**: main branch"
           fi
           echo ""
-          echo "✅ **Web Staging**: Completed"
-          echo "✅ **Mobile Staging**: Completed (Preview build)"
-          echo "✅ **Web Production**: Completed"
-          echo "✅ **Mobile Production**: Completed (Production build)"
-          echo "🌐 **Live**: Applications are now live in production"
+          echo "✅ **Mobile Production**: Completed"
+          echo "📱 **Live**: Mobile apps are now live in production"
+
+  deployment-complete:
+    needs: [deploy-web-production, deploy-mobile-production]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Final Deployment Summary
+        run: |
+          echo "## 🎉 Complete Deployment Summary"
+          echo ""
+          if [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.client_payload.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.client_payload.tag }}"
+            echo "📝 **Changes**: See release notes for ${{ github.event.client_payload.tag }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "📦 **Version**: ${{ github.event.inputs.version }}"
+            echo "🏷️ **Tag**: ${{ github.event.inputs.tag }}"
+          else
+            echo "📦 **Deployed from**: main branch"
+          fi
+          echo ""
+          echo "### Deployment Status:"
+          echo "- **Web Production**: ${{ needs.deploy-web-production.result }}"
+          echo "- **Mobile Production**: ${{ needs.deploy-mobile-production.result }}"
+          echo ""
+          echo "🌐 **Applications are now live in production**"
