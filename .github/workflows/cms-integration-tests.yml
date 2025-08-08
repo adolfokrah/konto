@@ -38,14 +38,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
-          cache-dependency-path: ./cms/pnpm-lock.yaml
+          cache-dependency-path: cms/pnpm-lock.yaml
 
       - name: Install dependencies
         working-directory: ./cms
@@ -69,5 +71,7 @@ jobs:
           path: |
             cms/coverage/
             cms/test-results/
+            cms/playwright-report/
+            cms/test-artifacts/
           retention-days: 3
-          if-no-files-found: warn
+          if-no-files-found: ignore
