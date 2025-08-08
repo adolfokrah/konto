@@ -68,7 +68,7 @@ jobs:
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
 
       - name: 🏗 Setup EAS
@@ -81,6 +81,8 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           cd mobile-app
+          # Ensure we're using pnpm and not yarn
+          rm -f yarn.lock package-lock.json
           pnpm install
 
       - name: 🚀 Build mobile app for staging
@@ -223,7 +225,7 @@ jobs:
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
 
       - name: 🏗 Setup EAS
@@ -236,6 +238,8 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           cd mobile-app
+          # Ensure we're using pnpm and not yarn
+          rm -f yarn.lock package-lock.json
           pnpm install
 
       - name: 🚀 Build and Submit to App Stores (Production)
