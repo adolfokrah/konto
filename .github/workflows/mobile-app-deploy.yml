@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build and Deploy to EAS
+  build-preview:
+    name: Build Preview Apps
     runs-on: ubuntu-latest
     
     steps:
@@ -64,4 +64,66 @@ jobs:
         run: |
           cd mobile-app
           echo "Build completed successfully!"
+          echo "Check your Expo dashboard for download links"
+
+  approval-production:
+    needs: build-preview
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: 🔒 Wait for Production Approval
+        run: echo "Production deployment approved! Proceeding to deploy mobile app..."
+
+  build-production:
+    needs: approval-production
+    name: Build Production Apps
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          cd mobile-app
+          pnpm install
+
+      - name: 🔍 Verify EAS configuration
+        run: |
+          cd mobile-app
+          eas build:configure --non-interactive || echo "EAS already configured"
+
+      - name: 🚀 Build iOS Production
+        run: |
+          cd mobile-app
+          eas build --platform ios --profile production --non-interactive
+
+      - name: 📱 Build Android Production
+        run: |
+          cd mobile-app
+          eas build --platform android --profile production --non-interactive
+
+      - name: 📋 Production build completed
+        run: |
+          echo "🎉 Production builds completed successfully!"
+          echo "📱 iOS and Android production builds are ready"
           echo "Check your Expo dashboard for download links"
