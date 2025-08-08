@@ -1,6 +1,6 @@
 {
   "name": "@konto/cms",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "PayloadCMS backend for Konto donation platform",
   "license": "MIT",
   "type": "module",
