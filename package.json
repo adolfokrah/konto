@@ -1,6 +1,6 @@
 {
   "name": "konto-monorepo",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A modern contribution and donation platform with web and mobile applications",
   "private": true,
   "packageManager": "pnpm@10.0.0",
