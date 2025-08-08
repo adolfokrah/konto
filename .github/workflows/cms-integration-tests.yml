@@ -53,12 +53,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate types
-        working-directory: ./cms
-        run: pnpm generate:types
+        run: pnpm --filter cms generate:types
 
       - name: Run integration tests
-        working-directory: ./cms
-        run: pnpm test:int
+        run: pnpm --filter cms test:int
         env:
           CI: true
 
