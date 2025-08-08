@@ -136,7 +136,7 @@ jobs:
           
           # Try to build - start with iOS first as it's more reliable
           echo "Building for preview (iOS first)..."
-          if eas build --platform ios --profile preview --non-interactive --no-wait; then
+          if eas build --platform ios --profile preview --non-interactive; then
             echo "✅ iOS preview build started successfully"
           else
             echo "⚠️ iOS preview build failed - continuing"
@@ -144,7 +144,7 @@ jobs:
           
           # Try Android build
           echo "Building for preview (Android)..."
-          if eas build --platform android --profile preview --non-interactive --no-wait; then
+          if eas build --platform android --profile preview --non-interactive; then
             echo "✅ Android preview build started successfully"
           else
             echo "⚠️ Android preview build failed - may need keystore setup"
