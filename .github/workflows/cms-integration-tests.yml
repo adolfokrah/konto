@@ -50,7 +50,6 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./cms
         run: pnpm install --frozen-lockfile
 
       - name: Generate types
