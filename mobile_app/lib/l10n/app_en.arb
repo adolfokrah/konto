@@ -1,0 +1,126 @@
+{
+  "appTitle": "Konto",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create account button text"
+  },
+  
+  "phoneNumber": "Phone number",
+  "@phoneNumber": {
+    "description": "Phone number input placeholder"
+  },
+  
+  "loginSubtitle": "Sign in to collect, contribute, or\ntrack with confidence.",
+  "@loginSubtitle": {
+    "description": "Login page subtitle"
+  },
+  
+  "onboardingTitle1": "Create with\nPurpose",
+  "@onboardingTitle1": {
+    "description": "First onboarding screen title"
+  },
+  
+  "onboardingDescription1": "Set up a jar in seconds to collect funds for weddings, funerals, birthdays, etc.",
+  "@onboardingDescription1": {
+    "description": "First onboarding screen description"
+  },
+  
+  "onboardingTitle2": "Give with\nConfidence",
+  "@onboardingTitle2": {
+    "description": "Second onboarding screen title"
+  },
+  
+  "onboardingDescription2": "Support loved ones with secure and transparent contributions.",
+  "@onboardingDescription2": {
+    "description": "Second onboarding screen description"
+  },
+  
+  "onboardingTitle3": "Track Every\nContribution",
+  "@onboardingTitle3": {
+    "description": "Third onboarding screen title"
+  },
+  
+  "onboardingDescription3": "See who contributed, how much, and get notified when you hit your goal.",
+  "@onboardingDescription3": {
+    "description": "Third onboarding screen description"
+  },
+  
+  "next": "Next",
+  "@next": {
+    "description": "Next button text"
+  },
+  
+  "continueText": "Continue",
+  "@continueText": {
+    "description": "Continue button text"
+  },
+  
+  "homePageComingSoon": "Home Page - Coming Soon",
+  "@homePageComingSoon": {
+    "description": "Home page placeholder text"
+  },
+  
+  "searchCountries": "Search countries",
+  "@searchCountries": {
+    "description": "Country picker search placeholder"
+  },
+  
+  "recentSelection": "Recent Selection",
+  "@recentSelection": {
+    "description": "Header for recently selected country"
+  },
+  
+  "selectedCountry": "Selected Country",
+  "@selectedCountry": {
+    "description": "Header for selected country in search results"
+  },
+  
+  "otherCountries": "Other Countries",
+  "@otherCountries": {
+    "description": "Header for other countries list"
+  },
+  
+  "otherResults": "Other Results",
+  "@otherResults": {
+    "description": "Header for other search results"
+  },
+  
+  "searchResults": "Search Results",
+  "@searchResults": {
+    "description": "Header for search results"
+  },
+  
+  "noCountriesFound": "No countries found",
+  "@noCountriesFound": {
+    "description": "Message when no countries match search"
+  },
+  
+  "countryGhana": "Ghana",
+  "@countryGhana": {
+    "description": "Country name: Ghana"
+  },
+  
+  "countryUnitedStates": "United States",
+  "@countryUnitedStates": {
+    "description": "Country name: United States"
+  },
+  
+  "countryFrance": "France",
+  "@countryFrance": {
+    "description": "Country name: France"
+  },
+  
+  "countryGermany": "Germany",
+  "@countryGermany": {
+    "description": "Country name: Germany"
+  }
+}

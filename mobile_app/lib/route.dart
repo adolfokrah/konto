@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
         '/': (context) => const OnBoardingPage(),
         '/onboarding': (context) => const OnBoardingPage(),
         '/login': (context) => const LoginView(),
-        '/home': (context) => const Scaffold(
+        '/home': (context) => Scaffold(
               body: Center(
-                child: Text('Home Page - Coming Soon'),
+                child: Text(AppLocalizations.of(context)!.homePageComingSoon),
               ),
             ),
       };

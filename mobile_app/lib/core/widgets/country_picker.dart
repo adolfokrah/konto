@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/searh_input.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class Country {
   final String name;
@@ -49,13 +50,13 @@ class CountryPicker extends StatelessWidget {
     );
   }
 
-  static Widget _buildCountryTile(Country country, bool isSelected, Function(Country) onCountrySelected) {
+  static Widget _buildCountryTile(Country country, bool isSelected, Function(Country) onCountrySelected, [BuildContext? context]) {
     return Column(
       children: [
         ListTile(
           contentPadding: const EdgeInsets.all(0),
           title: Text(
-            country.name,
+            context != null ? getLocalizedCountryName(context, country.name) : country.name,
             style: TextStyles.titleMediumM,
           ),
           trailing: Text(
@@ -116,6 +117,24 @@ class CountryPicker extends StatelessWidget {
   }
 
   static Country get defaultCountry => _countries.first;
+  
+  // Helper method to get localized country name
+  static String getLocalizedCountryName(BuildContext context, String countryName) {
+    final localizations = AppLocalizations.of(context)!;
+    
+    switch (countryName) {
+      case 'Ghana':
+        return localizations.countryGhana;
+      case 'United States':
+        return localizations.countryUnitedStates;
+      case 'France':
+        return localizations.countryFrance;
+      case 'Germany':
+        return localizations.countryGermany;
+      default:
+        return countryName; // Fallback to original name
+    }
+  }
 }
 
 class _CountryPickerContent extends StatefulWidget {
@@ -175,6 +194,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
   }
 
   Widget _buildListItem(BuildContext context, int index) {
+    final localizations = AppLocalizations.of(context)!;
     final selectedCountry = CountryPicker.getCountryByCode(widget.selectedCountryCode);
     final filteredCountries = _filteredCountries;
     final otherCountries = filteredCountries.where((country) => country.code != widget.selectedCountryCode).toList();
@@ -187,7 +207,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
         (_searchQuery.isNotEmpty && selectedCountryInResults)) {
       if (index == currentIndex) {
         // Header changes based on search state
-        final headerTitle = _searchQuery.isEmpty ? 'Recent Selection' : 'Selected Country';
+        final headerTitle = _searchQuery.isEmpty ? localizations.recentSelection : localizations.selectedCountry;
         return CountryPicker._buildSectionHeader(headerTitle);
       }
       currentIndex++;
@@ -200,7 +220,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
             borderRadius: BorderRadius.circular(AppRadius.radiusM),
           ),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-          child: CountryPicker._buildCountryTile(selectedCountry, true, _onCountrySelected),
+          child: CountryPicker._buildCountryTile(selectedCountry, true, _onCountrySelected, context),
         );
       }
       currentIndex++;
@@ -210,8 +230,8 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
     if (otherCountries.isNotEmpty) {
       if (index == currentIndex) {
         // Other Countries header
-        final headerTitle = _searchQuery.isEmpty ? 'Other Countries' : 
-                           selectedCountryInResults ? 'Other Results' : 'Search Results';
+        final headerTitle = _searchQuery.isEmpty ? localizations.otherCountries : 
+                           selectedCountryInResults ? localizations.otherResults : localizations.searchResults;
         return CountryPicker._buildSectionHeader(headerTitle);
       }
       currentIndex++;
@@ -236,7 +256,8 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
           child: CountryPicker._buildCountryTile(
             otherCountries[otherCountryIndex], 
             false, // Never show as selected in the "Other Countries" section
-            _onCountrySelected
+            _onCountrySelected,
+            context
           ),
         );
       }
@@ -252,6 +273,8 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.3,
@@ -281,7 +304,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
               // Search Input
               SearchInput(
                 controller: _searchController,
-                hintText: 'Search countries',
+                hintText: localizations.searchCountries,
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
@@ -294,7 +317,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
                 child: _getItemCount() == 0
                     ? Center(
                         child: Text(
-                          'No countries found',
+                          localizations.noCountriesFound,
                           style: TextStyles.titleMedium.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),

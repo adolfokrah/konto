@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/onboarding_data.dart';
+import 'package:konto/core/constants/localized_onboarding_data.dart';
 import 'package:konto/core/theme/text_styles.dart';
 
 class OnboardingTitle extends StatelessWidget {
@@ -9,6 +9,8 @@ class OnboardingTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(context);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
       child: AnimatedSwitcher(
@@ -29,7 +31,7 @@ class OnboardingTitle extends StatelessWidget {
           );
         },
         child: Text(
-          onBoardingData[currentPage].title,
+          localizedOnBoardingData[currentPage].title,
           key: ValueKey<int>(currentPage),
           style: TextStyles.headingOne,
         ),

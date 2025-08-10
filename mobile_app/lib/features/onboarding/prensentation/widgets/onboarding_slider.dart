@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/onboarding_data.dart';
+import 'package:konto/core/constants/localized_onboarding_data.dart';
 
 class OnBoardingSlider extends StatefulWidget {
   final int currentPage;
@@ -54,6 +54,8 @@ class _OnBoardingSliderState extends State<OnBoardingSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(context);
+    
     return Expanded(
       child: PageView.builder(
         controller: _pageController,
@@ -62,11 +64,11 @@ class _OnBoardingSliderState extends State<OnBoardingSlider> {
             widget.onPageChanged?.call(index);
           }
         },
-        itemCount: onBoardingData.length,
+        itemCount: localizedOnBoardingData.length,
         itemBuilder: (context, index) {
           return Center(
             child: Image.asset(
-              onBoardingData[index].illustration,
+              localizedOnBoardingData[index].illustration,
               width: 700,
               height: 700,
               fit: BoxFit.contain,

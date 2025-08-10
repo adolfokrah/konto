@@ -3,13 +3,16 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
-import '../../../../core/widgets/number_input.dart';
+import 'package:konto/core/widgets/number_input.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class LoginView extends StatelessWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -22,15 +25,15 @@ class LoginView extends StatelessWidget {
           children: [
             const SizedBox(height: 40),
             
-            const Text(
-              'Login',
+            Text(
+              localizations.login,
               style: TextStyles.headingOne,
             ),
             
             const SizedBox(height: AppSpacing.spacingS),
             
-            const Text(
-              'Sign in to collect, contribute, or\ntrack with confidence.',
+            Text(
+              localizations.loginSubtitle,
               style: TextStyles.headingTwo,
             ),
             
@@ -39,7 +42,7 @@ class LoginView extends StatelessWidget {
             NumberInput(
               selectedCountry: 'Ghana',
               countryCode: '+233',
-              placeholder: 'Phone number',
+              placeholder: localizations.phoneNumber,
               onCountryChanged: (country, code) {
                 // Handle country selection
                 print('Selected: $country ($code)');
@@ -52,9 +55,9 @@ class LoginView extends StatelessWidget {
             
             const SizedBox(height: AppSpacing.spacingS),
             
-            AppButton(text: "Login", variant: ButtonVariant.fill, onPressed: () => {},),
+            AppButton(text: localizations.login, variant: ButtonVariant.fill, onPressed: () => {},),
             const SizedBox(height: AppSpacing.spacingS),
-            AppButton(text: "Create Account", variant: ButtonVariant.outline, onPressed: () => {},)
+            AppButton(text: localizations.createAccount, variant: ButtonVariant.outline, onPressed: () => {},)
           ],
         ),
       ),
