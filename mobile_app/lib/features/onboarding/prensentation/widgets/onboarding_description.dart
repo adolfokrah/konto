@@ -11,7 +11,29 @@ class OnboardingDescription extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-      child: Text(onBoardingData[currentPage].description, style: TextStyles.headingTwo),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+          return Stack(
+            alignment: Alignment.centerLeft,
+            children: <Widget>[
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: Text(
+          onBoardingData[currentPage].description,
+          key: ValueKey<int>(currentPage),
+          style: TextStyles.headingTwo,
+        ),
+      ),
     );
   }
 }
