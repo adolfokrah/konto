@@ -121,7 +121,7 @@ class _NumberInputState extends State<NumberInput> {
                   decoration: InputDecoration(
                     hintText: widget.placeholder,
                     hintStyle:  TextStyles.titleMedium.copyWith(
-                      color: AppColors.label
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,

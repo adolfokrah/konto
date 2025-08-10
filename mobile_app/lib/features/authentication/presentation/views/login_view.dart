@@ -5,6 +5,7 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/route.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -19,11 +20,11 @@ class LoginView extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(AppSpacing.spacingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.spacingL),
             
             Text(
               localizations.login,
@@ -37,7 +38,7 @@ class LoginView extends StatelessWidget {
               style: TextStyles.headingTwo,
             ),
             
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.spacingL),
             
             NumberInput(
               selectedCountry: 'Ghana',
@@ -57,7 +58,9 @@ class LoginView extends StatelessWidget {
             
             AppButton(text: localizations.login, variant: ButtonVariant.fill, onPressed: () => {},),
             const SizedBox(height: AppSpacing.spacingS),
-            AppButton(text: localizations.createAccount, variant: ButtonVariant.outline, onPressed: () => {},)
+            AppButton(text: localizations.createAccount, variant: ButtonVariant.outline, onPressed: () => {
+              Navigator.pushNamed(context, AppRoutes.register),
+            },)
           ],
         ),
       ),
