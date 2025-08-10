@@ -25,7 +25,6 @@ class AppTheme {
       // Custom text theme from Figma
       textTheme: AppTextStyles.textTheme,
       fontFamily: 'Supreme',
-      
     );
   }
   

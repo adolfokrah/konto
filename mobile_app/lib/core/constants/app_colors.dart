@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Define your Figma colors
   static const Color primaryLight = Color(0xFFFDF7EC);
+  static const Color primaryDark = Color(0xFF2D3849);
   static const Color secondaryGreen = Color(0xFFF4FDDF);
   static const Color backgroundLight = Color(0xFFEBE2D7);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color onPrimaryWhite = Color(0xFFFFFFFF);
-  static const Color onSurfaceDark = Color(0xFF1F2937);
+  static const Color onSurfaceDark = Color(0xFF1B232E);
   static const Color label = Color(0xFF747373);
   static const Color black = Color(0xFF000000);
 
@@ -28,7 +29,7 @@ class AppColors {
   // Create dark theme color scheme (if needed)
   static const ColorScheme darkColorScheme = ColorScheme(
     brightness: Brightness.dark,
-    primary: primaryLight,
+    primary: primaryDark,
     onPrimary: onPrimaryWhite,
     secondary: secondaryGreen,
     onSecondary: onPrimaryWhite,

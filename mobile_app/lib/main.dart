@@ -30,7 +30,7 @@ class MainApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
         routes: AppRoutes.routes,
-        initialRoute: AppRoutes.initial,
+        initialRoute: AppRoutes.login,
       ),
     );
   }
