@@ -277,8 +277,9 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
     
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
+      maxChildSize: 0.9, // Allow near full screen
+      snap: true,
+      snapSizes: const [0.9], // Better snap positions
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -312,8 +313,8 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
                 },
               ),
               const SizedBox(height: AppSpacing.spacingM),
-              // Country list
-              Expanded(
+              // Country list - Use Flexible to handle overflow gracefully
+              Flexible(
                 child: _getItemCount() == 0
                     ? Center(
                         child: Text(

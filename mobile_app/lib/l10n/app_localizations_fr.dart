@@ -86,4 +86,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get countryGermany => 'Allemagne';
+
+  @override
+  String get dragUpToExpand => 'Glissez vers le haut pour développer';
 }

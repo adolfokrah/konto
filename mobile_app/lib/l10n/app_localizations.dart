@@ -247,6 +247,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Germany'**
   String get countryGermany;
+
+  /// Message shown when bottom sheet is too small
+  ///
+  /// In en, this message translates to:
+  /// **'Drag up to expand'**
+  String get dragUpToExpand;
 }
 
 class _AppLocalizationsDelegate

@@ -122,5 +122,10 @@
   "countryGermany": "Germany",
   "@countryGermany": {
     "description": "Country name: Germany"
+  },
+  
+  "dragUpToExpand": "Drag up to expand",
+  "@dragUpToExpand": {
+    "description": "Message shown when bottom sheet is too small"
   }
 }
