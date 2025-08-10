@@ -293,7 +293,7 @@ class _CountryPickerContentState extends State<_CountryPickerContent> {
             children: [
               // Drag handle
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(

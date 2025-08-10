@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/localized_onboarding_data.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -33,7 +34,9 @@ class OnboardingTitle extends StatelessWidget {
         child: Text(
           localizedOnBoardingData[currentPage].title,
           key: ValueKey<int>(currentPage),
-          style: TextStyles.headingOne,
+          style: TextStyles.headingOne.copyWith(
+            color: AppColors.black
+          ),
         ),
       ),
     );

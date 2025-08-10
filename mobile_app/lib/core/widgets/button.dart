@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/button_variants.dart';
@@ -85,19 +84,19 @@ class AppButton extends StatelessWidget {
       width: isFullWidth ? double.infinity : null,
       height: 55,
       child: variant == ButtonVariant.fill
-          ? _buildFilledButton(isDisabled)
-          : _buildOutlinedButton(isDisabled),
+          ? _buildFilledButton(context, isDisabled)
+          : _buildOutlinedButton(context, isDisabled),
     );
   }
 
-  Widget _buildFilledButton(bool isDisabled) {
+  Widget _buildFilledButton(BuildContext context, bool isDisabled) {
     final Color bgColor = isDisabled
-        ? AppColors.black.withValues(alpha: 0.3)
-        : backgroundColor ?? AppColors.black;
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
+        : backgroundColor ?? Theme.of(context).colorScheme.onSurface;
     
     final Color txtColor = isDisabled
-        ? AppColors.surfaceWhite.withValues(alpha: 0.5)
-        : textColor ?? AppColors.surfaceWhite;
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.5)
+        : textColor ?? Theme.of(context).colorScheme.surface;
 
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
@@ -118,14 +117,14 @@ class AppButton extends StatelessWidget {
     );
   }
 
-  Widget _buildOutlinedButton(bool isDisabled) {
+  Widget _buildOutlinedButton(BuildContext context, bool isDisabled) {
     final Color borderClr = isDisabled
-        ? AppColors.black.withValues(alpha: 0.3)
-        : borderColor ?? AppColors.black;
+        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+        : borderColor ?? Theme.of(context).colorScheme.onSurface;
     
     final Color txtColor = isDisabled
-        ? AppColors.black.withValues(alpha: 0.5)
-        : textColor ?? AppColors.black;
+        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
+        : textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return OutlinedButton(
       onPressed: isLoading ? null : onPressed,
