@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/constants/button_variants.dart';
 
 class OnBoardingData {
   final String title;
   final String description;
   final Color backgroundColor;
-  final Color buttonColor;
-  final Color buttonTextColor;
+  final ButtonVariant buttonVariant;
   final String buttonText;
   final String illustration;
 
@@ -13,8 +13,7 @@ class OnBoardingData {
     required this.title,
     required this.description,
     required this.backgroundColor,
-    required this.buttonColor,
-    required this.buttonTextColor,
+    required this.buttonVariant,
     required this.buttonText,
     required this.illustration,
   });

@@ -1,6 +1,6 @@
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/features/onboarding/prensentation/models/onboarding_data.dart' show OnBoardingData;
+import 'package:konto/features/onboarding/data/models/onboarding_data.dart' show OnBoardingData;
 
 final List<OnBoardingData> onBoardingData = [
     OnBoardingData(

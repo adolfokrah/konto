@@ -3,7 +3,8 @@ import 'package:konto/core/constants/onboarding_data.dart';
 
 class OnBoardingSlider extends StatelessWidget {
   final int currentPage; // Placeholder for current page index
-  OnBoardingSlider({super.key, required this.currentPage});
+  final Function(int)? onPageChanged;
+  OnBoardingSlider({super.key, required this.currentPage, this.onPageChanged});
   final PageController _pageController = PageController();
 
   @override
@@ -12,7 +13,7 @@ class OnBoardingSlider extends StatelessWidget {
         child: PageView.builder(
           controller: _pageController,
           onPageChanged: (index) {
-            
+            onPageChanged?.call(index); // Notify parent about page change
           },
           itemCount: onBoardingData.length,
           itemBuilder: (context, index) {
