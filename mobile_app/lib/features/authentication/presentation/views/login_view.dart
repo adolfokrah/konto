@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/constants/button_variants.dart';
+import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/widgets/button.dart';
 import '../../../../core/widgets/number_input.dart';
 
 class LoginView extends StatelessWidget {
@@ -10,17 +14,8 @@ class LoginView extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Login',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,22 +23,15 @@ class LoginView extends StatelessWidget {
             const SizedBox(height: 40),
             
             const Text(
-              'Enter your phone number',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              'Login',
+              style: TextStyles.headingOne,
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.spacingS),
             
             const Text(
-              'We\'ll send you a verification code',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              'Sign in to collect, contribute, or\ntrack with confidence.',
+              style: TextStyles.headingTwo,
             ),
             
             const SizedBox(height: 40),
@@ -62,34 +50,11 @@ class LoginView extends StatelessWidget {
               },
             ),
             
-            const Spacer(),
+            const SizedBox(height: AppSpacing.spacingS),
             
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle login/continue action
-                  print('Continue pressed');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 40),
+            AppButton(text: "Login", variant: ButtonVariant.fill, onPressed: () => {},),
+            const SizedBox(height: AppSpacing.spacingS),
+            AppButton(text: "Create Account", variant: ButtonVariant.outline, onPressed: () => {},)
           ],
         ),
       ),
