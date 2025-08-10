@@ -10,3 +10,5 @@ final class OnboardingPageState extends OnboardingState {
   
   OnboardingPageState(this.currentPage);
 }
+
+final class OnboardingCompleted extends OnboardingState {}

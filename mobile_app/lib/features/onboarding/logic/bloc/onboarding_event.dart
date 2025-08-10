@@ -8,3 +8,9 @@ final class PageChanged extends OnboardingEvent {
   
   PageChanged(this.pageIndex);
 }
+
+final class OnboardingFinished extends OnboardingEvent {}
+
+final class CheckOnboardingStatus extends OnboardingEvent {}
+
+final class ResetOnboarding extends OnboardingEvent {}

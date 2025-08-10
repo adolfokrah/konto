@@ -55,8 +55,8 @@ class OnBoardingPage extends StatelessWidget {
                       if (currentPage < localizedOnBoardingData.length - 1) {
                         context.read<OnboardingBloc>().add(PageChanged(currentPage + 1));
                       } else {
-                        // Last page - complete onboarding (navigate to login page)
-                        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+                        context.read<OnboardingBloc>().add(OnboardingFinished());
+                        // Navigator.of(context).pushReplacementNamed(AppRoutes.login);
                       }
                     },
                   ),

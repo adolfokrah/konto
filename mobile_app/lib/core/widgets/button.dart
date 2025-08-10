@@ -95,8 +95,8 @@ class AppButton extends StatelessWidget {
         : backgroundColor ?? Theme.of(context).colorScheme.onSurface;
     
     final Color txtColor = isDisabled
-        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.5)
-        : textColor ?? Theme.of(context).colorScheme.surface;
+        ? Theme.of(context).colorScheme.primary
+        : textColor ?? Theme.of(context).colorScheme.primary;
 
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,

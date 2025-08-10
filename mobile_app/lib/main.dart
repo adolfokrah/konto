@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
+import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
 void main() {
@@ -15,10 +17,20 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Create service instances
+    final localStorageService = LocalStorageService();
+    
+    // Create repository instances
+    final onboardingRepository = OnboardingRepository(
+      localStorageService: localStorageService,
+    );
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => OnboardingBloc(),
+          create: (context) => OnboardingBloc(
+            onboardingRepository: onboardingRepository,
+          )..add(CheckOnboardingStatus()),
         ),
         // Add more BLoCs here as you create them
         // BlocProvider(
@@ -45,7 +57,7 @@ class MainApp extends StatelessWidget {
           Locale('fr'), // French
         ],
         routes: AppRoutes.routes,
-        initialRoute: AppRoutes.login,
+        initialRoute: AppRoutes.initial,
       ),
     );
   }
