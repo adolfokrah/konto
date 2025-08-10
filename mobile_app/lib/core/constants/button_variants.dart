@@ -1,0 +1,1 @@
+enum ButtonVariant { fill, outline }

@@ -5,8 +5,8 @@ class AppTextStyles {
   // Heading Styles
   static const TextStyle headingOne = TextStyle(
     fontFamily: 'Chubbo',
-    fontSize: 48,
-    fontWeight: FontWeight.w500, // Medium
+    fontSize: 58,
+    fontWeight: FontWeight.bold, // Bold
     height: 1.2,
     letterSpacing: -0.5,
   );
@@ -22,7 +22,7 @@ class AppTextStyles {
   // Title Styles
   static const TextStyle titleMediumM = TextStyle(
     fontFamily: 'Supreme',
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: FontWeight.w500, // Medium
     height: 1.4,
     letterSpacing: 0.1,

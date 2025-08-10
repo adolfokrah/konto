@@ -9,6 +9,8 @@ class AppColors {
   static const Color errorRed = Color(0xFFEF4444);
   static const Color onPrimaryWhite = Color(0xFFFFFFFF);
   static const Color onSurfaceDark = Color(0xFF1F2937);
+  static const Color label = Color(0xFF747373);
+  static const Color black = Color(0xFF000000);
 
   // Create light theme color scheme
   static const ColorScheme lightColorScheme = ColorScheme(

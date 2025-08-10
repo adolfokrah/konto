@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/theme/app_theme.dart';
-import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -11,14 +11,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!', style: TextStyles.titleBoldLg),
-        ),
-      ),
+      home: const OnBoardingPage(),
     );
   }
 }
