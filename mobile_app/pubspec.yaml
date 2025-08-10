@@ -19,3 +19,70 @@ flutter:
   uses-material-design: true
   assets:
     - shorebird.yaml
+  
+  fonts:
+    - family: Chubbo
+      fonts:
+        - asset: assets/fonts/chubbo/Chubbo-Extralight.otf
+          weight: 200
+        - asset: assets/fonts/chubbo/Chubbo-ExtralightItalic.otf
+          weight: 200
+          style: italic
+        - asset: assets/fonts/chubbo/Chubbo-Light.otf
+          weight: 300
+        - asset: assets/fonts/chubbo/Chubbo-LightItalic.otf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/chubbo/Chubbo-Regular.otf
+          weight: 400
+        - asset: assets/fonts/chubbo/Chubbo-Italic.otf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/chubbo/Chubbo-Medium.otf
+          weight: 500
+        - asset: assets/fonts/chubbo/Chubbo-MediumItalic.otf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/chubbo/Chubbo-Bold.otf
+          weight: 700
+        - asset: assets/fonts/chubbo/Chubbo-BoldItalic.otf
+          weight: 700
+          style: italic
+    
+    - family: Supreme
+      fonts:
+        - asset: assets/fonts/supreme/Supreme-Thin.otf
+          weight: 100
+        - asset: assets/fonts/supreme/Supreme-ThinItalic.otf
+          weight: 100
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Extralight.otf
+          weight: 200
+        - asset: assets/fonts/supreme/Supreme-ExtralightItalic.otf
+          weight: 200
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Light.otf
+          weight: 300
+        - asset: assets/fonts/supreme/Supreme-LightItalic.otf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Regular.otf
+          weight: 400
+        - asset: assets/fonts/supreme/Supreme-Italic.otf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Medium.otf
+          weight: 500
+        - asset: assets/fonts/supreme/Supreme-MediumItalic.otf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Bold.otf
+          weight: 700
+        - asset: assets/fonts/supreme/Supreme-BoldItalic.otf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/supreme/Supreme-Extrabold.otf
+          weight: 800
+        - asset: assets/fonts/supreme/Supreme-ExtraboldItalic.otf
+          weight: 800
+          style: italic

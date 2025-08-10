@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/theme/app_theme.dart';
+import 'package:konto/core/theme/text_styles.dart';
 
 void main() {
   runApp(const MainApp());
@@ -9,11 +11,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp(
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Colors.amber,
         body: Center(
-          child: Text('Hello World!'),
+          child: Text('Hello World!', style: TextStyles.titleBoldLg),
         ),
       ),
     );
