@@ -4,7 +4,7 @@ import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/divider.dart';
-import 'package:konto/core/widgets/country_picker.dart';
+import 'package:konto/core/widgets/number_country_picker.dart';
 
 class NumberInput extends StatefulWidget {
   final String? selectedCountry;
@@ -39,7 +39,7 @@ class _NumberInputState extends State<NumberInput> {
     _phoneController = TextEditingController(text: widget.phoneNumber);
     
     // Get country from country picker or use defaults
-    final country = CountryPicker.getCountryByCode(widget.countryCode ?? '+233');
+    final country = NumberCountryPicker.getCountryByCode(widget.countryCode ?? '+233');
     _selectedCountry = country?.name ?? widget.selectedCountry ?? 'Ghana';
     _countryCode = country?.code ?? widget.countryCode ?? '+233';
   }
@@ -72,7 +72,7 @@ class _NumberInputState extends State<NumberInput> {
           // Top row with country and chevron
           InkWell(
             onTap: () {
-              CountryPicker.showCountryPickerDialog(
+              NumberCountryPicker.showCountryPickerDialog(
                 context,
                 selectedCountryCode: _countryCode,
                 onCountrySelected: _onCountrySelected,

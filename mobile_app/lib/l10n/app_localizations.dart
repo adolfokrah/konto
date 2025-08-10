@@ -253,6 +253,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drag up to expand'**
   String get dragUpToExpand;
+
+  /// Search placeholder for options picker
+  ///
+  /// In en, this message translates to:
+  /// **'Search options...'**
+  String get searchOptions;
+
+  /// Header for all options list
+  ///
+  /// In en, this message translates to:
+  /// **'All Options'**
+  String get allOptions;
+
+  /// Message when no options match search
+  ///
+  /// In en, this message translates to:
+  /// **'No options found'**
+  String get noOptionsFound;
+
+  /// Terms and conditions agreement text
+  ///
+  /// In en, this message translates to:
+  /// **'By signing up you agree with our '**
+  String get bySigningUpYouAgree;
+
+  /// Terms and conditions link text
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions'**
+  String get termsAndConditions;
+
+  /// Conjunction word between terms and privacy policy
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get and;
+
+  /// Privacy policy link text
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// Full name input label
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get fullName;
+
+  /// Email input label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// Country selection label
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get country;
+
+  /// Register page title
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get register;
 }
 
 class _AppLocalizationsDelegate

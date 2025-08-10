@@ -127,5 +127,60 @@
   "dragUpToExpand": "Drag up to expand",
   "@dragUpToExpand": {
     "description": "Message shown when bottom sheet is too small"
+  },
+  
+  "searchOptions": "Search options...",
+  "@searchOptions": {
+    "description": "Search placeholder for options picker"
+  },
+  
+  "allOptions": "All Options",
+  "@allOptions": {
+    "description": "Header for all options list"
+  },
+  
+  "noOptionsFound": "No options found",
+  "@noOptionsFound": {
+    "description": "Message when no options match search"
+  },
+  
+  "bySigningUpYouAgree": "By signing up you agree with our ",
+  "@bySigningUpYouAgree": {
+    "description": "Terms and conditions agreement text"
+  },
+  
+  "termsAndConditions": "Terms & Conditions",
+  "@termsAndConditions": {
+    "description": "Terms and conditions link text"
+  },
+  
+  "and": " and ",
+  "@and": {
+    "description": "Conjunction word between terms and privacy policy"
+  },
+  
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Privacy policy link text"
+  },
+  
+  "fullName": "Full name",
+  "@fullName": {
+    "description": "Full name input label"
+  },
+  
+  "email": "Email",
+  "@email": {
+    "description": "Email input label"
+  },
+  
+  "country": "Country",
+  "@country": {
+    "description": "Country selection label"
+  },
+  
+  "register": "Register",
+  "@register": {
+    "description": "Register page title"
   }
 }

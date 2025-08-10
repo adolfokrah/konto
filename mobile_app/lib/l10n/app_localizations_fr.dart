@@ -89,4 +89,37 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get dragUpToExpand => 'Glissez vers le haut pour développer';
+
+  @override
+  String get searchOptions => 'Rechercher des options...';
+
+  @override
+  String get allOptions => 'Toutes les options';
+
+  @override
+  String get noOptionsFound => 'Aucune option trouvée';
+
+  @override
+  String get bySigningUpYouAgree => 'En vous inscrivant, vous acceptez nos ';
+
+  @override
+  String get termsAndConditions => 'Conditions d\'utilisation';
+
+  @override
+  String get and => ' et ';
+
+  @override
+  String get privacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String get fullName => 'Nom complet';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get country => 'Pays';
+
+  @override
+  String get register => 'S\'inscrire';
 }

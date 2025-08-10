@@ -89,4 +89,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dragUpToExpand => 'Drag up to expand';
+
+  @override
+  String get searchOptions => 'Search options...';
+
+  @override
+  String get allOptions => 'All Options';
+
+  @override
+  String get noOptionsFound => 'No options found';
+
+  @override
+  String get bySigningUpYouAgree => 'By signing up you agree with our ';
+
+  @override
+  String get termsAndConditions => 'Terms & Conditions';
+
+  @override
+  String get and => ' and ';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get fullName => 'Full name';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get register => 'Register';
 }
