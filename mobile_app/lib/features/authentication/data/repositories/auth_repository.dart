@@ -13,6 +13,51 @@ class AuthRepository {
   })  : _smsOtpService = smsOtpService,
         _authApiProvider = authApiProvider;
 
+  /// Check if phone number is available (exists in system)
+  /// Returns true if phone number exists (user should login)
+  /// Returns false if phone number doesn't exist (user should register)
+  Future<Map<String, dynamic>> checkPhoneNumberAvailability({
+    required String phoneNumber,
+    required String countryCode,
+  }) async {
+    try {
+      print('🔍 Checking phone number availability for: $phoneNumber');
+      
+      final apiResponse = await _authApiProvider.checkPhoneNumberAvailability(
+        phoneNumber: phoneNumber,
+        countryCode: countryCode,
+      );
+      
+      print('📋 Availability check response: $apiResponse');
+      
+      if (apiResponse['success'] == true) {
+        final exists = apiResponse['exists'] ?? false;
+        return {
+          'success': true,
+          'exists': exists,
+          'shouldLogin': exists, // If phone exists, user should login
+          'shouldRegister': !exists, // If phone doesn't exist, user should register
+          'message': exists 
+            ? 'Phone number found. Proceed to login.'
+            : 'Phone number not found. Please register first.',
+        };
+      } else {
+        print('💥 API Error: ${apiResponse['message']}');
+        return {
+          'success': false,
+          'message': 'Error checking phone availability: ${apiResponse['message']}',
+          'error': apiResponse['error'],
+        };
+      }
+    } catch (e) {
+      print('💥 Repository Exception: $e');
+      return {
+        'success': false,
+        'message': 'Error: ${e.toString()}'
+      };
+    }
+  }
+
   /// Start phone number verification process
   Future<Map<String, dynamic>> verifyPhoneNumber({
     required String phoneNumber,

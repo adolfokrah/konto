@@ -10,8 +10,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   String? _sentOtp;
   
   AuthBloc() : super(const AuthInitial()) {
+    on<PhoneNumberAvailabilityChecked>(_onPhoneNumberAvailabilityChecked);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
     on<SignOutRequested>(_onSignOutRequested);
+  }
+
+  Future<void> _onPhoneNumberAvailabilityChecked(
+    PhoneNumberAvailabilityChecked event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Don't format the phone number with country code since we send it separately
+      // Just clean the phone number (remove non-digits)
+      String cleanPhoneNumber = event.phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+      
+      // Check phone number availability
+      final result = await authRepository.checkPhoneNumberAvailability(
+        phoneNumber: cleanPhoneNumber,
+        countryCode: event.countryCode,
+      );
+      
+      if (result['success'] == true) {
+        emit(PhoneNumberAvailabilityResult(
+          exists: result['exists'] ?? false,
+          shouldLogin: result['shouldLogin'] ?? false,
+          shouldRegister: result['shouldRegister'] ?? false,
+          message: result['message'] ?? '',
+          phoneNumber: cleanPhoneNumber,
+          countryCode: event.countryCode,
+        ));
+      } else {
+        emit(AuthFailure(result['message'] ?? 'Failed to check phone number availability'));
+      }
+    } catch (e) {
+      emit(AuthFailure('Failed to check phone number availability: ${e.toString()}'));
+    }
   }
 
   Future<void> _onPhoneNumberSubmitted(

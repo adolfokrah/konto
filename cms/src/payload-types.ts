@@ -130,6 +130,10 @@ export interface User {
    */
   photo?: (string | null) | Media;
   fullName: string;
+  /**
+   * Country code for the phone number, e.g., +233 for Ghana
+   */
+  countryCode?: string | null;
   phoneNumber: string;
   country: 'gh' | 'ng';
   isKYCVerified?: boolean | null;
@@ -355,6 +359,7 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   photo?: T;
   fullName?: T;
+  countryCode?: T;
   phoneNumber?: T;
   country?: T;
   isKYCVerified?: T;

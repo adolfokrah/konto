@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
+import { checkPhoneNumberExistence } from './endpoints/check-phone-number-existence'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -6,6 +8,18 @@ export const Users: CollectionConfig = {
     useAsTitle: 'fullName',
   },
   auth: true,
+  endpoints: [
+    {
+      path: '/login-with-phone',
+      method: 'post',
+      handler: loginWithPhoneNumber,
+    },
+    {
+      path: '/check-phone-number-existence',
+      method: 'post',
+      handler: checkPhoneNumberExistence,
+    },
+  ],
   fields: [
     {
       name: 'photo',
@@ -20,6 +34,13 @@ export const Users: CollectionConfig = {
       name: 'fullName',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'countryCode',
+      type: 'text',
+      admin: {
+        description: 'Country code for the phone number, e.g., +233 for Ghana',
+      }
     },
     {
       name: 'phoneNumber',

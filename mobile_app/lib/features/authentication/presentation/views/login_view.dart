@@ -32,7 +32,30 @@ class _LoginViewState extends State<LoginView> {
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthCodeSentSuccess) {
+          if (state is PhoneNumberAvailabilityResult) {
+            if (state.shouldLogin) {
+              // Phone number exists, proceed with OTP for login
+              context.read<AuthBloc>().add(
+                PhoneNumberSubmitted(
+                  phoneNumber: state.phoneNumber,
+                  countryCode: state.countryCode,
+                ),
+              );
+            } else if (state.shouldRegister) {
+              // Phone number doesn't exist, navigate to registration
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Phone number not found. Please register first.',
+                    style: TextStyles.titleRegularSm.copyWith(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              // Navigate to register view
+              Navigator.pushNamed(context, AppRoutes.register);
+            }
+          } else if (state is AuthCodeSentSuccess) {
             // Navigate to OTP screen when code is sent
             Navigator.pushNamed(
               context, 
@@ -99,12 +122,13 @@ class _LoginViewState extends State<LoginView> {
                   const SizedBox(height: AppSpacing.spacingS),
                   
                   AppButton(
-                    text: state is AuthLoading ? 'Sending...' : localizations.login,
+                    text: state is AuthLoading ? 'Checking...' : localizations.login,
                     variant: ButtonVariant.fill,
                     onPressed: state is AuthLoading ? null : () {
                       if (_phoneNumber.isNotEmpty) {
+                        // First check if phone number is available
                         context.read<AuthBloc>().add(
-                          PhoneNumberSubmitted(
+                          PhoneNumberAvailabilityChecked(
                             phoneNumber: _phoneNumber,
                             countryCode: _countryCode,
                           ),
