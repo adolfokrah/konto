@@ -4,13 +4,13 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/core/constants/localized_onboarding_data.dart';
+import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/onboarding/prensentation/widgets/onboarding_description.dart';
 import 'package:konto/features/onboarding/prensentation/widgets/onboarding_progress_indicator.dart';
 import 'package:konto/features/onboarding/prensentation/widgets/onboarding_slider.dart';
 import 'package:konto/features/onboarding/prensentation/widgets/onboarding_title.dart';
-import 'package:konto/route.dart';
 
 class OnBoardingPage extends StatelessWidget {
   const OnBoardingPage({super.key});
@@ -37,6 +37,7 @@ class OnBoardingPage extends StatelessWidget {
                   currentPage: currentPage,
                   onPageChanged: (index) {
                     context.read<OnboardingBloc>().add(PageChanged(index));
+                    HapticUtils.heavy();
                   },
                 ),
                 const SizedBox(height: AppSpacing.spacingM),

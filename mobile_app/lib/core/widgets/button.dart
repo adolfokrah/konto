@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/haptic_utils.dart';
 
 
 class AppButton extends StatelessWidget {
@@ -12,6 +13,7 @@ class AppButton extends StatelessWidget {
   final ButtonVariant variant;
   final bool isFullWidth;
   final bool isLoading;
+  final bool enableHapticFeedback;
   final Color? backgroundColor;
   final Color? textColor;
   final Color? borderColor;
@@ -24,6 +26,7 @@ class AppButton extends StatelessWidget {
     this.variant = ButtonVariant.fill,
     this.isFullWidth = true,
     this.isLoading = false,
+    this.enableHapticFeedback = true,
     this.backgroundColor,
     this.textColor,
     this.borderColor,
@@ -37,6 +40,7 @@ class AppButton extends StatelessWidget {
     VoidCallback? onPressed,
     bool isFullWidth = true,
     bool isLoading = false,
+    bool enableHapticFeedback = true,
     Color? backgroundColor,
     Color? textColor,
   }) {
@@ -48,6 +52,7 @@ class AppButton extends StatelessWidget {
       variant: ButtonVariant.fill,
       isFullWidth: isFullWidth,
       isLoading: isLoading,
+      enableHapticFeedback: enableHapticFeedback,
       backgroundColor: backgroundColor,
       textColor: textColor,
     );
@@ -60,6 +65,7 @@ class AppButton extends StatelessWidget {
     VoidCallback? onPressed,
     bool isFullWidth = true,
     bool isLoading = false,
+    bool enableHapticFeedback = true,
     Color? borderColor,
     Color? textColor,
   }) {
@@ -71,6 +77,7 @@ class AppButton extends StatelessWidget {
       variant: ButtonVariant.outline,
       isFullWidth: isFullWidth,
       isLoading: isLoading,
+      enableHapticFeedback: enableHapticFeedback,
       borderColor: borderColor,
       textColor: textColor,
     );
@@ -89,6 +96,17 @@ class AppButton extends StatelessWidget {
     );
   }
 
+  VoidCallback? _getOnPressedCallback() {
+    if (onPressed == null || isLoading) return null;
+
+    return enableHapticFeedback
+        ? () {
+            HapticUtils.heavy();
+            onPressed!();
+          }
+        : onPressed!;
+  }
+
   Widget _buildFilledButton(BuildContext context, bool isDisabled) {
     final Color bgColor = isDisabled
         ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
@@ -99,7 +117,7 @@ class AppButton extends StatelessWidget {
         : textColor ?? Theme.of(context).colorScheme.primary;
 
     return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
+      onPressed: _getOnPressedCallback(),
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
         foregroundColor: txtColor,
@@ -127,7 +145,7 @@ class AppButton extends StatelessWidget {
         : textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return OutlinedButton(
-      onPressed: isLoading ? null : onPressed,
+      onPressed: _getOnPressedCallback(),
       style: OutlinedButton.styleFrom(
         foregroundColor: txtColor,
         side: BorderSide(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/searh_input.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
@@ -36,6 +37,9 @@ class GenericPicker<T> extends StatelessWidget {
     double minHeight = 0.3,
     double initialHeight = 0.9,
   }) {
+    // Provide heavy haptic feedback when opening the picker modal
+    HapticUtils.heavy();
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
