@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "465253791485",
+    "project_id": "konto-57286",
+    "storage_bucket": "konto-57286.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465253791485:android:0ef11af36e6a424fedf094",
+        "android_client_info": {
+          "package_name": "com.example.konto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaJKRhi6BggzxqO3EUtgzaC0Ra-dwDhYg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 
