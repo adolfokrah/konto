@@ -205,8 +205,10 @@ class AuthRepository {
     }
   }
 
-  /// Register new user
-  Future<Map<String, dynamic>> registerUser({
+  /// Register user after OTP verification
+  Future<Map<String, dynamic>> registerUserAfterOtpVerification({
+    required String enteredOtp,
+    required String sentOtp,
     required String phoneNumber,
     required String countryCode,
     required String country,
@@ -214,6 +216,18 @@ class AuthRepository {
     required String email,
   }) async {
     try {
+      // First verify the OTP
+      if (enteredOtp != sentOtp) {
+        print('❌ OTP verification failed - codes do not match');
+        return {
+          'success': false,
+          'message': 'Invalid OTP code. Please check and try again.',
+        };
+      }
+
+      print('✅ OTP verification successful, proceeding to registration');
+
+      // If OTP is correct, register the user
       print('📝 Registering new user: $fullName');
       
       final apiResponse = await _authApiProvider.registerUser(
@@ -278,45 +292,6 @@ class AuthRepository {
         };
       }
     } catch (e) {
-      print('💥 Registration Repository Exception: $e');
-      return {
-        'success': false,
-        'message': 'Error during registration: ${e.toString()}'
-      };
-    }
-  }
-
-  /// Register user after OTP verification
-  Future<Map<String, dynamic>> registerUserAfterOtpVerification({
-    required String enteredOtp,
-    required String sentOtp,
-    required String phoneNumber,
-    required String countryCode,
-    required String country,
-    required String fullName,
-    required String email,
-  }) async {
-    try {
-      // First verify the OTP
-      if (enteredOtp != sentOtp) {
-        print('❌ OTP verification failed - codes do not match');
-        return {
-          'success': false,
-          'message': 'Invalid OTP code. Please check and try again.',
-        };
-      }
-
-      print('✅ OTP verification successful, proceeding to registration');
-
-      // If OTP is correct, register the user
-      return await registerUser(
-        phoneNumber: phoneNumber,
-        countryCode: countryCode,
-        country: country,
-        fullName: fullName,
-        email: email,
-      );
-    } catch (e) {
       print('💥 Registration with OTP Exception: $e');
       return {
         'success': false,
@@ -325,7 +300,74 @@ class AuthRepository {
     }
   }
 
-  /// Check if user is already logged in
+  /// Auto login using stored user data - simply calls login endpoint
+  Future<Map<String, dynamic>> autoLogin() async {
+    try {
+      // Get stored user data
+      final user = await _userStorageService.getUserData();
+      
+      if (user == null) {
+        print('❌ No user data found in storage');
+        return {
+          'success': false,
+          'message': 'No user data found in storage',
+        };
+      }
+
+      print('🔍 Found stored user data, attempting auto-login for: ${user.fullName}');
+      
+      // Use the existing login endpoint with stored phone number and country code
+      final loginResponse = await _authApiProvider.loginWithPhoneNumber(
+        phoneNumber: user.phoneNumber,
+        countryCode: user.countryCode,
+      );
+
+      if (loginResponse['success'] == true) {
+        // Parse the login response
+        final loginData = LoginResponse.fromJson(loginResponse);
+        
+        // Update stored user data and token with fresh data from backend
+        final saveResult = await _userStorageService.saveUserData(
+          user: loginData.user,
+          token: loginData.token,
+          tokenExpiry: loginData.exp,
+        );
+
+        if (saveResult) {
+          print('🎉 Auto-login successful and data refreshed');
+          return {
+            'success': true,
+            'message': 'Auto-login successful',
+            'user': loginData.user,
+            'token': loginData.token,
+          };
+        } else {
+          print('⚠️ Auto-login successful but failed to save updated data');
+          return {
+            'success': true,
+            'message': 'Auto-login successful',
+            'user': loginData.user,
+            'token': loginData.token,
+            'warning': 'Failed to save updated data locally',
+          };
+        }
+      } else {
+        print('💥 Auto-login failed: ${loginResponse['message']}');
+        // Clear stored data since login failed (user might be deleted/deactivated)
+        await _userStorageService.clearUserData();
+        return {
+          'success': false,
+          'message': 'Auto-login failed: ${loginResponse['message']}',
+        };
+      }
+    } catch (e) {
+      print('💥 Auto-login Exception: $e');
+      return {
+        'success': false,
+        'message': 'Auto-login error: ${e.toString()}'
+      };
+    }
+  }
   Future<bool> isUserLoggedIn() async {
     return await _userStorageService.isUserLoggedIn();
   }

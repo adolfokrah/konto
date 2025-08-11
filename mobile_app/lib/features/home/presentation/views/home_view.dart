@@ -9,19 +9,40 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Home'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildContent(context, state),
-          ),
-        );
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // Handle sign out - navigate to login
+        if (state is AuthUnauthenticated) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/login',
+            (route) => false,
+          );
+        }
       },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Home'),
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              actions: [
+                // Add sign out button
+                IconButton(
+                  onPressed: () {
+                    _showSignOutDialog(context);
+                  },
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'Sign Out',
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildContent(context, state),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -170,6 +191,34 @@ class HomeView extends StatelessWidget {
     final serviceRegistry = ServiceRegistry();
     final userStorageService = serviceRegistry.userStorageService;
     return await userStorageService.getUserData();
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Sign Out'),
+          content: const Text('Are you sure you want to sign out?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // Trigger sign out event
+                context.read<AuthBloc>().add(SignOutRequested());
+              },
+              child: const Text('Sign Out'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {

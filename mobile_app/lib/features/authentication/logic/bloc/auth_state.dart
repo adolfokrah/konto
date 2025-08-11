@@ -98,3 +98,25 @@ final class UserRegistrationOtpSent extends AuthState {
     required this.sentOtp,
   });
 }
+
+final class AutoLoginLoading extends AuthState {
+  const AutoLoginLoading();
+}
+
+final class AutoLoginSuccess extends AuthState {
+  final User user;
+  final String token;
+
+  const AutoLoginSuccess({
+    required this.user,
+    required this.token,
+  });
+}
+
+final class AutoLoginFailed extends AuthState {
+  final String message;
+
+  const AutoLoginFailed({
+    required this.message,
+  });
+}

@@ -15,8 +15,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
     on<UserRegistrationOtpRequested>(_onUserRegistrationOtpRequested);
     on<UserRegistrationWithOtpRequested>(_onUserRegistrationWithOtpRequested);
-    on<UserRegistrationRequested>(_onUserRegistrationRequested);
     on<SignOutRequested>(_onSignOutRequested);
+    on<AutoLoginRequested>(_onAutoLoginRequested);
   }
 
   Future<void> _onPhoneNumberAvailabilityChecked(
@@ -187,47 +187,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onUserRegistrationRequested(
-    UserRegistrationRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    try {
-      final authRepository = ServiceRegistry().authRepository;
-      
-      // This event should be triggered after OTP verification
-      // The event should contain the verified OTP
-      final result = await authRepository.registerUser(
-        phoneNumber: event.phoneNumber,
-        countryCode: event.countryCode,
-        country: event.country,
-        fullName: event.fullName,
-        email: event.email,
-      );
-      
-      if (result['success'] == true) {
-        final user = result['user'] as User;
-        final token = result['token'] as String?;
-        final requiresLogin = result['requiresLogin'] as bool? ?? false;
-        
-        emit(UserRegistrationSuccess(
-          user: user,
-          token: token,
-          requiresLogin: requiresLogin,
-        ));
-      } else {
-        emit(UserRegistrationFailure(
-          error: result['message'] ?? 'Registration failed',
-          errors: result['errors'],
-        ));
-      }
-    } catch (e) {
-      emit(UserRegistrationFailure(
-        error: 'Registration failed: ${e.toString()}',
-      ));
-    }
-  }
-
   // Helper method to verify OTP (can be called from VerificationBloc)
   Future<Map<String, dynamic>> verifyOtp(String enteredOtp) async {
     if (_sentOtp == null || _phoneNumber == null) {
@@ -243,6 +202,53 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       sentOtp: _sentOtp!,
       phoneNumber: _phoneNumber!,
     );
+  }
+
+  /// Auto login handler - uses stored user data to re-authenticate with backend
+  Future<void> _onAutoLoginRequested(
+    AutoLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AutoLoginLoading());
+    
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Check if there's any user data stored locally first
+      final isLoggedIn = await authRepository.isUserLoggedIn();
+      
+      if (!isLoggedIn) {
+        print('ℹ️ No stored session found');
+        emit(const AutoLoginFailed(
+          message: 'No stored session found'
+        ));
+        return;
+      }
+
+      // Attempt auto-login using stored phone number and country code
+      final autoLoginResult = await authRepository.autoLogin();
+      
+      if (autoLoginResult['success'] == true) {
+        final user = autoLoginResult['user'];
+        final token = autoLoginResult['token'];
+        
+        print('✅ Auto-login successful for user: ${user.fullName}');
+        emit(AutoLoginSuccess(
+          user: user,
+          token: token,
+        ));
+      } else {
+        print('❌ Auto-login failed: ${autoLoginResult['message']}');
+        emit(AutoLoginFailed(
+          message: autoLoginResult['message'] ?? 'Auto-login failed'
+        ));
+      }
+    } catch (e) {
+      print('💥 Auto-login error: $e');
+      emit(AutoLoginFailed(
+        message: 'Auto-login failed: ${e.toString()}'
+      ));
+    }
   }
 
   // Getters for the sent OTP and phone number

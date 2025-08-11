@@ -23,22 +23,6 @@ final class PhoneNumberSubmitted extends AuthEvent {
   });
 }
 
-final class UserRegistrationRequested extends AuthEvent {
-  final String phoneNumber;
-  final String countryCode;
-  final String country;
-  final String fullName;
-  final String email;
-
-  UserRegistrationRequested({
-    required this.phoneNumber,
-    required this.countryCode,
-    required this.country,
-    required this.fullName,
-    required this.email,
-  });
-}
-
 final class UserRegistrationOtpRequested extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
@@ -76,3 +60,5 @@ final class UserRegistrationWithOtpRequested extends AuthEvent {
 }
 
 final class SignOutRequested extends AuthEvent {}
+
+final class AutoLoginRequested extends AuthEvent {}
