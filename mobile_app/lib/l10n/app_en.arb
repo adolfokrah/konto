@@ -108,6 +108,11 @@
   "@countryGhana": {
     "description": "Country name: Ghana"
   },
+
+  "countryNigeria": "Nigeria", 
+  "@countryNigeria": {
+    "description": "Country name: Nigeria"
+  },
   
   "countryUnitedStates": "United States",
   "@countryUnitedStates": {
@@ -182,5 +187,10 @@
   "register": "Register",
   "@register": {
     "description": "Register page title"
+  },
+
+  "phoneNumberPlaceholder": "Phone Number",
+  "@phoneNumberPlaceholder": {
+    "description": "Phone number input placeholder text"
   }
 }

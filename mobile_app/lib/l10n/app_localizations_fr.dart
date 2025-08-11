@@ -79,6 +79,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get countryGhana => 'Ghana';
 
   @override
+  String get countryNigeria => 'Nigéria';
+
+  @override
   String get countryUnitedStates => 'États-Unis';
 
   @override
@@ -122,4 +125,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get register => 'S\'inscrire';
+
+  @override
+  String get phoneNumberPlaceholder => 'Numéro de téléphone';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_radius.dart';
+import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/generic_picker.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -37,7 +38,7 @@ class SelectInput<T> extends StatelessWidget {
     return GestureDetector(
       onTap: enabled ? () => _showSelectionBottomSheet(context) : null,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.spacingXs),
         decoration: BoxDecoration(
           color: filled ? Theme.of(context).colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.radiusM),
@@ -59,14 +60,12 @@ class SelectInput<T> extends StatelessWidget {
                       label!,
                       style: TextStyles.titleRegularXs.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                        fontSize: 12,
                       ),
                     ),
                   
                   // Small gap between label and value
-                  if (label != null && hasValue) 
-                    const SizedBox(height: 2),
-                  
+                  if (label != null && hasValue) const SizedBox(height: 2),
+
                   // Display value or placeholder
                   Text(
                     effectiveDisplayText ?? label ?? hintText ?? '',

@@ -16,8 +16,8 @@ class RegisterView extends StatelessWidget {
     
     // Define options for the SelectInput
     final List<SelectOption<String>> countryOptions = [
-      const SelectOption(value: 'ghana', label: 'Ghana'),
-      const SelectOption(value: 'nigeria', label: 'Nigeria')
+      SelectOption(value: 'ghana', label: localizations.countryGhana),
+      SelectOption(value: 'nigeria', label: localizations.countryNigeria)
     ];
 
     return  Scaffold(
@@ -63,9 +63,9 @@ class RegisterView extends StatelessWidget {
             ),
              const SizedBox(height: AppSpacing.spacingS),
              NumberInput(
-              selectedCountry: 'Ghana',
+              selectedCountry: localizations.countryGhana,
               countryCode: '+233',
-              placeholder: 'Phone Number',
+              placeholder: localizations.phoneNumberPlaceholder,
               onCountryChanged: (country, code) {
                 // Handle country selection
                 print('Selected: $country ($code)');
@@ -81,9 +81,7 @@ class RegisterView extends StatelessWidget {
             RichText(
               textAlign: TextAlign.left,
               text: TextSpan(
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
                 children: [
                   TextSpan(text: localizations.bySigningUpYouAgree),
                   TextSpan(

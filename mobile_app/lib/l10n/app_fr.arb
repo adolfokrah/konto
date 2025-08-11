@@ -21,6 +21,7 @@
   "searchResults": "Résultats de recherche",
   "noCountriesFound": "Aucun pays trouvé",
   "countryGhana": "Ghana",
+  "countryNigeria": "Nigéria",
   "countryUnitedStates": "États-Unis",
   "countryFrance": "France",
   "countryGermany": "Allemagne",
@@ -35,5 +36,6 @@
   "fullName": "Nom complet",
   "email": "Email",
   "country": "Pays",
-  "register": "S'inscrire"
+  "register": "S'inscrire",
+  "phoneNumberPlaceholder": "Numéro de téléphone"
 }

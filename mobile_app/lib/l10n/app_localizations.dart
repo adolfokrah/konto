@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Ghana'**
   String get countryGhana;
 
+  /// Country name: Nigeria
+  ///
+  /// In en, this message translates to:
+  /// **'Nigeria'**
+  String get countryNigeria;
+
   /// Country name: United States
   ///
   /// In en, this message translates to:
@@ -319,6 +325,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Register'**
   String get register;
+
+  /// Phone number input placeholder text
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumberPlaceholder;
 }
 
 class _AppLocalizationsDelegate

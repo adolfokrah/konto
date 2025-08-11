@@ -60,16 +60,15 @@ class AppTextInput extends StatelessWidget {
                 labelStyle: TextStyles.titleMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-                floatingLabelStyle: TextStyles.titleRegularXs.copyWith(
+                floatingLabelStyle: TextStyles.titleMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 12,
                 ),
                 hintStyle: TextStyles.titleMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 floatingLabelBehavior: FloatingLabelBehavior.auto,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(11),
+                contentPadding: const EdgeInsets.all(AppSpacing.spacingXs),
                 isDense: true,
               ),
             ),
