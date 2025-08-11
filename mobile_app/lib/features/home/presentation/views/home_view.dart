@@ -24,7 +24,7 @@ class HomeView extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Home'),
-              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               actions: [
                 // Add sign out button
                 IconButton(
@@ -93,7 +93,6 @@ class HomeView extends StatelessWidget {
                 Icon(
                   Icons.person_off_outlined,
                   size: 64,
-                  color: Colors.grey,
                 ),
                 SizedBox(height: 16),
                 Text(
@@ -148,7 +147,6 @@ class HomeView extends StatelessWidget {
                               Text(
                                 'Welcome back,',
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[600],
                                 ),
                               ),
                               Text(
@@ -227,14 +225,12 @@ class HomeView extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: Colors.grey[600],
         ),
         const SizedBox(width: 12),
         Text(
           '$label:',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
           ),
         ),
         const SizedBox(width: 8),
@@ -242,7 +238,6 @@ class HomeView extends StatelessWidget {
           child: Text(
             value,
             style: TextStyle(
-              color: valueColor ?? Colors.black87,
               fontWeight: valueColor != null ? FontWeight.w500 : FontWeight.normal,
             ),
           ),

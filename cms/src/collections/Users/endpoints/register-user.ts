@@ -41,8 +41,15 @@ export const registerUser = async (req: PayloadRequest) => {
             countryCode: {
               equals: countryCode,
             },
-          },
+          }
         ],
+        or: [
+            {
+                email: {
+                  equals: email || '',
+                },
+            }
+        ]
       },
     })
 

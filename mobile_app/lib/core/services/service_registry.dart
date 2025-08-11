@@ -14,6 +14,9 @@ class ServiceRegistry {
   factory ServiceRegistry() => _instance;
   ServiceRegistry._internal();
   
+  // Track initialization state
+  bool _isInitialized = false;
+  
   // Core services
   late final Dio _dio;
   late final LocalStorageService _localStorageService;
@@ -30,6 +33,12 @@ class ServiceRegistry {
   
   /// Initialize all services with proper dependency injection
   void initialize() {
+    // Skip if already initialized
+    if (_isInitialized) {
+      print('⚠️ ServiceRegistry already initialized, skipping...');
+      return;
+    }
+    
     // Initialize Dio with configuration
     _dio = Dio(
       BaseOptions(
@@ -66,6 +75,7 @@ class ServiceRegistry {
       smsApiProvider: _smsApiProvider,
     );
     
+    _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
   }
   
