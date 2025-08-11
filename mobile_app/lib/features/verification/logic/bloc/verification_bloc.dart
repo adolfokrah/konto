@@ -1,15 +1,21 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:konto/core/services/service_registry.dart';
 
 part 'verification_event.dart';
 part 'verification_state.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
+  String? _sentOtp;
+  String? _phoneNumber;
+  
   VerificationBloc() : super(const VerificationInitial()) {
     on<OtpChanged>(_onOtpChanged);
     on<OtpSubmitted>(_onOtpSubmitted);
     on<ResendOtpRequested>(_onResendOtpRequested);
     on<ClearOtp>(_onClearOtp);
+    on<InitializeVerification>(_onInitializeVerification);
+    on<PhoneNumberVerificationRequested>(_onPhoneNumberVerificationRequested);
   }
 
   void _onOtpChanged(OtpChanged event, Emitter<VerificationState> emit) {
@@ -19,6 +25,12 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       isComplete: isComplete,
       hasError: false,
     ));
+  }
+
+  void _onInitializeVerification(InitializeVerification event, Emitter<VerificationState> emit) {
+    _sentOtp = event.sentOtp;
+    _phoneNumber = event.phoneNumber;
+    emit(const VerificationCodeSent());
   }
 
   Future<void> _onOtpSubmitted(OtpSubmitted event, Emitter<VerificationState> emit) async {
@@ -35,33 +47,74 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     emit(const VerificationLoading());
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Mock validation - replace with actual API call
-      if (event.otp == '123456') {
-        emit(const VerificationSuccess());
+      if (_sentOtp != null) {
+        final verificationRepository = ServiceRegistry().verificationRepository;
+        final result = await verificationRepository.verifyOtp(
+          enteredOtp: event.otp,
+          sentOtp: _sentOtp!,
+        );
+        
+        if (result['success'] == true) {
+          emit(const VerificationSuccess());
+        } else {
+          emit(VerificationFailure(result['message'] ?? 'Invalid verification code'));
+        }
       } else {
-        emit(const VerificationFailure('Invalid verification code. Please try again.'));
+        emit(const VerificationFailure('No verification code sent. Please request a new code.'));
       }
     } catch (e) {
       emit(const VerificationFailure('Something went wrong. Please try again.'));
     }
   }
 
-  Future<void> _onResendOtpRequested(ResendOtpRequested event, Emitter<VerificationState> emit) async {
+  Future<void> _onPhoneNumberVerificationRequested(
+    PhoneNumberVerificationRequested event,
+    Emitter<VerificationState> emit,
+  ) async {
     emit(const VerificationLoading());
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      final verificationRepository = ServiceRegistry().verificationRepository;
+      final result = await verificationRepository.requestPhoneVerification(
+        phoneNumber: event.phoneNumber,
+      );
       
-      // Mock success - replace with actual API call
-      emit(const VerificationResendSuccess());
+      if (result['success'] == true) {
+        _sentOtp = result['otp']; // In production, this should be stored securely
+        _phoneNumber = result['phoneNumber'];
+        emit(const VerificationCodeSent());
+      } else {
+        emit(VerificationFailure(result['message'] ?? 'Failed to send verification code'));
+      }
+    } catch (e) {
+      emit(const VerificationFailure('Failed to send verification code. Please try again.'));
+    }
+  }
+
+  Future<void> _onResendOtpRequested(ResendOtpRequested event, Emitter<VerificationState> emit) async {
+    if (_phoneNumber == null) {
+      emit(const VerificationFailure('No phone number found. Please start verification again.'));
+      return;
+    }
+
+    emit(const VerificationLoading());
+
+    try {
+      final verificationRepository = ServiceRegistry().verificationRepository;
+      final result = await verificationRepository.requestPhoneVerification(
+        phoneNumber: _phoneNumber!,
+      );
       
-      // Return to input state
-      await Future.delayed(const Duration(milliseconds: 500));
-      emit(const VerificationOtpInput());
+      if (result['success'] == true) {
+        _sentOtp = result['otp']; // In production, this should be stored securely
+        emit(const VerificationResendSuccess());
+        
+        // Return to input state after short delay
+        await Future.delayed(const Duration(milliseconds: 500));
+        emit(const VerificationOtpInput());
+      } else {
+        emit(VerificationResendFailure(result['message'] ?? 'Failed to resend code'));
+      }
     } catch (e) {
       emit(const VerificationResendFailure('Failed to resend code. Please try again.'));
     }
@@ -70,4 +123,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   void _onClearOtp(ClearOtp event, Emitter<VerificationState> emit) {
     emit(const VerificationOtpInput());
   }
+
+  // Helper method to get sent OTP (for testing purposes only)
+  String? get sentOtp => _sentOtp;
 }

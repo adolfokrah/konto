@@ -45,5 +45,34 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>REVERSED_CLIENT_ID</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.465253791485-gp7qbsau7hnh4e2f3lq8d4br8l7h9kse</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>FIREBASE_APP_ID</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app-1-465253791485-ios-951bc96ea590b9c5edf094</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>FIREBASE_DEEP_LINK</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>konto-57286</string>
+				<string>https</string>
+				<string>konto-57286.firebaseapp.com</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -128,4 +128,43 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get phoneNumberPlaceholder => 'Numéro de téléphone';
+
+  @override
+  String get enterOtp => 'Entrer le code OTP';
+
+  @override
+  String otpSubtitle(String contactType) {
+    return 'Nous avons envoyé un code à 6 chiffres à votre $contactType';
+  }
+
+  @override
+  String get phoneNumberContactType => 'numéro de téléphone';
+
+  @override
+  String get emailContactType => 'adresse e-mail';
+
+  @override
+  String get contactType => 'contact';
+
+  @override
+  String get didntReceiveCode => 'Vous n\'avez pas reçu le code ? ';
+
+  @override
+  String get resend => 'Renvoyer';
+
+  @override
+  String resendIn(int seconds) {
+    return 'Renvoyer dans ${seconds}s';
+  }
+
+  @override
+  String get resendMessage =>
+      'Demande d\'un nouveau code. Si vous obtenez \"trop de demandes\", attendez 15-30 minutes.';
+
+  @override
+  String get verificationSuccessful => 'Vérification réussie !';
+
+  @override
+  String get verificationCodeSent =>
+      'Code de vérification envoyé avec succès !';
 }

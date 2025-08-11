@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:konto/core/services/local_storage_service.dart';
+import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  
+    // Initialize service registry for dependency injection
+  ServiceRegistry().initialize();
+  
   runApp(const MainApp());
 }
 
@@ -36,12 +38,15 @@ class MainApp extends StatelessWidget {
         BlocProvider(
           create: (context) => OnboardingBloc(
             onboardingRepository: onboardingRepository,
-          )..add(ResetOnboarding()),
+          )..add(CheckOnboardingStatus()),
+        ),
+        BlocProvider(
+          create: (context) => AuthBloc(),
+        ),
+        BlocProvider(
+          create: (context) => VerificationBloc(),
         ),
         // Add more BLoCs here as you create them
-        // BlocProvider(
-        //   create: (context) => AuthBloc(),
-        // ),
         // BlocProvider(
         //   create: (context) => HomeBloc(),
         // ),

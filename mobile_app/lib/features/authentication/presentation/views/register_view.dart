@@ -7,8 +7,17 @@ import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
-class RegisterView extends StatelessWidget {
+class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
+
+  @override
+  State<RegisterView> createState() => _RegisterViewState();
+}
+
+class _RegisterViewState extends State<RegisterView> {
+  String _phoneNumber = '';
+  String _countryCode = '+233';
+  String _selectedCountry = 'Ghana';
 
   @override
   Widget build(BuildContext context) {
@@ -63,15 +72,20 @@ class RegisterView extends StatelessWidget {
             ),
              const SizedBox(height: AppSpacing.spacingS),
              NumberInput(
-              selectedCountry: localizations.countryGhana,
-              countryCode: '+233',
+              selectedCountry: _selectedCountry,
+              countryCode: _countryCode,
               placeholder: localizations.phoneNumberPlaceholder,
               onCountryChanged: (country, code) {
-                // Handle country selection
+                setState(() {
+                  _selectedCountry = country;
+                  _countryCode = code;
+                });
                 print('Selected: $country ($code)');
               },
               onPhoneNumberChanged: (phoneNumber) {
-                // Handle phone number input
+                setState(() {
+                  _phoneNumber = phoneNumber;
+                });
                 print('Phone: $phoneNumber');
               },
              ),

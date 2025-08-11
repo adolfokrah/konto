@@ -7,6 +7,7 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/otp_input.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class OtpView extends StatelessWidget {
   const OtpView({super.key});
@@ -18,12 +19,9 @@ class OtpView extends StatelessWidget {
     final phoneNumber = args?['phoneNumber'] as String?;
     final email = args?['email'] as String?;
 
-    return BlocProvider(
-      create: (context) => VerificationBloc(),
-      child: _OtpViewContent(
-        phoneNumber: phoneNumber,
-        email: email,
-      ),
+    return _OtpViewContent(
+      phoneNumber: phoneNumber,
+      email: email,
     );
   }
 }
@@ -45,7 +43,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   late Timer _timer;
   int _resendCountdown = 30;
   bool _canResend = false;
-  String _currentOtp = '';
+  bool _hasInitialized = false;
 
   @override
   void initState() {
@@ -53,6 +51,31 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     _startResendTimer();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _initializeVerification();
+      _hasInitialized = true;
+    }
+  }
+
+  void _initializeVerification() {
+    // Initialize VerificationBloc with phone number and OTP from navigation arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final phoneNumber = args?['phoneNumber'] as String?;
+    final verificationId = args?['verificationId'] as String?; // This is actually the OTP
+
+    if (phoneNumber != null && verificationId != null) {
+      context.read<VerificationBloc>().add(
+        InitializeVerification(
+          phoneNumber: phoneNumber,
+          sentOtp: verificationId,
+        ),
+      );
+    }
+  }
+  
   @override
   void dispose() {
     _timer.cancel();
@@ -78,18 +101,29 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   void _handleResend() {
     if (_canResend) {
+      final localizations = AppLocalizations.of(context)!;
+      // Show helpful message about potential rate limiting
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations.resendMessage,
+            style: TextStyles.titleRegularSm.copyWith(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      
       context.read<VerificationBloc>().add(ResendOtpRequested());
       _startResendTimer();
     }
   }
 
   void _handleOtpChanged(String otp) {
-    _currentOtp = otp;
     context.read<VerificationBloc>().add(OtpChanged(otp));
   }
 
   void _handleOtpCompleted(String otp) {
-    _currentOtp = otp;
     context.read<VerificationBloc>().add(OtpSubmitted(otp));
   }
 
@@ -102,17 +136,20 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     return '';
   }
 
-  String get _contactType {
+  String _getContactType(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     if (widget.phoneNumber != null) {
-      return 'phone number';
+      return localizations.phoneNumberContactType;
     } else if (widget.email != null) {
-      return 'email address';
+      return localizations.emailContactType;
     }
-    return 'contact';
+    return localizations.contactType;
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -125,8 +162,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Verification successful!'),
-                backgroundColor: Colors.green,
+                content: Text(localizations.verificationSuccessful),
+                backgroundColor: AppColors.secondaryGreen,
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -150,10 +187,10 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           } else if (state is VerificationResendSuccess) {
             // Show resend success message
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Verification code sent successfully!'),
+              SnackBar(
+                content: Text(localizations.verificationCodeSent),
                 backgroundColor: AppColors.secondaryGreen,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           } else if (state is VerificationResendFailure) {
@@ -177,7 +214,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                 
                 // Title
                 Text(
-                  'Enter OTP',
+                  localizations.enterOtp,
                   style: AppTextStyles.headingOne,
                 ),
                 
@@ -186,7 +223,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                 // Subtitle with contact info
                 if (_contactInfo.isNotEmpty) ...[
                   Text(
-                    'We sent a 6-digit code to your $_contactType',
+                    localizations.otpSubtitle(_getContactType(context)),
                     style: AppTextStyles.titleRegularM.copyWith(
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
@@ -244,7 +281,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      "Didn't receive the code? ",
+                      localizations.didntReceiveCode,
                       style: AppTextStyles.titleRegularM.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
@@ -252,7 +289,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                     GestureDetector(
                       onTap: _canResend ? _handleResend : null,
                       child: Text(
-                        _canResend ? 'Resend' : 'Resend in ${_resendCountdown}s',
+                        _canResend ? localizations.resend : localizations.resendIn(_resendCountdown),
                         style: AppTextStyles.titleMediumM.copyWith(
                           color: _canResend 
                               ? Theme.of(context).colorScheme.onSurface
@@ -264,29 +301,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                     ),
                   ],
                 ),
-                
-                // const Spacer(),
-                
-                // // Verify button
-                // BlocBuilder<VerificationBloc, VerificationState>(
-                //   builder: (context, state) {
-                //     final isLoading = state is VerificationLoading;
-                    
-                //     return AppButton(
-                //       text: isLoading ? 'Verifying...' : 'Verify',
-                //       onPressed: (_currentOtp.length == 6 && !isLoading) 
-                //           ? () => _handleOtpCompleted(_currentOtp)
-                //           : null,
-                //       variant: ButtonVariant.fill,
-                //       backgroundColor: AppColors.black,
-                //       borderColor: AppColors.black,
-                //       textColor: AppColors.onPrimaryWhite,
-                //       isLoading: isLoading,
-                //     );
-                //   },
-                // ),
-                
-                // const SizedBox(height: AppSpacing.spacingM),
               ],
             ),
           ),

@@ -45,6 +45,10 @@ final class VerificationSuccess extends VerificationState {
   const VerificationSuccess();
 }
 
+final class VerificationCodeSent extends VerificationState {
+  const VerificationCodeSent();
+}
+
 final class VerificationFailure extends VerificationState {
   final String errorMessage;
 

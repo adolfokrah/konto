@@ -5,6 +5,7 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 
 /// A custom OTP (One-Time Password) input widget that follows the app's design system
+/// with enhanced SMS autofill support for iPhone
 class AppOtpInput extends StatefulWidget {
   /// Number of OTP digits (typically 4, 5, or 6)
   final int length;
@@ -61,7 +62,6 @@ class AppOtpInput extends StatefulWidget {
   @override
   State<AppOtpInput> createState() => _AppOtpInputState();
 }
-
 class _AppOtpInputState extends State<AppOtpInput> {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
@@ -120,6 +120,35 @@ class _AppOtpInputState extends State<AppOtpInput> {
   }
 
   void _onFieldChanged(String value, int index) {
+    // Handle pasting multiple digits (e.g., from iPhone SMS autofill)
+    if (value.length > 1) {
+      _handlePastedOtp(value, index);
+      return;
+    }
+    
+    // Handle single character input (normal typing)
+    if (value.isNotEmpty) {
+      // For single character input, ensure only one digit
+      final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+      if (digitsOnly.isNotEmpty) {
+        final singleChar = digitsOnly[0];
+        if (_controllers[index].text != singleChar) {
+          _controllers[index].text = singleChar;
+          _controllers[index].selection = TextSelection.fromPosition(
+            TextPosition(offset: 1),
+          );
+        }
+        
+        // Auto-focus next field when entering a digit
+        if (index < widget.length - 1) {
+          _focusNodes[index + 1].requestFocus();
+        }
+      } else {
+        // No valid digits, clear the field
+        _controllers[index].clear();
+      }
+    }
+    
     // Handle deletion - if field becomes empty, move to previous field
     if (value.isEmpty && index > 0) {
       // Delay to avoid conflicts with key event handler
@@ -129,20 +158,36 @@ class _AppOtpInputState extends State<AppOtpInput> {
         }
       });
     }
-    
-    // Only allow single digit
-    if (value.length > 1) {
-      _controllers[index].text = value.substring(value.length - 1);
-      _controllers[index].selection = TextSelection.fromPosition(
-        TextPosition(offset: _controllers[index].text.length),
-      );
-    }
 
     _updateOtpValue();
-
-    // Auto-focus next field when entering a digit
-    if (value.isNotEmpty && index < widget.length - 1) {
-      _focusNodes[index + 1].requestFocus();
+  }
+  
+  /// Handle pasted OTP code from iPhone SMS autofill or manual paste
+  void _handlePastedOtp(String pastedValue, int startIndex) {
+    // Remove any non-digit characters
+    final digitsOnly = pastedValue.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Clear all fields first
+    for (final controller in _controllers) {
+      controller.clear();
+    }
+    
+    // Fill fields with pasted digits
+    for (int i = 0; i < widget.length && i < digitsOnly.length; i++) {
+      _controllers[i].text = digitsOnly[i];
+    }
+    
+    // Update OTP value and trigger callbacks
+    _updateOtpValue();
+    
+    // Focus the last filled field or the last field if all are filled
+    final lastFilledIndex = (digitsOnly.length - 1).clamp(0, widget.length - 1);
+    if (lastFilledIndex < widget.length - 1 && digitsOnly.length < widget.length) {
+      // Not all fields filled, focus the next empty field
+      _focusNodes[lastFilledIndex + 1].requestFocus();
+    } else {
+      // All fields filled or last field reached, unfocus
+      _focusNodes[lastFilledIndex].unfocus();
     }
   }
 
@@ -155,12 +200,46 @@ class _AppOtpInputState extends State<AppOtpInput> {
     }
   }
 
-  void _onFieldTap(int index) {
+  void _onFieldTap(int index) async {
     // Focus and place cursor at end
     _focusNodes[index].requestFocus();
     _controllers[index].selection = TextSelection.fromPosition(
       TextPosition(offset: _controllers[index].text.length),
     );
+    
+    // Check clipboard for potential OTP paste when tapping the first field
+    if (index == 0 && _controllers[index].text.isEmpty) {
+      try {
+        final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+        final clipboardText = clipboardData?.text ?? '';
+        
+        // If clipboard contains only digits and looks like an OTP, suggest pasting
+        final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
+        if (digitsOnly.length >= widget.length && digitsOnly.length <= 10) {
+          // Automatically handle as pasted OTP
+          _handlePastedOtp(digitsOnly, 0);
+        }
+      } catch (e) {
+        // Clipboard access failed, ignore silently
+      }
+    }
+  }
+  
+  void _onFieldLongPress(int index) async {
+    // Show paste option on long press
+    try {
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      final clipboardText = clipboardData?.text ?? '';
+      
+      if (clipboardText.isNotEmpty) {
+        final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
+        if (digitsOnly.isNotEmpty) {
+          _handlePastedOtp(digitsOnly, index);
+        }
+      }
+    } catch (e) {
+      // Clipboard access failed, ignore silently
+    }
   }
 
   bool _onFieldKeyEvent(KeyEvent event, int index) {
@@ -209,6 +288,11 @@ class _AppOtpInputState extends State<AppOtpInput> {
 
   @override
   Widget build(BuildContext context) {
+    // Always use custom implementation for consistent design and better control
+    return _buildCustomOtpInput(context);
+  }
+  /// Build custom OTP input with enhanced paste handling
+  Widget _buildCustomOtpInput(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate available width and adjust field size if needed
@@ -281,33 +365,38 @@ class _AppOtpInputState extends State<AppOtpInput> {
               : KeyEventResult.ignored;
         },
         child: Center(
-          child: TextFormField(
-            controller: _controllers[index],
-            focusNode: _focusNodes[index],
-            enabled: widget.enabled,
-            obscureText: widget.obscureText,
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            maxLength: 1,
-            autofocus: widget.autoFocus && index == 0,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(1),
-            ],
-            style: AppTextStyles.titleBoldLg,
-            cursorColor: Theme.of(context).colorScheme.onSurface,
-            decoration: widget.decoration ?? InputDecoration(
-              border: InputBorder.none,
-              counterText: '',
-              contentPadding: EdgeInsets.zero,
-              isDense: true,
-              hintStyle: AppTextStyles.titleMediumM.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+          child: GestureDetector(
+            onLongPress: () => _onFieldLongPress(index),
+            child: TextFormField(
+              controller: _controllers[index],
+              focusNode: _focusNodes[index],
+              enabled: widget.enabled,
+              obscureText: widget.obscureText,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              maxLength: null, // Remove maxLength to allow paste detection
+              autofocus: widget.autoFocus && index == 0,
+              // Enable SMS autofill for the first field only
+              autofillHints: index == 0 ? [AutofillHints.oneTimeCode] : null,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                // Remove LengthLimitingTextInputFormatter to allow paste detection
+              ],
+              style: AppTextStyles.titleBoldLg,
+              cursorColor: Theme.of(context).colorScheme.onSurface,
+              decoration: widget.decoration ?? InputDecoration(
+                border: InputBorder.none,
+                counterText: '', // Hide character counter
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+                hintStyle: AppTextStyles.titleMediumM.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
               ),
+              onChanged: (value) => _onFieldChanged(value, index),
+              onFieldSubmitted: (value) => _onFieldSubmitted(value, index),
+              onTap: () => _onFieldTap(index),
             ),
-            onChanged: (value) => _onFieldChanged(value, index),
-            onFieldSubmitted: (value) => _onFieldSubmitted(value, index),
-            onTap: () => _onFieldTap(index),
           ),
         ),
       ),

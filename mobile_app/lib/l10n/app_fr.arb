@@ -37,5 +37,16 @@
   "email": "Email",
   "country": "Pays",
   "register": "S'inscrire",
-  "phoneNumberPlaceholder": "Numéro de téléphone"
+  "phoneNumberPlaceholder": "Numéro de téléphone",
+  "enterOtp": "Entrer le code OTP",
+  "otpSubtitle": "Nous avons envoyé un code à 6 chiffres à votre {contactType}",
+  "phoneNumberContactType": "numéro de téléphone",
+  "emailContactType": "adresse e-mail",
+  "contactType": "contact",
+  "didntReceiveCode": "Vous n'avez pas reçu le code ? ",
+  "resend": "Renvoyer",
+  "resendIn": "Renvoyer dans {seconds}s",
+  "resendMessage": "Demande d'un nouveau code. Si vous obtenez \"trop de demandes\", attendez 15-30 minutes.",
+  "verificationSuccessful": "Vérification réussie !",
+  "verificationCodeSent": "Code de vérification envoyé avec succès !"
 }

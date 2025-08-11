@@ -1,0 +1,70 @@
+import 'package:dio/dio.dart';
+import 'package:konto/core/services/sms_otp_service.dart';
+import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
+import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
+import 'package:konto/features/verification/data/repositories/verification_repository.dart';
+
+/// Service registry for dependency injection
+/// Ensures all services are properly initialized with their dependencies
+class ServiceRegistry {
+  static final ServiceRegistry _instance = ServiceRegistry._internal();
+  factory ServiceRegistry() => _instance;
+  ServiceRegistry._internal();
+  
+  // Core services
+  late final Dio _dio;
+  late final SmsOtpService _smsOtpService;
+  
+  // API providers
+  late final SmsApiProvider _smsApiProvider;
+  late final AuthApiProvider _authApiProvider;
+  
+  // Repositories
+  late final AuthRepository _authRepository;
+  late final VerificationRepository _verificationRepository;
+  
+  /// Initialize all services with proper dependency injection
+  void initialize() {
+    // Initialize Dio with configuration
+    _dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+    
+    // Initialize core services
+    _smsOtpService = SmsOtpService();
+    
+    // Initialize API providers with Dio
+    _smsApiProvider = SmsApiProvider(dio: _dio);
+    _authApiProvider = AuthApiProvider(smsApiProvider: _smsApiProvider);
+    
+    // Initialize repositories with dependencies
+    _authRepository = AuthRepository(
+      smsOtpService: _smsOtpService,
+      authApiProvider: _authApiProvider,
+    );
+    
+    _verificationRepository = VerificationRepository(
+      smsOtpService: _smsOtpService,
+      smsApiProvider: _smsApiProvider,
+    );
+    
+    print('✅ ServiceRegistry initialized with Dio successfully');
+  }
+  
+  // Getters for accessing initialized services
+  Dio get dio => _dio;
+  SmsOtpService get smsOtpService => _smsOtpService;
+  SmsApiProvider get smsApiProvider => _smsApiProvider;
+  AuthApiProvider get authApiProvider => _authApiProvider;
+  AuthRepository get authRepository => _authRepository;
+  VerificationRepository get verificationRepository => _verificationRepository;
+}

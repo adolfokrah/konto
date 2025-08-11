@@ -128,4 +128,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneNumberPlaceholder => 'Phone Number';
+
+  @override
+  String get enterOtp => 'Enter OTP';
+
+  @override
+  String otpSubtitle(String contactType) {
+    return 'We sent a 6-digit code to your $contactType';
+  }
+
+  @override
+  String get phoneNumberContactType => 'phone number';
+
+  @override
+  String get emailContactType => 'email address';
+
+  @override
+  String get contactType => 'contact';
+
+  @override
+  String get didntReceiveCode => 'Didn\'t receive the code? ';
+
+  @override
+  String get resend => 'Resend';
+
+  @override
+  String resendIn(int seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get resendMessage =>
+      'Requesting new code. If you get \"too many requests\", wait 15-30 minutes.';
+
+  @override
+  String get verificationSuccessful => 'Verification successful!';
+
+  @override
+  String get verificationCodeSent => 'Verification code sent successfully!';
 }

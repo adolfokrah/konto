@@ -192,5 +192,72 @@
   "phoneNumberPlaceholder": "Phone Number",
   "@phoneNumberPlaceholder": {
     "description": "Phone number input placeholder text"
+  },
+
+  "enterOtp": "Enter OTP",
+  "@enterOtp": {
+    "description": "OTP page title"
+  },
+
+  "otpSubtitle": "We sent a 6-digit code to your {contactType}",
+  "@otpSubtitle": {
+    "description": "OTP page subtitle with contact type",
+    "placeholders": {
+      "contactType": {
+        "type": "String",
+        "example": "phone number"
+      }
+    }
+  },
+
+  "phoneNumberContactType": "phone number",
+  "@phoneNumberContactType": {
+    "description": "Contact type for phone number"
+  },
+
+  "emailContactType": "email address",
+  "@emailContactType": {
+    "description": "Contact type for email address"
+  },
+
+  "contactType": "contact",
+  "@contactType": {
+    "description": "Generic contact type"
+  },
+
+  "didntReceiveCode": "Didn't receive the code? ",
+  "@didntReceiveCode": {
+    "description": "Text before resend button"
+  },
+
+  "resend": "Resend",
+  "@resend": {
+    "description": "Resend button text"
+  },
+
+  "resendIn": "Resend in {seconds}s",
+  "@resendIn": {
+    "description": "Resend countdown text",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+
+  "resendMessage": "Requesting new code. If you get \"too many requests\", wait 15-30 minutes.",
+  "@resendMessage": {
+    "description": "Message shown when requesting resend"
+  },
+
+  "verificationSuccessful": "Verification successful!",
+  "@verificationSuccessful": {
+    "description": "Success message when OTP is verified"
+  },
+
+  "verificationCodeSent": "Verification code sent successfully!",
+  "@verificationCodeSent": {
+    "description": "Success message when resend is successful"
   }
 }

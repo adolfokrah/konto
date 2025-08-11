@@ -331,6 +331,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Phone Number'**
   String get phoneNumberPlaceholder;
+
+  /// OTP page title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter OTP'**
+  String get enterOtp;
+
+  /// OTP page subtitle with contact type
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to your {contactType}'**
+  String otpSubtitle(String contactType);
+
+  /// Contact type for phone number
+  ///
+  /// In en, this message translates to:
+  /// **'phone number'**
+  String get phoneNumberContactType;
+
+  /// Contact type for email address
+  ///
+  /// In en, this message translates to:
+  /// **'email address'**
+  String get emailContactType;
+
+  /// Generic contact type
+  ///
+  /// In en, this message translates to:
+  /// **'contact'**
+  String get contactType;
+
+  /// Text before resend button
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code? '**
+  String get didntReceiveCode;
+
+  /// Resend button text
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get resend;
+
+  /// Resend countdown text
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resendIn(int seconds);
+
+  /// Message shown when requesting resend
+  ///
+  /// In en, this message translates to:
+  /// **'Requesting new code. If you get \"too many requests\", wait 15-30 minutes.'**
+  String get resendMessage;
+
+  /// Success message when OTP is verified
+  ///
+  /// In en, this message translates to:
+  /// **'Verification successful!'**
+  String get verificationSuccessful;
+
+  /// Success message when resend is successful
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code sent successfully!'**
+  String get verificationCodeSent;
 }
 
 class _AppLocalizationsDelegate
