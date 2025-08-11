@@ -44,10 +44,12 @@ final class AuthUnauthenticated extends AuthState {
 final class AuthCodeSentSuccess extends AuthState {
   final String verificationId;
   final String phoneNumber;
+  final String countryCode;
 
   const AuthCodeSentSuccess({
     required this.verificationId,
     required this.phoneNumber,
+    required this.countryCode,
   });
 }
 

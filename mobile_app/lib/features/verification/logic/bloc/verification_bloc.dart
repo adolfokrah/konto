@@ -8,6 +8,7 @@ part 'verification_state.dart';
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   String? _sentOtp;
   String? _phoneNumber;
+  String? _countryCode;
   
   VerificationBloc() : super(const VerificationInitial()) {
     on<OtpChanged>(_onOtpChanged);
@@ -30,6 +31,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   void _onInitializeVerification(InitializeVerification event, Emitter<VerificationState> emit) {
     _sentOtp = event.sentOtp;
     _phoneNumber = event.phoneNumber;
+    _countryCode = event.countryCode;
     emit(const VerificationCodeSent());
   }
 
@@ -48,10 +50,13 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
 
     try {
       if (_sentOtp != null) {
-        final verificationRepository = ServiceRegistry().verificationRepository;
-        final result = await verificationRepository.verifyOtp(
+        // Use AuthBloc's verifyOtp method which handles login after verification
+        final authBloc = ServiceRegistry().authRepository;
+        final result = await authBloc.verifyOTPAndLogin(
           enteredOtp: event.otp,
           sentOtp: _sentOtp!,
+          phoneNumber: _phoneNumber!,
+          countryCode: _countryCode ?? '+1', // Default to +1 if not set
         );
         
         if (result['success'] == true) {

@@ -63,6 +63,7 @@ class _LoginViewState extends State<LoginView> {
               arguments: {
                 'phoneNumber': state.phoneNumber,
                 'verificationId': state.verificationId,
+                'countryCode': state.countryCode,
               },
             );
           } else if (state is AuthFailure) {

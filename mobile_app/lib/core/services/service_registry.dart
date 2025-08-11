@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/services/sms_otp_service.dart';
-import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:konto/core/services/user_storage_service.dart';
 import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
+import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
 import 'package:konto/features/verification/data/repositories/verification_repository.dart';
 
 /// Service registry for dependency injection
@@ -14,7 +16,9 @@ class ServiceRegistry {
   
   // Core services
   late final Dio _dio;
+  late final LocalStorageService _localStorageService;
   late final SmsOtpService _smsOtpService;
+  late final UserStorageService _userStorageService;
   
   // API providers
   late final SmsApiProvider _smsApiProvider;
@@ -40,7 +44,9 @@ class ServiceRegistry {
     );
     
     // Initialize core services
+    _localStorageService = LocalStorageService();
     _smsOtpService = SmsOtpService();
+    _userStorageService = UserStorageService(localStorageService: _localStorageService);
     
     // Initialize API providers with Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
@@ -53,6 +59,7 @@ class ServiceRegistry {
     _authRepository = AuthRepository(
       smsOtpService: _smsOtpService,
       authApiProvider: _authApiProvider,
+      userStorageService: _userStorageService,
     );
     
     _verificationRepository = VerificationRepository(
@@ -65,7 +72,9 @@ class ServiceRegistry {
   
   // Getters for accessing initialized services
   Dio get dio => _dio;
+  LocalStorageService get localStorageService => _localStorageService;
   SmsOtpService get smsOtpService => _smsOtpService;
+  UserStorageService get userStorageService => _userStorageService;
   SmsApiProvider get smsApiProvider => _smsApiProvider;
   AuthApiProvider get authApiProvider => _authApiProvider;
   AuthRepository get authRepository => _authRepository;

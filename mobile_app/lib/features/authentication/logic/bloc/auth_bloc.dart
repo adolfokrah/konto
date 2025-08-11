@@ -60,11 +60,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final authRepository = ServiceRegistry().authRepository;
       
-      // Format phone number
-      _phoneNumber = authRepository.formatPhoneNumber(
-        event.phoneNumber,
-        event.countryCode,
-      );
+      // Clean the phone number (remove non-digits) but don't add country code
+      // The backend expects separate phoneNumber and countryCode fields
+      String cleanPhoneNumber = event.phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+      _phoneNumber = cleanPhoneNumber;
       
       // Send OTP using simple SMS service
       Map<String, dynamic> result = await authRepository.verifyPhoneNumber(
@@ -80,6 +79,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthCodeSentSuccess(
           verificationId: _sentOtp!, // Use OTP as verification ID for simplicity
           phoneNumber: result['phoneNumber'],
+          countryCode: event.countryCode,
         ));
       } else {
         emit(AuthFailure(result['message'] ?? 'Failed to send OTP'));

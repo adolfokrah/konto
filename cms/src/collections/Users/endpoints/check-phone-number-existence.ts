@@ -37,7 +37,6 @@ export const checkPhoneNumberExistence = async (req: PayloadRequest) => {
       limit: 1,
     })
 
-    console.log('Existing User:', existingUser)
 
     return Response.json({
       success: true,

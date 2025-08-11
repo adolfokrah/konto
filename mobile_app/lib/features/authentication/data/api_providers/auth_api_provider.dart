@@ -53,6 +53,45 @@ class AuthApiProvider {
     }
   }
   
+  /// Login user with phone number (after OTP verification)
+  Future<Map<String, dynamic>> loginWithPhoneNumber({
+    required String phoneNumber,
+    required String countryCode,
+  }) async {
+    try {
+      print('🔐 Logging in user with phone: $phoneNumber and country code: $countryCode');
+      
+      final response = await _dio.post(
+        '${BackendConfig.baseUrl}${BackendConfig.loginWithPhoneEndpoint}',
+        data: {
+          'phoneNumber': phoneNumber,
+          'countryCode': countryCode,
+        },
+        options: Options(
+          headers: BackendConfig.defaultHeaders,
+        ),
+      );
+      
+      print('🎉 Login response: ${response.data}');
+      return response.data;
+    } catch (e) {
+      print('💥 Login error: $e');
+      if (e is DioException) {
+        return {
+          'success': false,
+          'message': 'Network error: ${e.message}',
+          'error': e.toString(),
+          'dioErrorType': e.type.toString(),
+        };
+      }
+      return {
+        'success': false,
+        'message': 'Error during login: ${e.toString()}',
+        'error': e.toString(),
+      };
+    }
+  }
+
   /// Send authentication OTP via SMS
   Future<Map<String, dynamic>> sendAuthOtp({
     required String phoneNumber,

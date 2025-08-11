@@ -1,17 +1,22 @@
 import 'package:konto/core/services/sms_otp_service.dart';
+import 'package:konto/core/services/user_storage_service.dart';
 import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
+import 'package:konto/features/authentication/data/models/user.dart';
 
 /// Repository for authentication operations
 /// Orchestrates business logic between UI and API calls
 class AuthRepository {
   final SmsOtpService _smsOtpService;
   final AuthApiProvider _authApiProvider;
+  final UserStorageService _userStorageService;
 
   AuthRepository({
     required SmsOtpService smsOtpService,
     required AuthApiProvider authApiProvider,
+    required UserStorageService userStorageService,
   })  : _smsOtpService = smsOtpService,
-        _authApiProvider = authApiProvider;
+        _authApiProvider = authApiProvider,
+        _userStorageService = userStorageService;
 
   /// Check if phone number is available (exists in system)
   /// Returns true if phone number exists (user should login)
@@ -67,17 +72,18 @@ class AuthRepository {
       // Generate OTP
       String otp = _smsOtpService.generateOTP();
       
-      // Use the already formatted phone number (formatted in bloc)
-      // No need to format again as it's already done in the bloc
-      String formattedNumber = phoneNumber;
+      // For SMS sending, we need the full international format
+      // But for API calls, we use the clean local number
+      String formattedForSms = _smsOtpService.formatPhoneNumber(phoneNumber, countryCode);
       
       // Generate message
       String message = _smsOtpService.generateOtpMessage(otp);
       
-      // Send SMS via API provider
-      print('🚀 Starting phone verification for: $formattedNumber');
+      // Send SMS via API provider using the full international number
+      print('🚀 Starting phone verification for: $formattedForSms (SMS)');
+      print('🎯 Local number for API: $phoneNumber | Country code: $countryCode');
       final apiResponse = await _authApiProvider.sendAuthOtp(
-        phoneNumber: formattedNumber,
+        phoneNumber: formattedForSms,  // Use full international format for SMS
         message: message,
       );
       
@@ -92,12 +98,12 @@ class AuthRepository {
                          mnotifyData['code'] == '2000';
         
         if (isSuccess) {
-          print('✅ SMS sent successfully to $formattedNumber');
+          print('✅ SMS sent successfully to $formattedForSms');
           return {
             'success': true,
             'message': 'OTP sent successfully',
             'otp': otp,
-            'phoneNumber': formattedNumber,
+            'phoneNumber': phoneNumber,  // Return the clean local number for API calls
           };
         } else {
           print('❌ SMS sending failed: ${mnotifyData['message'] ?? 'Unknown error'}');
@@ -121,6 +127,93 @@ class AuthRepository {
         'message': 'Error: ${e.toString()}'
       };
     }
+  }
+
+  /// Verify OTP and login user
+  Future<Map<String, dynamic>> verifyOTPAndLogin({
+    required String enteredOtp,
+    required String sentOtp,
+    required String phoneNumber,
+    required String countryCode,
+  }) async {
+    try {
+      // First verify the OTP
+      if (enteredOtp != sentOtp) {
+        print('❌ OTP verification failed - codes do not match');
+        return {
+          'success': false,
+          'message': 'Invalid OTP code. Please check and try again.',
+        };
+      }
+
+      print('✅ OTP verification successful, proceeding to login');
+
+      // If OTP is correct, login the user
+      final loginResponse = await _authApiProvider.loginWithPhoneNumber(
+        phoneNumber: phoneNumber,
+        countryCode: countryCode,
+      );
+
+      if (loginResponse['success'] == true) {
+        // Parse the login response
+        final loginData = LoginResponse.fromJson(loginResponse);
+        
+        // Save user data and token to local storage
+        final saveResult = await _userStorageService.saveUserData(
+          user: loginData.user,
+          token: loginData.token,
+          tokenExpiry: loginData.exp,
+        );
+
+        if (saveResult) {
+          print('🎉 User logged in and data saved successfully');
+          return {
+            'success': true,
+            'message': 'Login successful',
+            'user': loginData.user,
+            'token': loginData.token,
+            'phoneNumber': phoneNumber,
+          };
+        } else {
+          print('⚠️ Login successful but failed to save data locally');
+          return {
+            'success': true,
+            'message': 'Login successful',
+            'user': loginData.user,
+            'token': loginData.token,
+            'phoneNumber': phoneNumber,
+            'warning': 'Failed to save data locally',
+          };
+        }
+      } else {
+        print('💥 Login failed: ${loginResponse['message']}');
+        return {
+          'success': false,
+          'message': 'Login failed: ${loginResponse['message']}',
+        };
+      }
+    } catch (e) {
+      print('💥 OTP Verification and Login Exception: $e');
+      return {
+        'success': false,
+        'message': 'Error during verification and login: ${e.toString()}'
+      };
+    }
+  }
+
+  /// Check if user is already logged in
+  Future<bool> isUserLoggedIn() async {
+    return await _userStorageService.isUserLoggedIn();
+  }
+
+  /// Get current user data from storage
+  Future<User?> getCurrentUser() async {
+    return await _userStorageService.getUserData();
+  }
+
+  /// Get authentication token
+  Future<String?> getAuthToken() async {
+    return await _userStorageService.getAuthToken();
   }
 
   /// Verify OTP
@@ -160,8 +253,12 @@ class AuthRepository {
 
   /// Sign out user
   Future<void> signOut() async {
-    // Simple sign out - just clear any cached data
-    // In a real app, this might clear stored tokens, etc.
-    print('🚪 User signed out');
+    try {
+      // Clear user data from local storage
+      await _userStorageService.clearUserData();
+      print('🚪 User signed out and data cleared');
+    } catch (e) {
+      print('� Error during sign out: $e');
+    }
   }
 }

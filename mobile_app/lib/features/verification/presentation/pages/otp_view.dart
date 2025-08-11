@@ -18,10 +18,12 @@ class OtpView extends StatelessWidget {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
     final email = args?['email'] as String?;
+    final countryCode = args?['countryCode'] as String?;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
       email: email,
+      countryCode: countryCode,
     );
   }
 }
@@ -29,10 +31,12 @@ class OtpView extends StatelessWidget {
 class _OtpViewContent extends StatefulWidget {
   final String? phoneNumber;
   final String? email;
+  final String? countryCode;
 
   const _OtpViewContent({
     this.phoneNumber,
     this.email,
+    this.countryCode,
   });
 
   @override
@@ -65,12 +69,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
     final verificationId = args?['verificationId'] as String?; // This is actually the OTP
+    final countryCode = args?['countryCode'] as String?;
 
-    if (phoneNumber != null && verificationId != null) {
+    if (phoneNumber != null && verificationId != null && countryCode != null) {
       context.read<VerificationBloc>().add(
         InitializeVerification(
           phoneNumber: phoneNumber,
           sentOtp: verificationId,
+          countryCode: countryCode,
         ),
       );
     }
@@ -129,7 +135,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   String get _contactInfo {
     if (widget.phoneNumber != null) {
-      return widget.phoneNumber!;
+      // Format phone number with country code for display
+      final countryCode = widget.countryCode ?? '';
+      final phoneNumber = widget.phoneNumber!;
+      
+      if (countryCode.isNotEmpty) {
+        return '$countryCode $phoneNumber';
+      }
+      return phoneNumber;
     } else if (widget.email != null) {
       return widget.email!;
     }

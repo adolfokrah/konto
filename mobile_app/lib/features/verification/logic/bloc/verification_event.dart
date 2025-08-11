@@ -23,10 +23,12 @@ final class ClearOtp extends VerificationEvent {}
 final class InitializeVerification extends VerificationEvent {
   final String phoneNumber;
   final String sentOtp;
+  final String countryCode;
 
   InitializeVerification({
     required this.phoneNumber,
     required this.sentOtp,
+    required this.countryCode,
   });
 }
 
