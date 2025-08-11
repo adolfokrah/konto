@@ -56,7 +56,11 @@ class LoginView extends StatelessWidget {
             
             const SizedBox(height: AppSpacing.spacingS),
             
-            AppButton(text: localizations.login, variant: ButtonVariant.fill, onPressed: () => {},),
+            AppButton(text: localizations.login, variant: ButtonVariant.fill, onPressed: () => {
+              Navigator.pushNamed(context, AppRoutes.otp, arguments: {
+                'phoneNumber': '+2331234567890', // Example phone number
+              })
+            },),
             const SizedBox(height: AppSpacing.spacingS),
             AppButton(text: localizations.createAccount, variant: ButtonVariant.outline, onPressed: () => {
               Navigator.pushNamed(context, AppRoutes.register),

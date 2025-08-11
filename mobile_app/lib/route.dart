@@ -4,7 +4,7 @@ import 'package:konto/features/authentication/presentation/views/login_view.dart
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/features/verification/presentation/pages/otp_view.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
@@ -19,11 +19,7 @@ class AppRoutes {
         '/onboarding': (context) => const OnBoardingPage(),
         '/login': (context) => const LoginView(),
         '/register': (context) => const RegisterView(),
-        '/home': (context) => Scaffold(
-              body: Center(
-                child: Text(AppLocalizations.of(context)!.homePageComingSoon),
-              ),
-            ),
+        '/otp': (context) => const OtpView()
       };
 
   // Route names constants for easy access
@@ -31,5 +27,6 @@ class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
+  static const String otp = '/otp';
   static const String home = '/home';
 }
