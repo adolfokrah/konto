@@ -51,7 +51,6 @@ class ServiceRegistry {
     // Initialize API providers with Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(
-      smsApiProvider: _smsApiProvider,
       dio: _dio,
     );
     

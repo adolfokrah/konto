@@ -52,8 +52,16 @@ class _LoginViewState extends State<LoginView> {
                   backgroundColor: Colors.orange,
                 ),
               );
-              // Navigate to register view
-              Navigator.pushNamed(context, AppRoutes.register);
+              // Navigate to register view with phone number and country information
+              Navigator.pushNamed(
+                context, 
+                AppRoutes.register,
+                arguments: {
+                  'phoneNumber': state.phoneNumber,
+                  'countryCode': state.countryCode,
+                  'country': _selectedCountry,
+                },
+              );
             }
           } else if (state is AuthCodeSentSuccess) {
             // Navigate to OTP screen when code is sent

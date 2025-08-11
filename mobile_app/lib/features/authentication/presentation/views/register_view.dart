@@ -1,10 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/text_input.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
 class RegisterView extends StatefulWidget {
@@ -15,9 +17,97 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   String _phoneNumber = '';
   String _countryCode = '+233';
   String _selectedCountry = 'Ghana';
+  bool _isLoading = false;
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Extract arguments passed from login view
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      final phoneNumber = args['phoneNumber'] as String?;
+      final countryCode = args['countryCode'] as String?;
+      final country = args['country'] as String?;
+      
+      if (phoneNumber != null && countryCode != null && country != null) {
+        setState(() {
+          _phoneNumber = phoneNumber;
+          _countryCode = countryCode;
+          _selectedCountry = country;
+        });
+        print('📱 Pre-filled registration: $countryCode $phoneNumber ($country)');
+      }
+    }
+  }
+  
+  void _handleCreateAccount(BuildContext context) {
+    // Validate input fields
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your full name'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    if (_phoneNumber.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your phone number'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    // Map country name to country code for backend
+    String getCountryCode(String countryName) {
+      switch (countryName.toLowerCase()) {
+        case 'ghana':
+          return 'gh';
+        case 'nigeria':
+          return 'ng';
+        default:
+          return 'gh';
+      }
+    }
+    
+    // Trigger registration OTP request
+    context.read<AuthBloc>().add(
+      UserRegistrationOtpRequested(
+        phoneNumber: _phoneNumber,
+        countryCode: _countryCode,
+        country: getCountryCode(_selectedCountry),
+        fullName: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+      ),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +118,69 @@ class _RegisterViewState extends State<RegisterView> {
       SelectOption(value: 'ghana', label: localizations.countryGhana),
       SelectOption(value: 'nigeria', label: localizations.countryNigeria)
     ];
+    
+    // Map country name to option value
+    String getCountryValue(String countryName) {
+      switch (countryName.toLowerCase()) {
+        case 'ghana':
+          return 'ghana';
+        case 'nigeria':
+          return 'nigeria';
+        default:
+          return 'ghana'; // Default fallback
+      }
+    }
 
-    return  Scaffold(
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is UserRegistrationOtpSent) {
+          // OTP sent successfully, navigate to OTP verification
+          Navigator.pushNamed(
+            context, 
+            '/otp',
+            arguments: {
+              'phoneNumber': state.phoneNumber,
+              'countryCode': state.countryCode,
+              'verificationId': state.sentOtp, // Use 'verificationId' key that OTP view expects
+              'country': state.country,
+              'fullName': state.fullName,
+              'email': state.email,
+              'sentOtp': state.sentOtp,
+              'isRegistration': true, // Flag to indicate this is for registration
+            },
+          );
+        } else if (state is UserRegistrationSuccess) {
+          // Registration successful
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // Navigate to home view if token is provided
+          if (state.token != null) {
+            Navigator.pushReplacementNamed(context, '/home');
+          } else if (state.requiresLogin) {
+            // User needs to login manually
+            Navigator.pop(context);
+          }
+        } else if (state is UserRegistrationFailure) {
+          // Registration failed
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        
+        // Update loading state
+        setState(() {
+          _isLoading = state is AuthLoading;
+        });
+      },
+      child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -44,7 +195,7 @@ class _RegisterViewState extends State<RegisterView> {
             AppTextInput(
               label: localizations.fullName,
               keyboardType: TextInputType.name,
-              controller: TextEditingController(),
+              controller: _nameController,
               onChanged: (value) {
                 // Handle name input
                 print('Name: $value');
@@ -54,7 +205,7 @@ class _RegisterViewState extends State<RegisterView> {
               AppTextInput(
               label: localizations.email,
               keyboardType: TextInputType.emailAddress,
-              controller: TextEditingController(),
+              controller: _emailController,
               onChanged: (value) {
                 // Handle email input
                 print('Email: $value');
@@ -64,16 +215,24 @@ class _RegisterViewState extends State<RegisterView> {
             SelectInput<String>(
               label: localizations.country,
               options: countryOptions,
-              value: 'ghana',
+              value: getCountryValue(_selectedCountry),
               onChanged: (value) {
-                // Handle country selection
-                print('Selected country: $value');
+                // Handle country selection and update corresponding state
+                String countryName = value == 'ghana' ? 'Ghana' : 'Nigeria';
+                String countryCode = value == 'ghana' ? '+233' : '+234';
+                
+                setState(() {
+                  _selectedCountry = countryName;
+                  _countryCode = countryCode;
+                });
+                print('Selected country: $value -> $countryName ($countryCode)');
               },
             ),
              const SizedBox(height: AppSpacing.spacingS),
              NumberInput(
               selectedCountry: _selectedCountry,
               countryCode: _countryCode,
+              phoneNumber: _phoneNumber, // Pre-fill with passed phone number
               placeholder: localizations.phoneNumberPlaceholder,
               onCountryChanged: (country, code) {
                 setState(() {
@@ -135,9 +294,9 @@ class _RegisterViewState extends State<RegisterView> {
                 // Create Account Button
                 AppButton.filled(
                   text: localizations.createAccount,
-                  onPressed: () {
-                    // Handle create account
-                    print('Create Account pressed');
+                  isLoading: _isLoading,
+                  onPressed: _isLoading ? null : () {
+                    _handleCreateAccount(context);
                   },
                 ),
                 
@@ -159,6 +318,7 @@ class _RegisterViewState extends State<RegisterView> {
           ],
         ),
       ),
+    ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:konto/core/services/sms_otp_service.dart';
 import 'package:konto/core/services/user_storage_service.dart';
+import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 
@@ -79,19 +80,22 @@ class AuthRepository {
       // Generate message
       String message = _smsOtpService.generateOtpMessage(otp);
       
-      // Send SMS via API provider using the full international number
+      // Send SMS via SMS API provider using the full international number
       print('🚀 Starting phone verification for: $formattedForSms (SMS)');
       print('🎯 Local number for API: $phoneNumber | Country code: $countryCode');
-      final apiResponse = await _authApiProvider.sendAuthOtp(
+      
+      // Use SMS API provider for SMS sending
+      final smsApiProvider = ServiceRegistry().smsApiProvider;
+      final smsResponse = await smsApiProvider.sendSms(
         phoneNumber: formattedForSms,  // Use full international format for SMS
         message: message,
       );
       
-      print('📡 API Response received: $apiResponse');
+      print('📡 SMS Response received: $smsResponse');
       
-      if (apiResponse['success'] == true) {
+      if (smsResponse['success'] == true) {
         // Check Mnotify specific response
-        final mnotifyData = apiResponse['data'];
+        final mnotifyData = smsResponse['data'];
         print('📋 Mnotify Data: $mnotifyData');
         
         final isSuccess = mnotifyData['status'] == 'success' || 
@@ -113,11 +117,11 @@ class AuthRepository {
           };
         }
       } else {
-        print('💥 API Error: ${apiResponse['message']}');
+        print('💥 SMS API Error: ${smsResponse['message']}');
         return {
           'success': false,
-          'message': 'Network error: ${apiResponse['error']}',
-          'errorType': apiResponse['dioErrorType'] ?? 'unknown',
+          'message': 'Network error: ${smsResponse['error']}',
+          'errorType': smsResponse['dioErrorType'] ?? 'unknown',
         };
       }
     } catch (e) {
@@ -197,6 +201,126 @@ class AuthRepository {
       return {
         'success': false,
         'message': 'Error during verification and login: ${e.toString()}'
+      };
+    }
+  }
+
+  /// Register new user
+  Future<Map<String, dynamic>> registerUser({
+    required String phoneNumber,
+    required String countryCode,
+    required String country,
+    required String fullName,
+    required String email,
+  }) async {
+    try {
+      print('📝 Registering new user: $fullName');
+      
+      final apiResponse = await _authApiProvider.registerUser(
+        phoneNumber: phoneNumber,
+        countryCode: countryCode,
+        country: country,
+        fullName: fullName,
+        email: email,
+      );
+      
+      print('📋 Registration response: $apiResponse');
+      
+      if (apiResponse['success'] == true || apiResponse['doc'] != null) {
+        // Payload CMS returns the created user in 'doc' field
+        final userData = apiResponse['doc'] ?? apiResponse['user'];
+        final token = apiResponse['token'];
+        
+        if (userData != null) {
+          // Create User model from response
+          final user = User.fromJson(userData);
+          
+          // Save user data and token to local storage
+          if (token != null) {
+            // Calculate token expiry (24 hours from now)
+            final tokenExpiry = DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch;
+            
+            await _userStorageService.saveUserData(
+              user: user, 
+              token: token,
+              tokenExpiry: tokenExpiry,
+            );
+            print('✅ User registered and logged in successfully');
+            
+            return {
+              'success': true,
+              'message': 'Registration successful',
+              'user': user,
+              'token': token,
+            };
+          } else {
+            print('⚠️ Registration successful but no token received');
+            return {
+              'success': true,
+              'message': 'Registration successful',
+              'user': user,
+              'requiresLogin': true,
+            };
+          }
+        } else {
+          print('❌ Registration response missing user data');
+          return {
+            'success': false,
+            'message': 'Registration failed: Invalid response format',
+          };
+        }
+      } else {
+        print('💥 Registration API Error: ${apiResponse['message']}');
+        return {
+          'success': false,
+          'message': apiResponse['message'] ?? 'Registration failed',
+          'errors': apiResponse['errors'],
+        };
+      }
+    } catch (e) {
+      print('💥 Registration Repository Exception: $e');
+      return {
+        'success': false,
+        'message': 'Error during registration: ${e.toString()}'
+      };
+    }
+  }
+
+  /// Register user after OTP verification
+  Future<Map<String, dynamic>> registerUserAfterOtpVerification({
+    required String enteredOtp,
+    required String sentOtp,
+    required String phoneNumber,
+    required String countryCode,
+    required String country,
+    required String fullName,
+    required String email,
+  }) async {
+    try {
+      // First verify the OTP
+      if (enteredOtp != sentOtp) {
+        print('❌ OTP verification failed - codes do not match');
+        return {
+          'success': false,
+          'message': 'Invalid OTP code. Please check and try again.',
+        };
+      }
+
+      print('✅ OTP verification successful, proceeding to registration');
+
+      // If OTP is correct, register the user
+      return await registerUser(
+        phoneNumber: phoneNumber,
+        countryCode: countryCode,
+        country: country,
+        fullName: fullName,
+        email: email,
+      );
+    } catch (e) {
+      print('💥 Registration with OTP Exception: $e');
+      return {
+        'success': false,
+        'message': 'Error during registration: ${e.toString()}'
       };
     }
   }

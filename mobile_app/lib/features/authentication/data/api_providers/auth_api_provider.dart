@@ -1,18 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
 
 /// API Provider for authentication-related operations
-/// Reuses the SMS API provider for sending OTP messages
 class AuthApiProvider {
-  final SmsApiProvider _smsApiProvider;
   final Dio _dio;
   
   AuthApiProvider({
-    required SmsApiProvider smsApiProvider,
     required Dio dio,
-  }) : _smsApiProvider = smsApiProvider,
-       _dio = dio;
+  }) : _dio = dio;
   
   /// Check if phone number exists in the system
   Future<Map<String, dynamic>> checkPhoneNumberAvailability({
@@ -92,50 +87,60 @@ class AuthApiProvider {
     }
   }
 
-  /// Send authentication OTP via SMS
-  Future<Map<String, dynamic>> sendAuthOtp({
-    required String phoneNumber,
-    required String message,
-  }) async {
-    return await _smsApiProvider.sendSms(
-      phoneNumber: phoneNumber,
-      message: message,
-    );
-  }
-  
-  /// Verify user credentials (placeholder for future backend integration)
-  Future<Map<String, dynamic>> verifyUserCredentials({
-    required String phoneNumber,
-    required String otp,
-  }) async {
-    // TODO: Implement backend API call for user verification
-    // For now, return success if OTP verification passes locally
-    return {
-      'success': true,
-      'user': {
-        'phoneNumber': phoneNumber,
-        'isVerified': true,
-      },
-      'message': 'User authenticated successfully',
-    };
-  }
-  
-  /// Register user (placeholder for future backend integration)
+  /// Register user (creates new user via Payload CMS)
   Future<Map<String, dynamic>> registerUser({
     required String phoneNumber,
-    String? email,
-    String? name,
+    required String countryCode,
+    required String country,
+    required String fullName,
+    required String email,
   }) async {
-    // TODO: Implement backend API call for user registration
-    return {
-      'success': true,
-      'user': {
-        'phoneNumber': phoneNumber,
-        'email': email,
-        'name': name,
-        'isRegistered': true,
-      },
-      'message': 'User registered successfully',
-    };
+    try {
+      print('📝 Registering user: $fullName with phone: $phoneNumber');
+      
+      final response = await _dio.post(
+        '${BackendConfig.baseUrl}${BackendConfig.registerUserEndpoint}',
+        data: {
+          'fullName': fullName,
+          'email': email,
+          'password': '123456', // Default password or user-provided
+          'phoneNumber': phoneNumber,
+          'countryCode': countryCode,
+          'country': country,
+          'isKYCVerified': false,
+          'appSettings': {
+            'language': 'en',
+            'darkMode': false,
+            'biometricAuthEnabled': false,
+            'notificationsSettings': {
+              'pushNotificationsEnabled': true,
+              'emailNotificationsEnabled': true,
+              'smsNotificationsEnabled': false,
+            },
+          },
+        },
+        options: Options(
+          headers: BackendConfig.defaultHeaders,
+        ),
+      );
+      
+      print('🎉 Registration response: ${response.data}');
+      return response.data;
+    } catch (e) {
+      print('💥 Registration error: $e');
+      if (e is DioException) {
+        return {
+          'success': false,
+          'message': 'Network error: ${e.message}',
+          'error': e.toString(),
+          'dioErrorType': e.type.toString(),
+        };
+      }
+      return {
+        'success': false,
+        'message': 'Error during registration: ${e.toString()}',
+        'error': e.toString(),
+      };
+    }
   }
 }

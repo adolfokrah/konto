@@ -58,3 +58,43 @@ final class AuthFailure extends AuthState {
 
   const AuthFailure(this.error);
 }
+
+final class UserRegistrationSuccess extends AuthState {
+  final User user;
+  final String? token;
+  final bool requiresLogin;
+
+  const UserRegistrationSuccess({
+    required this.user,
+    this.token,
+    this.requiresLogin = false,
+  });
+}
+
+final class UserRegistrationFailure extends AuthState {
+  final String error;
+  final Map<String, dynamic>? errors;
+
+  const UserRegistrationFailure({
+    required this.error,
+    this.errors,
+  });
+}
+
+final class UserRegistrationOtpSent extends AuthState {
+  final String phoneNumber;
+  final String countryCode;
+  final String country;
+  final String fullName;
+  final String email;
+  final String sentOtp;
+
+  const UserRegistrationOtpSent({
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.country,
+    required this.fullName,
+    required this.email,
+    required this.sentOtp,
+  });
+}

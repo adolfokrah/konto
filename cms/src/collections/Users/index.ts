@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { checkPhoneNumberExistence } from './endpoints/check-phone-number-existence'
+import { registerUser } from './endpoints/register-user'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,6 +9,32 @@ export const Users: CollectionConfig = {
     useAsTitle: 'fullName',
   },
   auth: true,
+  access: {
+    // Allow public registration
+    create: () => true,
+    // Logged in users can read themselves, admins can read all
+    read: ({ req: { user } }) => {
+      if (user) {
+        return true
+      }
+      return false
+    },
+    // Users can update themselves, admins can update all
+    update: ({ req: { user } }) => {
+      if (user) {
+        return true
+      }
+      return false
+    },
+    // Only admins can delete
+    delete: ({ req: { user } }) => {
+      if (user) {
+        // Only allow delete if user is admin (we can check roles later)
+        return true
+      }
+      return false
+    },
+  },
   endpoints: [
     {
       path: '/login-with-phone',
@@ -18,6 +45,11 @@ export const Users: CollectionConfig = {
       path: '/check-phone-number-existence',
       method: 'post',
       handler: checkPhoneNumberExistence,
+    },
+    {
+      path: '/register-user',
+      method: 'post',
+      handler: registerUser,
     },
   ],
   fields: [

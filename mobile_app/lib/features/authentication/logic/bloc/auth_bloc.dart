@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:konto/core/services/service_registry.dart';
+import 'package:konto/features/authentication/data/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -12,6 +13,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(const AuthInitial()) {
     on<PhoneNumberAvailabilityChecked>(_onPhoneNumberAvailabilityChecked);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
+    on<UserRegistrationOtpRequested>(_onUserRegistrationOtpRequested);
+    on<UserRegistrationWithOtpRequested>(_onUserRegistrationWithOtpRequested);
+    on<UserRegistrationRequested>(_onUserRegistrationRequested);
     on<SignOutRequested>(_onSignOutRequested);
   }
 
@@ -101,6 +105,126 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthUnauthenticated());
     } catch (e) {
       emit(AuthFailure('Failed to sign out: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onUserRegistrationOtpRequested(
+    UserRegistrationOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Send OTP for registration verification
+      final result = await authRepository.verifyPhoneNumber(
+        phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
+      );
+      
+      if (result['success'] == true) {
+        final sentOtp = result['otp'] as String;
+        
+        emit(UserRegistrationOtpSent(
+          phoneNumber: event.phoneNumber,
+          countryCode: event.countryCode,
+          country: event.country,
+          fullName: event.fullName,
+          email: event.email,
+          sentOtp: sentOtp,
+        ));
+      } else {
+        emit(UserRegistrationFailure(
+          error: result['message'] ?? 'Failed to send OTP',
+        ));
+      }
+    } catch (e) {
+      emit(UserRegistrationFailure(
+        error: 'Failed to send OTP: ${e.toString()}',
+      ));
+    }
+  }
+
+  Future<void> _onUserRegistrationWithOtpRequested(
+    UserRegistrationWithOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Register user after OTP verification
+      final result = await authRepository.registerUserAfterOtpVerification(
+        enteredOtp: event.enteredOtp,
+        sentOtp: event.sentOtp,
+        phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
+        country: event.country,
+        fullName: event.fullName,
+        email: event.email,
+      );
+      
+      if (result['success'] == true) {
+        final user = result['user'] as User;
+        final token = result['token'] as String?;
+        final requiresLogin = result['requiresLogin'] as bool? ?? false;
+        
+        emit(UserRegistrationSuccess(
+          user: user,
+          token: token,
+          requiresLogin: requiresLogin,
+        ));
+      } else {
+        emit(UserRegistrationFailure(
+          error: result['message'] ?? 'Registration failed',
+          errors: result['errors'],
+        ));
+      }
+    } catch (e) {
+      emit(UserRegistrationFailure(
+        error: 'Registration failed: ${e.toString()}',
+      ));
+    }
+  }
+
+  Future<void> _onUserRegistrationRequested(
+    UserRegistrationRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // This event should be triggered after OTP verification
+      // The event should contain the verified OTP
+      final result = await authRepository.registerUser(
+        phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
+        country: event.country,
+        fullName: event.fullName,
+        email: event.email,
+      );
+      
+      if (result['success'] == true) {
+        final user = result['user'] as User;
+        final token = result['token'] as String?;
+        final requiresLogin = result['requiresLogin'] as bool? ?? false;
+        
+        emit(UserRegistrationSuccess(
+          user: user,
+          token: token,
+          requiresLogin: requiresLogin,
+        ));
+      } else {
+        emit(UserRegistrationFailure(
+          error: result['message'] ?? 'Registration failed',
+          errors: result['errors'],
+        ));
+      }
+    } catch (e) {
+      emit(UserRegistrationFailure(
+        error: 'Registration failed: ${e.toString()}',
+      ));
     }
   }
 

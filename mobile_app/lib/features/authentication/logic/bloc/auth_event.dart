@@ -23,4 +23,56 @@ final class PhoneNumberSubmitted extends AuthEvent {
   });
 }
 
+final class UserRegistrationRequested extends AuthEvent {
+  final String phoneNumber;
+  final String countryCode;
+  final String country;
+  final String fullName;
+  final String email;
+
+  UserRegistrationRequested({
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.country,
+    required this.fullName,
+    required this.email,
+  });
+}
+
+final class UserRegistrationOtpRequested extends AuthEvent {
+  final String phoneNumber;
+  final String countryCode;
+  final String country;
+  final String fullName;
+  final String email;
+
+  UserRegistrationOtpRequested({
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.country,
+    required this.fullName,
+    required this.email,
+  });
+}
+
+final class UserRegistrationWithOtpRequested extends AuthEvent {
+  final String enteredOtp;
+  final String sentOtp;
+  final String phoneNumber;
+  final String countryCode;
+  final String country;
+  final String fullName;
+  final String email;
+
+  UserRegistrationWithOtpRequested({
+    required this.enteredOtp,
+    required this.sentOtp,
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.country,
+    required this.fullName,
+    required this.email,
+  });
+}
+
 final class SignOutRequested extends AuthEvent {}
