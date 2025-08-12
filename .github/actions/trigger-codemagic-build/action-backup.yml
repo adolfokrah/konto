@@ -111,51 +111,68 @@ runs:
         while [ $elapsed_time -lt $max_wait_time ]; do
           echo "⏱️  Checking build status... (${elapsed_time}s elapsed)"
           
-          # Use the correct single build endpoint
+          # Get build details from the correct endpoint
           status_response=$(curl -s \
             -H "Content-Type: application/json" \
             -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
             "https://api.codemagic.io/builds/$build_id")
           
-          # Extract status from the build object (not root level)
-          status=$(echo "$status_response" | grep -o '"build":{[^}]*"status":"[^"]*"' | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-          
-          echo "📊 Current build status: '$status'"
-          
-          # Debug logging if status is empty
-          if [ -z "$status" ]; then
-            echo "⚠️  Could not extract status from response"
-            echo "🔍 Response preview: $(echo "$status_response" | head -c 300)..."
+          # Check if response contains build data or if we need to use a different endpoint
+          if echo "$status_response" | grep -q '"application":'; then
+            echo "� Getting build status from builds endpoint..."
+            status_response=$(curl -s \
+              -H "Content-Type: application/json" \
+              -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
+              "https://api.codemagic.io/builds")
+            
+            # Extract our specific build from the list
+            build_info=$(echo "$status_response" | grep -A 500 "\"_id\":\"$build_id\"" | grep -B 500 -m 1 "\"_id\":\"" | head -n -1)
+            status=$(echo "$build_info" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          else
+            # Extract status from direct build response
+            status=$(echo "$status_response" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
           fi
           
+          # Debug logging (truncated to avoid too much output)
+          echo "🔍 Response preview: $(echo "$status_response" | head -c 200)..."
+          echo "📊 Current build status: '$status'"
+          
           case $status in
-            "finished")
+            "finished"|"success"|"successful"|"completed")
               echo "✅ Build completed successfully!"
               echo "🎉 ${{ inputs.environment }} build finished - marking as PASSED"
               echo "📱 View build details: $build_url"
               echo "build_status=success" >> $GITHUB_OUTPUT
               exit 0
               ;;
-            "failed"|"timeout")
-              echo "❌ Build failed or timed out"
+            "failed"|"failure"|"error")
+              echo "❌ Build failed"
               echo "🔗 Check build logs: $build_url"
               echo "build_status=failed" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "canceled")
+            "canceled"|"cancelled"|"aborted")
               echo "⏹️  Build was canceled"
               echo "🔗 Check build details: $build_url"
               echo "build_status=canceled" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing"|"skipped"|"warning")
+            "timeout"|"timed_out")
+              echo "⏰ Build timed out"
+              echo "🔗 Check build details: $build_url"
+              echo "build_status=timeout" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing"|"starting"|"pending")
               echo "🔄 Build in progress: $status"
               ;;
             "")
-              echo "⚠️  Could not get build status - will continue monitoring"
+              echo "⚠️  Could not get build status - API response might be malformed"
+              echo "Raw response: $status_response"
               ;;
             *)
-              echo "⚠️  Unknown status: '$status' - continuing to monitor"
+              echo "⚠️  Unknown status: '$status' - assuming build is still in progress"
+              echo "Raw response: $status_response"
               ;;
           esac
           

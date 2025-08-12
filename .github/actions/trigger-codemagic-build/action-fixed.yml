@@ -111,44 +111,52 @@ runs:
         while [ $elapsed_time -lt $max_wait_time ]; do
           echo "⏱️  Checking build status... (${elapsed_time}s elapsed)"
           
-          # Use the correct single build endpoint
+          # Use the builds list endpoint with app ID filter
           status_response=$(curl -s \
             -H "Content-Type: application/json" \
             -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
-            "https://api.codemagic.io/builds/$build_id")
+            "https://api.codemagic.io/builds?appId=${{ inputs.codemagic-app-id }}&limit=50")
           
-          # Extract status from the build object (not root level)
-          status=$(echo "$status_response" | grep -o '"build":{[^}]*"status":"[^"]*"' | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          # Extract our specific build status from the builds array
+          status=$(echo "$status_response" | grep -A 20 "\"_id\":\"$build_id\"" | grep -m 1 '"status":' | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
           
           echo "📊 Current build status: '$status'"
           
-          # Debug logging if status is empty
+          # If we can't find the status, try a different approach
           if [ -z "$status" ]; then
-            echo "⚠️  Could not extract status from response"
-            echo "🔍 Response preview: $(echo "$status_response" | head -c 300)..."
+            echo "⚠️  Could not find build $build_id in builds list, trying direct approach..."
+            # Try to extract just the build IDs to see what's available
+            available_builds=$(echo "$status_response" | grep -o '"_id":"[^"]*"' | head -5)
+            echo "📄 Available builds: $available_builds"
           fi
           
           case $status in
-            "finished")
+            "finished"|"success"|"successful"|"completed")
               echo "✅ Build completed successfully!"
               echo "🎉 ${{ inputs.environment }} build finished - marking as PASSED"
               echo "📱 View build details: $build_url"
               echo "build_status=success" >> $GITHUB_OUTPUT
               exit 0
               ;;
-            "failed"|"timeout")
-              echo "❌ Build failed or timed out"
+            "failed"|"failure"|"error")
+              echo "❌ Build failed"
               echo "🔗 Check build logs: $build_url"
               echo "build_status=failed" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "canceled")
+            "canceled"|"cancelled"|"aborted")
               echo "⏹️  Build was canceled"
               echo "🔗 Check build details: $build_url"
               echo "build_status=canceled" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing"|"skipped"|"warning")
+            "timeout"|"timed_out")
+              echo "⏰ Build timed out"
+              echo "🔗 Check build details: $build_url"
+              echo "build_status=timeout" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing"|"starting"|"pending")
               echo "🔄 Build in progress: $status"
               ;;
             "")
