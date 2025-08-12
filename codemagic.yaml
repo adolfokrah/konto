@@ -50,9 +50,8 @@ workflows:
       - mobile_app/build/**/outputs/**/*.aab
       - mobile_app/build/ios/iphoneos/Runner.app
     publishing:
-      email:
-        recipients:
-          - adolfokrah@gmail.com
-        notify:
-          success: true
-          failure: true
+      scripts:
+        - name: Build completion notification
+          script: |
+            echo "Build completed successfully!"
+            echo "Artifacts generated in mobile_app/build/"
