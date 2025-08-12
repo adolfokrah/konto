@@ -1,7 +1,13 @@
 name: Trigger Codemagic Build
 
 on:
-  workflow_dispatch: # Only allow manual triggering
+  workflow_run:
+    workflows: ["Mobile Integration Tests"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch: # Keep manual triggering option
     inputs:
       environment:
         description: 'Build environment'
@@ -19,6 +25,8 @@ on:
 jobs:
   trigger-build:
     runs-on: ubuntu-latest
+    # Only run if the mobile integration tests passed
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Trigger Codemagic Build
         run: |
@@ -31,8 +39,8 @@ jobs:
             "branch": "main",
             "environment": {
               "variables": {
-                "CUSTOM_MESSAGE": "${{ github.event.inputs.custom_message || 'Manual build triggered' }}",
-                "BUILD_ENV": "${{ github.event.inputs.environment }}"
+                "CUSTOM_MESSAGE": "${{ github.event.inputs.custom_message || 'Build triggered after successful integration tests' }}",
+                "BUILD_ENV": "${{ github.event.inputs.environment || 'staging' }}"
               }
             }
           }' \
