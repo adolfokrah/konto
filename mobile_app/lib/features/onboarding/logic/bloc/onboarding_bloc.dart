@@ -7,7 +7,7 @@ part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   final OnboardingRepository onboardingRepository;
-  OnboardingBloc({required this.onboardingRepository}) : super(OnboardingPageState(0)) {
+  OnboardingBloc({required this.onboardingRepository}) : super(OnboardingInitial()) {
     on<PageChanged>((event, emit) {
       emit(OnboardingPageState(event.pageIndex));
     });
@@ -26,19 +26,19 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         if (onboardingCompleted) {
           emit(OnboardingCompleted());
         } else {
-          emit(OnboardingInitial());
+          emit(OnboardingPageState(0)); // Start from first page
         }
       } catch (e) {
-        emit(OnboardingInitial());
+        emit(OnboardingPageState(0)); // Start from first page on error
       }
     });
     on<ResetOnboarding>((event, emit) async {
       try {
         await onboardingRepository.resetOnboarding();
-        emit(OnboardingInitial());
+        emit(OnboardingPageState(0)); // Start from first page
       } catch (e) {
         // Handle reset error if needed
-        emit(OnboardingInitial());
+        emit(OnboardingPageState(0)); // Start from first page
       }
     });
   }

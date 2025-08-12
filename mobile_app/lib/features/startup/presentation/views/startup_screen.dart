@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
 
@@ -17,60 +16,62 @@ class _StartupScreenState extends State<StartupScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger onboarding check first
-    context.read<OnboardingBloc>().add(CheckOnboardingStatus());
+    // Check for existing user session first
+    context.read<AuthBloc>().add(AutoLoginRequested());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<OnboardingBloc, OnboardingState>(
-        listener: (context, onboardingState) {
-          // When onboarding check is complete, check for auto-login
-          if (onboardingState is OnboardingCompleted) {
-            // Onboarding is complete, now check for auto-login
-            context.read<AuthBloc>().add(AutoLoginRequested());
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          // If checking for existing session
+          if (authState is AutoLoginLoading) {
+            return const _LoadingScreen(message: 'Checking session...');
           }
+          
+          // If user has valid token, navigate to home
+          if (authState is AutoLoginSuccess) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context).pushReplacementNamed('/home');
+            });
+            return const _LoadingScreen(message: 'Welcome back!');
+          }
+          
+          // No valid token, check onboarding
+          if (authState is AutoLoginFailed) {
+            return BlocBuilder<OnboardingBloc, OnboardingState>(
+              builder: (context, onboardingState) {
+                // First time checking onboarding status
+                if (onboardingState is OnboardingInitial) {
+                  // Trigger onboarding check
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.read<OnboardingBloc>().add(CheckOnboardingStatus());
+                  });
+                  return const _LoadingScreen(message: 'Loading...');
+                }
+                
+                // User is going through onboarding
+                if (onboardingState is OnboardingPageState) {
+                  return const OnBoardingPage();
+                }
+                
+                // Onboarding completed, go to login
+                if (onboardingState is OnboardingCompleted) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  });
+                  return const _LoadingScreen(message: 'Setting up...');
+                }
+                
+                return const _LoadingScreen(message: 'Loading...');
+              },
+            );
+          }
+          
+          // Default loading state
+          return const _LoadingScreen(message: 'Starting up...');
         },
-        child: BlocBuilder<OnboardingBloc, OnboardingState>(
-          builder: (context, onboardingState) {
-            // Show onboarding if not completed
-            if (onboardingState is OnboardingInitial) {
-              return const OnBoardingPage();
-            }
-            
-            // If onboarding is completed, show auth flow or auto-login results
-            if (onboardingState is OnboardingCompleted) {
-              return BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  // Handle auto-login states
-                  if (authState is AutoLoginLoading) {
-                    return const _LoadingScreen(message: 'Checking session...');
-                  }
-                  
-                  if (authState is AutoLoginSuccess) {
-                    // Auto-login successful, navigate to home
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      Navigator.of(context).pushReplacementNamed('/home');
-                    });
-                    return const _LoadingScreen(message: 'Welcome back!');
-                  }
-                  
-                  if (authState is AutoLoginFailed) {
-                    // Auto-login failed, show login screen
-                    return const LoginView();
-                  }
-                  
-                  // Default to login view while checking
-                  return const LoginView();
-                },
-              );
-            }
-            
-            // Default loading state
-            return const _LoadingScreen(message: 'Starting up...');
-          },
-        ),
       ),
     );
   }

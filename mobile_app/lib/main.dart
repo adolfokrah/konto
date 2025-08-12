@@ -47,7 +47,7 @@ class MainApp extends StatelessWidget {
         BlocProvider(
           create: (context) => OnboardingBloc(
             onboardingRepository: onboardingRepository,
-          )..add(CheckOnboardingStatus()),
+          ),
         ),
         BlocProvider(
           create: (context) => AuthBloc(),

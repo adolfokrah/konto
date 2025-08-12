@@ -57,7 +57,6 @@ class OnBoardingPage extends StatelessWidget {
                         context.read<OnboardingBloc>().add(PageChanged(currentPage + 1));
                       } else {
                         context.read<OnboardingBloc>().add(OnboardingFinished());
-                        // Navigator.of(context).pushReplacementNamed(AppRoutes.login);
                       }
                     },
                   ),
