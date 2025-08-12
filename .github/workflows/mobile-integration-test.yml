@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      FLUTTER_VERSION: '3.24.3'
+      FLUTTER_VERSION: '3.27.0'
       
     steps:
       - name: Checkout code
@@ -32,6 +32,9 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
+
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics
 
       - name: Get Flutter dependencies
         working-directory: ./mobile_app
