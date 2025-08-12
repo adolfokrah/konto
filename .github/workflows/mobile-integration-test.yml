@@ -75,6 +75,17 @@ jobs:
           echo "Analysis can be run locally with: flutter analyze"
         continue-on-error: true
 
+      - name: Create .env file for tests
+        working-directory: ./mobile_app
+        run: |
+          echo "# Environment variables for CI testing" > .env
+          echo "API_BASE_URL=http://localhost:3000/api" >> .env
+          echo "MNOTIFY_API_KEY=test_api_key" >> .env
+          echo "MNOTIFY_SENDER_ID=TestApp" >> .env
+          echo "MNOTIFY_API_BASE_URL=https://api.mnotify.com/api/sms/quick" >> .env
+          echo "APP_ENV=test" >> .env
+          echo "Created .env file for CI testing"
+
       - name: Run Flutter E2E tests
         working-directory: ./mobile_app
         run: flutter test test/e2e/ --reporter expanded

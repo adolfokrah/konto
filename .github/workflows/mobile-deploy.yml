@@ -1,9 +1,20 @@
 name: Trigger Codemagic Build
 
 on:
-  push:
-    branches:
-      - main # or master, or any branch you want
+  workflow_dispatch: # Only allow manual triggering
+    inputs:
+      environment:
+        description: 'Build environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      custom_message:
+        description: 'Custom message for the build'
+        required: false
+        default: 'Manual build triggered'
 
 jobs:
   trigger-build:
@@ -15,13 +26,13 @@ jobs:
           -H "Content-Type: application/json" \
           -H "x-auth-token: ${{ secrets.CODEMAGIC_API_TOKEN }}" \
           -d '{
-            "appId": "YOUR_CODEMAGIC_APP_ID",
+            "appId": "${{ secrets.CODEMAGIC_APP_ID }}",
             "workflowId": "my-workflow",
             "branch": "main",
             "environment": {
               "variables": {
-                "CUSTOM_MESSAGE": "Build triggered by GitHub Actions",
-                "BUILD_ENV": "production"
+                "CUSTOM_MESSAGE": "${{ github.event.inputs.custom_message || 'Manual build triggered' }}",
+                "BUILD_ENV": "${{ github.event.inputs.environment }}"
               }
             }
           }' \
