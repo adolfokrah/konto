@@ -3,13 +3,6 @@ workflows:
     name: Build App for staging
     triggering: {}
     environment:
-      vars:
-        CUSTOM_MESSAGE: "Default Message"
-        BUILD_ENV: "staging"
-        MNOTIFY_API_BASE_URL: "https://api.mnotify.com/api/sms/quick"
-        MNOTIFY_SENDER_ID: "perpel"
-        MNOTIFY_API_KEY: "A67zyKtxltxoH5iTDgz671wMD"
-        apiBaseUrl: "https://konto-env-staging-ui-ninjas-projects.vercel.app/api"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -61,12 +54,13 @@ workflows:
     triggering: {}
     environment:
       vars:
-        CUSTOM_MESSAGE: "Production Build"
+        # These values will be overridden by GitHub Actions
+        CUSTOM_MESSAGE: "Default production build"
         BUILD_ENV: "production"
-        MNOTIFY_API_BASE_URL: "https://api.mnotify.com/api/sms/quick"
-        MNOTIFY_SENDER_ID: "perpel"
-        MNOTIFY_API_KEY: "A67zyKtxltxoH5iTDgz671wMD"
-        apiBaseUrl: "https://konto-production-api.vercel.app/api"
+        MNOTIFY_API_BASE_URL: "placeholder"
+        MNOTIFY_SENDER_ID: "placeholder"
+        MNOTIFY_API_KEY: "placeholder"
+        apiBaseUrl: "placeholder"
       flutter: stable
       xcode: latest
       cocoapods: default

@@ -22,6 +22,18 @@ inputs:
     description: 'Git branch to build'
     required: false
     default: 'main'
+  api-base-url:
+    description: 'API base URL for the environment'
+    required: false
+  mnotify-api-key:
+    description: 'MNotify API key'
+    required: false
+  mnotify-sender-id:
+    description: 'MNotify sender ID'
+    required: false
+  mnotify-api-base-url:
+    description: 'MNotify API base URL'
+    required: false
 outputs:
   build-id:
     description: 'Codemagic build ID'
@@ -52,7 +64,11 @@ runs:
           "environment": {
             "variables": {
               "CUSTOM_MESSAGE": "${{ inputs.custom-message }}",
-              "BUILD_ENV": "${{ inputs.environment }}"
+              "BUILD_ENV": "${{ inputs.environment }}",
+              "apiBaseUrl": "${{ inputs.api-base-url }}",
+              "MNOTIFY_API_KEY": "${{ inputs.mnotify-api-key }}",
+              "MNOTIFY_SENDER_ID": "${{ inputs.mnotify-sender-id }}",
+              "MNOTIFY_API_BASE_URL": "${{ inputs.mnotify-api-base-url }}"
             }
           }
         }' \
@@ -100,38 +116,46 @@ runs:
             -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
             "https://api.codemagic.io/builds/$build_id")
           
-          # Extract status from response
+          # Debug: Show raw response for troubleshooting
+          echo "🔍 Raw API response: $status_response"
+          
+          # Extract status from response - try multiple patterns
           status=$(echo $status_response | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
           
-          echo "📊 Current build status: $status"
+          # If that didn't work, try extracting from build object
+          if [ -z "$status" ]; then
+            status=$(echo $status_response | grep -o '"build":{[^}]*"status":"[^"]*"' | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          fi
+          
+          echo "📊 Current build status: '$status'"
           
           case $status in
-            "finished")
+            "finished"|"success"|"successful"|"completed")
               echo "✅ Build completed successfully!"
               echo "🎉 ${{ inputs.environment }} build finished - marking as PASSED"
               echo "📱 View build details: $build_url"
               echo "build_status=success" >> $GITHUB_OUTPUT
               exit 0
               ;;
-            "failed")
+            "failed"|"failure"|"error")
               echo "❌ Build failed"
               echo "🔗 Check build logs: $build_url"
               echo "build_status=failed" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "canceled")
+            "canceled"|"cancelled"|"aborted")
               echo "⏹️  Build was canceled"
               echo "🔗 Check build details: $build_url"
               echo "build_status=canceled" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "timeout")
+            "timeout"|"timed_out")
               echo "⏰ Build timed out"
               echo "🔗 Check build details: $build_url"
               echo "build_status=timeout" >> $GITHUB_OUTPUT
               exit 1
               ;;
-            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing")
+            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing"|"starting"|"pending")
               echo "🔄 Build in progress: $status"
               ;;
             "")
@@ -139,7 +163,7 @@ runs:
               echo "Raw response: $status_response"
               ;;
             *)
-              echo "⚠️  Unknown status: $status"
+              echo "⚠️  Unknown status: '$status' - assuming build is still in progress"
               echo "Raw response: $status_response"
               ;;
           esac

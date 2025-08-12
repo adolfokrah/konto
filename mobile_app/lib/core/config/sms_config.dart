@@ -4,23 +4,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class SmsConfig {
   // Mnotify API key
   static String get mnotifyApiKey {
-    return dotenv.env['MNOTIFY_API_KEY'] ?? 
-           const String.fromEnvironment('MNOTIFY_API_KEY', 
-             defaultValue: '');
+    return dotenv.env['MNOTIFY_API_KEY'] ?? '';
   }
   
   // Sender ID from Mnotify
   static String get senderId {
-    return dotenv.env['MNOTIFY_SENDER_ID'] ?? 
-           const String.fromEnvironment('MNOTIFY_SENDER_ID', 
-             defaultValue: '');
+    return dotenv.env['MNOTIFY_SENDER_ID'] ?? '';
   }
   
   // Mnotify API endpoints
   static String get apiBaseUrl {
-    return dotenv.env['MNOTIFY_API_BASE_URL'] ?? 
-           const String.fromEnvironment('MNOTIFY_API_BASE_URL', 
-             defaultValue: 'https://api.mnotify.com/api/sms/quick');
+    return dotenv.env['MNOTIFY_API_BASE_URL'] ?? '';
   }
   
   // OTP settings

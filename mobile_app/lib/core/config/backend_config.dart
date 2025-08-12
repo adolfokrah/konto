@@ -5,9 +5,7 @@ class BackendConfig {
   // Base URL for the backend API
   static String get apiBaseUrl {
     // Priority: .env file (local) > compile-time env var (CI/CD) > fallback
-    return dotenv.env['API_BASE_URL'] ?? 
-           const String.fromEnvironment('API_BASE_URL', 
-             defaultValue: 'http://192.168.0.160:3000/api');
+    return dotenv.env['API_BASE_URL'] ?? '';
   }
   
   // API endpoints
