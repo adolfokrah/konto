@@ -35,7 +35,7 @@ jobs:
           -H "x-auth-token: ${{ secrets.CODEMAGIC_API_TOKEN }}" \
           -d '{
             "appId": "${{ secrets.CODEMAGIC_APP_ID }}",
-            "workflowId": "my-workflow",
+            "workflowId": "689b0f33f3fc76ada5d0008c",
             "branch": "main",
             "environment": {
               "variables": {
