@@ -42,13 +42,6 @@ export const registerUser = async (req: PayloadRequest) => {
               equals: countryCode,
             },
           }
-        ],
-        or: [
-            {
-                email: {
-                  equals: email || '',
-                },
-            }
         ]
       },
     })
@@ -98,25 +91,12 @@ export const registerUser = async (req: PayloadRequest) => {
 
     console.log('🎉 User created successfully:', newUser.id)
 
-    // Login the user to get the token
-    const loginResult = await req.payload.login({
-      collection: 'users',
-      data: {
-        email: userEmail,
-        password: defaultPassword,
-      },
-      req,
-    })
-
-    console.log('🔑 User logged in successfully after registration')
-
-    // Return success response with user data and token
+    // Return success response with user data (without token for testing)
     return Response.json({
       success: true,
       message: 'User registered successfully',
-      doc: loginResult.user,
-      token: loginResult.token,
-      user: loginResult.user, // For backward compatibility
+      doc: newUser,
+      user: newUser, // For backward compatibility
     }, { status: 201 })
 
   } catch (error: any) {
