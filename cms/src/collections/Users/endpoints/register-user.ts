@@ -32,6 +32,13 @@ export const registerUser = async (req: PayloadRequest) => {
               equals: countryCode,
             },
           }
+        ],
+        or: [
+          {
+            email: {
+              equals: email,
+            },
+          }
         ]
       },
     })
@@ -39,7 +46,7 @@ export const registerUser = async (req: PayloadRequest) => {
     if (existingUser.docs.length > 0) {
       return Response.json({
         success: false,
-        message: 'User already exists with this phone number',
+        message: 'User already exists',
         errors: [
           {
             field: 'phoneNumber',

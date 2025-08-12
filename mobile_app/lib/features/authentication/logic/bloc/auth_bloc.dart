@@ -169,6 +169,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final token = result['token'] as String?;
         final requiresLogin = result['requiresLogin'] as bool? ?? false;
         
+        print('🎯 Registration successful: user=${user.fullName}, token=${token != null ? 'YES' : 'NO'}, requiresLogin=$requiresLogin');
+        
         emit(UserRegistrationSuccess(
           user: user,
           token: token,

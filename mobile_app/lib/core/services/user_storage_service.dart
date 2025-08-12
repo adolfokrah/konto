@@ -17,17 +17,24 @@ class UserStorageService {
     required int tokenExpiry,
   }) async {
     try {
+      print('💾 Saving user data: ${user.fullName} (${user.phoneNumber})');
+      print('💾 Token: ${token.length} chars');
+      print('💾 Token expiry: $tokenExpiry (${DateTime.fromMillisecondsSinceEpoch(tokenExpiry * 1000)})');
+      
       // Save user data
       final userJson = json.encode(user.toJson());
       await _localStorageService.saveToken(LocalStorageTokens.userData, userJson);
+      print('💾 User data JSON saved');
       
       // Save authentication token
       await _localStorageService.saveToken(LocalStorageTokens.authToken, token);
+      print('💾 Auth token saved');
       
       // Save token expiry timestamp
       await _localStorageService.saveToken(LocalStorageTokens.tokenExpiry, tokenExpiry.toString());
+      print('💾 Token expiry saved');
       
-      print('✅ User data saved to local storage');
+      print('✅ User data saved to local storage successfully');
       return true;
     } catch (e) {
       print('💥 Error saving user data: $e');
@@ -38,13 +45,18 @@ class UserStorageService {
   /// Retrieve user data from local storage
   Future<User?> getUserData() async {
     try {
+      print('🔍 Retrieving user data from storage...');
       final userJson = await _localStorageService.getToken(LocalStorageTokens.userData);
       
       if (userJson != null) {
+        print('🔍 Found user JSON in storage');
         final userMap = json.decode(userJson) as Map<String, dynamic>;
-        return User.fromJson(userMap);
+        final user = User.fromJson(userMap);
+        print('🔍 Retrieved user: ${user.fullName} (${user.phoneNumber})');
+        return user;
       }
       
+      print('⚠️ No user data found in storage');
       return null;
     } catch (e) {
       print('💥 Error retrieving user data: $e');
@@ -79,22 +91,31 @@ class UserStorageService {
   /// Check if user is logged in and token is valid
   Future<bool> isUserLoggedIn() async {
     try {
+      print('🔐 Checking if user is logged in...');
       final user = await getUserData();
       final token = await getAuthToken();
       final expiry = await getTokenExpiry();
       
+      print('🔐 User data: ${user != null ? 'YES' : 'NO'}');
+      print('🔐 Auth token: ${token != null ? 'YES' : 'NO'}');
+      print('🔐 Token expiry: $expiry');
+      
       if (user == null || token == null || expiry == null) {
+        print('🔐 Missing required auth data');
         return false;
       }
       
       // Check if token is expired
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      print('🔐 Current timestamp: $currentTimestamp, Token expiry: $expiry');
+      
       if (currentTimestamp >= expiry) {
         print('🔒 Token expired, user needs to login again');
         await clearUserData();
         return false;
       }
       
+      print('🔐 User is logged in and token is valid');
       return true;
     } catch (e) {
       print('💥 Error checking login status: $e');

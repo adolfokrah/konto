@@ -86,28 +86,39 @@ class HomeView extends StatelessWidget {
 
         final user = snapshot.data;
         if (user == null) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.person_off_outlined,
                   size: 64,
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'No user data found',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Please log in again',
                   style: TextStyle(
                     color: Colors.grey,
                   ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate back to login
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login',
+                      (route) => false,
+                    );
+                  },
+                  child: const Text('Go to Login'),
                 ),
               ],
             ),
@@ -186,9 +197,23 @@ class HomeView extends StatelessWidget {
   }
 
   Future<User?> _getCurrentUser() async {
-    final serviceRegistry = ServiceRegistry();
-    final userStorageService = serviceRegistry.userStorageService;
-    return await userStorageService.getUserData();
+    try {
+      print('🏠 HomeView: Getting current user data');
+      final serviceRegistry = ServiceRegistry();
+      final userStorageService = serviceRegistry.userStorageService;
+      final user = await userStorageService.getUserData();
+      
+      if (user != null) {
+        print('🏠 HomeView: User data found - ${user.fullName}');
+      } else {
+        print('🏠 HomeView: No user data found');
+      }
+      
+      return user;
+    } catch (e) {
+      print('🏠 HomeView: Error getting user data - $e');
+      rethrow;
+    }
   }
 
   void _showSignOutDialog(BuildContext context) {

@@ -251,8 +251,8 @@ class AuthRepository {
           
           // Save user data and token to local storage
           if (token != null) {
-            // Calculate token expiry (24 hours from now)
-            final tokenExpiry = DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch;
+            // Calculate token expiry (24 hours from now) in seconds (Unix timestamp)
+            final tokenExpiry = DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch ~/ 1000;
             
             await _userStorageService.saveUserData(
               user: user, 
@@ -268,13 +268,62 @@ class AuthRepository {
               'token': token,
             };
           } else {
-            print('⚠️ Registration successful but no token received');
-            return {
-              'success': true,
-              'message': 'Registration successful',
-              'user': user,
-              'requiresLogin': true,
-            };
+            print('⚠️ Registration successful but no token received, attempting auto-login');
+            
+            // No token received from registration, attempt to login the user automatically
+            try {
+              final loginResponse = await _authApiProvider.loginWithPhoneNumber(
+                phoneNumber: phoneNumber,
+                countryCode: countryCode,
+              );
+
+              if (loginResponse['success'] == true) {
+                // Parse the login response
+                final loginData = LoginResponse.fromJson(loginResponse);
+                
+                // Save user data and token to local storage
+                final saveResult = await _userStorageService.saveUserData(
+                  user: loginData.user,
+                  token: loginData.token,
+                  tokenExpiry: loginData.exp,
+                );
+
+                if (saveResult) {
+                  print('✅ User registered and auto-logged in successfully');
+                  return {
+                    'success': true,
+                    'message': 'Registration and auto-login successful',
+                    'user': loginData.user,
+                    'token': loginData.token,
+                  };
+                } else {
+                  print('⚠️ Auto-login successful but failed to save data locally');
+                  return {
+                    'success': true,
+                    'message': 'Registration successful, auto-login completed',
+                    'user': loginData.user,
+                    'token': loginData.token,
+                    'warning': 'Failed to save data locally',
+                  };
+                }
+              } else {
+                print('💥 Auto-login after registration failed: ${loginResponse['message']}');
+                return {
+                  'success': true,
+                  'message': 'Registration successful but auto-login failed',
+                  'user': user,
+                  'requiresLogin': true,
+                };
+              }
+            } catch (e) {
+              print('💥 Auto-login after registration exception: $e');
+              return {
+                'success': true,
+                'message': 'Registration successful but auto-login failed',
+                'user': user,
+                'requiresLogin': true,
+              };
+            }
           }
         } else {
           print('❌ Registration response missing user data');

@@ -84,7 +84,7 @@ runs:
           exit 1
         fi
         
-        build_url="https://codemagic.io/builds/$build_id"
+        build_url="https://codemagic.io/app/${{ inputs.codemagic-app-id }}/build/$build_id"
         
         echo "✅ Build triggered successfully!"
         echo "📱 Build ID: $build_id"
@@ -111,21 +111,30 @@ runs:
         while [ $elapsed_time -lt $max_wait_time ]; do
           echo "⏱️  Checking build status... (${elapsed_time}s elapsed)"
           
-          # Use the correct single build endpoint
+          # Try the builds list endpoint first, as the direct endpoint seems to return app data
           status_response=$(curl -s \
             -H "Content-Type: application/json" \
             -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
-            "https://api.codemagic.io/builds/$build_id")
+            "https://api.codemagic.io/builds?appId=${{ inputs.codemagic-app-id }}&limit=20")
           
-          # Extract status from the build object (not root level)
-          status=$(echo "$status_response" | grep -o '"build":{[^}]*"status":"[^"]*"' | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          # Extract status for our specific build ID from the builds array
+          status=$(echo "$status_response" | jq -r ".builds[]? | select(._id == \"$build_id\") | .status // empty" 2>/dev/null)
+          
+          # Fallback: if jq is not available, use grep/sed
+          if [ -z "$status" ]; then
+            # Look for our build in the response and extract just the status value
+            build_block=$(echo "$status_response" | sed -n "/\"_id\":\"$build_id\"/,/}/p")
+            status=$(echo "$build_block" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+          fi
           
           echo "📊 Current build status: '$status'"
           
           # Debug logging if status is empty
           if [ -z "$status" ]; then
-            echo "⚠️  Could not extract status from response"
-            echo "🔍 Response preview: $(echo "$status_response" | head -c 300)..."
+            echo "⚠️  Could not find build $build_id in builds list"
+            echo "🔍 Searching for build IDs in response..."
+            build_ids=$(echo "$status_response" | grep -o '"_id":"[^"]*"' | head -3)
+            echo "📄 Recent builds: $build_ids"
           fi
           
           case $status in

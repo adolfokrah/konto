@@ -262,23 +262,56 @@ class _OtpViewContentState extends State<_OtpViewContent> {
         },
       ),
       BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is UserRegistrationSuccess) {
+            print('🎉 UserRegistrationSuccess received in OTP view');
+            print('🎉 Token: ${state.token != null ? 'YES' : 'NO'}, RequiresLogin: ${state.requiresLogin}');
+            
             // Registration successful
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully!'),
+              SnackBar(
+                content: Text(state.token != null 
+                  ? 'Account created and logged in successfully!' 
+                  : 'Account created successfully!'),
                 backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
             
-            // Navigate to home view
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/home',
-              (route) => false,
-            );
+            // Add a small delay to ensure data is saved before navigation
+            await Future.delayed(const Duration(milliseconds: 500));
+            
+            // Navigate to home view if user has token, otherwise navigate to login
+            if (state.token != null && !state.requiresLogin) {
+              print('🏠 Navigating to home view - user is logged in');
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/home',
+                (route) => false,
+              );
+            } else if (state.requiresLogin) {
+              print('🔑 Registration successful but auto-login failed, redirecting to login');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Please login with your new account'),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            } else {
+              // This shouldn't happen, but fallback to home
+              print('🏠 Fallback navigation to home view');
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/home',
+                (route) => false,
+              );
+            }
           } else if (state is UserRegistrationFailure) {
             // Registration failed
             ScaffoldMessenger.of(context).showSnackBar(
