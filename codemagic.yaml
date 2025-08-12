@@ -1,0 +1,40 @@
+workflows:
+  my-workflow:
+    name: Custom GitHub Trigger Workflow
+    triggering: {}
+    environment:
+      vars:
+        CUSTOM_MESSAGE: "Default Message"
+        BUILD_ENV: "staging"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          cd mobile_app
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          cd mobile_app
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          cd mobile_app
+          flutter test
+      - name: Build APK
+        script: |
+          cd mobile_app
+          flutter build apk --release
+      - name: Build iOS
+        script: |
+          cd mobile_app
+          flutter build ios --release --no-codesign
+    artifacts:
+      - mobile_app/build/**/outputs/**/*.apk
+      - mobile_app/build/**/outputs/**/*.aab
+      - mobile_app/build/ios/iphoneos/Runner.app
+    publishing:
+      email:
+        recipients:
+          - $CUSTOM_MESSAGE
