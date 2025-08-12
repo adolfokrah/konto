@@ -14,7 +14,6 @@ export const validateToken = async (req: PayloadRequest) => {
       }, { status: 401 })
     }
 
-    console.log('✅ Token validation successful for user:', user.id)
 
     // Return success with user data
     return Response.json({
@@ -36,7 +35,11 @@ export const validateToken = async (req: PayloadRequest) => {
     })
 
   } catch (error: any) {
-    console.error('💥 Token validation error:', error)
+    // Log error in development only
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error('💥 Token validation error:', error)
+    }
     
     return Response.json({
       success: false,

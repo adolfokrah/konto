@@ -8,7 +8,6 @@ export const checkPhoneNumberExistence = async (req: PayloadRequest) => {
     
     const { phoneNumber, countryCode } = req.data || {}
 
-    console.log(phoneNumber, countryCode)
     if (!phoneNumber) {
       return Response.json({
         success: false,

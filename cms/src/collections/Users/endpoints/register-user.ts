@@ -7,18 +7,9 @@ export const registerUser = async (req: PayloadRequest) => {
     await addDataAndFileToRequest(req)
     
     const { phoneNumber, countryCode, country, fullName, email } = req.data || {}
-    
-    console.log('📝 Registration request received:', {
-      phoneNumber,
-      countryCode,
-      country,
-      fullName,
-      email: email ? email.substring(0, 3) + '***' : 'none'
-    })
 
     // Validate required fields
     if (!phoneNumber || !countryCode || !country || !fullName) {
-      console.log('❌ Missing required fields')
       return Response.json({
         success: false,
         message: 'Missing required fields: phoneNumber, countryCode, country, fullName are required',
@@ -27,7 +18,6 @@ export const registerUser = async (req: PayloadRequest) => {
     }
 
     // Check if user already exists with this phone number and country code
-    console.log('🔍 Checking if user already exists...')
     const existingUser = await req.payload.find({
       collection: 'users',
       where: {
@@ -47,7 +37,6 @@ export const registerUser = async (req: PayloadRequest) => {
     })
 
     if (existingUser.docs.length > 0) {
-      console.log('❌ User already exists with this phone number')
       return Response.json({
         success: false,
         message: 'User already exists with this phone number',
@@ -60,7 +49,6 @@ export const registerUser = async (req: PayloadRequest) => {
       }, { status: 409 })
     }
 
-    console.log('✅ Phone number is available, creating new user...')
 
     // Create the new user - Include email and password for auth
     const userEmail = email || `${phoneNumber.replace(/\+/g, '')}@konto.app` // Generate email if not provided
@@ -89,7 +77,6 @@ export const registerUser = async (req: PayloadRequest) => {
       } as any, // Use any to bypass type checking for now
     })
 
-    console.log('🎉 User created successfully:', newUser.id)
 
     // Return success response with user data (without token for testing)
     return Response.json({
@@ -100,7 +87,11 @@ export const registerUser = async (req: PayloadRequest) => {
     }, { status: 201 })
 
   } catch (error: any) {
-    console.error('💥 Registration error:', error)
+    // Log error in development only
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error('💥 Registration error:', error)
+    }
     
     // Handle validation errors
     if (error.name === 'ValidationError') {

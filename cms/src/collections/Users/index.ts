@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
+
 import { checkPhoneNumberExistence } from './endpoints/check-phone-number-existence'
+import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 
 export const Users: CollectionConfig = {
