@@ -19,7 +19,7 @@ import 'dart:math';
 
 class SmsOtpService {
   // Using Africa's Talk as example (perfect for Ghana!)
-  static const String _baseUrl = 'https://api.africastalking.com/version1/messaging';
+  static const String _apiBaseUrl = 'https://api.africastalking.com/version1/messaging';
   static const String _username = 'your_username';
   static const String _apiKey = 'your_api_key';
   
@@ -33,7 +33,7 @@ class SmsOtpService {
   Future<bool> sendOTP(String phoneNumber, String otp) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(_apiBaseUrl),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',

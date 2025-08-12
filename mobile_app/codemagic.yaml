@@ -1,0 +1,19 @@
+workflows:
+  my-workflow:
+    name: Custom GitHub Trigger Workflow
+    triggering:
+      branch_patterns:
+        - pattern: "main"
+          include: false
+        - pattern: "master"
+          include: false
+    environment:
+      vars:
+        CUSTOM_MESSAGE: "Default Message"
+        BUILD_ENV: "staging"
+    scripts:
+      - name: Print trigger info
+        script: |
+          echo "Triggered from GitHub Actions"
+          echo "Custom message: $CUSTOM_MESSAGE"
+          echo "Environment: $BUILD_ENV"

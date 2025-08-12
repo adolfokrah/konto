@@ -1,13 +1,28 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 // SMS Configuration - Store your Mnotify credentials here
 class SmsConfig {
   // Mnotify API key
-  static const String mnotifyApiKey = 'A67zyKtxltxoH5iTDgz671wMD';
+  static String get mnotifyApiKey {
+    return dotenv.env['MNOTIFY_API_KEY'] ?? 
+           const String.fromEnvironment('MNOTIFY_API_KEY', 
+             defaultValue: '');
+  }
   
-  // TODO: Replace with your approved sender ID from Mnotify
-  static const String senderId = 'perple'; // Max 8 characters for Ghana
+  // Sender ID from Mnotify
+  static String get senderId {
+    return dotenv.env['MNOTIFY_SENDER_ID'] ?? 
+           const String.fromEnvironment('MNOTIFY_SENDER_ID', 
+             defaultValue: '');
+  }
   
   // Mnotify API endpoints
-  static const String baseUrl = 'https://api.mnotify.com/api/sms/quick';
+  static String get apiBaseUrl {
+    return dotenv.env['MNOTIFY_API_BASE_URL'] ?? 
+           const String.fromEnvironment('MNOTIFY_API_BASE_URL', 
+             defaultValue: 'https://api.mnotify.com/api/sms/quick');
+  }
+  
   // OTP settings
   static const int otpLength = 6;
   static const int otpValidityMinutes = 5;

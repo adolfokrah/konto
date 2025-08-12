@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
@@ -14,7 +15,15 @@ import 'package:konto/l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-    // Initialize service registry for dependency injection
+  // Load environment variables from .env file
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // .env file might not exist in production/CI, that's okay
+    print('Note: .env file not found, using compile-time environment variables');
+  }
+  
+  // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
   
   runApp(const MainApp());

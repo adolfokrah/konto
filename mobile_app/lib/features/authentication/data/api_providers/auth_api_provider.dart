@@ -18,7 +18,7 @@ class AuthApiProvider {
       print('🔍 Checking phone number availability: $phoneNumber with country code: $countryCode');
       
       final response = await _dio.post(
-        '${BackendConfig.baseUrl}${BackendConfig.checkPhoneExistenceEndpoint}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.checkPhoneExistenceEndpoint}',
         data: {
           'phoneNumber': phoneNumber,
           'countryCode': countryCode,
@@ -57,7 +57,7 @@ class AuthApiProvider {
       print('🔐 Logging in user with phone: $phoneNumber and country code: $countryCode');
       
       final response = await _dio.post(
-        '${BackendConfig.baseUrl}${BackendConfig.loginWithPhoneEndpoint}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.loginWithPhoneEndpoint}',
         data: {
           'phoneNumber': phoneNumber,
           'countryCode': countryCode,
@@ -99,7 +99,7 @@ class AuthApiProvider {
       print('📝 Registering user: $fullName with phone: $phoneNumber');
       
       final response = await _dio.post(
-        '${BackendConfig.baseUrl}${BackendConfig.registerUserEndpoint}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.registerUserEndpoint}',
         data: {
           'fullName': fullName,
           'email': email,

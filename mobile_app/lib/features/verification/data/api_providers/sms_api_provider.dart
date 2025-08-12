@@ -52,7 +52,7 @@ class SmsApiProvider {
       
       // Make Dio POST request to Mnotify
       final response = await _dio.post(
-        "${SmsConfig.baseUrl}?key=${SmsConfig.mnotifyApiKey}",
+        "${SmsConfig.apiBaseUrl}?key=${SmsConfig.mnotifyApiKey}",
         data: requestData      
         );
       

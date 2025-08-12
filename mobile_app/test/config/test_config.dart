@@ -11,7 +11,7 @@ class TestConfig {
   static const String testEmail = 'john.doe@test.com';
   
   // Test backend config
-  static const String testBaseUrl = 'http://192.168.0.160:3000/api';
+  static const String testapiBaseUrl = 'http://192.168.0.160:3000/api';
   
   // Test mode flag
   static bool isTestMode = false;

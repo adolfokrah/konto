@@ -66,7 +66,7 @@ class HttpClientService {
       
       // Make API request to Mnotify
       final response = await _dio.post(
-        SmsConfig.baseUrl,
+        SmsConfig.apiBaseUrl,
         data: requestData,
         options: Options(
           headers: {
