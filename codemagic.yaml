@@ -18,10 +18,10 @@ workflows:
         script: |
           cd mobile_app
           echo "# Environment variables for Codemagic build" > .env
-          echo "API_BASE_URL=http://localhost:3000/api" >> .env
-          echo "MNOTIFY_API_KEY=test_api_key_for_build" >> .env
-          echo "MNOTIFY_SENDER_ID=KontoApp" >> .env
-          echo "MNOTIFY_API_BASE_URL=https://api.mnotify.com/api/sms/quick" >> .env
+          echo "API_BASE_URL=$apiBaseUrl" >> .env
+          echo "MNOTIFY_API_KEY=$MNOTIFY_API_KEY" >> .env
+          echo "MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID" >> .env
+          echo "MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL" >> .env
           echo "APP_ENV=$BUILD_ENV" >> .env
           echo "Created .env file for Codemagic build"
           cat .env
@@ -52,4 +52,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - $CUSTOM_MESSAGE
+          - adolfokrah@gmail.com
+        notify:
+          success: true
+          failure: true
