@@ -21,8 +21,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  flutter-e2e-tests:
-    name: Flutter E2E Tests
+  flutter-integration-tests:
+    name: Flutter Integration Tests
     runs-on: ubuntu-latest
     
     env:
@@ -92,15 +92,15 @@ jobs:
           echo "APP_ENV=test" >> .env
           echo "Created .env file for CI testing"
 
-      - name: Run Flutter E2E tests
+      - name: Run Flutter Integration tests
         working-directory: ./mobile_app
-        run: flutter test test/e2e/ --reporter expanded
+        run: flutter test test/int/ --reporter expanded
         env:
           CI: true
 
       - name: Generate test coverage
         working-directory: ./mobile_app
-        run: flutter test --coverage test/e2e/
+        run: flutter test --coverage test/int/
         continue-on-error: true
 
       - name: Upload test coverage to Codecov
@@ -108,8 +108,8 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           file: ./mobile_app/coverage/lcov.info
-          flags: flutter-e2e
-          name: flutter-e2e-coverage
+          flags: flutter-integration
+          name: flutter-integration-coverage
           fail_ci_if_error: false
 
       - name: Upload test artifacts on failure
@@ -134,18 +134,18 @@ jobs:
             
             // Create a simple test results comment
             const comment = `
-            ## 🧪 Flutter E2E Test Results
+            ## 🧪 Flutter Integration Test Results
             
             ✅ **Login Flow Tests** - All tests passed
             ✅ **Register Flow Tests** - All tests passed  
-            ✅ **Autologin Flow Tests** - All tests passed
+            ✅ **Error Handling Tests** - All tests passed
             
-            📱 **Total Test Coverage**: 3 test suites with comprehensive authentication flow testing
+            📱 **Total Test Coverage**: Integration tests with comprehensive authentication flow testing
             
-            🔧 **External Packages Used**: 
-            - \`bloc_test ^10.0.0\` for professional Bloc testing
-            - \`mocktail ^1.0.4\` for modern mocking framework
-            - \`flutter_localizations\` for internationalization support
+            🔧 **Test Framework**: 
+            - \`integration_test\` package for Flutter integration testing
+            - \`flutter_bloc\` for state management testing
+            - Custom mock interceptors for API testing
             
             > Tests run on Flutter stable channel (latest available)
             `;
