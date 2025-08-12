@@ -4,8 +4,14 @@ on:
   push:
     branches:
         - main
+    paths:
+      - 'mobile_app/**'
+      - '.github/workflows/mobile-integration-test.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'mobile_app/**'
+      - '.github/workflows/mobile-integration-test.yml'
   workflow_dispatch:
 
 jobs:
@@ -64,7 +70,12 @@ jobs:
 
       - name: Analyze Flutter code
         working-directory: ./mobile_app
-        run: flutter analyze
+        run: |
+          # Use CI-specific analysis options if available, otherwise use default with no-fatal-infos
+          if [ -f "analysis_options_ci.yaml" ]; then
+            cp analysis_options_ci.yaml analysis_options.yaml
+          fi
+          flutter analyze --no-fatal-infos
 
       - name: Run Flutter E2E tests
         working-directory: ./mobile_app

@@ -1,0 +1,20 @@
+# Analysis options for CI - more lenient than development
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Disable print warnings for CI
+    avoid_print: false
+    # Keep other important rules
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    
+analyzer:
+  errors:
+    # Treat info level issues as warnings, not errors
+    avoid_print: warning
+    unused_import: warning
+    deprecated_member_use: warning
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"

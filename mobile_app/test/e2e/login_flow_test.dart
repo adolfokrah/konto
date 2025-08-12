@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
-import 'package:konto/features/verification/presentation/pages/otp_view.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
