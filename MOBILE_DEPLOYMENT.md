@@ -150,8 +150,8 @@ If automatic deployment fails, you can manually run Shorebird commands:
 # Install Shorebird CLI locally
 curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
 
-# Add to PATH
-export PATH="$HOME/.shorebird/bin:$PATH"
+# Add to PATH (installation path varies by environment)
+export PATH="$HOME/.config/shorebird/bin:$PATH"
 
 # Login
 shorebird login --token YOUR_TOKEN

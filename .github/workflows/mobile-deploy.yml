@@ -16,7 +16,7 @@ jobs:
     
     env:
       FLUTTER_CHANNEL: 'stable'
-      SHOREBIRD_PATH: $HOME/.shorebird/bin
+      SHOREBIRD_PATH: $HOME/.config/shorebird/bin
       
     steps:
       - name: Checkout code
@@ -45,14 +45,15 @@ jobs:
           # Download and install Shorebird CLI
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
           
+          # Shorebird installs to ~/.config/shorebird/bin on CI
+          SHOREBIRD_PATH="$HOME/.config/shorebird/bin"
+          
           # Add to PATH for this session
-          echo "$HOME/.shorebird/bin" >> $GITHUB_PATH
+          echo "$SHOREBIRD_PATH" >> $GITHUB_PATH
+          export PATH="$SHOREBIRD_PATH:$PATH"
           
-          # Source the environment to make sure PATH is updated
-          export PATH="$HOME/.shorebird/bin:$PATH"
-          
-          # Verify installation immediately
-          "$HOME/.shorebird/bin/shorebird" --version
+          # Verify installation immediately with correct path
+          "$SHOREBIRD_PATH/shorebird" --version
           
           # Also verify dart and flutter are available
           which dart && dart --version
@@ -67,7 +68,7 @@ jobs:
             shorebird --version
           else
             echo "⚠️ Shorebird not in PATH, using direct path"
-            "$HOME/.shorebird/bin/shorebird" --version
+            "$HOME/.config/shorebird/bin/shorebird" --version
           fi
 
       - name: Get commit message and determine update type
@@ -172,7 +173,7 @@ jobs:
           if command -v shorebird >/dev/null 2>&1; then
             shorebird login --token "$SHOREBIRD_TOKEN"
           else
-            "$HOME/.shorebird/bin/shorebird" login --token "$SHOREBIRD_TOKEN"
+            "$HOME/.config/shorebird/bin/shorebird" login --token "$SHOREBIRD_TOKEN"
           fi
 
       - name: Create Shorebird Release (for major/feat updates)
@@ -183,7 +184,7 @@ jobs:
           if command -v shorebird >/dev/null 2>&1; then
             shorebird release android --force
           else
-            "$HOME/.shorebird/bin/shorebird" release android --force
+            "$HOME/.config/shorebird/bin/shorebird" release android --force
           fi
           echo "Created new Shorebird release for version ${{ steps.new_version.outputs.new_version }}"
 
@@ -195,7 +196,7 @@ jobs:
           if command -v shorebird >/dev/null 2>&1; then
             shorebird patch android --force
           else
-            "$HOME/.shorebird/bin/shorebird" patch android --force
+            "$HOME/.config/shorebird/bin/shorebird" patch android --force
           fi
           echo "Created Shorebird patch for version ${{ steps.new_version.outputs.new_version }}"
 
