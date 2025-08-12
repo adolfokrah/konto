@@ -7,11 +7,13 @@ on:
     paths:
       - 'mobile_app/**'
       - '.github/workflows/mobile-integration-test.yml'
+      - '.github/workflows/mobile-deploy.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'mobile_app/**'
       - '.github/workflows/mobile-integration-test.yml'
+      - '.github/workflows/mobile-deploy.yml'
   workflow_dispatch:
 
 jobs:
