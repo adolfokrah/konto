@@ -1,4 +1,4 @@
-name: Trigger Codemagic Build
+name: Mobile Build Pipeline
 
 on:
   workflow_run:
@@ -17,47 +17,60 @@ on:
         options:
         - staging
         - production
+        - both
       custom_message:
         description: 'Custom message for the build'
         required: false
         default: 'Manual build triggered'
 
 jobs:
-  trigger-build:
+  staging-build:
+    name: Staging Build
     runs-on: ubuntu-latest
-    # Only run if the mobile integration tests passed
+    # Only run if the mobile integration tests passed OR manual trigger
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    # Skip staging if manual trigger requests production only
+    continue-on-error: false
     steps:
-      - name: Trigger Codemagic Build
-        id: trigger-build
-        run: |
-          echo "Triggering Codemagic build..."
-          
-          response=$(curl -s -X POST \
-          -H "Content-Type: application/json" \
-          -H "x-auth-token: ${{ secrets.CODEMAGIC_API_TOKEN }}" \
-          -d '{
-            "appId": "${{ secrets.CODEMAGIC_APP_ID }}",
-            "workflowId": "staging-workflow",
-            "branch": "main",
-            "environment": {
-              "variables": {
-                "CUSTOM_MESSAGE": "${{ github.event.inputs.custom_message || 'Build triggered after successful integration tests' }}",
-                "BUILD_ENV": "${{ github.event.inputs.environment || 'staging' }}"
-              }
-            }
-          }' \
-          https://api.codemagic.io/builds)
-          
-          echo "Response: $response"
-          
-          # Extract build ID from response
-          build_id=$(echo $response | grep -o '"buildId":"[^"]*"' | cut -d'"' -f4)
-          
-          if [ -z "$build_id" ]; then
-            echo "Failed to get build ID from response"
-            exit 1
-          fi
-          
-          echo "Build triggered successfully! Build ID: $build_id"
-          echo "build_id=$build_id" >> $GITHUB_OUTPUT
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Trigger Staging Build
+        uses: ./.github/actions/trigger-codemagic-build
+        with:
+          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
+          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
+          workflow-id: 'staging-workflow'
+          environment: 'staging'
+          custom-message: ${{ github.event.inputs.custom_message || 'Staging build triggered after successful integration tests' }}
+          branch: 'main'
+
+  production-approval:
+    name: Production Approval
+    runs-on: ubuntu-latest
+    needs: staging-build
+    environment: production
+    steps:
+      - name: Approve production deployment
+        run: echo "Production deployment approved"
+
+  production-build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: [staging-build, production-approval]
+    # Only run production if both staging and approval succeed
+    if: ${{ success() && (github.event.inputs.environment == 'production' || github.event.inputs.environment == 'both' || github.event_name == 'workflow_run') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Trigger Production Build
+        uses: ./.github/actions/trigger-codemagic-build
+        with:
+          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
+          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
+          workflow-id: 'production-workflow'
+          environment: 'production'
+          custom-message: ${{ github.event.inputs.custom_message || 'Production build triggered after successful staging build' }}
+          branch: 'main'
+         

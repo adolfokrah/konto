@@ -1,0 +1,166 @@
+name: 'Trigger Codemagic Build'
+description: 'Triggers a Codemagic build and waits for completion'
+inputs:
+  codemagic-api-token:
+    description: 'Codemagic API token'
+    required: true
+  codemagic-app-id:
+    description: 'Codemagic App ID'
+    required: true
+  workflow-id:
+    description: 'Codemagic workflow ID'
+    required: true
+  environment:
+    description: 'Build environment (staging/production)'
+    required: true
+    default: 'staging'
+  custom-message:
+    description: 'Custom message for the build'
+    required: false
+    default: 'Build triggered'
+  branch:
+    description: 'Git branch to build'
+    required: false
+    default: 'main'
+outputs:
+  build-id:
+    description: 'Codemagic build ID'
+    value: ${{ steps.trigger-build.outputs.build_id }}
+  build-url:
+    description: 'Codemagic build URL'
+    value: ${{ steps.trigger-build.outputs.build_url }}
+  build-status:
+    description: 'Final build status'
+    value: ${{ steps.monitor-build.outputs.build_status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Trigger Codemagic Build
+      id: trigger-build
+      shell: bash
+      run: |
+        echo "🚀 Triggering Codemagic build for ${{ inputs.environment }} environment..."
+        
+        response=$(curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
+        -d '{
+          "appId": "${{ inputs.codemagic-app-id }}",
+          "workflowId": "${{ inputs.workflow-id }}",
+          "branch": "${{ inputs.branch }}",
+          "environment": {
+            "variables": {
+              "CUSTOM_MESSAGE": "${{ inputs.custom-message }}",
+              "BUILD_ENV": "${{ inputs.environment }}"
+            }
+          }
+        }' \
+        https://api.codemagic.io/builds)
+        
+        echo "API Response: $response"
+        
+        # Extract build ID from response
+        build_id=$(echo $response | grep -o '"buildId":"[^"]*"' | cut -d'"' -f4)
+        
+        if [ -z "$build_id" ]; then
+          echo "❌ Failed to get build ID from response"
+          exit 1
+        fi
+        
+        build_url="https://codemagic.io/builds/$build_id"
+        
+        echo "✅ Build triggered successfully!"
+        echo "📱 Build ID: $build_id"
+        echo "🔗 Build URL: $build_url"
+        
+        echo "build_id=$build_id" >> $GITHUB_OUTPUT
+        echo "build_url=$build_url" >> $GITHUB_OUTPUT
+
+    - name: Monitor Codemagic Build
+      id: monitor-build
+      shell: bash
+      run: |
+        build_id="${{ steps.trigger-build.outputs.build_id }}"
+        build_url="${{ steps.trigger-build.outputs.build_url }}"
+        
+        echo "🔄 Monitoring Codemagic build: $build_id"
+        echo "📱 Build URL: $build_url"
+        echo "🏗️ Environment: ${{ inputs.environment }}"
+        
+        max_wait_time=3600  # 1 hour max wait time
+        check_interval=30   # Check every 30 seconds
+        elapsed_time=0
+        
+        while [ $elapsed_time -lt $max_wait_time ]; do
+          echo "⏱️  Checking build status... (${elapsed_time}s elapsed)"
+          
+          status_response=$(curl -s \
+            -H "Content-Type: application/json" \
+            -H "x-auth-token: ${{ inputs.codemagic-api-token }}" \
+            "https://api.codemagic.io/builds/$build_id")
+          
+          # Extract status from response
+          status=$(echo $status_response | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+          
+          echo "📊 Current build status: $status"
+          
+          case $status in
+            "finished")
+              echo "✅ Build completed successfully!"
+              echo "🎉 ${{ inputs.environment }} build finished - marking as PASSED"
+              echo "📱 View build details: $build_url"
+              echo "build_status=success" >> $GITHUB_OUTPUT
+              exit 0
+              ;;
+            "failed")
+              echo "❌ Build failed"
+              echo "🔗 Check build logs: $build_url"
+              echo "build_status=failed" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+            "canceled")
+              echo "⏹️  Build was canceled"
+              echo "🔗 Check build details: $build_url"
+              echo "build_status=canceled" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+            "timeout")
+              echo "⏰ Build timed out"
+              echo "🔗 Check build details: $build_url"
+              echo "build_status=timeout" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+            "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing")
+              echo "🔄 Build in progress: $status"
+              ;;
+            "")
+              echo "⚠️  Could not get build status - API response might be malformed"
+              echo "Raw response: $status_response"
+              ;;
+            *)
+              echo "⚠️  Unknown status: $status"
+              echo "Raw response: $status_response"
+              ;;
+          esac
+          
+          sleep $check_interval
+          elapsed_time=$((elapsed_time + check_interval))
+        done
+        
+        echo "❌ Build monitoring timed out after ${max_wait_time} seconds"
+        echo "🔗 Check build status manually: $build_url"
+        echo "build_status=timeout" >> $GITHUB_OUTPUT
+        exit 1
+
+    - name: Build Success Summary
+      if: success()
+      shell: bash
+      run: |
+        build_id="${{ steps.trigger-build.outputs.build_id }}"
+        build_url="${{ steps.trigger-build.outputs.build_url }}"
+        
+        echo "🎊 SUCCESS: ${{ inputs.environment }} build completed successfully!"
+        echo "📱 Build ID: $build_id"
+        echo "🔗 View artifacts: $build_url"
+        echo "✅ GitHub Action marked as PASSED"

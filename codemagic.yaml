@@ -1,6 +1,6 @@
 workflows:
   staging-workflow:
-    name: Custom GitHub Trigger Workflow
+    name: Build App for staging
     triggering: {}
     environment:
       vars:
@@ -53,5 +53,62 @@ workflows:
       scripts:
         - name: Build completion notification
           script: |
-            echo "Build completed successfully!"
+            echo "Staging build completed successfully!"
             echo "Artifacts generated in mobile_app/build/"
+
+  production-workflow:
+    name: Production Build Workflow
+    triggering: {}
+    environment:
+      vars:
+        CUSTOM_MESSAGE: "Production Build"
+        BUILD_ENV: "production"
+        MNOTIFY_API_BASE_URL: "https://api.mnotify.com/api/sms/quick"
+        MNOTIFY_SENDER_ID: "perpel"
+        MNOTIFY_API_KEY: "A67zyKtxltxoH5iTDgz671wMD"
+        apiBaseUrl: "https://konto-production-api.vercel.app/api"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Create .env file for production build
+        script: |
+          cd mobile_app
+          echo "# Environment variables for Production Codemagic build" > .env
+          echo "API_BASE_URL=$apiBaseUrl" >> .env
+          echo "MNOTIFY_API_KEY=$MNOTIFY_API_KEY" >> .env
+          echo "MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID" >> .env
+          echo "MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL" >> .env
+          echo "APP_ENV=$BUILD_ENV" >> .env
+          echo "Created .env file for Production Codemagic build"
+          cat .env
+      - name: Get Flutter dependencies
+        script: |
+          cd mobile_app
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          cd mobile_app
+          flutter analyze || echo "Flutter analyze found issues, but continuing build..."
+      - name: Flutter unit tests
+        script: |
+          cd mobile_app
+          flutter test
+      - name: Build app bundle (Release)
+        script: |
+          cd mobile_app
+          flutter build appbundle --release
+      - name: Build iOS (Release)
+        script: |
+          cd mobile_app
+          flutter build ios --release --no-codesign
+    artifacts:
+      - mobile_app/build/**/outputs/**/*.apk
+      - mobile_app/build/**/outputs/**/*.aab
+      - mobile_app/build/ios/iphoneos/Runner.app
+    publishing:
+      scripts:
+        - name: Production build completion notification
+          script: |
+            echo "Production build completed successfully!"
+            echo "Release artifacts generated in mobile_app/build/"
