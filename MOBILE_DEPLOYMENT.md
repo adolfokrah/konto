@@ -38,14 +38,23 @@ Based on the commit type, the workflow deploys differently:
 Add the following secret to your GitHub repository:
 
 1. **`SHOREBIRD_TOKEN`** - Your Shorebird authentication token
-   - Get this from your Shorebird dashboard
+   - Get this from your Shorebird dashboard: https://console.shorebird.dev/
    - Go to Repository Settings → Secrets and variables → Actions → New repository secret
+   - Name: `SHOREBIRD_TOKEN`
+   - Value: Your token from Shorebird console
 
 ### Shorebird Configuration
 
 The app is already configured with Shorebird:
 - `mobile_app/shorebird.yaml` contains the app configuration
 - App ID: `53bedfda-d473-401b-a14a-0f1cb2dd800b`
+
+### Prerequisites
+
+Before the first deployment:
+1. Ensure your Flutter app builds successfully
+2. Verify you have the correct Shorebird app ID in `shorebird.yaml`
+3. Make sure you have access to the Shorebird project
 
 ## Usage Examples
 
@@ -120,17 +129,29 @@ You can also trigger the deployment manually:
 
 ### Common Issues
 
-1. **Missing Shorebird Token**: Ensure `SHOREBIRD_TOKEN` secret is set
-2. **Version Conflicts**: The workflow force updates, but check for any conflicts
-3. **Build Failures**: Check Flutter dependencies and test results in the workflow logs
+1. **Missing Shorebird Token**: Ensure `SHOREBIRD_TOKEN` secret is set correctly
+2. **Shorebird CLI Not Found**: The workflow has fallback mechanisms to use direct path
+3. **Version Conflicts**: The workflow force updates, but check for any conflicts
+4. **Build Failures**: Check Flutter dependencies and test results in the workflow logs
+5. **Login Issues**: Verify your Shorebird token has the correct permissions
+
+### Shorebird CLI Installation Issues
+
+If you see "shorebird: command not found" errors:
+- The workflow automatically handles PATH issues with fallbacks
+- Check the "Install Shorebird CLI" step logs for detailed information
+- Verify the installation completed successfully
 
 ### Manual Recovery
 
 If automatic deployment fails, you can manually run Shorebird commands:
 
 ```bash
-# Install Shorebird CLI
+# Install Shorebird CLI locally
 curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+
+# Add to PATH
+export PATH="$HOME/.shorebird/bin:$PATH"
 
 # Login
 shorebird login --token YOUR_TOKEN

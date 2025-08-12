@@ -16,6 +16,7 @@ jobs:
     
     env:
       FLUTTER_CHANNEL: 'stable'
+      SHOREBIRD_PATH: $HOME/.shorebird/bin
       
     steps:
       - name: Checkout code
@@ -41,11 +42,33 @@ jobs:
 
       - name: Install Shorebird CLI
         run: |
+          # Download and install Shorebird CLI
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+          
+          # Add to PATH for this session
           echo "$HOME/.shorebird/bin" >> $GITHUB_PATH
-
+          
+          # Source the environment to make sure PATH is updated
+          export PATH="$HOME/.shorebird/bin:$PATH"
+          
+          # Verify installation immediately
+          "$HOME/.shorebird/bin/shorebird" --version
+          
+          # Also verify dart and flutter are available
+          which dart && dart --version
+          which flutter && flutter --version
+          
       - name: Verify Shorebird installation
-        run: shorebird --version
+        run: |
+          # Verify Shorebird is in PATH
+          echo "Checking if shorebird is in PATH..."
+          if command -v shorebird >/dev/null 2>&1; then
+            echo "✅ Shorebird found in PATH"
+            shorebird --version
+          else
+            echo "⚠️ Shorebird not in PATH, using direct path"
+            "$HOME/.shorebird/bin/shorebird" --version
+          fi
 
       - name: Get commit message and determine update type
         id: commit_info
@@ -145,20 +168,35 @@ jobs:
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          shorebird login --token "$SHOREBIRD_TOKEN"
+          # Try using shorebird from PATH, fallback to direct path
+          if command -v shorebird >/dev/null 2>&1; then
+            shorebird login --token "$SHOREBIRD_TOKEN"
+          else
+            "$HOME/.shorebird/bin/shorebird" login --token "$SHOREBIRD_TOKEN"
+          fi
 
       - name: Create Shorebird Release (for major/feat updates)
         if: steps.commit_info.outputs.deploy_type == 'release'
         working-directory: ./mobile_app
         run: |
-          shorebird release android --force
+          # Try using shorebird from PATH, fallback to direct path
+          if command -v shorebird >/dev/null 2>&1; then
+            shorebird release android --force
+          else
+            "$HOME/.shorebird/bin/shorebird" release android --force
+          fi
           echo "Created new Shorebird release for version ${{ steps.new_version.outputs.new_version }}"
 
       - name: Create Shorebird Patch (for fix updates)
         if: steps.commit_info.outputs.deploy_type == 'patch'
         working-directory: ./mobile_app
         run: |
-          shorebird patch android --force
+          # Try using shorebird from PATH, fallback to direct path
+          if command -v shorebird >/dev/null 2>&1; then
+            shorebird patch android --force
+          else
+            "$HOME/.shorebird/bin/shorebird" patch android --force
+          fi
           echo "Created Shorebird patch for version ${{ steps.new_version.outputs.new_version }}"
 
       - name: Create GitHub Release
