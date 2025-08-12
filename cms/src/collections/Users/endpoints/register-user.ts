@@ -18,7 +18,7 @@ export const registerUser = async (req: PayloadRequest) => {
     }
 
     // Check if user already exists with this phone number and country code
-    const existingUser = await req.payload.find({
+    const existingUserByPhone = await req.payload.find({
       collection: 'users',
       where: {
         and: [
@@ -33,20 +33,13 @@ export const registerUser = async (req: PayloadRequest) => {
             },
           }
         ],
-        or: [
-          {
-            email: {
-              equals: email,
-            },
-          }
-        ]
       },
     })
 
-    if (existingUser.docs.length > 0) {
+    if (existingUserByPhone.docs.length > 0) {
       return Response.json({
         success: false,
-        message: 'User already exists',
+        message: 'User already exists with this phone number',
         errors: [
           {
             field: 'phoneNumber',
@@ -54,6 +47,31 @@ export const registerUser = async (req: PayloadRequest) => {
           }
         ]
       }, { status: 409 })
+    }
+
+    // If email is provided, check if user already exists with this email
+    if (email) {
+      const existingUserByEmail = await req.payload.find({
+        collection: 'users',
+        where: {
+          email: {
+            equals: email,
+          },
+        },
+      })
+
+      if (existingUserByEmail.docs.length > 0) {
+        return Response.json({
+          success: false,
+          message: 'User already exists with this email',
+          errors: [
+            {
+              field: 'email',
+              message: 'Email already registered'
+            }
+          ]
+        }, { status: 409 })
+      }
     }
 
 
