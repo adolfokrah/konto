@@ -264,16 +264,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
       BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is UserRegistrationSuccess) {
-            print('🎉 UserRegistrationSuccess received in OTP view');
-            print('🎉 Token: ${state.token != null ? 'YES' : 'NO'}, RequiresLogin: ${state.requiresLogin}');
-            
+          
             // Registration successful
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.token != null 
                   ? 'Account created and logged in successfully!' 
-                  : 'Account created successfully!'),
-                backgroundColor: Colors.green,
+                  : 'Account created successfully!', style: AppTextStyles.titleRegularM),
+                backgroundColor: AppColors.secondaryGreen,
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -283,19 +281,17 @@ class _OtpViewContentState extends State<_OtpViewContent> {
             
             // Navigate to home view if user has token, otherwise navigate to login
             if (state.token != null && !state.requiresLogin) {
-              print('🏠 Navigating to home view - user is logged in');
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/home',
                 (route) => false,
               );
             } else if (state.requiresLogin) {
-              print('🔑 Registration successful but auto-login failed, redirecting to login');
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please login with your new account'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: Text('Please login with your new account', style: AppTextStyles.titleRegularM),
+                  backgroundColor: AppColors.errorRed,
+                  duration: const Duration(seconds: 2),
                 ),
               );
               Navigator.pushNamedAndRemoveUntil(
@@ -304,8 +300,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                 (route) => false,
               );
             } else {
-              // This shouldn't happen, but fallback to home
-              print('🏠 Fallback navigation to home view');
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/home',
@@ -316,8 +310,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
             // Registration failed
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.error),
-                backgroundColor: Colors.red,
+                content: Text(state.error, style: AppTextStyles.titleRegularM),
+                backgroundColor: AppColors.errorRed,
                 duration: const Duration(seconds: 3),
               ),
             );

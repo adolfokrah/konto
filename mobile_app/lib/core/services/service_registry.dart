@@ -88,4 +88,46 @@ class ServiceRegistry {
   AuthApiProvider get authApiProvider => _authApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
+  
+  /// Reset the registry (useful for testing)
+  void reset() {
+    _isInitialized = false;
+  }
+  
+  /// Initialize with custom Dio instance (useful for testing)
+  void initializeWithDio(Dio customDio) {
+    // Skip if already initialized
+    if (_isInitialized) {
+      reset();
+    }
+    
+    // Use the provided Dio instance
+    _dio = customDio;
+    
+    // Initialize core services
+    _localStorageService = LocalStorageService();
+    _smsOtpService = SmsOtpService();
+    _userStorageService = UserStorageService(localStorageService: _localStorageService);
+    
+    // Initialize API providers with custom Dio
+    _smsApiProvider = SmsApiProvider(dio: _dio);
+    _authApiProvider = AuthApiProvider(
+      dio: _dio,
+    );
+    
+    // Initialize repositories with dependencies
+    _authRepository = AuthRepository(
+      smsOtpService: _smsOtpService,
+      authApiProvider: _authApiProvider,
+      userStorageService: _userStorageService,
+    );
+    
+    _verificationRepository = VerificationRepository(
+      smsOtpService: _smsOtpService,
+      smsApiProvider: _smsApiProvider,
+    );
+    
+    _isInitialized = true;
+    print('✅ ServiceRegistry initialized with custom Dio for testing');
+  }
 }

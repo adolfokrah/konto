@@ -15,7 +15,6 @@ class AuthApiProvider {
     required String countryCode,
   }) async {
     try {
-      print('🔍 Checking phone number availability: $phoneNumber with country code: $countryCode');
       
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.checkPhoneExistenceEndpoint}',
@@ -28,10 +27,8 @@ class AuthApiProvider {
         ),
       );
       
-      print('📱 Phone availability response: ${response.data}');
       return response.data;
     } catch (e) {
-      print('💥 Phone availability check error: $e');
       if (e is DioException) {
         return {
           'success': false,

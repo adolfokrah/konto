@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -13,6 +12,7 @@ class NumberInput extends StatefulWidget {
   final Function(String country, String code)? onCountryChanged;
   final Function(String phoneNumber)? onPhoneNumberChanged;
   final String placeholder;
+  final Key? textFieldKey;
 
   const NumberInput({
     super.key,
@@ -22,6 +22,7 @@ class NumberInput extends StatefulWidget {
     this.onCountryChanged,
     this.onPhoneNumberChanged,
     this.placeholder = 'Phone number',
+    this.textFieldKey,
   });
 
   @override
@@ -114,6 +115,7 @@ class _NumberInputState extends State<NumberInput> {
               
               Expanded(
                 child: TextField(
+                  key: widget.textFieldKey,
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   style:  TextStyles.titleMedium,

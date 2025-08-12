@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
@@ -50,9 +52,9 @@ class _RegisterViewState extends State<RegisterView> {
     // Validate input fields
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your full name'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('Please enter your full name', style: AppTextStyles.titleRegularM),
+          backgroundColor: AppColors.errorRed,
         ),
       );
       return;
@@ -60,9 +62,9 @@ class _RegisterViewState extends State<RegisterView> {
     
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email address'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('Please enter your email address', style: AppTextStyles.titleRegularM),
+          backgroundColor: AppColors.errorRed,
         ),
       );
       return;
@@ -70,9 +72,9 @@ class _RegisterViewState extends State<RegisterView> {
     
     if (_phoneNumber.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your phone number'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('Please enter your phone number', style: AppTextStyles.titleRegularM),
+          backgroundColor: AppColors.errorRed,
         ),
       );
       return;
@@ -149,28 +151,12 @@ class _RegisterViewState extends State<RegisterView> {
               'isRegistration': true, // Flag to indicate this is for registration
             },
           );
-        } else if (state is UserRegistrationSuccess) {
-          // Registration successful
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          
-          // Navigate to home view if token is provided
-          if (state.token != null) {
-            Navigator.pushReplacementNamed(context, '/home');
-          } else if (state.requiresLogin) {
-            // User needs to login manually
-            Navigator.pop(context);
-          }
         } else if (state is UserRegistrationFailure) {
           // Registration failed
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.error),
-              backgroundColor: Colors.red,
+              content: Text(state.error, style: AppTextStyles.titleRegularM),
+              backgroundColor: AppColors.errorRed,
             ),
           );
         }
@@ -196,13 +182,11 @@ class _RegisterViewState extends State<RegisterView> {
               label: localizations.fullName,
               keyboardType: TextInputType.name,
               controller: _nameController,
-              onChanged: (value) {
-                // Handle name input
-                print('Name: $value');
-              },
+              key: const Key('fullName'),
             ),
             const SizedBox(height: AppSpacing.spacingS),
               AppTextInput(
+              key: const Key('email'),
               label: localizations.email,
               keyboardType: TextInputType.emailAddress,
               controller: _emailController,
@@ -213,6 +197,7 @@ class _RegisterViewState extends State<RegisterView> {
             ),
              const SizedBox(height: AppSpacing.spacingS),
             SelectInput<String>(
+              key: const Key('country'),
               label: localizations.country,
               options: countryOptions,
               value: getCountryValue(_selectedCountry),
@@ -225,11 +210,11 @@ class _RegisterViewState extends State<RegisterView> {
                   _selectedCountry = countryName;
                   _countryCode = countryCode;
                 });
-                print('Selected country: $value -> $countryName ($countryCode)');
               },
             ),
              const SizedBox(height: AppSpacing.spacingS),
              NumberInput(
+              key: const Key('phoneNumber'),
               selectedCountry: _selectedCountry,
               countryCode: _countryCode,
               phoneNumber: _phoneNumber, // Pre-fill with passed phone number
@@ -239,13 +224,11 @@ class _RegisterViewState extends State<RegisterView> {
                   _selectedCountry = country;
                   _countryCode = code;
                 });
-                print('Selected: $country ($code)');
               },
               onPhoneNumberChanged: (phoneNumber) {
                 setState(() {
                   _phoneNumber = phoneNumber;
                 });
-                print('Phone: $phoneNumber');
               },
              ),
             const SizedBox(height: AppSpacing.spacingL),

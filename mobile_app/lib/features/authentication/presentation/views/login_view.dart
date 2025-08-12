@@ -47,7 +47,7 @@ class _LoginViewState extends State<LoginView> {
                 SnackBar(
                   content: Text(
                     'Phone number not found. Please register first.',
-                    style: TextStyles.titleRegularSm.copyWith(color: Colors.white),
+                    style: TextStyles.titleRegularSm,
                   ),
                   backgroundColor: Colors.orange,
                 ),
@@ -115,6 +115,7 @@ class _LoginViewState extends State<LoginView> {
                     selectedCountry: _selectedCountry,
                     countryCode: _countryCode,
                     placeholder: localizations.phoneNumber,
+                    textFieldKey: const Key('phone_number'),
                     onCountryChanged: (country, code) {
                       setState(() {
                         _selectedCountry = country;
@@ -133,6 +134,7 @@ class _LoginViewState extends State<LoginView> {
                   AppButton(
                     text: state is AuthLoading ? 'Checking...' : localizations.login,
                     variant: ButtonVariant.fill,
+                    key: const Key('login_button'),
                     onPressed: state is AuthLoading ? null : () {
                       if (_phoneNumber.isNotEmpty) {
                         // First check if phone number is available
