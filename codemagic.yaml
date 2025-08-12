@@ -1,0 +1,55 @@
+workflows:
+  staging-workflow:
+    name: Custom GitHub Trigger Workflow
+    triggering: {}
+    environment:
+      vars:
+        CUSTOM_MESSAGE: "Default Message"
+        BUILD_ENV: "staging"
+        MNOTIFY_API_BASE_URL: "https://api.mnotify.com/api/sms/quick"
+        MNOTIFY_SENDER_ID: "perpel"
+        MNOTIFY_API_KEY: "A67zyKtxltxoH5iTDgz671wMD"
+        apiBaseUrl: "https://konto-env-staging-ui-ninjas-projects.vercel.app/api"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Create .env file for build
+        script: |
+          cd mobile_app
+          echo "# Environment variables for Codemagic build" > .env
+          echo "API_BASE_URL=http://localhost:3000/api" >> .env
+          echo "MNOTIFY_API_KEY=test_api_key_for_build" >> .env
+          echo "MNOTIFY_SENDER_ID=KontoApp" >> .env
+          echo "MNOTIFY_API_BASE_URL=https://api.mnotify.com/api/sms/quick" >> .env
+          echo "APP_ENV=$BUILD_ENV" >> .env
+          echo "Created .env file for Codemagic build"
+          cat .env
+      - name: Get Flutter dependencies
+        script: |
+          cd mobile_app
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          cd mobile_app
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          cd mobile_app
+          flutter test
+      - name: Build APK
+        script: |
+          cd mobile_app
+          flutter build apk --profile
+      - name: Build iOS
+        script: |
+          cd mobile_app
+          flutter build ios --profile --no-codesign
+    artifacts:
+      - mobile_app/build/**/outputs/**/*.apk
+      - mobile_app/build/**/outputs/**/*.aab
+      - mobile_app/build/ios/iphoneos/Runner.app
+    publishing:
+      email:
+        recipients:
+          - $CUSTOM_MESSAGE

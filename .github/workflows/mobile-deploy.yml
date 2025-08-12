@@ -29,13 +29,16 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Trigger Codemagic Build
+        id: trigger-build
         run: |
-          curl -X POST \
+          echo "Triggering Codemagic build..."
+          
+          response=$(curl -s -X POST \
           -H "Content-Type: application/json" \
           -H "x-auth-token: ${{ secrets.CODEMAGIC_API_TOKEN }}" \
           -d '{
             "appId": "${{ secrets.CODEMAGIC_APP_ID }}",
-            "workflowId": "689b0f33f3fc76ada5d0008c",
+            "workflowId": "staging-workflow",
             "branch": "main",
             "environment": {
               "variables": {
@@ -44,4 +47,65 @@ jobs:
               }
             }
           }' \
-          https://api.codemagic.io/builds
+          https://api.codemagic.io/builds)
+          
+          echo "Response: $response"
+          
+          # Extract build ID from response
+          build_id=$(echo $response | grep -o '"buildId":"[^"]*"' | cut -d'"' -f4)
+          
+          if [ -z "$build_id" ]; then
+            echo "Failed to get build ID from response"
+            exit 1
+          fi
+          
+          echo "Build triggered successfully! Build ID: $build_id"
+          echo "build_id=$build_id" >> $GITHUB_OUTPUT
+
+      - name: Wait for Codemagic Build to Complete
+        run: |
+          build_id="${{ steps.trigger-build.outputs.build_id }}"
+          echo "Monitoring build: $build_id"
+          
+          max_wait_time=3600  # 1 hour max wait time
+          check_interval=60   # Check every 60 seconds
+          elapsed_time=0
+          
+          while [ $elapsed_time -lt $max_wait_time ]; do
+            echo "Checking build status... (${elapsed_time}s elapsed)"
+            
+            status_response=$(curl -s \
+              -H "Content-Type: application/json" \
+              -H "x-auth-token: ${{ secrets.CODEMAGIC_API_TOKEN }}" \
+              "https://api.codemagic.io/builds/$build_id")
+            
+            echo "Status response: $status_response"
+            
+            # Extract status from response
+            status=$(echo $status_response | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+            
+            echo "Current build status: $status"
+            
+            case $status in
+              "finished")
+                echo "✅ Build completed successfully!"
+                exit 0
+                ;;
+              "failed"|"canceled"|"timeout")
+                echo "❌ Build failed with status: $status"
+                exit 1
+                ;;
+              "building"|"queued"|"preparing"|"testing"|"publishing"|"fetching"|"finishing")
+                echo "🔄 Build in progress: $status"
+                ;;
+              *)
+                echo "⚠️ Unknown status: $status"
+                ;;
+            esac
+            
+            sleep $check_interval
+            elapsed_time=$((elapsed_time + check_interval))
+          done
+          
+          echo "❌ Build timed out after ${max_wait_time} seconds"
+          exit 1
