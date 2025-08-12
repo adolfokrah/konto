@@ -2,6 +2,15 @@
 
 This guide explains how the mobile app deployment workflow works with Shorebird for the Konto project.
 
+## Platform Support
+
+The deployment is split into two separate workflows due to CI/CD platform limitations:
+
+- **Android**: Deploys on Ubuntu runners (`mobile-deploy.yml`)
+- **iOS**: Deploys on macOS runners (`mobile-deploy-ios.yml`) 
+
+> **Note**: iOS builds require Xcode and Apple's toolchain, which are only available on macOS runners. This is a standard limitation in CI/CD environments.
+
 ## Deployment Workflow
 
 The deployment is automated through GitHub Actions and triggers based on commit message patterns when pushing to the `main` branch.
@@ -102,6 +111,7 @@ This will:
 
 ## Workflow Steps
 
+### Android Deployment (`mobile-deploy.yml`)
 1. **Trigger**: Push to main branch with changes in `mobile_app/`
 2. **Analysis**: Parse commit message to determine update type
 3. **Version Update**: Automatically bump version in `pubspec.yaml`
@@ -109,14 +119,37 @@ This will:
 5. **Deploy**: Create Shorebird patch or release based on commit type
 6. **Release**: Create GitHub release for major/minor updates
 
+### iOS Deployment (`mobile-deploy-ios.yml`)
+1. **Trigger**: Same as Android, but runs on macOS runners
+2. **Analysis**: Parse commit message to determine update type  
+3. **Version Update**: Automatically bump version in `pubspec.yaml`
+4. **Build**: Run tests and build iOS IPA (no code signing)
+5. **Deploy**: Create Shorebird patch or release for iOS
+6. **Note**: Requires macOS runners, which cost more on GitHub Actions
+
+## Cost Considerations
+
+- **Android**: Uses Ubuntu runners (included in free tier)
+- **iOS**: Uses macOS runners (10x more expensive than Ubuntu)
+- **Recommendation**: Start with Android-only deployment, add iOS later if needed
+
 ## Manual Deployment
 
-You can also trigger the deployment manually:
+You can trigger either deployment workflow manually:
 
+### Android Deployment
 1. Go to GitHub Actions tab
-2. Select "Mobile App Deploy" workflow
+2. Select "Mobile App Deploy (Android)" workflow
 3. Click "Run workflow"
 4. Select the branch and run
+
+### iOS Deployment
+1. Go to GitHub Actions tab
+2. Select "Mobile App Deploy (iOS)" workflow  
+3. Click "Run workflow"
+4. Select the branch and run
+
+> **Warning**: iOS deployments on macOS runners consume GitHub Actions minutes quickly. Monitor your usage if on a paid plan.
 
 ## Monitoring
 
