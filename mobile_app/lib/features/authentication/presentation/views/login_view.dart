@@ -34,10 +34,6 @@ class _LoginViewState extends State<LoginView> {
         listeners: [
           BlocListener<VerificationBloc, VerificationState>(
             listener: (context, state) {
-              bool? isCurrentRoute = ModalRoute.of(context)?.isCurrent;
-              if (isCurrentRoute == false) {
-                return;
-              }
               if (state is VerificationSuccess) {
                 context.read<AuthBloc>().add(
                   RequestLogin(

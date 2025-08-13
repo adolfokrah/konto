@@ -154,17 +154,13 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: BlocListener<AuthBloc, AuthState>(
+      body: BlocListener<VerificationBloc, VerificationState>(
         listener: (context, state) async {
-          if (state is AuthAuthenticated) {
-            // Navigate to home on successful authentication
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/home',
-              (route) => false,
-            );
-          } else if (state is AuthError) {
-            AppSnackBar.showError(context, message: state.error);
+          if (state is VerificationSuccess) {
+            //remove the opt screen
+            Navigator.pop(context);
+          } else if (state is VerificationFailure) {
+            AppSnackBar.showError(context, message: state.errorMessage);
           }
         },
         child: SafeArea(
