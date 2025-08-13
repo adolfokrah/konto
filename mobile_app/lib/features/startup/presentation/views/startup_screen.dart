@@ -15,7 +15,9 @@ class StartupScreen extends StatelessWidget {
           BlocListener<OnboardingBloc, OnboardingState>(
             listener: (context, state) {
               if (state is! OnboardingCompleted) {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed(AppRoutes.onboarding);
               } else {
                 // Onboarding is completed, now check auth status
                 // Trigger auth check if needed
@@ -33,9 +35,7 @@ class StartupScreen extends StatelessWidget {
             },
           ),
         ],
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

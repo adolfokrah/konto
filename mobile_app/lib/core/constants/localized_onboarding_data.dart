@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/features/onboarding/data/models/onboarding_data.dart' show OnBoardingData;
+import 'package:konto/features/onboarding/data/models/onboarding_data.dart'
+    show OnBoardingData;
 import 'package:konto/l10n/app_localizations.dart';
 
 class LocalizedOnboardingData {
   static List<OnBoardingData> getOnboardingData(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     return [
       OnBoardingData(
         title: localizations.onboardingTitle1,

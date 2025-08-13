@@ -12,7 +12,7 @@ class AppTheme {
       colorScheme: AppColors.lightColorScheme,
       // Custom text theme from Figma
       textTheme: AppTextStyles.textTheme,
-      fontFamily: 'Supreme'
+      fontFamily: 'Supreme',
     );
   }
 
@@ -27,5 +27,4 @@ class AppTheme {
       fontFamily: 'Supreme',
     );
   }
-  
 }

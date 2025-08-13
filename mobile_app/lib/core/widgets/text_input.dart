@@ -32,16 +32,25 @@ class AppTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveController = controller ?? TextEditingController(text: value);
+    final effectiveController =
+        controller ?? TextEditingController(text: value);
 
     return Container(
       decoration: BoxDecoration(
-        color: filled ? Theme.of(context).colorScheme.primary : Colors.transparent, // Match number_input
+        color:
+            filled
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent, // Match number_input
         borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        border: !filled ? Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ) : null,
+        border:
+            !filled
+                ? Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  width: 1,
+                )
+                : null,
       ),
       child: Row(
         children: [
@@ -52,19 +61,26 @@ class AppTextInput extends StatelessWidget {
               enabled: enabled,
               keyboardType: keyboardType,
               maxLines: maxLines,
-              cursorColor: Theme.of(context).colorScheme.onSurface, // Match number_input
+              cursorColor:
+                  Theme.of(context).colorScheme.onSurface, // Match number_input
               style: TextStyles.titleMedium, // Match number_input
               decoration: InputDecoration(
                 labelText: label,
                 hintText: hintText,
                 labelStyle: TextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 floatingLabelStyle: TextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 hintStyle: TextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 floatingLabelBehavior: FloatingLabelBehavior.auto,
                 border: InputBorder.none,
@@ -73,7 +89,7 @@ class AppTextInput extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Suffix icon if provided
           if (suffixIcon != null) ...[
             const SizedBox(width: AppSpacing.spacingM),

@@ -15,9 +15,9 @@ class AuthRepository {
     required SmsOtpService smsOtpService,
     required AuthApiProvider authApiProvider,
     required UserStorageService userStorageService,
-  })  : _smsOtpService = smsOtpService,
-        _authApiProvider = authApiProvider,
-        _userStorageService = userStorageService;
+  }) : _smsOtpService = smsOtpService,
+       _authApiProvider = authApiProvider,
+       _userStorageService = userStorageService;
 
   /// Check if user exists in the system
   /// Returns true if user exists (user should login)
@@ -33,28 +33,27 @@ class AuthRepository {
         countryCode: countryCode,
         email: email,
       );
-            
+
       if (apiResponse['success'] == true) {
         final exists = apiResponse['exists'] ?? false;
         return {
           'success': true,
           'exists': exists,
-          'message': exists 
-            ? 'Phone number found. Proceed to login.'
-            : 'Phone number not found. Please register first.',
+          'message':
+              exists
+                  ? 'Phone number found. Proceed to login.'
+                  : 'Phone number not found. Please register first.',
         };
       } else {
         return {
           'success': false,
-          'message': 'Error checking phone availability: ${apiResponse['message']}',
+          'message':
+              'Error checking phone availability: ${apiResponse['message']}',
           'error': apiResponse['error'],
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error: ${e.toString()}'
-      };
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
     }
   }
 
@@ -66,48 +65,57 @@ class AuthRepository {
     try {
       // Generate OTP
       String otp = _smsOtpService.generateOTP();
-      
+
       // For SMS sending, we need the full international format
       // But for API calls, we use the clean local number
-      String formattedForSms = _smsOtpService.formatPhoneNumber(phoneNumber, countryCode);
-      
+      String formattedForSms = _smsOtpService.formatPhoneNumber(
+        phoneNumber,
+        countryCode,
+      );
+
       // Generate message
       String message = _smsOtpService.generateOtpMessage(otp);
-      
+
       // Send SMS via SMS API provider using the full international number
       print('🚀 Starting phone verification for: $formattedForSms (SMS)');
-      print('🎯 Local number for API: $phoneNumber | Country code: $countryCode');
-      
+      print(
+        '🎯 Local number for API: $phoneNumber | Country code: $countryCode',
+      );
+
       // Use SMS API provider for SMS sending
       final smsApiProvider = ServiceRegistry().smsApiProvider;
       final smsResponse = await smsApiProvider.sendSms(
-        phoneNumber: formattedForSms,  // Use full international format for SMS
+        phoneNumber: formattedForSms, // Use full international format for SMS
         message: message,
       );
-      
+
       print('📡 SMS Response received: $smsResponse');
-      
+
       if (smsResponse['success'] == true) {
         // Check Mnotify specific response
         final mnotifyData = smsResponse['data'];
         print('📋 Mnotify Data: $mnotifyData');
-        
-        final isSuccess = mnotifyData['status'] == 'success' || 
-                         mnotifyData['code'] == '2000';
-        
+
+        final isSuccess =
+            mnotifyData['status'] == 'success' || mnotifyData['code'] == '2000';
+
         if (isSuccess) {
           print('✅ SMS sent successfully to $formattedForSms');
           return {
             'success': true,
             'message': 'OTP sent successfully',
             'otp': otp,
-            'phoneNumber': phoneNumber,  // Return the clean local number for API calls
+            'phoneNumber':
+                phoneNumber, // Return the clean local number for API calls
           };
         } else {
-          print('❌ SMS sending failed: ${mnotifyData['message'] ?? 'Unknown error'}');
+          print(
+            '❌ SMS sending failed: ${mnotifyData['message'] ?? 'Unknown error'}',
+          );
           return {
             'success': false,
-            'message': 'Failed to send OTP: ${mnotifyData['message'] ?? 'Unknown error'}',
+            'message':
+                'Failed to send OTP: ${mnotifyData['message'] ?? 'Unknown error'}',
           };
         }
       } else {
@@ -120,10 +128,7 @@ class AuthRepository {
       }
     } catch (e) {
       print('💥 Repository Exception: $e');
-      return {
-        'success': false,
-        'message': 'Error: ${e.toString()}'
-      };
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
     }
   }
 
@@ -142,7 +147,7 @@ class AuthRepository {
       if (loginResponse['success'] == true) {
         // Parse the login response
         final loginData = LoginResponse.fromJson(loginResponse);
-        
+
         // Save user data and token to local storage
         await _userStorageService.saveUserData(
           user: loginData.user,
@@ -150,14 +155,13 @@ class AuthRepository {
           tokenExpiry: loginData.exp,
         );
 
-         return {
-            'success': true,
-            'message': 'Login successful',
-            'user': loginData.user,
-            'token': loginData.token,
-            'phoneNumber': phoneNumber,
-          };
-
+        return {
+          'success': true,
+          'message': 'Login successful',
+          'user': loginData.user,
+          'token': loginData.token,
+          'phoneNumber': phoneNumber,
+        };
       } else {
         return {
           'success': false,
@@ -167,7 +171,7 @@ class AuthRepository {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Error during verification and login: ${e.toString()}'
+        'message': 'Error during verification and login: ${e.toString()}',
       };
     }
   }
@@ -181,7 +185,6 @@ class AuthRepository {
     required String email,
   }) async {
     try {
-    
       final apiResponse = await _authApiProvider.registerUser(
         phoneNumber: phoneNumber,
         countryCode: countryCode,
@@ -190,10 +193,7 @@ class AuthRepository {
         email: email,
       );
 
-      
-      
       if (apiResponse['success'] == true) {
-        
         print(phoneNumber);
         print(countryCode);
         final loginResponse = await loginWithPhoneNumber(
@@ -201,19 +201,18 @@ class AuthRepository {
           countryCode: countryCode,
         );
 
-        
         return loginResponse;
-      }else{
+      } else {
         return {
           'success': false,
           'message': 'Registration failed: ${apiResponse['message']}',
-        }; 
+        };
       }
     } catch (e) {
       print('💥 Registration with OTP Exception: $e');
       return {
         'success': false,
-        'message': 'Error during registration: ${e.toString()}'
+        'message': 'Error during registration: ${e.toString()}',
       };
     }
   }
@@ -223,15 +222,11 @@ class AuthRepository {
     try {
       // Get stored user data
       final user = await _userStorageService.getUserData();
-      
+
       if (user == null) {
-        return {
-          'success': false,
-          'message': 'No user data found in storage',
-        };
+        return {'success': false, 'message': 'No user data found in storage'};
       }
 
-      
       // Use the existing login endpoint with stored phone number and country code
       final loginResponse = await loginWithPhoneNumber(
         phoneNumber: user.phoneNumber,
@@ -239,17 +234,12 @@ class AuthRepository {
       );
 
       return loginResponse;
-
     } catch (e) {
       print('💥 Auto-login Exception: $e');
-      return {
-        'success': false,
-        'message': 'Auto-login error: ${e.toString()}'
-      };
+      return {'success': false, 'message': 'Auto-login error: ${e.toString()}'};
     }
   }
-  
-  
+
   Future<bool> isUserLoggedIn() async {
     return await _userStorageService.isUserLoggedIn();
   }
@@ -289,12 +279,10 @@ class AuthRepository {
       print('💥 OTP Verification Exception: $e');
       return {
         'success': false,
-        'message': 'Error verifying OTP: ${e.toString()}'
+        'message': 'Error verifying OTP: ${e.toString()}',
       };
     }
   }
-
-
 
   /// Sign out user
   Future<void> signOut() async {

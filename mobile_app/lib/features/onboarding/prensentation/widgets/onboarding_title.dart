@@ -10,8 +10,10 @@ class OnboardingTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(context);
-    
+    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(
+      context,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
       child: AnimatedSwitcher(
@@ -26,17 +28,12 @@ class OnboardingTitle extends StatelessWidget {
           );
         },
         transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         child: Text(
           localizedOnBoardingData[currentPage].title,
           key: ValueKey<int>(currentPage),
-          style: TextStyles.headingOne.copyWith(
-            color: AppColors.black
-          ),
+          style: TextStyles.headingOne.copyWith(color: AppColors.black),
         ),
       ),
     );

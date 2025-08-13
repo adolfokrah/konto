@@ -8,7 +8,7 @@ class UserStorageService {
   final LocalStorageService _localStorageService;
 
   UserStorageService({required LocalStorageService localStorageService})
-      : _localStorageService = localStorageService;
+    : _localStorageService = localStorageService;
 
   /// Save user data and authentication token to local storage
   Future<bool> saveUserData({
@@ -19,21 +19,29 @@ class UserStorageService {
     try {
       print('💾 Saving user data: ${user.fullName} (${user.phoneNumber})');
       print('💾 Token: ${token.length} chars');
-      print('💾 Token expiry: $tokenExpiry (${DateTime.fromMillisecondsSinceEpoch(tokenExpiry * 1000)})');
-      
+      print(
+        '💾 Token expiry: $tokenExpiry (${DateTime.fromMillisecondsSinceEpoch(tokenExpiry * 1000)})',
+      );
+
       // Save user data
       final userJson = json.encode(user.toJson());
-      await _localStorageService.saveToken(LocalStorageTokens.userData, userJson);
+      await _localStorageService.saveToken(
+        LocalStorageTokens.userData,
+        userJson,
+      );
       print('💾 User data JSON saved');
-      
+
       // Save authentication token
       await _localStorageService.saveToken(LocalStorageTokens.authToken, token);
       print('💾 Auth token saved');
-      
+
       // Save token expiry timestamp
-      await _localStorageService.saveToken(LocalStorageTokens.tokenExpiry, tokenExpiry.toString());
+      await _localStorageService.saveToken(
+        LocalStorageTokens.tokenExpiry,
+        tokenExpiry.toString(),
+      );
       print('💾 Token expiry saved');
-      
+
       print('✅ User data saved to local storage successfully');
       return true;
     } catch (e) {
@@ -46,8 +54,10 @@ class UserStorageService {
   Future<User?> getUserData() async {
     try {
       print('🔍 Retrieving user data from storage...');
-      final userJson = await _localStorageService.getToken(LocalStorageTokens.userData);
-      
+      final userJson = await _localStorageService.getToken(
+        LocalStorageTokens.userData,
+      );
+
       if (userJson != null) {
         print('🔍 Found user JSON in storage');
         final userMap = json.decode(userJson) as Map<String, dynamic>;
@@ -55,7 +65,7 @@ class UserStorageService {
         print('🔍 Retrieved user: ${user.fullName} (${user.phoneNumber})');
         return user;
       }
-      
+
       print('⚠️ No user data found in storage');
       return null;
     } catch (e) {
@@ -77,7 +87,9 @@ class UserStorageService {
   /// Get token expiry timestamp
   Future<int?> getTokenExpiry() async {
     try {
-      final expiryString = await _localStorageService.getToken(LocalStorageTokens.tokenExpiry);
+      final expiryString = await _localStorageService.getToken(
+        LocalStorageTokens.tokenExpiry,
+      );
       if (expiryString != null) {
         return int.tryParse(expiryString);
       }
@@ -95,26 +107,26 @@ class UserStorageService {
       final user = await getUserData();
       final token = await getAuthToken();
       final expiry = await getTokenExpiry();
-      
+
       print('🔐 User data: ${user != null ? 'YES' : 'NO'}');
       print('🔐 Auth token: ${token != null ? 'YES' : 'NO'}');
       print('🔐 Token expiry: $expiry');
-      
+
       if (user == null || token == null || expiry == null) {
         print('🔐 Missing required auth data');
         return false;
       }
-      
+
       // Check if token is expired
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print('🔐 Current timestamp: $currentTimestamp, Token expiry: $expiry');
-      
+
       if (currentTimestamp >= expiry) {
         print('🔒 Token expired, user needs to login again');
         await clearUserData();
         return false;
       }
-      
+
       print('🔐 User is logged in and token is valid');
       return true;
     } catch (e) {
@@ -129,7 +141,7 @@ class UserStorageService {
       await _localStorageService.deleteToken(LocalStorageTokens.userData);
       await _localStorageService.deleteToken(LocalStorageTokens.authToken);
       await _localStorageService.deleteToken(LocalStorageTokens.tokenExpiry);
-      
+
       print('🧹 User data cleared from local storage');
       return true;
     } catch (e) {
@@ -142,8 +154,11 @@ class UserStorageService {
   Future<bool> updateUserData(User updatedUser) async {
     try {
       final userJson = json.encode(updatedUser.toJson());
-      await _localStorageService.saveToken(LocalStorageTokens.userData, userJson);
-      
+      await _localStorageService.saveToken(
+        LocalStorageTokens.userData,
+        userJson,
+      );
+
       print('🔄 User data updated in local storage');
       return true;
     } catch (e) {
@@ -158,11 +173,11 @@ class UserStorageService {
       final user = await getUserData();
       final token = await getAuthToken();
       final expiry = await getTokenExpiry();
-      
+
       if (user == null || token == null || expiry == null) {
         return null;
       }
-      
+
       return {
         'user': user,
         'token': token,

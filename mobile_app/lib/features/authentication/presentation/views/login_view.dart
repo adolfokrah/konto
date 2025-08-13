@@ -30,33 +30,68 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          bool? isCurrentRoute = ModalRoute.of(context)?.isCurrent;
-          if(isCurrentRoute == false) {
-            return;
-          }
-          if(state is PhoneNumberAvailable) {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.otp,
-              arguments: {
-                'phoneNumber': state.phoneNumber,
-                'countryCode': state.countryCode,
-              },
-            );
-          } else if (state is PhoneNumberNotAvailable) {
-            // Navigate to registration screen if phone number is not available
-            Navigator.pushNamed(context, AppRoutes.register, arguments: {
-              'initialPhoneNumber': state.phoneNumber,
-              'initialCountryCode': state.countryCode,
-              'initialSelectedCountry': _selectedCountry,
-            });
-          } else if (state is AuthError) {
-            // Show error message from auth state
-            AppSnackBar.showError(context, message: state.error);
-          }
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<VerificationBloc, VerificationState>(
+            listener: (context, state) {
+              bool? isCurrentRoute = ModalRoute.of(context)?.isCurrent;
+              if (isCurrentRoute == false) {
+                return;
+              }
+              if (state is VerificationSuccess) {
+                context.read<AuthBloc>().add(
+                  RequestLogin(
+                    phoneNumber: _phoneNumber,
+                    countryCode: _countryCode,
+                  ),
+                );
+              } else if (state is VerificationFailure) {
+                AppSnackBar.showError(context, message: state.errorMessage);
+              }
+            },
+          ),
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              bool? isCurrentRoute = ModalRoute.of(context)?.isCurrent;
+              if (isCurrentRoute == false) {
+                return;
+              }
+
+              if (state is AuthAuthenticated) {
+                // Navigate to home on success
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/home',
+                  (route) => false,
+                );
+              }
+              if (state is PhoneNumberAvailable) {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.otp,
+                  arguments: {
+                    'phoneNumber': state.phoneNumber,
+                    'countryCode': state.countryCode,
+                  },
+                );
+              } else if (state is PhoneNumberNotAvailable) {
+                // Navigate to registration screen if phone number is not available
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.register,
+                  arguments: {
+                    'initialPhoneNumber': state.phoneNumber,
+                    'initialCountryCode': state.countryCode,
+                    'initialSelectedCountry': _selectedCountry,
+                  },
+                );
+              } else if (state is AuthError) {
+                // Show error message from auth state
+                AppSnackBar.showError(context, message: state.error);
+              }
+            },
+          ),
+        ],
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return SingleChildScrollView(

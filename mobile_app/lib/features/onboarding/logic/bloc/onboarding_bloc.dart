@@ -21,7 +21,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<CheckOnboardingStatus>((event, emit) async {
       try {
-        final onboardingCompleted = await ServiceRegistry().onboardingRepository.checkOnboardingStatus();
+        final onboardingCompleted =
+            await ServiceRegistry().onboardingRepository
+                .checkOnboardingStatus();
         if (onboardingCompleted) {
           emit(OnboardingCompleted());
         } else {

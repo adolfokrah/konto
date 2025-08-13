@@ -4,10 +4,10 @@ import 'package:konto/core/constants/localized_onboarding_data.dart';
 class OnBoardingSlider extends StatefulWidget {
   final int currentPage;
   final Function(int)? onPageChanged;
-  
+
   const OnBoardingSlider({
-    super.key, 
-    required this.currentPage, 
+    super.key,
+    required this.currentPage,
     this.onPageChanged,
   });
 
@@ -28,7 +28,7 @@ class _OnBoardingSliderState extends State<OnBoardingSlider> {
   @override
   void didUpdateWidget(OnBoardingSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // If currentPage changed externally (e.g., from button click), animate to that page
     if (widget.currentPage != oldWidget.currentPage && !_isAnimating) {
       _animateToPage(widget.currentPage);
@@ -37,13 +37,15 @@ class _OnBoardingSliderState extends State<OnBoardingSlider> {
 
   void _animateToPage(int page) {
     _isAnimating = true;
-    _pageController.animateToPage(
-      page,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    ).then((_) {
-      _isAnimating = false;
-    });
+    _pageController
+        .animateToPage(
+          page,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        )
+        .then((_) {
+          _isAnimating = false;
+        });
   }
 
   @override
@@ -54,8 +56,10 @@ class _OnBoardingSliderState extends State<OnBoardingSlider> {
 
   @override
   Widget build(BuildContext context) {
-    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(context);
-    
+    final localizedOnBoardingData = LocalizedOnboardingData.getOnboardingData(
+      context,
+    );
+
     return Expanded(
       child: PageView.builder(
         controller: _pageController,

@@ -4,10 +4,8 @@ import 'package:konto/core/config/backend_config.dart';
 /// API Provider for authentication-related operations
 class AuthApiProvider {
   final Dio _dio;
-  
-  AuthApiProvider({
-    required Dio dio,
-  }) : _dio = dio;
+
+  AuthApiProvider({required Dio dio}) : _dio = dio;
 
   /// Check if user exists in the system
   Future<Map<String, dynamic>> checkUserExistence({
@@ -16,7 +14,6 @@ class AuthApiProvider {
     String? email,
   }) async {
     try {
-      
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.checkUserExistence}',
         data: {
@@ -24,11 +21,9 @@ class AuthApiProvider {
           'countryCode': countryCode,
           'email': email,
         },
-        options: Options(
-          headers: BackendConfig.defaultHeaders,
-        ),
+        options: Options(headers: BackendConfig.defaultHeaders),
       );
-      
+
       return response.data;
     } catch (e) {
       if (e is DioException) {
@@ -46,26 +41,23 @@ class AuthApiProvider {
       };
     }
   }
-  
+
   /// Login user with phone number (after OTP verification)
   Future<Map<String, dynamic>> loginWithPhoneNumber({
     required String phoneNumber,
     required String countryCode,
   }) async {
     try {
-      print('🔐 Logging in user with phone: $phoneNumber and country code: $countryCode');
-      
+      print(
+        '🔐 Logging in user with phone: $phoneNumber and country code: $countryCode',
+      );
+
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.loginWithPhoneEndpoint}',
-        data: {
-          'phoneNumber': phoneNumber,
-          'countryCode': countryCode,
-        },
-        options: Options(
-          headers: BackendConfig.defaultHeaders,
-        ),
+        data: {'phoneNumber': phoneNumber, 'countryCode': countryCode},
+        options: Options(headers: BackendConfig.defaultHeaders),
       );
-      
+
       print('🎉 Login response: ${response.data}');
       return response.data;
     } catch (e) {
@@ -95,7 +87,6 @@ class AuthApiProvider {
     required String email,
   }) async {
     try {
-      
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.registerUserEndpoint}',
         data: {
@@ -117,11 +108,9 @@ class AuthApiProvider {
             },
           },
         },
-        options: Options(
-          headers: BackendConfig.defaultHeaders,
-        ),
+        options: Options(headers: BackendConfig.defaultHeaders),
       );
-      
+
       print('🎉 Registration response: ${response.data}');
       return response.data;
     } catch (e) {

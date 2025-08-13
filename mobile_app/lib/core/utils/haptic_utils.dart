@@ -33,4 +33,3 @@ class HapticUtils {
     HapticFeedback.vibrate();
   }
 }
-

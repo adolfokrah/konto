@@ -37,10 +37,17 @@ class User {
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
-      sessions: (json['sessions'] as List<dynamic>?)
-          ?.map((session) => UserSession.fromJson(session as Map<String, dynamic>))
-          .toList() ?? [],
-      appSettings: AppSettings.fromJson(json['appSettings'] as Map<String, dynamic>? ?? {}),
+      sessions:
+          (json['sessions'] as List<dynamic>?)
+              ?.map(
+                (session) =>
+                    UserSession.fromJson(session as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      appSettings: AppSettings.fromJson(
+        json['appSettings'] as Map<String, dynamic>? ?? {},
+      ),
     );
   }
 
@@ -167,9 +174,12 @@ class NotificationSettings {
 
   factory NotificationSettings.fromJson(Map<String, dynamic> json) {
     return NotificationSettings(
-      pushNotificationsEnabled: json['pushNotificationsEnabled'] as bool? ?? true,
-      emailNotificationsEnabled: json['emailNotificationsEnabled'] as bool? ?? true,
-      smsNotificationsEnabled: json['smsNotificationsEnabled'] as bool? ?? false,
+      pushNotificationsEnabled:
+          json['pushNotificationsEnabled'] as bool? ?? true,
+      emailNotificationsEnabled:
+          json['emailNotificationsEnabled'] as bool? ?? true,
+      smsNotificationsEnabled:
+          json['smsNotificationsEnabled'] as bool? ?? false,
     );
   }
 

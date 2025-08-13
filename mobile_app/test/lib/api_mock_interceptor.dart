@@ -7,19 +7,22 @@ typedef MockResponseBuilder = Response Function(RequestOptions options);
 class MockInterceptor extends Interceptor {
   // Map to store endpoint overrides
   static final Map<String, MockResponseBuilder> _endpointOverrides = {};
-  
+
   /// Override a specific endpoint with custom response
-  static void overrideEndpoint(String endpoint, MockResponseBuilder responseBuilder) {
+  static void overrideEndpoint(
+    String endpoint,
+    MockResponseBuilder responseBuilder,
+  ) {
     _endpointOverrides[endpoint] = responseBuilder;
     print('🔧 MockInterceptor: Override set for endpoint: $endpoint');
   }
-  
+
   /// Clear all endpoint overrides
   static void clearOverrides() {
     _endpointOverrides.clear();
     print('🧹 MockInterceptor: All overrides cleared');
   }
-  
+
   /// Clear specific endpoint override
   static void clearEndpointOverride(String endpoint) {
     _endpointOverrides.remove(endpoint);
@@ -31,26 +34,29 @@ class MockInterceptor extends Interceptor {
     print('MockInterceptor: Intercepting ${options.method} ${options.uri}');
     print('MockInterceptor: Path = ${options.path}');
     print('MockInterceptor: Data = ${options.data}');
-    
+
     // Check for endpoint overrides first
     final matchingEndpoint = _endpointOverrides.keys.firstWhere(
-      (endpoint) => options.path.contains(endpoint) || options.uri.toString().contains(endpoint),
+      (endpoint) =>
+          options.path.contains(endpoint) ||
+          options.uri.toString().contains(endpoint),
       orElse: () => '',
     );
-    
+
     if (matchingEndpoint.isNotEmpty) {
-      print('🎯 MockInterceptor: Using override for endpoint: $matchingEndpoint');
+      print(
+        '🎯 MockInterceptor: Using override for endpoint: $matchingEndpoint',
+      );
       final response = _endpointOverrides[matchingEndpoint]!(options);
       handler.resolve(response);
       return;
     }
-    
+
     // Default mock responses (fallback)
 
     // Mock the checkUserExistence endpoint
-    if (options.path.contains(BackendConfig.checkUserExistence) && 
+    if (options.path.contains(BackendConfig.checkUserExistence) &&
         options.method == 'POST') {
-      
       final response = Response(
         requestOptions: options,
         data: {
@@ -62,15 +68,14 @@ class MockInterceptor extends Interceptor {
         },
         statusCode: 200,
       );
-      
+
       handler.resolve(response);
       return;
     }
-    
+
     // Mock the Mnotify SMS API endpoint
-    if (options.uri.toString().contains('api.mnotify.com') && 
+    if (options.uri.toString().contains('api.mnotify.com') &&
         options.method == 'POST') {
-      
       final response = Response(
         requestOptions: options,
         data: {
@@ -81,19 +86,18 @@ class MockInterceptor extends Interceptor {
             'status': 'success',
             'code': '2000',
             'message': 'Message sent successfully',
-          }
+          },
         },
         statusCode: 200,
       );
-      
+
       handler.resolve(response);
       return;
     }
-    
+
     // Mock the loginWithPhoneEndpoint
-    if (options.path.contains(BackendConfig.loginWithPhoneEndpoint) && 
+    if (options.path.contains(BackendConfig.loginWithPhoneEndpoint) &&
         options.method == 'POST') {
-      
       print('MockInterceptor: ✅ Mocking Login API response');
       final now = DateTime.now();
       final response = Response(
@@ -116,7 +120,7 @@ class MockInterceptor extends Interceptor {
                 'id': 'test-session-id',
                 'createdAt': now.toIso8601String(),
                 'expiresAt': now.add(Duration(days: 30)).toIso8601String(),
-              }
+              },
             ],
             'appSettings': {
               'language': 'en',
@@ -126,19 +130,19 @@ class MockInterceptor extends Interceptor {
                 'pushNotificationsEnabled': true,
                 'emailNotificationsEnabled': true,
                 'smsNotificationsEnabled': false,
-              }
-            }
+              },
+            },
           },
           'token': 'test-jwt-token-123456',
           'exp': now.add(Duration(days: 30)).millisecondsSinceEpoch ~/ 1000,
         },
         statusCode: 200,
       );
-      
+
       handler.resolve(response);
       return;
     }
-    
+
     // For all other requests, continue normally
     handler.next(options);
   }

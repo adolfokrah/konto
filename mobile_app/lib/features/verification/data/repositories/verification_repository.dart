@@ -5,7 +5,7 @@ import 'package:konto/features/verification/data/api_providers/sms_api_provider.
 class VerificationRepository {
   final SmsOtpService _smsOtpService;
   final SmsApiProvider _smsApiProvider;
-  
+
   VerificationRepository({
     required SmsOtpService smsOtpService,
     required SmsApiProvider smsApiProvider,
@@ -38,22 +38,22 @@ class VerificationRepository {
     try {
       // Generate OTP using service
       final otp = _smsOtpService.generateOTP();
-      
+
       // Generate message using service
       final message = _smsOtpService.generateOtpMessage(otp);
-      
+
       // Send SMS using API provider
       final apiResponse = await _smsApiProvider.sendSms(
         phoneNumber: phoneNumber,
         message: message,
       );
-      
+
       if (apiResponse['success'] == true) {
         // Check Mnotify specific response
         final mnotifyData = apiResponse['data'];
-        final isSuccess = mnotifyData['status'] == 'success' || 
-                         mnotifyData['code'] == '2000';
-        
+        final isSuccess =
+            mnotifyData['status'] == 'success' || mnotifyData['code'] == '2000';
+
         if (isSuccess) {
           print('✅ SMS sent successfully to $phoneNumber');
           return {
@@ -63,10 +63,13 @@ class VerificationRepository {
             'message': 'OTP sent successfully',
           };
         } else {
-          print('❌ Mnotify error: ${mnotifyData['message'] ?? 'Unknown error'}');
+          print(
+            '❌ Mnotify error: ${mnotifyData['message'] ?? 'Unknown error'}',
+          );
           return {
             'success': false,
-            'message': 'Failed to send OTP: ${mnotifyData['message'] ?? 'Unknown error'}',
+            'message':
+                'Failed to send OTP: ${mnotifyData['message'] ?? 'Unknown error'}',
           };
         }
       } else {

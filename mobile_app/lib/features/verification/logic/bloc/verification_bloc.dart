@@ -8,6 +8,14 @@ part 'verification_state.dart';
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   VerificationBloc() : super(const VerificationInitial()) {
     on<PhoneNumberVerificationRequested>(_onPhoneNumberVerificationRequested);
+    on<VerificationSuccessRequested>(_onVerificationSuccessRequested);
+  }
+
+  Future<void> _onVerificationSuccessRequested(
+    VerificationSuccessRequested event,
+    Emitter<VerificationState> emit,
+  ) async {
+    emit(const VerificationSuccess());
   }
 
   Future<void> _onPhoneNumberVerificationRequested(
@@ -20,16 +28,22 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       final result = await verificationRepository.requestPhoneVerification(
         phoneNumber: event.phoneNumber,
       );
-      
+
       if (result['success'] == true) {
-        emit(VerificationCodeSent(
-          otpCode: result['otp']!,
-        ));
+        emit(VerificationCodeSent(otpCode: result['otp']!));
       } else {
-        emit(VerificationFailure(result['message'] ?? 'Failed to send verification code'));
+        emit(
+          VerificationFailure(
+            result['message'] ?? 'Failed to send verification code',
+          ),
+        );
       }
     } catch (e) {
-      emit(const VerificationFailure('Failed to send verification code. Please try again.'));
+      emit(
+        const VerificationFailure(
+          'Failed to send verification code. Please try again.',
+        ),
+      );
     }
   }
 }

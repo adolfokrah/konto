@@ -21,15 +21,19 @@ void main() {
   setUpAll(() async {
     await TestSetup.initialize();
   });
-  
+
   tearDownAll(() {
     TestSetup.reset();
   });
 
   group('Register Flow Test', () {
-    testWidgets('User can register successfully with all fields', (tester) async {
+    testWidgets('User can register successfully with all fields', (
+      tester,
+    ) async {
       // Mock successful user existence check (user doesn't exist)
-      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (options) {
+      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (
+        options,
+      ) {
         return Response(
           requestOptions: options,
           data: {
@@ -100,21 +104,29 @@ void main() {
 
       // Check if the OTP page is displayed
       expect(find.byType(OtpView), findsOneWidget);
-      
+
       // Check that we're no longer on the register page
       expect(find.byKey(const Key('fullName')), findsNothing);
       expect(find.byKey(const Key('email')), findsNothing);
-      
+
       // Look for OTP-specific elements
-      expect(find.textContaining('OTP'), findsOneWidget, reason: 'Should find OTP text on the page');
+      expect(
+        find.textContaining('OTP'),
+        findsOneWidget,
+        reason: 'Should find OTP text on the page',
+      );
 
       // Clear the override for next test
       MockInterceptor.clearEndpointOverride(BackendConfig.checkUserExistence);
     });
 
-    testWidgets('User can register with pre-filled data from login navigation', (tester) async {
+    testWidgets('User can register with pre-filled data from login navigation', (
+      tester,
+    ) async {
       // Mock successful user existence check (user doesn't exist)
-      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (options) {
+      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (
+        options,
+      ) {
         return Response(
           requestOptions: options,
           data: {
@@ -170,9 +182,7 @@ void main() {
                 ),
               ),
             ),
-            routes: {
-              '/otp': (context) => const OtpView(),
-            },
+            routes: {'/otp': (context) => const OtpView()},
           ),
         ),
       );
@@ -262,7 +272,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check for error message
-      expect(find.textContaining('Please enter your full name'), findsOneWidget);
+      expect(
+        find.textContaining('Please enter your full name'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Show error when email is missing', (tester) async {
@@ -304,7 +317,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check for error message
-      expect(find.textContaining('Please enter your email address'), findsOneWidget);
+      expect(
+        find.textContaining('Please enter your email address'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Show error when phone number is missing', (tester) async {
@@ -346,14 +362,21 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check for error message
-      expect(find.textContaining('Please enter your phone number'), findsOneWidget);
+      expect(
+        find.textContaining('Please enter your phone number'),
+        findsOneWidget,
+      );
     });
   });
 
   group('Register Error Scenarios', () {
-    testWidgets('Show error when user already exists with phone number', (tester) async {
+    testWidgets('Show error when user already exists with phone number', (
+      tester,
+    ) async {
       // Mock user existence check (user exists with phone)
-      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (options) {
+      MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (
+        options,
+      ) {
         return Response(
           requestOptions: options,
           data: {
@@ -416,7 +439,9 @@ void main() {
       MockInterceptor.clearEndpointOverride(BackendConfig.checkUserExistence);
     });
 
-    testWidgets('Navigate back to login view when login button is tapped', (tester) async {
+    testWidgets('Navigate back to login view when login button is tapped', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
@@ -435,9 +460,7 @@ void main() {
               Locale('fr'), // French
             ],
             home: const RegisterView(),
-            routes: {
-              '/login': (context) => const LoginView(),
-            },
+            routes: {'/login': (context) => const LoginView()},
           ),
         ),
       );
@@ -446,11 +469,11 @@ void main() {
       // Find and tap the login button using its key
       final loginButton = find.byKey(const Key('login_button'));
       expect(loginButton, findsOneWidget);
-      
+
       // Scroll to make the button visible if it's off-screen
       await tester.ensureVisible(loginButton);
       await tester.pumpAndSettle();
-      
+
       await tester.tap(loginButton, warnIfMissed: false);
       await tester.pumpAndSettle();
 
@@ -458,7 +481,7 @@ void main() {
       // We can verify by checking if we're still on register view or not
       // If using Navigator.pop(), the view might disappear
       // If using named route, we'd see LoginView
-      
+
       // This test verifies the button exists and is tappable
     });
   });
@@ -500,7 +523,9 @@ void main() {
       // This test verifies the field is interactive
     });
 
-    testWidgets('Phone number input responds to country code changes', (tester) async {
+    testWidgets('Phone number input responds to country code changes', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [

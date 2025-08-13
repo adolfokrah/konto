@@ -9,37 +9,37 @@ import 'package:konto/core/theme/text_styles.dart';
 class AppOtpInput extends StatefulWidget {
   /// Number of OTP digits (typically 4, 5, or 6)
   final int length;
-  
+
   /// Callback when OTP is complete
   final Function(String)? onCompleted;
-  
+
   /// Callback when OTP value changes
   final Function(String)? onChanged;
-  
+
   /// Whether the input is enabled
   final bool enabled;
-  
+
   /// Whether to auto-focus the first field
   final bool autoFocus;
-  
+
   /// Whether to obscure the text (for security)
   final bool obscureText;
-  
+
   /// Width of each OTP field
   final double fieldWidth;
-  
+
   /// Height of each OTP field
   final double fieldHeight;
-  
+
   /// Space between OTP fields
   final double spacing;
-  
+
   /// Initial value for the OTP
   final String? initialValue;
-  
+
   /// Error state
   final bool hasError;
-  
+
   /// Custom input decoration
   final InputDecoration? decoration;
 
@@ -62,6 +62,7 @@ class AppOtpInput extends StatefulWidget {
   @override
   State<AppOtpInput> createState() => _AppOtpInputState();
 }
+
 class _AppOtpInputState extends State<AppOtpInput> {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
@@ -83,10 +84,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
   }
 
   void _initializeFocusNodes() {
-    _focusNodes = List.generate(
-      widget.length,
-      (index) => FocusNode(),
-    );
+    _focusNodes = List.generate(widget.length, (index) => FocusNode());
   }
 
   void _setInitialValue() {
@@ -113,7 +111,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
   void _updateOtpValue() {
     _otpValue = _controllers.map((controller) => controller.text).join();
     widget.onChanged?.call(_otpValue);
-    
+
     if (_otpValue.length == widget.length) {
       widget.onCompleted?.call(_otpValue);
     }
@@ -125,7 +123,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
       _handlePastedOtp(value, index);
       return;
     }
-    
+
     // Handle single character input (normal typing)
     if (value.isNotEmpty) {
       // For single character input, ensure only one digit
@@ -138,7 +136,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
             TextPosition(offset: 1),
           );
         }
-        
+
         // Auto-focus next field when entering a digit
         if (index < widget.length - 1) {
           _focusNodes[index + 1].requestFocus();
@@ -148,7 +146,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
         _controllers[index].clear();
       }
     }
-    
+
     // Handle deletion - if field becomes empty, move to previous field
     if (value.isEmpty && index > 0) {
       // Delay to avoid conflicts with key event handler
@@ -161,28 +159,29 @@ class _AppOtpInputState extends State<AppOtpInput> {
 
     _updateOtpValue();
   }
-  
+
   /// Handle pasted OTP code from iPhone SMS autofill or manual paste
   void _handlePastedOtp(String pastedValue, int startIndex) {
     // Remove any non-digit characters
     final digitsOnly = pastedValue.replaceAll(RegExp(r'[^0-9]'), '');
-    
+
     // Clear all fields first
     for (final controller in _controllers) {
       controller.clear();
     }
-    
+
     // Fill fields with pasted digits
     for (int i = 0; i < widget.length && i < digitsOnly.length; i++) {
       _controllers[i].text = digitsOnly[i];
     }
-    
+
     // Update OTP value and trigger callbacks
     _updateOtpValue();
-    
+
     // Focus the last filled field or the last field if all are filled
     final lastFilledIndex = (digitsOnly.length - 1).clamp(0, widget.length - 1);
-    if (lastFilledIndex < widget.length - 1 && digitsOnly.length < widget.length) {
+    if (lastFilledIndex < widget.length - 1 &&
+        digitsOnly.length < widget.length) {
       // Not all fields filled, focus the next empty field
       _focusNodes[lastFilledIndex + 1].requestFocus();
     } else {
@@ -206,13 +205,13 @@ class _AppOtpInputState extends State<AppOtpInput> {
     _controllers[index].selection = TextSelection.fromPosition(
       TextPosition(offset: _controllers[index].text.length),
     );
-    
+
     // Check clipboard for potential OTP paste when tapping the first field
     if (index == 0 && _controllers[index].text.isEmpty) {
       try {
         final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
         final clipboardText = clipboardData?.text ?? '';
-        
+
         // If clipboard contains only digits and looks like an OTP, suggest pasting
         final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
         if (digitsOnly.length >= widget.length && digitsOnly.length <= 10) {
@@ -224,13 +223,13 @@ class _AppOtpInputState extends State<AppOtpInput> {
       }
     }
   }
-  
+
   void _onFieldLongPress(int index) async {
     // Show paste option on long press
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       final clipboardText = clipboardData?.text ?? '';
-      
+
       if (clipboardText.isNotEmpty) {
         final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
         if (digitsOnly.isNotEmpty) {
@@ -244,7 +243,8 @@ class _AppOtpInputState extends State<AppOtpInput> {
 
   bool _onFieldKeyEvent(KeyEvent event, int index) {
     // Handle backspace key
-    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.backspace) {
       if (_controllers[index].text.isNotEmpty) {
         // Clear current field if it has content
         _controllers[index].clear();
@@ -291,6 +291,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
     // Always use custom implementation for consistent design and better control
     return _buildCustomOtpInput(context);
   }
+
   /// Build custom OTP input with enhanced paste handling
   Widget _buildCustomOtpInput(BuildContext context) {
     return LayoutBuilder(
@@ -298,24 +299,27 @@ class _AppOtpInputState extends State<AppOtpInput> {
         // Calculate available width and adjust field size if needed
         final screenWidth = MediaQuery.of(context).size.width;
         final padding = AppSpacing.spacingM * 2; // Account for page padding
-        final availableWidth = constraints.maxWidth.isFinite 
-            ? constraints.maxWidth 
-            : screenWidth - padding;
-        
+        final availableWidth =
+            constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : screenWidth - padding;
+
         final totalSpacing = widget.spacing * (widget.length - 1);
         final maxTotalFieldWidth = availableWidth - totalSpacing;
         final calculatedFieldWidth = maxTotalFieldWidth / widget.length;
-        
+
         // Use smaller field width if needed, but maintain minimum size
-        final effectiveFieldWidth = calculatedFieldWidth < widget.fieldWidth 
-            ? (calculatedFieldWidth > 35 ? calculatedFieldWidth : 35.0)
-            : widget.fieldWidth;
-        
+        final effectiveFieldWidth =
+            calculatedFieldWidth < widget.fieldWidth
+                ? (calculatedFieldWidth > 35 ? calculatedFieldWidth : 35.0)
+                : widget.fieldWidth;
+
         // Adjust spacing proportionally if fields are smaller
-        final effectiveSpacing = calculatedFieldWidth < widget.fieldWidth 
-            ? (widget.spacing * 0.6).clamp(8.0, widget.spacing) 
-            : widget.spacing;
-        
+        final effectiveSpacing =
+            calculatedFieldWidth < widget.fieldWidth
+                ? (widget.spacing * 0.6).clamp(8.0, widget.spacing)
+                : widget.spacing;
+
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -337,31 +341,35 @@ class _AppOtpInputState extends State<AppOtpInput> {
 
   Widget _buildOtpField(int index, [double? customWidth]) {
     final fieldWidth = customWidth ?? widget.fieldWidth;
-    
+
     return Container(
       width: fieldWidth,
       height: widget.fieldHeight,
       decoration: BoxDecoration(
-        color: widget.enabled 
-            ? Theme.of(context).colorScheme.primary 
-            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+        color:
+            widget.enabled
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        border: widget.hasError
-            ? Border.all(
-                color: Theme.of(context).colorScheme.error,
-                width: 2,
-              )
-            : _focusNodes[index].hasFocus
+        border:
+            widget.hasError
                 ? Border.all(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
-                    width: 2,
-                  )
+                  color: Theme.of(context).colorScheme.error,
+                  width: 2,
+                )
+                : _focusNodes[index].hasFocus
+                ? Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.3),
+                  width: 2,
+                )
                 : null,
       ),
       child: Focus(
         onKeyEvent: (node, event) {
-          return _onFieldKeyEvent(event, index) 
-              ? KeyEventResult.handled 
+          return _onFieldKeyEvent(event, index)
+              ? KeyEventResult.handled
               : KeyEventResult.ignored;
         },
         child: Center(
@@ -384,15 +392,19 @@ class _AppOtpInputState extends State<AppOtpInput> {
               ],
               style: AppTextStyles.titleBoldLg,
               cursorColor: Theme.of(context).colorScheme.onSurface,
-              decoration: widget.decoration ?? InputDecoration(
-                border: InputBorder.none,
-                counterText: '', // Hide character counter
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-                hintStyle: AppTextStyles.titleMediumM.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-                ),
-              ),
+              decoration:
+                  widget.decoration ??
+                  InputDecoration(
+                    border: InputBorder.none,
+                    counterText: '', // Hide character counter
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                    hintStyle: AppTextStyles.titleMediumM.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
               onChanged: (value) => _onFieldChanged(value, index),
               onFieldSubmitted: (value) => _onFieldSubmitted(value, index),
               onTap: () => _onFieldTap(index),

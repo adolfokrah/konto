@@ -15,3 +15,5 @@ final class PhoneNumberVerificationRequested extends VerificationEvent {
 
   PhoneNumberVerificationRequested({required this.phoneNumber});
 }
+
+final class VerificationSuccessRequested extends VerificationEvent {}

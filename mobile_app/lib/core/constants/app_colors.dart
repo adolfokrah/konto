@@ -25,7 +25,7 @@ class AppColors {
     surface: backgroundLight,
     onSurface: onSurfaceDark,
   );
-  
+
   // Create dark theme color scheme (if needed)
   static const ColorScheme darkColorScheme = ColorScheme(
     brightness: Brightness.dark,

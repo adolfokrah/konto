@@ -106,15 +106,15 @@ class AppTextStyles {
     headlineLarge: headingOne,
     headlineMedium: titleBoldXl,
     headlineSmall: headingTwo,
-    
+
     titleLarge: titleMediumLg,
     titleMedium: titleMedium,
     titleSmall: titleMediumM,
-    
+
     bodyLarge: titleRegularM,
     bodyMedium: titleRegularSm,
     bodySmall: titleRegularXs,
-    
+
     labelLarge: titleBoldM,
     labelMedium: titleMediumXs,
     labelSmall: titleRegularXs,

@@ -3,7 +3,6 @@ part of 'auth_bloc.dart';
 @immutable
 sealed class AuthEvent {}
 
-
 final class CheckUserExistence extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
@@ -20,10 +19,7 @@ final class RequestLogin extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
 
-  RequestLogin({
-    required this.phoneNumber,
-    required this.countryCode,
-  });
+  RequestLogin({required this.phoneNumber, required this.countryCode});
 }
 
 final class RequestRegistration extends AuthEvent {

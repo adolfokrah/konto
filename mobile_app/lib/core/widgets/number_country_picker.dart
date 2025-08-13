@@ -8,11 +8,7 @@ class Country {
   final String code;
   final String flag;
 
-  const Country({
-    required this.name,
-    required this.code,
-    required this.flag,
-  });
+  const Country({required this.name, required this.code, required this.flag});
 }
 
 class NumberCountryPicker extends StatelessWidget {
@@ -38,19 +34,23 @@ class NumberCountryPicker extends StatelessWidget {
     Country(name: 'Australia', code: '+61', flag: '🇦🇺'),
   ];
 
-  static Widget _buildCountryTile(Country country, bool isSelected, Function(Country) onCountrySelected, [BuildContext? context]) {
+  static Widget _buildCountryTile(
+    Country country,
+    bool isSelected,
+    Function(Country) onCountrySelected, [
+    BuildContext? context,
+  ]) {
     return Column(
       children: [
         ListTile(
           contentPadding: const EdgeInsets.all(0),
           title: Text(
-            context != null ? getLocalizedCountryName(context, country.name) : country.name,
+            context != null
+                ? getLocalizedCountryName(context, country.name)
+                : country.name,
             style: TextStyles.titleMediumM,
           ),
-          trailing: Text(
-                country.code,
-                style: TextStyles.titleRegularSm,
-              ),
+          trailing: Text(country.code, style: TextStyles.titleRegularSm),
           onTap: () {
             onCountrySelected(country);
           },
@@ -65,7 +65,7 @@ class NumberCountryPicker extends StatelessWidget {
     required Function(Country country) onCountrySelected,
   }) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     GenericPicker.showPickerDialog<Country>(
       context,
       selectedValue: selectedCountryCode,
@@ -76,11 +76,19 @@ class NumberCountryPicker extends StatelessWidget {
       otherSectionTitle: localizations.otherCountries,
       searchResultsTitle: localizations.searchResults,
       noResultsMessage: localizations.noCountriesFound,
-      searchFilter: (country) => '${getLocalizedCountryName(context, country.name)} ${country.code}',
+      searchFilter:
+          (country) =>
+              '${getLocalizedCountryName(context, country.name)} ${country.code}',
       isItemSelected: (country, selectedCode) => country.code == selectedCode,
-      itemBuilder: (country, isSelected, onTap) => _buildCountryTile(country, isSelected, (_) => onTap(), context),
-      recentItemBuilder: (country, isSelected, onTap) => _buildCountryTile(country, isSelected, (_) => onTap(), context),
-      searchResultBuilder: (country, isSelected, onTap) => _buildCountryTile(country, isSelected, (_) => onTap(), context),
+      itemBuilder:
+          (country, isSelected, onTap) =>
+              _buildCountryTile(country, isSelected, (_) => onTap(), context),
+      recentItemBuilder:
+          (country, isSelected, onTap) =>
+              _buildCountryTile(country, isSelected, (_) => onTap(), context),
+      searchResultBuilder:
+          (country, isSelected, onTap) =>
+              _buildCountryTile(country, isSelected, (_) => onTap(), context),
     );
   }
 
@@ -96,10 +104,7 @@ class NumberCountryPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _showCountryPickerDialog(context),
-      child: const Icon(
-        Icons.chevron_right,
-        size: 18,
-      ),
+      child: const Icon(Icons.chevron_right, size: 18),
     );
   }
 
@@ -112,11 +117,14 @@ class NumberCountryPicker extends StatelessWidget {
   }
 
   static Country get defaultCountry => _countries.first;
-  
+
   // Helper method to get localized country name
-  static String getLocalizedCountryName(BuildContext context, String countryName) {
+  static String getLocalizedCountryName(
+    BuildContext context,
+    String countryName,
+  ) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     switch (countryName) {
       case 'Ghana':
         return localizations.countryGhana;

@@ -1,0 +1,57 @@
+# Lefthook configuration for Flutter/Dart & TypeScript project
+# See https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
+
+pre-commit:
+  parallel: true
+  commands:
+    # Flutter/Dart formatting
+    dart-format:
+      glob: "mobile_app/**/*.{dart}"
+      run: cd mobile_app && dart format --set-exit-if-changed {staged_files}
+      stage_fixed: true
+    
+    # Flutter analyze (linting) - optional, shows warnings but doesn't block
+    dart-analyze:
+      glob: "mobile_app/**/*.{dart}"
+      run: cd mobile_app && flutter analyze --no-fatal-infos || echo "⚠️  Flutter analyze found issues (not blocking commit)"
+      stage_fixed: false
+    
+    # TypeScript/Node.js formatting and linting for CMS
+    cms-format:
+      glob: "cms/**/*.{ts,js,json}"
+      run: cd cms && pnpm prettier --write {staged_files}
+      stage_fixed: true
+    
+    cms-lint:
+      glob: "cms/**/*.{ts,js}"
+      run: cd cms && pnpm eslint {staged_files} --fix
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    # Validate commit message format
+    commitizen:
+      run: echo "Commit message validation can be added here"
+
+pre-push:
+  commands:
+    # Run Flutter tests before push
+    flutter-test:
+      glob: "mobile_app/**/*.{dart}"
+      run: cd mobile_app && flutter test --no-sound-null-safety
+      skip:
+        - merge
+        - rebase
+    
+    # Run CMS tests before push  
+    cms-test:
+      glob: "cms/**/*.{ts,js}"
+      run: cd cms && pnpm test
+      skip:
+        - merge
+        - rebase
+    
+    # TypeScript type checking
+    cms-typecheck:
+      glob: "cms/**/*.{ts}"
+      run: cd cms && pnpm tsc --noEmit

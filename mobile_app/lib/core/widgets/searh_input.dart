@@ -36,7 +36,7 @@ class _SearchInputState extends State<SearchInput> {
     super.initState();
     _controller = widget.controller ?? TextEditingController();
     _focusNode = FocusNode();
-    
+
     if (widget.autofocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
@@ -62,11 +62,11 @@ class _SearchInputState extends State<SearchInput> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? (
-          Theme.of(context).brightness == Brightness.light 
-            ? Theme.of(context).colorScheme.onPrimary
-            : Theme.of(context).colorScheme.primary
-        ),
+        color:
+            widget.backgroundColor ??
+            (Theme.of(context).brightness == Brightness.light
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.primary),
         borderRadius: BorderRadius.circular(AppRadius.radiusL),
       ),
       child: TextField(
@@ -79,23 +79,28 @@ class _SearchInputState extends State<SearchInput> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: TextStyles.titleMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           prefixIcon: Icon(
             Icons.search,
             color: widget.iconColor ?? Theme.of(context).colorScheme.onSurface,
             size: 20,
           ),
-          suffixIcon: _controller.text.isNotEmpty
-              ? IconButton(
-                  onPressed: _clearSearch,
-                  icon: Icon(
-                    Icons.clear,
-                    color: widget.iconColor ?? Theme.of(context).colorScheme.onSurface,
-                    size: 18,
-                  ),
-                )
-              : null,
+          suffixIcon:
+              _controller.text.isNotEmpty
+                  ? IconButton(
+                    onPressed: _clearSearch,
+                    icon: Icon(
+                      Icons.clear,
+                      color:
+                          widget.iconColor ??
+                          Theme.of(context).colorScheme.onSurface,
+                      size: 18,
+                    ),
+                  )
+                  : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.spacingS,

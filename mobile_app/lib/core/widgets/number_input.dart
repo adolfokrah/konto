@@ -37,11 +37,13 @@ class _NumberInputState extends State<NumberInput> {
   @override
   void initState() {
     super.initState();
-    
+
     _phoneController = TextEditingController(text: widget.phoneNumber);
-    
+
     // Get country from country picker or use defaults
-    final country = NumberCountryPicker.getCountryByCode(widget.countryCode ?? '+233');
+    final country = NumberCountryPicker.getCountryByCode(
+      widget.countryCode ?? '+233',
+    );
     _selectedCountry = country?.name ?? widget.selectedCountry ?? 'Ghana';
     _countryCode = country?.code ?? widget.countryCode ?? '+233';
   }
@@ -49,16 +51,18 @@ class _NumberInputState extends State<NumberInput> {
   @override
   void didUpdateWidget(NumberInput oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Update phone number if it changed
     if (widget.phoneNumber != oldWidget.phoneNumber) {
       _phoneController.text = widget.phoneNumber ?? '';
     }
-    
+
     // Update country and country code if they changed
-    if (widget.countryCode != oldWidget.countryCode || 
+    if (widget.countryCode != oldWidget.countryCode ||
         widget.selectedCountry != oldWidget.selectedCountry) {
-      final country = NumberCountryPicker.getCountryByCode(widget.countryCode ?? '+233');
+      final country = NumberCountryPicker.getCountryByCode(
+        widget.countryCode ?? '+233',
+      );
       setState(() {
         _selectedCountry = country?.name ?? widget.selectedCountry ?? 'Ghana';
         _countryCode = country?.code ?? widget.countryCode ?? '+233';
@@ -85,7 +89,8 @@ class _NumberInputState extends State<NumberInput> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary, // theme-aware primary color
+        color:
+            Theme.of(context).colorScheme.primary, // theme-aware primary color
         borderRadius: BorderRadius.circular(AppRadius.radiusM),
       ),
       child: Column(
@@ -105,46 +110,42 @@ class _NumberInputState extends State<NumberInput> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _selectedCountry,
-                    style: TextStyles.titleMedium,
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                  ),
+                  Text(_selectedCountry, style: TextStyles.titleMedium),
+                  const Icon(Icons.chevron_right, size: 18),
                 ],
               ),
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.spacingXs),
-          
+
           const AppDivider(),
-          
+
           const SizedBox(height: AppSpacing.spacingXs),
-          
+
           // Bottom row with country code and phone input
           Row(
             children: [
-              Text(
-                _countryCode,
-                style:  TextStyles.titleMedium,
-              ),
-              
+              Text(_countryCode, style: TextStyles.titleMedium),
+
               const SizedBox(width: 11),
-              
+
               Expanded(
                 child: TextField(
                   key: widget.textFieldKey,
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  style:  TextStyles.titleMedium,
-                  cursorColor: Theme.of(context).colorScheme.onSurface, // Add explicit cursor color
+                  style: TextStyles.titleMedium,
+                  cursorColor:
+                      Theme.of(
+                        context,
+                      ).colorScheme.onSurface, // Add explicit cursor color
                   decoration: InputDecoration(
                     hintText: widget.placeholder,
-                    hintStyle:  TextStyles.titleMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    hintStyle: TextStyles.titleMedium.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,

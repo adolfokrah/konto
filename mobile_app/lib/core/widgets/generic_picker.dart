@@ -21,9 +21,12 @@ class GenericPicker<T> extends StatelessWidget {
     required String selectedValue,
     required List<T> items,
     required Function(T item) onItemSelected,
-    required Widget Function(T item, bool isSelected, VoidCallback onTap) itemBuilder,
-    required Widget Function(T item, bool isSelected, VoidCallback onTap) recentItemBuilder,
-    required Widget Function(T item, bool isSelected, VoidCallback onTap) searchResultBuilder,
+    required Widget Function(T item, bool isSelected, VoidCallback onTap)
+    itemBuilder,
+    required Widget Function(T item, bool isSelected, VoidCallback onTap)
+    recentItemBuilder,
+    required Widget Function(T item, bool isSelected, VoidCallback onTap)
+    searchResultBuilder,
     required String Function(T item) searchFilter,
     required bool Function(T item, String selectedValue) isItemSelected,
     String? title,
@@ -39,7 +42,7 @@ class GenericPicker<T> extends StatelessWidget {
   }) {
     // Provide heavy haptic feedback when opening the picker modal
     HapticUtils.heavy();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -73,10 +76,7 @@ class GenericPicker<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _showPickerDialog(context),
-      child: const Icon(
-        Icons.chevron_right,
-        size: 18,
-      ),
+      child: const Icon(Icons.chevron_right, size: 18),
     );
   }
 
@@ -90,9 +90,12 @@ class _GenericPickerContent<T> extends StatefulWidget {
   final String selectedValue;
   final List<T> items;
   final Function(T item) onItemSelected;
-  final Widget Function(T item, bool isSelected, VoidCallback onTap) itemBuilder;
-  final Widget Function(T item, bool isSelected, VoidCallback onTap) recentItemBuilder;
-  final Widget Function(T item, bool isSelected, VoidCallback onTap) searchResultBuilder;
+  final Widget Function(T item, bool isSelected, VoidCallback onTap)
+  itemBuilder;
+  final Widget Function(T item, bool isSelected, VoidCallback onTap)
+  recentItemBuilder;
+  final Widget Function(T item, bool isSelected, VoidCallback onTap)
+  searchResultBuilder;
   final String Function(T item) searchFilter;
   final bool Function(T item, String selectedValue) isItemSelected;
   final String? title;
@@ -128,7 +131,8 @@ class _GenericPickerContent<T> extends StatefulWidget {
   });
 
   @override
-  State<_GenericPickerContent<T>> createState() => _GenericPickerContentState<T>();
+  State<_GenericPickerContent<T>> createState() =>
+      _GenericPickerContentState<T>();
 }
 
 class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
@@ -153,7 +157,9 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
 
   T? get _selectedItem {
     try {
-      return widget.items.firstWhere((item) => widget.isItemSelected(item, widget.selectedValue));
+      return widget.items.firstWhere(
+        (item) => widget.isItemSelected(item, widget.selectedValue),
+      );
     } catch (e) {
       return null;
     }
@@ -162,57 +168,63 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
   int _getItemCount() {
     final selectedItem = _selectedItem;
     final filteredItems = _filteredItems;
-    final otherItems = filteredItems.where((item) => !widget.isItemSelected(item, widget.selectedValue)).toList();
-    final selectedItemInResults = selectedItem != null && filteredItems.contains(selectedItem);
-    
+    final otherItems =
+        filteredItems
+            .where((item) => !widget.isItemSelected(item, widget.selectedValue))
+            .toList();
+    final selectedItemInResults =
+        selectedItem != null && filteredItems.contains(selectedItem);
+
     int count = 0;
-    
+
     // Recent Selection section (when no search) OR selected item in search results
-    if ((_searchQuery.isEmpty && selectedItemInResults) || 
+    if ((_searchQuery.isEmpty && selectedItemInResults) ||
         (_searchQuery.isNotEmpty && selectedItemInResults)) {
       count += 2; // header + selected item
     }
-    
+
     // Other Items section
     if (otherItems.isNotEmpty) {
       count += 1; // header
       count += otherItems.length; // other items
     }
-    
+
     return count;
   }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingM),
-      child: Text(
-        title,
-        style: TextStyles.titleBoldLg,
-      ),
+      child: Text(title, style: TextStyles.titleBoldLg),
     );
   }
 
   Widget _buildListItem(BuildContext context, int index) {
     final selectedItem = _selectedItem;
     final filteredItems = _filteredItems;
-    final otherItems = filteredItems.where((item) => !widget.isItemSelected(item, widget.selectedValue)).toList();
-    final selectedItemInResults = selectedItem != null && filteredItems.contains(selectedItem);
+    final otherItems =
+        filteredItems
+            .where((item) => !widget.isItemSelected(item, widget.selectedValue))
+            .toList();
+    final selectedItemInResults =
+        selectedItem != null && filteredItems.contains(selectedItem);
     final localizations = AppLocalizations.of(context)!;
-    
+
     int currentIndex = 0;
-    
+
     // Recent Selection section (when no search) OR selected item in search results
-    if ((_searchQuery.isEmpty && selectedItemInResults) || 
+    if ((_searchQuery.isEmpty && selectedItemInResults) ||
         (_searchQuery.isNotEmpty && selectedItemInResults)) {
       if (index == currentIndex) {
         // Header changes based on search state
-        final headerTitle = _searchQuery.isEmpty 
-            ? (widget.recentSectionTitle ?? localizations.recentSelection)
-            : (widget.searchResultsTitle ?? localizations.searchResults);
+        final headerTitle =
+            _searchQuery.isEmpty
+                ? (widget.recentSectionTitle ?? localizations.recentSelection)
+                : (widget.searchResultsTitle ?? localizations.searchResults);
         return _buildSectionHeader(headerTitle);
       }
       currentIndex++;
-      
+
       if (index == currentIndex) {
         // Selected item
         return Container(
@@ -221,34 +233,45 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
             borderRadius: BorderRadius.circular(AppRadius.radiusM),
           ),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-          child: _searchQuery.isEmpty 
-              ? widget.recentItemBuilder(selectedItem, true, () => _onItemSelected(selectedItem))
-              : widget.searchResultBuilder(selectedItem, true, () => _onItemSelected(selectedItem)),
+          child:
+              _searchQuery.isEmpty
+                  ? widget.recentItemBuilder(
+                    selectedItem,
+                    true,
+                    () => _onItemSelected(selectedItem),
+                  )
+                  : widget.searchResultBuilder(
+                    selectedItem,
+                    true,
+                    () => _onItemSelected(selectedItem),
+                  ),
         );
       }
       currentIndex++;
     }
-    
+
     // Other Items section
     if (otherItems.isNotEmpty) {
       if (index == currentIndex) {
         // Other Items header
-        final headerTitle = _searchQuery.isEmpty 
-            ? (widget.otherSectionTitle ?? localizations.allOptions)
-            : (selectedItemInResults 
-                ? (widget.searchResultsTitle ?? localizations.searchResults)
-                : (widget.searchResultsTitle ?? localizations.searchResults));
+        final headerTitle =
+            _searchQuery.isEmpty
+                ? (widget.otherSectionTitle ?? localizations.allOptions)
+                : (selectedItemInResults
+                    ? (widget.searchResultsTitle ?? localizations.searchResults)
+                    : (widget.searchResultsTitle ??
+                        localizations.searchResults));
         return _buildSectionHeader(headerTitle);
       }
       currentIndex++;
-      
+
       // Other items
       final otherItemIndex = index - currentIndex;
       if (otherItemIndex >= 0 && otherItemIndex < otherItems.length) {
         final item = otherItems[otherItemIndex];
         final isFirst = otherItemIndex == 0;
         final isLast = otherItemIndex == otherItems.length - 1;
-        
+
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary,
@@ -260,13 +283,18 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-          child: _searchQuery.isEmpty 
-              ? widget.itemBuilder(item, false, () => _onItemSelected(item))
-              : widget.searchResultBuilder(item, false, () => _onItemSelected(item)),
+          child:
+              _searchQuery.isEmpty
+                  ? widget.itemBuilder(item, false, () => _onItemSelected(item))
+                  : widget.searchResultBuilder(
+                    item,
+                    false,
+                    () => _onItemSelected(item),
+                  ),
         );
       }
     }
-    
+
     return const SizedBox.shrink();
   }
 
@@ -278,13 +306,20 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     return DraggableScrollableSheet(
-      initialChildSize: widget.initialHeight <= widget.maxHeight ? widget.initialHeight : widget.maxHeight,
+      initialChildSize:
+          widget.initialHeight <= widget.maxHeight
+              ? widget.initialHeight
+              : widget.maxHeight,
       minChildSize: widget.minHeight,
       maxChildSize: widget.maxHeight,
       snap: true,
-      snapSizes: [widget.initialHeight <= widget.maxHeight ? widget.initialHeight : widget.maxHeight],
+      snapSizes: [
+        widget.initialHeight <= widget.maxHeight
+            ? widget.initialHeight
+            : widget.maxHeight,
+      ],
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -307,20 +342,19 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Title
               if (widget.title != null) ...[
-                Text(
-                  widget.title!,
-                  style: TextStyles.titleBoldLg,
-                ),
+                Text(widget.title!, style: TextStyles.titleBoldLg),
                 const SizedBox(height: AppSpacing.spacingM),
               ],
-              
+
               // Search Input
               if (widget.showSearch) ...[
                 SearchInput(
@@ -334,26 +368,30 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
                 ),
                 const SizedBox(height: AppSpacing.spacingM),
               ],
-              
+
               // Items list
               Flexible(
-                child: _getItemCount() == 0
-                    ? Center(
-                        child: Text(
-                          widget.noResultsMessage ?? localizations.noOptionsFound,
-                          style: TextStyles.titleMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                child:
+                    _getItemCount() == 0
+                        ? Center(
+                          child: Text(
+                            widget.noResultsMessage ??
+                                localizations.noOptionsFound,
+                            style: TextStyles.titleMedium.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
                           ),
+                        )
+                        : ListView.builder(
+                          controller: scrollController,
+                          padding: EdgeInsets.zero,
+                          itemCount: _getItemCount(),
+                          itemBuilder: (context, index) {
+                            return _buildListItem(context, index);
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: EdgeInsets.zero,
-                        itemCount: _getItemCount(),
-                        itemBuilder: (context, index) {
-                          return _buildListItem(context, index);
-                        },
-                      ),
               ),
             ],
           ),

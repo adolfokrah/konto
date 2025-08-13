@@ -6,8 +6,10 @@ class AppDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return // Divider
-      Divider(
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), // theme-aware primary color
-      );
+    Divider(
+      color: Theme.of(context).colorScheme.onSurface.withValues(
+        alpha: 0.1,
+      ), // theme-aware primary color
+    );
   }
 }

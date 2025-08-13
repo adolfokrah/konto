@@ -7,8 +7,6 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-
-  
   AuthBloc() : super(const AuthInitial()) {
     on<RequestRegistration>(_onRequestRegistration);
     on<AutoLoginRequested>(_onAutoLoginRequested);
@@ -32,47 +30,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         countryCode: event.countryCode,
         email: event.email,
       );
-      
+
       if (isAvailable['exists'] == true) {
         // Emit a success state indicating phone number is available
-        emit(PhoneNumberAvailable(
-          phoneNumber: event.phoneNumber,
-          countryCode: event.countryCode,
-        ));
+        emit(
+          PhoneNumberAvailable(
+            phoneNumber: event.phoneNumber,
+            countryCode: event.countryCode,
+          ),
+        );
       } else {
-        emit(PhoneNumberNotAvailable(
-          phoneNumber: event.phoneNumber,
-          countryCode: event.countryCode,
-        ));
+        emit(
+          PhoneNumberNotAvailable(
+            phoneNumber: event.phoneNumber,
+            countryCode: event.countryCode,
+          ),
+        );
       }
     } catch (e) {
-      emit(AuthError(error: 'Failed to check phone number availability: ${e.toString()}'));
+      emit(
+        AuthError(
+          error: 'Failed to check phone number availability: ${e.toString()}',
+        ),
+      );
     }
   }
 
-
   Future<void> _onRequestLogin(
     RequestLogin event,
-    Emitter<AuthState> emit
+    Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
+
       // Attempt to login with the provided phone number and country code
       final loginResult = await authRepository.loginWithPhoneNumber(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
       );
-      
+
       if (loginResult['success'] == true) {
         final user = loginResult['user'] as User;
         final token = loginResult['token'] as String?;
-        
-        emit(AuthAuthenticated(
-          user: user,
-          token: token ?? '',
-        ));
+
+        emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
         emit(AuthError(error: loginResult['message'] ?? 'Login failed'));
       }
@@ -81,7 +83,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-
   Future<void> _onRequestRegistration(
     RequestRegistration event,
     Emitter<AuthState> emit,
@@ -89,7 +90,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
+
       // Register user after OTP verification
       final result = await authRepository.registerUser(
         phoneNumber: event.phoneNumber,
@@ -98,24 +99,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         fullName: event.fullName,
         email: event.email,
       );
-      
+
       if (result['success'] == true) {
         final user = result['user'] as User;
         final token = result['token'] as String?;
-        
-        emit(AuthAuthenticated(
-          user: user,
-          token: token ?? '',
-        ));
+
+        emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
-        emit(AuthError(
-          error: result['message'] ?? 'Registration failed',
-        ));
+        emit(AuthError(error: result['message'] ?? 'Registration failed'));
       }
     } catch (e) {
-      emit(AuthError(
-        error: 'Registration failed: ${e.toString()}',
-      ));
+      emit(AuthError(error: 'Registration failed: ${e.toString()}'));
     }
   }
 
@@ -128,10 +122,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
+
       // Check if there's any user data stored locally first
       final isLoggedIn = await authRepository.isUserLoggedIn();
-      
+
       if (!isLoggedIn) {
         emit(AuthInitial());
         return;
@@ -139,20 +133,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       // Attempt auto-login using stored phone number and country code
       final autoLoginResult = await authRepository.autoLogin();
-      
+
       if (autoLoginResult['success'] == true) {
         final user = autoLoginResult['user'];
         final token = autoLoginResult['token'];
-        
-        emit(AuthAuthenticated(
-          user: user,
-          token: token,
-        ));
+
+        emit(AuthAuthenticated(user: user, token: token));
       } else {
         emit(AuthInitial());
       }
     } catch (e) {
-       emit(AuthInitial());
+      emit(AuthInitial());
     }
   }
 
@@ -162,10 +153,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
+
       // Clear user session
       await authRepository.signOut();
-      
+
       emit(const AuthInitial());
     } catch (e) {
       emit(AuthError(error: 'Failed to sign out: ${e.toString()}'));

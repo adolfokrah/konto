@@ -4,22 +4,22 @@ import 'package:konto/core/config/sms_config.dart';
 /// API Provider for SMS operations using Mnotify service with Dio
 class SmsApiProvider {
   late final Dio _dio;
-  
-  SmsApiProvider({
-    Dio? dio,
-  }) {
-    _dio = dio ?? Dio(
-      BaseOptions(
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-        },
-      ),
-    );
-    
+
+  SmsApiProvider({Dio? dio}) {
+    _dio =
+        dio ??
+        Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+            sendTimeout: const Duration(seconds: 30),
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json',
+            },
+          ),
+        );
+
     // Add Dio interceptors for better logging
     _dio.interceptors.add(
       LogInterceptor(
@@ -32,7 +32,7 @@ class SmsApiProvider {
       ),
     );
   }
-  
+
   /// Send SMS via Mnotify API using Dio directly
   Future<Map<String, dynamic>> sendSms({
     required String phoneNumber,
@@ -47,17 +47,17 @@ class SmsApiProvider {
         'is_schedule': 'false',
         'schedule_date': '',
       };
-      
+
       print('📱 Sending SMS to $phoneNumber via Mnotify with Dio...');
-      
+
       // Make Dio POST request to Mnotify
       final response = await _dio.post(
         "${SmsConfig.apiBaseUrl}?key=${SmsConfig.mnotifyApiKey}",
-        data: requestData      
-        );
-      
+        data: requestData,
+      );
+
       print('✅ Dio Response: ${response.statusCode} - ${response.data}');
-      
+
       return {
         'success': true,
         'data': response.data,
@@ -65,13 +65,14 @@ class SmsApiProvider {
       };
     } on DioException catch (e) {
       print('❌ Dio SMS Error: ${e.type} - ${e.message}');
-      
+
       String errorMessage;
       int statusCode = 0;
-      
+
       switch (e.type) {
         case DioExceptionType.connectionTimeout:
-          errorMessage = 'Connection timeout. Please check your internet connection.';
+          errorMessage =
+              'Connection timeout. Please check your internet connection.';
           break;
         case DioExceptionType.sendTimeout:
           errorMessage = 'Send timeout. Please try again.';
@@ -81,7 +82,8 @@ class SmsApiProvider {
           break;
         case DioExceptionType.badResponse:
           statusCode = e.response?.statusCode ?? 0;
-          errorMessage = 'Server error: ${e.response?.statusMessage ?? 'Unknown error'}';
+          errorMessage =
+              'Server error: ${e.response?.statusMessage ?? 'Unknown error'}';
           break;
         case DioExceptionType.cancel:
           errorMessage = 'Request was cancelled.';
@@ -96,7 +98,7 @@ class SmsApiProvider {
           errorMessage = 'Network error: ${e.message}';
           break;
       }
-      
+
       return {
         'success': false,
         'error': errorMessage,
@@ -112,7 +114,7 @@ class SmsApiProvider {
       };
     }
   }
-  
+
   /// Check SMS delivery status (if Mnotify supports it)
   Future<Map<String, dynamic>> checkDeliveryStatus(String messageId) async {
     try {

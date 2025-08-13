@@ -5,7 +5,6 @@ import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
 
-
 class AppButton extends StatelessWidget {
   final String text;
   final Widget? icon;
@@ -86,13 +85,14 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDisabled = onPressed == null && !isLoading;
-    
+
     return SizedBox(
       width: isFullWidth ? double.infinity : null,
       height: 55,
-      child: variant == ButtonVariant.fill
-          ? _buildFilledButton(context, isDisabled)
-          : _buildOutlinedButton(context, isDisabled),
+      child:
+          variant == ButtonVariant.fill
+              ? _buildFilledButton(context, isDisabled)
+              : _buildOutlinedButton(context, isDisabled),
     );
   }
 
@@ -101,20 +101,22 @@ class AppButton extends StatelessWidget {
 
     return enableHapticFeedback
         ? () {
-            HapticUtils.heavy();
-            onPressed!();
-          }
+          HapticUtils.heavy();
+          onPressed!();
+        }
         : onPressed!;
   }
 
   Widget _buildFilledButton(BuildContext context, bool isDisabled) {
-    final Color bgColor = isDisabled
-        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
-        : backgroundColor ?? Theme.of(context).colorScheme.onSurface;
-    
-    final Color txtColor = isDisabled
-        ? Theme.of(context).colorScheme.primary
-        : textColor ?? Theme.of(context).colorScheme.primary;
+    final Color bgColor =
+        isDisabled
+            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
+            : backgroundColor ?? Theme.of(context).colorScheme.onSurface;
+
+    final Color txtColor =
+        isDisabled
+            ? Theme.of(context).colorScheme.primary
+            : textColor ?? Theme.of(context).colorScheme.primary;
 
     return ElevatedButton(
       onPressed: _getOnPressedCallback(),
@@ -123,9 +125,7 @@ class AppButton extends StatelessWidget {
         foregroundColor: txtColor,
         elevation: 0,
         shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(100),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.spacingM,
           vertical: AppSpacing.spacingXs,
@@ -136,22 +136,21 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _buildOutlinedButton(BuildContext context, bool isDisabled) {
-    final Color borderClr = isDisabled
-        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-        : borderColor ?? Theme.of(context).colorScheme.onSurface;
-    
-    final Color txtColor = isDisabled
-        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
-        : textColor ?? Theme.of(context).colorScheme.onSurface;
+    final Color borderClr =
+        isDisabled
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+            : borderColor ?? Theme.of(context).colorScheme.onSurface;
+
+    final Color txtColor =
+        isDisabled
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
+            : textColor ?? Theme.of(context).colorScheme.onSurface;
 
     return OutlinedButton(
       onPressed: _getOnPressedCallback(),
       style: OutlinedButton.styleFrom(
         foregroundColor: txtColor,
-        side: BorderSide(
-          color: borderClr,
-          width: 2,
-        ),
+        side: BorderSide(color: borderClr, width: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.radiusL),
         ),
@@ -181,11 +180,7 @@ class AppButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 30,
-            height: 22,
-            child: icon,
-          ),
+          SizedBox(width: 30, height: 22, child: icon),
           SizedBox(width: AppSpacing.spacingXs),
           Flexible(
             child: Text(
@@ -205,9 +200,7 @@ class AppButton extends StatelessWidget {
 
     return Text(
       text,
-      style: AppTextStyles.titleMediumM.copyWith(
-        color: textColor,
-      ),
+      style: AppTextStyles.titleMediumM.copyWith(color: textColor),
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -216,9 +209,6 @@ class AppButton extends StatelessWidget {
 // Extension for easy button usage
 extension AppButtonExtension on Widget {
   Widget withGap(double gap) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: gap),
-      child: this,
-    );
+    return Padding(padding: EdgeInsets.only(bottom: gap), child: this);
   }
 }

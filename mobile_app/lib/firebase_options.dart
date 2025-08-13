@@ -65,5 +65,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'konto-57286.firebasestorage.app',
     iosBundleId: 'com.thecompany.konto',
   );
-
 }

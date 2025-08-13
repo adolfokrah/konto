@@ -32,20 +32,40 @@ class SelectInput<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasValue = value != null || displayText != null;
-    final effectiveDisplayText = displayText ?? 
-        (value != null ? options.firstWhere((option) => option.value == value, orElse: () => SelectOption(value: value as T, label: value.toString())).label : null);
+    final effectiveDisplayText =
+        displayText ??
+        (value != null
+            ? options
+                .firstWhere(
+                  (option) => option.value == value,
+                  orElse:
+                      () => SelectOption(
+                        value: value as T,
+                        label: value.toString(),
+                      ),
+                )
+                .label
+            : null);
 
     return GestureDetector(
       onTap: enabled ? () => _showSelectionBottomSheet(context) : null,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.spacingXs),
         decoration: BoxDecoration(
-          color: filled ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          color:
+              filled
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.radiusM),
-          border: !filled ? Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-            width: 1,
-          ) : null,
+          border:
+              !filled
+                  ? Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.2),
+                    width: 1,
+                  )
+                  : null,
         ),
         child: Row(
           children: [
@@ -59,10 +79,12 @@ class SelectInput<T> extends StatelessWidget {
                     Text(
                       label!,
                       style: TextStyles.titleRegularXs.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
-                  
+
                   // Small gap between label and value
                   if (label != null && hasValue) const SizedBox(height: 2),
 
@@ -70,18 +92,17 @@ class SelectInput<T> extends StatelessWidget {
                   Text(
                     effectiveDisplayText ?? label ?? hintText ?? '',
                     style: TextStyles.titleMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: hasValue ? 1.0 : 0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(
+                        alpha: hasValue ? 1.0 : 0.6,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             // Suffix icon (chevron or custom)
-            suffixIcon ?? const Icon(
-              Icons.keyboard_arrow_down,
-              size: 20,
-            ),
+            suffixIcon ?? const Icon(Icons.keyboard_arrow_down, size: 20),
           ],
         ),
       ),
@@ -90,7 +111,7 @@ class SelectInput<T> extends StatelessWidget {
 
   void _showSelectionBottomSheet(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     GenericPicker.showPickerDialog<T>(
       context,
       selectedValue: value?.toString() ?? '',
@@ -105,10 +126,17 @@ class SelectInput<T> extends StatelessWidget {
       noResultsMessage: localizations.noOptionsFound,
       maxHeight: 0.9,
       searchFilter: (item) => _getOptionLabel(item),
-      isItemSelected: (item, selectedString) => item.toString() == selectedString,
-      itemBuilder: (item, isSelected, onTap) => _buildOptionTile(item, isSelected, onTap),
-      recentItemBuilder: (item, isSelected, onTap) => _buildOptionTile(item, isSelected, onTap),
-      searchResultBuilder: (item, isSelected, onTap) => _buildOptionTile(item, isSelected, onTap),
+      isItemSelected:
+          (item, selectedString) => item.toString() == selectedString,
+      itemBuilder:
+          (item, isSelected, onTap) =>
+              _buildOptionTile(item, isSelected, onTap),
+      recentItemBuilder:
+          (item, isSelected, onTap) =>
+              _buildOptionTile(item, isSelected, onTap),
+      searchResultBuilder:
+          (item, isSelected, onTap) =>
+              _buildOptionTile(item, isSelected, onTap),
     );
   }
 
@@ -146,9 +174,5 @@ class SelectOption<T> {
   final String label;
   final Widget? icon;
 
-  const SelectOption({
-    required this.value,
-    required this.label,
-    this.icon,
-  });
+  const SelectOption({required this.value, required this.label, this.icon});
 }

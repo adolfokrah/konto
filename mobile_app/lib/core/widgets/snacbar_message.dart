@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/theme/text_styles.dart';
 
-enum SnackBarType {
-  success,
-  error,
-  warning,
-  info,
-}
+enum SnackBarType { success, error, warning, info }
 
 class AppSnackBar {
   static void show(
@@ -24,18 +19,12 @@ class AppSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: TextStyles.titleRegularM.copyWith(
-                  color: Colors.white
-                ),
+                style: TextStyles.titleRegularM.copyWith(color: Colors.white),
               ),
             ),
           ],
@@ -44,16 +33,15 @@ class AppSnackBar {
         duration: duration,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        action: actionLabel != null
-            ? SnackBarAction(
-                label: actionLabel,
-                textColor: Colors.white,
-                onPressed: onActionPressed ?? () {},
-              )
-            : null,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        action:
+            actionLabel != null
+                ? SnackBarAction(
+                  label: actionLabel,
+                  textColor: Colors.white,
+                  onPressed: onActionPressed ?? () {},
+                )
+                : null,
       ),
     );
   }

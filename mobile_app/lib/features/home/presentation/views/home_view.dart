@@ -13,10 +13,9 @@ class HomeView extends StatelessWidget {
       listener: (context, state) {
         // Handle sign out - navigate to login
         if (state is AuthInitial) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/login',
-            (route) => false,
-          );
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/login', (route) => false);
         }
       },
       child: BlocBuilder<AuthBloc, AuthState>(
@@ -53,9 +52,7 @@ class HomeView extends StatelessWidget {
       future: _getCurrentUser(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -63,16 +60,9 @@ class HomeView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[400],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
                 const SizedBox(height: 16),
-                Text(
-                  'Error',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Error', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
                 Text(
                   'Error loading user data: ${snapshot.error}',
@@ -90,33 +80,24 @@ class HomeView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.person_off_outlined,
-                  size: 64,
-                ),
+                const Icon(Icons.person_off_outlined, size: 64),
                 const SizedBox(height: 16),
                 const Text(
                   'No user data found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Please log in again',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     // Navigate back to login
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login',
-                      (route) => false,
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/login', (route) => false);
                   },
                   child: const Text('Go to Login'),
                 ),
@@ -157,14 +138,15 @@ class HomeView extends StatelessWidget {
                             children: [
                               Text(
                                 'Welcome back,',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                ),
+                                style:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(),
                               ),
                               Text(
                                 user.fullName,
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -176,15 +158,26 @@ class HomeView extends StatelessWidget {
                     const SizedBox(height: 8),
                     _buildInfoRow(Icons.email_outlined, 'Email', user.email),
                     const SizedBox(height: 8),
-                    _buildInfoRow(Icons.phone_outlined, 'Phone', '${user.countryCode} ${user.phoneNumber}'),
-                    const SizedBox(height: 8),
-                    _buildInfoRow(Icons.location_on_outlined, 'Country', user.country),
+                    _buildInfoRow(
+                      Icons.phone_outlined,
+                      'Phone',
+                      '${user.countryCode} ${user.phoneNumber}',
+                    ),
                     const SizedBox(height: 8),
                     _buildInfoRow(
-                      user.isKYCVerified ? Icons.verified_outlined : Icons.warning_outlined,
+                      Icons.location_on_outlined,
+                      'Country',
+                      user.country,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      user.isKYCVerified
+                          ? Icons.verified_outlined
+                          : Icons.warning_outlined,
                       'KYC Status',
                       user.isKYCVerified ? 'Verified' : 'Not Verified',
-                      valueColor: user.isKYCVerified ? Colors.green : Colors.orange,
+                      valueColor:
+                          user.isKYCVerified ? Colors.green : Colors.orange,
                     ),
                   ],
                 ),
@@ -202,13 +195,13 @@ class HomeView extends StatelessWidget {
       final serviceRegistry = ServiceRegistry();
       final userStorageService = serviceRegistry.userStorageService;
       final user = await userStorageService.getUserData();
-      
+
       if (user != null) {
         print('🏠 HomeView: User data found - ${user.fullName}');
       } else {
         print('🏠 HomeView: No user data found');
       }
-      
+
       return user;
     } catch (e) {
       print('🏠 HomeView: Error getting user data - $e');
@@ -244,26 +237,24 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-        ),
+        Icon(icon, size: 20),
         const SizedBox(width: 12),
-        Text(
-          '$label:',
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text('$label:', style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             style: TextStyle(
-              fontWeight: valueColor != null ? FontWeight.w500 : FontWeight.normal,
+              fontWeight:
+                  valueColor != null ? FontWeight.w500 : FontWeight.normal,
             ),
           ),
         ),

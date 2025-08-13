@@ -4,7 +4,7 @@ import 'package:konto/core/config/sms_config.dart';
 /// HTTP client service using Dio for better error handling and interceptors
 class HttpClientService {
   late final Dio _dio;
-  
+
   HttpClientService() {
     _dio = Dio(
       BaseOptions(
@@ -17,7 +17,7 @@ class HttpClientService {
         },
       ),
     );
-    
+
     // Add interceptors for logging and error handling
     _dio.interceptors.add(
       LogInterceptor(
@@ -29,7 +29,7 @@ class HttpClientService {
         },
       ),
     );
-    
+
     // Add error handling interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -43,10 +43,10 @@ class HttpClientService {
       ),
     );
   }
-  
+
   /// Get Dio instance
   Dio get dio => _dio;
-  
+
   /// Send SMS via Mnotify API using Dio
   Future<Map<String, dynamic>> sendSmsViaMnotify({
     required String phoneNumber,
@@ -61,22 +61,20 @@ class HttpClientService {
         'is_schedule': 'false',
         'schedule_date': '',
       };
-      
+
       print('📱 Sending SMS to $phoneNumber via Mnotify...');
-      
+
       // Make API request to Mnotify
       final response = await _dio.post(
         SmsConfig.apiBaseUrl,
         data: requestData,
         options: Options(
-          headers: {
-            'Authorization': 'Bearer ${SmsConfig.mnotifyApiKey}',
-          },
+          headers: {'Authorization': 'Bearer ${SmsConfig.mnotifyApiKey}'},
         ),
       );
-      
+
       print('✅ Mnotify Response: ${response.statusCode} - ${response.data}');
-      
+
       return {
         'success': true,
         'data': response.data,
@@ -84,13 +82,14 @@ class HttpClientService {
       };
     } on DioException catch (e) {
       print('❌ Dio Error: ${e.type} - ${e.message}');
-      
+
       String errorMessage;
       int statusCode = 0;
-      
+
       switch (e.type) {
         case DioExceptionType.connectionTimeout:
-          errorMessage = 'Connection timeout. Please check your internet connection.';
+          errorMessage =
+              'Connection timeout. Please check your internet connection.';
           break;
         case DioExceptionType.sendTimeout:
           errorMessage = 'Send timeout. Please try again.';
@@ -100,7 +99,8 @@ class HttpClientService {
           break;
         case DioExceptionType.badResponse:
           statusCode = e.response?.statusCode ?? 0;
-          errorMessage = 'Server error: ${e.response?.statusMessage ?? 'Unknown error'}';
+          errorMessage =
+              'Server error: ${e.response?.statusMessage ?? 'Unknown error'}';
           break;
         case DioExceptionType.cancel:
           errorMessage = 'Request was cancelled.';
@@ -115,7 +115,7 @@ class HttpClientService {
           errorMessage = 'Network error: ${e.message}';
           break;
       }
-      
+
       return {
         'success': false,
         'error': errorMessage,
