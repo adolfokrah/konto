@@ -5,9 +5,7 @@ export const registerUser = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    
     const { phoneNumber, countryCode, country, fullName, email } = req.data || {}
-
     // Validate required fields
     if (!phoneNumber || !countryCode || !country || !fullName) {
       return Response.json({

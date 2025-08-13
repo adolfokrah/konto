@@ -108,23 +108,6 @@ describe('Users Collection Integration Tests', () => {
       ).rejects.toThrow()
     })
 
-    it('should fail to create user with invalid country', async () => {
-      const userData = {
-        email: 'invalid@example.com',
-        password: 'testPassword123',
-        fullName: 'Invalid User',
-        phoneNumber: '+1234567890',
-        country: 'invalid_country', // Invalid option
-      } as any
-
-      await expect(
-        payload.create({
-          collection: 'users',
-          data: userData,
-        }),
-      ).rejects.toThrow()
-    })
-
     it('should fail to create user with duplicate email', async () => {
       const userData = {
         email: generateUniqueEmail('duplicate'),
@@ -333,17 +316,7 @@ describe('Users Collection Integration Tests', () => {
       expect(updatedUser.country).toBe('ng')
     })
 
-    it('should fail to update user with invalid country', async () => {
-      await expect(
-        payload.update({
-          collection: 'users',
-          id: testUser.id,
-          data: {
-            country: 'invalid_country' as any,
-          },
-        }),
-      ).rejects.toThrow()
-    })
+   
   })
 
   describe('User Deletion', () => {

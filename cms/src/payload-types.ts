@@ -135,7 +135,7 @@ export interface User {
    */
   countryCode?: string | null;
   phoneNumber: string;
-  country: 'gh' | 'ng';
+  country: string;
   isKYCVerified?: boolean | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;

@@ -3,7 +3,7 @@ import { CollectionSlug, Payload } from 'payload'
 export async function clearAllCollections(payload: Payload) {
   try {
     // Get all collection names from payload config
-    const collections = ['users', 'jars', 'contributions', 'media']
+    const collections = ['users', 'jars', 'contributions', 'media', 'jar-groups']
 
     for (const collection of collections) {
       try {

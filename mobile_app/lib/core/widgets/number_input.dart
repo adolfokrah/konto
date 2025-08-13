@@ -37,12 +37,33 @@ class _NumberInputState extends State<NumberInput> {
   @override
   void initState() {
     super.initState();
+    
     _phoneController = TextEditingController(text: widget.phoneNumber);
     
     // Get country from country picker or use defaults
     final country = NumberCountryPicker.getCountryByCode(widget.countryCode ?? '+233');
     _selectedCountry = country?.name ?? widget.selectedCountry ?? 'Ghana';
     _countryCode = country?.code ?? widget.countryCode ?? '+233';
+  }
+
+  @override
+  void didUpdateWidget(NumberInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Update phone number if it changed
+    if (widget.phoneNumber != oldWidget.phoneNumber) {
+      _phoneController.text = widget.phoneNumber ?? '';
+    }
+    
+    // Update country and country code if they changed
+    if (widget.countryCode != oldWidget.countryCode || 
+        widget.selectedCountry != oldWidget.selectedCountry) {
+      final country = NumberCountryPicker.getCountryByCode(widget.countryCode ?? '+233');
+      setState(() {
+        _selectedCountry = country?.name ?? widget.selectedCountry ?? 'Ghana';
+        _countryCode = country?.code ?? widget.countryCode ?? '+233';
+      });
+    }
   }
 
   @override

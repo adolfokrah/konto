@@ -19,17 +19,19 @@ class AuthRepository {
         _authApiProvider = authApiProvider,
         _userStorageService = userStorageService;
 
-  /// Check if phone number is available (exists in system)
-  /// Returns true if phone number exists (user should login)
-  /// Returns false if phone number doesn't exist (user should register)
-  Future<Map<String, dynamic>> checkPhoneNumberAvailability({
+  /// Check if user exists in the system
+  /// Returns true if user exists (user should login)
+  /// Returns false if user doesn't exist (user should register)
+  Future<Map<String, dynamic>> checkUserExistence({
     required String phoneNumber,
     required String countryCode,
+    String? email,
   }) async {
     try {
-      final apiResponse = await _authApiProvider.checkPhoneNumberAvailability(
+      final apiResponse = await _authApiProvider.checkUserExistence(
         phoneNumber: phoneNumber,
         countryCode: countryCode,
+        email: email,
       );
             
       if (apiResponse['success'] == true) {
@@ -142,7 +144,7 @@ class AuthRepository {
         final loginData = LoginResponse.fromJson(loginResponse);
         
         // Save user data and token to local storage
-        final saveResult = await _userStorageService.saveUserData(
+        await _userStorageService.saveUserData(
           user: loginData.user,
           token: loginData.token,
           tokenExpiry: loginData.exp,
@@ -171,9 +173,7 @@ class AuthRepository {
   }
 
   /// Register user after OTP verification
-  Future<Map<String, dynamic>> registerUserAfterOtpVerification({
-    required String enteredOtp,
-    required String sentOtp,
+  Future<Map<String, dynamic>> registerUser({
     required String phoneNumber,
     required String countryCode,
     required String country,
@@ -181,20 +181,7 @@ class AuthRepository {
     required String email,
   }) async {
     try {
-      // First verify the OTP
-      if (enteredOtp != sentOtp) {
-        print('❌ OTP verification failed - codes do not match');
-        return {
-          'success': false,
-          'message': 'Invalid OTP code. Please check and try again.',
-        };
-      }
-
-      print('✅ OTP verification successful, proceeding to registration');
-
-      // If OTP is correct, register the user
-      print('📝 Registering new user: $fullName');
-      
+    
       final apiResponse = await _authApiProvider.registerUser(
         phoneNumber: phoneNumber,
         countryCode: countryCode,
@@ -202,108 +189,25 @@ class AuthRepository {
         fullName: fullName,
         email: email,
       );
+
       
-      print('📋 Registration response: $apiResponse');
       
-      if (apiResponse['success'] == true || apiResponse['doc'] != null) {
-        // Payload CMS returns the created user in 'doc' field
-        final userData = apiResponse['doc'] ?? apiResponse['user'];
-        final token = apiResponse['token'];
+      if (apiResponse['success'] == true) {
         
-        if (userData != null) {
-          // Create User model from response
-          final user = User.fromJson(userData);
-          
-          // Save user data and token to local storage
-          if (token != null) {
-            // Calculate token expiry (24 hours from now) in seconds (Unix timestamp)
-            final tokenExpiry = DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch ~/ 1000;
-            
-            await _userStorageService.saveUserData(
-              user: user, 
-              token: token,
-              tokenExpiry: tokenExpiry,
-            );
-            print('✅ User registered and logged in successfully');
-            
-            return {
-              'success': true,
-              'message': 'Registration successful',
-              'user': user,
-              'token': token,
-            };
-          } else {
-            print('⚠️ Registration successful but no token received, attempting auto-login');
-            
-            // No token received from registration, attempt to login the user automatically
-            try {
-              final loginResponse = await _authApiProvider.loginWithPhoneNumber(
-                phoneNumber: phoneNumber,
-                countryCode: countryCode,
-              );
+        print(phoneNumber);
+        print(countryCode);
+        final loginResponse = await loginWithPhoneNumber(
+          phoneNumber: phoneNumber,
+          countryCode: countryCode,
+        );
 
-              if (loginResponse['success'] == true) {
-                // Parse the login response
-                final loginData = LoginResponse.fromJson(loginResponse);
-                
-                // Save user data and token to local storage
-                final saveResult = await _userStorageService.saveUserData(
-                  user: loginData.user,
-                  token: loginData.token,
-                  tokenExpiry: loginData.exp,
-                );
-
-                if (saveResult) {
-                  print('✅ User registered and auto-logged in successfully');
-                  return {
-                    'success': true,
-                    'message': 'Registration and auto-login successful',
-                    'user': loginData.user,
-                    'token': loginData.token,
-                  };
-                } else {
-                  print('⚠️ Auto-login successful but failed to save data locally');
-                  return {
-                    'success': true,
-                    'message': 'Registration successful, auto-login completed',
-                    'user': loginData.user,
-                    'token': loginData.token,
-                    'warning': 'Failed to save data locally',
-                  };
-                }
-              } else {
-                print('💥 Auto-login after registration failed: ${loginResponse['message']}');
-                return {
-                  'success': true,
-                  'message': 'Registration successful but auto-login failed',
-                  'user': user,
-                  'requiresLogin': true,
-                };
-              }
-            } catch (e) {
-              print('💥 Auto-login after registration exception: $e');
-              return {
-                'success': true,
-                'message': 'Registration successful but auto-login failed',
-                'user': user,
-                'requiresLogin': true,
-              };
-            }
-          }
-        } else {
-          print('❌ Registration response missing user data');
-          return {
-            'success': false,
-            'message': 'Registration failed: Invalid response format',
-          };
-        }
-      } else {
-        print('💥 Registration API Error: ${apiResponse['message']}');
+        
+        return loginResponse;
+      }else{
         return {
           'success': false,
-          'message': apiResponse['message'] ?? 'Registration failed',
-          'errors': apiResponse['errors'],
-        };
+          'message': 'Registration failed: ${apiResponse['message']}',
+        }; 
       }
     } catch (e) {
       print('💥 Registration with OTP Exception: $e');
@@ -390,10 +294,7 @@ class AuthRepository {
     }
   }
 
-  /// Format phone number with country code
-  String formatPhoneNumber(String phoneNumber, String countryCode) {
-    return _smsOtpService.formatPhoneNumber(phoneNumber, countryCode);
-  }
+
 
   /// Sign out user
   Future<void> signOut() async {

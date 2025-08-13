@@ -46,9 +46,9 @@ class MockInterceptor extends Interceptor {
     }
     
     // Default mock responses (fallback)
-    
-    // Mock the checkPhoneNumberAvailability endpoint
-    if (options.path.contains(BackendConfig.checkPhoneExistenceEndpoint) && 
+
+    // Mock the checkUserExistence endpoint
+    if (options.path.contains(BackendConfig.checkUserExistence) && 
         options.method == 'POST') {
       
       final response = Response(

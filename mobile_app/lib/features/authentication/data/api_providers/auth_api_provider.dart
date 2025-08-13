@@ -8,19 +8,21 @@ class AuthApiProvider {
   AuthApiProvider({
     required Dio dio,
   }) : _dio = dio;
-  
-  /// Check if phone number exists in the system
-  Future<Map<String, dynamic>> checkPhoneNumberAvailability({
+
+  /// Check if user exists in the system
+  Future<Map<String, dynamic>> checkUserExistence({
     required String phoneNumber,
     required String countryCode,
+    String? email,
   }) async {
     try {
       
       final response = await _dio.post(
-        '${BackendConfig.apiBaseUrl}${BackendConfig.checkPhoneExistenceEndpoint}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.checkUserExistence}',
         data: {
           'phoneNumber': phoneNumber,
           'countryCode': countryCode,
+          'email': email,
         },
         options: Options(
           headers: BackendConfig.defaultHeaders,
@@ -93,7 +95,6 @@ class AuthApiProvider {
     required String email,
   }) async {
     try {
-      print('📝 Registering user: $fullName with phone: $phoneNumber');
       
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.registerUserEndpoint}',

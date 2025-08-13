@@ -24,7 +24,6 @@ class OtpView extends StatelessWidget {
     final isRegistration = args?['isRegistration'] as bool? ?? false;
     final country = args?['country'] as String?;
     final fullName = args?['fullName'] as String?;
-    final sentOtp = args?['sentOtp'] as String?;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
@@ -33,7 +32,6 @@ class OtpView extends StatelessWidget {
       isRegistration: isRegistration,
       country: country,
       fullName: fullName,
-      sentOtp: sentOtp,
     );
   }
 }
@@ -45,7 +43,6 @@ class _OtpViewContent extends StatefulWidget {
   final bool isRegistration;
   final String? country;
   final String? fullName;
-  final String? sentOtp;
 
   const _OtpViewContent({
     this.phoneNumber,
@@ -54,7 +51,6 @@ class _OtpViewContent extends StatefulWidget {
     this.isRegistration = false,
     this.country,
     this.fullName,
-    this.sentOtp,
   });
 
   @override
@@ -150,13 +146,11 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           widget.countryCode != null && 
           widget.country != null && 
           widget.fullName != null && 
-          widget.email != null &&
-          widget.sentOtp != null) {
-        
+          widget.email != null) {
+          
+
         context.read<AuthBloc>().add(
-          UserRegistrationWithOtpRequested(
-            enteredOtp: otp,
-            sentOtp: widget.sentOtp!,
+          RequestRegistration(
             phoneNumber: widget.phoneNumber!,
             countryCode: widget.countryCode!,
             country: widget.country!,

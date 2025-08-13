@@ -10,26 +10,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   
   AuthBloc() : super(const AuthInitial()) {
-    on<UserRegistrationWithOtpRequested>(_onUserRegistrationWithOtpRequested);
+    on<RequestRegistration>(_onRequestRegistration);
     on<AutoLoginRequested>(_onAutoLoginRequested);
-    on<PhoneNumberAvailabilityChecked>(_onPhoneNumberAvailabilityChecked);
+    on<CheckUserExistence>(_onCheckUserExistence);
     on<RequestLogin>(_onRequestLogin);
     on<SignOutRequested>(_onSignOutRequested);
   }
 
   /// Checks if the phone number is available for registration
-  Future<void> _onPhoneNumberAvailabilityChecked(
-    PhoneNumberAvailabilityChecked event,
+  Future<void> _onCheckUserExistence(
+    CheckUserExistence event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
-      // Check phone number availability
-      final isAvailable = await authRepository.checkPhoneNumberAvailability(
+
+      // Check user existence
+      final isAvailable = await authRepository.checkUserExistence(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
+        email: event.email,
       );
       
       if (isAvailable['exists'] == true) {
@@ -81,8 +82,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
 
-  Future<void> _onUserRegistrationWithOtpRequested(
-    UserRegistrationWithOtpRequested event,
+  Future<void> _onRequestRegistration(
+    RequestRegistration event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
@@ -90,9 +91,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final authRepository = ServiceRegistry().authRepository;
       
       // Register user after OTP verification
-      final result = await authRepository.registerUserAfterOtpVerification(
-        enteredOtp: event.enteredOtp,
-        sentOtp: event.sentOtp,
+      final result = await authRepository.registerUser(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         country: event.country,

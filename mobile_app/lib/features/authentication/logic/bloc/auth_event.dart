@@ -4,13 +4,15 @@ part of 'auth_bloc.dart';
 sealed class AuthEvent {}
 
 
-final class PhoneNumberAvailabilityChecked extends AuthEvent {
+final class CheckUserExistence extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
+  final String? email;
 
-  PhoneNumberAvailabilityChecked({
+  CheckUserExistence({
     required this.phoneNumber,
     required this.countryCode,
+    this.email,
   });
 }
 
@@ -24,18 +26,14 @@ final class RequestLogin extends AuthEvent {
   });
 }
 
-final class UserRegistrationWithOtpRequested extends AuthEvent {
-  final String enteredOtp;
-  final String sentOtp;
+final class RequestRegistration extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
   final String country;
   final String fullName;
   final String email;
 
-  UserRegistrationWithOtpRequested({
-    required this.enteredOtp,
-    required this.sentOtp,
+  RequestRegistration({
     required this.phoneNumber,
     required this.countryCode,
     required this.country,

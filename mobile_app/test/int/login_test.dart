@@ -133,14 +133,14 @@ import '../lib/api_mock_interceptor.dart';
     });
 
     group('Login Error Scenarios', () {
-      testWidgets('Shows error when phone number does not exist', (tester) async {
-        // Override the phone existence endpoint to return phone not found
-        MockInterceptor.overrideEndpoint(BackendConfig.checkPhoneExistenceEndpoint, (options) {
+      testWidgets('Navigate to register view if phone number does not exist', (tester) async {
+        // Override the user existence endpoint to return user not found
+        MockInterceptor.overrideEndpoint(BackendConfig.checkUserExistence, (options) {
           return Response(
             requestOptions: options,
             data: {
               'success': true,  // Changed to true so repository processes it correctly
-              'exists': false,  // Phone doesn't exist
+              'exists': false,  // User doesn't exist
               'message': 'Phone number not found',
             },
             statusCode: 200,  // Changed to 200 for successful API call
@@ -195,7 +195,41 @@ import '../lib/api_mock_interceptor.dart';
                reason: 'Should have navigated to RegisterView when shouldRegister: true');
 
         // Clear the override for next test
-        MockInterceptor.clearEndpointOverride(BackendConfig.checkPhoneExistenceEndpoint);
+        MockInterceptor.clearEndpointOverride(BackendConfig.checkUserExistence);
+      });
+   
+      testWidgets('User want to login without phone number', (tester) async{
+        // Start with the LoginView
+        await tester.pumpWidget(
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => AuthBloc()),
+              BlocProvider(create: (context) => VerificationBloc()),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en'), // English
+                Locale('fr'), // French
+              ],
+              home: const LoginView(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Tap login without entering phone number
+        final loginButton = find.byKey(const Key('login_button'));
+        await tester.tap(loginButton);
+        await tester.pumpAndSettle();
+
+        // Check for error message
+        expect(find.textContaining('Please enter a phone number'), findsOneWidget);
       });
     });
   }

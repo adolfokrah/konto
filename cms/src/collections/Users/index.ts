@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { checkPhoneNumberExistence } from './endpoints/check-phone-number-existence'
+import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 
@@ -43,9 +43,9 @@ export const Users: CollectionConfig = {
       handler: loginWithPhoneNumber,
     },
     {
-      path: '/check-phone-number-existence',
+      path: '/check-user-existence',
       method: 'post',
-      handler: checkPhoneNumberExistence,
+      handler: checkUserExistence,
     },
     {
       path: '/register-user',
@@ -82,11 +82,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'country',
-      type: 'select',
-      options: [
-        { label: 'Ghana', value: 'gh' },
-        { label: 'Nigeria', value: 'ng' },
-      ],
+      type: 'text',
       required: true,
     },
     {

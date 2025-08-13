@@ -7,9 +7,11 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
+import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/route.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -22,86 +24,49 @@ class _RegisterViewState extends State<RegisterView> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   String _phoneNumber = '';
-  String _countryCode = '+233';
+  String _countryCode = '+233'; // Default to Ghana
+  String _selectedPhoneCountry = 'Ghana';
   String _selectedCountry = 'Ghana';
   bool _isLoading = false;
-  
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    
-    // Extract arguments passed from login view
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      final phoneNumber = args['phoneNumber'] as String?;
-      final countryCode = args['countryCode'] as String?;
-      final country = args['country'] as String?;
-      
-      if (phoneNumber != null && countryCode != null && country != null) {
-        setState(() {
-          _phoneNumber = phoneNumber;
-          _countryCode = countryCode;
-          _selectedCountry = country;
-        });
-        print('📱 Pre-filled registration: $countryCode $phoneNumber ($country)');
-      }
-    }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      // Set initial values from widget parameters
+      setState(() {
+        _countryCode = args?['initialCountryCode'] ?? '+233';
+        _phoneNumber = args?['initialPhoneNumber'] ?? '';
+        _selectedPhoneCountry = args?['initialSelectedCountry'] ?? 'Ghana'; // Fixed key name
+      });
+    });
   }
-  
+
   void _handleCreateAccount(BuildContext context) {
-    // Validate input fields
-    if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter your full name', style: AppTextStyles.titleRegularM),
-          backgroundColor: AppColors.errorRed,
-        ),
-      );
+
+    final localizations = AppLocalizations.of(context)!;
+
+    if(_nameController.text.isEmpty) {
+      AppSnackBar.showError(context, message: "Please enter your full name");
       return;
     }
-    
-    if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter your email address', style: AppTextStyles.titleRegularM),
-          backgroundColor: AppColors.errorRed,
-        ),
-      );
+
+    if(_emailController.text.isEmpty) {
+      AppSnackBar.showError(context, message: "Please enter your email address");
       return;
     }
-    
-    if (_phoneNumber.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter your phone number', style: AppTextStyles.titleRegularM),
-          backgroundColor: AppColors.errorRed,
-        ),
-      );
+    if(_phoneNumber.isEmpty) {
+      AppSnackBar.showError(context, message: "Please enter your phone number");
       return;
     }
-    
-    // Map country name to country code for backend
-    String getCountryCode(String countryName) {
-      switch (countryName.toLowerCase()) {
-        case 'ghana':
-          return 'gh';
-        case 'nigeria':
-          return 'ng';
-        default:
-          return 'gh';
-      }
-    }
-    
-    // // Trigger registration OTP request
-    // context.read<AuthBloc>().add(
-    //   UserRegistrationOtpRequested(
-    //     phoneNumber: _phoneNumber,
-    //     countryCode: _countryCode,
-    //     country: getCountryCode(_selectedCountry),
-    //     fullName: _nameController.text.trim(),
-    //     email: _emailController.text.trim(),
-    //   ),
-    // );
+
+    //check if user exists
+    context.read<AuthBloc>().add(CheckUserExistence(
+      phoneNumber: _phoneNumber,
+      countryCode: _countryCode,
+      email: _emailController.text.trim(),
+    ));
   }
   
   @override
@@ -121,50 +86,28 @@ class _RegisterViewState extends State<RegisterView> {
       SelectOption(value: 'nigeria', label: localizations.countryNigeria)
     ];
     
-    // Map country name to option value
-    String getCountryValue(String countryName) {
-      switch (countryName.toLowerCase()) {
-        case 'ghana':
-          return 'ghana';
-        case 'nigeria':
-          return 'nigeria';
-        default:
-          return 'ghana'; // Default fallback
-      }
-    }
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // if (state is UserRegistrationOtpSent) {
-        //   // OTP sent successfully, navigate to OTP verification
-        //   Navigator.pushNamed(
-        //     context, 
-        //     '/otp',
-        //     arguments: {
-        //       'phoneNumber': state.phoneNumber,
-        //       'countryCode': state.countryCode,
-        //       'verificationId': state.sentOtp, // Use 'verificationId' key that OTP view expects
-        //       'country': state.country,
-        //       'fullName': state.fullName,
-        //       'email': state.email,
-        //       'sentOtp': state.sentOtp,
-        //       'isRegistration': true, // Flag to indicate this is for registration
-        //     },
-        //   );
-        // } else if (state is UserRegistrationFailure) {
-        //   // Registration failed
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(
-        //       content: Text(state.error, style: AppTextStyles.titleRegularM),
-        //       backgroundColor: AppColors.errorRed,
-        //     ),
-        //   );
-        // }
-        
-        // Update loading state
-        setState(() {
-          _isLoading = state is AuthLoading;
-        });
+        if(state is PhoneNumberAvailable){
+          AppSnackBar.showError(
+            context,
+            message: 'Account already exists',
+          );
+        }else if (state is PhoneNumberNotAvailable){
+            Navigator.pushNamed(
+              context,
+              AppRoutes.otp,
+              arguments: {
+                'phoneNumber': _phoneNumber,
+                'countryCode': _countryCode,
+                'isRegistration': true,
+                'email': _emailController.text.trim(),
+                'fullName': _nameController.text.trim(),
+                'country': _selectedPhoneCountry
+              },
+            );
+        }
       },
       child: Scaffold(
       appBar: AppBar(
@@ -190,38 +133,32 @@ class _RegisterViewState extends State<RegisterView> {
               label: localizations.email,
               keyboardType: TextInputType.emailAddress,
               controller: _emailController,
-              onChanged: (value) {
-                // Handle email input
-                print('Email: $value');
-              },
             ),
-             const SizedBox(height: AppSpacing.spacingS),
+            const SizedBox(height: AppSpacing.spacingS),
             SelectInput<String>(
               key: const Key('country'),
               label: localizations.country,
               options: countryOptions,
-              value: getCountryValue(_selectedCountry),
+              value: _selectedCountry,
               onChanged: (value) {
-                // Handle country selection and update corresponding state
-                String countryName = value == 'ghana' ? 'Ghana' : 'Nigeria';
-                String countryCode = value == 'ghana' ? '+233' : '+234';
+                print(value);
                 
                 setState(() {
-                  _selectedCountry = countryName;
-                  _countryCode = countryCode;
+                  _selectedCountry = value;
                 });
               },
             ),
              const SizedBox(height: AppSpacing.spacingS),
+             
              NumberInput(
               key: const Key('phoneNumber'),
-              selectedCountry: _selectedCountry,
+              selectedCountry: _selectedPhoneCountry,
               countryCode: _countryCode,
               phoneNumber: _phoneNumber, // Pre-fill with passed phone number
               placeholder: localizations.phoneNumberPlaceholder,
               onCountryChanged: (country, code) {
                 setState(() {
-                  _selectedCountry = country;
+                  _selectedPhoneCountry = country;
                   _countryCode = code;
                 });
               },
@@ -287,6 +224,7 @@ class _RegisterViewState extends State<RegisterView> {
                 
                 // Login Button
                 AppButton.outlined(
+                  key: const Key('login_button'),
                   text: localizations.login,
                   onPressed: () {
                     // Handle login navigation

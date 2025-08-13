@@ -32,6 +32,10 @@ class _LoginViewState extends State<LoginView> {
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
+          bool? isCurrentRoute = ModalRoute.of(context)?.isCurrent;
+          if(isCurrentRoute == false) {
+            return;
+          }
           if(state is PhoneNumberAvailable) {
             Navigator.pushNamed(
               context,
@@ -44,8 +48,9 @@ class _LoginViewState extends State<LoginView> {
           } else if (state is PhoneNumberNotAvailable) {
             // Navigate to registration screen if phone number is not available
             Navigator.pushNamed(context, AppRoutes.register, arguments: {
-              'phoneNumber': state.phoneNumber,
-              'countryCode': state.countryCode,
+              'initialPhoneNumber': state.phoneNumber,
+              'initialCountryCode': state.countryCode,
+              'initialSelectedCountry': _selectedCountry,
             });
           } else if (state is AuthError) {
             // Show error message from auth state
@@ -104,9 +109,9 @@ class _LoginViewState extends State<LoginView> {
                             ? null
                             : () {
                               if (_phoneNumber.isNotEmpty) {
-                                // First check if phone number is available
+                                // First check if user exists
                                 context.read<AuthBloc>().add(
-                                  PhoneNumberAvailabilityChecked(
+                                  CheckUserExistence(
                                     phoneNumber: _phoneNumber,
                                     countryCode: _countryCode,
                                   ),

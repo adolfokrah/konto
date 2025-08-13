@@ -1,12 +1,14 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-export const checkPhoneNumberExistence = async (req: PayloadRequest) => {
+export const checkUserExistence = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    
-    const { phoneNumber, countryCode } = req.data || {}
+
+    const { phoneNumber, countryCode, email } = req.data || {}
+
+    console.log(phoneNumber, countryCode, email)
 
     if (!phoneNumber) {
       return Response.json({
@@ -22,17 +24,40 @@ export const checkPhoneNumberExistence = async (req: PayloadRequest) => {
       }, { status: 400 })
     }
 
-    // Find the user with the phone number and country code
+
+    // Find the user with the phone number and country code OR email
+    const whereConditions: any = {
+      or: [
+        // Phone number and country code must both match
+        {
+          and: [
+            {
+              phoneNumber: {
+                equals: phoneNumber,
+              },
+            },
+            {
+              countryCode: {
+                equals: countryCode,
+              },
+            },
+          ],
+        },
+      ],
+    }
+
+    // Add email condition if provided
+    if (email) {
+      whereConditions.or.push({
+        email: {
+          equals: email,
+        },
+      })
+    }
+
     const existingUser = await req.payload.find({
       collection: 'users',
-      where: {
-        phoneNumber: {
-          equals: phoneNumber,
-        },
-        countryCode: {
-          equals: countryCode,
-        },
-      },
+      where: whereConditions,
       limit: 1,
     })
 
