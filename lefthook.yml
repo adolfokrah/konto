@@ -38,7 +38,7 @@ pre-push:
     # Run Flutter tests before push
     flutter-test:
       glob: "mobile_app/**/*.{dart}"
-      run: cd mobile_app && flutter test --no-sound-null-safety
+      run: cd mobile_app && flutter test
       skip:
         - merge
         - rebase
