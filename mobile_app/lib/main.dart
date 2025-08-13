@@ -2,27 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
-import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Load environment variables from .env file
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    // .env file might not exist in production/CI, that's okay
-    print('Note: .env file not found, using compile-time environment variables');
-  }
-  
+  await dotenv.load(fileName: ".env");
   // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
   
@@ -34,20 +24,11 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create service instances
-    final localStorageService = LocalStorageService();
-    
-    // Create repository instances
-    final onboardingRepository = OnboardingRepository(
-      localStorageService: localStorageService,
-    );
 
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => OnboardingBloc(
-            onboardingRepository: onboardingRepository,
-          ),
+          create: (context) => OnboardingBloc()..add(CheckOnboardingStatus()),
         ),
         BlocProvider(
           create: (context) => AuthBloc(),

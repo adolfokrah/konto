@@ -27,28 +27,21 @@ class AuthRepository {
     required String countryCode,
   }) async {
     try {
-      print('🔍 Checking phone number availability for: $phoneNumber');
-      
       final apiResponse = await _authApiProvider.checkPhoneNumberAvailability(
         phoneNumber: phoneNumber,
         countryCode: countryCode,
       );
-      
-      print('📋 Availability check response: $apiResponse');
-      
+            
       if (apiResponse['success'] == true) {
         final exists = apiResponse['exists'] ?? false;
         return {
           'success': true,
           'exists': exists,
-          'shouldLogin': exists, // If phone exists, user should login
-          'shouldRegister': !exists, // If phone doesn't exist, user should register
           'message': exists 
             ? 'Phone number found. Proceed to login.'
             : 'Phone number not found. Please register first.',
         };
       } else {
-        print('💥 API Error: ${apiResponse['message']}');
         return {
           'success': false,
           'message': 'Error checking phone availability: ${apiResponse['message']}',
@@ -56,7 +49,6 @@ class AuthRepository {
         };
       }
     } catch (e) {
-      print('💥 Repository Exception: $e');
       return {
         'success': false,
         'message': 'Error: ${e.toString()}'
@@ -134,24 +126,11 @@ class AuthRepository {
   }
 
   /// Verify OTP and login user
-  Future<Map<String, dynamic>> verifyOTPAndLogin({
-    required String enteredOtp,
-    required String sentOtp,
+  Future<Map<String, dynamic>> loginWithPhoneNumber({
     required String phoneNumber,
     required String countryCode,
   }) async {
     try {
-      // First verify the OTP
-      if (enteredOtp != sentOtp) {
-        print('❌ OTP verification failed - codes do not match');
-        return {
-          'success': false,
-          'message': 'Invalid OTP code. Please check and try again.',
-        };
-      }
-
-      print('✅ OTP verification successful, proceeding to login');
-
       // If OTP is correct, login the user
       final loginResponse = await _authApiProvider.loginWithPhoneNumber(
         phoneNumber: phoneNumber,
@@ -169,35 +148,21 @@ class AuthRepository {
           tokenExpiry: loginData.exp,
         );
 
-        if (saveResult) {
-          print('🎉 User logged in and data saved successfully');
-          return {
+         return {
             'success': true,
             'message': 'Login successful',
             'user': loginData.user,
             'token': loginData.token,
             'phoneNumber': phoneNumber,
           };
-        } else {
-          print('⚠️ Login successful but failed to save data locally');
-          return {
-            'success': true,
-            'message': 'Login successful',
-            'user': loginData.user,
-            'token': loginData.token,
-            'phoneNumber': phoneNumber,
-            'warning': 'Failed to save data locally',
-          };
-        }
+
       } else {
-        print('💥 Login failed: ${loginResponse['message']}');
         return {
           'success': false,
           'message': 'Login failed: ${loginResponse['message']}',
         };
       }
     } catch (e) {
-      print('💥 OTP Verification and Login Exception: $e');
       return {
         'success': false,
         'message': 'Error during verification and login: ${e.toString()}'
@@ -356,59 +321,21 @@ class AuthRepository {
       final user = await _userStorageService.getUserData();
       
       if (user == null) {
-        print('❌ No user data found in storage');
         return {
           'success': false,
           'message': 'No user data found in storage',
         };
       }
 
-      print('🔍 Found stored user data, attempting auto-login for: ${user.fullName}');
       
       // Use the existing login endpoint with stored phone number and country code
-      final loginResponse = await _authApiProvider.loginWithPhoneNumber(
+      final loginResponse = await loginWithPhoneNumber(
         phoneNumber: user.phoneNumber,
         countryCode: user.countryCode,
       );
 
-      if (loginResponse['success'] == true) {
-        // Parse the login response
-        final loginData = LoginResponse.fromJson(loginResponse);
-        
-        // Update stored user data and token with fresh data from backend
-        final saveResult = await _userStorageService.saveUserData(
-          user: loginData.user,
-          token: loginData.token,
-          tokenExpiry: loginData.exp,
-        );
+      return loginResponse;
 
-        if (saveResult) {
-          print('🎉 Auto-login successful and data refreshed');
-          return {
-            'success': true,
-            'message': 'Auto-login successful',
-            'user': loginData.user,
-            'token': loginData.token,
-          };
-        } else {
-          print('⚠️ Auto-login successful but failed to save updated data');
-          return {
-            'success': true,
-            'message': 'Auto-login successful',
-            'user': loginData.user,
-            'token': loginData.token,
-            'warning': 'Failed to save updated data locally',
-          };
-        }
-      } else {
-        print('💥 Auto-login failed: ${loginResponse['message']}');
-        // Clear stored data since login failed (user might be deleted/deactivated)
-        await _userStorageService.clearUserData();
-        return {
-          'success': false,
-          'message': 'Auto-login failed: ${loginResponse['message']}',
-        };
-      }
     } catch (e) {
       print('💥 Auto-login Exception: $e');
       return {
@@ -417,6 +344,8 @@ class AuthRepository {
       };
     }
   }
+  
+  
   Future<bool> isUserLoggedIn() async {
     return await _userStorageService.isUserLoggedIn();
   }

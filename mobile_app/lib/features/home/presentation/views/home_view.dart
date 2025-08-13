@@ -12,7 +12,7 @@ class HomeView extends StatelessWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         // Handle sign out - navigate to login
-        if (state is AuthUnauthenticated) {
+        if (state is AuthInitial) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/login',
             (route) => false,

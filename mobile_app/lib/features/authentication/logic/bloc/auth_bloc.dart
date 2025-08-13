@@ -7,143 +7,79 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  String? _phoneNumber;
-  String? _sentOtp;
+
   
   AuthBloc() : super(const AuthInitial()) {
-    on<PhoneNumberAvailabilityChecked>(_onPhoneNumberAvailabilityChecked);
-    on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
-    on<UserRegistrationOtpRequested>(_onUserRegistrationOtpRequested);
     on<UserRegistrationWithOtpRequested>(_onUserRegistrationWithOtpRequested);
-    on<SignOutRequested>(_onSignOutRequested);
     on<AutoLoginRequested>(_onAutoLoginRequested);
+    on<PhoneNumberAvailabilityChecked>(_onPhoneNumberAvailabilityChecked);
+    on<RequestLogin>(_onRequestLogin);
+    on<SignOutRequested>(_onSignOutRequested);
   }
 
+  /// Checks if the phone number is available for registration
   Future<void> _onPhoneNumberAvailabilityChecked(
     PhoneNumberAvailabilityChecked event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-    
     try {
       final authRepository = ServiceRegistry().authRepository;
-      
-      // Don't format the phone number with country code since we send it separately
-      // Just clean the phone number (remove non-digits)
-      String cleanPhoneNumber = event.phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
       
       // Check phone number availability
-      final result = await authRepository.checkPhoneNumberAvailability(
-        phoneNumber: cleanPhoneNumber,
-        countryCode: event.countryCode,
-      );
-      
-      if (result['success'] == true) {
-        emit(PhoneNumberAvailabilityResult(
-          exists: result['exists'] ?? false,
-          shouldLogin: result['shouldLogin'] ?? false,
-          shouldRegister: result['shouldRegister'] ?? false,
-          message: result['message'] ?? '',
-          phoneNumber: cleanPhoneNumber,
-          countryCode: event.countryCode,
-        ));
-      } else {
-        emit(AuthFailure(result['message'] ?? 'Failed to check phone number availability'));
-      }
-    } catch (e) {
-      emit(AuthFailure('Failed to check phone number availability: ${e.toString()}'));
-    }
-  }
-
-  Future<void> _onPhoneNumberSubmitted(
-    PhoneNumberSubmitted event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    
-    try {
-      final authRepository = ServiceRegistry().authRepository;
-      
-      // Clean the phone number (remove non-digits) but don't add country code
-      // The backend expects separate phoneNumber and countryCode fields
-      String cleanPhoneNumber = event.phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-      _phoneNumber = cleanPhoneNumber;
-      
-      // Send OTP using simple SMS service
-      Map<String, dynamic> result = await authRepository.verifyPhoneNumber(
-        phoneNumber: _phoneNumber!,
-        countryCode: event.countryCode,
-      );
-      
-      if (result['success'] == true) {
-        // Store the sent OTP for verification later
-        _sentOtp = result['otp'];
-        
-        // Emit success state with phone number and OTP for navigation
-        emit(AuthCodeSentSuccess(
-          verificationId: _sentOtp!, // Use OTP as verification ID for simplicity
-          phoneNumber: result['phoneNumber'],
-          countryCode: event.countryCode,
-        ));
-      } else {
-        emit(AuthFailure(result['message'] ?? 'Failed to send OTP'));
-      }
-    } catch (e) {
-      emit(AuthFailure('Failed to send verification code: ${e.toString()}'));
-    }
-  }
-
-  Future<void> _onSignOutRequested(
-    SignOutRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    try {
-      final authRepository = ServiceRegistry().authRepository;
-      await authRepository.signOut();
-      _phoneNumber = null;
-      _sentOtp = null;
-      emit(const AuthUnauthenticated());
-    } catch (e) {
-      emit(AuthFailure('Failed to sign out: ${e.toString()}'));
-    }
-  }
-
-  Future<void> _onUserRegistrationOtpRequested(
-    UserRegistrationOtpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    try {
-      final authRepository = ServiceRegistry().authRepository;
-      
-      // Send OTP for registration verification
-      final result = await authRepository.verifyPhoneNumber(
+      final isAvailable = await authRepository.checkPhoneNumberAvailability(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
       );
       
-      if (result['success'] == true) {
-        final sentOtp = result['otp'] as String;
-        
-        emit(UserRegistrationOtpSent(
+      if (isAvailable['exists'] == true) {
+        // Emit a success state indicating phone number is available
+        emit(PhoneNumberAvailable(
           phoneNumber: event.phoneNumber,
           countryCode: event.countryCode,
-          country: event.country,
-          fullName: event.fullName,
-          email: event.email,
-          sentOtp: sentOtp,
         ));
       } else {
-        emit(UserRegistrationFailure(
-          error: result['message'] ?? 'Failed to send OTP',
+        emit(PhoneNumberNotAvailable(
+          phoneNumber: event.phoneNumber,
+          countryCode: event.countryCode,
         ));
       }
     } catch (e) {
-      emit(UserRegistrationFailure(
-        error: 'Failed to send OTP: ${e.toString()}',
-      ));
+      emit(AuthError(error: 'Failed to check phone number availability: ${e.toString()}'));
     }
   }
+
+
+  Future<void> _onRequestLogin(
+    RequestLogin event,
+    Emitter<AuthState> emit
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Attempt to login with the provided phone number and country code
+      final loginResult = await authRepository.loginWithPhoneNumber(
+        phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
+      );
+      
+      if (loginResult['success'] == true) {
+        final user = loginResult['user'] as User;
+        final token = loginResult['token'] as String?;
+        
+        emit(AuthAuthenticated(
+          user: user,
+          token: token ?? '',
+        ));
+      } else {
+        emit(AuthError(error: loginResult['message'] ?? 'Login failed'));
+      }
+    } catch (e) {
+      emit(AuthError(error: 'Login failed: ${e.toString()}'));
+    }
+  }
+
 
   Future<void> _onUserRegistrationWithOtpRequested(
     UserRegistrationWithOtpRequested event,
@@ -167,43 +103,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (result['success'] == true) {
         final user = result['user'] as User;
         final token = result['token'] as String?;
-        final requiresLogin = result['requiresLogin'] as bool? ?? false;
         
-        print('🎯 Registration successful: user=${user.fullName}, token=${token != null ? 'YES' : 'NO'}, requiresLogin=$requiresLogin');
-        
-        emit(UserRegistrationSuccess(
+        emit(AuthAuthenticated(
           user: user,
-          token: token,
-          requiresLogin: requiresLogin,
+          token: token ?? '',
         ));
       } else {
-        emit(UserRegistrationFailure(
+        emit(AuthError(
           error: result['message'] ?? 'Registration failed',
-          errors: result['errors'],
         ));
       }
     } catch (e) {
-      emit(UserRegistrationFailure(
+      emit(AuthError(
         error: 'Registration failed: ${e.toString()}',
       ));
     }
-  }
-
-  // Helper method to verify OTP (can be called from VerificationBloc)
-  Future<Map<String, dynamic>> verifyOtp(String enteredOtp) async {
-    if (_sentOtp == null || _phoneNumber == null) {
-      return {
-        'success': false,
-        'message': 'No OTP session found'
-      };
-    }
-    
-    final authRepository = ServiceRegistry().authRepository;
-    return await authRepository.verifyOTP(
-      enteredOtp: enteredOtp,
-      sentOtp: _sentOtp!,
-      phoneNumber: _phoneNumber!,
-    );
   }
 
   /// Auto login handler - uses stored user data to re-authenticate with backend
@@ -211,8 +125,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AutoLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AutoLoginLoading());
-    
+    emit(const AuthLoading());
+
     try {
       final authRepository = ServiceRegistry().authRepository;
       
@@ -220,10 +134,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final isLoggedIn = await authRepository.isUserLoggedIn();
       
       if (!isLoggedIn) {
-        print('ℹ️ No stored session found');
-        emit(const AutoLoginFailed(
-          message: 'No stored session found'
-        ));
+        emit(AuthInitial());
         return;
       }
 
@@ -234,26 +145,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final user = autoLoginResult['user'];
         final token = autoLoginResult['token'];
         
-        print('✅ Auto-login successful for user: ${user.fullName}');
-        emit(AutoLoginSuccess(
+        emit(AuthAuthenticated(
           user: user,
           token: token,
         ));
       } else {
-        print('❌ Auto-login failed: ${autoLoginResult['message']}');
-        emit(AutoLoginFailed(
-          message: autoLoginResult['message'] ?? 'Auto-login failed'
-        ));
+        emit(AuthInitial());
       }
     } catch (e) {
-      print('💥 Auto-login error: $e');
-      emit(AutoLoginFailed(
-        message: 'Auto-login failed: ${e.toString()}'
-      ));
+       emit(AuthInitial());
     }
   }
 
-  // Getters for the sent OTP and phone number
-  String? get sentOtp => _sentOtp;
-  String? get phoneNumber => _phoneNumber;
+  Future<void> _onSignOutRequested(
+    SignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      final authRepository = ServiceRegistry().authRepository;
+      
+      // Clear user session
+      await authRepository.signOut();
+      
+      emit(const AuthInitial());
+    } catch (e) {
+      emit(AuthError(error: 'Failed to sign out: ${e.toString()}'));
+    }
+  }
 }

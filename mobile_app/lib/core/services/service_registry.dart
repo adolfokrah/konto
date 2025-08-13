@@ -6,6 +6,7 @@ import 'package:konto/features/authentication/data/api_providers/auth_api_provid
 import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
 import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
 import 'package:konto/features/verification/data/repositories/verification_repository.dart';
+import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies
@@ -30,6 +31,7 @@ class ServiceRegistry {
   // Repositories
   late final AuthRepository _authRepository;
   late final VerificationRepository _verificationRepository;
+  late final OnboardingRepository _onboardingRepository;
   
   /// Initialize all services with proper dependency injection
   void initialize() {
@@ -75,6 +77,10 @@ class ServiceRegistry {
       smsApiProvider: _smsApiProvider,
     );
     
+    _onboardingRepository = OnboardingRepository(
+      localStorageService: _localStorageService,
+    );
+    
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
   }
@@ -88,6 +94,7 @@ class ServiceRegistry {
   AuthApiProvider get authApiProvider => _authApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
+  OnboardingRepository get onboardingRepository => _onboardingRepository;
   
   /// Reset the registry (useful for testing)
   void reset() {
@@ -125,6 +132,10 @@ class ServiceRegistry {
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
       smsApiProvider: _smsApiProvider,
+    );
+    
+    _onboardingRepository = OnboardingRepository(
+      localStorageService: _localStorageService,
     );
     
     _isInitialized = true;

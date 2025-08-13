@@ -92,16 +92,16 @@ class _RegisterViewState extends State<RegisterView> {
       }
     }
     
-    // Trigger registration OTP request
-    context.read<AuthBloc>().add(
-      UserRegistrationOtpRequested(
-        phoneNumber: _phoneNumber,
-        countryCode: _countryCode,
-        country: getCountryCode(_selectedCountry),
-        fullName: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-      ),
-    );
+    // // Trigger registration OTP request
+    // context.read<AuthBloc>().add(
+    //   UserRegistrationOtpRequested(
+    //     phoneNumber: _phoneNumber,
+    //     countryCode: _countryCode,
+    //     country: getCountryCode(_selectedCountry),
+    //     fullName: _nameController.text.trim(),
+    //     email: _emailController.text.trim(),
+    //   ),
+    // );
   }
   
   @override
@@ -135,31 +135,31 @@ class _RegisterViewState extends State<RegisterView> {
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is UserRegistrationOtpSent) {
-          // OTP sent successfully, navigate to OTP verification
-          Navigator.pushNamed(
-            context, 
-            '/otp',
-            arguments: {
-              'phoneNumber': state.phoneNumber,
-              'countryCode': state.countryCode,
-              'verificationId': state.sentOtp, // Use 'verificationId' key that OTP view expects
-              'country': state.country,
-              'fullName': state.fullName,
-              'email': state.email,
-              'sentOtp': state.sentOtp,
-              'isRegistration': true, // Flag to indicate this is for registration
-            },
-          );
-        } else if (state is UserRegistrationFailure) {
-          // Registration failed
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.error, style: AppTextStyles.titleRegularM),
-              backgroundColor: AppColors.errorRed,
-            ),
-          );
-        }
+        // if (state is UserRegistrationOtpSent) {
+        //   // OTP sent successfully, navigate to OTP verification
+        //   Navigator.pushNamed(
+        //     context, 
+        //     '/otp',
+        //     arguments: {
+        //       'phoneNumber': state.phoneNumber,
+        //       'countryCode': state.countryCode,
+        //       'verificationId': state.sentOtp, // Use 'verificationId' key that OTP view expects
+        //       'country': state.country,
+        //       'fullName': state.fullName,
+        //       'email': state.email,
+        //       'sentOtp': state.sentOtp,
+        //       'isRegistration': true, // Flag to indicate this is for registration
+        //     },
+        //   );
+        // } else if (state is UserRegistrationFailure) {
+        //   // Registration failed
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text(state.error, style: AppTextStyles.titleRegularM),
+        //       backgroundColor: AppColors.errorRed,
+        //     ),
+        //   );
+        // }
         
         // Update loading state
         setState(() {

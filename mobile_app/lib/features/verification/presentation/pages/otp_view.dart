@@ -6,6 +6,7 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/otp_input.dart';
+import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -64,39 +65,31 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   late Timer _timer;
   int _resendCountdown = 30;
   bool _canResend = false;
-  bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _startResendTimer();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_hasInitialized) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeVerification();
-      _hasInitialized = true;
-    }
+    });
   }
 
   void _initializeVerification() {
     // Initialize VerificationBloc with phone number and OTP from navigation arguments
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
-    final verificationId = args?['verificationId'] as String?; // This is actually the OTP
     final countryCode = args?['countryCode'] as String?;
+    final fullPhoneNumber = phoneNumber != null && countryCode != null
+        ? '$countryCode$phoneNumber'
+        : phoneNumber;
 
-    if (phoneNumber != null && verificationId != null && countryCode != null) {
-      context.read<VerificationBloc>().add(
-        InitializeVerification(
-          phoneNumber: phoneNumber,
-          sentOtp: verificationId,
-          countryCode: countryCode,
+    context.read<VerificationBloc>().add(
+        PhoneNumberVerificationRequested(
+          phoneNumber: fullPhoneNumber ?? '',
         ),
       );
-    }
+     _startResendTimer();
+    
   }
   
   @override
@@ -125,28 +118,32 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   void _handleResend() {
     if (_canResend) {
       final localizations = AppLocalizations.of(context)!;
-      // Show helpful message about potential rate limiting
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            localizations.resendMessage,
-            style: TextStyles.titleRegularSm.copyWith(color: Colors.white),
-          ),
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          duration: const Duration(seconds: 4),
-        ),
+     
+      AppSnackBar.showInfo(
+        context,
+        message: localizations.resendMessage,
       );
       
-      context.read<VerificationBloc>().add(ResendOtpRequested());
-      _startResendTimer();
+      _initializeVerification();
     }
   }
 
-  void _handleOtpChanged(String otp) {
-    context.read<VerificationBloc>().add(OtpChanged(otp));
-  }
 
   void _handleOtpCompleted(String otp) {
+    
+    final state = context.read<VerificationBloc>().state;
+    if (state is! VerificationCodeSent) {
+        return;
+      }
+    final sentOtp = state.otpCode;
+    if (otp != sentOtp) {
+      AppSnackBar.showError(
+        context,
+        message: "OTP does not match the sent code. Please try again.",
+      );
+      return;
+    }
+
     if (widget.isRegistration) {
       // Handle registration OTP verification
       if (widget.phoneNumber != null && 
@@ -169,8 +166,18 @@ class _OtpViewContentState extends State<_OtpViewContent> {
         );
       }
     } else {
+       if(widget.phoneNumber != null && widget.countryCode != null) {
+        // Handle login OTP verification
+        context.read<AuthBloc>().add(
+          RequestLogin(
+            phoneNumber: widget.phoneNumber!,
+            countryCode: widget.countryCode!,
+          ),
+        );
+      }
+
       // Handle regular login OTP verification
-      context.read<VerificationBloc>().add(OtpSubmitted(otp));
+      // context.read<VerificationBloc>().add(OtpSubmitted(otp));
     }
   }
 
@@ -215,16 +222,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           BlocListener<VerificationBloc, VerificationState>(
             listener: (context, state) {
               if (state is VerificationSuccess) {
-                // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(localizations.verificationSuccessful),
-                    backgroundColor: AppColors.secondaryGreen,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-                
-                // Call success callback or navigate
                 // Navigate to home on success
                 Navigator.pushNamedAndRemoveUntil(
                   context,
@@ -232,90 +229,81 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                   (route) => false,
             );
           } else if (state is VerificationFailure) {
-            // Show error message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Theme.of(context).colorScheme.error,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          } else if (state is VerificationResendSuccess) {
-            // Show resend success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(localizations.verificationCodeSent),
-                backgroundColor: AppColors.secondaryGreen,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          } else if (state is VerificationResendFailure) {
-            // Show resend error
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Theme.of(context).colorScheme.error,
-                duration: const Duration(seconds: 3),
-              ),
+            AppSnackBar.showError(
+              context,
+              message: state.errorMessage,
             );
           }
         },
       ),
       BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
-          if (state is UserRegistrationSuccess) {
-          
-            // Registration successful
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.token != null 
-                  ? 'Account created and logged in successfully!' 
-                  : 'Account created successfully!', style: AppTextStyles.titleRegularM),
-                backgroundColor: AppColors.secondaryGreen,
-                duration: const Duration(seconds: 2),
-              ),
+          if(state is AuthAuthenticated) {
+            // Navigate to home on successful authentication
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home',
+              (route) => false,
             );
-            
-            // Add a small delay to ensure data is saved before navigation
-            await Future.delayed(const Duration(milliseconds: 500));
-            
-            // Navigate to home view if user has token, otherwise navigate to login
-            if (state.token != null && !state.requiresLogin) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/home',
-                (route) => false,
-              );
-            } else if (state.requiresLogin) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Please login with your new account', style: AppTextStyles.titleRegularM),
-                  backgroundColor: AppColors.errorRed,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
-            } else {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/home',
-                (route) => false,
-              );
-            }
-          } else if (state is UserRegistrationFailure) {
-            // Registration failed
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error, style: AppTextStyles.titleRegularM),
-                backgroundColor: AppColors.errorRed,
-                duration: const Duration(seconds: 3),
-              ),
+          } else if (state is AuthError) {
+            AppSnackBar.showError(
+              context,
+              message: state.error,
             );
           }
+          // if (state is UserRegistrationSuccess) {
+          
+          //   // Registration successful
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(
+          //       content: Text(state.token != null 
+          //         ? 'Account created and logged in successfully!' 
+          //         : 'Account created successfully!', style: AppTextStyles.titleRegularM),
+          //       backgroundColor: AppColors.secondaryGreen,
+          //       duration: const Duration(seconds: 2),
+          //     ),
+          //   );
+            
+          //   // Add a small delay to ensure data is saved before navigation
+          //   await Future.delayed(const Duration(milliseconds: 500));
+            
+          //   // Navigate to home view if user has token, otherwise navigate to login
+          //   if (state.token != null && !state.requiresLogin) {
+          //     Navigator.pushNamedAndRemoveUntil(
+          //       context,
+          //       '/home',
+          //       (route) => false,
+          //     );
+          //   } else if (state.requiresLogin) {
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(
+          //         content: Text('Please login with your new account', style: AppTextStyles.titleRegularM),
+          //         backgroundColor: AppColors.errorRed,
+          //         duration: const Duration(seconds: 2),
+          //       ),
+          //     );
+          //     Navigator.pushNamedAndRemoveUntil(
+          //       context,
+          //       '/login',
+          //       (route) => false,
+          //     );
+          //   } else {
+          //     Navigator.pushNamedAndRemoveUntil(
+          //       context,
+          //       '/home',
+          //       (route) => false,
+          //     );
+          //   }
+          // } else if (state is UserRegistrationFailure) {
+          //   // Registration failed
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(
+          //       content: Text(state.error, style: AppTextStyles.titleRegularM),
+          //       backgroundColor: AppColors.errorRed,
+          //       duration: const Duration(seconds: 3),
+          //     ),
+          //   );
+          // }
         },
       ),
     ],
@@ -358,37 +346,16 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                 // OTP Input
                 BlocBuilder<VerificationBloc, VerificationState>(
                   builder: (context, state) {
-                    bool hasError = false;
-                    if (state is VerificationOtpInput) {
-                      hasError = state.hasError;
-                    }
+                    
                     
                     return AppOtpInput(
                       length: 6,
-                      hasError: hasError,
-                      onChanged: _handleOtpChanged,
+                      hasError: false,
                       onCompleted: _handleOtpCompleted,
                     );
                   },
-                ),
-                
-                const SizedBox(height: AppSpacing.spacingM),
-                
-                // Error message
-                BlocBuilder<VerificationBloc, VerificationState>(
-                  builder: (context, state) {
-                    if (state is VerificationOtpInput && state.hasError && state.errorMessage != null) {
-                      return Text(
-                        state.errorMessage!,
-                        style: AppTextStyles.titleRegularM.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-                
+                ),                
+              
                 const SizedBox(height: AppSpacing.spacingL),
                 
                 // Resend code section

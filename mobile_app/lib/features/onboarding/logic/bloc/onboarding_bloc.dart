@@ -1,19 +1,18 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:konto/core/services/service_registry.dart';
 import 'package:meta/meta.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  final OnboardingRepository onboardingRepository;
-  OnboardingBloc({required this.onboardingRepository}) : super(OnboardingInitial()) {
+  OnboardingBloc() : super(OnboardingInitial()) {
     on<PageChanged>((event, emit) {
       emit(OnboardingPageState(event.pageIndex));
     });
     on<OnboardingFinished>((event, emit) async {
       try {
-        await onboardingRepository.completeOnboarding();
+        await ServiceRegistry().onboardingRepository.completeOnboarding();
         emit(OnboardingCompleted());
       } catch (e) {
         // Still emit completed to avoid blocking user
@@ -22,7 +21,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<CheckOnboardingStatus>((event, emit) async {
       try {
-        final onboardingCompleted = await onboardingRepository.checkOnboardingStatus();
+        final onboardingCompleted = await ServiceRegistry().onboardingRepository.checkOnboardingStatus();
         if (onboardingCompleted) {
           emit(OnboardingCompleted());
         } else {
@@ -34,7 +33,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<ResetOnboarding>((event, emit) async {
       try {
-        await onboardingRepository.resetOnboarding();
+        await ServiceRegistry().onboardingRepository.resetOnboarding();
         emit(OnboardingPageState(0)); // Start from first page
       } catch (e) {
         // Handle reset error if needed

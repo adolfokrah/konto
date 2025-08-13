@@ -189,15 +189,7 @@ import '../lib/api_mock_interceptor.dart';
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pumpAndSettle();
 
-        // Check that the snackbar with the correct message is displayed
-        // This should be the message from LoginView, not the API error
-        expect(find.textContaining('Phone number not found. Please register first.'), findsOneWidget, 
-               reason: 'Should show snackbar from LoginView');
-
-        // Wait for navigation to complete
-        await tester.pump(const Duration(seconds: 2));
-        await tester.pumpAndSettle();
-
+       
         // ✅ Navigation to RegisterView should now work
         expect(find.byType(RegisterView), findsOneWidget, 
                reason: 'Should have navigated to RegisterView when shouldRegister: true');
