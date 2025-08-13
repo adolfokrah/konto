@@ -46,7 +46,7 @@ pre-push:
     # Run CMS tests before push  
     cms-test:
       glob: "cms/**/*.{ts,js}"
-      run: cd cms && pnpm test
+      run: cd cms && pnpm test:int
       skip:
         - merge
         - rebase
