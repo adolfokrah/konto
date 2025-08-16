@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class BackendConfig {
   // Base URL for the backend API
   static String get apiBaseUrl {
-    // Priority: .env file (local) > compile-time env var (CI/CD) > fallback
     return dotenv.env['API_BASE_URL'] ?? '';
   }
 
