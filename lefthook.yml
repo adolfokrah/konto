@@ -19,12 +19,20 @@ pre-commit:
     # TypeScript/Node.js formatting and linting for CMS
     cms-format:
       glob: "cms/**/*.{ts,js,json}"
-      run: cd cms && pnpm prettier --write {staged_files}
+      run: |
+        cd cms
+        # Remove 'cms/' prefix from file paths
+        files=$(echo "{staged_files}" | sed 's|cms/||g')
+        pnpm prettier --write $files
       stage_fixed: true
     
     cms-lint:
       glob: "cms/**/*.{ts,js}"
-      run: cd cms && pnpm eslint {staged_files} --fix
+      run: |
+        cd cms
+        # Remove 'cms/' prefix from file paths  
+        files=$(echo "{staged_files}" | sed 's|cms/||g')
+        pnpm eslint $files --fix
       stage_fixed: true
 
 commit-msg:

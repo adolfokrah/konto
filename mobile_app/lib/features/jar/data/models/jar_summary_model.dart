@@ -1,0 +1,466 @@
+/// Models for the Jar Summary API response
+class JarSummaryModel {
+  final String id;
+  final String name;
+  final String? description;
+  final double goalAmount;
+  final double acceptedContributionAmount;
+  final String currency; // 'ghc' | 'ngn'
+  final bool isActive;
+  final bool isFixedContribution;
+  final UserModel creator;
+  final List<UserModel>? collectors;
+  final List<String> acceptedPaymentMethods;
+  final bool acceptAnonymousContributions;
+  final String? paymentLink;
+  final JarGroupModel? jarGroup;
+  final MediaModel? image;
+  final DateTime? deadline;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<ContributionModel> contributions;
+
+  const JarSummaryModel({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.goalAmount,
+    required this.acceptedContributionAmount,
+    required this.currency,
+    required this.isActive,
+    required this.isFixedContribution,
+    required this.creator,
+    this.collectors,
+    required this.acceptedPaymentMethods,
+    required this.acceptAnonymousContributions,
+    this.paymentLink,
+    this.jarGroup,
+    this.image,
+    this.deadline,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.contributions,
+  });
+
+  factory JarSummaryModel.fromJson(Map<String, dynamic> json) {
+    return JarSummaryModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      goalAmount: (json['goalAmount'] as num).toDouble(),
+      acceptedContributionAmount:
+          (json['acceptedContributionAmount'] as num).toDouble(),
+      currency: json['currency'] as String,
+      isActive: json['isActive'] as bool,
+      isFixedContribution: json['isFixedContribution'] as bool,
+      creator: UserModel.fromJson(json['creator'] as Map<String, dynamic>),
+      collectors:
+          (json['collectors'] as List<dynamic>?)
+              ?.map(
+                (collector) =>
+                    UserModel.fromJson(collector as Map<String, dynamic>),
+              )
+              .toList(),
+      acceptedPaymentMethods:
+          (json['acceptedPaymentMethods'] as List<dynamic>)
+              .map((method) => method as String)
+              .toList(),
+      acceptAnonymousContributions:
+          json['acceptAnonymousContributions'] as bool,
+      paymentLink: json['paymentLink'] as String?,
+      jarGroup:
+          json['jarGroup'] != null
+              ? JarGroupModel.fromJson(json['jarGroup'] as Map<String, dynamic>)
+              : null,
+      image:
+          json['image'] != null
+              ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
+              : null,
+      deadline:
+          json['deadline'] != null
+              ? DateTime.parse(json['deadline'] as String)
+              : null,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      contributions:
+          json['contributions'] is List
+              ? (json['contributions'] as List<dynamic>)
+                  .map(
+                    (contribution) => ContributionModel.fromJson(
+                      contribution as Map<String, dynamic>,
+                    ),
+                  )
+                  .toList()
+              : json['contributions'] is Map &&
+                  json['contributions']['docs'] is List
+              ? (json['contributions']['docs'] as List<dynamic>)
+                  .map(
+                    (contribution) => ContributionModel.fromJson(
+                      contribution as Map<String, dynamic>,
+                    ),
+                  )
+                  .toList()
+              : <ContributionModel>[],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'goalAmount': goalAmount,
+      'acceptedContributionAmount': acceptedContributionAmount,
+      'currency': currency,
+      'isActive': isActive,
+      'isFixedContribution': isFixedContribution,
+      'creator': creator.toJson(),
+      'collectors': collectors?.map((collector) => collector.toJson()).toList(),
+      'acceptedPaymentMethods': acceptedPaymentMethods,
+      'acceptAnonymousContributions': acceptAnonymousContributions,
+      'paymentLink': paymentLink,
+      'jarGroup': jarGroup?.toJson(),
+      'image': image?.toJson(),
+      'deadline': deadline?.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'contributions':
+          contributions.map((contribution) => contribution.toJson()).toList(),
+    };
+  }
+}
+
+class UserModel {
+  final String id;
+  final String email;
+  final String fullName;
+  final String phoneNumber;
+  final String countryCode;
+  final String country;
+  final bool isKYCVerified;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const UserModel({
+    required this.id,
+    required this.email,
+    required this.fullName,
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.country,
+    required this.isKYCVerified,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as String,
+      email: json['email'] as String? ?? '',
+      fullName: json['fullName'] as String,
+      phoneNumber: json['phoneNumber'] as String,
+      countryCode: json['countryCode'] as String? ?? '',
+      country: json['country'] as String,
+      isKYCVerified: json['isKYCVerified'] as bool? ?? false,
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : null,
+      updatedAt:
+          json['updatedAt'] != null
+              ? DateTime.parse(json['updatedAt'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'fullName': fullName,
+      'phoneNumber': phoneNumber,
+      'countryCode': countryCode,
+      'country': country,
+      'isKYCVerified': isKYCVerified,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class JarGroupModel {
+  final String id;
+  final String name;
+  final String? description;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const JarGroupModel({
+    required this.id,
+    required this.name,
+    this.description,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory JarGroupModel.fromJson(Map<String, dynamic> json) {
+    return JarGroupModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : null,
+      updatedAt:
+          json['updatedAt'] != null
+              ? DateTime.parse(json['updatedAt'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class MediaModel {
+  final String id;
+  final String alt;
+  final String filename;
+  final String? mimeType;
+  final int? filesize;
+  final int? width;
+  final int? height;
+  final String? url;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const MediaModel({
+    required this.id,
+    required this.alt,
+    required this.filename,
+    this.mimeType,
+    this.filesize,
+    this.width,
+    this.height,
+    this.url,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory MediaModel.fromJson(Map<String, dynamic> json) {
+    return MediaModel(
+      id: json['id'] as String,
+      alt:
+          json['alt'] as String? ??
+          '', // alt is required in PayloadCMS but make it safe
+      filename: json['filename'] as String,
+      mimeType: json['mimeType'] as String?,
+      filesize: json['filesize'] as int?,
+      width: json['width'] as int?,
+      height: json['height'] as int?,
+      url: json['url'] as String?,
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : null,
+      updatedAt:
+          json['updatedAt'] != null
+              ? DateTime.parse(json['updatedAt'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'alt': alt,
+      'filename': filename,
+      'mimeType': mimeType,
+      'filesize': filesize,
+      'width': width,
+      'height': height,
+      'url': url,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class ContributionModel {
+  final String id;
+  final dynamic
+  jar; // Can be String ID or populated JarModel - keep as dynamic for flexibility
+  final String? contributor;
+  final String contributorPhoneNumber;
+  final String? paymentMethod; // 'mobile-money' | 'bank-transfer' | 'cash'
+  final double amountContributed;
+  final String
+  paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
+  final UserModel? collector;
+  final bool? viaPaymentLink;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const ContributionModel({
+    required this.id,
+    required this.jar,
+    this.contributor,
+    required this.contributorPhoneNumber,
+    this.paymentMethod,
+    required this.amountContributed,
+    required this.paymentStatus,
+    this.collector,
+    this.viaPaymentLink,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory ContributionModel.fromJson(Map<String, dynamic> json) {
+    return ContributionModel(
+      id: json['id'] as String,
+      jar: json['jar'], // Keep as dynamic - can be String or Map
+      contributor: json['contributor'] as String?,
+      contributorPhoneNumber: json['contributorPhoneNumber'] as String,
+      paymentMethod: json['paymentMethod'] as String?,
+      amountContributed: (json['amountContributed'] as num).toDouble(),
+      paymentStatus: json['paymentStatus'] as String,
+      collector:
+          json['collector'] != null
+              ? UserModel.fromJson(json['collector'] as Map<String, dynamic>)
+              : null, // Provide a fallback empty UserModel
+      viaPaymentLink: json['viaPaymentLink'] as bool?,
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : null,
+      updatedAt:
+          json['updatedAt'] != null
+              ? DateTime.parse(json['updatedAt'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'jar': jar is Map ? jar : jar.toString(), // Handle both cases
+      'contributor': contributor,
+      'contributorPhoneNumber': contributorPhoneNumber,
+      'paymentMethod': paymentMethod,
+      'amountContributed': amountContributed,
+      'paymentStatus': paymentStatus,
+      'collector': collector?.toJson(),
+      'viaPaymentLink': viaPaymentLink,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class ContributionsPaginatedModel {
+  final List<ContributionModel> docs;
+  final int totalDocs;
+  final int limit;
+  final int page;
+  final int totalPages;
+  final bool hasNextPage;
+  final bool hasPrevPage;
+  final int? nextPage;
+  final int? prevPage;
+
+  const ContributionsPaginatedModel({
+    required this.docs,
+    required this.totalDocs,
+    required this.limit,
+    required this.page,
+    required this.totalPages,
+    required this.hasNextPage,
+    required this.hasPrevPage,
+    this.nextPage,
+    this.prevPage,
+  });
+
+  factory ContributionsPaginatedModel.fromJson(Map<String, dynamic> json) {
+    return ContributionsPaginatedModel(
+      docs:
+          (json['docs'] as List<dynamic>)
+              .map(
+                (doc) =>
+                    ContributionModel.fromJson(doc as Map<String, dynamic>),
+              )
+              .toList(),
+      totalDocs: json['totalDocs'] as int,
+      limit: json['limit'] as int,
+      page: json['page'] as int,
+      totalPages: json['totalPages'] as int,
+      hasNextPage: json['hasNextPage'] as bool,
+      hasPrevPage: json['hasPrevPage'] as bool,
+      nextPage: json['nextPage'] as int?,
+      prevPage: json['prevPage'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'docs': docs.map((doc) => doc.toJson()).toList(),
+      'totalDocs': totalDocs,
+      'limit': limit,
+      'page': page,
+      'totalPages': totalPages,
+      'hasNextPage': hasNextPage,
+      'hasPrevPage': hasPrevPage,
+      'nextPage': nextPage,
+      'prevPage': prevPage,
+    };
+  }
+}
+
+class JarSummaryResponse {
+  final bool success;
+  final JarSummaryModel data;
+  final String? message;
+
+  const JarSummaryResponse({
+    required this.success,
+    required this.data,
+    this.message,
+  });
+
+  factory JarSummaryResponse.fromJson(Map<String, dynamic> json) {
+    return JarSummaryResponse(
+      success: json['success'] as bool,
+      data: JarSummaryModel.fromJson(json['data'] as Map<String, dynamic>),
+      message: json['message'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'success': success, 'data': data.toJson(), 'message': message};
+  }
+}
+
+class JarSummaryErrorResponse {
+  final bool success;
+  final String message;
+
+  const JarSummaryErrorResponse({required this.success, required this.message});
+
+  factory JarSummaryErrorResponse.fromJson(Map<String, dynamic> json) {
+    return JarSummaryErrorResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'success': success, 'message': message};
+  }
+}

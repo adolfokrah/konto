@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
+import { getJarSummary } from './endpoints/get-jar-summary'
 import { generatePaymentLink } from './hooks'
 
 export const Jars: CollectionConfig = {
@@ -160,4 +161,11 @@ export const Jars: CollectionConfig = {
     beforeChange: [],
     afterChange: [generatePaymentLink],
   },
+  endpoints: [
+    {
+      method: 'get',
+      path: '/:id/summary',
+      handler: getJarSummary,
+    },
+  ],
 }

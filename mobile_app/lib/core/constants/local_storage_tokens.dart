@@ -9,4 +9,8 @@ class LocalStorageTokens {
   static const String userData = 'konto_user_data';
   static const String authToken = 'konto_auth_token';
   static const String tokenExpiry = 'konto_token_expiry';
+
+  // Jar related
+  static const String currentJarId = 'konto_current_jar_id';
+  static const String recentJars = 'konto_recent_jars';
 }

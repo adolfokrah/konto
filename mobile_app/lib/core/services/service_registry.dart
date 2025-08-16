@@ -3,11 +3,14 @@ import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/services/sms_otp_service.dart';
 import 'package:konto/core/services/translation_service.dart';
 import 'package:konto/core/services/user_storage_service.dart';
+import 'package:konto/core/services/jar_storage_service.dart';
 import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
 import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
 import 'package:konto/features/verification/data/repositories/verification_repository.dart';
 import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
+import 'package:konto/features/jars/data/repositories/jar_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies
@@ -24,16 +27,19 @@ class ServiceRegistry {
   late final LocalStorageService _localStorageService;
   late final SmsOtpService _smsOtpService;
   late final UserStorageService _userStorageService;
+  late final JarStorageService _jarStorageService;
   late final TranslationService _translationService;
 
   // API providers
   late final SmsApiProvider _smsApiProvider;
   late final AuthApiProvider _authApiProvider;
+  late final JarApiProvider _jarApiProvider;
 
   // Repositories
   late final AuthRepository _authRepository;
   late final VerificationRepository _verificationRepository;
   late final OnboardingRepository _onboardingRepository;
+  late final JarRepository _jarRepository;
 
   /// Initialize all services with proper dependency injection
   void initialize() {
@@ -62,12 +68,19 @@ class ServiceRegistry {
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
+    _jarStorageService = JarStorageService(
+      localStorageService: _localStorageService,
+    );
     _translationService = TranslationService();
     _translationService.initialize();
 
     // Initialize API providers with Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
+    _jarApiProvider = JarApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -85,6 +98,8 @@ class ServiceRegistry {
       localStorageService: _localStorageService,
     );
 
+    _jarRepository = JarRepository(jarApiProvider: _jarApiProvider);
+
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
   }
@@ -94,12 +109,15 @@ class ServiceRegistry {
   LocalStorageService get localStorageService => _localStorageService;
   SmsOtpService get smsOtpService => _smsOtpService;
   UserStorageService get userStorageService => _userStorageService;
+  JarStorageService get jarStorageService => _jarStorageService;
   TranslationService get translationService => _translationService;
   SmsApiProvider get smsApiProvider => _smsApiProvider;
   AuthApiProvider get authApiProvider => _authApiProvider;
+  JarApiProvider get jarApiProvider => _jarApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
   OnboardingRepository get onboardingRepository => _onboardingRepository;
+  JarRepository get jarRepository => _jarRepository;
 
   /// Reset the registry (useful for testing)
   void reset() {
@@ -122,12 +140,19 @@ class ServiceRegistry {
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
+    _jarStorageService = JarStorageService(
+      localStorageService: _localStorageService,
+    );
     _translationService = TranslationService();
     _translationService.initialize();
 
     // Initialize API providers with custom Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
+    _jarApiProvider = JarApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -144,6 +169,8 @@ class ServiceRegistry {
     _onboardingRepository = OnboardingRepository(
       localStorageService: _localStorageService,
     );
+
+    _jarRepository = JarRepository(jarApiProvider: _jarApiProvider);
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with custom Dio for testing');

@@ -178,12 +178,7 @@ class UserStorageService {
         return null;
       }
 
-      return {
-        'user': user,
-        'token': token,
-        'expiry': expiry,
-        'isValid': await isUserLoggedIn(),
-      };
+      return {'user': user, 'token': token, 'expiry': expiry};
     } catch (e) {
       print('💥 Error retrieving auth data: $e');
       return null;
