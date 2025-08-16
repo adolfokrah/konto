@@ -4,8 +4,8 @@ import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 
-class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+class JarDetailView extends StatelessWidget {
+  const JarDetailView({super.key});
 
   @override
   Widget build(BuildContext context) {

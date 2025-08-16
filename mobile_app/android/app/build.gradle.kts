@@ -31,6 +31,7 @@ android {
         // Updated to minSdk 24 to support integration_test plugin
         minSdkVersion(24)
         targetSdkVersion(35)
+        compileSdk = 36
         
         versionCode = flutter.versionCode
         versionName = flutter.versionName

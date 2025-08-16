@@ -28,7 +28,7 @@ class StartupScreen extends StatelessWidget {
           BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthAuthenticated) {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+                Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
               } else if (state is AuthInitial) {
                 Navigator.of(context).pushReplacementNamed(AppRoutes.login);
               }
