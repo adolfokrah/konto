@@ -7,7 +7,7 @@ on:
       - completed
     branches:
       - main
-  workflow_dispatch: # Keep manual triggering option
+  workflow_dispatch:
     inputs:
       environment:
         description: 'Build environment'
