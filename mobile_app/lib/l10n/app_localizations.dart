@@ -397,6 +397,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification code sent successfully!'**
   String get verificationCodeSent;
+
+  /// Loading text shown when checking user existence
+  ///
+  /// In en, this message translates to:
+  /// **'Checking...'**
+  String get checking;
+
+  /// Error message when phone number is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a phone number'**
+  String get pleaseEnterPhoneNumber;
+
+  /// Error message when full name is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your full name'**
+  String get pleaseEnterFullName;
+
+  /// Error message when email address is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email address'**
+  String get pleaseEnterEmailAddress;
+
+  /// Error message when phone number is empty in registration form
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your phone number'**
+  String get pleaseEnterPhoneNumberRegister;
+
+  /// Error message when user tries to register with existing account
+  ///
+  /// In en, this message translates to:
+  /// **'Account already exists'**
+  String get accountAlreadyExists;
+
+  /// Error message when phone availability check fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error checking phone availability'**
+  String get errorCheckingPhoneAvailability;
+
+  /// Error message when phone number check connection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to check phone number availability. Connection failed'**
+  String get failedToCheckPhoneNumber;
+
+  /// Generic login failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailed;
+
+  /// Generic registration failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed'**
+  String get registrationFailed;
+
+  /// Error message when sign out fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sign out'**
+  String get failedToSignOut;
 }
 
 class _AppLocalizationsDelegate

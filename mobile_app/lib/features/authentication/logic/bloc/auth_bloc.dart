@@ -23,15 +23,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final authRepository = ServiceRegistry().authRepository;
+      final translationService = ServiceRegistry().translationService;
 
       // Check user existence
-      final isAvailable = await authRepository.checkUserExistence(
+      final response = await authRepository.checkUserExistence(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         email: event.email,
       );
 
-      if (isAvailable['exists'] == true) {
+      print(response);
+
+      if (response['exists'] == true) {
         // Emit a success state indicating phone number is available
         emit(
           PhoneNumberAvailable(
@@ -39,20 +42,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             countryCode: event.countryCode,
           ),
         );
-      } else {
+      } else if (response['exists'] == false) {
         emit(
           PhoneNumberNotAvailable(
             phoneNumber: event.phoneNumber,
             countryCode: event.countryCode,
           ),
         );
+      } else {
+        throw Exception(
+          translationService.errorCheckingPhoneAvailabilityWithMessage(
+            response['message'],
+          ),
+        );
       }
     } catch (e) {
-      emit(
-        AuthError(
-          error: 'Failed to check phone number availability: ${e.toString()}',
-        ),
-      );
+      final translationService = ServiceRegistry().translationService;
+      emit(AuthError(error: translationService.failedToCheckPhoneNumber));
     }
   }
 
@@ -76,10 +82,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
-        emit(AuthError(error: loginResult['message'] ?? 'Login failed'));
+        final translationService = ServiceRegistry().translationService;
+        emit(
+          AuthError(
+            error: loginResult['message'] ?? translationService.loginFailed,
+          ),
+        );
       }
     } catch (e) {
-      emit(AuthError(error: 'Login failed: ${e.toString()}'));
+      final translationService = ServiceRegistry().translationService;
+      emit(
+        AuthError(
+          error: translationService.loginFailedWithDetails(e.toString()),
+        ),
+      );
     }
   }
 
@@ -106,10 +122,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
-        emit(AuthError(error: result['message'] ?? 'Registration failed'));
+        final translationService = ServiceRegistry().translationService;
+        emit(
+          AuthError(
+            error: result['message'] ?? translationService.registrationFailed,
+          ),
+        );
       }
     } catch (e) {
-      emit(AuthError(error: 'Registration failed: ${e.toString()}'));
+      final translationService = ServiceRegistry().translationService;
+      emit(
+        AuthError(
+          error: translationService.registrationFailedWithDetails(e.toString()),
+        ),
+      );
     }
   }
 
@@ -159,7 +185,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       emit(const AuthInitial());
     } catch (e) {
-      emit(AuthError(error: 'Failed to sign out: ${e.toString()}'));
+      final translationService = ServiceRegistry().translationService;
+      emit(
+        AuthError(
+          error: translationService.failedToSignOutWithDetails(e.toString()),
+        ),
+      );
     }
   }
 }

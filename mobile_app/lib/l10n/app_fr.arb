@@ -48,5 +48,16 @@
   "resendIn": "Renvoyer dans {seconds}s",
   "resendMessage": "Demande d'un nouveau code. Si vous obtenez \"trop de demandes\", attendez 15-30 minutes.",
   "verificationSuccessful": "Vérification réussie !",
-  "verificationCodeSent": "Code de vérification envoyé avec succès !"
+  "verificationCodeSent": "Code de vérification envoyé avec succès !",
+  "checking": "Vérification...",
+  "pleaseEnterPhoneNumber": "Veuillez saisir un numéro de téléphone",
+  "pleaseEnterFullName": "Veuillez saisir votre nom complet",
+  "pleaseEnterEmailAddress": "Veuillez saisir votre adresse e-mail",
+  "pleaseEnterPhoneNumberRegister": "Veuillez saisir votre numéro de téléphone",
+  "accountAlreadyExists": "Le compte existe déjà",
+  "errorCheckingPhoneAvailability": "Erreur lors de la vérification de la disponibilité du téléphone",
+  "failedToCheckPhoneNumber": "Impossible de vérifier la disponibilité du numéro de téléphone. Échec de la connexion",
+  "loginFailed": "Échec de la connexion",
+  "registrationFailed": "Échec de l'inscription",
+  "failedToSignOut": "Échec de la déconnexion"
 }

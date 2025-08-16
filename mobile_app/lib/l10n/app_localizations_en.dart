@@ -166,4 +166,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationCodeSent => 'Verification code sent successfully!';
+
+  @override
+  String get checking => 'Checking...';
+
+  @override
+  String get pleaseEnterPhoneNumber => 'Please enter a phone number';
+
+  @override
+  String get pleaseEnterFullName => 'Please enter your full name';
+
+  @override
+  String get pleaseEnterEmailAddress => 'Please enter your email address';
+
+  @override
+  String get pleaseEnterPhoneNumberRegister => 'Please enter your phone number';
+
+  @override
+  String get accountAlreadyExists => 'Account already exists';
+
+  @override
+  String get errorCheckingPhoneAvailability =>
+      'Error checking phone availability';
+
+  @override
+  String get failedToCheckPhoneNumber =>
+      'Failed to check phone number availability. Connection failed';
+
+  @override
+  String get loginFailed => 'Login failed';
+
+  @override
+  String get registrationFailed => 'Registration failed';
+
+  @override
+  String get failedToSignOut => 'Failed to sign out';
 }

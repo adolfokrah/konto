@@ -15,7 +15,6 @@ void main() async {
   await dotenv.load(fileName: ".env");
   // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
-  
   runApp(const MainApp());
 }
 
@@ -24,18 +23,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
           create: (context) => OnboardingBloc()..add(CheckOnboardingStatus()),
         ),
-        BlocProvider(
-          create: (context) => AuthBloc(),
-        ),
-        BlocProvider(
-          create: (context) => VerificationBloc(),
-        ),
+        BlocProvider(create: (context) => AuthBloc()),
+        BlocProvider(create: (context) => VerificationBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),
@@ -45,7 +39,8 @@ class MainApp extends StatelessWidget {
         title: 'Konto',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system, // Automatically switch based on system setting
+        themeMode:
+            ThemeMode.system, // Automatically switch based on system setting
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -57,6 +52,13 @@ class MainApp extends StatelessWidget {
           Locale('en'), // English
           Locale('fr'), // French
         ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          // Update translation service when locale changes
+          if (locale != null) {
+            ServiceRegistry().translationService.updateLocale(locale);
+          }
+          return locale;
+        },
         routes: AppRoutes.routes,
         initialRoute: AppRoutes.initial,
       ),

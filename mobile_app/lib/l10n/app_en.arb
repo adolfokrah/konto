@@ -259,5 +259,60 @@
   "verificationCodeSent": "Verification code sent successfully!",
   "@verificationCodeSent": {
     "description": "Success message when resend is successful"
+  },
+
+  "checking": "Checking...",
+  "@checking": {
+    "description": "Loading text shown when checking user existence"
+  },
+
+  "pleaseEnterPhoneNumber": "Please enter a phone number",
+  "@pleaseEnterPhoneNumber": {
+    "description": "Error message when phone number is empty"
+  },
+
+  "pleaseEnterFullName": "Please enter your full name",
+  "@pleaseEnterFullName": {
+    "description": "Error message when full name is empty"
+  },
+
+  "pleaseEnterEmailAddress": "Please enter your email address",
+  "@pleaseEnterEmailAddress": {
+    "description": "Error message when email address is empty"
+  },
+
+  "pleaseEnterPhoneNumberRegister": "Please enter your phone number",
+  "@pleaseEnterPhoneNumberRegister": {
+    "description": "Error message when phone number is empty in registration form"
+  },
+
+  "accountAlreadyExists": "Account already exists",
+  "@accountAlreadyExists": {
+    "description": "Error message when user tries to register with existing account"
+  },
+
+  "errorCheckingPhoneAvailability": "Error checking phone availability",
+  "@errorCheckingPhoneAvailability": {
+    "description": "Error message when phone availability check fails"
+  },
+
+  "failedToCheckPhoneNumber": "Failed to check phone number availability. Connection failed",
+  "@failedToCheckPhoneNumber": {
+    "description": "Error message when phone number check connection fails"
+  },
+
+  "loginFailed": "Login failed",
+  "@loginFailed": {
+    "description": "Generic login failure message"
+  },
+
+  "registrationFailed": "Registration failed",
+  "@registrationFailed": {
+    "description": "Generic registration failure message"
+  },
+
+  "failedToSignOut": "Failed to sign out",
+  "@failedToSignOut": {
+    "description": "Error message when sign out fails"
   }
 }

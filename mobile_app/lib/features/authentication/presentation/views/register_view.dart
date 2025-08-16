@@ -1,9 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
@@ -28,7 +26,7 @@ class _RegisterViewState extends State<RegisterView> {
   String _countryCode = '+233'; // Default to Ghana
   String _selectedPhoneCountry = 'Ghana';
   String _selectedCountry = 'Ghana';
-  bool _isLoading = false;
+  final _isLoading = false;
 
   @override
   void initState() {
@@ -50,19 +48,25 @@ class _RegisterViewState extends State<RegisterView> {
     final localizations = AppLocalizations.of(context)!;
 
     if (_nameController.text.isEmpty) {
-      AppSnackBar.showError(context, message: "Please enter your full name");
+      AppSnackBar.showError(
+        context,
+        message: localizations.pleaseEnterFullName,
+      );
       return;
     }
 
     if (_emailController.text.isEmpty) {
       AppSnackBar.showError(
         context,
-        message: "Please enter your email address",
+        message: localizations.pleaseEnterEmailAddress,
       );
       return;
     }
     if (_phoneNumber.isEmpty) {
-      AppSnackBar.showError(context, message: "Please enter your phone number");
+      AppSnackBar.showError(
+        context,
+        message: localizations.pleaseEnterPhoneNumberRegister,
+      );
       return;
     }
 
@@ -106,7 +110,10 @@ class _RegisterViewState extends State<RegisterView> {
               );
             }
             if (state is PhoneNumberAvailable) {
-              AppSnackBar.showError(context, message: 'Account already exists');
+              AppSnackBar.showError(
+                context,
+                message: localizations.accountAlreadyExists,
+              );
             } else if (state is PhoneNumberNotAvailable) {
               Navigator.pushNamed(
                 context,

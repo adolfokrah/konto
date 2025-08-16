@@ -167,4 +167,40 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get verificationCodeSent =>
       'Code de vérification envoyé avec succès !';
+
+  @override
+  String get checking => 'Vérification...';
+
+  @override
+  String get pleaseEnterPhoneNumber => 'Veuillez saisir un numéro de téléphone';
+
+  @override
+  String get pleaseEnterFullName => 'Veuillez saisir votre nom complet';
+
+  @override
+  String get pleaseEnterEmailAddress => 'Veuillez saisir votre adresse e-mail';
+
+  @override
+  String get pleaseEnterPhoneNumberRegister =>
+      'Veuillez saisir votre numéro de téléphone';
+
+  @override
+  String get accountAlreadyExists => 'Le compte existe déjà';
+
+  @override
+  String get errorCheckingPhoneAvailability =>
+      'Erreur lors de la vérification de la disponibilité du téléphone';
+
+  @override
+  String get failedToCheckPhoneNumber =>
+      'Impossible de vérifier la disponibilité du numéro de téléphone. Échec de la connexion';
+
+  @override
+  String get loginFailed => 'Échec de la connexion';
+
+  @override
+  String get registrationFailed => 'Échec de l\'inscription';
+
+  @override
+  String get failedToSignOut => 'Échec de la déconnexion';
 }

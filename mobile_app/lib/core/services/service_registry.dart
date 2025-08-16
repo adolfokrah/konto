@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/services/local_storage_service.dart';
 import 'package:konto/core/services/sms_otp_service.dart';
+import 'package:konto/core/services/translation_service.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
@@ -23,6 +24,7 @@ class ServiceRegistry {
   late final LocalStorageService _localStorageService;
   late final SmsOtpService _smsOtpService;
   late final UserStorageService _userStorageService;
+  late final TranslationService _translationService;
 
   // API providers
   late final SmsApiProvider _smsApiProvider;
@@ -60,6 +62,8 @@ class ServiceRegistry {
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
+    _translationService = TranslationService();
+    _translationService.initialize();
 
     // Initialize API providers with Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
@@ -90,6 +94,7 @@ class ServiceRegistry {
   LocalStorageService get localStorageService => _localStorageService;
   SmsOtpService get smsOtpService => _smsOtpService;
   UserStorageService get userStorageService => _userStorageService;
+  TranslationService get translationService => _translationService;
   SmsApiProvider get smsApiProvider => _smsApiProvider;
   AuthApiProvider get authApiProvider => _authApiProvider;
   AuthRepository get authRepository => _authRepository;
@@ -117,6 +122,8 @@ class ServiceRegistry {
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
+    _translationService = TranslationService();
+    _translationService.initialize();
 
     // Initialize API providers with custom Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);

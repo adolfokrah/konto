@@ -6,7 +6,6 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/otp_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 

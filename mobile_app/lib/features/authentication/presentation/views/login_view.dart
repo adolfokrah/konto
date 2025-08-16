@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
@@ -131,7 +130,7 @@ class _LoginViewState extends State<LoginView> {
                   AppButton(
                     text:
                         state is AuthLoading
-                            ? 'Checking...'
+                            ? localizations.checking
                             : localizations.login,
                     variant: ButtonVariant.fill,
                     key: const Key('login_button'),
@@ -150,7 +149,7 @@ class _LoginViewState extends State<LoginView> {
                               } else {
                                 AppSnackBar.showError(
                                   context,
-                                  message: 'Please enter a phone number',
+                                  message: localizations.pleaseEnterPhoneNumber,
                                 );
                               }
                             },
