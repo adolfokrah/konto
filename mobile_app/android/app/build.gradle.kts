@@ -28,8 +28,8 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         
-        // Using function call syntax to ensure compatibility
-        minSdkVersion(23)
+        // Updated to minSdk 24 to support integration_test plugin
+        minSdkVersion(24)
         targetSdkVersion(35)
         
         versionCode = flutter.versionCode
