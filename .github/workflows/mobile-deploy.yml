@@ -190,9 +190,9 @@ jobs:
   production-build:
     name: Production Build  
     runs-on: ubuntu-latest
-    needs: version-bump
+    needs: [version-bump, production-approval]
     # Run if version was bumped OR manual trigger (regardless of version change)
-    if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' }}
+    if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' && needs.production-approval.result == 'success' }}
     # Skip production if manual trigger requests staging only
     continue-on-error: false
     steps:
