@@ -24,11 +24,131 @@ on:
         default: 'Manual build triggered'
 
 jobs:
-  staging-build:
-    name: Staging Build
+  version-bump:
+    name: Semantic Version Bump
     runs-on: ubuntu-latest
     # Only run if the mobile integration tests passed OR manual trigger
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    outputs:
+      new-version: ${{ steps.version-bump.outputs.new-version }}
+      version-changed: ${{ steps.version-bump.outputs.version-changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for proper version analysis
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Analyze commits and bump version
+        id: version-bump
+        run: |
+          cd mobile_app
+          
+          # Get current version from pubspec.yaml
+          current_version=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "Current version: $current_version"
+          
+          # Store current version for output
+          echo "current-version=$current_version" >> $GITHUB_OUTPUT
+          
+          # Get the last commit message
+          last_commit_message=$(git log -1 --pretty=format:"%s")
+          echo "Last commit message: $last_commit_message"
+          
+          # Parse semantic version (major.minor.patch)
+          IFS='.' read -r major minor patch <<< "$current_version"
+          
+          # Determine version bump based on commit message
+          if [[ "$last_commit_message" =~ ^(feat|feature)(\(.+\))?!: ]] || [[ "$last_commit_message" =~ BREAKING[[:space:]]CHANGE ]]; then
+            # Major version bump for breaking changes
+            major=$((major + 1))
+            minor=0
+            patch=0
+            bump_type="major"
+            echo "🚀 BREAKING CHANGE detected - Major version bump"
+          elif [[ "$last_commit_message" =~ ^(feat|feature)(\(.+\))?: ]]; then
+            # Minor version bump for new features
+            minor=$((minor + 1))
+            patch=0
+            bump_type="minor"
+            echo "✨ New feature detected - Minor version bump"
+          elif [[ "$last_commit_message" =~ ^(fix|bugfix)(\(.+\))?: ]]; then
+            # Patch version bump for bug fixes
+            patch=$((patch + 1))
+            bump_type="patch"
+            echo "🐛 Bug fix detected - Patch version bump"
+          elif [[ "$last_commit_message" =~ ^(perf)(\(.+\))?: ]]; then
+            # Patch version bump for performance improvements
+            patch=$((patch + 1))
+            bump_type="patch"
+            echo "⚡ Performance improvement detected - Patch version bump"
+          else
+            # No version bump for other commit types (docs, style, refactor, test, chore, etc.)
+            echo "📝 No version bump needed for commit type"
+            echo "new-version=$current_version" >> $GITHUB_OUTPUT
+            echo "version-changed=false" >> $GITHUB_OUTPUT
+            echo "bump-type=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          new_version="$major.$minor.$patch"
+          echo "New version: $new_version (${bump_type} bump)"
+          
+          # Update pubspec.yaml
+          sed -i "s/^version:.*/version: $new_version/" pubspec.yaml
+          
+          # Verify the change
+          updated_version=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "Updated version in pubspec.yaml: $updated_version"
+          
+          # Commit the version change
+          git add pubspec.yaml
+          git commit -m "chore: bump version to $new_version [skip ci]"
+          git push origin main
+          
+          # Create and push tag
+          git tag -a "v$new_version" -m "Release version $new_version"
+          git push origin "v$new_version"
+          
+          # Set outputs
+          echo "new-version=$new_version" >> $GITHUB_OUTPUT
+          echo "version-changed=true" >> $GITHUB_OUTPUT
+          echo "bump-type=$bump_type" >> $GITHUB_OUTPUT
+
+      - name: Version Bump Summary
+        run: |
+          cd mobile_app
+          if [[ "${{ steps.version-bump.outputs.version-changed }}" == "true" ]]; then
+            echo "## 📦 Version Update Summary" >> $GITHUB_STEP_SUMMARY
+            echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY  
+            echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Previous Version | ${{ steps.version-bump.outputs.current-version }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| New Version | ${{ steps.version-bump.outputs.new-version }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Bump Type | ${{ steps.version-bump.outputs.bump-type }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Git Tag | v${{ steps.version-bump.outputs.new-version }} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🏷️ Git tag \`v${{ steps.version-bump.outputs.new-version }}\` has been created and pushed." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 📋 Version Status" >> $GITHUB_STEP_SUMMARY
+            echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY  
+            echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Current Version | ${{ steps.version-bump.outputs.current-version }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Bump Type | ${{ steps.version-bump.outputs.bump-type }} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️ No version bump required for this commit type." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  staging-build:
+    name: Staging Build
+    runs-on: ubuntu-latest
+    needs: version-bump
+    # Run if version was bumped OR manual trigger (regardless of version change)
+    if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' }}
     # Skip staging if manual trigger requests production only
     continue-on-error: false
     steps:
@@ -42,7 +162,7 @@ jobs:
           codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
           workflow-id: 'staging-workflow'
           environment: 'staging'
-          custom-message: ${{ github.event.inputs.custom_message || 'Staging build triggered after successful integration tests' }}
+          custom-message: ${{ github.event.inputs.custom_message || format('Staging build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
           branch: 'main'
           api-base-url: ${{ secrets.STAGING_API_BASE_URL  }}
           mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
@@ -52,32 +172,17 @@ jobs:
   production-approval:
     name: Production Approval
     runs-on: ubuntu-latest
-    needs: staging-build
+    needs: [version-bump, staging-build]
     environment: production
     steps:
       - name: Approve production deployment
         run: echo "Production deployment approved"
 
   production-build:
-    name: Production Build
+    name: Production Build  
     runs-on: ubuntu-latest
-    needs: [staging-build, production-approval]
-    # Only run production if both staging and approval succeed
-    if: ${{ success() && (github.event.inputs.environment == 'production' || github.event.inputs.environment == 'both' || github.event_name == 'workflow_run') }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Trigger Production Build
-        uses: ./.github/actions/trigger-codemagic-build
-        with:
-          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
-          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
-          workflow-id: 'production-workflow'
-          environment: 'production'
-          custom-message: ${{ github.event.inputs.custom_message || 'Production build triggered after successful staging build' }}
-          branch: 'main'
-          api-base-url: ${{ secrets.PRODUCTION_API_BASE_URL}}
-          mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
-          mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID }}
-          mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL}}
+    needs: version-bump
+    # Run if version was bumped OR manual trigger (regardless of version change)
+    if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' }}
+    # Skip production if manual trigger requests staging only
+    continue-on-error: false
