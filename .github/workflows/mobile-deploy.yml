@@ -195,3 +195,20 @@ jobs:
     if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' }}
     # Skip production if manual trigger requests staging only
     continue-on-error: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Trigger Production Build
+        uses: ./.github/actions/trigger-codemagic-build
+        with:
+          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
+          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
+          workflow-id: 'production-workflow'
+          environment: 'production'
+          custom-message: ${{ github.event.inputs.custom_message || format('Production build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
+          branch: 'main'
+          api-base-url: ${{ secrets.STAGING_API_BASE_URL }}
+          mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
+          mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
+          mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
