@@ -32,16 +32,19 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       if (result['success'] == true) {
         emit(VerificationCodeSent(otpCode: result['otp']!));
       } else {
+        final translationService = ServiceRegistry().translationService;
         emit(
           VerificationFailure(
-            result['message'] ?? 'Failed to send verification code',
+            result['message'] ??
+                translationService.failedToSendVerificationCode,
           ),
         );
       }
     } catch (e) {
+      final translationService = ServiceRegistry().translationService;
       emit(
-        const VerificationFailure(
-          'Failed to send verification code. Please try again.',
+        VerificationFailure(
+          translationService.failedToSendVerificationCodeTryAgain,
         ),
       );
     }

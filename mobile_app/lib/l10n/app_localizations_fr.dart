@@ -203,4 +203,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get failedToSignOut => 'Échec de la déconnexion';
+
+  @override
+  String get otpDoesNotMatch =>
+      'Le code OTP ne correspond pas au code envoyé. Veuillez réessayer.';
+
+  @override
+  String get failedToSendVerificationCode =>
+      'Échec de l\'envoi du code de vérification';
+
+  @override
+  String get failedToSendVerificationCodeTryAgain =>
+      'Échec de l\'envoi du code de vérification. Veuillez réessayer.';
+
+  @override
+  String otpSmsMessage(String otp, int minutes) {
+    return 'Votre code de vérification Konto est : $otp. Valable pendant $minutes minutes. Ne partagez pas ce code.';
+  }
 }

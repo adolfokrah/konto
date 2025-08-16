@@ -463,6 +463,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to sign out'**
   String get failedToSignOut;
+
+  /// Error message when entered OTP does not match the sent code
+  ///
+  /// In en, this message translates to:
+  /// **'OTP does not match the sent code. Please try again.'**
+  String get otpDoesNotMatch;
+
+  /// Generic error message when verification code sending fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send verification code'**
+  String get failedToSendVerificationCode;
+
+  /// Error message when verification code sending fails with retry instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send verification code. Please try again.'**
+  String get failedToSendVerificationCodeTryAgain;
+
+  /// SMS message template for OTP verification code
+  ///
+  /// In en, this message translates to:
+  /// **'Your Konto verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.'**
+  String otpSmsMessage(String otp, int minutes);
 }
 
 class _AppLocalizationsDelegate

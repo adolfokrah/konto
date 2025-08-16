@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:konto/core/services/service_registry.dart';
 
 // SMS Configuration - Store your Mnotify credentials here
 class SmsConfig {
@@ -23,6 +24,7 @@ class SmsConfig {
 
   // Message template
   static String getOtpMessage(String otp) {
-    return 'Your Konto verification code is: $otp. Valid for $otpValidityMinutes minutes. Do not share this code.';
+    final translationService = ServiceRegistry().translationService;
+    return translationService.getOtpSmsMessage(otp, otpValidityMinutes);
   }
 }

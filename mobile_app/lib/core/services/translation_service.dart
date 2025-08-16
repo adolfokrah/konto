@@ -37,6 +37,11 @@ class TranslationService {
   String get loginFailed => localizations.loginFailed;
   String get registrationFailed => localizations.registrationFailed;
   String get failedToSignOut => localizations.failedToSignOut;
+  String get otpDoesNotMatch => localizations.otpDoesNotMatch;
+  String get failedToSendVerificationCode =>
+      localizations.failedToSendVerificationCode;
+  String get failedToSendVerificationCodeTryAgain =>
+      localizations.failedToSendVerificationCodeTryAgain;
 
   /// Format error message with dynamic content
   String errorCheckingPhoneAvailabilityWithMessage(String message) {
@@ -53,5 +58,10 @@ class TranslationService {
 
   String failedToSignOutWithDetails(String details) {
     return '${localizations.failedToSignOut}: $details';
+  }
+
+  /// Get formatted OTP SMS message
+  String getOtpSmsMessage(String otp, int minutes) {
+    return localizations.otpSmsMessage(otp, minutes);
   }
 }

@@ -59,5 +59,9 @@
   "failedToCheckPhoneNumber": "Impossible de vérifier la disponibilité du numéro de téléphone. Échec de la connexion",
   "loginFailed": "Échec de la connexion",
   "registrationFailed": "Échec de l'inscription",
-  "failedToSignOut": "Échec de la déconnexion"
+  "failedToSignOut": "Échec de la déconnexion",
+  "otpDoesNotMatch": "Le code OTP ne correspond pas au code envoyé. Veuillez réessayer.",
+  "failedToSendVerificationCode": "Échec de l'envoi du code de vérification",
+  "failedToSendVerificationCodeTryAgain": "Échec de l'envoi du code de vérification. Veuillez réessayer.",
+  "otpSmsMessage": "Votre code de vérification Konto est : {otp}. Valable pendant {minutes} minutes. Ne partagez pas ce code."
 }

@@ -201,4 +201,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToSignOut => 'Failed to sign out';
+
+  @override
+  String get otpDoesNotMatch =>
+      'OTP does not match the sent code. Please try again.';
+
+  @override
+  String get failedToSendVerificationCode => 'Failed to send verification code';
+
+  @override
+  String get failedToSendVerificationCodeTryAgain =>
+      'Failed to send verification code. Please try again.';
+
+  @override
+  String otpSmsMessage(String otp, int minutes) {
+    return 'Your Konto verification code is: $otp. Valid for $minutes minutes. Do not share this code.';
+  }
 }

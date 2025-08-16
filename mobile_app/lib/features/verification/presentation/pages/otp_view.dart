@@ -110,10 +110,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     }
     final sentOtp = state.otpCode;
     if (otp != sentOtp) {
-      AppSnackBar.showError(
-        context,
-        message: "OTP does not match the sent code. Please try again.",
-      );
+      final localizations = AppLocalizations.of(context)!;
+      AppSnackBar.showError(context, message: localizations.otpDoesNotMatch);
       return;
     }
 

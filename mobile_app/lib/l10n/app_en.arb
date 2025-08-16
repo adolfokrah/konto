@@ -314,5 +314,35 @@
   "failedToSignOut": "Failed to sign out",
   "@failedToSignOut": {
     "description": "Error message when sign out fails"
+  },
+
+  "otpDoesNotMatch": "OTP does not match the sent code. Please try again.",
+  "@otpDoesNotMatch": {
+    "description": "Error message when entered OTP does not match the sent code"
+  },
+
+  "failedToSendVerificationCode": "Failed to send verification code",
+  "@failedToSendVerificationCode": {
+    "description": "Generic error message when verification code sending fails"
+  },
+
+  "failedToSendVerificationCodeTryAgain": "Failed to send verification code. Please try again.",
+  "@failedToSendVerificationCodeTryAgain": {
+    "description": "Error message when verification code sending fails with retry instruction"
+  },
+
+  "otpSmsMessage": "Your Konto verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.",
+  "@otpSmsMessage": {
+    "description": "SMS message template for OTP verification code",
+    "placeholders": {
+      "otp": {
+        "type": "String",
+        "example": "123456"
+      },
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
   }
 }
