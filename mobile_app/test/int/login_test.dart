@@ -11,6 +11,7 @@ import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
@@ -35,6 +36,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => JarSummaryBloc()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -189,6 +191,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => JarSummaryBloc()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -247,6 +250,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => JarSummaryBloc()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [

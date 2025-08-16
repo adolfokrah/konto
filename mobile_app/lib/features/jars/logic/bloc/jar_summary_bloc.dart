@@ -31,7 +31,6 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         final JarSummaryModel jarData = result['data'];
         emit(JarSummaryLoaded(jarData: jarData));
       } else {
-        print('Repository error: ${result['error']}');
         emit(
           JarSummaryError(
             message: result['message'] ?? 'Failed to load jar summary',
@@ -40,7 +39,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         );
       }
     } catch (e) {
-      print('BLoC error: ${e.toString()}');
+      print(e.toString());
       emit(
         JarSummaryError(
           message: 'An unexpected error occurred: ${e.toString()}',
