@@ -84,7 +84,7 @@ workflows:
         script: |
           cd mobile_app
           flutter analyze || echo "Flutter analyze found issues, but continuing build..."
-      - name: Flutter unit tests
+      - name: Flutter integration tests
         script: |
           cd mobile_app
           flutter test
