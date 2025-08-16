@@ -7,11 +7,6 @@ on:
       - completed
     branches:
       - main
-  push:
-    branches:
-      - main
-    paths:
-      - 'mobile_app/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -32,8 +27,8 @@ jobs:
   version-bump:
     name: Semantic Version Bump
     runs-on: ubuntu-latest
-    # Run if: integration tests passed OR push to mobile_app OR manual trigger
-    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.name == 'Mobile Integration Tests') || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    # Only run if mobile integration tests passed OR manual trigger
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || github.event_name == 'workflow_dispatch' }}
     outputs:
       new-version: ${{ steps.version-bump.outputs.new-version }}
       version-changed: ${{ steps.version-bump.outputs.version-changed }}
