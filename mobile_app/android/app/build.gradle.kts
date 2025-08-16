@@ -27,8 +27,11 @@ android {
         applicationId = "com.example.konto"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
-        targetSdk = 35
+        
+        // Using function call syntax to ensure compatibility
+        minSdkVersion(23)
+        targetSdkVersion(35)
+        
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
