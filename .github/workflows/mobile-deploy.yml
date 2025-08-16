@@ -1,12 +1,12 @@
 name: Mobile Build Pipeline
 
 on:
-  workflow_run:
-    workflows: ["Mobile Integration Tests"]
-    types:
-      - completed
+  push:
     branches:
       - main
+    paths:
+      - 'mobile_app/**'
+      - '.github/workflows/mobile-deploy.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -27,12 +27,19 @@ jobs:
   version-bump:
     name: Semantic Version Bump
     runs-on: ubuntu-latest
-    # Only run if the mobile integration tests passed OR manual trigger
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    # Run on push to mobile_app files or manual trigger
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     outputs:
       new-version: ${{ steps.version-bump.outputs.new-version }}
       version-changed: ${{ steps.version-bump.outputs.version-changed }}
     steps:
+      - name: Debug workflow trigger
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Head commit: ${{ github.sha }}"
+      
       - name: Checkout code
         uses: actions/checkout@v4
         with:
