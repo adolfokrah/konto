@@ -22,11 +22,24 @@ workflows:
         script: |
           cd mobile_app
           flutter packages pub get
+      - name: Debug build configuration
+        script: |
+          cd mobile_app
+          echo "Checking build.gradle.kts content:"
+          echo "Line 30: $(sed -n '30p' android/app/build.gradle.kts)"
+          echo "All minSdk occurrences:"
+          grep -n "minSdk" android/app/build.gradle.kts || echo "No minSdk found"
+          echo "All minSdkVersion occurrences:"
+          grep -n "minSdkVersion" android/app/build.gradle.kts || echo "No minSdkVersion found"
+      - name: Clean Flutter project
+        script: |
+          cd mobile_app
+          flutter clean
       - name: Flutter analyze
         script: |
           cd mobile_app
           flutter analyze || echo "Flutter analyze found issues, but continuing build..."
-      - name: Flutter unit tests
+      - name: Flutter Integration tests
         script: |
           cd mobile_app
           flutter test
@@ -80,6 +93,19 @@ workflows:
         script: |
           cd mobile_app
           flutter packages pub get
+      - name: Debug build configuration
+        script: |
+          cd mobile_app
+          echo "Checking build.gradle.kts content:"
+          echo "Line 30: $(sed -n '30p' android/app/build.gradle.kts)"
+          echo "All minSdk occurrences:"
+          grep -n "minSdk" android/app/build.gradle.kts || echo "No minSdk found"
+          echo "All minSdkVersion occurrences:"
+          grep -n "minSdkVersion" android/app/build.gradle.kts || echo "No minSdkVersion found"
+      - name: Clean Flutter project
+        script: |
+          cd mobile_app
+          flutter clean
       - name: Flutter analyze
         script: |
           cd mobile_app
