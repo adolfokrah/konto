@@ -19,6 +19,7 @@ class JarSummaryModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<ContributionModel> contributions;
+  final List<double>? chartData; // Chart data for last 10 days
 
   const JarSummaryModel({
     required this.id,
@@ -40,7 +41,30 @@ class JarSummaryModel {
     required this.createdAt,
     required this.updatedAt,
     required this.contributions,
+    this.chartData,
   });
+
+  /// Utility function to calculate total contributions from completed contributions
+  double get totalContributions {
+    return contributions
+        .where((contribution) => contribution.paymentStatus == 'completed')
+        .fold(
+          0.0,
+          (total, contribution) => total + contribution.amountContributed,
+        );
+  }
+
+  /// Utility function to get formatted total contributions with currency
+  String get formattedTotalContributions {
+    final total = totalContributions;
+    final currencySymbol = currency == 'ghc' ? '₵' : '₦';
+    return '$currencySymbol ${total.toStringAsFixed(2)}';
+  }
+
+  /// Get currency symbol
+  String get currencySymbol {
+    return currency == 'ghc' ? '₵' : '₦';
+  }
 
   factory JarSummaryModel.fromJson(Map<String, dynamic> json) {
     return JarSummaryModel(
@@ -101,6 +125,12 @@ class JarSummaryModel {
                   )
                   .toList()
               : <ContributionModel>[],
+      chartData:
+          json['chartData'] != null
+              ? (json['chartData'] as List<dynamic>)
+                  .map((value) => (value as num).toDouble())
+                  .toList()
+              : null,
     );
   }
 
@@ -126,6 +156,7 @@ class JarSummaryModel {
       'updatedAt': updatedAt.toIso8601String(),
       'contributions':
           contributions.map((contribution) => contribution.toJson()).toList(),
+      'chartData': chartData,
     };
   }
 }

@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/constants/app_radius.dart';
+import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/widgets/animated_number_text.dart';
+import 'package:konto/core/widgets/button.dart';
+import 'package:konto/core/widgets/card.dart';
+import 'package:konto/core/widgets/contribution_chart.dart';
+import 'package:konto/core/widgets/contribution_list_item.dart';
+import 'package:konto/core/widgets/divider.dart';
+import 'package:konto/core/widgets/goal_progress_card.dart';
+import 'package:konto/core/widgets/icon_button.dart';
+import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary_reload_bloc.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -18,29 +31,92 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
+  Future<void> _onRefresh() async {
+    // Trigger the reload and wait for completion
+    context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
+
+    // Wait for the reload to complete by listening for state changes
+    await context
+        .read<JarSummaryReloadBloc>()
+        .stream
+        .firstWhere(
+          (state) =>
+              state is JarSummaryReloaded || state is JarSummaryReloadError,
+        )
+        .timeout(
+          const Duration(seconds: 20), // Add timeout to prevent hanging
+          onTimeout: () {
+            // Return a dummy state if timeout occurs
+            return JarSummaryReloadError(message: 'Refresh timed out');
+          },
+        );
+  }
+
+  void _onRefetch() {
+    // Trigger jar summary request with loading indicator
+    context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        // Handle sign out - navigate to login
-        if (state is AuthInitial) {
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/login', (route) => false);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<JarSummaryReloadBloc, JarSummaryReloadState>(
+          listener: (context, state) {
+            if (state is JarSummaryReloadError) {
+              // Show error message
+              AppSnackBar.show(
+                context,
+                message: state.message,
+                type: SnackBarType.error,
+              );
+            }
+          },
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            // Handle sign out - navigate to login
+            if (state is AuthInitial) {
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/login', (route) => false);
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Jar Details'),
+          title: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              String firstName = 'User';
+              if (state is AuthAuthenticated) {
+                // Extract first name from full name
+                final fullName = state.user.fullName;
+                firstName = fullName.split(' ').first;
+              }
+              return Text('Hi $firstName !', style: TextStyles.titleMediumLg);
+            },
+          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
-            IconButton(
-              onPressed: () {
-                context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
-              },
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh',
+            AppIconButton(
+              onPressed: _onRefetch,
+              icon: Icons.qr_code,
+              size: const Size(40, 40),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.spacingXs,
+                right: AppSpacing.spacingM,
+              ),
+              child: AppIconButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(SignOutRequested());
+                },
+                icon: Icons.person,
+                size: const Size(40, 40),
+              ),
             ),
           ],
         ),
@@ -49,85 +125,484 @@ class _JarDetailViewState extends State<JarDetailView> {
             if (state is JarSummaryLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is JarSummaryError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Colors.red[300],
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.8,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error_outline, size: 48),
+                                const SizedBox(height: 16),
+                                Text(
+                                  state.message,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                AppButton.filled(
+                                  onPressed: _onRefetch,
+                                  text: "Retry",
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red[600]),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<JarSummaryBloc>().add(
-                            GetJarSummaryRequested(),
-                          );
-                        },
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             } else if (state is JarSummaryLoaded) {
               // Display jar details
               final jarData = state.jarData;
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      jarData.name,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    if (jarData.description != null)
-                      Text(
-                        jarData.description!,
-                        style: Theme.of(context).textTheme.bodyLarge,
+              bool isDark = Theme.of(context).brightness == Brightness.dark;
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 80),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // const SizedBox(height: 20), // Reduced spacing
+                            Text(jarData.name, style: TextStyles.titleMediumM),
+                            const SizedBox(height: AppSpacing.spacingXs),
+                            RevolutStyleCounterWithCurrency(
+                              value: jarData.formattedTotalContributions,
+                              style: TextStyles.titleBoldXl,
+                              duration: const Duration(milliseconds: 1000),
+                            ),
+                            const SizedBox(height: AppSpacing.spacingXs),
+                            ElevatedButton(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Contribute feature coming soon!',
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onSurface,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.spacingXs,
+                                  horizontal: AppSpacing.spacingL,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.radiusL,
+                                  ),
+                                ),
+                              ),
+                              child: const Text(
+                                'Jars',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.spacingL),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.spacingM,
+                                vertical: AppSpacing.spacingL,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AppIconButton(
+                                        onPressed: () {},
+                                        icon: Icons.add,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingXs,
+                                      ),
+                                      Text(
+                                        'Contribute',
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AppIconButton(
+                                        onPressed: () {},
+                                        icon: Icons.call_received,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingXs,
+                                      ),
+                                      Text(
+                                        'Request',
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AppIconButton(
+                                        onPressed: () {},
+                                        icon: Icons.info,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingXs,
+                                      ),
+                                      Text(
+                                        'Info',
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AppIconButton(
+                                        onPressed: () {},
+                                        icon: Icons.more_horiz,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingXs,
+                                      ),
+                                      Text(
+                                        'More',
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: AppCard(
+                                    variant: CardVariant.primary,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(Icons.person),
+                                          style: IconButton.styleFrom(
+                                            backgroundColor:
+                                                isDark
+                                                    ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.surface
+                                                    : Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                            foregroundColor:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingL,
+                                        ),
+                                        Text(
+                                          'Collectors',
+                                          style: TextStyles.titleRegularM,
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingXs,
+                                        ),
+                                        AnimatedNumberTextScale(
+                                          value:
+                                              (jarData.collectors?.length ?? 0)
+                                                  .toString(),
+                                          style: TextStyles.titleBoldLg,
+                                          duration: const Duration(
+                                            milliseconds: 600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.spacingM),
+                                Expanded(
+                                  child: AppCard(
+                                    variant: CardVariant.primary,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Contributions',
+                                          style: TextStyles.titleRegularM,
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingXs,
+                                        ),
+                                        AnimatedNumberTextScaleWithCurrency(
+                                          value:
+                                              jarData
+                                                  .formattedTotalContributions,
+                                          style: TextStyles.titleBoldLg,
+                                          duration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingM,
+                                        ),
+                                        // Chart with real data from API
+                                        ContributionChart(
+                                          dataPoints:
+                                              jarData.chartData ?? const [],
+                                          chartColor: Colors.green,
+                                          height: 50,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Add some bottom padding for better UX
+                            const SizedBox(height: AppSpacing.spacingL),
+
+                            // Goal Progress Card
+                            GoalProgressCard(
+                              currentAmount: jarData.totalContributions,
+                              goalAmount: jarData.goalAmount,
+                              currency: jarData.currencySymbol,
+                              deadline: jarData.deadline,
+                              variant: CardVariant.primary,
+                              onSetGoal: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Set Goal feature coming soon!',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // Recent Contributions Section
+                            const SizedBox(height: AppSpacing.spacingL),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.spacingM,
+                                    vertical: AppSpacing.spacingXs,
+                                  ),
+                                  child: Text(
+                                    'Recent Contributions',
+                                    style: TextStyles.titleMediumLg,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: AppCard(
+                                    variant: CardVariant.primary,
+                                    child:
+                                        jarData.contributions.isEmpty
+                                            ? Padding(
+                                              padding: const EdgeInsets.all(
+                                                AppSpacing.spacingL,
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  Image.asset(
+                                                    'assets/images/onboarding_slide_1.png',
+                                                    width: 80,
+                                                    height: 80,
+                                                    fit: BoxFit.contain,
+                                                    color: Colors.white,
+                                                    colorBlendMode:
+                                                        BlendMode.srcIn,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: AppSpacing.spacingM,
+                                                  ),
+                                                  Text(
+                                                    'No contributions yet',
+                                                    style:
+                                                        TextStyles.titleMedium,
+                                                  ),
+                                                  const SizedBox(
+                                                    height:
+                                                        AppSpacing.spacingXs,
+                                                  ),
+                                                  Text(
+                                                    'Be the first to contribute to this jar!',
+                                                    style:
+                                                        TextStyles
+                                                            .titleRegularSm,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: AppSpacing.spacingL,
+                                                  ),
+                                                  AppButton.filled(
+                                                    text: 'Contribute',
+                                                    onPressed: () {
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                            'Contribute feature coming soon!',
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                            : Column(
+                                              children: [
+                                                ...jarData.contributions
+                                                    .map(
+                                                      (contribution) => [
+                                                        ContributionListItem(
+                                                          contributorName:
+                                                              contribution
+                                                                  .contributor ??
+                                                              'User ${contribution.contributorPhoneNumber.substring(contribution.contributorPhoneNumber.length - 4)}',
+                                                          amount:
+                                                              contribution
+                                                                  .amountContributed,
+                                                          currency:
+                                                              jarData
+                                                                  .currencySymbol,
+                                                          timestamp:
+                                                              contribution
+                                                                  .createdAt ??
+                                                              DateTime.now(),
+                                                          paymentMethod:
+                                                              contribution
+                                                                  .paymentMethod,
+                                                          isAnonymous:
+                                                              contribution
+                                                                  .contributor ==
+                                                              null,
+                                                          viaPaymentLink:
+                                                              contribution
+                                                                  .viaPaymentLink,
+                                                          paymentStatus:
+                                                              contribution
+                                                                  .paymentStatus,
+                                                          onTap: () {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                  'Contribution details coming soon!',
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                        if (jarData
+                                                                .contributions
+                                                                .indexOf(
+                                                                  contribution,
+                                                                ) <
+                                                            (jarData
+                                                                    .contributions
+                                                                    .length -
+                                                                1))
+                                                          const AppDivider(),
+                                                      ],
+                                                    )
+                                                    .expand((list) => list)
+                                                    .toList(),
+                                                InkWell(
+                                                  onTap: () {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'View all ${jarData.contributions.length} contributions coming soon!',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    'See all',
+                                                    style:
+                                                        TextStyles.titleMedium,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Final bottom padding
+                            const SizedBox(height: AppSpacing.spacingL),
+                          ],
+                        ),
                       ),
-                    const SizedBox(height: 16),
-                    Text('Goal: GH₵ ${jarData.goalAmount.toStringAsFixed(2)}'),
-                    Text(
-                      'Current Balance: GH₵ ${jarData.acceptedContributionAmount.toStringAsFixed(2)}',
                     ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value:
-                          jarData.acceptedContributionAmount /
-                          jarData.goalAmount,
-                      backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Progress: ${((jarData.acceptedContributionAmount / jarData.goalAmount) * 100).toStringAsFixed(1)}%',
-                    ),
-                    // Add more details as needed
                   ],
                 ),
               );
             }
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Create a new jar to see details here.',
-                  textAlign: TextAlign.center,
-                ),
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.8,
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            'Create a new jar to see details here.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           },

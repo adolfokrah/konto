@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/jar/data/models/jar_summary_model.dart';
+import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:meta/meta.dart';
 
 part 'jar_summary_event.dart';
@@ -9,6 +9,7 @@ part 'jar_summary_state.dart';
 class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
   JarSummaryBloc() : super(JarSummaryInitial()) {
     on<GetJarSummaryRequested>(_getJarSummaryRequested);
+    on<UpdateJarSummaryRequested>(_updateJarSummaryRequested);
     on<SetCurrentJarRequested>(_setCurrentJarRequested);
   }
 
@@ -77,5 +78,12 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         ),
       );
     }
+  }
+
+  Future<void> _updateJarSummaryRequested(
+    UpdateJarSummaryRequested event,
+    Emitter<JarSummaryState> emit,
+  ) async {
+    emit(JarSummaryLoaded(jarData: event.jarData));
   }
 }

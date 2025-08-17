@@ -1,5 +1,5 @@
 import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
-import 'package:konto/features/jar/data/models/jar_summary_model.dart';
+import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 
 /// Repository for jar operations
 /// Orchestrates business logic between UI and API calls

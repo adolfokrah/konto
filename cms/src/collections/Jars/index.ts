@@ -68,6 +68,7 @@ export const Jars: CollectionConfig = {
       name: 'goalAmount',
       type: 'number',
       required: false,
+      defaultValue: 0,
       admin: {
         description: 'Target amount for the jar',
       },

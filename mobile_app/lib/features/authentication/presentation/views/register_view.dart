@@ -105,7 +105,7 @@ class _RegisterViewState extends State<RegisterView> {
               // Navigate to home on success
               Navigator.pushNamedAndRemoveUntil(
                 context,
-                '/home',
+                AppRoutes.jarDetail,
                 (route) => false,
               );
             }

@@ -46,7 +46,6 @@ export const Contributions: CollectionConfig = {
       name: 'paymentStatus',
       type: 'select',
       admin: {
-        readOnly: true,
         components: {
           Cell: '@collections/Contributions/components/PaymentStatus.tsx',
         },

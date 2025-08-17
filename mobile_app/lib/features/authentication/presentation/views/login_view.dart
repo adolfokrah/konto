@@ -56,7 +56,7 @@ class _LoginViewState extends State<LoginView> {
                 // Navigate to home on success
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/home',
+                  AppRoutes.jarDetail,
                   (route) => false,
                 );
               }
