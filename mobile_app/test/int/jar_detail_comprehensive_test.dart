@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
+import 'package:konto/features/contribution/presentation/views/request_contribution_view.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
@@ -170,6 +171,7 @@ void main() {
         home: const JarDetailView(),
         routes: {
           '/login': (context) => const Scaffold(body: Text('Login Screen')),
+          '/request_contribution': (context) => const RequestContributionView(),
         },
       ),
     );
@@ -345,6 +347,10 @@ void main() {
           ],
           supportedLocales: const [Locale('en'), Locale('fr')],
           home: const JarDetailView(),
+          routes: {
+            '/request_contribution':
+                (context) => const RequestContributionView(),
+          },
         ),
       );
 
@@ -531,6 +537,8 @@ void main() {
         child: MaterialApp(
           routes: {
             '/login': (context) => const Scaffold(body: Text('Login Screen')),
+            '/request_contribution':
+                (context) => const RequestContributionView(),
           },
           localizationsDelegates: const [
             AppLocalizations.delegate,
