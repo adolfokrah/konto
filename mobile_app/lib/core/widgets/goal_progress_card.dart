@@ -4,6 +4,7 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class GoalProgressCard extends StatelessWidget {
   /// Current amount raised
@@ -40,6 +41,7 @@ class GoalProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final progress = goalAmount > 0 ? currentAmount / goalAmount : 0.0;
     final progressPercentage = (progress * 100).clamp(0.0, 100.0);
     final daysLeft = _calculateDaysLeft();
@@ -48,7 +50,7 @@ class GoalProgressCard extends StatelessWidget {
     return AppCard(
       variant: variant,
       isCollapsible: isCollapsible,
-      title: isCollapsible ? 'Goal' : null,
+      title: isCollapsible ? localizations.goal : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,7 +59,7 @@ class GoalProgressCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Goal', style: TextStyles.titleMedium),
+                Text(localizations.goal, style: TextStyles.titleMedium),
                 Icon(Icons.chevron_right, size: 20),
               ],
             ),
@@ -68,11 +70,12 @@ class GoalProgressCard extends StatelessWidget {
           hasGoal
               ? _buildGoalContent(
                 context,
+                localizations,
                 progress,
                 progressPercentage,
                 daysLeft,
               )
-              : _buildNoGoalContent(context),
+              : _buildNoGoalContent(context, localizations),
         ],
       ),
     );
@@ -81,6 +84,7 @@ class GoalProgressCard extends StatelessWidget {
   // Build content when goal exists
   Widget _buildGoalContent(
     BuildContext context,
+    AppLocalizations localizations,
     double progress,
     double progressPercentage,
     int? daysLeft,
@@ -99,7 +103,8 @@ class GoalProgressCard extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: ' of $currency${_formatAmount(goalAmount)}',
+                text:
+                    ' ${localizations.goalAmountOf(currency, _formatAmount(goalAmount))}',
                 style: TextStyles.titleRegularM.copyWith(
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
@@ -136,7 +141,7 @@ class GoalProgressCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Deadline ${_formatDate(deadline!)}',
+                    localizations.deadlineDate(_formatDate(deadline!)),
                     style: TextStyles.titleRegularSm,
                   ),
                 ],
@@ -146,7 +151,7 @@ class GoalProgressCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$daysLeft days left',
+                      localizations.daysLeft(daysLeft),
                       style: TextStyles.titleRegularSm,
                     ),
                   ],
@@ -154,7 +159,9 @@ class GoalProgressCard extends StatelessWidget {
             ] else ...[
               // If no deadline, show progress percentage
               Text(
-                '${progressPercentage.toStringAsFixed(1)}% completed',
+                localizations.percentageCompleted(
+                  progressPercentage.toStringAsFixed(1),
+                ),
                 style: TextStyles.titleRegularSm.copyWith(
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
@@ -167,20 +174,23 @@ class GoalProgressCard extends StatelessWidget {
   }
 
   // Build content when no goal is set
-  Widget _buildNoGoalContent(BuildContext context) {
+  Widget _buildNoGoalContent(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Current amount without goal
-        Text(
-          'You do not have a goal set yet.',
-          style: TextStyles.titleRegularM,
-        ),
+        Text(localizations.noGoalSetYet, style: TextStyles.titleRegularM),
 
         const SizedBox(height: AppSpacing.spacingL),
 
         // Set goal button
-        AppButton.filled(text: 'Set Goal', onPressed: onSetGoal ?? () {}),
+        AppButton.filled(
+          text: localizations.setGoal,
+          onPressed: onSetGoal ?? () {},
+        ),
       ],
     );
   }

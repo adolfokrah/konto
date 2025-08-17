@@ -217,4 +217,154 @@ class AppLocalizationsEn extends AppLocalizations {
   String otpSmsMessage(String otp, int minutes) {
     return 'Your Konto verification code is: $otp. Valid for $minutes minutes. Do not share this code.';
   }
+
+  @override
+  String hiUser(String firstName) {
+    return 'Hi $firstName !';
+  }
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get jars => 'Jars';
+
+  @override
+  String get contribute => 'Contribute';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get info => 'Info';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get collectors => 'Collectors';
+
+  @override
+  String get contributions => 'Contributions';
+
+  @override
+  String get recentContributions => 'Recent Contributions';
+
+  @override
+  String get noContributionsYet => 'No contributions yet';
+
+  @override
+  String get beTheFirstToContribute =>
+      'Be the first to contribute to this jar!';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get createNewJarMessage => 'Create a new jar to see details here.';
+
+  @override
+  String get contributeFeatureComingSoon => 'Contribute feature coming soon!';
+
+  @override
+  String get setGoalFeatureComingSoon => 'Set Goal feature coming soon!';
+
+  @override
+  String get contributionDetailsComingSoon =>
+      'Contribution details coming soon!';
+
+  @override
+  String viewAllContributionsComingSoon(int count) {
+    return 'View all $count contributions coming soon!';
+  }
+
+  @override
+  String get refreshTimedOut => 'Refresh timed out';
+
+  @override
+  String get goal => 'Goal';
+
+  @override
+  String goalAmountOf(String currency, String amount) {
+    return 'of $currency$amount';
+  }
+
+  @override
+  String deadlineDate(String date) {
+    return 'Deadline $date';
+  }
+
+  @override
+  String daysLeft(int days) {
+    return '$days days left';
+  }
+
+  @override
+  String percentageCompleted(String percentage) {
+    return '$percentage% completed';
+  }
+
+  @override
+  String get noGoalSetYet => 'You do not have a goal set yet.';
+
+  @override
+  String get setGoal => 'Set Goal';
+
+  @override
+  String get anonymous => 'Anonymous';
+
+  @override
+  String dayAgo(int days) {
+    return '$days day ago';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String hourAgo(int hours) {
+    return '$hours hour ago';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return '$hours hours ago';
+  }
+
+  @override
+  String minuteAgo(int minutes) {
+    return '$minutes minute ago';
+  }
+
+  @override
+  String minutesAgo(int minutes) {
+    return '$minutes minutes ago';
+  }
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String get failedToReloadJarSummary => 'Failed to reload jar summary';
+
+  @override
+  String unexpectedErrorOccurred(String error) {
+    return 'An unexpected error occurred: $error';
+  }
+
+  @override
+  String get createNewJar => 'Create new jar';
+
+  @override
+  String get createJarFeatureComingSoon => 'Create jar feature coming soon!';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String userWithLastDigits(String digits) {
+    return 'User $digits';
+  }
 }

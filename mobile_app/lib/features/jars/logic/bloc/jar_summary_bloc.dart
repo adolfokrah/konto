@@ -29,7 +29,13 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
-        final JarSummaryModel jarData = result['data'];
+        if (result['data'] == null) {
+          emit(JarSummaryInitial());
+          return;
+        }
+        final JarSummaryModel jarData = JarSummaryModel.fromJson(
+          result['data'],
+        );
         emit(JarSummaryLoaded(jarData: jarData));
       } else {
         emit(

@@ -42,20 +42,20 @@ export const getJarSummary = async (req: PayloadRequest) => {
     // If jar is not found, Payload throws a NotFound error
     return Response.json(
       {
-        success: false,
+        success: true,
         message: 'Jar not found',
       },
-      { status: 404 },
+      { status: 200 },
     )
   }
 
   if (!jar) {
     return Response.json(
       {
-        success: false,
+        success: true,
         message: 'Jar not found',
       },
-      { status: 404 },
+      { status: 200 },
     )
   }
 

@@ -21,11 +21,13 @@ class JarSummaryReloadBloc
     Emitter<JarSummaryReloadState> emit,
   ) async {
     emit(JarSummaryReloading());
-    try {
-      final serviceRegistry = ServiceRegistry();
-      final jarStorageService = serviceRegistry.jarStorageService;
-      final jarRepository = serviceRegistry.jarRepository;
 
+    final serviceRegistry = ServiceRegistry();
+    final jarStorageService = serviceRegistry.jarStorageService;
+    final jarRepository = serviceRegistry.jarRepository;
+    final translationService = serviceRegistry.translationService;
+
+    try {
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
@@ -47,7 +49,9 @@ class JarSummaryReloadBloc
         print('Reload failed: ${result['message']}'); // Debug log
         emit(
           JarSummaryReloadError(
-            message: result['message'] ?? 'Failed to reload jar summary',
+            message:
+                result['message'] ??
+                translationService.failedToReloadJarSummary,
           ),
         );
       }
@@ -55,7 +59,9 @@ class JarSummaryReloadBloc
       print('Reload exception: ${e.toString()}'); // Debug log
       emit(
         JarSummaryReloadError(
-          message: 'An unexpected error occurred: ${e.toString()}',
+          message: translationService.unexpectedErrorOccurredWithDetails(
+            e.toString(),
+          ),
         ),
       );
     }

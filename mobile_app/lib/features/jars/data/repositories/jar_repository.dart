@@ -19,11 +19,10 @@ class JarRepository {
         try {
           // Parse the API response data into the model
           final jarData = apiResponse['data'];
-          final jarSummary = JarSummaryModel.fromJson(jarData);
 
           return {
             'success': true,
-            'data': jarSummary,
+            'data': jarData,
             'message': 'Jar summary retrieved successfully',
           };
         } catch (modelError) {

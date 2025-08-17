@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class ContributionListItem extends StatelessWidget {
   /// The name or identifier of the contributor
@@ -51,6 +52,7 @@ class ContributionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
@@ -105,7 +107,7 @@ class ContributionListItem extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              isAnonymous ? 'Anonymous' : contributorName,
+              isAnonymous ? localizations.anonymous : contributorName,
               style: TextStyles.titleMedium,
               overflow: TextOverflow.ellipsis,
             ),
@@ -124,7 +126,10 @@ class ContributionListItem extends StatelessWidget {
       subtitle: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(_formatTimestamp(timestamp), style: TextStyles.titleRegularXs),
+          Text(
+            _formatTimestamp(timestamp, localizations),
+            style: TextStyles.titleRegularXs,
+          ),
           if (paymentMethod != null)
             Container(
               padding: const EdgeInsets.symmetric(
@@ -132,7 +137,9 @@ class ContributionListItem extends StatelessWidget {
                 vertical: 2,
               ),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.radiusM / 3),
               ),
               child: Text(
@@ -149,18 +156,24 @@ class ContributionListItem extends StatelessWidget {
     );
   }
 
-  String _formatTimestamp(DateTime dateTime) {
+  String _formatTimestamp(DateTime dateTime, AppLocalizations localizations) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+      return difference.inDays == 1
+          ? localizations.dayAgo(difference.inDays)
+          : localizations.daysAgo(difference.inDays);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+      return difference.inHours == 1
+          ? localizations.hourAgo(difference.inHours)
+          : localizations.hoursAgo(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
+      return difference.inMinutes == 1
+          ? localizations.minuteAgo(difference.inMinutes)
+          : localizations.minutesAgo(difference.inMinutes);
     } else {
-      return 'Just now';
+      return localizations.justNow;
     }
   }
 

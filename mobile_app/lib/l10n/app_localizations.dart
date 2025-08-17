@@ -487,6 +487,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Konto verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.'**
   String otpSmsMessage(String otp, int minutes);
+
+  /// Greeting text in app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Hi {firstName} !'**
+  String hiUser(String firstName);
+
+  /// Retry button text
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Jars text on button
+  ///
+  /// In en, this message translates to:
+  /// **'Jars'**
+  String get jars;
+
+  /// Contribute button text
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute'**
+  String get contribute;
+
+  /// Request button text
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get request;
+
+  /// Info button text
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get info;
+
+  /// More button text
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// Collectors card title
+  ///
+  /// In en, this message translates to:
+  /// **'Collectors'**
+  String get collectors;
+
+  /// Contributions card title
+  ///
+  /// In en, this message translates to:
+  /// **'Contributions'**
+  String get contributions;
+
+  /// Recent contributions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Contributions'**
+  String get recentContributions;
+
+  /// Message when there are no contributions
+  ///
+  /// In en, this message translates to:
+  /// **'No contributions yet'**
+  String get noContributionsYet;
+
+  /// Encouragement message when there are no contributions
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to contribute to this jar!'**
+  String get beTheFirstToContribute;
+
+  /// See all button text
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// Message shown when no jar is available
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new jar to see details here.'**
+  String get createNewJarMessage;
+
+  /// Coming soon message for contribute feature
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute feature coming soon!'**
+  String get contributeFeatureComingSoon;
+
+  /// Coming soon message for set goal feature
+  ///
+  /// In en, this message translates to:
+  /// **'Set Goal feature coming soon!'**
+  String get setGoalFeatureComingSoon;
+
+  /// Coming soon message for contribution details
+  ///
+  /// In en, this message translates to:
+  /// **'Contribution details coming soon!'**
+  String get contributionDetailsComingSoon;
+
+  /// Coming soon message for viewing all contributions
+  ///
+  /// In en, this message translates to:
+  /// **'View all {count} contributions coming soon!'**
+  String viewAllContributionsComingSoon(int count);
+
+  /// Error message when refresh times out
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh timed out'**
+  String get refreshTimedOut;
+
+  /// Goal text for progress card
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goal;
+
+  /// Goal amount text showing progress
+  ///
+  /// In en, this message translates to:
+  /// **'of {currency}{amount}'**
+  String goalAmountOf(String currency, String amount);
+
+  /// Deadline text with date
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline {date}'**
+  String deadlineDate(String date);
+
+  /// Days remaining text
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days left'**
+  String daysLeft(int days);
+
+  /// Percentage completion text
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage}% completed'**
+  String percentageCompleted(String percentage);
+
+  /// Message when no goal is set
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have a goal set yet.'**
+  String get noGoalSetYet;
+
+  /// Set goal button text
+  ///
+  /// In en, this message translates to:
+  /// **'Set Goal'**
+  String get setGoal;
+
+  /// Anonymous contributor name
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get anonymous;
+
+  /// Single day ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{days} day ago'**
+  String dayAgo(int days);
+
+  /// Multiple days ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days ago'**
+  String daysAgo(int days);
+
+  /// Single hour ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hour ago'**
+  String hourAgo(int hours);
+
+  /// Multiple hours ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hours ago'**
+  String hoursAgo(int hours);
+
+  /// Single minute ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minute ago'**
+  String minuteAgo(int minutes);
+
+  /// Multiple minutes ago text
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes ago'**
+  String minutesAgo(int minutes);
+
+  /// Just now timestamp text
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// Error message when jar summary reload fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reload jar summary'**
+  String get failedToReloadJarSummary;
+
+  /// Generic unexpected error message with error details
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred: {error}'**
+  String unexpectedErrorOccurred(String error);
+
+  /// Create new jar button text
+  ///
+  /// In en, this message translates to:
+  /// **'Create new jar'**
+  String get createNewJar;
+
+  /// Coming soon message for create jar feature
+  ///
+  /// In en, this message translates to:
+  /// **'Create jar feature coming soon!'**
+  String get createJarFeatureComingSoon;
+
+  /// Default user name fallback
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get user;
+
+  /// Anonymous user name with last 4 digits of phone number
+  ///
+  /// In en, this message translates to:
+  /// **'User {digits}'**
+  String userWithLastDigits(String digits);
 }
 
 class _AppLocalizationsDelegate

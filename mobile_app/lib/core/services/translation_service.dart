@@ -43,6 +43,8 @@ class TranslationService {
   String get failedToSendVerificationCodeTryAgain =>
       localizations.failedToSendVerificationCodeTryAgain;
 
+  String get failedToReloadJarSummary => localizations.failedToReloadJarSummary;
+
   /// Format error message with dynamic content
   String errorCheckingPhoneAvailabilityWithMessage(String message) {
     return '${localizations.errorCheckingPhoneAvailability}: $message';
@@ -63,5 +65,10 @@ class TranslationService {
   /// Get formatted OTP SMS message
   String getOtpSmsMessage(String otp, int minutes) {
     return localizations.otpSmsMessage(otp, minutes);
+  }
+
+  /// Get formatted unexpected error message
+  String unexpectedErrorOccurredWithDetails(String error) {
+    return localizations.unexpectedErrorOccurred(error);
   }
 }

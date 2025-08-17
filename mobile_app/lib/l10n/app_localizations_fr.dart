@@ -220,4 +220,159 @@ class AppLocalizationsFr extends AppLocalizations {
   String otpSmsMessage(String otp, int minutes) {
     return 'Votre code de vérification Konto est : $otp. Valable pendant $minutes minutes. Ne partagez pas ce code.';
   }
+
+  @override
+  String hiUser(String firstName) {
+    return 'Salut $firstName !';
+  }
+
+  @override
+  String get retry => 'Réessayer';
+
+  @override
+  String get jars => 'Pots';
+
+  @override
+  String get contribute => 'Contribuer';
+
+  @override
+  String get request => 'Demander';
+
+  @override
+  String get info => 'Info';
+
+  @override
+  String get more => 'Plus';
+
+  @override
+  String get collectors => 'Collecteurs';
+
+  @override
+  String get contributions => 'Contributions';
+
+  @override
+  String get recentContributions => 'Contributions Récentes';
+
+  @override
+  String get noContributionsYet => 'Aucune contribution pour l\'instant';
+
+  @override
+  String get beTheFirstToContribute =>
+      'Soyez le premier à contribuer à ce pot !';
+
+  @override
+  String get seeAll => 'Voir tout';
+
+  @override
+  String get createNewJarMessage =>
+      'Créez un nouveau pot pour voir les détails ici.';
+
+  @override
+  String get contributeFeatureComingSoon =>
+      'Fonctionnalité de contribution bientôt disponible !';
+
+  @override
+  String get setGoalFeatureComingSoon =>
+      'Fonctionnalité de définition d\'objectif bientôt disponible !';
+
+  @override
+  String get contributionDetailsComingSoon =>
+      'Détails de contribution bientôt disponibles !';
+
+  @override
+  String viewAllContributionsComingSoon(int count) {
+    return 'Voir toutes les $count contributions bientôt disponible !';
+  }
+
+  @override
+  String get refreshTimedOut => 'Délai d\'actualisation dépassé';
+
+  @override
+  String get goal => 'Objectif';
+
+  @override
+  String goalAmountOf(String currency, String amount) {
+    return 'sur $currency$amount';
+  }
+
+  @override
+  String deadlineDate(String date) {
+    return 'Échéance $date';
+  }
+
+  @override
+  String daysLeft(int days) {
+    return '$days jours restants';
+  }
+
+  @override
+  String percentageCompleted(String percentage) {
+    return '$percentage% terminé';
+  }
+
+  @override
+  String get noGoalSetYet => 'Vous n\'avez pas encore défini d\'objectif.';
+
+  @override
+  String get setGoal => 'Définir un objectif';
+
+  @override
+  String get anonymous => 'Anonyme';
+
+  @override
+  String dayAgo(int days) {
+    return 'Il y a $days jour';
+  }
+
+  @override
+  String daysAgo(int days) {
+    return 'Il y a $days jours';
+  }
+
+  @override
+  String hourAgo(int hours) {
+    return 'Il y a $hours heure';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return 'Il y a $hours heures';
+  }
+
+  @override
+  String minuteAgo(int minutes) {
+    return 'Il y a $minutes minute';
+  }
+
+  @override
+  String minutesAgo(int minutes) {
+    return 'Il y a $minutes minutes';
+  }
+
+  @override
+  String get justNow => 'À l\'instant';
+
+  @override
+  String get failedToReloadJarSummary =>
+      'Échec du rechargement du résumé du pot';
+
+  @override
+  String unexpectedErrorOccurred(String error) {
+    return 'Une erreur inattendue s\'est produite : $error';
+  }
+
+  @override
+  String get createNewJar => 'Créer un nouveau pot';
+
+  @override
+  String get createJarFeatureComingSoon =>
+      'Fonctionnalité de création de pot bientôt disponible !';
+
+  @override
+  String get user => 'Utilisateur';
+
+  @override
+  String userWithLastDigits(String digits) {
+    return 'Utilisateur $digits';
+  }
 }

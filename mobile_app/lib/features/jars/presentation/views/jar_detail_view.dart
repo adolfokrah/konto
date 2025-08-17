@@ -15,6 +15,7 @@ import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -32,6 +33,8 @@ class _JarDetailViewState extends State<JarDetailView> {
   }
 
   Future<void> _onRefresh() async {
+    final localizations = AppLocalizations.of(context)!;
+
     // Trigger the reload and wait for completion
     context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
 
@@ -47,7 +50,9 @@ class _JarDetailViewState extends State<JarDetailView> {
           const Duration(seconds: 20), // Add timeout to prevent hanging
           onTimeout: () {
             // Return a dummy state if timeout occurs
-            return JarSummaryReloadError(message: 'Refresh timed out');
+            return JarSummaryReloadError(
+              message: localizations.refreshTimedOut,
+            );
           },
         );
   }
@@ -59,6 +64,8 @@ class _JarDetailViewState extends State<JarDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return MultiBlocListener(
       listeners: [
         BlocListener<JarSummaryReloadBloc, JarSummaryReloadState>(
@@ -88,13 +95,16 @@ class _JarDetailViewState extends State<JarDetailView> {
         appBar: AppBar(
           title: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
-              String firstName = 'User';
+              String firstName = localizations.user;
               if (state is AuthAuthenticated) {
                 // Extract first name from full name
                 final fullName = state.user.fullName;
                 firstName = fullName.split(' ').first;
               }
-              return Text('Hi $firstName !', style: TextStyles.titleMediumLg);
+              return Text(
+                localizations.hiUser(firstName),
+                style: TextStyles.titleMediumLg,
+              );
             },
           ),
           backgroundColor: Colors.transparent,
@@ -149,7 +159,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 const SizedBox(height: 16),
                                 AppButton.filled(
                                   onPressed: _onRefetch,
-                                  text: "Retry",
+                                  text: localizations.retry,
                                 ),
                               ],
                             ),
@@ -189,9 +199,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                             ElevatedButton(
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'Contribute feature coming soon!',
+                                      localizations.contributeFeatureComingSoon,
                                     ),
                                   ),
                                 );
@@ -212,9 +222,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   ),
                                 ),
                               ),
-                              child: const Text(
-                                'Jars',
-                                style: TextStyle(
+                              child: Text(
+                                localizations.jars,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -242,7 +252,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         height: AppSpacing.spacingXs,
                                       ),
                                       Text(
-                                        'Contribute',
+                                        localizations.contribute,
                                         style: TextStyles.titleMedium,
                                       ),
                                     ],
@@ -259,7 +269,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         height: AppSpacing.spacingXs,
                                       ),
                                       Text(
-                                        'Request',
+                                        localizations.request,
                                         style: TextStyles.titleMedium,
                                       ),
                                     ],
@@ -276,7 +286,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         height: AppSpacing.spacingXs,
                                       ),
                                       Text(
-                                        'Info',
+                                        localizations.info,
                                         style: TextStyles.titleMedium,
                                       ),
                                     ],
@@ -293,7 +303,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         height: AppSpacing.spacingXs,
                                       ),
                                       Text(
-                                        'More',
+                                        localizations.more,
                                         style: TextStyles.titleMedium,
                                       ),
                                     ],
@@ -333,7 +343,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                           height: AppSpacing.spacingL,
                                         ),
                                         Text(
-                                          'Collectors',
+                                          localizations.collectors,
                                           style: TextStyles.titleRegularM,
                                         ),
                                         const SizedBox(
@@ -352,7 +362,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: AppSpacing.spacingM),
+                                const SizedBox(width: AppSpacing.spacingXs),
                                 Expanded(
                                   child: AppCard(
                                     variant: CardVariant.primary,
@@ -361,7 +371,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Contributions',
+                                          localizations.contributions,
                                           style: TextStyles.titleRegularM,
                                         ),
                                         const SizedBox(
@@ -392,8 +402,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 ),
                               ],
                             ),
-                            // Add some bottom padding for better UX
-                            const SizedBox(height: AppSpacing.spacingL),
 
                             // Goal Progress Card
                             GoalProgressCard(
@@ -404,9 +412,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                               variant: CardVariant.primary,
                               onSetGoal: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'Set Goal feature coming soon!',
+                                      localizations.setGoalFeatureComingSoon,
                                     ),
                                   ),
                                 );
@@ -414,7 +422,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                             ),
 
                             // Recent Contributions Section
-                            const SizedBox(height: AppSpacing.spacingL),
+                            const SizedBox(height: AppSpacing.spacingXs),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -424,7 +432,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     vertical: AppSpacing.spacingXs,
                                   ),
                                   child: Text(
-                                    'Recent Contributions',
+                                    localizations.recentContributions,
                                     style: TextStyles.titleMediumLg,
                                   ),
                                 ),
@@ -453,7 +461,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     height: AppSpacing.spacingM,
                                                   ),
                                                   Text(
-                                                    'No contributions yet',
+                                                    localizations
+                                                        .noContributionsYet,
                                                     style:
                                                         TextStyles.titleMedium,
                                                   ),
@@ -462,7 +471,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                         AppSpacing.spacingXs,
                                                   ),
                                                   Text(
-                                                    'Be the first to contribute to this jar!',
+                                                    localizations
+                                                        .beTheFirstToContribute,
                                                     style:
                                                         TextStyles
                                                             .titleRegularSm,
@@ -472,14 +482,17 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     height: AppSpacing.spacingL,
                                                   ),
                                                   AppButton.filled(
-                                                    text: 'Contribute',
+                                                    text:
+                                                        localizations
+                                                            .contribute,
                                                     onPressed: () {
                                                       ScaffoldMessenger.of(
                                                         context,
                                                       ).showSnackBar(
-                                                        const SnackBar(
+                                                        SnackBar(
                                                           content: Text(
-                                                            'Contribute feature coming soon!',
+                                                            localizations
+                                                                .contributeFeatureComingSoon,
                                                           ),
                                                         ),
                                                       );
@@ -497,7 +510,16 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                           contributorName:
                                                               contribution
                                                                   .contributor ??
-                                                              'User ${contribution.contributorPhoneNumber.substring(contribution.contributorPhoneNumber.length - 4)}',
+                                                              localizations.userWithLastDigits(
+                                                                contribution
+                                                                    .contributorPhoneNumber
+                                                                    .substring(
+                                                                      contribution
+                                                                              .contributorPhoneNumber
+                                                                              .length -
+                                                                          4,
+                                                                    ),
+                                                              ),
                                                           amount:
                                                               contribution
                                                                   .amountContributed,
@@ -525,9 +547,10 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                             ScaffoldMessenger.of(
                                                               context,
                                                             ).showSnackBar(
-                                                              const SnackBar(
+                                                              SnackBar(
                                                                 content: Text(
-                                                                  'Contribution details coming soon!',
+                                                                  localizations
+                                                                      .contributionDetailsComingSoon,
                                                                 ),
                                                               ),
                                                             );
@@ -545,8 +568,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                           const AppDivider(),
                                                       ],
                                                     )
-                                                    .expand((list) => list)
-                                                    .toList(),
+                                                    .expand((list) => list),
                                                 InkWell(
                                                   onTap: () {
                                                     ScaffoldMessenger.of(
@@ -554,13 +576,18 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     ).showSnackBar(
                                                       SnackBar(
                                                         content: Text(
-                                                          'View all ${jarData.contributions.length} contributions coming soon!',
+                                                          localizations
+                                                              .viewAllContributionsComingSoon(
+                                                                jarData
+                                                                    .contributions
+                                                                    .length,
+                                                              ),
                                                         ),
                                                       ),
                                                     );
                                                   },
                                                   child: Text(
-                                                    'See all',
+                                                    localizations.seeAll,
                                                     style:
                                                         TextStyles.titleMedium,
                                                   ),
@@ -582,27 +609,43 @@ class _JarDetailViewState extends State<JarDetailView> {
                 ),
               );
             }
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.8,
-                      child: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            'Create a new jar to see details here.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/onboarding_slide_1.png',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.contain,
+                        color: Colors.white,
+                        colorBlendMode: BlendMode.srcIn,
                       ),
-                    ),
+                      Text(
+                        localizations.createNewJarMessage,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.spacingM),
+                      AppButton.outlined(
+                        text: localizations.createNewJar,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                localizations.createJarFeatureComingSoon,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },

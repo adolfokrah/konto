@@ -344,5 +344,293 @@
         "example": "5"
       }
     }
+  },
+
+  "hiUser": "Hi {firstName} !",
+  "@hiUser": {
+    "description": "Greeting text in app bar",
+    "placeholders": {
+      "firstName": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button text"
+  },
+
+  "jars": "Jars",
+  "@jars": {
+    "description": "Jars text on button"
+  },
+
+  "contribute": "Contribute",
+  "@contribute": {
+    "description": "Contribute button text"
+  },
+
+  "request": "Request",
+  "@request": {
+    "description": "Request button text"
+  },
+
+  "info": "Info",
+  "@info": {
+    "description": "Info button text"
+  },
+
+  "more": "More",
+  "@more": {
+    "description": "More button text"
+  },
+
+  "collectors": "Collectors",
+  "@collectors": {
+    "description": "Collectors card title"
+  },
+
+  "contributions": "Contributions",
+  "@contributions": {
+    "description": "Contributions card title"
+  },
+
+  "recentContributions": "Recent Contributions",
+  "@recentContributions": {
+    "description": "Recent contributions section title"
+  },
+
+  "noContributionsYet": "No contributions yet",
+  "@noContributionsYet": {
+    "description": "Message when there are no contributions"
+  },
+
+  "beTheFirstToContribute": "Be the first to contribute to this jar!",
+  "@beTheFirstToContribute": {
+    "description": "Encouragement message when there are no contributions"
+  },
+
+  "seeAll": "See all",
+  "@seeAll": {
+    "description": "See all button text"
+  },
+
+  "createNewJarMessage": "Create a new jar to see details here.",
+  "@createNewJarMessage": {
+    "description": "Message shown when no jar is available"
+  },
+
+  "contributeFeatureComingSoon": "Contribute feature coming soon!",
+  "@contributeFeatureComingSoon": {
+    "description": "Coming soon message for contribute feature"
+  },
+
+  "setGoalFeatureComingSoon": "Set Goal feature coming soon!",
+  "@setGoalFeatureComingSoon": {
+    "description": "Coming soon message for set goal feature"
+  },
+
+  "contributionDetailsComingSoon": "Contribution details coming soon!",
+  "@contributionDetailsComingSoon": {
+    "description": "Coming soon message for contribution details"
+  },
+
+  "viewAllContributionsComingSoon": "View all {count} contributions coming soon!",
+  "@viewAllContributionsComingSoon": {
+    "description": "Coming soon message for viewing all contributions",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "refreshTimedOut": "Refresh timed out",
+  "@refreshTimedOut": {
+    "description": "Error message when refresh times out"
+  },
+
+  "goal": "Goal",
+  "@goal": {
+    "description": "Goal text for progress card"
+  },
+
+  "goalAmountOf": "of {currency}{amount}",
+  "@goalAmountOf": {
+    "description": "Goal amount text showing progress",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "example": "$"
+      },
+      "amount": {
+        "type": "String",
+        "example": "1000"
+      }
+    }
+  },
+
+  "deadlineDate": "Deadline {date}",
+  "@deadlineDate": {
+    "description": "Deadline text with date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "15 Dec 2024"
+      }
+    }
+  },
+
+  "daysLeft": "{days} days left",
+  "@daysLeft": {
+    "description": "Days remaining text",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+
+  "percentageCompleted": "{percentage}% completed",
+  "@percentageCompleted": {
+    "description": "Percentage completion text",
+    "placeholders": {
+      "percentage": {
+        "type": "String",
+        "example": "75.5"
+      }
+    }
+  },
+
+  "noGoalSetYet": "You do not have a goal set yet.",
+  "@noGoalSetYet": {
+    "description": "Message when no goal is set"
+  },
+
+  "setGoal": "Set Goal",
+  "@setGoal": {
+    "description": "Set goal button text"
+  },
+
+  "anonymous": "Anonymous",
+  "@anonymous": {
+    "description": "Anonymous contributor name"
+  },
+
+  "dayAgo": "{days} day ago",
+  "@dayAgo": {
+    "description": "Single day ago text",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "daysAgo": "{days} days ago",
+  "@daysAgo": {
+    "description": "Multiple days ago text",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "hourAgo": "{hours} hour ago",
+  "@hourAgo": {
+    "description": "Single hour ago text",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "hoursAgo": "{hours} hours ago",
+  "@hoursAgo": {
+    "description": "Multiple hours ago text",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "minuteAgo": "{minutes} minute ago",
+  "@minuteAgo": {
+    "description": "Single minute ago text",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "minutesAgo": "{minutes} minutes ago",
+  "@minutesAgo": {
+    "description": "Multiple minutes ago text",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+
+  "justNow": "Just now",
+  "@justNow": {
+    "description": "Just now timestamp text"
+  },
+
+  "failedToReloadJarSummary": "Failed to reload jar summary",
+  "@failedToReloadJarSummary": {
+    "description": "Error message when jar summary reload fails"
+  },
+
+  "unexpectedErrorOccurred": "An unexpected error occurred: {error}",
+  "@unexpectedErrorOccurred": {
+    "description": "Generic unexpected error message with error details",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network connection failed"
+      }
+    }
+  },
+
+  "createNewJar": "Create new jar",
+  "@createNewJar": {
+    "description": "Create new jar button text"
+  },
+
+  "createJarFeatureComingSoon": "Create jar feature coming soon!",
+  "@createJarFeatureComingSoon": {
+    "description": "Coming soon message for create jar feature"
+  },
+
+  "user": "User",
+  "@user": {
+    "description": "Default user name fallback"
+  },
+
+  "userWithLastDigits": "User {digits}",
+  "@userWithLastDigits": {
+    "description": "Anonymous user name with last 4 digits of phone number",
+    "placeholders": {
+      "digits": {
+        "type": "String",
+        "example": "1234"
+      }
+    }
   }
 }
