@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -25,11 +26,33 @@ class JarDetailView extends StatefulWidget {
 }
 
 class _JarDetailViewState extends State<JarDetailView> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
   @override
   void initState() {
     super.initState();
     // Trigger jar summary request when page loads for the first time
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
+
+    // Listen to scroll changes
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    setState(() {
+      _scrollOffset = _scrollController.offset;
+    });
+    print(
+      'Scroll offset: $_scrollOffset, Opacity: ${(1.0 - (_scrollOffset / 200)).clamp(0.0, 1.0)}',
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _onRefresh() async {
@@ -91,566 +114,569 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
       ],
-      child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              String firstName = localizations.user;
-              if (state is AuthAuthenticated) {
-                // Extract first name from full name
-                final fullName = state.user.fullName;
-                firstName = fullName.split(' ').first;
-              }
-              return Text(
-                localizations.hiUser(firstName),
-                style: TextStyles.titleMediumLg,
-              );
-            },
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          actions: [
-            AppIconButton(
-              onPressed: _onRefetch,
-              icon: Icons.qr_code,
-              size: const Size(40, 40),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.spacingXs,
-                right: AppSpacing.spacingM,
-              ),
-              child: AppIconButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(SignOutRequested());
-                },
-                icon: Icons.person,
-                size: const Size(40, 40),
-              ),
-            ),
-          ],
-        ),
-        body: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-          builder: (context, state) {
-            if (state is JarSummaryLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is JarSummaryError) {
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.8,
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline, size: 48),
-                                const SizedBox(height: 16),
-                                Text(
-                                  state.message,
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                AppButton.filled(
-                                  onPressed: _onRefetch,
-                                  text: localizations.retry,
-                                ),
+      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Stack(
+              children: [
+                // Background image positioned to cover upper section only
+                if (state is JarSummaryLoaded &&
+                    state.jarData.image?.url != null)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 450, // Cover upper section including app bar area
+                    child: Opacity(
+                      opacity: (1.0 - (_scrollOffset / 200)).clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              _constructImageUrl(state.jarData.image!.url!),
+                            ),
+                            fit: BoxFit.cover,
+                            opacity: 0.30,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(
+                                context,
+                              ).colorScheme.surface.withOpacity(0.8),
+                              BlendMode.overlay,
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.transparent,
+                                Theme.of(
+                                  context,
+                                ).colorScheme.surface.withOpacity(0.3),
+                                Theme.of(
+                                  context,
+                                ).colorScheme.surface.withOpacity(0.8),
+                                Theme.of(context).colorScheme.surface,
                               ],
+                              stops: const [0.0, 0.6, 0.8, 0.95, 1.0],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              );
-            } else if (state is JarSummaryLoaded) {
-              // Display jar details
-              final jarData = state.jarData;
-              bool isDark = Theme.of(context).brightness == Brightness.dark;
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 80),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // const SizedBox(height: 20), // Reduced spacing
-                            Text(jarData.name, style: TextStyles.titleMediumM),
-                            const SizedBox(height: AppSpacing.spacingXs),
-                            RevolutStyleCounterWithCurrency(
-                              value: jarData.formattedTotalContributions,
-                              style: TextStyles.titleBoldXl,
-                              duration: const Duration(milliseconds: 1000),
-                            ),
-                            const SizedBox(height: AppSpacing.spacingXs),
-                            ElevatedButton(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      localizations.contributeFeatureComingSoon,
-                                    ),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.onSurface,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: AppSpacing.spacingXs,
-                                  horizontal: AppSpacing.spacingL,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadius.radiusL,
-                                  ),
-                                ),
-                              ),
-                              child: Text(
-                                localizations.jars,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.spacingL),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.spacingM,
-                                vertical: AppSpacing.spacingL,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      AppIconButton(
-                                        onPressed: () {},
-                                        icon: Icons.add,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingXs,
-                                      ),
-                                      Text(
-                                        localizations.contribute,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      AppIconButton(
-                                        onPressed: () {},
-                                        icon: Icons.call_received,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingXs,
-                                      ),
-                                      Text(
-                                        localizations.request,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      AppIconButton(
-                                        onPressed: () {},
-                                        icon: Icons.info,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingXs,
-                                      ),
-                                      Text(
-                                        localizations.info,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      AppIconButton(
-                                        onPressed: () {},
-                                        icon: Icons.more_horiz,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingXs,
-                                      ),
-                                      Text(
-                                        localizations.more,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: AppCard(
-                                    variant: CardVariant.primary,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(Icons.person),
-                                          style: IconButton.styleFrom(
-                                            backgroundColor:
-                                                isDark
-                                                    ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.surface
-                                                    : Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary,
-                                            foregroundColor:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.onSurface,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingL,
-                                        ),
-                                        Text(
-                                          localizations.collectors,
-                                          style: TextStyles.titleRegularM,
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingXs,
-                                        ),
-                                        AnimatedNumberTextScale(
-                                          value:
-                                              (jarData.collectors?.length ?? 0)
-                                                  .toString(),
-                                          style: TextStyles.titleBoldLg,
-                                          duration: const Duration(
-                                            milliseconds: 600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.spacingXs),
-                                Expanded(
-                                  child: AppCard(
-                                    variant: CardVariant.primary,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          localizations.contributions,
-                                          style: TextStyles.titleRegularM,
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingXs,
-                                        ),
-                                        AnimatedNumberTextScaleWithCurrency(
-                                          value:
-                                              jarData
-                                                  .formattedTotalContributions,
-                                          style: TextStyles.titleBoldLg,
-                                          duration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingM,
-                                        ),
-                                        // Chart with real data from API
-                                        ContributionChart(
-                                          dataPoints:
-                                              jarData.chartData ?? const [],
-                                          chartColor: Colors.green,
-                                          height: 50,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // Goal Progress Card
-                            GoalProgressCard(
-                              currentAmount: jarData.totalContributions,
-                              goalAmount: jarData.goalAmount,
-                              currency: jarData.currencySymbol,
-                              deadline: jarData.deadline,
-                              variant: CardVariant.primary,
-                              onSetGoal: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      localizations.setGoalFeatureComingSoon,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-
-                            // Recent Contributions Section
-                            const SizedBox(height: AppSpacing.spacingXs),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.spacingM,
-                                    vertical: AppSpacing.spacingXs,
-                                  ),
-                                  child: Text(
-                                    localizations.recentContributions,
-                                    style: TextStyles.titleMediumLg,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: AppCard(
-                                    variant: CardVariant.primary,
-                                    child:
-                                        jarData.contributions.isEmpty
-                                            ? Padding(
-                                              padding: const EdgeInsets.all(
-                                                AppSpacing.spacingL,
-                                              ),
-                                              child: Column(
-                                                children: [
-                                                  Image.asset(
-                                                    'assets/images/onboarding_slide_1.png',
-                                                    width: 80,
-                                                    height: 80,
-                                                    fit: BoxFit.contain,
-                                                    color: Colors.white,
-                                                    colorBlendMode:
-                                                        BlendMode.srcIn,
-                                                  ),
-                                                  const SizedBox(
-                                                    height: AppSpacing.spacingM,
-                                                  ),
-                                                  Text(
-                                                    localizations
-                                                        .noContributionsYet,
-                                                    style:
-                                                        TextStyles.titleMedium,
-                                                  ),
-                                                  const SizedBox(
-                                                    height:
-                                                        AppSpacing.spacingXs,
-                                                  ),
-                                                  Text(
-                                                    localizations
-                                                        .beTheFirstToContribute,
-                                                    style:
-                                                        TextStyles
-                                                            .titleRegularSm,
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                  const SizedBox(
-                                                    height: AppSpacing.spacingL,
-                                                  ),
-                                                  AppButton.filled(
-                                                    text:
-                                                        localizations
-                                                            .contribute,
-                                                    onPressed: () {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            localizations
-                                                                .contributeFeatureComingSoon,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                            : Column(
-                                              children: [
-                                                ...jarData.contributions
-                                                    .map(
-                                                      (contribution) => [
-                                                        ContributionListItem(
-                                                          contributorName:
-                                                              contribution
-                                                                  .contributor ??
-                                                              localizations.userWithLastDigits(
-                                                                contribution
-                                                                    .contributorPhoneNumber
-                                                                    .substring(
-                                                                      contribution
-                                                                              .contributorPhoneNumber
-                                                                              .length -
-                                                                          4,
-                                                                    ),
-                                                              ),
-                                                          amount:
-                                                              contribution
-                                                                  .amountContributed,
-                                                          currency:
-                                                              jarData
-                                                                  .currencySymbol,
-                                                          timestamp:
-                                                              contribution
-                                                                  .createdAt ??
-                                                              DateTime.now(),
-                                                          paymentMethod:
-                                                              contribution
-                                                                  .paymentMethod,
-                                                          isAnonymous:
-                                                              contribution
-                                                                  .contributor ==
-                                                              null,
-                                                          viaPaymentLink:
-                                                              contribution
-                                                                  .viaPaymentLink,
-                                                          paymentStatus:
-                                                              contribution
-                                                                  .paymentStatus,
-                                                          onTap: () {
-                                                            ScaffoldMessenger.of(
-                                                              context,
-                                                            ).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  localizations
-                                                                      .contributionDetailsComingSoon,
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                        if (jarData
-                                                                .contributions
-                                                                .indexOf(
-                                                                  contribution,
-                                                                ) <
-                                                            (jarData
-                                                                    .contributions
-                                                                    .length -
-                                                                1))
-                                                          const AppDivider(),
-                                                      ],
-                                                    )
-                                                    .expand((list) => list),
-                                                InkWell(
-                                                  onTap: () {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          localizations
-                                                              .viewAllContributionsComingSoon(
-                                                                jarData
-                                                                    .contributions
-                                                                    .length,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Text(
-                                                    localizations.seeAll,
-                                                    style:
-                                                        TextStyles.titleMedium,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // Final bottom padding
-                            const SizedBox(height: AppSpacing.spacingL),
-                          ],
+                  ),
+                // Main content with custom scroll view
+                NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification notification) {
+                    if (notification is ScrollUpdateNotification) {
+                      setState(() {
+                        _scrollOffset = notification.metrics.pixels;
+                      });
+                    }
+                    return false;
+                  },
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverAppBar(
+                        title: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                            String firstName = localizations.user;
+                            if (state is AuthAuthenticated) {
+                              // Extract first name from full name
+                              final fullName = state.user.fullName;
+                              firstName = fullName.split(' ').first;
+                            }
+                            return Text(
+                              localizations.hiUser(firstName),
+                              style: TextStyles.titleMediumLg,
+                            );
+                          },
                         ),
+                        backgroundColor: Color.lerp(
+                          Colors.transparent,
+                          Theme.of(context).colorScheme.surface,
+                          (_scrollOffset / 200).clamp(0.0, 1.0),
+                        ),
+                        surfaceTintColor: Colors.transparent,
+                        elevation: 0,
+                        floating: true,
+                        snap: true,
+                        pinned: true,
+                        actions: [
+                          AppIconButton(
+                            onPressed: _onRefetch,
+                            icon: Icons.qr_code,
+                            size: const Size(40, 40),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: AppSpacing.spacingXs,
+                              right: AppSpacing.spacingM,
+                            ),
+                            child: AppIconButton(
+                              onPressed: () {
+                                context.read<AuthBloc>().add(
+                                  SignOutRequested(),
+                                );
+                              },
+                              icon: Icons.person,
+                              size: const Size(40, 40),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      _buildSliverBody(context, state),
+                    ],
+                  ),
                 ),
-              );
-            }
-            return SizedBox(
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSliverBody(BuildContext context, JarSummaryState state) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (state is JarSummaryLoading) {
+      return SliverFillRemaining(
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    } else if (state is JarSummaryError) {
+      return SliverFillRemaining(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/onboarding_slide_1.png',
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.contain,
-                        color: Colors.white,
-                        colorBlendMode: BlendMode.srcIn,
-                      ),
-                      Text(
-                        localizations.createNewJarMessage,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
-                      AppButton.outlined(
-                        text: localizations.createNewJar,
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                localizations.createJarFeatureComingSoon,
-                              ),
-                            ),
-                          );
-                        },
+                      Icon(Icons.error_outline, size: 48),
+                      const SizedBox(height: 16),
+                      Text(state.message, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      AppButton.filled(
+                        onPressed: _onRefetch,
+                        text: localizations.retry,
                       ),
                     ],
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ),
+        ),
+      );
+    } else if (state is JarSummaryLoaded) {
+      // Display jar details
+      final jarData = state.jarData;
+      bool isDark = Theme.of(context).brightness == Brightness.dark;
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 80),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(jarData.name, style: TextStyles.titleMediumM),
+              const SizedBox(height: AppSpacing.spacingXs),
+              RevolutStyleCounterWithCurrency(
+                value: jarData.formattedTotalContributions,
+                style: TextStyles.titleBoldXl,
+                duration: const Duration(milliseconds: 1000),
+              ),
+              const SizedBox(height: AppSpacing.spacingXs),
+              ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(localizations.contributeFeatureComingSoon),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.spacingXs,
+                    horizontal: AppSpacing.spacingL,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.radiusL),
+                  ),
+                ),
+                child: Text(
+                  localizations.jars,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacingL),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.spacingM,
+                  vertical: AppSpacing.spacingL,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIconButton(onPressed: () {}, icon: Icons.add),
+                        const SizedBox(height: AppSpacing.spacingXs),
+                        Text(
+                          localizations.contribute,
+                          style: TextStyles.titleMedium,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIconButton(
+                          onPressed: () {},
+                          icon: Icons.call_received,
+                        ),
+                        const SizedBox(height: AppSpacing.spacingXs),
+                        Text(
+                          localizations.request,
+                          style: TextStyles.titleMedium,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIconButton(onPressed: () {}, icon: Icons.info),
+                        const SizedBox(height: AppSpacing.spacingXs),
+                        Text(localizations.info, style: TextStyles.titleMedium),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIconButton(onPressed: () {}, icon: Icons.more_horiz),
+                        const SizedBox(height: AppSpacing.spacingXs),
+                        Text(localizations.more, style: TextStyles.titleMedium),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: AppCard(
+                      variant: CardVariant.primary,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.person),
+                            style: IconButton.styleFrom(
+                              backgroundColor:
+                                  isDark
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingL),
+                          Text(
+                            localizations.collectors,
+                            style: TextStyles.titleRegularM,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                          AnimatedNumberTextScale(
+                            value: (jarData.collectors?.length ?? 0).toString(),
+                            style: TextStyles.titleBoldLg,
+                            duration: const Duration(milliseconds: 600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.spacingXs),
+                  Expanded(
+                    child: AppCard(
+                      variant: CardVariant.primary,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            localizations.contributions,
+                            style: TextStyles.titleRegularM,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                          RevolutStyleCounterWithCurrency(
+                            value: jarData.formattedTotalContributions,
+                            style: TextStyles.titleBoldLg,
+                            duration: const Duration(milliseconds: 800),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
+                          // Chart with real data from API
+                          ContributionChart(
+                            dataPoints: jarData.chartData ?? const [],
+                            chartColor: Colors.green,
+                            height: 50,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              //end of top section
+              const SizedBox(height: AppSpacing.spacingXs),
+              // Goal Progress Card
+              GoalProgressCard(
+                currentAmount: jarData.totalContributions,
+                goalAmount: jarData.goalAmount,
+                currency: jarData.currencySymbol,
+                deadline: jarData.deadline,
+                variant: CardVariant.primary,
+                onSetGoal: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(localizations.setGoalFeatureComingSoon),
+                    ),
+                  );
+                },
+              ),
+
+              // Recent Contributions Section
+              const SizedBox(height: AppSpacing.spacingXs),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.spacingM,
+                      vertical: AppSpacing.spacingXs,
+                    ),
+                    child: Text(
+                      localizations.recentContributions,
+                      style: TextStyles.titleMediumLg,
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppCard(
+                      variant: CardVariant.primary,
+                      child:
+                          jarData.contributions.isEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.all(
+                                  AppSpacing.spacingL,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/onboarding_slide_1.png',
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.contain,
+                                      color: Colors.white,
+                                      colorBlendMode: BlendMode.srcIn,
+                                    ),
+                                    const SizedBox(height: AppSpacing.spacingM),
+                                    Text(
+                                      localizations.noContributionsYet,
+                                      style: TextStyles.titleMedium,
+                                    ),
+                                    const SizedBox(
+                                      height: AppSpacing.spacingXs,
+                                    ),
+                                    Text(
+                                      localizations.beTheFirstToContribute,
+                                      style: TextStyles.titleRegularSm,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: AppSpacing.spacingL),
+                                    AppButton.filled(
+                                      text: localizations.contribute,
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              localizations
+                                                  .contributeFeatureComingSoon,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              )
+                              : Column(
+                                children: [
+                                  ...jarData.contributions
+                                      .map(
+                                        (contribution) => [
+                                          ContributionListItem(
+                                            contributorName:
+                                                contribution.contributor ??
+                                                localizations.userWithLastDigits(
+                                                  contribution
+                                                      .contributorPhoneNumber
+                                                      .substring(
+                                                        contribution
+                                                                .contributorPhoneNumber
+                                                                .length -
+                                                            4,
+                                                      ),
+                                                ),
+                                            amount:
+                                                contribution.amountContributed,
+                                            currency: jarData.currencySymbol,
+                                            timestamp:
+                                                contribution.createdAt ??
+                                                DateTime.now(),
+                                            paymentMethod:
+                                                contribution.paymentMethod,
+                                            isAnonymous:
+                                                contribution.contributor ==
+                                                null,
+                                            viaPaymentLink:
+                                                contribution.viaPaymentLink,
+                                            paymentStatus:
+                                                contribution.paymentStatus,
+                                            onTap: () {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    localizations
+                                                        .contributionDetailsComingSoon,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          if (jarData.contributions.indexOf(
+                                                contribution,
+                                              ) <
+                                              (jarData.contributions.length -
+                                                  1))
+                                            const AppDivider(),
+                                        ],
+                                      )
+                                      .expand((list) => list),
+                                  InkWell(
+                                    onTap: () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            localizations
+                                                .viewAllContributionsComingSoon(
+                                                  jarData.contributions.length,
+                                                ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.seeAll,
+                                      style: TextStyles.titleMedium,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Final bottom padding
+              const SizedBox(height: AppSpacing.spacingL),
+            ],
+          ),
+        ),
+      );
+    }
+    return SliverFillRemaining(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/onboarding_slide_1.png',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                  color: Colors.white,
+                  colorBlendMode: BlendMode.srcIn,
+                ),
+                Text(
+                  localizations.createNewJarMessage,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.spacingM),
+                AppButton.outlined(
+                  text: localizations.createNewJar,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(localizations.createJarFeatureComingSoon),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  /// Helper method to construct full image URL from relative path
+  String _constructImageUrl(String relativePath) {
+    final baseUrl = BackendConfig.imageBaseUrl;
+
+    // If the path is already a full URL, return it as is
+    if (relativePath.startsWith('http://') ||
+        relativePath.startsWith('https://')) {
+      return relativePath;
+    }
+
+    // If the path starts with '/', remove it to avoid double slashes
+    final cleanPath =
+        relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
+
+    // Construct the full URL
+    return '$baseUrl/$cleanPath';
   }
 }
