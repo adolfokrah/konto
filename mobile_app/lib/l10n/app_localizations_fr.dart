@@ -375,4 +375,37 @@ class AppLocalizationsFr extends AppLocalizations {
   String userWithLastDigits(String digits) {
     return 'Utilisateur $digits';
   }
+
+  @override
+  String get requestContribution => 'Demander une Contribution';
+
+  @override
+  String get scanToGetContribution => 'Scanner pour obtenir une contribution';
+
+  @override
+  String get byAnyone => 'par n\'importe qui';
+
+  @override
+  String get shareLink => 'Partager le Lien';
+
+  @override
+  String get copyLink => 'Copier le Lien';
+
+  @override
+  String get qrCodeInstructions =>
+      'Partagez ce code QR avec les contributeurs pour qu\'ils puissent facilement accéder à votre pot et faire des contributions.';
+
+  @override
+  String contributeToJar(String jarName) {
+    return 'Contribuer à $jarName';
+  }
+
+  @override
+  String get linkCopiedToClipboard => 'Lien copié dans le presse-papier';
+
+  @override
+  String get failedToShareLink => 'Échec du partage du lien';
+
+  @override
+  String get failedToCopyLink => 'Échec de la copie du lien';
 }

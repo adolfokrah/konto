@@ -632,5 +632,61 @@
         "example": "1234"
       }
     }
+  },
+
+  "requestContribution": "Request Contribution",
+  "@requestContribution": {
+    "description": "Request contribution screen title"
+  },
+
+  "scanToGetContribution": "Scan to get contribution",
+  "@scanToGetContribution": {
+    "description": "Text showing what the QR code is for"
+  },
+
+  "byAnyone": "by anyone",
+  "@byAnyone": {
+    "description": "Text indicating anyone can contribute"
+  },
+
+  "shareLink": "Share Link",
+  "@shareLink": {
+    "description": "Share link button text"
+  },
+
+  "copyLink": "Copy Link",
+  "@copyLink": {
+    "description": "Copy link button text"
+  },
+
+  "qrCodeInstructions": "Share this QR code with contributors so they can easily access your jar and make contributions.",
+  "@qrCodeInstructions": {
+    "description": "Instructions for using the QR code"
+  },
+
+  "contributeToJar": "Contribute to {jarName}",
+  "@contributeToJar": {
+    "description": "Subject line when sharing jar link",
+    "placeholders": {
+      "jarName": {
+        "type": "String",
+        "example": "Pool Party"
+      }
+    }
+  },
+
+  "linkCopiedToClipboard": "Link copied to clipboard",
+  "@linkCopiedToClipboard": {
+    "description": "Success message when link is copied"
+  },
+
+  "failedToShareLink": "Failed to share link",
+  "@failedToShareLink": {
+    "description": "Error message when sharing fails"
+  },
+
+  "failedToCopyLink": "Failed to copy link",
+  "@failedToCopyLink": {
+    "description": "Error message when copying fails"
   }
 }

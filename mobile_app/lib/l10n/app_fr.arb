@@ -103,5 +103,15 @@
   "createNewJar": "Créer un nouveau pot",
   "createJarFeatureComingSoon": "Fonctionnalité de création de pot bientôt disponible !",
   "user": "Utilisateur",
-  "userWithLastDigits": "Utilisateur {digits}"
+  "userWithLastDigits": "Utilisateur {digits}",
+  "requestContribution": "Demander une Contribution",
+  "scanToGetContribution": "Scanner pour obtenir une contribution",
+  "byAnyone": "par n'importe qui",
+  "shareLink": "Partager le Lien",
+  "copyLink": "Copier le Lien",
+  "qrCodeInstructions": "Partagez ce code QR avec les contributeurs pour qu'ils puissent facilement accéder à votre pot et faire des contributions.",
+  "contributeToJar": "Contribuer à {jarName}",
+  "linkCopiedToClipboard": "Lien copié dans le presse-papier",
+  "failedToShareLink": "Échec du partage du lien",
+  "failedToCopyLink": "Échec de la copie du lien"
 }

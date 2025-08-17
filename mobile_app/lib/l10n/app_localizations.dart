@@ -727,6 +727,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User {digits}'**
   String userWithLastDigits(String digits);
+
+  /// Request contribution screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Request Contribution'**
+  String get requestContribution;
+
+  /// Text showing what the QR code is for
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to get contribution'**
+  String get scanToGetContribution;
+
+  /// Text indicating anyone can contribute
+  ///
+  /// In en, this message translates to:
+  /// **'by anyone'**
+  String get byAnyone;
+
+  /// Share link button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get shareLink;
+
+  /// Copy link button text
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get copyLink;
+
+  /// Instructions for using the QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Share this QR code with contributors so they can easily access your jar and make contributions.'**
+  String get qrCodeInstructions;
+
+  /// Subject line when sharing jar link
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute to {jarName}'**
+  String contributeToJar(String jarName);
+
+  /// Success message when link is copied
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard'**
+  String get linkCopiedToClipboard;
+
+  /// Error message when sharing fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to share link'**
+  String get failedToShareLink;
+
+  /// Error message when copying fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy link'**
+  String get failedToCopyLink;
 }
 
 class _AppLocalizationsDelegate

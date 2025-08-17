@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/animated_number_text.dart';
@@ -12,11 +11,13 @@ import 'package:konto/core/widgets/contribution_list_item.dart';
 import 'package:konto/core/widgets/divider.dart';
 import 'package:konto/core/widgets/goal_progress_card.dart';
 import 'package:konto/core/widgets/icon_button.dart';
+import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/route.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -145,7 +146,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                             colorFilter: ColorFilter.mode(
                               Theme.of(
                                 context,
-                              ).colorScheme.surface.withOpacity(0.8),
+                              ).colorScheme.surface.withValues(alpha: 0.8),
                               BlendMode.overlay,
                             ),
                           ),
@@ -215,11 +216,21 @@ class _JarDetailViewState extends State<JarDetailView> {
                           snap: true,
                           pinned: true,
                           actions: [
-                            AppIconButton(
-                              onPressed: _onRefetch,
-                              icon: Icons.qr_code,
-                              size: const Size(40, 40),
-                            ),
+                            if (state is JarSummaryLoaded)
+                              AppIconButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.contributionRequest,
+                                    arguments: {
+                                      'paymentLink': state.jarData.paymentLink,
+                                      'jarName': state.jarData.name,
+                                    },
+                                  );
+                                },
+                                icon: Icons.qr_code,
+                                size: const Size(40, 40),
+                              ),
                             Padding(
                               padding: const EdgeInsets.only(
                                 left: AppSpacing.spacingXs,
@@ -300,7 +311,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                 duration: const Duration(milliseconds: 1000),
               ),
               const SizedBox(height: AppSpacing.spacingXs),
-              ElevatedButton(
+              AppSmallButton(
+                child: Text(localizations.jars, style: TextStyles.titleMedium),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -308,25 +320,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.spacingXs,
-                    horizontal: AppSpacing.spacingL,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.radiusL),
-                  ),
-                ),
-                child: Text(
-                  localizations.jars,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
               const SizedBox(height: AppSpacing.spacingL),
               Padding(
@@ -352,7 +345,16 @@ class _JarDetailViewState extends State<JarDetailView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         AppIconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.contributionRequest,
+                              arguments: {
+                                'paymentLink': state.jarData.paymentLink,
+                                'jarName': state.jarData.name,
+                              },
+                            );
+                          },
                           icon: Icons.call_received,
                         ),
                         const SizedBox(height: AppSpacing.spacingXs),
