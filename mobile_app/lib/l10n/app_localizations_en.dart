@@ -21,25 +21,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneNumber => 'Phone number';
 
   @override
-  String get loginSubtitle => 'Sign in to collect, contribute, or\ntrack with confidence.';
+  String get loginSubtitle =>
+      'Sign in to collect, contribute, or\ntrack with confidence.';
 
   @override
   String get onboardingTitle1 => 'Create with\nPurpose';
 
   @override
-  String get onboardingDescription1 => 'Set up a jar in seconds to collect funds for weddings, funerals, birthdays, etc.';
+  String get onboardingDescription1 =>
+      'Set up a jar in seconds to collect funds for weddings, funerals, birthdays, etc.';
 
   @override
   String get onboardingTitle2 => 'Give with\nConfidence';
 
   @override
-  String get onboardingDescription2 => 'Support loved ones with secure and transparent contributions.';
+  String get onboardingDescription2 =>
+      'Support loved ones with secure and transparent contributions.';
 
   @override
   String get onboardingTitle3 => 'Track Every\nContribution';
 
   @override
-  String get onboardingDescription3 => 'See who contributed, how much, and get notified when you hit your goal.';
+  String get onboardingDescription3 =>
+      'See who contributed, how much, and get notified when you hit your goal.';
 
   @override
   String get next => 'Next';
@@ -154,7 +158,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get resendMessage => 'Requesting new code. If you get \"too many requests\", wait 15-30 minutes.';
+  String get resendMessage =>
+      'Requesting new code. If you get \"too many requests\", wait 15-30 minutes.';
 
   @override
   String get verificationSuccessful => 'Verification successful!';
@@ -181,10 +186,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountAlreadyExists => 'Account already exists';
 
   @override
-  String get errorCheckingPhoneAvailability => 'Error checking phone availability';
+  String get errorCheckingPhoneAvailability =>
+      'Error checking phone availability';
 
   @override
-  String get failedToCheckPhoneNumber => 'Failed to check phone number availability. Connection failed';
+  String get failedToCheckPhoneNumber =>
+      'Failed to check phone number availability. Connection failed';
 
   @override
   String get loginFailed => 'Login failed';
@@ -196,13 +203,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToSignOut => 'Failed to sign out';
 
   @override
-  String get otpDoesNotMatch => 'OTP does not match the sent code. Please try again.';
+  String get otpDoesNotMatch =>
+      'OTP does not match the sent code. Please try again.';
 
   @override
   String get failedToSendVerificationCode => 'Failed to send verification code';
 
   @override
-  String get failedToSendVerificationCodeTryAgain => 'Failed to send verification code. Please try again.';
+  String get failedToSendVerificationCodeTryAgain =>
+      'Failed to send verification code. Please try again.';
 
   @override
   String otpSmsMessage(String otp, int minutes) {
@@ -245,7 +254,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noContributionsYet => 'No contributions yet';
 
   @override
-  String get beTheFirstToContribute => 'Be the first to contribute to this jar!';
+  String get beTheFirstToContribute =>
+      'Be the first to contribute to this jar!';
 
   @override
   String get seeAll => 'See all';
@@ -260,7 +270,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setGoalFeatureComingSoon => 'Set Goal feature coming soon!';
 
   @override
-  String get contributionDetailsComingSoon => 'Contribution details coming soon!';
+  String get contributionDetailsComingSoon =>
+      'Contribution details coming soon!';
 
   @override
   String viewAllContributionsComingSoon(int count) {
@@ -342,10 +353,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToLoadJarSummary => 'Failed to load jar summary';
 
   @override
-  String get failedToSetCurrentJar => 'Failed to set current jar. Please try again.';
+  String get failedToSetCurrentJar =>
+      'Failed to set current jar. Please try again.';
 
   @override
-  String get unexpectedErrorSettingCurrentJar => 'An unexpected error occurred while setting current jar';
+  String get unexpectedErrorSettingCurrentJar =>
+      'An unexpected error occurred while setting current jar';
 
   @override
   String unexpectedErrorOccurred(String error) {
@@ -382,7 +395,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyLink => 'Copy Link';
 
   @override
-  String get qrCodeInstructions => 'Share this QR code with contributors so they can easily access your jar and make contributions.';
+  String get qrCodeInstructions =>
+      'Share this QR code with contributors so they can easily access your jar and make contributions.';
 
   @override
   String contributeToJar(String jarName) {
@@ -415,7 +429,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get jarSummaryRetrievedSuccessfully => 'Jar summary retrieved successfully';
+  String get jarSummaryRetrievedSuccessfully =>
+      'Jar summary retrieved successfully';
 
   @override
   String get failedToParseJarData => 'Failed to parse jar data';
@@ -429,7 +444,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToRetrieveJarSummary => 'Failed to retrieve jar summary';
 
   @override
-  String get unexpectedErrorRetrievingJarSummary => 'An unexpected error occurred while retrieving jar summary';
+  String get unexpectedErrorRetrievingJarSummary =>
+      'An unexpected error occurred while retrieving jar summary';
 
   @override
   String get close => 'Close';
