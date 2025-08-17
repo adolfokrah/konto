@@ -43,9 +43,6 @@ class _JarDetailViewState extends State<JarDetailView> {
     setState(() {
       _scrollOffset = _scrollController.offset;
     });
-    print(
-      'Scroll offset: $_scrollOffset, Opacity: ${(1.0 - (_scrollOffset / 200)).clamp(0.0, 1.0)}',
-    );
   }
 
   @override
@@ -57,27 +54,32 @@ class _JarDetailViewState extends State<JarDetailView> {
 
   Future<void> _onRefresh() async {
     final localizations = AppLocalizations.of(context)!;
+    final jarSummaryReloadBloc = context.read<JarSummaryReloadBloc>();
 
     // Trigger the reload and wait for completion
-    context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
+    // This should refresh data in the background without affecting UI state
+    jarSummaryReloadBloc.add(ReloadJarSummaryRequested());
 
-    // Wait for the reload to complete by listening for state changes
-    await context
-        .read<JarSummaryReloadBloc>()
-        .stream
-        .firstWhere(
-          (state) =>
-              state is JarSummaryReloaded || state is JarSummaryReloadError,
-        )
-        .timeout(
-          const Duration(seconds: 20), // Add timeout to prevent hanging
-          onTimeout: () {
-            // Return a dummy state if timeout occurs
-            return JarSummaryReloadError(
-              message: localizations.refreshTimedOut,
-            );
-          },
+    try {
+      // Wait for the reload to complete by listening for state changes
+      await jarSummaryReloadBloc.stream
+          .firstWhere(
+            (state) =>
+                state is JarSummaryReloaded || state is JarSummaryReloadError,
+          )
+          .timeout(
+            const Duration(seconds: 20), // Add timeout to prevent hanging
+          );
+    } catch (e) {
+      // Handle timeout or other errors
+      if (context.mounted) {
+        AppSnackBar.show(
+          context,
+          message: localizations.refreshTimedOut,
+          type: SnackBarType.error,
         );
+      }
+    }
   }
 
   void _onRefetch() {
@@ -101,6 +103,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                 type: SnackBarType.error,
               );
             }
+            // JarSummaryReloaded state is handled automatically by the bloc
+            // which calls UpdateJarSummaryRequested on the main bloc without flicker
           },
         ),
         BlocListener<AuthBloc, AuthState>(
@@ -179,60 +183,63 @@ class _JarDetailViewState extends State<JarDetailView> {
                     }
                     return false;
                   },
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverAppBar(
-                        title: BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
-                            String firstName = localizations.user;
-                            if (state is AuthAuthenticated) {
-                              // Extract first name from full name
-                              final fullName = state.user.fullName;
-                              firstName = fullName.split(' ').first;
-                            }
-                            return Text(
-                              localizations.hiUser(firstName),
-                              style: TextStyles.titleMediumLg,
-                            );
-                          },
-                        ),
-                        backgroundColor: Color.lerp(
-                          Colors.transparent,
-                          Theme.of(context).colorScheme.surface,
-                          (_scrollOffset / 200).clamp(0.0, 1.0),
-                        ),
-                        surfaceTintColor: Colors.transparent,
-                        elevation: 0,
-                        floating: true,
-                        snap: true,
-                        pinned: true,
-                        actions: [
-                          AppIconButton(
-                            onPressed: _onRefetch,
-                            icon: Icons.qr_code,
-                            size: const Size(40, 40),
+                  child: RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverAppBar(
+                          title: BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              String firstName = localizations.user;
+                              if (state is AuthAuthenticated) {
+                                // Extract first name from full name
+                                final fullName = state.user.fullName;
+                                firstName = fullName.split(' ').first;
+                              }
+                              return Text(
+                                localizations.hiUser(firstName),
+                                style: TextStyles.titleMediumLg,
+                              );
+                            },
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: AppSpacing.spacingXs,
-                              right: AppSpacing.spacingM,
-                            ),
-                            child: AppIconButton(
-                              onPressed: () {
-                                context.read<AuthBloc>().add(
-                                  SignOutRequested(),
-                                );
-                              },
-                              icon: Icons.person,
+                          backgroundColor: Color.lerp(
+                            Colors.transparent,
+                            Theme.of(context).colorScheme.surface,
+                            (_scrollOffset / 200).clamp(0.0, 1.0),
+                          ),
+                          surfaceTintColor: Colors.transparent,
+                          elevation: 0,
+                          floating: true,
+                          snap: true,
+                          pinned: true,
+                          actions: [
+                            AppIconButton(
+                              onPressed: _onRefetch,
+                              icon: Icons.qr_code,
                               size: const Size(40, 40),
                             ),
-                          ),
-                        ],
-                      ),
-                      _buildSliverBody(context, state),
-                    ],
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: AppSpacing.spacingXs,
+                                right: AppSpacing.spacingM,
+                              ),
+                              child: AppIconButton(
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(
+                                    SignOutRequested(),
+                                  );
+                                },
+                                icon: Icons.person,
+                                size: const Size(40, 40),
+                              ),
+                            ),
+                          ],
+                        ),
+                        _buildSliverBody(context, state),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -252,29 +259,23 @@ class _JarDetailViewState extends State<JarDetailView> {
       );
     } else if (state is JarSummaryError) {
       return SliverFillRemaining(
-        child: RefreshIndicator(
-          onRefresh: _onRefresh,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 48),
-                      const SizedBox(height: 16),
-                      Text(state.message, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      AppButton.filled(
-                        onPressed: _onRefetch,
-                        text: localizations.retry,
-                      ),
-                    ],
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 48),
+                  const SizedBox(height: 16),
+                  Text(state.message, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  AppButton.filled(
+                    onPressed: _onRefetch,
+                    text: localizations.retry,
                   ),
-                ),
+                ],
               ),
             ),
           ),
