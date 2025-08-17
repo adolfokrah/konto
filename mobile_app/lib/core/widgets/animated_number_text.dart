@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/constants/app_spacing.dart';
 
 class AnimatedNumberText extends StatefulWidget {
   final String value;
@@ -245,8 +246,8 @@ class RevolutStyleCounterWithCurrency extends StatefulWidget {
 class _RevolutStyleCounterWithCurrencyState
     extends State<RevolutStyleCounterWithCurrency>
     with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
+  List<AnimationController> _controllers = [];
+  List<Animation<Offset>> _slideAnimations = [];
   String _displayValue = '';
   String _previousValue = '';
   bool _hasInitialized = false;
@@ -279,16 +280,52 @@ class _RevolutStyleCounterWithCurrencyState
     return {'currency': '', 'number': value, 'position': 'before'};
   }
 
+  void _initializeControllers(String numberPart) {
+    // Dispose existing controllers
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+
+    _controllers.clear();
+    _slideAnimations.clear();
+
+    // Create a controller for each character in the number
+    for (int i = 0; i < numberPart.length; i++) {
+      final controller = AnimationController(
+        duration: widget.duration,
+        vsync: this,
+      );
+
+      final slideAnimation = Tween<Offset>(
+        begin: const Offset(0.0, 1.0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOutBack));
+
+      _controllers.add(controller);
+      _slideAnimations.add(slideAnimation);
+    }
+  }
+
+  void _animateDigits() {
+    // Animate each digit with a small delay for cascading effect
+    for (int i = 0; i < _controllers.length; i++) {
+      Future.delayed(Duration(milliseconds: i * 80), () {
+        if (mounted && _controllers.isNotEmpty && i < _controllers.length) {
+          _controllers[i].reset();
+          _controllers[i].forward();
+        }
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _displayValue = widget.value;
     _hasInitialized = true;
-    _controller = AnimationController(duration: widget.duration, vsync: this);
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 1.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    final parsed = _parseValue(_displayValue);
+    _initializeControllers(parsed['number']!);
   }
 
   @override
@@ -297,14 +334,18 @@ class _RevolutStyleCounterWithCurrencyState
     if (oldWidget.value != widget.value && _hasInitialized) {
       _previousValue = _displayValue;
       _displayValue = widget.value;
-      _controller.reset();
-      _controller.forward();
+
+      final parsed = _parseValue(_displayValue);
+      _initializeControllers(parsed['number']!);
+      _animateDigits();
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -314,71 +355,113 @@ class _RevolutStyleCounterWithCurrencyState
     final previousParsed =
         _previousValue.isNotEmpty ? _parseValue(_previousValue) : null;
 
+    final numberPart = currentParsed['number']!;
+    final previousNumberPart = previousParsed?['number'] ?? '';
+
     // Show text immediately on first load, animate only on updates
-    if (!_controller.isAnimating && _previousValue.isEmpty) {
+    if (_previousValue.isEmpty) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (currentParsed['position'] == 'before' &&
               currentParsed['currency']!.isNotEmpty) ...[
-            Text(currentParsed['currency']!, style: widget.style),
-            const SizedBox(width: 2),
+            Text(
+              currentParsed['currency']!,
+              style: widget.style?.copyWith(
+                fontSize: (widget.style?.fontSize ?? 14) * 0.85,
+              ),
+            ),
+            const SizedBox(width: 5),
           ],
-          Text(currentParsed['number']!, style: widget.style),
+          Text(numberPart, style: widget.style),
           if (currentParsed['position'] == 'after' &&
               currentParsed['currency']!.isNotEmpty) ...[
-            const SizedBox(width: 2),
-            Text(currentParsed['currency']!, style: widget.style),
+            const SizedBox(width: 5),
+            Text(
+              currentParsed['currency']!,
+              style: widget.style?.copyWith(
+                fontSize: (widget.style?.fontSize ?? 14) * 0.85,
+              ),
+            ),
           ],
         ],
       );
     }
 
-    return AnimatedBuilder(
-      animation: _slideAnimation,
-      builder: (context, child) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Currency symbol (if before number) - doesn't animate
-            if (currentParsed['position'] == 'before' &&
-                currentParsed['currency']!.isNotEmpty) ...[
-              Text(currentParsed['currency']!, style: widget.style),
-              const SizedBox(width: 2),
-            ],
-            // Animated number part
-            ClipRect(
-              child: Stack(
-                children: [
-                  // Previous number sliding out
-                  if (_controller.isAnimating && previousParsed != null)
-                    SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset.zero,
-                        end: const Offset(0.0, -1.0),
-                      ).animate(_controller),
-                      child: Text(
-                        previousParsed['number']!,
-                        style: widget.style,
-                      ),
-                    ),
-                  // Current number sliding in
-                  SlideTransition(
-                    position: _slideAnimation,
-                    child: Text(currentParsed['number']!, style: widget.style),
-                  ),
-                ],
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Currency symbol (if before number) - doesn't animate
+        if (currentParsed['position'] == 'before' &&
+            currentParsed['currency']!.isNotEmpty) ...[
+          Text(
+            currentParsed['currency']!,
+            style: widget.style?.copyWith(
+              fontSize: (widget.style?.fontSize ?? 14) * 0.85,
             ),
-            // Currency symbol (if after number) - doesn't animate
-            if (currentParsed['position'] == 'after' &&
-                currentParsed['currency']!.isNotEmpty) ...[
-              const SizedBox(width: 2),
-              Text(currentParsed['currency']!, style: widget.style),
-            ],
-          ],
-        );
-      },
+          ),
+          const SizedBox(width: 5),
+        ],
+        // Animated number part - each digit animated individually
+        ...List.generate(numberPart.length, (index) {
+          if (index >= _slideAnimations.length) {
+            return Text(numberPart[index], style: widget.style);
+          }
+
+          final char = numberPart[index];
+          final previousChar =
+              index < previousNumberPart.length
+                  ? previousNumberPart[index]
+                  : '';
+          final animation = _slideAnimations[index];
+
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, child) {
+              // Only animate digits, keep other characters static
+              if (RegExp(r'\d').hasMatch(char)) {
+                return ClipRect(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Previous digit sliding out (upward)
+                      if (_controllers[index].isAnimating &&
+                          previousChar.isNotEmpty &&
+                          RegExp(r'\d').hasMatch(previousChar))
+                        SlideTransition(
+                          position: Tween<Offset>(
+                            begin: Offset.zero,
+                            end: const Offset(0.0, -1.0),
+                          ).animate(_controllers[index]),
+                          child: Text(previousChar, style: widget.style),
+                        ),
+                      // Current digit sliding in (from below)
+                      SlideTransition(
+                        position: animation,
+                        child: Text(char, style: widget.style),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Non-digit characters (commas, dots) - no animation
+              return Text(char, style: widget.style);
+            },
+          );
+        }),
+        // Currency symbol (if after number) - doesn't animate
+        if (currentParsed['position'] == 'after' &&
+            currentParsed['currency']!.isNotEmpty) ...[
+          const SizedBox(width: 2),
+          Text(
+            currentParsed['currency']!,
+            style: widget.style?.copyWith(
+              fontSize: (widget.style?.fontSize ?? 14) * 0.85,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -403,10 +486,10 @@ class AnimatedNumberTextScaleWithCurrency extends StatefulWidget {
 
 class _AnimatedNumberTextScaleWithCurrencyState
     extends State<AnimatedNumberTextScaleWithCurrency>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+    with TickerProviderStateMixin {
+  List<AnimationController> _controllers = [];
+  List<Animation<double>> _scaleAnimations = [];
+  List<Animation<double>> _fadeAnimations = [];
 
   // Parse currency and number from formatted string
   Map<String, String> _parseValue(String value) {
@@ -436,48 +519,79 @@ class _AnimatedNumberTextScaleWithCurrencyState
     return {'currency': '', 'number': value, 'position': 'before'};
   }
 
+  void _initializeControllers(String numberPart) {
+    // Dispose existing controllers
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+
+    _controllers.clear();
+    _scaleAnimations.clear();
+    _fadeAnimations.clear();
+
+    // Create controllers for each character in the number
+    for (int i = 0; i < numberPart.length; i++) {
+      final controller = AnimationController(
+        duration: widget.duration,
+        vsync: this,
+      );
+
+      final scaleAnimation = Tween<double>(
+        begin: 0.3,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.elasticOut));
+
+      final fadeAnimation = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
+
+      _controllers.add(controller);
+      _scaleAnimations.add(scaleAnimation);
+      _fadeAnimations.add(fadeAnimation);
+    }
+  }
+
+  void _animateDigits() {
+    // Animate each digit with a small delay for cascading effect
+    for (int i = 0; i < _controllers.length; i++) {
+      Future.delayed(Duration(milliseconds: i * 60), () {
+        if (mounted && _controllers.isNotEmpty && i < _controllers.length) {
+          _controllers[i].forward();
+        }
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: widget.duration, vsync: this);
-    // Start with visible text (scale: 1.0, opacity: 1.0)
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
-    _fadeAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    final parsed = _parseValue(widget.value);
+    _initializeControllers(parsed['number']!);
   }
 
   @override
   void didUpdateWidget(AnimatedNumberTextScaleWithCurrency oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
-      // Reset animations for the new value change
-      _scaleAnimation = Tween<double>(
-        begin: 0.8,
-        end: 1.0,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
-      _fadeAnimation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
-      _controller.reset();
-      _controller.forward();
+      final parsed = _parseValue(widget.value);
+      _initializeControllers(parsed['number']!);
+      _animateDigits();
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final parsed = _parseValue(widget.value);
+    final numberPart = parsed['number']!;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -485,27 +599,53 @@ class _AnimatedNumberTextScaleWithCurrencyState
         // Currency symbol (if before number) - doesn't animate
         if (parsed['position'] == 'before' &&
             parsed['currency']!.isNotEmpty) ...[
-          Text(parsed['currency']!, style: widget.style),
+          Text(
+            parsed['currency']!,
+            style: widget.style?.copyWith(
+              fontSize: (widget.style?.fontSize ?? 14) * 0.85,
+            ),
+          ),
           const SizedBox(width: 2),
         ],
-        // Animated number part
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: Opacity(
-                opacity: _fadeAnimation.value,
-                child: Text(parsed['number']!, style: widget.style),
-              ),
-            );
-          },
-        ),
+        // Animated number part - each digit animated individually
+        ...List.generate(numberPart.length, (index) {
+          if (index >= _scaleAnimations.length) {
+            return Text(numberPart[index], style: widget.style);
+          }
+
+          final char = numberPart[index];
+          final scaleAnimation = _scaleAnimations[index];
+          final fadeAnimation = _fadeAnimations[index];
+
+          return AnimatedBuilder(
+            animation: Listenable.merge([scaleAnimation, fadeAnimation]),
+            builder: (context, child) {
+              // Only animate digits, keep other characters static
+              if (RegExp(r'\d').hasMatch(char)) {
+                return Transform.scale(
+                  scale: scaleAnimation.value,
+                  child: Opacity(
+                    opacity: fadeAnimation.value,
+                    child: Text(char, style: widget.style),
+                  ),
+                );
+              }
+
+              // Non-digit characters (commas, dots) - no animation
+              return Text(char, style: widget.style);
+            },
+          );
+        }),
         // Currency symbol (if after number) - doesn't animate
         if (parsed['position'] == 'after' &&
             parsed['currency']!.isNotEmpty) ...[
           const SizedBox(width: 2),
-          Text(parsed['currency']!, style: widget.style),
+          Text(
+            parsed['currency']!,
+            style: widget.style?.copyWith(
+              fontSize: (widget.style?.fontSize ?? 14) * 0.85,
+            ),
+          ),
         ],
       ],
     );
