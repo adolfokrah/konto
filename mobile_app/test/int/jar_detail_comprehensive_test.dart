@@ -9,6 +9,7 @@ import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 import 'package:konto/features/contribution/presentation/views/request_contribution_view.dart';
+import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
@@ -153,6 +154,7 @@ void main() {
       providers: [
         BlocProvider(create: (context) => AuthBloc()),
         BlocProvider(create: (context) => JarSummaryBloc()),
+        BlocProvider(create: (context) => JarListBloc()),
         BlocProvider(
           create:
               (context) => JarSummaryReloadBloc(
@@ -331,6 +333,7 @@ void main() {
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
           BlocProvider(create: (context) => JarSummaryBloc()),
+          BlocProvider(create: (context) => JarListBloc()),
           BlocProvider(
             create:
                 (context) => JarSummaryReloadBloc(
@@ -527,6 +530,7 @@ void main() {
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
           BlocProvider(create: (context) => JarSummaryBloc()),
+          BlocProvider(create: (context) => JarListBloc()),
           BlocProvider(
             create:
                 (context) => JarSummaryReloadBloc(

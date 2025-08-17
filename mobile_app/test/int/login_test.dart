@@ -11,6 +11,7 @@ import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
+import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
@@ -38,6 +39,7 @@ void main() {
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
+            BlocProvider(create: (context) => JarListBloc()),
             BlocProvider(
               create:
                   (context) => JarSummaryReloadBloc(
@@ -199,6 +201,7 @@ void main() {
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
+            BlocProvider(create: (context) => JarListBloc()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -258,6 +261,7 @@ void main() {
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
+            BlocProvider(create: (context) => JarListBloc()),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
