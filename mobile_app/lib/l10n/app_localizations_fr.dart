@@ -408,4 +408,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get failedToCopyLink => 'Échec de la copie du lien';
+
+  @override
+  String get share => 'Partager';
+
+  @override
+  String get scanTheQRCodeToContribute => 'Scannez le code QR pour contribuer';
 }

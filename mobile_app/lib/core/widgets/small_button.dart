@@ -29,6 +29,9 @@ class AppSmallButton extends StatelessWidget {
           vertical: AppSpacing.spacingXs,
           horizontal: AppSpacing.spacingL,
         ),
+        minimumSize: Size.zero, // Allow button to be smaller than default
+        tapTargetSize:
+            MaterialTapTargetSize.shrinkWrap, // Removes extra padding
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.radiusL),
         ),

@@ -787,6 +787,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to copy link'**
   String get failedToCopyLink;
+
+  /// Share button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// Instructions for scanning QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR code to contribute'**
+  String get scanTheQRCodeToContribute;
 }
 
 class _AppLocalizationsDelegate

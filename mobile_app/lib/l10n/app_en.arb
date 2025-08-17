@@ -688,5 +688,15 @@
   "failedToCopyLink": "Failed to copy link",
   "@failedToCopyLink": {
     "description": "Error message when copying fails"
+  },
+
+  "share": "Share",
+  "@share": {
+    "description": "Share button text"
+  },
+
+  "scanTheQRCodeToContribute": "Scan the QR code to contribute",
+  "@scanTheQRCodeToContribute": {
+    "description": "Instructions for scanning QR code"
   }
 }

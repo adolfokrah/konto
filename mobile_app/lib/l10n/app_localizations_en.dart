@@ -400,4 +400,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToCopyLink => 'Failed to copy link';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get scanTheQRCodeToContribute => 'Scan the QR code to contribute';
 }

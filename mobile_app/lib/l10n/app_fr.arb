@@ -113,5 +113,7 @@
   "contributeToJar": "Contribuer à {jarName}",
   "linkCopiedToClipboard": "Lien copié dans le presse-papier",
   "failedToShareLink": "Échec du partage du lien",
-  "failedToCopyLink": "Échec de la copie du lien"
+  "failedToCopyLink": "Échec de la copie du lien",
+  "share": "Partager",
+  "scanTheQRCodeToContribute": "Scannez le code QR pour contribuer"
 }
