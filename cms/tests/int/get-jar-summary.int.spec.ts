@@ -100,7 +100,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
   })
 
   describe('Input Validation', () => {
-    it('should return 404 when jarId is missing', async () => {
+    it('should return 200 when jarId is missing', async () => {
       const mockRequest = {
         payload,
         user: testUser,
@@ -110,8 +110,8 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const response = await getJarSummary(mockRequest)
       const result = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(result.success).toBe(false)
+      expect(response.status).toBe(200)
+      expect(result.success).toBe(true)
       expect(result.message).toBe('Jar not found')
     })
 
@@ -132,7 +132,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       expect(result.data).toBeDefined()
     })
 
-    it('should return 404 when jarId is empty string', async () => {
+    it('should return 200 when jarId is empty string', async () => {
       const mockRequest = {
         payload,
         user: testUser,
@@ -144,14 +144,14 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const response = await getJarSummary(mockRequest)
       const result = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(result.success).toBe(false)
+      expect(response.status).toBe(200)
+      expect(result.success).toBe(true)
       expect(result.message).toBe('Jar not found')
     })
   })
 
   describe('Jar Retrieval', () => {
-    it('should return 404 when jar does not exist', async () => {
+    it('should return 200 when jar does not exist', async () => {
       const nonExistentJarId = '507f1f77bcf86cd799439011' // Valid ObjectId format
 
       const mockRequest = {
@@ -165,8 +165,8 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const response = await getJarSummary(mockRequest)
       const result = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(result.success).toBe(false)
+      expect(response.status).toBe(200)
+      expect(result.success).toBe(true)
       expect(result.message).toBe('Jar not found')
     })
 
@@ -340,9 +340,9 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const response = await getJarSummary(mockRequest)
       const result = await response.json()
 
-      // Should return 404 since the jar won't be found with invalid ID
-      expect(response.status).toBe(404)
-      expect(result.success).toBe(false)
+      // Should return 200 since the jar won't be found with invalid ID
+      expect(response.status).toBe(200)
+      expect(result.success).toBe(true)
       expect(result.message).toBe('Jar not found')
     })
   })

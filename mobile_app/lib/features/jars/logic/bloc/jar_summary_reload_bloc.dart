@@ -38,7 +38,10 @@ class JarSummaryReloadBloc
       print('Reload result: ${result['success']}'); // Debug log
 
       if (result['success'] == true) {
-        final JarSummaryModel jarData = result['data'];
+        final JarSummaryModel jarData = JarSummaryModel.fromJson(
+          result['data'],
+        );
+
         print('Reload successful with data: ${jarData.name}'); // Debug log
 
         // Directly call the update event on the main JarSummaryBloc
