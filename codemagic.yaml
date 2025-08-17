@@ -16,6 +16,7 @@ workflows:
           echo "MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID" >> .env
           echo "MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL" >> .env
           echo "APP_ENV=$BUILD_ENV" >> .env
+          echo "IMAGE_BASE_URL=$IMAGE_BASE_URL" >> .env
           echo "Created .env file for Codemagic build"
           cat .env
       - name: Get Flutter dependencies
@@ -87,6 +88,7 @@ workflows:
           echo "MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID" >> .env
           echo "MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL" >> .env
           echo "APP_ENV=$BUILD_ENV" >> .env
+          echo "IMAGE_BASE_URL=$IMAGE_BASE_URL" >> .env
           echo "Created .env file for Production Codemagic build"
           cat .env
       - name: Get Flutter dependencies

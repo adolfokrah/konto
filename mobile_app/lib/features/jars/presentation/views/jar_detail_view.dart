@@ -8,14 +8,15 @@ import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contribution_chart.dart';
 import 'package:konto/core/widgets/contribution_list_item.dart';
-import 'package:konto/core/widgets/divider.dart';
 import 'package:konto/core/widgets/goal_progress_card.dart';
 import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_reload_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:konto/features/jars/presentation/views/jars_list_view.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
 
@@ -94,6 +95,14 @@ class _JarDetailViewState extends State<JarDetailView> {
 
     return MultiBlocListener(
       listeners: [
+        BlocListener<JarSummaryBloc, JarSummaryState>(
+          listener: (context, state) {
+            if (state is JarSummaryLoaded) {
+              // Show error message
+              context.read<JarListBloc>().add(LoadJarList());
+            }
+          },
+        ),
         BlocListener<JarSummaryReloadBloc, JarSummaryReloadState>(
           listener: (context, state) {
             if (state is JarSummaryReloadError) {
@@ -314,11 +323,7 @@ class _JarDetailViewState extends State<JarDetailView> {
               AppSmallButton(
                 child: Text(localizations.jars, style: TextStyles.titleMedium),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(localizations.contributeFeatureComingSoon),
-                    ),
-                  );
+                  JarsListView.showModal(context);
                 },
               ),
               const SizedBox(height: AppSpacing.spacingL),
@@ -456,7 +461,7 @@ class _JarDetailViewState extends State<JarDetailView> {
               GoalProgressCard(
                 currentAmount: jarData.totalContributions,
                 goalAmount: jarData.goalAmount,
-                currency: jarData.currencySymbol,
+                currency: jarData.currency,
                 deadline: jarData.deadline,
                 variant: CardVariant.primary,
                 onSetGoal: () {
@@ -555,7 +560,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                 ),
                                             amount:
                                                 contribution.amountContributed,
-                                            currency: jarData.currencySymbol,
+                                            currency: jarData.currency,
                                             timestamp:
                                                 contribution.createdAt ??
                                                 DateTime.now(),
@@ -581,12 +586,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                                               );
                                             },
                                           ),
-                                          if (jarData.contributions.indexOf(
-                                                contribution,
-                                              ) <
-                                              (jarData.contributions.length -
-                                                  1))
-                                            const AppDivider(),
                                         ],
                                       )
                                       .expand((list) => list),

@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
 class ContributionListItem extends StatelessWidget {
@@ -12,7 +13,7 @@ class ContributionListItem extends StatelessWidget {
   /// The contribution amount
   final double amount;
 
-  /// The currency symbol (e.g., '₵', '₦')
+  /// The currency code (e.g., 'ghc', 'ngn', 'usd')
   final String currency;
 
   /// The date and time of the contribution
@@ -113,7 +114,7 @@ class ContributionListItem extends StatelessWidget {
             ),
           ),
           Text(
-            '$currency${amount.toStringAsFixed(2)}',
+            CurrencyUtils.formatAmount(amount, currency),
             style: TextStyles.titleBoldM.copyWith(
               decoration:
                   paymentStatus?.toLowerCase() == 'failed'
@@ -132,10 +133,7 @@ class ContributionListItem extends StatelessWidget {
           ),
           if (paymentMethod != null)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingXs,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 2),
               decoration: BoxDecoration(
                 color: Theme.of(
                   context,
@@ -144,11 +142,7 @@ class ContributionListItem extends StatelessWidget {
               ),
               child: Text(
                 paymentMethod!.toUpperCase(),
-                style: TextStyles.titleRegularXs.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 10,
-                ),
+                style: TextStyles.titleRegularXs,
               ),
             ),
         ],

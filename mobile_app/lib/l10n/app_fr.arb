@@ -125,5 +125,12 @@
   "failedToParseJarData": "Échec de l'analyse des données du jar",
   "modelParsingError": "Erreur d'analyse du modèle: {error}",
   "failedToRetrieveJarSummary": "Échec de la récupération du résumé du jar",
-  "unexpectedErrorRetrievingJarSummary": "Une erreur inattendue s'est produite lors de la récupération du résumé du jar"
+  "unexpectedErrorRetrievingJarSummary": "Une erreur inattendue s'est produite lors de la récupération du résumé du jar",
+  "close": "Fermer",
+  "createJar": "Créer un Pot",
+  "errorLoadingJars": "Erreur lors du chargement des pots",
+  "noJarsFound": "Aucun pot trouvé",
+  "createYourFirstJar": "Créez votre premier pot pour commencer",
+  "noJarsInThisGroup": "Aucun pot dans ce groupe",
+  "tapToLoadYourJars": "Appuyez pour charger vos pots"
 }

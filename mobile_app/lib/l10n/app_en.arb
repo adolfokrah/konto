@@ -766,5 +766,40 @@
   "unexpectedErrorRetrievingJarSummary": "An unexpected error occurred while retrieving jar summary",
   "@unexpectedErrorRetrievingJarSummary": {
     "description": "Error message for unexpected errors during jar summary retrieval"
+  },
+
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
+  },
+
+  "createJar": "Create Jar",
+  "@createJar": {
+    "description": "Create jar button text"
+  },
+
+  "errorLoadingJars": "Error loading jars",
+  "@errorLoadingJars": {
+    "description": "Error message when jar loading fails"
+  },
+
+  "noJarsFound": "No jars found",
+  "@noJarsFound": {
+    "description": "Message when no jars are available"
+  },
+
+  "createYourFirstJar": "Create your first jar to get started",
+  "@createYourFirstJar": {
+    "description": "Encouragement message for first jar creation"
+  },
+
+  "noJarsInThisGroup": "No jars in this group",
+  "@noJarsInThisGroup": {
+    "description": "Message when a jar group is empty"
+  },
+
+  "tapToLoadYourJars": "Tap to load your jars",
+  "@tapToLoadYourJars": {
+    "description": "Message for initial state before loading jars"
   }
 }

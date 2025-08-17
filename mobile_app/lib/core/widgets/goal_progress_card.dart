@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -13,7 +14,7 @@ class GoalProgressCard extends StatelessWidget {
   /// Target goal amount
   final double goalAmount;
 
-  /// Currency symbol (e.g., '₵', '₦')
+  /// Currency code (e.g., 'ghc', 'ngn', 'usd')
   final String currency;
 
   /// Deadline date
@@ -97,14 +98,17 @@ class GoalProgressCard extends StatelessWidget {
           text: TextSpan(
             children: [
               TextSpan(
-                text: '$currency${_formatAmount(currentAmount)}',
+                text: CurrencyUtils.formatAmountCompact(
+                  currentAmount,
+                  currency,
+                ),
                 style: TextStyles.titleBoldM.copyWith(
                   color: Theme.of(context).textTheme.titleLarge?.color,
                 ),
               ),
               TextSpan(
                 text:
-                    ' ${localizations.goalAmountOf(currency, _formatAmount(goalAmount))}',
+                    ' ${localizations.goalAmountOf(CurrencyUtils.getCurrencySymbol(currency), _formatAmount(goalAmount))}',
                 style: TextStyles.titleRegularM.copyWith(
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
@@ -113,7 +117,7 @@ class GoalProgressCard extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: AppSpacing.spacingM),
+        const SizedBox(height: 54),
 
         // Progress bar
         Column(
@@ -184,7 +188,7 @@ class GoalProgressCard extends StatelessWidget {
         // Current amount without goal
         Text(localizations.noGoalSetYet, style: TextStyles.titleRegularM),
 
-        const SizedBox(height: AppSpacing.spacingL),
+        const SizedBox(height: 54),
 
         // Set goal button
         AppButton.filled(

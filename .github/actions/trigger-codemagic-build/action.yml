@@ -34,6 +34,9 @@ inputs:
   mnotify-api-base-url:
     description: 'MNotify API base URL'
     required: false
+  image-base-url:
+    description: 'Image base URL'
+    required: true
 outputs:
   build-id:
     description: 'Codemagic build ID'

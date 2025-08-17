@@ -1,4 +1,5 @@
 import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
+import 'package:konto/features/jars/data/models/jar_list_model.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 
 /// Repository for jar operations
@@ -47,6 +48,34 @@ class JarRepository {
       return {
         'success': false,
         'message': 'An unexpected error occurred while retrieving jar summary',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserJars() async {
+    try {
+      final response = await _jarApiProvider.getUserJars();
+
+      if (response['success'] == true) {
+        // Parse the response data into a list of JarGroup
+
+        return {
+          'success': true,
+          'data': response['data'],
+          'message': 'User jars retrieved successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': response['message'] ?? 'Failed to retrieve user jars',
+          'error': response['error'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while retrieving user jars',
         'error': e.toString(),
       };
     }

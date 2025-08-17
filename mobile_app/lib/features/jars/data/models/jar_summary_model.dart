@@ -1,4 +1,6 @@
-/// Models for the Jar Summary API response
+// Models for the Jar Summary API response
+import 'package:konto/core/utils/currency_utils.dart';
+
 class JarSummaryModel {
   final String id;
   final String name;
@@ -57,13 +59,12 @@ class JarSummaryModel {
   /// Utility function to get formatted total contributions with currency
   String get formattedTotalContributions {
     final total = totalContributions;
-    final currencySymbol = currency == 'ghc' ? '₵' : '₦';
-    return '$currencySymbol ${total.toStringAsFixed(2)}';
+    return CurrencyUtils.formatAmount(total, currency);
   }
 
   /// Get currency symbol
   String get currencySymbol {
-    return currency == 'ghc' ? '₵' : '₦';
+    return CurrencyUtils.getCurrencySymbol(currency);
   }
 
   factory JarSummaryModel.fromJson(Map<String, dynamic> json) {
@@ -71,9 +72,9 @@ class JarSummaryModel {
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
-      goalAmount: (json['goalAmount'] as num).toDouble(),
+      goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
       acceptedContributionAmount:
-          (json['acceptedContributionAmount'] as num).toDouble(),
+          (json['acceptedContributionAmount'] as num? ?? 0).toDouble(),
       currency: json['currency'] as String,
       isActive: json['isActive'] as bool,
       isFixedContribution: json['isFixedContribution'] as bool,
@@ -128,7 +129,7 @@ class JarSummaryModel {
       chartData:
           json['chartData'] != null
               ? (json['chartData'] as List<dynamic>)
-                  .map((value) => (value as num).toDouble())
+                  .map((value) => (value as num? ?? 0).toDouble())
                   .toList()
               : null,
     );
@@ -361,7 +362,7 @@ class ContributionModel {
       contributor: json['contributor'] as String?,
       contributorPhoneNumber: json['contributorPhoneNumber'] as String,
       paymentMethod: json['paymentMethod'] as String?,
-      amountContributed: (json['amountContributed'] as num).toDouble(),
+      amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
       paymentStatus: json['paymentStatus'] as String,
       collector:
           json['collector'] != null

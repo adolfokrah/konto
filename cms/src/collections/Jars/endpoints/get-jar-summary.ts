@@ -21,9 +21,18 @@ export const getJarSummary = async (req: PayloadRequest) => {
       const jarResult = await req.payload.find({
         collection: 'jars',
         where: {
-          creator: {
-            equals: req.user,
-          },
+          or: [
+            {
+              creator: {
+                equals: req.user,
+              },
+            },
+            {
+              collectors: {
+                contains: req.user,
+              },
+            },
+          ],
         },
         limit: 1,
         depth: 2,
@@ -67,6 +76,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       },
     },
     limit: 10,
+    sort: '-createdAt', // Sort by createdAt in descending order
   })
 
   const last100Contributions = await req.payload.find({

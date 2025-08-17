@@ -177,6 +177,7 @@ jobs:
           mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
           mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
           mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
+          image-base-url: ${{ secrets.STAGING_IMAGE_BASE_URL }}
 
   production-approval:
     name: Production Approval
@@ -212,3 +213,4 @@ jobs:
           mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
           mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
           mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
+          image-base-url: ${{ secrets.PRODUCTION_IMAGE_BASE_URL }}

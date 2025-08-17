@@ -21,29 +21,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get phoneNumber => 'Numéro de téléphone';
 
   @override
-  String get loginSubtitle =>
-      'Connectez-vous pour collecter, contribuer ou\nsuivre en toute confiance.';
+  String get loginSubtitle => 'Connectez-vous pour collecter, contribuer ou\nsuivre en toute confiance.';
 
   @override
   String get onboardingTitle1 => 'Créer avec\nObjectif';
 
   @override
-  String get onboardingDescription1 =>
-      'Configurez un pot en quelques secondes pour collecter des fonds pour les mariages, funérailles, anniversaires, etc.';
+  String get onboardingDescription1 => 'Configurez un pot en quelques secondes pour collecter des fonds pour les mariages, funérailles, anniversaires, etc.';
 
   @override
   String get onboardingTitle2 => 'Donner avec\nConfiance';
 
   @override
-  String get onboardingDescription2 =>
-      'Soutenez vos proches avec des contributions sécurisées et transparentes.';
+  String get onboardingDescription2 => 'Soutenez vos proches avec des contributions sécurisées et transparentes.';
 
   @override
   String get onboardingTitle3 => 'Suivre Chaque\nContribution';
 
   @override
-  String get onboardingDescription3 =>
-      'Voyez qui a contribué, combien, et soyez averti quand vous atteignez votre objectif.';
+  String get onboardingDescription3 => 'Voyez qui a contribué, combien, et soyez averti quand vous atteignez votre objectif.';
 
   @override
   String get next => 'Suivant';
@@ -158,15 +154,13 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get resendMessage =>
-      'Demande d\'un nouveau code. Si vous obtenez \"trop de demandes\", attendez 15-30 minutes.';
+  String get resendMessage => 'Demande d\'un nouveau code. Si vous obtenez \"trop de demandes\", attendez 15-30 minutes.';
 
   @override
   String get verificationSuccessful => 'Vérification réussie !';
 
   @override
-  String get verificationCodeSent =>
-      'Code de vérification envoyé avec succès !';
+  String get verificationCodeSent => 'Code de vérification envoyé avec succès !';
 
   @override
   String get checking => 'Vérification...';
@@ -181,19 +175,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pleaseEnterEmailAddress => 'Veuillez saisir votre adresse e-mail';
 
   @override
-  String get pleaseEnterPhoneNumberRegister =>
-      'Veuillez saisir votre numéro de téléphone';
+  String get pleaseEnterPhoneNumberRegister => 'Veuillez saisir votre numéro de téléphone';
 
   @override
   String get accountAlreadyExists => 'Le compte existe déjà';
 
   @override
-  String get errorCheckingPhoneAvailability =>
-      'Erreur lors de la vérification de la disponibilité du téléphone';
+  String get errorCheckingPhoneAvailability => 'Erreur lors de la vérification de la disponibilité du téléphone';
 
   @override
-  String get failedToCheckPhoneNumber =>
-      'Impossible de vérifier la disponibilité du numéro de téléphone. Échec de la connexion';
+  String get failedToCheckPhoneNumber => 'Impossible de vérifier la disponibilité du numéro de téléphone. Échec de la connexion';
 
   @override
   String get loginFailed => 'Échec de la connexion';
@@ -205,16 +196,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get failedToSignOut => 'Échec de la déconnexion';
 
   @override
-  String get otpDoesNotMatch =>
-      'Le code OTP ne correspond pas au code envoyé. Veuillez réessayer.';
+  String get otpDoesNotMatch => 'Le code OTP ne correspond pas au code envoyé. Veuillez réessayer.';
 
   @override
-  String get failedToSendVerificationCode =>
-      'Échec de l\'envoi du code de vérification';
+  String get failedToSendVerificationCode => 'Échec de l\'envoi du code de vérification';
 
   @override
-  String get failedToSendVerificationCodeTryAgain =>
-      'Échec de l\'envoi du code de vérification. Veuillez réessayer.';
+  String get failedToSendVerificationCodeTryAgain => 'Échec de l\'envoi du code de vérification. Veuillez réessayer.';
 
   @override
   String otpSmsMessage(String otp, int minutes) {
@@ -257,27 +245,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noContributionsYet => 'Aucune contribution pour l\'instant';
 
   @override
-  String get beTheFirstToContribute =>
-      'Soyez le premier à contribuer à ce pot !';
+  String get beTheFirstToContribute => 'Soyez le premier à contribuer à ce pot !';
 
   @override
   String get seeAll => 'Voir tout';
 
   @override
-  String get createNewJarMessage =>
-      'Créez un nouveau pot pour voir les détails ici.';
+  String get createNewJarMessage => 'Créez un nouveau pot pour voir les détails ici.';
 
   @override
-  String get contributeFeatureComingSoon =>
-      'Fonctionnalité de contribution bientôt disponible !';
+  String get contributeFeatureComingSoon => 'Fonctionnalité de contribution bientôt disponible !';
 
   @override
-  String get setGoalFeatureComingSoon =>
-      'Fonctionnalité de définition d\'objectif bientôt disponible !';
+  String get setGoalFeatureComingSoon => 'Fonctionnalité de définition d\'objectif bientôt disponible !';
 
   @override
-  String get contributionDetailsComingSoon =>
-      'Détails de contribution bientôt disponibles !';
+  String get contributionDetailsComingSoon => 'Détails de contribution bientôt disponibles !';
 
   @override
   String viewAllContributionsComingSoon(int count) {
@@ -353,19 +336,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get justNow => 'À l\'instant';
 
   @override
-  String get failedToReloadJarSummary =>
-      'Échec du rechargement du résumé du pot';
+  String get failedToReloadJarSummary => 'Échec du rechargement du résumé du pot';
 
   @override
   String get failedToLoadJarSummary => 'Échec du chargement du résumé du pot';
 
   @override
-  String get failedToSetCurrentJar =>
-      'Échec de la définition du pot actuel. Veuillez réessayer.';
+  String get failedToSetCurrentJar => 'Échec de la définition du pot actuel. Veuillez réessayer.';
 
   @override
-  String get unexpectedErrorSettingCurrentJar =>
-      'Une erreur inattendue s\'est produite lors de la définition du pot actuel';
+  String get unexpectedErrorSettingCurrentJar => 'Une erreur inattendue s\'est produite lors de la définition du pot actuel';
 
   @override
   String unexpectedErrorOccurred(String error) {
@@ -376,8 +356,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get createNewJar => 'Créer un nouveau pot';
 
   @override
-  String get createJarFeatureComingSoon =>
-      'Fonctionnalité de création de pot bientôt disponible !';
+  String get createJarFeatureComingSoon => 'Fonctionnalité de création de pot bientôt disponible !';
 
   @override
   String get user => 'Utilisateur';
@@ -403,8 +382,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get copyLink => 'Copier le Lien';
 
   @override
-  String get qrCodeInstructions =>
-      'Partagez ce code QR avec les contributeurs pour qu\'ils puissent facilement accéder à votre pot et faire des contributions.';
+  String get qrCodeInstructions => 'Partagez ce code QR avec les contributeurs pour qu\'ils puissent facilement accéder à votre pot et faire des contributions.';
 
   @override
   String contributeToJar(String jarName) {
@@ -437,8 +415,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get jarSummaryRetrievedSuccessfully =>
-      'Résumé du jar récupéré avec succès';
+  String get jarSummaryRetrievedSuccessfully => 'Résumé du jar récupéré avec succès';
 
   @override
   String get failedToParseJarData => 'Échec de l\'analyse des données du jar';
@@ -449,10 +426,29 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get failedToRetrieveJarSummary =>
-      'Échec de la récupération du résumé du jar';
+  String get failedToRetrieveJarSummary => 'Échec de la récupération du résumé du jar';
 
   @override
-  String get unexpectedErrorRetrievingJarSummary =>
-      'Une erreur inattendue s\'est produite lors de la récupération du résumé du jar';
+  String get unexpectedErrorRetrievingJarSummary => 'Une erreur inattendue s\'est produite lors de la récupération du résumé du jar';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get createJar => 'Créer un Pot';
+
+  @override
+  String get errorLoadingJars => 'Erreur lors du chargement des pots';
+
+  @override
+  String get noJarsFound => 'Aucun pot trouvé';
+
+  @override
+  String get createYourFirstJar => 'Créez votre premier pot pour commencer';
+
+  @override
+  String get noJarsInThisGroup => 'Aucun pot dans ce groupe';
+
+  @override
+  String get tapToLoadYourJars => 'Appuyez pour charger vos pots';
 }
