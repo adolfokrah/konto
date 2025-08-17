@@ -44,6 +44,10 @@ class TranslationService {
       localizations.failedToSendVerificationCodeTryAgain;
 
   String get failedToReloadJarSummary => localizations.failedToReloadJarSummary;
+  String get failedToLoadJarSummary => localizations.failedToLoadJarSummary;
+  String get failedToSetCurrentJar => localizations.failedToSetCurrentJar;
+  String get unexpectedErrorSettingCurrentJar =>
+      localizations.unexpectedErrorSettingCurrentJar;
 
   /// Format error message with dynamic content
   String errorCheckingPhoneAvailabilityWithMessage(String message) {

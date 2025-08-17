@@ -31,25 +31,18 @@ class JarSummaryReloadBloc
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
-      print('Reloading jar summary for jarId: $jarId'); // Debug log
-
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
-
-      print('Reload result: ${result['success']}'); // Debug log
 
       if (result['success'] == true) {
         final JarSummaryModel jarData = JarSummaryModel.fromJson(
           result['data'],
         );
 
-        print('Reload successful with data: ${jarData.name}'); // Debug log
-
         // Directly call the update event on the main JarSummaryBloc
         jarSummaryBloc.add(UpdateJarSummaryRequested(jarData: jarData));
 
         emit(JarSummaryReloaded());
       } else {
-        print('Reload failed: ${result['message']}'); // Debug log
         emit(
           JarSummaryReloadError(
             message:
@@ -59,7 +52,6 @@ class JarSummaryReloadBloc
         );
       }
     } catch (e) {
-      print('Reload exception: ${e.toString()}'); // Debug log
       emit(
         JarSummaryReloadError(
           message: translationService.unexpectedErrorOccurredWithDetails(

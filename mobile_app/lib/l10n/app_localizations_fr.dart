@@ -357,6 +357,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Échec du rechargement du résumé du pot';
 
   @override
+  String get failedToLoadJarSummary => 'Échec du chargement du résumé du pot';
+
+  @override
+  String get failedToSetCurrentJar =>
+      'Échec de la définition du pot actuel. Veuillez réessayer.';
+
+  @override
+  String get unexpectedErrorSettingCurrentJar =>
+      'Une erreur inattendue s\'est produite lors de la définition du pot actuel';
+
+  @override
   String unexpectedErrorOccurred(String error) {
     return 'Une erreur inattendue s\'est produite : $error';
   }
@@ -414,4 +425,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get scanTheQRCodeToContribute => 'Scannez le code QR pour contribuer';
+
+  @override
+  String shareJarMessage(String jarName, String paymentLink) {
+    return 'Aidez-moi à atteindre mon objectif pour \"$jarName\"! Contribuez ici: $paymentLink';
+  }
+
+  @override
+  String shareGenericMessage(String paymentLink) {
+    return 'Aidez-moi à atteindre mon objectif! Contribuez ici: $paymentLink';
+  }
+
+  @override
+  String get jarSummaryRetrievedSuccessfully =>
+      'Résumé du jar récupéré avec succès';
+
+  @override
+  String get failedToParseJarData => 'Échec de l\'analyse des données du jar';
+
+  @override
+  String modelParsingError(String error) {
+    return 'Erreur d\'analyse du modèle: $error';
+  }
+
+  @override
+  String get failedToRetrieveJarSummary =>
+      'Échec de la récupération du résumé du jar';
+
+  @override
+  String get unexpectedErrorRetrievingJarSummary =>
+      'Une erreur inattendue s\'est produite lors de la récupération du résumé du jar';
 }

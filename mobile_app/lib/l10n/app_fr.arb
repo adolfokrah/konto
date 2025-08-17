@@ -99,6 +99,9 @@
   "minutesAgo": "Il y a {minutes} minutes",
   "justNow": "À l'instant",
   "failedToReloadJarSummary": "Échec du rechargement du résumé du pot",
+  "failedToLoadJarSummary": "Échec du chargement du résumé du pot",
+  "failedToSetCurrentJar": "Échec de la définition du pot actuel. Veuillez réessayer.",
+  "unexpectedErrorSettingCurrentJar": "Une erreur inattendue s'est produite lors de la définition du pot actuel",
   "unexpectedErrorOccurred": "Une erreur inattendue s'est produite : {error}",
   "createNewJar": "Créer un nouveau pot",
   "createJarFeatureComingSoon": "Fonctionnalité de création de pot bientôt disponible !",
@@ -115,5 +118,12 @@
   "failedToShareLink": "Échec du partage du lien",
   "failedToCopyLink": "Échec de la copie du lien",
   "share": "Partager",
-  "scanTheQRCodeToContribute": "Scannez le code QR pour contribuer"
+  "scanTheQRCodeToContribute": "Scannez le code QR pour contribuer",
+  "shareJarMessage": "Aidez-moi à atteindre mon objectif pour \"{jarName}\"! Contribuez ici: {paymentLink}",
+  "shareGenericMessage": "Aidez-moi à atteindre mon objectif! Contribuez ici: {paymentLink}",
+  "jarSummaryRetrievedSuccessfully": "Résumé du jar récupéré avec succès",
+  "failedToParseJarData": "Échec de l'analyse des données du jar",
+  "modelParsingError": "Erreur d'analyse du modèle: {error}",
+  "failedToRetrieveJarSummary": "Échec de la récupération du résumé du jar",
+  "unexpectedErrorRetrievingJarSummary": "Une erreur inattendue s'est produite lors de la récupération du résumé du jar"
 }

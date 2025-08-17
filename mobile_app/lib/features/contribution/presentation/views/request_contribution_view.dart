@@ -66,8 +66,8 @@ class _RequestContributionViewState extends State<RequestContributionView> {
   ) {
     final shareText =
         jarName != null
-            ? 'Help me reach my goal for "$jarName"! Contribute here: $paymentLink'
-            : 'Help me reach my goal! Contribute here: $paymentLink';
+            ? localizations.shareJarMessage(jarName, paymentLink)
+            : localizations.shareGenericMessage(paymentLink);
 
     Share.share(
       shareText,

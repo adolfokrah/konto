@@ -698,6 +698,24 @@ abstract class AppLocalizations {
   /// **'Failed to reload jar summary'**
   String get failedToReloadJarSummary;
 
+  /// Error message when jar summary loading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load jar summary'**
+  String get failedToLoadJarSummary;
+
+  /// Error message when setting current jar fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to set current jar. Please try again.'**
+  String get failedToSetCurrentJar;
+
+  /// Error message for unexpected errors while setting current jar
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while setting current jar'**
+  String get unexpectedErrorSettingCurrentJar;
+
   /// Generic unexpected error message with error details
   ///
   /// In en, this message translates to:
@@ -799,6 +817,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan the QR code to contribute'**
   String get scanTheQRCodeToContribute;
+
+  /// Share message when sharing a specific jar
+  ///
+  /// In en, this message translates to:
+  /// **'Help me reach my goal for \"{jarName}\"! Contribute here: {paymentLink}'**
+  String shareJarMessage(String jarName, String paymentLink);
+
+  /// Share message when jar name is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Help me reach my goal! Contribute here: {paymentLink}'**
+  String shareGenericMessage(String paymentLink);
+
+  /// Success message when jar summary is retrieved
+  ///
+  /// In en, this message translates to:
+  /// **'Jar summary retrieved successfully'**
+  String get jarSummaryRetrievedSuccessfully;
+
+  /// Error message when jar data parsing fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to parse jar data'**
+  String get failedToParseJarData;
+
+  /// Error message for model parsing issues
+  ///
+  /// In en, this message translates to:
+  /// **'Model parsing error: {error}'**
+  String modelParsingError(String error);
+
+  /// Error message when jar summary retrieval fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to retrieve jar summary'**
+  String get failedToRetrieveJarSummary;
+
+  /// Error message for unexpected errors during jar summary retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while retrieving jar summary'**
+  String get unexpectedErrorRetrievingJarSummary;
 }
 
 class _AppLocalizationsDelegate

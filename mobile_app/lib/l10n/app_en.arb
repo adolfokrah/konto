@@ -597,6 +597,21 @@
     "description": "Error message when jar summary reload fails"
   },
 
+  "failedToLoadJarSummary": "Failed to load jar summary",
+  "@failedToLoadJarSummary": {
+    "description": "Error message when jar summary loading fails"
+  },
+
+  "failedToSetCurrentJar": "Failed to set current jar. Please try again.",
+  "@failedToSetCurrentJar": {
+    "description": "Error message when setting current jar fails"
+  },
+
+  "unexpectedErrorSettingCurrentJar": "An unexpected error occurred while setting current jar",
+  "@unexpectedErrorSettingCurrentJar": {
+    "description": "Error message for unexpected errors while setting current jar"
+  },
+
   "unexpectedErrorOccurred": "An unexpected error occurred: {error}",
   "@unexpectedErrorOccurred": {
     "description": "Generic unexpected error message with error details",
@@ -698,5 +713,58 @@
   "scanTheQRCodeToContribute": "Scan the QR code to contribute",
   "@scanTheQRCodeToContribute": {
     "description": "Instructions for scanning QR code"
+  },
+
+  "shareJarMessage": "Help me reach my goal for \"{jarName}\"! Contribute here: {paymentLink}",
+  "@shareJarMessage": {
+    "description": "Share message when sharing a specific jar",
+    "placeholders": {
+      "jarName": {
+        "type": "String"
+      },
+      "paymentLink": {
+        "type": "String"
+      }
+    }
+  },
+
+  "shareGenericMessage": "Help me reach my goal! Contribute here: {paymentLink}",
+  "@shareGenericMessage": {
+    "description": "Share message when jar name is not available",
+    "placeholders": {
+      "paymentLink": {
+        "type": "String"
+      }
+    }
+  },
+
+  "jarSummaryRetrievedSuccessfully": "Jar summary retrieved successfully",
+  "@jarSummaryRetrievedSuccessfully": {
+    "description": "Success message when jar summary is retrieved"
+  },
+
+  "failedToParseJarData": "Failed to parse jar data",
+  "@failedToParseJarData": {
+    "description": "Error message when jar data parsing fails"
+  },
+
+  "modelParsingError": "Model parsing error: {error}",
+  "@modelParsingError": {
+    "description": "Error message for model parsing issues",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "failedToRetrieveJarSummary": "Failed to retrieve jar summary",
+  "@failedToRetrieveJarSummary": {
+    "description": "Error message when jar summary retrieval fails"
+  },
+
+  "unexpectedErrorRetrievingJarSummary": "An unexpected error occurred while retrieving jar summary",
+  "@unexpectedErrorRetrievingJarSummary": {
+    "description": "Error message for unexpected errors during jar summary retrieval"
   }
 }

@@ -350,6 +350,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToReloadJarSummary => 'Failed to reload jar summary';
 
   @override
+  String get failedToLoadJarSummary => 'Failed to load jar summary';
+
+  @override
+  String get failedToSetCurrentJar =>
+      'Failed to set current jar. Please try again.';
+
+  @override
+  String get unexpectedErrorSettingCurrentJar =>
+      'An unexpected error occurred while setting current jar';
+
+  @override
   String unexpectedErrorOccurred(String error) {
     return 'An unexpected error occurred: $error';
   }
@@ -406,4 +417,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanTheQRCodeToContribute => 'Scan the QR code to contribute';
+
+  @override
+  String shareJarMessage(String jarName, String paymentLink) {
+    return 'Help me reach my goal for \"$jarName\"! Contribute here: $paymentLink';
+  }
+
+  @override
+  String shareGenericMessage(String paymentLink) {
+    return 'Help me reach my goal! Contribute here: $paymentLink';
+  }
+
+  @override
+  String get jarSummaryRetrievedSuccessfully =>
+      'Jar summary retrieved successfully';
+
+  @override
+  String get failedToParseJarData => 'Failed to parse jar data';
+
+  @override
+  String modelParsingError(String error) {
+    return 'Model parsing error: $error';
+  }
+
+  @override
+  String get failedToRetrieveJarSummary => 'Failed to retrieve jar summary';
+
+  @override
+  String get unexpectedErrorRetrievingJarSummary =>
+      'An unexpected error occurred while retrieving jar summary';
 }

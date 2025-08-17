@@ -22,6 +22,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       final serviceRegistry = ServiceRegistry();
       final jarStorageService = serviceRegistry.jarStorageService;
       final jarRepository = serviceRegistry.jarRepository;
+      final translationService = serviceRegistry.translationService;
 
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
@@ -40,16 +41,20 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       } else {
         emit(
           JarSummaryError(
-            message: result['message'] ?? 'Failed to load jar summary',
+            message:
+                result['message'] ?? translationService.failedToLoadJarSummary,
             statusCode: result['statusCode'],
           ),
         );
       }
     } catch (e) {
-      print(e.toString());
+      final serviceRegistry = ServiceRegistry();
+      final translationService = serviceRegistry.translationService;
       emit(
         JarSummaryError(
-          message: 'An unexpected error occurred: ${e.toString()}',
+          message: translationService.unexpectedErrorOccurredWithDetails(
+            e.toString(),
+          ),
         ),
       );
     }
@@ -62,6 +67,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     try {
       final serviceRegistry = ServiceRegistry();
       final jarStorageService = serviceRegistry.jarStorageService;
+      final translationService = serviceRegistry.translationService;
 
       // Save the jar ID to storage
       final success = await jarStorageService.saveCurrentJarId(event.jarId);
@@ -71,16 +77,15 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         add(GetJarSummaryRequested());
       } else {
         emit(
-          JarSummaryError(
-            message: 'Failed to set current jar. Please try again.',
-          ),
+          JarSummaryError(message: translationService.failedToSetCurrentJar),
         );
       }
     } catch (e) {
+      final serviceRegistry = ServiceRegistry();
+      final translationService = serviceRegistry.translationService;
       emit(
         JarSummaryError(
-          message:
-              'An unexpected error occurred while setting current jar: ${e.toString()}',
+          message: translationService.unexpectedErrorSettingCurrentJar,
         ),
       );
     }
