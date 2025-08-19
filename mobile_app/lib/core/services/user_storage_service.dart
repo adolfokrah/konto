@@ -106,24 +106,12 @@ class UserStorageService {
       print('🔐 Checking if user is logged in...');
       final user = await getUserData();
       final token = await getAuthToken();
-      final expiry = await getTokenExpiry();
 
       print('🔐 User data: ${user != null ? 'YES' : 'NO'}');
       print('🔐 Auth token: ${token != null ? 'YES' : 'NO'}');
-      print('🔐 Token expiry: $expiry');
 
-      if (user == null || token == null || expiry == null) {
+      if (user == null || token == null) {
         print('🔐 Missing required auth data');
-        return false;
-      }
-
-      // Check if token is expired
-      final currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      print('🔐 Current timestamp: $currentTimestamp, Token expiry: $expiry');
-
-      if (currentTimestamp >= expiry) {
-        print('🔒 Token expired, user needs to login again');
-        await clearUserData();
         return false;
       }
 

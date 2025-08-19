@@ -154,7 +154,10 @@ class ContributionListItem extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
-    if (difference.inDays > 0) {
+    // If more than 2 days ago, show exact date and time
+    if (difference.inDays > 2) {
+      return _formatExactDateTime(dateTime);
+    } else if (difference.inDays > 0) {
       return difference.inDays == 1
           ? localizations.dayAgo(difference.inDays)
           : localizations.daysAgo(difference.inDays);
@@ -169,6 +172,38 @@ class ContributionListItem extends StatelessWidget {
     } else {
       return localizations.justNow;
     }
+  }
+
+  /// Format the exact date and time for contributions older than 2 days
+  String _formatExactDateTime(DateTime dateTime) {
+    // Format: "Jan 15, 2025 at 2:30 PM"
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    final month = months[dateTime.month - 1];
+    final day = dateTime.day;
+    final year = dateTime.year;
+
+    final hour = dateTime.hour;
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+
+    // Convert to 12-hour format
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+
+    return '$month $day, $year at $displayHour:$minute $period';
   }
 
   String _getInitials(String name) {

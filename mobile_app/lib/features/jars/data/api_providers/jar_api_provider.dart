@@ -13,25 +13,68 @@ class JarApiProvider {
   }) : _dio = dio,
        _userStorageService = userStorageService;
 
-  /// Get jar summary with contributions
-  Future<Map<String, dynamic>> getJarSummary({required String jarId}) async {
-    try {
-      // Get auth token from storage
-      final authToken = await _userStorageService.getAuthToken();
+  /// Get authenticated headers with Bearer token
+  /// Returns null if user is not authenticated
+  Future<Map<String, String>?> _getAuthenticatedHeaders() async {
+    final authToken = await _userStorageService.getAuthToken();
 
-      if (authToken == null) {
+    if (authToken == null) {
+      return null;
+    }
+
+    return {
+      ...BackendConfig.defaultHeaders,
+      'Authorization': 'Bearer $authToken',
+    };
+  }
+
+  /// Standard authentication error response
+  Map<String, dynamic> _getUnauthenticatedError() {
+    return {
+      'success': false,
+      'message': 'User not authenticated. Please log in again.',
+      'error': 'No auth token found',
+    };
+  }
+
+  /// Handle standard API errors with consistent error responses
+  Map<String, dynamic> _handleApiError(dynamic error, String operation) {
+    if (error is DioException) {
+      // Handle 401 Unauthorized specifically
+      if (error.response?.statusCode == 401) {
         return {
           'success': false,
-          'message': 'User not authenticated. Please log in again.',
-          'error': 'No auth token found',
+          'message': 'Your session has expired. Please log in again.',
+          'error': 'Unauthorized',
+          'dioErrorType': error.type.toString(),
+          'statusCode': 401,
         };
       }
 
-      // Prepare headers with authorization
-      final headers = {
-        ...BackendConfig.defaultHeaders,
-        'Authorization': 'Bearer $authToken',
+      return {
+        'success': false,
+        'message': 'Network error: ${error.message}',
+        'error': error.toString(),
+        'dioErrorType': error.type.toString(),
       };
+    }
+
+    return {
+      'success': false,
+      'message': 'Error $operation: ${error.toString()}',
+      'error': error.toString(),
+    };
+  }
+
+  /// Get jar summary with contributions
+  Future<Map<String, dynamic>> getJarSummary({required String jarId}) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
 
       final response = await _dio.get(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId/summary',
@@ -40,52 +83,19 @@ class JarApiProvider {
 
       return response.data;
     } catch (e) {
-      if (e is DioException) {
-        // Handle 401 Unauthorized specifically
-        if (e.response?.statusCode == 401) {
-          return {
-            'success': false,
-            'message': 'Your session has expired. Please log in again.',
-            'error': 'Unauthorized',
-            'dioErrorType': e.type.toString(),
-            'statusCode': 401,
-          };
-        }
-
-        return {
-          'success': false,
-          'message': 'Network error: ${e.message}',
-          'error': e.toString(),
-          'dioErrorType': e.type.toString(),
-        };
-      }
-      return {
-        'success': false,
-        'message': 'Error fetching jar summary: ${e.toString()}',
-        'error': e.toString(),
-      };
+      return _handleApiError(e, 'fetching jar summary');
     }
   }
 
   /// Get user's jars grouped by jar groups
   Future<Map<String, dynamic>> getUserJars() async {
     try {
-      // Get auth token from storage
-      final authToken = await _userStorageService.getAuthToken();
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
 
-      if (authToken == null) {
-        return {
-          'success': false,
-          'message': 'User not authenticated. Please log in again.',
-          'error': 'No auth token found',
-        };
+      if (headers == null) {
+        return _getUnauthenticatedError();
       }
-
-      // Prepare headers with authorization
-      final headers = {
-        ...BackendConfig.defaultHeaders,
-        'Authorization': 'Bearer $authToken',
-      };
 
       final response = await _dio.get(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/user-jars',
@@ -94,30 +104,7 @@ class JarApiProvider {
 
       return response.data;
     } catch (e) {
-      if (e is DioException) {
-        // Handle 401 Unauthorized specifically
-        if (e.response?.statusCode == 401) {
-          return {
-            'success': false,
-            'message': 'Your session has expired. Please log in again.',
-            'error': 'Unauthorized',
-            'dioErrorType': e.type.toString(),
-            'statusCode': 401,
-          };
-        }
-
-        return {
-          'success': false,
-          'message': 'Network error: ${e.message}',
-          'error': e.toString(),
-          'dioErrorType': e.type.toString(),
-        };
-      }
-      return {
-        'success': false,
-        'message': 'Error fetching user jars: ${e.toString()}',
-        'error': e.toString(),
-      };
+      return _handleApiError(e, 'fetching user jars');
     }
   }
 }
