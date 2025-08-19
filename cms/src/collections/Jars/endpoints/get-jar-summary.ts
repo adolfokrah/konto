@@ -130,8 +130,26 @@ export const getJarSummary = async (req: PayloadRequest) => {
     return chartPoints
   }
 
+  const allContributions = await req.payload.find({
+    collection: 'contributions',
+    where: {
+      jar: {
+        equals: jar.id,
+      },
+      paymentStatus: {
+        equals: 'completed',
+      },
+    },
+    limit: 10000000,
+  })
+
+  const totalContributedAmount = allContributions.docs.reduce((sum: number, contribution: any) => {
+    return sum + contribution.amountContributed
+  }, 0)
+
   const data = {
     ...jar,
+    totalContributedAmount,
     contributions: recentJarContributions, // Return the full paginated structure
     chartData: totalContributionsChart(), // Add chart data for the last 10 days
   }

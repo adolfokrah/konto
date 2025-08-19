@@ -255,6 +255,20 @@ export const Jars: CollectionConfig = {
         description: 'Payment methods accepted for contributions to this jar',
       },
     },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'active',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+        { label: 'Frozen', value: 'frozen' },
+      ],
+      required: true,
+      admin: {
+        description: 'Current status of the jar',
+      },
+    },
   ],
   hooks: {
     beforeChange: [],

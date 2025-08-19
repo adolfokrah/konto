@@ -255,6 +255,10 @@ export interface Jar {
    * Payment methods accepted for contributions to this jar
    */
   acceptedPaymentMethods: ('mobile-money' | 'bank-transfer' | 'cash')[];
+  /**
+   * Current status of the jar
+   */
+  status: 'active' | 'inactive' | 'frozen';
   updatedAt: string;
   createdAt: string;
 }
@@ -454,6 +458,7 @@ export interface JarsSelect<T extends boolean = true> {
   paymentLink?: T;
   acceptAnonymousContributions?: T;
   acceptedPaymentMethods?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

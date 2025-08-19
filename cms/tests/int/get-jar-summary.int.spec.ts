@@ -38,6 +38,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
     testJar = await payload.create({
       collection: 'jars',
       data: {
+        status: 'active',
         name: 'Test Jar for Summary',
         description: 'A test jar for summary endpoint testing',
         goalAmount: 1000,
@@ -292,6 +293,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const emptyJar = await payload.create({
         collection: 'jars',
         data: {
+          status: 'active',
           name: 'Empty Test Jar',
           description: 'A jar with no contributions',
           goalAmount: 500,

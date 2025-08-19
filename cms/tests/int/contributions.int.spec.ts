@@ -71,6 +71,7 @@ describe('Contributions Collection Integration Tests', () => {
       collection: 'jars',
       data: {
         name: 'Test Contribution Jar',
+        status: 'active',
         currency: 'ghc' as const,
         creator: testUser.id,
         invitedCollectors: [

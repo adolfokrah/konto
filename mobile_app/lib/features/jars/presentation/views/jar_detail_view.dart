@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/animated_number_text.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
@@ -279,7 +280,9 @@ class _JarDetailViewState extends State<JarDetailView> {
               Text(jarData.name, style: TextStyles.titleMediumM),
               const SizedBox(height: AppSpacing.spacingXs),
               RevolutStyleCounterWithCurrency(
-                value: jarData.formattedTotalContributions,
+                value:
+                    CurrencyUtils.getCurrencySymbol(jarData.currency) +
+                    jarData.totalContributedAmount.toString(),
                 style: TextStyles.titleBoldXl,
                 duration: const Duration(milliseconds: 1000),
               ),

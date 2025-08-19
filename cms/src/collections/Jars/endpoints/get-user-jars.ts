@@ -19,10 +19,16 @@ export const getUserJars = async (req: PayloadRequest) => {
             creator: {
               equals: req.user,
             },
+            status: {
+              not_equals: 'inactive',
+            },
           },
           {
             'invitedCollectors.collector': {
               equals: req.user,
+            },
+            status: {
+              not_equals: 'inactive',
             },
           },
         ],

@@ -22,6 +22,7 @@ class JarSummaryModel {
   final DateTime updatedAt;
   final List<ContributionModel> contributions;
   final List<double>? chartData; // Chart data for last 10 days
+  final double totalContributedAmount; // Total amount from all contributions
 
   const JarSummaryModel({
     required this.id,
@@ -44,6 +45,7 @@ class JarSummaryModel {
     required this.updatedAt,
     required this.contributions,
     this.chartData,
+    required this.totalContributedAmount,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -60,6 +62,11 @@ class JarSummaryModel {
   String get formattedTotalContributions {
     final total = totalContributions;
     return CurrencyUtils.formatAmount(total, currency);
+  }
+
+  /// Utility function to get formatted total contributed amount from API with currency
+  String get formattedTotalContributedAmount {
+    return CurrencyUtils.formatAmount(totalContributedAmount, currency);
   }
 
   /// Get currency symbol
@@ -133,6 +140,8 @@ class JarSummaryModel {
                   .map((value) => (value as num? ?? 0).toDouble())
                   .toList()
               : null,
+      totalContributedAmount:
+          (json['totalContributedAmount'] as num? ?? 0).toDouble(),
     );
   }
 
@@ -162,6 +171,7 @@ class JarSummaryModel {
       'contributions':
           contributions.map((contribution) => contribution.toJson()).toList(),
       'chartData': chartData,
+      'totalContributedAmount': totalContributedAmount,
     };
   }
 }

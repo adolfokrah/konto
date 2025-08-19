@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_spacing.dart';
 
 class AnimatedNumberText extends StatefulWidget {
   final String value;

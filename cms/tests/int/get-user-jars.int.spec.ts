@@ -115,10 +115,16 @@ describe('getUserJars', () => {
               creator: {
                 equals: mockUser,
               },
+              status: {
+                not_equals: 'inactive',
+              },
             },
             {
               'invitedCollectors.collector': {
                 equals: mockUser,
+              },
+              status: {
+                not_equals: 'inactive',
               },
             },
           ],
@@ -184,10 +190,16 @@ describe('getUserJars', () => {
               creator: {
                 equals: mockUser,
               },
+              status: {
+                not_equals: 'inactive',
+              },
             },
             {
               'invitedCollectors.collector': {
                 equals: mockUser,
+              },
+              status: {
+                not_equals: 'inactive',
               },
             },
           ],
@@ -228,10 +240,16 @@ describe('getUserJars', () => {
               creator: {
                 equals: mockUser,
               },
+              status: {
+                not_equals: 'inactive',
+              },
             },
             {
               'invitedCollectors.collector': {
                 equals: mockUser,
+              },
+              status: {
+                not_equals: 'inactive',
               },
             },
           ],
@@ -391,10 +409,16 @@ describe('getUserJars', () => {
               creator: {
                 equals: mockUser,
               },
+              status: {
+                not_equals: 'inactive',
+              },
             },
             {
               'invitedCollectors.collector': {
                 equals: mockUser,
+              },
+              status: {
+                not_equals: 'inactive',
               },
             },
           ],
@@ -424,10 +448,16 @@ describe('getUserJars', () => {
         creator: {
           equals: mockUser,
         },
+        status: {
+          not_equals: 'inactive',
+        },
       })
       expect(callArgs.where.or[1]).toEqual({
         'invitedCollectors.collector': {
           equals: mockUser,
+        },
+        status: {
+          not_equals: 'inactive',
         },
       })
     })
