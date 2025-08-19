@@ -28,8 +28,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
               },
             },
             {
-              collectors: {
-                contains: req.user,
+              'invitedCollectors.collector': {
+                equals: req.user,
               },
             },
           ],

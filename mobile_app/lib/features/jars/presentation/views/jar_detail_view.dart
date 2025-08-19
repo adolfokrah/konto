@@ -381,7 +381,16 @@ class _JarDetailViewState extends State<JarDetailView> {
                           ),
                           const SizedBox(height: AppSpacing.spacingXs),
                           AnimatedNumberTextScale(
-                            value: (jarData.collectors?.length ?? 0).toString(),
+                            value:
+                                (jarData.invitedCollectors
+                                            ?.where(
+                                              (collector) =>
+                                                  collector.status ==
+                                                  'accepted',
+                                            )
+                                            .length ??
+                                        0)
+                                    .toString(),
                             style: TextStyles.titleBoldLg,
                             duration: const Duration(milliseconds: 600),
                           ),

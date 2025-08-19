@@ -278,10 +278,10 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       expect(result.data.creator.id).toBe(testUser.id)
       expect(result.data.creator.email).toBe(testUser.email)
 
-      // Verify collectors are populated (if any)
-      if (result.data.collectors && result.data.collectors.length > 0) {
-        expect(result.data.collectors).toBeInstanceOf(Array)
-        expect(result.data.collectors[0]).toBeTypeOf('object')
+      // Verify invitedCollectors are populated (if any)
+      if (result.data.invitedCollectors && result.data.invitedCollectors.length > 0) {
+        expect(result.data.invitedCollectors).toBeInstanceOf(Array)
+        expect(result.data.invitedCollectors[0]).toBeTypeOf('object')
       }
     })
   })

@@ -11,7 +11,7 @@ class JarSummaryModel {
   final bool isActive;
   final bool isFixedContribution;
   final UserModel creator;
-  final List<UserModel>? collectors;
+  final List<InvitedCollectorModel>? invitedCollectors;
   final List<String> acceptedPaymentMethods;
   final bool acceptAnonymousContributions;
   final String? paymentLink;
@@ -33,7 +33,7 @@ class JarSummaryModel {
     required this.isActive,
     required this.isFixedContribution,
     required this.creator,
-    this.collectors,
+    this.invitedCollectors,
     required this.acceptedPaymentMethods,
     required this.acceptAnonymousContributions,
     this.paymentLink,
@@ -79,11 +79,12 @@ class JarSummaryModel {
       isActive: json['isActive'] as bool,
       isFixedContribution: json['isFixedContribution'] as bool,
       creator: UserModel.fromJson(json['creator'] as Map<String, dynamic>),
-      collectors:
-          (json['collectors'] as List<dynamic>?)
+      invitedCollectors:
+          (json['invitedCollectors'] as List<dynamic>?)
               ?.map(
-                (collector) =>
-                    UserModel.fromJson(collector as Map<String, dynamic>),
+                (invitedCollector) => InvitedCollectorModel.fromJson(
+                  invitedCollector as Map<String, dynamic>,
+                ),
               )
               .toList(),
       acceptedPaymentMethods:
@@ -146,7 +147,10 @@ class JarSummaryModel {
       'isActive': isActive,
       'isFixedContribution': isFixedContribution,
       'creator': creator.toJson(),
-      'collectors': collectors?.map((collector) => collector.toJson()).toList(),
+      'invitedCollectors':
+          invitedCollectors
+              ?.map((invitedCollector) => invitedCollector.toJson())
+              .toList(),
       'acceptedPaymentMethods': acceptedPaymentMethods,
       'acceptAnonymousContributions': acceptAnonymousContributions,
       'paymentLink': paymentLink,
@@ -216,6 +220,41 @@ class UserModel {
       'isKYCVerified': isKYCVerified,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class InvitedCollectorModel {
+  final UserModel? collector;
+  final String? phoneNumber;
+  final String? name;
+  final String status; // 'accepted' | 'pending'
+
+  const InvitedCollectorModel({
+    this.collector,
+    this.phoneNumber,
+    this.name,
+    required this.status,
+  });
+
+  factory InvitedCollectorModel.fromJson(Map<String, dynamic> json) {
+    return InvitedCollectorModel(
+      collector:
+          json['collector'] != null
+              ? UserModel.fromJson(json['collector'] as Map<String, dynamic>)
+              : null,
+      phoneNumber: json['phoneNumber'] as String?,
+      name: json['name'] as String?,
+      status: json['status'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'collector': collector?.toJson(),
+      'phoneNumber': phoneNumber,
+      'name': name,
+      'status': status,
     };
   }
 }

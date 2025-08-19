@@ -114,12 +114,17 @@ describe('Jars Collection Integration Tests', () => {
       expect(jar.currency).toBe('ngn')
     })
 
-    it('should create a jar with collectors', async () => {
+    it('should create a jar with invitedCollectors', async () => {
       const jarData = {
-        name: 'Jar with Collectors',
+        name: 'Jar with Invited Collectors',
         currency: 'ghc' as const,
         creator: testUser.id,
-        collectors: [secondUser.id],
+        invitedCollectors: [
+          {
+            collector: secondUser.id,
+            status: 'accepted' as const,
+          },
+        ],
         acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
 
@@ -128,9 +133,11 @@ describe('Jars Collection Integration Tests', () => {
         data: jarData,
       })
 
-      expect(jar.collectors?.map((c: any) => (typeof c === 'object' ? c.id : c))).toEqual([
-        secondUser.id,
-      ])
+      expect(
+        jar.invitedCollectors?.map((ic: any) =>
+          typeof ic.collector === 'object' ? ic.collector.id : ic.collector,
+        ),
+      ).toEqual([secondUser.id])
     })
 
     it('should create a jar with anonymous contributions enabled', async () => {
@@ -370,18 +377,25 @@ describe('Jars Collection Integration Tests', () => {
       expect(updatedJar.isActive).toBe(false)
     })
 
-    it('should add collectors to jar', async () => {
+    it('should add invitedCollectors to jar', async () => {
       const updatedJar = await payload.update({
         collection: 'jars',
         id: testJar.id,
         data: {
-          collectors: [secondUser.id],
+          invitedCollectors: [
+            {
+              collector: secondUser.id,
+              status: 'accepted' as const,
+            },
+          ],
         },
       })
 
-      expect(updatedJar.collectors?.map((c: any) => (typeof c === 'object' ? c.id : c))).toEqual([
-        secondUser.id,
-      ])
+      expect(
+        updatedJar.invitedCollectors?.map((ic: any) =>
+          typeof ic.collector === 'object' ? ic.collector.id : ic.collector,
+        ),
+      ).toEqual([secondUser.id])
     })
 
     it('should update payment methods', async () => {

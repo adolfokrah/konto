@@ -129,7 +129,7 @@ class JarListItem {
   final String? deadline;
   final String currency; // 'ghc' | 'ngn'
   final JarCreator creator;
-  final List<JarCollector> collectors;
+  final List<JarInvitedCollector> invitedCollectors;
   final String? paymentLink;
   final bool acceptAnonymousContributions;
   final List<String> acceptedPaymentMethods;
@@ -149,7 +149,7 @@ class JarListItem {
     this.deadline,
     required this.currency,
     required this.creator,
-    required this.collectors,
+    required this.invitedCollectors,
     this.paymentLink,
     required this.acceptAnonymousContributions,
     required this.acceptedPaymentMethods,
@@ -175,10 +175,11 @@ class JarListItem {
       deadline: json['deadline'],
       currency: json['currency'] ?? 'ghc',
       creator: JarCreator.fromJson(json['creator'] as Map<String, dynamic>),
-      collectors:
-          (json['collectors'] as List<dynamic>?)
+      invitedCollectors:
+          (json['invitedCollectors'] as List<dynamic>?)
               ?.map(
-                (item) => JarCollector.fromJson(item as Map<String, dynamic>),
+                (item) =>
+                    JarInvitedCollector.fromJson(item as Map<String, dynamic>),
               )
               .toList() ??
           [],
@@ -209,7 +210,8 @@ class JarListItem {
       'deadline': deadline,
       'currency': currency,
       'creator': creator.toJson(),
-      'collectors': collectors.map((collector) => collector.toJson()).toList(),
+      'invitedCollectors':
+          invitedCollectors.map((collector) => collector.toJson()).toList(),
       'paymentLink': paymentLink,
       'acceptAnonymousContributions': acceptAnonymousContributions,
       'acceptedPaymentMethods': acceptedPaymentMethods,
@@ -291,6 +293,41 @@ class JarCollector {
 
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'profilePicture': profilePicture?.toJson()};
+  }
+}
+
+class JarInvitedCollector {
+  final JarCollector? collector;
+  final String? phoneNumber;
+  final String? name;
+  final String status; // 'accepted' | 'pending'
+
+  const JarInvitedCollector({
+    this.collector,
+    this.phoneNumber,
+    this.name,
+    required this.status,
+  });
+
+  factory JarInvitedCollector.fromJson(Map<String, dynamic> json) {
+    return JarInvitedCollector(
+      collector:
+          json['collector'] != null
+              ? JarCollector.fromJson(json['collector'] as Map<String, dynamic>)
+              : null,
+      phoneNumber: json['phoneNumber'] as String?,
+      name: json['name'] as String?,
+      status: json['status'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'collector': collector?.toJson(),
+      'phoneNumber': phoneNumber,
+      'name': name,
+      'status': status,
+    };
   }
 }
 

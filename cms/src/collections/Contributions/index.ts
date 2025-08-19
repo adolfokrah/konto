@@ -93,12 +93,17 @@ export const Contributions: CollectionConfig = {
             allowedUserIds.push(creatorId)
           }
 
-          // Add collectors to allowed users
-          if (jar.collectors && Array.isArray(jar.collectors)) {
-            jar.collectors.forEach(collector => {
-              // Handle both ObjectId string and populated object
-              const collectorId = typeof collector === 'string' ? collector : collector.id
-              allowedUserIds.push(collectorId)
+          // Add invited collectors with 'accepted' status to allowed users
+          if (jar.invitedCollectors && Array.isArray(jar.invitedCollectors)) {
+            jar.invitedCollectors.forEach(invitedCollector => {
+              if (invitedCollector.collector && invitedCollector.status === 'accepted') {
+                // Handle both ObjectId string and populated object
+                const collectorId =
+                  typeof invitedCollector.collector === 'string'
+                    ? invitedCollector.collector
+                    : invitedCollector.collector.id
+                allowedUserIds.push(collectorId)
+              }
             })
           }
 

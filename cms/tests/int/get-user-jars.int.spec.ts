@@ -59,7 +59,7 @@ describe('getUserJars', () => {
         name: 'Test Jar 1',
         description: null,
         creator: mockUser,
-        collectors: [],
+        invitedCollectors: [],
         jarGroup: { id: 'group1', name: 'Wedding Fund' },
         image: null,
         isActive: true,
@@ -79,7 +79,7 @@ describe('getUserJars', () => {
         name: 'Test Jar 2',
         description: null,
         creator: mockUser,
-        collectors: [],
+        invitedCollectors: [],
         jarGroup: { id: 'group1', name: 'Wedding Fund' },
         image: null,
         isActive: true,
@@ -117,8 +117,8 @@ describe('getUserJars', () => {
               },
             },
             {
-              collectors: {
-                contains: mockUser,
+              'invitedCollectors.collector': {
+                equals: mockUser,
               },
             },
           ],
@@ -143,7 +143,12 @@ describe('getUserJars', () => {
         name: 'Collector Jar',
         description: null,
         creator: { id: 'otherUser', name: 'Other User', profilePicture: null },
-        collectors: [mockUser],
+        invitedCollectors: [
+          {
+            collector: mockUser,
+            status: 'accepted',
+          },
+        ],
         jarGroup: { id: 'group2', name: 'Vacation Fund' },
         image: null,
         isActive: true,
@@ -181,8 +186,8 @@ describe('getUserJars', () => {
               },
             },
             {
-              collectors: {
-                contains: mockUser,
+              'invitedCollectors.collector': {
+                equals: mockUser,
               },
             },
           ],
@@ -225,8 +230,8 @@ describe('getUserJars', () => {
               },
             },
             {
-              collectors: {
-                contains: mockUser,
+              'invitedCollectors.collector': {
+                equals: mockUser,
               },
             },
           ],
@@ -249,7 +254,7 @@ describe('getUserJars', () => {
         name: 'Grouped Jar',
         description: null,
         creator: mockUser,
-        collectors: [],
+        invitedCollectors: [],
         jarGroup: { id: 'group1', name: 'Wedding Fund' },
         image: null,
         isActive: true,
@@ -269,7 +274,7 @@ describe('getUserJars', () => {
         name: 'Ungrouped Jar',
         description: null,
         creator: mockUser,
-        collectors: [],
+        invitedCollectors: [],
         jarGroup: null,
         image: null,
         isActive: true,
@@ -388,8 +393,8 @@ describe('getUserJars', () => {
               },
             },
             {
-              collectors: {
-                contains: mockUser,
+              'invitedCollectors.collector': {
+                equals: mockUser,
               },
             },
           ],
@@ -421,8 +426,8 @@ describe('getUserJars', () => {
         },
       })
       expect(callArgs.where.or[1]).toEqual({
-        collectors: {
-          contains: mockUser,
+        'invitedCollectors.collector': {
+          equals: mockUser,
         },
       })
     })

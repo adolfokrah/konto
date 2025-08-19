@@ -73,7 +73,12 @@ describe('Contributions Collection Integration Tests', () => {
         name: 'Test Contribution Jar',
         currency: 'ghc' as const,
         creator: testUser.id,
-        collectors: [collectorUser.id],
+        invitedCollectors: [
+          {
+            collector: collectorUser.id,
+            status: 'accepted' as const,
+          },
+        ],
         isActive: true,
         acceptedPaymentMethods: ['mobile-money', 'bank-transfer'] as (
           | 'mobile-money'

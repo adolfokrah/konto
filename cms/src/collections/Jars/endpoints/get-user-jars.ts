@@ -143,7 +143,7 @@ export const getUserJars = async (req: PayloadRequest) => {
         success: true,
         message: 'No Jars found',
       },
-      { status: 500 },
+      { status: 200 },
     )
   }
 }
