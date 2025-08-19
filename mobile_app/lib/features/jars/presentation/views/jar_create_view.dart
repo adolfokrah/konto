@@ -118,7 +118,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                               top:
                                   MediaQuery.of(context).padding.top +
                                   kToolbarHeight +
-                                  -5.0 -
+                                  -7 -
                                   (32.0 *
                                       scrollProgress), // Adjusted to center properly when fully scrolled
                               child: Text(
