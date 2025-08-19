@@ -80,4 +80,63 @@ class JarRepository {
       };
     }
   }
+
+  /// Create a new jar
+  /// Returns success response with jar data if successful
+  Future<Map<String, dynamic>> createJar({
+    required String name,
+    String? description,
+    required String jarGroupId,
+    String? imageId,
+    bool isActive = true,
+    bool isFixedContribution = false,
+    double? acceptedContributionAmount,
+    double? goalAmount,
+    DateTime? deadline,
+    required String currency,
+    bool acceptAnonymousContributions = false,
+    required List<String> acceptedPaymentMethods,
+    List<Map<String, dynamic>>? invitedCollectors,
+  }) async {
+    try {
+      final apiResponse = await _jarApiProvider.createJar(
+        name: name,
+        description: description,
+        jarGroupId: jarGroupId,
+        imageId: imageId,
+        isActive: isActive,
+        isFixedContribution: isFixedContribution,
+        acceptedContributionAmount: acceptedContributionAmount,
+        goalAmount: goalAmount,
+        deadline: deadline,
+        currency: currency,
+        acceptAnonymousContributions: acceptAnonymousContributions,
+        acceptedPaymentMethods: acceptedPaymentMethods,
+        invitedCollectors: invitedCollectors,
+      );
+
+      if (apiResponse['success'] == true) {
+        return {
+          'success': true,
+          'data': apiResponse['data'],
+          'message': 'Jar created successfully',
+        };
+      } else {
+        // Handle API errors
+        return {
+          'success': false,
+          'message': apiResponse['message'] ?? 'Failed to create jar',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while creating jar',
+        'error': e.toString(),
+      };
+    }
+  }
 }

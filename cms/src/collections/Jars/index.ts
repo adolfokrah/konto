@@ -108,25 +108,122 @@ export const Jars: CollectionConfig = {
       },
     },
     {
-      name: 'collectors',
-      type: 'relationship',
-      relationTo: 'users',
-      hasMany: true,
-      filterOptions: ({ data }) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const filters: any = {}
+      name: 'invitedCollectors',
+      type: 'array',
+      fields: [
+        {
+          name: 'collector',
+          type: 'relationship',
+          relationTo: 'users',
+          required: false,
+          hasMany: false,
+          filterOptions: ({ data }) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const filters: any = {}
 
-        if (data?.creator) {
-          filters.id = {
-            not_equals: data.creator,
-          }
-        }
+            if (data?.creator) {
+              filters.id = {
+                not_equals: data.creator,
+              }
+            }
 
-        return filters
-      },
-      admin: {
-        description: 'Users who can contribute to this jar (excluding the creator)',
-      },
+            return filters
+          },
+          admin: {
+            description: 'Users who can contribute to this jar (excluding the creator)',
+          },
+        },
+        {
+          name: 'phoneNumber',
+          type: 'text',
+          required: false,
+          admin: {
+            description:
+              'Phone number of the invited collector (auto-populated from selected collector)',
+            readOnly: true,
+          },
+          hooks: {
+            beforeChange: [
+              async ({ data, siblingData, req }) => {
+                // Auto-populate phone number from selected collector
+                if (siblingData?.collector) {
+                  try {
+                    // Get the first selected collector
+                    const collectorId =
+                      typeof siblingData.collector === 'object'
+                        ? siblingData.collector.id
+                        : siblingData.collector
+
+                    // Fetch the user to get their phone number
+                    const user = await req.payload.findByID({
+                      collection: 'users',
+                      id: collectorId,
+                    })
+
+                    if (user?.phoneNumber) {
+                      return user.phoneNumber
+                    }
+                  } catch (error) {
+                    console.error('Error fetching collector phone number:', error)
+                  }
+                }
+
+                // Return existing value if no collector selected or error occurred
+                return data
+              },
+            ],
+          },
+        },
+        {
+          name: 'name',
+          type: 'text',
+          required: false,
+          admin: {
+            description: 'Name of the invited collector (auto-populated from selected collector)',
+            readOnly: true,
+          },
+          hooks: {
+            beforeChange: [
+              async ({ data, siblingData, req }) => {
+                // Auto-populate name from selected collector
+                if (siblingData?.collector) {
+                  try {
+                    // Get the first selected collector
+                    const collectorId =
+                      typeof siblingData.collector === 'object'
+                        ? siblingData.collector.id
+                        : siblingData.collector
+
+                    // Fetch the user to get their full name
+                    const user = await req.payload.findByID({
+                      collection: 'users',
+                      id: collectorId,
+                    })
+
+                    if (user?.fullName) {
+                      return user.fullName
+                    }
+                  } catch (error) {
+                    console.error('Error fetching collector name:', error)
+                  }
+                }
+
+                // Return existing value if no collector selected or error occurred
+                return data
+              },
+            ],
+          },
+        },
+        {
+          name: 'status',
+          type: 'select',
+          options: [
+            { label: 'Accepted', value: 'accepted' },
+            { label: 'Pending', value: 'pending' },
+          ],
+          required: true,
+        },
+      ],
     },
     {
       name: 'paymentLink',

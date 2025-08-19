@@ -23,6 +23,9 @@ class AppCard extends StatefulWidget {
   /// Initial expanded state for collapsible cards
   final bool initiallyExpanded;
 
+  /// Custom padding for the card content (defaults to AppSpacing.spacingM)
+  final EdgeInsetsGeometry? padding;
+
   /// Creates a Card widget
   const AppCard({
     super.key,
@@ -31,6 +34,7 @@ class AppCard extends StatefulWidget {
     this.isCollapsible = false,
     this.title,
     this.initiallyExpanded = false,
+    this.padding,
   });
 
   @override
@@ -90,46 +94,44 @@ class _CardState extends State<AppCard> with SingleTickerProviderStateMixin {
             ? Theme.of(context).colorScheme.primary
             : AppColors.onPrimaryWhite;
       case CardVariant.secondary:
-        return !isDark
-            ? Theme.of(context).colorScheme.onSurface
-            : Theme.of(context).colorScheme.primary;
+        return Theme.of(context).colorScheme.primary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8.0),
-      child: Material(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        ),
-        color: _getCardColor(context),
-        clipBehavior: Clip.antiAlias,
-        child:
-            widget.isCollapsible
-                ? _buildCollapsibleCard(context)
-                : _buildRegularCard(),
+    return Material(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.radiusM),
       ),
+      color: _getCardColor(context),
+      clipBehavior: Clip.antiAlias,
+      child:
+          widget.isCollapsible
+              ? _buildCollapsibleCard(context)
+              : _buildRegularCard(),
     );
   }
 
   Widget _buildRegularCard() {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
+      padding: widget.padding ?? const EdgeInsets.all(AppSpacing.spacingM),
       child: widget.child,
     );
   }
 
   Widget _buildCollapsibleCard(BuildContext context) {
+    final defaultPadding = const EdgeInsets.all(AppSpacing.spacingM);
+    final customPadding = widget.padding ?? defaultPadding;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
           onTap: _toggleExpanded,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.spacingM),
+            padding: customPadding,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -152,7 +154,12 @@ class _CardState extends State<AppCard> with SingleTickerProviderStateMixin {
         SizeTransition(
           sizeFactor: _expandAnimation,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+            padding: EdgeInsets.fromLTRB(
+              customPadding.horizontal / 2,
+              0,
+              customPadding.horizontal / 2,
+              customPadding.vertical / 2,
+            ),
             child: widget.child,
           ),
         ),

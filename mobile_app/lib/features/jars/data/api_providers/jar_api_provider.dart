@@ -107,4 +107,60 @@ class JarApiProvider {
       return _handleApiError(e, 'fetching user jars');
     }
   }
+
+  /// Create a new jar
+  Future<Map<String, dynamic>> createJar({
+    required String name,
+    String? description,
+    required String jarGroupId,
+    String? imageId,
+    bool isActive = true,
+    bool isFixedContribution = false,
+    double? acceptedContributionAmount,
+    double? goalAmount,
+    DateTime? deadline,
+    required String currency,
+    bool acceptAnonymousContributions = false,
+    required List<String> acceptedPaymentMethods,
+    List<Map<String, dynamic>>? invitedCollectors,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Prepare jar data based on the collection schema
+      final jarData = {
+        'name': name,
+        'description': description,
+        'jarGroup': jarGroupId,
+        'image': imageId,
+        'isActive': isActive,
+        'isFixedContribution': isFixedContribution,
+        'acceptedContributionAmount': acceptedContributionAmount,
+        'goalAmount': goalAmount ?? 0,
+        'deadline': deadline?.toIso8601String(),
+        'currency': currency,
+        'acceptAnonymousContributions': acceptAnonymousContributions,
+        'acceptedPaymentMethods': acceptedPaymentMethods,
+        'invitedCollectors': invitedCollectors,
+      };
+
+      // Remove null values to avoid sending unnecessary data
+      jarData.removeWhere((key, value) => value == null);
+
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}',
+        data: jarData,
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'creating jar');
+    }
+  }
 }

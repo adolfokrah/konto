@@ -1,0 +1,36 @@
+part of 'jar_create_bloc.dart';
+
+@immutable
+sealed class JarCreateEvent {}
+
+final class JarCreateSubmitted extends JarCreateEvent {
+  final String name;
+  final String? description;
+  final String jarGroupId;
+  final String? imageId;
+  final bool isActive;
+  final bool isFixedContribution;
+  final double? acceptedContributionAmount;
+  final double? goalAmount;
+  final DateTime? deadline;
+  final String currency;
+  final bool acceptAnonymousContributions;
+  final List<String> acceptedPaymentMethods;
+  final List<Map<String, dynamic>>? invitedCollectors;
+
+  JarCreateSubmitted({
+    required this.name,
+    this.description,
+    required this.jarGroupId,
+    this.imageId,
+    this.isActive = true,
+    this.isFixedContribution = false,
+    this.acceptedContributionAmount,
+    this.goalAmount,
+    this.deadline,
+    required this.currency,
+    this.acceptAnonymousContributions = false,
+    required this.acceptedPaymentMethods,
+    this.invitedCollectors,
+  });
+}

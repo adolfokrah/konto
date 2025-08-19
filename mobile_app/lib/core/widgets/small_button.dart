@@ -7,6 +7,7 @@ class AppSmallButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Color? backgroundColor;
   final Color? textColor;
+  final EdgeInsetsGeometry? padding;
 
   const AppSmallButton({
     super.key,
@@ -14,6 +15,7 @@ class AppSmallButton extends StatelessWidget {
     this.onPressed,
     this.backgroundColor,
     this.textColor,
+    this.padding,
   });
 
   @override
@@ -25,10 +27,12 @@ class AppSmallButton extends StatelessWidget {
         backgroundColor:
             backgroundColor ?? Theme.of(context).colorScheme.primary,
         foregroundColor: textColor ?? Theme.of(context).colorScheme.onSurface,
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.spacingXs,
-          horizontal: AppSpacing.spacingL,
-        ),
+        padding:
+            padding ??
+            const EdgeInsets.symmetric(
+              vertical: AppSpacing.spacingXs,
+              horizontal: AppSpacing.spacingL,
+            ),
         minimumSize: Size.zero, // Allow button to be smaller than default
         tapTargetSize:
             MaterialTapTargetSize.shrinkWrap, // Removes extra padding

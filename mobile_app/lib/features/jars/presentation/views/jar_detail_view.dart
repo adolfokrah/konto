@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/animated_number_text.dart';
@@ -10,8 +9,10 @@ import 'package:konto/core/widgets/contribution_chart.dart';
 import 'package:konto/core/widgets/contribution_list_item.dart';
 import 'package:konto/core/widgets/goal_progress_card.dart';
 import 'package:konto/core/widgets/icon_button.dart';
+import 'package:konto/core/widgets/scrollable_background_image.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:konto/core/utils/image_utils.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -137,51 +138,14 @@ class _JarDetailViewState extends State<JarDetailView> {
                 // Background image positioned to cover upper section only
                 if (state is JarSummaryLoaded &&
                     state.jarData.image?.url != null)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 450, // Cover upper section including app bar area
-                    child: Opacity(
-                      opacity: (1.0 - (_scrollOffset / 200)).clamp(0.0, 1.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              _constructImageUrl(state.jarData.image!.url!),
-                            ),
-                            fit: BoxFit.cover,
-                            opacity: 0.30,
-                            colorFilter: ColorFilter.mode(
-                              Theme.of(
-                                context,
-                              ).colorScheme.surface.withValues(alpha: 0.8),
-                              BlendMode.overlay,
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.transparent,
-                                Theme.of(
-                                  context,
-                                ).colorScheme.surface.withOpacity(0.3),
-                                Theme.of(
-                                  context,
-                                ).colorScheme.surface.withOpacity(0.8),
-                                Theme.of(context).colorScheme.surface,
-                              ],
-                              stops: const [0.0, 0.6, 0.8, 0.95, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
+                  ScrollableBackgroundImage(
+                    imageUrl: ImageUtils.constructImageUrl(
+                      state.jarData.image!.url!,
                     ),
+                    scrollOffset: _scrollOffset,
+                    height: 450.0,
+                    maxScrollForOpacity: 200.0,
+                    baseOpacity: 0.30,
                   ),
                 // Main content with custom scroll view
                 NotificationListener<ScrollNotification>(
@@ -662,23 +626,5 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
       ),
     );
-  }
-
-  /// Helper method to construct full image URL from relative path
-  String _constructImageUrl(String relativePath) {
-    final baseUrl = BackendConfig.imageBaseUrl;
-
-    // If the path is already a full URL, return it as is
-    if (relativePath.startsWith('http://') ||
-        relativePath.startsWith('https://')) {
-      return relativePath;
-    }
-
-    // If the path starts with '/', remove it to avoid double slashes
-    final cleanPath =
-        relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
-
-    // Construct the full URL
-    return '$baseUrl/$cleanPath';
   }
 }

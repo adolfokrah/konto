@@ -89,7 +89,7 @@ class JarsListView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.add, size: 20),
-                        const SizedBox(width: AppSpacing.spacingS),
+                        const SizedBox(width: AppSpacing.spacingXs),
                         Text(
                           localizations.createJar,
                           style: TextStyles.titleMedium,
@@ -98,6 +98,7 @@ class JarsListView extends StatelessWidget {
                     ),
                     onPressed: () {
                       HapticUtils.heavy();
+                      Navigator.of(context).pushNamed('/jar_create');
                     },
                   ),
                 ),
@@ -176,11 +177,14 @@ class JarsListView extends StatelessWidget {
         // Adjust index for jar groups (subtract 1 because title takes index 0)
         final jarGroup = jarList.groups[index - 1];
 
-        return AppCard(
-          isCollapsible: true,
-          title: jarGroup.name,
-          initiallyExpanded: true, // Expand all cards by default
-          child: _buildJarGroupContent(jarGroup, context, localizations),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
+          child: AppCard(
+            isCollapsible: true,
+            title: jarGroup.name,
+            initiallyExpanded: true, // Expand all cards by default
+            child: _buildJarGroupContent(jarGroup, context, localizations),
+          ),
         );
       },
     );

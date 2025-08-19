@@ -351,7 +351,11 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
 
               // Title
               if (widget.title != null) ...[
-                Text(widget.title!, style: TextStyles.titleBoldLg),
+                const SizedBox(height: AppSpacing.spacingM),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(widget.title!, style: TextStyles.titleBoldLg),
+                ),
                 const SizedBox(height: AppSpacing.spacingM),
               ],
 

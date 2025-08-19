@@ -228,10 +228,24 @@ export interface Jar {
    * User who created the jar
    */
   creator: string | User;
-  /**
-   * Users who can contribute to this jar (excluding the creator)
-   */
-  collectors?: (string | User)[] | null;
+  invitedCollectors?:
+    | {
+        /**
+         * Users who can contribute to this jar (excluding the creator)
+         */
+        collector?: (string | null) | User;
+        /**
+         * Phone number of the invited collector (auto-populated from selected collector)
+         */
+        phoneNumber?: string | null;
+        /**
+         * Name of the invited collector (auto-populated from selected collector)
+         */
+        name?: string | null;
+        status: 'accepted' | 'pending';
+        id?: string | null;
+      }[]
+    | null;
   paymentLink?: string | null;
   /**
    * Allow anonymous contributions to this jar
@@ -428,7 +442,15 @@ export interface JarsSelect<T extends boolean = true> {
   deadline?: T;
   currency?: T;
   creator?: T;
-  collectors?: T;
+  invitedCollectors?:
+    | T
+    | {
+        collector?: T;
+        phoneNumber?: T;
+        name?: T;
+        status?: T;
+        id?: T;
+      };
   paymentLink?: T;
   acceptAnonymousContributions?: T;
   acceptedPaymentMethods?: T;

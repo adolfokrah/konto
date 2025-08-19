@@ -28,6 +28,15 @@ class AppTextStyles {
     letterSpacing: 0.1,
   );
 
+  // Title Styles
+  static const TextStyle titleMediumS = TextStyle(
+    fontFamily: 'Supreme',
+    fontSize: 14,
+    fontWeight: FontWeight.w500, // Medium
+    height: 1.4,
+    letterSpacing: 0.1,
+  );
+
   static const TextStyle titleRegularM = TextStyle(
     fontFamily: 'Supreme',
     fontSize: 14,
@@ -131,6 +140,7 @@ class TextStyles {
   static const headingOne = AppTextStyles.headingOne;
   static const headingTwo = AppTextStyles.headingTwo;
   static const titleMediumM = AppTextStyles.titleMediumM;
+  static const titleMediumS = AppTextStyles.titleMediumS;
   static const titleRegularM = AppTextStyles.titleRegularM;
   static const titleBoldM = AppTextStyles.titleBoldM;
   static const titleBoldXl = AppTextStyles.titleBoldXl;

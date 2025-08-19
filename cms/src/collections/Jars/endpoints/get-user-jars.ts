@@ -21,8 +21,8 @@ export const getUserJars = async (req: PayloadRequest) => {
             },
           },
           {
-            collectors: {
-              contains: req.user,
+            'invitedCollectors.collector': {
+              equals: req.user,
             },
           },
         ],
@@ -107,17 +107,6 @@ export const getUserJars = async (req: PayloadRequest) => {
               }
             : null,
         },
-        collectors:
-          jar.collectors?.map((collector: any) => ({
-            id: collector.id,
-            name: collector.name,
-            profilePicture: collector.profilePicture
-              ? {
-                  id: collector.profilePicture.id,
-                  url: collector.profilePicture.url,
-                }
-              : null,
-          })) || [],
         paymentLink: jar.paymentLink,
         acceptAnonymousContributions: jar.acceptAnonymousContributions,
         acceptedPaymentMethods: jar.acceptedPaymentMethods,
@@ -154,7 +143,7 @@ export const getUserJars = async (req: PayloadRequest) => {
         success: true,
         message: 'No Jars found',
       },
-      { status: 200 },
+      { status: 500 },
     )
   }
 }
