@@ -252,7 +252,10 @@ class _JarCreateViewState extends State<JarCreateView> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color:
+                  isDark
+                      ? Theme.of(context).colorScheme.surface
+                      : Theme.of(context).colorScheme.inversePrimary,
             ),
             padding: EdgeInsetsGeometry.symmetric(
               horizontal: AppSpacing.spacingM,
