@@ -49,6 +49,7 @@ class GoalProgressCard extends StatelessWidget {
     final hasGoal = goalAmount > 0;
 
     return AppCard(
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
       variant: variant,
       isCollapsible: isCollapsible,
       title: isCollapsible ? localizations.goal : null,

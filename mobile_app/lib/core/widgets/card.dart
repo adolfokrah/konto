@@ -26,6 +26,9 @@ class AppCard extends StatefulWidget {
   /// Custom padding for the card content (defaults to AppSpacing.spacingM)
   final EdgeInsetsGeometry? padding;
 
+  /// Custom margin around the card (defaults to EdgeInsets.zero)
+  final EdgeInsetsGeometry? margin;
+
   /// Creates a Card widget
   const AppCard({
     super.key,
@@ -35,6 +38,7 @@ class AppCard extends StatefulWidget {
     this.title,
     this.initiallyExpanded = false,
     this.padding,
+    this.margin,
   });
 
   @override
@@ -100,17 +104,20 @@ class _CardState extends State<AppCard> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
+    return Container(
+      margin: widget.margin ?? EdgeInsets.zero,
+      child: Material(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusM),
+        ),
+        color: _getCardColor(context),
+        clipBehavior: Clip.antiAlias,
+        child:
+            widget.isCollapsible
+                ? _buildCollapsibleCard(context)
+                : _buildRegularCard(),
       ),
-      color: _getCardColor(context),
-      clipBehavior: Clip.antiAlias,
-      child:
-          widget.isCollapsible
-              ? _buildCollapsibleCard(context)
-              : _buildRegularCard(),
     );
   }
 

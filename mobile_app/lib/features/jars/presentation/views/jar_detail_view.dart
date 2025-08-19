@@ -357,6 +357,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                 children: [
                   Expanded(
                     child: AppCard(
+                      margin: EdgeInsets.only(left: AppSpacing.spacingXs),
                       variant: CardVariant.primary,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,6 +392,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                   const SizedBox(width: AppSpacing.spacingXs),
                   Expanded(
                     child: AppCard(
+                      margin: EdgeInsets.only(right: AppSpacing.spacingXs),
                       variant: CardVariant.primary,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,6 +457,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                   SizedBox(
                     width: double.infinity,
                     child: AppCard(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.spacingXs,
+                      ),
                       variant: CardVariant.primary,
                       child:
                           jarData.contributions.isEmpty
