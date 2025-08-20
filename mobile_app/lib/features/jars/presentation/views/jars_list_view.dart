@@ -149,6 +149,12 @@ class _JarsListViewState extends State<JarsListView> {
                 ),
                 Center(
                   child: AppSmallButton(
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.spacingS,
+                      right: AppSpacing.spacingL,
+                      top: AppSpacing.spacingS,
+                      bottom: AppSpacing.spacingS,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/widgets/card.dart';
+import 'package:konto/core/widgets/drag_handle.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/features/jars/data/models/jar_model.dart';
 
 class InvitedCollectorItem extends StatelessWidget {
   final InvitedCollector invitedCollector;
-  const InvitedCollectorItem({super.key, required this.invitedCollector});
+  final bool isNew;
+  const InvitedCollectorItem({
+    super.key,
+    required this.invitedCollector,
+    this.isNew = true,
+  });
 
   /// Generate initials from the invited collector's name
   String _getInitials(String? name) {
@@ -23,10 +31,121 @@ class InvitedCollectorItem extends StatelessWidget {
     }
   }
 
+  /// Show bottom sheet with collector options
+  void _showCollectorOptionsBottomSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color:
+                isDark
+                    ? Theme.of(context).colorScheme.surface
+                    : Theme.of(context).colorScheme.onPrimary,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppRadius.radiusM),
+            ),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.spacingS),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              const DragHandle(),
+
+              // Header with name
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.spacingXs,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    invitedCollector.name ?? 'Unknown',
+                    style: TextStyles.titleMediumLg,
+                  ),
+                ),
+              ),
+
+              // Remind option - only show when status is pending
+              if (invitedCollector.status == 'pending' && !isNew) ...[
+                AppCard(
+                  variant: CardVariant.secondary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.spacingXs,
+                    vertical: AppSpacing.spacingXs,
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(0),
+                    leading: CircleAvatar(
+                      radius: 25,
+                      backgroundColor:
+                          isDark
+                              ? Theme.of(context).colorScheme.surface
+                              : Theme.of(context).colorScheme.surface,
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    title: const Text('Remind'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      // Handle remind action
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.spacingS),
+              ],
+
+              AppCard(
+                variant: CardVariant.secondary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.spacingXs,
+                  vertical: AppSpacing.spacingXs,
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(0),
+                  leading: CircleAvatar(
+                    radius: 25,
+                    backgroundColor:
+                        isDark
+                            ? Theme.of(context).colorScheme.surface
+                            : Theme.of(context).colorScheme.surface,
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  title:
+                      invitedCollector.status == 'pending'
+                          ? Text('Cancel Invitation')
+                          : const Text('Revoke access'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Handle cancel action
+                  },
+                ),
+              ),
+
+              // Bottom padding for safe area
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.all(0),
+      onTap: () {
+        _showCollectorOptionsBottomSheet(context);
+      },
       leading: CircleAvatar(
         child: Text(
           _getInitials(invitedCollector.name),
@@ -40,7 +159,7 @@ class InvitedCollectorItem extends StatelessWidget {
         style: Theme.of(context).textTheme.titleMedium,
       ),
       trailing:
-          invitedCollector.status == 'pending'
+          invitedCollector.status == 'pending' && !isNew
               ? AppSmallButton(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.spacingS,

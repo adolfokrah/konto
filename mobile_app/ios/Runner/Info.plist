@@ -74,5 +74,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSContactsUsageDescription</key>
+	<string>This app needs access to your contacts to invite collaborators to your jars.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to take photos for your jars.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select images for your jars.</string>
 </dict>
 </plist>

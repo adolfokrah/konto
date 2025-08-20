@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/category_selector.dart';
 import 'package:konto/core/widgets/currency_picker.dart';
 import 'package:konto/core/widgets/icon_button.dart';
+import 'package:konto/core/widgets/image_uploader_bottom_sheet.dart';
 import 'package:konto/core/widgets/invited_collector_item.dart';
 import 'package:konto/core/widgets/scrollable_background_image.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/text_input.dart';
+import 'package:konto/features/jars/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:konto/features/jars/data/models/jar_model.dart';
 
 class JarCreateView extends StatefulWidget {
@@ -42,6 +45,70 @@ class _JarCreateViewState extends State<JarCreateView> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+  }
+
+  void _showInviteCollaboratorsSheet() {
+    // Convert InvitedCollector to Contact for the sheet
+    List<Contact> selectedContacts =
+        invitedContributors
+            .map(
+              (contributor) => Contact(
+                name: contributor.name ?? 'Unknown',
+                phoneNumber: contributor.phoneNumber ?? '',
+                initials: _generateInitials(contributor.name ?? ''),
+              ),
+            )
+            .toList();
+
+    InviteCollaboratorsSheet.show(
+      context,
+      selectedContacts: selectedContacts,
+      onContactsSelected: (contacts) {
+        // Convert Contact back to InvitedCollector and update the list
+        setState(() {
+          invitedContributors =
+              contacts
+                  .map(
+                    (contact) => InvitedCollector(
+                      name: contact.name,
+                      phoneNumber: contact.phoneNumber,
+                      status: 'pending', // New invites are always pending
+                    ),
+                  )
+                  .toList();
+        });
+      },
+    );
+  }
+
+  void _showImageUploaderSheet() {
+    ImageUploaderBottomSheet.show(
+      context,
+      onImageSelected: (XFile? image) {
+        if (image != null) {
+          // Handle the selected image
+          setState(() {
+            jarImageUrl = image.path; // Use the local file path
+          });
+
+          // You can implement image upload to backend here
+          // For now, we're just using the local path
+          debugPrint('Image selected: ${image.path}');
+        }
+      },
+    );
+  }
+
+  String _generateInitials(String name) {
+    if (name.isEmpty) return '?';
+
+    final words = name.trim().split(' ');
+    if (words.length == 1) {
+      return words[0].substring(0, 1).toUpperCase();
+    } else {
+      return '${words[0].substring(0, 1)}${words[words.length - 1].substring(0, 1)}'
+          .toUpperCase();
+    }
   }
 
   void _scrollListener() {
@@ -137,7 +204,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                               right: AppSpacing.spacingXs,
                               child: AppIconButton(
                                 size: const Size(40, 40),
-                                onPressed: () {},
+                                onPressed: _showImageUploaderSheet,
                                 icon: Icons.camera,
                               ),
                             ),
@@ -206,7 +273,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     horizontal: AppSpacing.spacingS,
                                     vertical: 6,
                                   ),
-                                  onPressed: () {},
+                                  onPressed: _showInviteCollaboratorsSheet,
                                   child: Row(
                                     children: [
                                       const Icon(Icons.add, size: 16),
@@ -223,23 +290,19 @@ class _JarCreateViewState extends State<JarCreateView> {
                               ],
                             ),
                             const SizedBox(height: AppSpacing.spacingM),
-                            InvitedCollectorItem(
-                              invitedCollector: InvitedCollector(
-                                name: 'John Doe',
-                                phoneNumber: '123-456-7890',
-                                status: 'pending',
-                              ),
-                            ),
-                            InvitedCollectorItem(
-                              invitedCollector: InvitedCollector(
-                                name: 'Peter Parker',
-                                phoneNumber: '123-456-7890',
-                                status: 'accepted',
+                            ...invitedContributors.map(
+                              (contributor) => Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.spacingS,
+                                ),
+                                child: InvitedCollectorItem(
+                                  invitedCollector: contributor,
+                                ),
                               ),
                             ),
                             // Add minimum height to ensure scrolling
                             SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.3,
+                              height: MediaQuery.of(context).size.height * 0.2,
                             ),
                           ],
                         ),

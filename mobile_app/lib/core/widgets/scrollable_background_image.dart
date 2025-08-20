@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 /// A reusable background image widget that fades out as the user scrolls
@@ -34,6 +35,13 @@ class ScrollableBackgroundImage extends StatelessWidget {
       return const SizedBox();
     }
 
+    // Determine if this is a local file path or network URL
+    final bool isLocalFile = !imageUrl!.startsWith('http');
+    final ImageProvider imageProvider =
+        isLocalFile
+            ? FileImage(File(imageUrl!))
+            : NetworkImage(imageUrl!) as ImageProvider;
+
     return Positioned(
       top: 0,
       left: 0,
@@ -44,7 +52,7 @@ class ScrollableBackgroundImage extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(imageUrl!),
+              image: imageProvider,
               fit: BoxFit.cover,
               opacity: baseOpacity,
               colorFilter: ColorFilter.mode(

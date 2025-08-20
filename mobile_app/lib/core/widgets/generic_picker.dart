@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
+import 'package:konto/core/widgets/drag_handle.dart';
 import 'package:konto/core/widgets/searh_input.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
@@ -337,17 +338,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
           child: Column(
             children: [
               // Drag handle
-              Container(
-                margin: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              const DragHandle(),
 
               // Title
               if (widget.title != null) ...[
