@@ -15,7 +15,6 @@ export async function clearAllCollections(payload: Payload) {
         console.warn('Cleanup failed:', error)
       }
     }
-    console.log('✅ All collections cleared')
   } catch (error) {
     console.error('❌ Failed to clear collections:', error)
     throw error

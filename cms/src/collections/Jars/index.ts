@@ -164,7 +164,7 @@ export const Jars: CollectionConfig = {
                       return user.phoneNumber
                     }
                   } catch (error) {
-                    console.error('Error fetching collector phone number:', error)
+                    throw new Error('Error fetching collector phone number')
                   }
                 }
 
@@ -204,7 +204,7 @@ export const Jars: CollectionConfig = {
                       return user.fullName
                     }
                   } catch (error) {
-                    console.error('Error fetching collector name:', error)
+                    throw new Error('Error fetching collector name')
                   }
                 }
 

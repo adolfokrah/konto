@@ -7,5 +7,4 @@ import { afterAll } from 'vitest'
 afterAll(async () => {
   // PayloadCMS handles database connections internally
   // We don't need manual mongoose connection management
-  console.log('Tests completed')
 })
