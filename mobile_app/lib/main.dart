@@ -7,6 +7,7 @@ import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
@@ -41,7 +42,7 @@ class MainApp extends StatelessWidget {
               ),
         ),
         BlocProvider(create: (context) => JarListBloc()),
-        // BlocProvider(create: (context) => MediaBloc()),
+        BlocProvider(create: (context) => MediaBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

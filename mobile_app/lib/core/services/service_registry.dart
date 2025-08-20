@@ -11,8 +11,8 @@ import 'package:konto/features/verification/data/repositories/verification_repos
 import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:konto/features/jars/data/repositories/jar_repository.dart';
-// import 'package:konto/features/media/data/api_provider/media_api_provider.dart';
-// import 'package:konto/features/media/data/repository_provider/media_repository.dart';
+import 'package:konto/features/media/data/api_provider/media_api_provider.dart';
+import 'package:konto/features/media/data/repository_provider/media_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies
@@ -36,14 +36,14 @@ class ServiceRegistry {
   late final SmsApiProvider _smsApiProvider;
   late final AuthApiProvider _authApiProvider;
   late final JarApiProvider _jarApiProvider;
-  // late final MediaApiProvider _mediaApiProvider;
+  late final MediaApiProvider _mediaApiProvider;
 
   // Repositories
   late final AuthRepository _authRepository;
   late final VerificationRepository _verificationRepository;
   late final OnboardingRepository _onboardingRepository;
   late final JarRepository _jarRepository;
-  // late final MediaRepository _mediaRepository;
+  late final MediaRepository _mediaRepository;
 
   /// Initialize all services with proper dependency injection
   void initialize() {
@@ -85,6 +85,10 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
+    _mediaApiProvider = MediaApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -104,7 +108,7 @@ class ServiceRegistry {
 
     _jarRepository = JarRepository(jarApiProvider: _jarApiProvider);
 
-    // _mediaRepository = MediaRepository(mediaApiProvider: _mediaApiProvider);
+    _mediaRepository = MediaRepository(mediaApiProvider: _mediaApiProvider);
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
@@ -120,12 +124,12 @@ class ServiceRegistry {
   SmsApiProvider get smsApiProvider => _smsApiProvider;
   AuthApiProvider get authApiProvider => _authApiProvider;
   JarApiProvider get jarApiProvider => _jarApiProvider;
-  // MediaApiProvider get mediaApiProvider => _mediaApiProvider;
+  MediaApiProvider get mediaApiProvider => _mediaApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
   OnboardingRepository get onboardingRepository => _onboardingRepository;
   JarRepository get jarRepository => _jarRepository;
-  // MediaRepository get mediaRepository => _mediaRepository;
+  MediaRepository get mediaRepository => _mediaRepository;
 
   /// Reset the registry (useful for testing)
   void reset() {
@@ -161,10 +165,10 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
-    // _mediaApiProvider = MediaApiProvider(
-    //   dio: _dio,
-    //   userStorageService: _userStorageService,
-    // );
+    _mediaApiProvider = MediaApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -184,7 +188,7 @@ class ServiceRegistry {
 
     _jarRepository = JarRepository(jarApiProvider: _jarApiProvider);
 
-    // _mediaRepository = MediaRepository(mediaApiProvider: _mediaApiProvider);
+    _mediaRepository = MediaRepository(mediaApiProvider: _mediaApiProvider);
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with custom Dio for testing');

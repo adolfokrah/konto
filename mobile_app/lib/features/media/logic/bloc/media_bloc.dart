@@ -4,8 +4,6 @@ import 'package:meta/meta.dart';
 import 'package:konto/core/services/service_registry.dart';
 
 import '../../data/models/media_model.dart';
-import '../../data/api_provider/media_api_provider.dart';
-import '../../data/repository_provider/media_repository.dart';
 
 part 'media_event.dart';
 part 'media_state.dart';
@@ -22,14 +20,8 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
     emit(MediaLoading());
 
     try {
-      // Create MediaRepository with its dependencies directly
-      final mediaApiProvider = MediaApiProvider(
-        dio: ServiceRegistry().dio,
-        userStorageService: ServiceRegistry().userStorageService,
-      );
-      final mediaRepository = MediaRepository(
-        mediaApiProvider: mediaApiProvider,
-      );
+      // Use MediaRepository from ServiceRegistry
+      final mediaRepository = ServiceRegistry().mediaRepository;
 
       // Upload image using MediaRepository
       final response = await mediaRepository.uploadImage(
@@ -37,9 +29,13 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
         alt: event.alt ?? 'Uploaded Image',
       );
 
-      if (response['success'] == true) {
-        // Parse the media data from the response
-        final mediaData = response['data'] as Map<String, dynamic>;
+      print('DEBUG: Full response: $response');
+
+      // Check if response contains doc (successful upload)
+      if (response['success'] == true && response['data']['doc'] != null) {
+        // Parse the media data from the response - it's nested under data.doc
+        final mediaData = response['data']['doc'] as Map<String, dynamic>;
+        print('DEBUG: Media data: $mediaData');
         final mediaModel = MediaModel.fromJson(mediaData);
 
         emit(MediaLoaded(media: mediaModel));

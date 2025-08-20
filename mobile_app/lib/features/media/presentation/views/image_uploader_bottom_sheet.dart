@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
@@ -6,148 +7,191 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
+import '../../logic/bloc/media_bloc.dart';
 
-/// A bottom sheet widget for selecting image upload source (camera or gallery)
+/// A bottom sheet widget for selecting and uploading images (camera or gallery)
+/// The uploaded image data can be accessed via MediaBloc state
+/// Alt text is automatically generated from the image filename
 ///
 /// Usage example:
 /// ```dart
-/// ImageUploaderBottomSheet.show(
-///   context,
-///   onImageSelected: (image) {
-///     if (image != null) {
-///       // Handle selected image file
-///       print('Selected image: ${image.path}');
-///     }
-///   },
-/// );
+/// ImageUploaderBottomSheet.show(context);
 /// ```
 class ImageUploaderBottomSheet extends StatelessWidget {
-  final Function(XFile?)? onImageSelected;
-  final ImagePicker _picker = ImagePicker();
-
-  ImageUploaderBottomSheet({super.key, this.onImageSelected});
+  const ImageUploaderBottomSheet({super.key});
 
   static void show(BuildContext context) {
     HapticUtils.light();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => ImageUploaderBottomSheet(),
+      builder: (context) => const ImageUploaderBottomSheet(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color:
-            isDark
-                ? Theme.of(context).colorScheme.surface
-                : Theme.of(context).colorScheme.onPrimary,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppRadius.radiusM),
-          topRight: Radius.circular(AppRadius.radiusM),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: AppSpacing.spacingS),
-            child: DragHandle(),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingM,
-              vertical: AppSpacing.spacingXs,
+    return BlocListener<MediaBloc, MediaState>(
+      listener: (context, state) {
+        if (state is MediaLoaded) {
+          Navigator.pop(context);
+          // MediaModel can be accessed via BlocProvider.of<MediaBloc>(context).state
+        } else if (state is MediaError) {
+          Navigator.pop(context);
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Upload failed: ${state.errorMessage}'),
+              backgroundColor: Colors.red,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Upload Image',
-                    style: TextStyles.titleMediumLg.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingM,
+          );
+        }
+      },
+      child: BlocBuilder<MediaBloc, MediaState>(
+        builder: (context, state) {
+          return Container(
+            decoration: BoxDecoration(
+              color:
+                  isDark
+                      ? Theme.of(context).colorScheme.surface
+                      : Theme.of(context).colorScheme.onPrimary,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(AppRadius.radiusM),
+                topRight: Radius.circular(AppRadius.radiusM),
+              ),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildOptionTile(
-                  context,
-                  icon: Icons.camera_alt_outlined,
-                  title: 'Take Photo',
-                  subtitle: 'Use camera to take a photo',
-                  onTap: () async {
-                    HapticUtils.light();
-                    try {
-                      final XFile? image = await _picker.pickImage(
-                        source: ImageSource.camera,
-                        imageQuality: 85,
-                        maxWidth: 1920,
-                        maxHeight: 1920,
-                      );
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        onImageSelected?.call(image);
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                      // Handle error (could show snackbar)
-                      debugPrint('Error picking image from camera: $e');
-                    }
-                  },
+                const Padding(
+                  padding: EdgeInsets.only(top: AppSpacing.spacingS),
+                  child: DragHandle(),
                 ),
 
-                const SizedBox(height: AppSpacing.spacingS),
-
-                _buildOptionTile(
-                  context,
-                  icon: Icons.photo_library_outlined,
-                  title: 'Choose from Gallery',
-                  subtitle: 'Select an image from your gallery',
-                  onTap: () async {
-                    HapticUtils.light();
-                    try {
-                      final XFile? image = await _picker.pickImage(
-                        source: ImageSource.gallery,
-                        imageQuality: 85,
-                        maxWidth: 1920,
-                        maxHeight: 1920,
-                      );
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        onImageSelected?.call(image);
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                      // Handle error (could show snackbar)
-                      debugPrint('Error picking image from gallery: $e');
-                    }
-                  },
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.spacingM,
+                    vertical: AppSpacing.spacingXs,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Upload Image',
+                          style: TextStyles.titleMediumLg.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (state is MediaLoading)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                    ],
+                  ),
                 ),
+
+                if (state is! MediaLoading) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.spacingM,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildOptionTile(
+                          context,
+                          icon: Icons.camera_alt_outlined,
+                          title: 'Take Photo',
+                          subtitle: 'Use camera to take a photo',
+                          onTap:
+                              () => _handleImageSelection(
+                                context,
+                                ImageSource.camera,
+                              ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.spacingS),
+
+                        _buildOptionTile(
+                          context,
+                          icon: Icons.photo_library_outlined,
+                          title: 'Choose from Gallery',
+                          subtitle: 'Select an image from your gallery',
+                          onTap:
+                              () => _handleImageSelection(
+                                context,
+                                ImageSource.gallery,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.spacingL),
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: AppSpacing.spacingM),
+                        Text('Uploading image...'),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.spacingL),
               ],
             ),
-          ),
-
-          const SizedBox(height: AppSpacing.spacingL),
-        ],
+          );
+        },
       ),
     );
+  }
+
+  void _handleImageSelection(BuildContext context, ImageSource source) async {
+    HapticUtils.light();
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+
+      if (image != null && context.mounted) {
+        // Generate alt text from image filename by replacing spaces with dashes
+        String generatedAltText = image.name.replaceAll(' ', '-');
+        // Remove file extension from alt text
+        if (generatedAltText.contains('.')) {
+          generatedAltText = generatedAltText.substring(
+            0,
+            generatedAltText.lastIndexOf('.'),
+          );
+        }
+
+        // Trigger the upload using MediaBloc
+        context.read<MediaBloc>().add(
+          RequestUploadMedia(imageFile: image, alt: generatedAltText),
+        );
+      } else if (context.mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildOptionTile(
