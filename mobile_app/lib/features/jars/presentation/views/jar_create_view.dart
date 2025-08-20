@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/category_selector.dart';
 import 'package:konto/core/widgets/currency_picker.dart';
 import 'package:konto/core/widgets/icon_button.dart';
-import 'package:konto/core/widgets/image_uploader_bottom_sheet.dart';
+import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:konto/core/widgets/invited_collector_item.dart';
 import 'package:konto/core/widgets/scrollable_background_image.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/text_input.dart';
-import 'package:konto/features/jars/collaborators/presentation/views/invite_collaborators_view.dart';
+import 'package:konto/features/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:konto/features/jars/data/models/jar_model.dart';
 
 class JarCreateView extends StatefulWidget {
@@ -82,21 +81,7 @@ class _JarCreateViewState extends State<JarCreateView> {
   }
 
   void _showImageUploaderSheet() {
-    ImageUploaderBottomSheet.show(
-      context,
-      onImageSelected: (XFile? image) {
-        if (image != null) {
-          // Handle the selected image
-          setState(() {
-            jarImageUrl = image.path; // Use the local file path
-          });
-
-          // You can implement image upload to backend here
-          // For now, we're just using the local path
-          debugPrint('Image selected: ${image.path}');
-        }
-      },
-    );
+    ImageUploaderBottomSheet.show(context);
   }
 
   String _generateInitials(String name) {

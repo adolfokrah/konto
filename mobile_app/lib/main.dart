@@ -41,6 +41,7 @@ class MainApp extends StatelessWidget {
               ),
         ),
         BlocProvider(create: (context) => JarListBloc()),
+        // BlocProvider(create: (context) => MediaBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

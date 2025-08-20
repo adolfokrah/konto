@@ -13,6 +13,7 @@ import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -40,6 +41,7 @@ void main() {
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
+            BlocProvider(create: (context) => MediaBloc()),
             BlocProvider(
               create:
                   (context) => JarSummaryReloadBloc(

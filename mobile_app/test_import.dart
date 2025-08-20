@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/features/jars/collaborators/presentation/views/invite_collaborators_view.dart';
+import 'package:konto/features/collaborators/presentation/views/invite_collaborators_view.dart';
 
 void main() {
   // Test if we can access Contact and InviteCollaboratorsSheet

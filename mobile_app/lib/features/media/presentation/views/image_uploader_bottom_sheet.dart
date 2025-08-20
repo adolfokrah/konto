@@ -27,14 +27,12 @@ class ImageUploaderBottomSheet extends StatelessWidget {
 
   ImageUploaderBottomSheet({super.key, this.onImageSelected});
 
-  static void show(BuildContext context, {Function(XFile?)? onImageSelected}) {
+  static void show(BuildContext context) {
     HapticUtils.light();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) =>
-              ImageUploaderBottomSheet(onImageSelected: onImageSelected),
+      builder: (context) => ImageUploaderBottomSheet(),
     );
   }
 
