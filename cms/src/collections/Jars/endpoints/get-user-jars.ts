@@ -40,8 +40,16 @@ export const getUserJars = async (req: PayloadRequest) => {
     // Group jars by jarGroup with enhanced data structure
     const groupedJars = jars.docs.reduce(async (groupsPromise: any, jar: any) => {
       const groups = await groupsPromise
-      const groupId = jar.jarGroup || 'ungrouped'
-      const groupName = jar.jarGroup || 'Ungrouped'
+
+      // Handle jarGroup being either a string ID or a populated object
+      const groupId =
+        typeof jar.jarGroup === 'object' && jar.jarGroup?.id
+          ? jar.jarGroup.id
+          : jar.jarGroup || 'ungrouped'
+      const groupName =
+        typeof jar.jarGroup === 'object' && jar.jarGroup?.name
+          ? jar.jarGroup.name
+          : jar.jarGroup || 'Ungrouped'
 
       if (!groups[groupId]) {
         groups[groupId] = {

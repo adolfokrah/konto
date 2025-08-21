@@ -85,6 +85,19 @@ export const Jars: CollectionConfig = {
       name: 'currency',
       type: 'text',
       required: true,
+      validate: (value: unknown) => {
+        if (typeof value !== 'string') {
+          return 'Currency must be a string'
+        }
+        const validCurrencies = ['ghc', 'ngn']
+        if (!validCurrencies.includes(value.toLowerCase())) {
+          return `Currency must be one of: ${validCurrencies.join(', ')}`
+        }
+        return true
+      },
+      admin: {
+        description: 'Currency code (ghc or ngn)',
+      },
     },
     {
       name: 'creator',

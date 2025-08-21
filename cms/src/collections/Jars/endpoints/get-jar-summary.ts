@@ -14,39 +14,33 @@ export const getJarSummary = async (req: PayloadRequest) => {
   // Extract jarId from URL parameters using req.routeParams
   const jarId = req.routeParams?.id as string
 
+  // If no jarId provided, return not found
+  if (!jarId || jarId === '' || jarId === 'undefined') {
+    return Response.json(
+      {
+        success: true,
+        message: 'Jar not found',
+      },
+      { status: 200 },
+    )
+  }
+
   // Find the jar with the given ID
   let jar: any = null
   try {
-    if (jarId != 'null') {
+    if (jarId !== 'null') {
       jar = await req.payload.findByID({
         collection: 'jars',
         id: jarId,
         depth: 2,
       })
     } else {
-      jar = await req.payload.findByID({
-        collection: 'jars',
-        id: jarId,
-        depth: 2,
-      })
-
-      if (jar) {
-        jar = await getUserJar()
-      }
+      // When jarId is 'null', try to get user's jar
+      jar = await getUserJar()
     }
   } catch (error) {
     // If jar is not found, Payload throws a NotFound error
-    jar = await getUserJar()
-
-    if (!jar) {
-      return Response.json(
-        {
-          success: false,
-          message: 'Jar not found',
-        },
-        { status: 404 },
-      )
-    }
+    jar = null
   }
 
   if (!jar) {
@@ -179,5 +173,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
   return Response.json({
     success: true,
     data,
+    message: 'Jar summary retrieved successfully',
   })
 }

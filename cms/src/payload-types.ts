@@ -221,6 +221,9 @@ export interface Jar {
    * Deadline for contributions to this jar
    */
   deadline?: string | null;
+  /**
+   * Currency code (ghc or ngn)
+   */
   currency: string;
   /**
    * User who created the jar
