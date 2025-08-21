@@ -24,7 +24,7 @@ class Currencies {
     ),
     Currency(
       name: 'Ghanaian Cedi',
-      code: 'GHS',
+      code: 'GHC',
       symbol: '₵',
       flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',
     ),

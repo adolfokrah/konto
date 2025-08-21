@@ -147,6 +147,59 @@ void main() {
         statusCode: 200,
       );
     });
+
+    // Also mock the user jars endpoint that JarListBloc calls
+    MockInterceptor.overrideEndpoint(
+      '${BackendConfig.jarsEndpoint}/user-jars',
+      (options) {
+        return Response(
+          requestOptions: options,
+          data: {
+            'success': true,
+            'data': [
+              {
+                'id': 'ungrouped',
+                'name': 'Ungrouped',
+                'description': null,
+                'jars': [
+                  {
+                    'id': 'test-jar-123',
+                    'name': 'Emergency Fund',
+                    'description': null,
+                    'image': null,
+                    'isActive': true,
+                    'isFixedContribution': false,
+                    'acceptedContributionAmount': 500.0,
+                    'goalAmount': 5000.0,
+                    'deadline': null,
+                    'currency': 'ghc',
+                    'creator': {
+                      'id': 'test-user-id',
+                      'name': 'Test User',
+                      'profilePicture': null,
+                    },
+                    'invitedCollectors': [],
+                    'paymentLink': null,
+                    'acceptAnonymousContributions': false,
+                    'acceptedPaymentMethods': ['mobile-money'],
+                    'createdAt': '2025-01-21T18:32:42.806Z',
+                    'updatedAt': '2025-01-21T18:32:42.806Z',
+                    'totalContributions': 0.0,
+                  },
+                ],
+                'totalJars': 1,
+                'totalGoalAmount': 5000.0,
+                'totalContributions': 0.0,
+                'createdAt': null,
+                'updatedAt': null,
+              },
+            ],
+            'message': 'User jars retrieved successfully',
+          },
+          statusCode: 200,
+        );
+      },
+    );
   }
 
   Widget createTestWidget() {
@@ -183,6 +236,9 @@ void main() {
     testWidgets('should display loading state initially', (
       WidgetTester tester,
     ) async {
+      // Set up a mock that delays the response to test loading state
+      setupSuccessfulJarMock();
+
       await tester.pumpWidget(createTestWidget());
 
       // Check loading state appears - it might be in different forms

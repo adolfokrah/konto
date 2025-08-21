@@ -27,7 +27,13 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
-      final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
+      // If no jar ID is found, emit initial state
+      if (jarId == null) {
+        emit(JarSummaryInitial());
+        return;
+      }
+
+      final result = await jarRepository.getJarSummary(jarId: jarId);
 
       if (result['success'] == true) {
         if (result['data'] == null) {
