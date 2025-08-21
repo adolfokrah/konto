@@ -8,9 +8,9 @@ final class JarCreateInitial extends JarCreateState {}
 final class JarCreateLoading extends JarCreateState {}
 
 final class JarCreateSuccess extends JarCreateState {
-  final Map<String, dynamic> jarData;
+  final JarModel jar;
 
-  JarCreateSuccess({required this.jarData});
+  JarCreateSuccess(this.jar);
 }
 
 final class JarCreateFailure extends JarCreateState {

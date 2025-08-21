@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/constants/currencies.dart';
+import 'package:konto/core/constants/jar_groups.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/category_selector.dart';
 import 'package:konto/core/widgets/currency_picker.dart';
 import 'package:konto/core/widgets/icon_button.dart';
+import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/route.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:konto/core/widgets/invited_collector_item.dart';
@@ -27,21 +34,11 @@ class _JarCreateViewState extends State<JarCreateView> {
   final ScrollController _scrollController = ScrollController();
   TextEditingController nameController = TextEditingController();
   String selectedJarGroup = '';
-  Currency? selectedCurrency;
+  Currency? selectedCurrency = Currencies.defaultCurrency;
   List<InvitedCollector> invitedContributors = [];
-  String jarImageUrl = 'http://192.168.0.160:3000/api/media/file/image.png';
+  String jarImageUrl = '';
   String jarImageId = '';
   double _scrollOffset = 0.0;
-
-  // Dummy jar groups
-  final List<String> jarGroups = [
-    'Funeral',
-    'Parties',
-    'Trips',
-    'Weddings',
-    'Saving groups',
-    'Other',
-  ];
 
   @override
   void initState() {
@@ -105,6 +102,43 @@ class _JarCreateViewState extends State<JarCreateView> {
     });
   }
 
+  void _createJar() {
+    if (nameController.text.isEmpty) {
+      AppSnackBar.showError(context, message: 'Jar name cannot be empty');
+      return;
+    }
+
+    if (selectedJarGroup.isEmpty) {
+      AppSnackBar.showError(context, message: 'Please select a jar group');
+      return;
+    }
+
+    final invitedCollectorsData =
+        invitedContributors
+            .map(
+              (contributor) => {
+                'name': contributor.name,
+                'phoneNumber':
+                    contributor.phoneNumber, // Remove toString() call
+                'status': contributor.status,
+              },
+            )
+            .toList();
+
+    context.read<JarCreateBloc>().add(
+      JarCreateSubmitted(
+        name: nameController.text,
+        jarGroup: selectedJarGroup,
+        currency: selectedCurrency?.code ?? 'GHS',
+        invitedCollectors: invitedCollectorsData,
+        imageId: jarImageId,
+        isActive: true,
+        acceptedPaymentMethods: ['mobile-money', 'bank-transfer', 'cash'],
+        goalAmount: 0,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
@@ -131,213 +165,265 @@ class _JarCreateViewState extends State<JarCreateView> {
             }
           },
         ),
+        BlocListener<JarCreateBloc, JarCreateState>(
+          listener: (context, state) {
+            if (state is JarCreateSuccess) {
+              AppSnackBar.showSuccess(
+                context,
+                message: 'Jar created successfully',
+              );
+
+              // Get the newly created jar ID from the JarModel
+              final newJarId = state.jar.id;
+
+              // 1. Set the newly created jar as current jar and load its summary
+              context.read<JarSummaryBloc>().add(
+                SetCurrentJarRequested(jarId: newJarId),
+              );
+
+              // 2. Refresh the jar list to include the new jar
+              context.read<JarListBloc>().add(LoadJarList());
+
+              // 3. Replace the entire navigation stack with the jar detail view
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil(AppRoutes.jarDetail, (route) => false);
+            } else if (state is JarCreateFailure) {
+              AppSnackBar.showError(context, message: state.error);
+            }
+          },
+        ),
       ],
-      child: Scaffold(
-        backgroundColor:
-            jarImageUrl.isNotEmpty && !isDark
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.primary,
-        body: Column(
-          children: [
-            Expanded(
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverAppBar(
-                    expandedHeight: 300.0,
-                    floating: false,
-                    pinned: true,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    flexibleSpace: LayoutBuilder(
-                      builder: (
-                        BuildContext context,
-                        BoxConstraints constraints,
-                      ) {
-                        // Calculate scroll progress
-                        final double top = constraints.biggest.height;
-                        final double expandedHeight = 200.0;
-                        final double collapsedHeight =
-                            kToolbarHeight + MediaQuery.of(context).padding.top;
-                        final double scrollProgress = ((expandedHeight - top) /
-                                (expandedHeight - collapsedHeight))
-                            .clamp(0.0, 1.0);
+      child: BlocBuilder<JarCreateBloc, JarCreateState>(
+        builder: (context, jarCreateState) {
+          final isLoading = jarCreateState is JarCreateLoading;
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface
-                                .withValues(alpha: scrollProgress),
-                          ),
-                          child: Stack(
-                            children: [
-                              // Background gradient and image (if available)
-                              if (jarImageUrl.isNotEmpty)
-                                ScrollableBackgroundImage(
-                                  imageUrl: jarImageUrl,
-                                  scrollOffset: _scrollOffset,
-                                  height: 400.0,
-                                  maxScrollForOpacity: 100.0,
-                                  baseOpacity: 0.50,
-                                ),
+          return Scaffold(
+            backgroundColor:
+                jarImageUrl.isNotEmpty && !isDark
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.primary,
+            body: Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      SliverAppBar(
+                        expandedHeight: 300.0,
+                        floating: false,
+                        pinned: true,
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        flexibleSpace: LayoutBuilder(
+                          builder: (
+                            BuildContext context,
+                            BoxConstraints constraints,
+                          ) {
+                            // Calculate scroll progress
+                            final double top = constraints.biggest.height;
+                            final double expandedHeight = 200.0;
+                            final double collapsedHeight =
+                                kToolbarHeight +
+                                MediaQuery.of(context).padding.top;
+                            final double scrollProgress = ((expandedHeight -
+                                        top) /
+                                    (expandedHeight - collapsedHeight))
+                                .clamp(0.0, 1.0);
 
-                              // Title positioned independently of image
-                              Positioned(
-                                left:
-                                    16.0 +
-                                    (40.0 *
-                                        scrollProgress), // Smoothly interpolate from 16 to 56
-                                top:
-                                    MediaQuery.of(context).padding.top +
-                                    kToolbarHeight +
-                                    -7 -
-                                    (32.0 *
-                                        scrollProgress), // Adjusted to center properly when fully scrolled
-                                child: Text(
-                                  'Set up your jar',
-                                  style: TextStyle(
-                                    fontSize:
-                                        24.0 -
-                                        (4.0 * scrollProgress), // From 24 to 20
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface
+                                    .withValues(alpha: scrollProgress),
                               ),
-
-                              Positioned(
-                                bottom: AppSpacing.spacingXs,
-                                right: AppSpacing.spacingXs,
-                                child: AppIconButton(
-                                  size: const Size(40, 40),
-                                  onPressed: _showImageUploaderSheet,
-                                  icon: Icons.camera,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color:
-                              isDark
-                                  ? Theme.of(context).colorScheme.surface
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inversePrimary,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.spacingM),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppTextInput(
-                                label: 'Jar name',
-                                hintText: "Enter jar name",
-                                controller: nameController,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              CategorySelector(
-                                categories: jarGroups,
-                                selectedCategory:
-                                    selectedJarGroup.isEmpty
-                                        ? null
-                                        : selectedJarGroup,
-                                onCategorySelected: (category) {
-                                  setState(() {
-                                    selectedJarGroup = category;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              const Text(
-                                'Currency',
-                                style: TextStyles.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              CurrencyPicker(
-                                onCurrencySelected: (currency) {
-                                  setState(() {
-                                    selectedCurrency = currency;
-                                  });
-                                },
-                                selectedCurrency: selectedCurrency,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              child: Stack(
                                 children: [
-                                  const Text(
-                                    'Collaborators',
-                                    style: TextStyles.titleMedium,
-                                  ),
-                                  AppSmallButton(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.spacingS,
-                                      vertical: 6,
+                                  // Background gradient and image (if available)
+                                  if (jarImageUrl.isNotEmpty)
+                                    ScrollableBackgroundImage(
+                                      imageUrl: jarImageUrl,
+                                      scrollOffset: _scrollOffset,
+                                      height: 400.0,
+                                      maxScrollForOpacity: 100.0,
+                                      baseOpacity: 0.50,
                                     ),
-                                    onPressed: _showInviteCollaboratorsSheet,
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.add, size: 16),
-                                        const SizedBox(
-                                          width: AppSpacing.spacingXs,
-                                        ),
-                                        const Text(
-                                          "Invite",
-                                          style: TextStyles.titleMediumS,
-                                        ),
-                                      ],
+
+                                  // Title positioned independently of image
+                                  Positioned(
+                                    left:
+                                        16.0 +
+                                        (40.0 *
+                                            scrollProgress), // Smoothly interpolate from 16 to 56
+                                    top:
+                                        MediaQuery.of(context).padding.top +
+                                        kToolbarHeight +
+                                        -7 -
+                                        (32.0 *
+                                            scrollProgress), // Adjusted to center properly when fully scrolled
+                                    child: Text(
+                                      'Set up your jar',
+                                      style: TextStyle(
+                                        fontSize:
+                                            24.0 -
+                                            (4.0 *
+                                                scrollProgress), // From 24 to 20
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+
+                                  Positioned(
+                                    bottom: AppSpacing.spacingXs,
+                                    right: AppSpacing.spacingXs,
+                                    child: AppIconButton(
+                                      size: const Size(40, 40),
+                                      onPressed: _showImageUploaderSheet,
+                                      icon: Icons.camera,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              ...invitedContributors.map(
-                                (contributor) => Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: AppSpacing.spacingS,
-                                  ),
-                                  child: InvitedCollectorItem(
-                                    invitedCollector: contributor,
-                                  ),
-                                ),
-                              ),
-                              // Add minimum height to ensure scrolling
-                              SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    }, childCount: 1),
+                      ),
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color:
+                                  isDark
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Theme.of(
+                                        context,
+                                      ).colorScheme.inversePrimary,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                AppSpacing.spacingM,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppTextInput(
+                                    label: 'Jar name',
+                                    hintText: "Enter jar name",
+                                    controller: nameController,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  CategorySelector(
+                                    categories: JarGroups.groups,
+                                    selectedCategory:
+                                        selectedJarGroup.isEmpty
+                                            ? null
+                                            : selectedJarGroup,
+                                    onCategorySelected: (category) {
+                                      setState(() {
+                                        selectedJarGroup = category;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  const Text(
+                                    'Currency',
+                                    style: TextStyles.titleMedium,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  CurrencyPicker(
+                                    onCurrencySelected: (currency) {
+                                      setState(() {
+                                        selectedCurrency = currency;
+                                      });
+                                    },
+                                    selectedCurrency: selectedCurrency,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Collaborators',
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                      AppSmallButton(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.spacingS,
+                                          vertical: 6,
+                                        ),
+                                        onPressed:
+                                            _showInviteCollaboratorsSheet,
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.add, size: 16),
+                                            const SizedBox(
+                                              width: AppSpacing.spacingXs,
+                                            ),
+                                            const Text(
+                                              "Invite",
+                                              style: TextStyles.titleMediumS,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  ...invitedContributors.map(
+                                    (contributor) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: AppSpacing.spacingS,
+                                      ),
+                                      child: InvitedCollectorItem(
+                                        invitedCollector: contributor,
+                                        onCancel: () {
+                                          setState(() {
+                                            invitedContributors.remove(
+                                              contributor,
+                                            );
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  // Add minimum height to ensure scrolling
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }, childCount: 1),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color:
+                        isDark
+                            ? Theme.of(context).colorScheme.surface
+                            : Theme.of(context).colorScheme.inversePrimary,
+                  ),
+                  padding: EdgeInsetsGeometry.symmetric(
+                    horizontal: AppSpacing.spacingM,
+                    vertical: AppSpacing.spacingL,
+                  ),
+                  child: Center(
+                    child: AppButton(
+                      text: 'Create Jar',
+                      onPressed: isLoading ? null : _createJar,
+                      isLoading: isLoading,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Container(
-              decoration: BoxDecoration(
-                color:
-                    isDark
-                        ? Theme.of(context).colorScheme.surface
-                        : Theme.of(context).colorScheme.inversePrimary,
-              ),
-              padding: EdgeInsetsGeometry.symmetric(
-                horizontal: AppSpacing.spacingM,
-                vertical: AppSpacing.spacingL,
-              ),
-              child: Center(
-                child: AppButton(text: 'Create Jar', onPressed: () {}),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

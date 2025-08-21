@@ -40,20 +40,20 @@ export const getUserJars = async (req: PayloadRequest) => {
     // Group jars by jarGroup with enhanced data structure
     const groupedJars = jars.docs.reduce(async (groupsPromise: any, jar: any) => {
       const groups = await groupsPromise
-      const groupId = jar.jarGroup?.id || 'ungrouped'
-      const groupName = jar.jarGroup?.name || 'Ungrouped'
+      const groupId = jar.jarGroup || 'ungrouped'
+      const groupName = jar.jarGroup || 'Ungrouped'
 
       if (!groups[groupId]) {
         groups[groupId] = {
           id: groupId,
           name: groupName,
-          description: jar.jarGroup?.description || null,
+          description: null,
           jars: [],
           totalJars: 0,
           totalGoalAmount: 0,
           totalContributions: 0,
-          createdAt: jar.jarGroup?.createdAt || null,
-          updatedAt: jar.jarGroup?.updatedAt || null,
+          createdAt: null,
+          updatedAt: null,
         }
       }
 
@@ -74,7 +74,10 @@ export const getUserJars = async (req: PayloadRequest) => {
             },
           ],
         },
-        limit: 100000000,
+        pagination: false,
+        select: {
+          amountContributed: true,
+        },
       })
 
       // Calculate total contributions for this jar

@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/constants/currencies.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/generic_picker.dart';
 import 'package:konto/core/widgets/small_button.dart';
-
-// Currency data model
-class Currency {
-  final String name;
-  final String code;
-  final String flagUrl;
-
-  const Currency({
-    required this.name,
-    required this.code,
-    required this.flagUrl,
-  });
-}
 
 class CurrencyPicker extends StatefulWidget {
   final Function(Currency)? onCurrencySelected;
@@ -34,44 +22,20 @@ class CurrencyPicker extends StatefulWidget {
 }
 
 class _CurrencyPickerState extends State<CurrencyPicker> {
-  // Available currencies - Nigeria, Ghana, USD, and Euro
-  static const List<Currency> _currencies = [
-    Currency(
-      name: 'Nigerian Naira',
-      code: 'NGN',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/ng.png',
-    ),
-    Currency(
-      name: 'Ghanaian Cedi',
-      code: 'GHS',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',
-    ),
-    Currency(
-      name: 'US Dollar',
-      code: 'USD',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/us.png',
-    ),
-    Currency(
-      name: 'Euro',
-      code: 'EUR',
-      flagUrl: 'https://flagpedia.net/data/org/w580/eu.png',
-    ),
-  ];
-
   late Currency _selectedCurrency;
 
   @override
   void initState() {
     super.initState();
     // Default to Ghanaian Cedi if no currency selected
-    _selectedCurrency = widget.selectedCurrency ?? _currencies[1];
+    _selectedCurrency = widget.selectedCurrency ?? Currencies.defaultCurrency;
   }
 
   void _showCurrencyPicker() {
     GenericPicker.showPickerDialog<Currency>(
       context,
       selectedValue: _selectedCurrency.code,
-      items: _currencies,
+      items: Currencies.all,
       onItemSelected: (currency) {
         setState(() {
           _selectedCurrency = currency;

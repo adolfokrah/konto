@@ -112,7 +112,7 @@ class JarApiProvider {
   Future<Map<String, dynamic>> createJar({
     required String name,
     String? description,
-    required String jarGroupId,
+    required String jarGroup,
     String? imageId,
     bool isActive = true,
     bool isFixedContribution = false,
@@ -132,21 +132,68 @@ class JarApiProvider {
         return _getUnauthenticatedError();
       }
 
+      // Get the current user to set as creator
+      final user = await _userStorageService.getUserData();
+
+      if (user == null) {
+        return {
+          'success': false,
+          'message': 'User not authenticated',
+          'statusCode': 401,
+        };
+      }
+
+      // Process and validate invitedCollectors data
+      List<Map<String, dynamic>> processedInvitedCollectors = [];
+      if (invitedCollectors != null) {
+        for (int i = 0; i < invitedCollectors.length; i++) {
+          final collector = invitedCollectors[i];
+
+          // Validate and clean collector data
+          final processedCollector = <String, dynamic>{};
+
+          // Extract name safely
+          final name = collector['name'];
+          if (name is String && name.isNotEmpty) {
+            processedCollector['name'] = name;
+          }
+
+          // Extract phoneNumber safely
+          final phoneNumber = collector['phoneNumber'];
+          if (phoneNumber is String && phoneNumber.isNotEmpty) {
+            processedCollector['phoneNumber'] = phoneNumber;
+          }
+
+          // Extract status safely
+          final status = collector['status'] ?? 'pending';
+          if (status is String) {
+            processedCollector['status'] = status;
+          }
+
+          // Explicitly set collector to null to avoid hook confusion
+          processedCollector['collector'] = null;
+
+          processedInvitedCollectors.add(processedCollector);
+        }
+      }
+
       // Prepare jar data based on the collection schema
       final jarData = {
         'name': name,
         'description': description,
-        'jarGroup': jarGroupId,
+        'jarGroup': jarGroup,
         'image': imageId,
         'isActive': isActive,
         'isFixedContribution': isFixedContribution,
         'acceptedContributionAmount': acceptedContributionAmount,
         'goalAmount': goalAmount ?? 0,
         'deadline': deadline?.toIso8601String(),
-        'currency': currency,
+        'currency': currency, // Now a text field
+        'creator': user.id, // Set the authenticated user as creator
         'acceptAnonymousContributions': acceptAnonymousContributions,
-        'acceptedPaymentMethods': acceptedPaymentMethods,
-        'invitedCollectors': invitedCollectors,
+        'acceptedPaymentMethods':
+            acceptedPaymentMethods, // Already in correct format from UI
+        'invitedCollectors': processedInvitedCollectors,
       };
 
       // Remove null values to avoid sending unnecessary data

@@ -86,7 +86,7 @@ class JarRepository {
   Future<Map<String, dynamic>> createJar({
     required String name,
     String? description,
-    required String jarGroupId,
+    required String jarGroup,
     String? imageId,
     bool isActive = true,
     bool isFixedContribution = false,
@@ -102,7 +102,7 @@ class JarRepository {
       final apiResponse = await _jarApiProvider.createJar(
         name: name,
         description: description,
-        jarGroupId: jarGroupId,
+        jarGroup: jarGroup,
         imageId: imageId,
         isActive: isActive,
         isFixedContribution: isFixedContribution,
@@ -115,10 +115,10 @@ class JarRepository {
         invitedCollectors: invitedCollectors,
       );
 
-      if (apiResponse['success'] == true) {
+      if (apiResponse['doc'] != null) {
         return {
           'success': true,
-          'data': apiResponse['data'],
+          'data': apiResponse['doc'],
           'message': 'Jar created successfully',
         };
       } else {

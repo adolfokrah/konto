@@ -44,7 +44,7 @@ class JarModel {
   final String id;
   final String name;
   final String? description;
-  final JarGroupModel jarGroup;
+  final String jarGroup;
   final MediaModel? image;
   final bool isActive;
   final bool isFixedContribution;
@@ -98,9 +98,7 @@ class JarModel {
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
-      jarGroup: JarGroupModel.fromJson(
-        json['jarGroup'] as Map<String, dynamic>,
-      ),
+      jarGroup: json['jarGroup'] as String,
       image:
           json['image'] != null
               ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
@@ -149,7 +147,7 @@ class JarModel {
       'id': id,
       'name': name,
       'description': description,
-      'jarGroup': jarGroup.toJson(),
+      'jarGroup': jarGroup,
       'image': image?.toJson(),
       'isActive': isActive,
       'isFixedContribution': isFixedContribution,
@@ -178,7 +176,7 @@ class JarModel {
     String? id,
     String? name,
     String? description,
-    JarGroupModel? jarGroup,
+    String? jarGroup,
     MediaModel? image,
     bool? isActive,
     bool? isFixedContribution,
@@ -286,45 +284,6 @@ class JarModel {
   bool isUserInvited(String userId) => invitedCollectors.any(
     (invitedCollector) => invitedCollector.collector?.id == userId,
   );
-}
-
-/// Jar Group model representing the category/group a jar belongs to
-class JarGroupModel {
-  final String id;
-  final String name;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const JarGroupModel({
-    required this.id,
-    required this.name,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory JarGroupModel.fromJson(Map<String, dynamic> json) {
-    return JarGroupModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'] as String)
-              : null,
-      updatedAt:
-          json['updatedAt'] != null
-              ? DateTime.parse(json['updatedAt'] as String)
-              : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-    };
-  }
 }
 
 /// Media model representing uploaded files/images

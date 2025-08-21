@@ -28,8 +28,7 @@ export const Jars: CollectionConfig = {
     },
     {
       name: 'jarGroup',
-      type: 'relationship',
-      relationTo: 'jar-groups',
+      type: 'text',
     },
     {
       name: 'image',
@@ -84,11 +83,7 @@ export const Jars: CollectionConfig = {
     },
     {
       name: 'currency',
-      type: 'select',
-      options: [
-        { label: 'Ghanaian Cedi', value: 'ghc' },
-        { label: 'Nigerian Naira', value: 'ngn' },
-      ],
+      type: 'text',
       required: true,
     },
     {
@@ -146,9 +141,9 @@ export const Jars: CollectionConfig = {
             beforeChange: [
               async ({ data, siblingData, req }) => {
                 // Auto-populate phone number from selected collector
-                if (siblingData?.collector) {
+                if (siblingData?.collector && siblingData.collector !== null) {
                   try {
-                    // Get the first selected collector
+                    // Get the collector ID
                     const collectorId =
                       typeof siblingData.collector === 'object'
                         ? siblingData.collector.id
@@ -161,15 +156,12 @@ export const Jars: CollectionConfig = {
                     })
 
                     if (user?.phoneNumber) {
-                      return user.phoneNumber
+                      user.phoneNumber
                     }
                   } catch (error) {
-                    throw new Error('Error fetching collector phone number')
+                    req.payload.logger.error('Error fetching collector phone number:', error)
                   }
                 }
-
-                // Return existing value if no collector selected or error occurred
-                return data
               },
             ],
           },
@@ -186,9 +178,9 @@ export const Jars: CollectionConfig = {
             beforeChange: [
               async ({ data, siblingData, req }) => {
                 // Auto-populate name from selected collector
-                if (siblingData?.collector) {
+                if (siblingData?.collector && siblingData.collector !== null) {
                   try {
-                    // Get the first selected collector
+                    // Get the collector ID
                     const collectorId =
                       typeof siblingData.collector === 'object'
                         ? siblingData.collector.id
@@ -201,15 +193,12 @@ export const Jars: CollectionConfig = {
                     })
 
                     if (user?.fullName) {
-                      return user.fullName
+                      user.fullName
                     }
                   } catch (error) {
-                    throw new Error('Error fetching collector name')
+                    req.payload.logger.error('Error fetching collector name:', error)
                   }
                 }
-
-                // Return existing value if no collector selected or error occurred
-                return data
               },
             ],
           },
@@ -271,7 +260,6 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [],
     afterChange: [generatePaymentLink],
   },
   endpoints: [

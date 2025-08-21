@@ -13,8 +13,6 @@ import { Jars } from '@collections/Jars'
 import { Media } from '@collections/Media'
 import { Users } from '@collections/Users'
 
-import { jarGroup } from './collections/JarGroups'
-
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -28,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Jars, jarGroup, Contributions],
+  collections: [Users, Media, Jars, Contributions],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

@@ -1,20 +1,19 @@
 /// Currency formatting utilities for jar currencies used throughout the app
-class CurrencyUtils {
-  /// Map of currency codes to their symbols
-  static const Map<String, String> _currencySymbols = {
-    'ghc': '₵',
-    'ngn': '₦',
-    'usd': '\$',
-    'eur': '€',
-    'gbp': '£',
-  };
+import 'package:konto/core/constants/currencies.dart';
 
+class CurrencyUtils {
   /// Get currency symbol based on currency code
   ///
   /// Supports: GHC (₵), NGN (₦), USD ($), EUR (€), GBP (£)
   /// Returns GHC symbol (₵) as fallback for unsupported currencies
   static String getCurrencySymbol(String currency) {
-    return _currencySymbols[currency.toLowerCase()] ?? '₵';
+    try {
+      return Currencies.all
+          .firstWhere((c) => c.code.toLowerCase() == currency.toLowerCase())
+          .symbol;
+    } catch (e) {
+      return '₵'; // Default fallback
+    }
   }
 
   /// Format amount with currency symbol
@@ -52,11 +51,14 @@ class CurrencyUtils {
   }
 
   /// Get all supported currency codes
-  static List<String> get supportedCurrencies => _currencySymbols.keys.toList();
+  static List<String> get supportedCurrencies =>
+      Currencies.all.map((c) => c.code.toLowerCase()).toList();
 
   /// Check if a currency code is supported
   static bool isCurrencySupported(String currency) {
-    return _currencySymbols.containsKey(currency.toLowerCase());
+    return Currencies.all.any(
+      (c) => c.code.toLowerCase() == currency.toLowerCase(),
+    );
   }
 
   /// Get currency name from code

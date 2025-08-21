@@ -6,7 +6,6 @@ sealed class JarCreateEvent {}
 final class JarCreateSubmitted extends JarCreateEvent {
   final String name;
   final String? description;
-  final String jarGroupId;
   final String? imageId;
   final bool isActive;
   final bool isFixedContribution;
@@ -17,11 +16,11 @@ final class JarCreateSubmitted extends JarCreateEvent {
   final bool acceptAnonymousContributions;
   final List<String> acceptedPaymentMethods;
   final List<Map<String, dynamic>>? invitedCollectors;
+  final String jarGroup;
 
   JarCreateSubmitted({
     required this.name,
     this.description,
-    required this.jarGroupId,
     this.imageId,
     this.isActive = true,
     this.isFixedContribution = false,
@@ -32,5 +31,6 @@ final class JarCreateSubmitted extends JarCreateEvent {
     this.acceptAnonymousContributions = false,
     required this.acceptedPaymentMethods,
     this.invitedCollectors,
+    required this.jarGroup,
   });
 }

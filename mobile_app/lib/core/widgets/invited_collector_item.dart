@@ -10,10 +10,15 @@ import 'package:konto/features/jars/data/models/jar_model.dart';
 class InvitedCollectorItem extends StatelessWidget {
   final InvitedCollector invitedCollector;
   final bool isNew;
+  final VoidCallback? onRemind;
+  final VoidCallback? onCancel;
+
   const InvitedCollectorItem({
     super.key,
     required this.invitedCollector,
     this.isNew = true,
+    this.onRemind,
+    this.onCancel,
   });
 
   /// Generate initials from the invited collector's name
@@ -93,7 +98,7 @@ class InvitedCollectorItem extends StatelessWidget {
                     title: const Text('Remind'),
                     onTap: () {
                       Navigator.pop(context);
-                      // Handle remind action
+                      onRemind?.call();
                     },
                   ),
                 ),
@@ -125,7 +130,7 @@ class InvitedCollectorItem extends StatelessWidget {
                           : const Text('Revoke access'),
                   onTap: () {
                     Navigator.pop(context);
-                    // Handle cancel action
+                    onCancel?.call();
                   },
                 ),
               ),
@@ -165,7 +170,7 @@ class InvitedCollectorItem extends StatelessWidget {
                   horizontal: AppSpacing.spacingS,
                   vertical: 6,
                 ),
-                onPressed: () {},
+                onPressed: onRemind,
                 child: const Text("Remind", style: TextStyles.titleMediumS),
               )
               : const SizedBox.shrink(),

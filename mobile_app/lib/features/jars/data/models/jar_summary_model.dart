@@ -15,7 +15,7 @@ class JarSummaryModel {
   final List<String> acceptedPaymentMethods;
   final bool acceptAnonymousContributions;
   final String? paymentLink;
-  final JarGroupModel? jarGroup;
+  final String? jarGroup;
   final MediaModel? image;
   final DateTime? deadline;
   final DateTime createdAt;
@@ -101,10 +101,7 @@ class JarSummaryModel {
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool,
       paymentLink: json['paymentLink'] as String?,
-      jarGroup:
-          json['jarGroup'] != null
-              ? JarGroupModel.fromJson(json['jarGroup'] as Map<String, dynamic>)
-              : null,
+      jarGroup: json['jarGroup'] as String?,
       image:
           json['image'] != null
               ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
@@ -163,7 +160,7 @@ class JarSummaryModel {
       'acceptedPaymentMethods': acceptedPaymentMethods,
       'acceptAnonymousContributions': acceptAnonymousContributions,
       'paymentLink': paymentLink,
-      'jarGroup': jarGroup?.toJson(),
+      'jarGroup': jarGroup,
       'image': image?.toJson(),
       'deadline': deadline?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
@@ -265,48 +262,6 @@ class InvitedCollectorModel {
       'phoneNumber': phoneNumber,
       'name': name,
       'status': status,
-    };
-  }
-}
-
-class JarGroupModel {
-  final String id;
-  final String name;
-  final String? description;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const JarGroupModel({
-    required this.id,
-    required this.name,
-    this.description,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory JarGroupModel.fromJson(Map<String, dynamic> json) {
-    return JarGroupModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'] as String)
-              : null,
-      updatedAt:
-          json['updatedAt'] != null
-              ? DateTime.parse(json['updatedAt'] as String)
-              : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 }

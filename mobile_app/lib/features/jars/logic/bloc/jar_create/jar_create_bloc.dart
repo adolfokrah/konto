@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:konto/core/services/service_registry.dart';
+import 'package:konto/features/jars/data/models/jar_model.dart';
 import 'package:meta/meta.dart';
 
 part 'jar_create_event.dart';
@@ -23,7 +24,7 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
       final result = await jarRepository.createJar(
         name: event.name,
         description: event.description,
-        jarGroupId: event.jarGroupId,
+        jarGroup: event.jarGroup,
         imageId: event.imageId,
         isActive: event.isActive,
         isFixedContribution: event.isFixedContribution,
@@ -37,7 +38,8 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
       );
 
       if (result['success'] == true) {
-        emit(JarCreateSuccess(jarData: result['data']));
+        final jar = JarModel.fromJson(result['data']);
+        emit(JarCreateSuccess(jar));
       } else {
         emit(JarCreateFailure(result['message'] ?? 'Failed to create jar'));
       }

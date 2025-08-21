@@ -17,45 +17,36 @@ export const getJarSummary = async (req: PayloadRequest) => {
   // Find the jar with the given ID
   let jar: any = null
   try {
-    if (jarId == 'null') {
-      const jarResult = await req.payload.find({
+    if (jarId != 'null') {
+      jar = await req.payload.findByID({
         collection: 'jars',
-        where: {
-          or: [
-            {
-              creator: {
-                equals: req.user,
-              },
-            },
-            {
-              'invitedCollectors.collector': {
-                equals: req.user,
-              },
-            },
-          ],
-        },
-        limit: 1,
+        id: jarId,
         depth: 2,
       })
-      if (jarResult.docs.length > 0) {
-        jar = jarResult.docs[0]
-      }
     } else {
       jar = await req.payload.findByID({
         collection: 'jars',
         id: jarId,
         depth: 2,
       })
+
+      if (jar) {
+        jar = await getUserJar()
+      }
     }
   } catch (error) {
     // If jar is not found, Payload throws a NotFound error
-    return Response.json(
-      {
-        success: true,
-        message: 'Jar not found',
-      },
-      { status: 200 },
-    )
+    jar = await getUserJar()
+
+    if (!jar) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Jar not found',
+        },
+        { status: 404 },
+      )
+    }
   }
 
   if (!jar) {
@@ -66,6 +57,34 @@ export const getJarSummary = async (req: PayloadRequest) => {
       },
       { status: 200 },
     )
+  }
+
+  async function getUserJar() {
+    let jar = null
+    const jarResult = await req.payload.find({
+      collection: 'jars',
+      where: {
+        or: [
+          {
+            creator: {
+              equals: req.user,
+            },
+          },
+          {
+            'invitedCollectors.collector': {
+              equals: req.user,
+            },
+          },
+        ],
+      },
+      limit: 1,
+      depth: 2,
+    })
+    if (jarResult.docs.length > 0) {
+      jar = jarResult.docs[0]
+    }
+
+    return jar
   }
 
   const recentJarContributions = await req.payload.find({
@@ -140,7 +159,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
         equals: 'completed',
       },
     },
-    limit: 10000000,
+    pagination: false,
+    select: {
+      amountContributed: true,
+    },
   })
 
   const totalContributedAmount = allContributions.docs.reduce((sum: number, contribution: any) => {
