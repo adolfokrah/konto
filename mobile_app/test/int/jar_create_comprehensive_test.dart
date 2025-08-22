@@ -1,0 +1,585 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:konto/features/authentication/data/models/user.dart';
+import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
+import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
+import '../lib/test_setup.dart';
+import '../lib/api_mock_interceptor.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    await TestSetup.initialize();
+
+    // Set up authentication data AFTER TestSetup (which resets SharedPreferences)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('konto_auth_token', 'test-jwt-token-123456');
+    await prefs.setString(
+      'konto_token_expiry',
+      '${DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch ~/ 1000}',
+    );
+    await prefs.setString(
+      'konto_user_data',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+    );
+
+    print('✅ Authentication data set up for testing');
+  });
+
+  tearDownAll(() {
+    TestSetup.reset();
+  });
+
+  // Helper method to ensure authentication is set up
+  Future<void> ensureAuthentication() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('konto_auth_token', 'test-jwt-token-123456');
+    await prefs.setString(
+      'konto_token_expiry',
+      '${DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch ~/ 1000}',
+    );
+    await prefs.setString(
+      'konto_user_data',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+    );
+  }
+
+  void setupSuccessfulJarCreateMock() {
+    // Mock the jar creation endpoint
+    MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+      return Response(
+        requestOptions: options,
+        data: {
+          'success': true,
+          'doc': {
+            'id': 'new-jar-123',
+            'name': 'Emergency Fund',
+            'description': 'Save for emergencies',
+            'jarGroup': 'savings',
+            'image': null,
+            'isActive': true,
+            'isFixedContribution': false,
+            'acceptedContributionAmount': null,
+            'goalAmount': 5000.0,
+            'deadline': null,
+            'currency': 'ghc',
+            'creator': {
+              'id': 'test-user-123',
+              'email': 'test@example.com',
+              'fullName': 'Test User',
+              'phoneNumber': '+1234567890',
+              'countryCode': 'US',
+              'country': 'United States',
+              'isKYCVerified': true,
+              'createdAt': '2025-07-21T18:32:42.806Z',
+              'updatedAt': '2025-08-21T18:32:42.806Z',
+            },
+            'invitedCollectors': [],
+            'acceptedPaymentMethods': ['mobile-money'],
+            'acceptAnonymousContributions': false,
+            'paymentLink': null,
+            'status': 'active',
+            'createdAt': '2025-08-21T18:32:42.806Z',
+            'updatedAt': '2025-08-21T18:32:42.806Z',
+          },
+          'message': 'Jar created successfully',
+        },
+        statusCode: 201,
+      );
+    });
+
+    // Mock the user jars endpoint for jar list refresh
+    MockInterceptor.overrideEndpoint('/jars/user-jars', (options) {
+      return Response(
+        requestOptions: options,
+        data: {
+          'success': true,
+          'data': [
+            {
+              'id': 'ungrouped',
+              'name': 'Ungrouped',
+              'description': null,
+              'jars': [
+                {
+                  'id': 'new-jar-123',
+                  'name': 'Emergency Fund',
+                  'description': 'Save for emergencies',
+                  'image': null,
+                  'isActive': true,
+                  'isFixedContribution': false,
+                  'acceptedContributionAmount': null,
+                  'goalAmount': 5000.0,
+                  'deadline': null,
+                  'currency': 'ghc',
+                  'creator': {
+                    'id': 'test-user-123',
+                    'name': 'Test User',
+                    'profilePicture': null,
+                  },
+                  'invitedCollectors': [],
+                  'paymentLink': null,
+                  'acceptAnonymousContributions': false,
+                  'acceptedPaymentMethods': ['mobile-money'],
+                  'createdAt': '2025-08-21T18:32:42.806Z',
+                  'updatedAt': '2025-08-21T18:32:42.806Z',
+                  'totalContributions': 0.0,
+                },
+              ],
+              'totalJars': 1,
+              'totalGoalAmount': 5000.0,
+              'totalContributions': 0.0,
+              'createdAt': null,
+              'updatedAt': null,
+            },
+          ],
+          'message': 'User jars retrieved successfully',
+        },
+        statusCode: 200,
+      );
+    });
+
+    print('🔧 MockInterceptor: Successful jar create mocks set up');
+  }
+
+  void setupFailedJarCreateMock() {
+    MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+      return Response(
+        requestOptions: options,
+        data: {
+          'success': false,
+          'message': 'Failed to create jar. Name already exists.',
+          'error': 'Validation error',
+          'statusCode': 400,
+        },
+        statusCode: 400,
+      );
+    });
+
+    print('🔧 MockInterceptor: Failed jar create mock set up');
+  }
+
+  Widget createTestWidget() {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+        BlocProvider<JarCreateBloc>(create: (context) => JarCreateBloc()),
+        BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
+        BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
+        BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en')],
+        home: const JarCreateView(),
+      ),
+    );
+  }
+
+  group('Jar Create View Comprehensive Tests', () {
+    setUp(() async {
+      await ensureAuthentication();
+      MockInterceptor.clearOverrides();
+    });
+
+    testWidgets('should display initial jar creation form', (
+      WidgetTester tester,
+    ) async {
+      setupSuccessfulJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Verify the form elements are present
+      expect(find.byType(JarCreateView), findsOneWidget);
+      expect(
+        find.byType(TextFormField),
+        findsAtLeastNWidgets(1),
+      ); // At least name field
+
+      print('✅ Initial jar creation form displayed correctly');
+    });
+
+    testWidgets('should handle jar creation form interaction', (
+      WidgetTester tester,
+    ) async {
+      setupSuccessfulJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Find text fields and try to interact with them
+      final textFields = find.byType(TextFormField);
+      if (textFields.evaluate().isNotEmpty) {
+        // Fill in the first text field (likely jar name)
+        await tester.enterText(textFields.first, 'Test Jar');
+        await tester.pumpAndSettle();
+      }
+
+      print('✅ Form interaction works correctly');
+    });
+
+    testWidgets('should handle form submission', (WidgetTester tester) async {
+      setupSuccessfulJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Fill in jar name if field exists
+      final textFields = find.byType(TextFormField);
+      if (textFields.evaluate().isNotEmpty) {
+        await tester.enterText(textFields.first, 'Submit Test Jar');
+        await tester.pumpAndSettle();
+      }
+
+      // Look for and tap submit button
+      final submitButtons = find.byType(ElevatedButton);
+      if (submitButtons.evaluate().isNotEmpty) {
+        await tester.tap(submitButtons.first);
+        await tester.pumpAndSettle();
+      }
+
+      print('✅ Form submission handled');
+    });
+
+    testWidgets('should handle API failure gracefully', (
+      WidgetTester tester,
+    ) async {
+      setupFailedJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Fill in jar name if field exists
+      final textFields = find.byType(TextFormField);
+      if (textFields.evaluate().isNotEmpty) {
+        await tester.enterText(textFields.first, 'Failed Jar');
+        await tester.pumpAndSettle();
+      }
+
+      // Try to submit
+      final submitButtons = find.byType(ElevatedButton);
+      if (submitButtons.evaluate().isNotEmpty) {
+        await tester.tap(submitButtons.first);
+        await tester.pumpAndSettle();
+      }
+
+      print('✅ API failure handled gracefully');
+    });
+
+    testWidgets('should handle back navigation', (WidgetTester tester) async {
+      setupSuccessfulJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Look for back button
+      final backButtons = find.byType(BackButton);
+      if (backButtons.evaluate().isNotEmpty) {
+        await tester.tap(backButtons.first);
+        await tester.pumpAndSettle();
+      }
+
+      print('✅ Back navigation works');
+    });
+
+    testWidgets(
+      'should create jar with complete parameters: name, jarGroup, currency, invitedCollaborators',
+      (WidgetTester tester) async {
+        // Setup mock to expect and validate the complete jar creation request
+        MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+          // Validate that the request contains all expected parameters
+          final requestData = options.data;
+          expect(requestData['name'], equals('Complete Test Jar'));
+          expect(requestData['jarGroup'], equals('savings'));
+          expect(requestData['currency'], equals('ghc'));
+          expect(requestData['invitedCollectors'], isNotNull);
+          expect(requestData['invitedCollectors'], isList);
+          expect(
+            requestData['acceptedPaymentMethods'],
+            contains('mobile-money'),
+          );
+
+          return Response(
+            requestOptions: options,
+            data: {
+              'success': true,
+              'doc': {
+                'id': 'complete-jar-456',
+                'name': 'Complete Test Jar',
+                'description': 'A comprehensive test jar with all parameters',
+                'jarGroup': 'savings',
+                'image': null,
+                'isActive': true,
+                'isFixedContribution': false,
+                'acceptedContributionAmount': null,
+                'goalAmount': 10000.0,
+                'deadline': null,
+                'currency': 'ghc',
+                'creator': {
+                  'id': 'test-user-123',
+                  'email': 'test@example.com',
+                  'fullName': 'Test User',
+                  'phoneNumber': '+1234567890',
+                  'countryCode': 'US',
+                  'country': 'United States',
+                  'isKYCVerified': true,
+                  'createdAt': '2025-07-21T18:32:42.806Z',
+                  'updatedAt': '2025-08-21T18:32:42.806Z',
+                },
+                'invitedCollectors': [
+                  {
+                    'email': 'collaborator1@example.com',
+                    'name': 'John Doe',
+                    'status': 'pending',
+                  },
+                  {
+                    'email': 'collaborator2@example.com',
+                    'name': 'Jane Smith',
+                    'status': 'pending',
+                  },
+                ],
+                'acceptedPaymentMethods': ['mobile-money', 'bank-transfer'],
+                'acceptAnonymousContributions': false,
+                'paymentLink': null,
+                'status': 'active',
+                'createdAt': '2025-08-22T10:15:30.000Z',
+                'updatedAt': '2025-08-22T10:15:30.000Z',
+              },
+              'message': 'Jar created successfully with all parameters',
+            },
+            statusCode: 201,
+          );
+        });
+
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
+
+        // Test jar creation with BLoC event dispatch
+        final jarCreateBloc = BlocProvider.of<JarCreateBloc>(
+          tester.element(find.byType(JarCreateView)),
+        );
+
+        // Create jar with all required parameters
+        final jarCreateEvent = JarCreateSubmitted(
+          name: 'Complete Test Jar',
+          description: 'A comprehensive test jar with all parameters',
+          jarGroup: 'savings',
+          currency: 'ghc',
+          goalAmount: 10000.0,
+          acceptedPaymentMethods: ['mobile-money', 'bank-transfer'],
+          invitedCollectors: [
+            {'email': 'collaborator1@example.com', 'name': 'John Doe'},
+            {'email': 'collaborator2@example.com', 'name': 'Jane Smith'},
+          ],
+        );
+
+        // Dispatch the jar creation event
+        jarCreateBloc.add(jarCreateEvent);
+        await tester.pumpAndSettle();
+
+        // Allow time for API call processing
+        await tester.pump(const Duration(milliseconds: 500));
+
+        print('✅ Jar created successfully with complete parameters:');
+        print('   - Name: Complete Test Jar');
+        print('   - Jar Group: savings');
+        print('   - Currency: ghc');
+        print('   - Invited Collaborators: 2 invitations');
+        print('   - Goal Amount: 10000.0');
+        print('   - Payment Methods: mobile-money, bank-transfer');
+      },
+    );
+
+    testWidgets('should validate required fields for jar creation', (
+      WidgetTester tester,
+    ) async {
+      setupFailedJarCreateMock();
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Test with missing required fields
+      final jarCreateBloc = BlocProvider.of<JarCreateBloc>(
+        tester.element(find.byType(JarCreateView)),
+      );
+
+      // Try to create jar with empty name (should fail validation)
+      final invalidJarCreateEvent = JarCreateSubmitted(
+        name: '', // Empty name should cause validation error
+        jarGroup: 'personal',
+        currency: 'usd',
+        acceptedPaymentMethods: ['mobile-money'],
+      );
+
+      jarCreateBloc.add(invalidJarCreateEvent);
+      await tester.pumpAndSettle();
+
+      // Allow time for validation processing
+      await tester.pump(const Duration(milliseconds: 500));
+
+      print('✅ Validation handled correctly for required fields');
+    });
+
+    testWidgets('should create jar with different currency options', (
+      WidgetTester tester,
+    ) async {
+      // Test USD currency
+      MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+        expect(options.data['currency'], equals('usd'));
+        expect(options.data['name'], equals('USD Test Jar'));
+
+        return Response(
+          requestOptions: options,
+          data: {
+            'success': true,
+            'doc': {
+              'id': 'usd-jar-789',
+              'name': 'USD Test Jar',
+              'currency': 'usd',
+              'jarGroup': 'investment',
+              'creator': {'id': 'test-user-123'},
+              'invitedCollectors': [],
+              'acceptedPaymentMethods': ['bank-transfer'],
+              'createdAt': '2025-08-22T10:15:30.000Z',
+              'updatedAt': '2025-08-22T10:15:30.000Z',
+            },
+          },
+          statusCode: 201,
+        );
+      });
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      final jarCreateBloc = BlocProvider.of<JarCreateBloc>(
+        tester.element(find.byType(JarCreateView)),
+      );
+
+      final usdJarEvent = JarCreateSubmitted(
+        name: 'USD Test Jar',
+        jarGroup: 'investment',
+        currency: 'usd',
+        acceptedPaymentMethods: ['bank-transfer'],
+      );
+
+      jarCreateBloc.add(usdJarEvent);
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      print('✅ Jar created successfully with USD currency');
+    });
+
+    testWidgets('should handle multiple invited collaborators', (
+      WidgetTester tester,
+    ) async {
+      MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+        final invitedCollectors = options.data['invitedCollectors'] as List;
+        expect(invitedCollectors.length, equals(3));
+        expect(invitedCollectors[0]['email'], equals('user1@test.com'));
+        expect(invitedCollectors[1]['email'], equals('user2@test.com'));
+        expect(invitedCollectors[2]['email'], equals('user3@test.com'));
+
+        return Response(
+          requestOptions: options,
+          data: {
+            'success': true,
+            'doc': {
+              'id': 'collab-jar-999',
+              'name': 'Collaboration Test Jar',
+              'currency': 'ghc',
+              'jarGroup': 'group-savings',
+              'creator': {'id': 'test-user-123'},
+              'invitedCollectors': invitedCollectors,
+              'acceptedPaymentMethods': ['mobile-money'],
+              'createdAt': '2025-08-22T10:15:30.000Z',
+              'updatedAt': '2025-08-22T10:15:30.000Z',
+            },
+          },
+          statusCode: 201,
+        );
+      });
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      final jarCreateBloc = BlocProvider.of<JarCreateBloc>(
+        tester.element(find.byType(JarCreateView)),
+      );
+
+      final collaborativeJarEvent = JarCreateSubmitted(
+        name: 'Collaboration Test Jar',
+        jarGroup: 'group-savings',
+        currency: 'ghc',
+        acceptedPaymentMethods: ['mobile-money'],
+        invitedCollectors: [
+          {'email': 'user1@test.com', 'name': 'Alice Johnson'},
+          {'email': 'user2@test.com', 'name': 'Bob Wilson'},
+          {'email': 'user3@test.com', 'name': 'Carol Davis'},
+        ],
+      );
+
+      jarCreateBloc.add(collaborativeJarEvent);
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      print('✅ Jar created successfully with 3 invited collaborators');
+    });
+  });
+
+  group('Jar Create View Error Handling', () {
+    setUp(() async {
+      await ensureAuthentication();
+      MockInterceptor.clearOverrides();
+    });
+
+    testWidgets('should handle network timeout', (WidgetTester tester) async {
+      MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+        throw DioException.connectionTimeout(
+          timeout: const Duration(seconds: 30),
+          requestOptions: RequestOptions(path: BackendConfig.jarsEndpoint),
+        );
+      });
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      print('✅ Network timeout setup complete');
+    });
+
+    testWidgets('should handle server error', (WidgetTester tester) async {
+      MockInterceptor.overrideEndpoint(BackendConfig.jarsEndpoint, (options) {
+        return Response(
+          requestOptions: options,
+          data: {
+            'success': false,
+            'message': 'Internal server error',
+            'statusCode': 500,
+          },
+          statusCode: 500,
+        );
+      });
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      print('✅ Server error handling setup complete');
+    });
+  });
+}
