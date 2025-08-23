@@ -24,21 +24,13 @@ export const getJarSummary = async (req: PayloadRequest) => {
         depth: 2,
       })
     } else {
-      jar = await req.payload.findByID({
-        collection: 'jars',
-        id: jarId,
-        depth: 2,
-      })
-
-      if (jar) {
-        jar = await getUserJar()
-      }
+      //get user first jar
+      jar = await getUserJar()
     }
   } catch (error) {
-    // If jar is not found, Payload throws a NotFound error
-    jar = await getUserJar()
-
-    if (!jar) {
+    try {
+      jar = await getUserJar()
+    } catch (error) {
       return Response.json(
         {
           success: true,
@@ -48,10 +40,12 @@ export const getJarSummary = async (req: PayloadRequest) => {
       )
     }
   }
+
   async function getUserJar() {
     let jar = null
     const jarResult = await req.payload.find({
       collection: 'jars',
+      pagination: false,
       where: {
         or: [
           {

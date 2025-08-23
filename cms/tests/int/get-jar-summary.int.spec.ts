@@ -113,7 +113,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
-      expect(result.message).toBe('Jar not found')
+      expect(result.message).toBe('Jar summary retrieved successfully')
     })
 
     it('should return user jar when jarId is null string', async () => {
@@ -147,7 +147,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
-      expect(result.message).toBe('Jar not found')
+      expect(result.message).toBe('Jar summary retrieved successfully')
     })
   })
 
@@ -168,7 +168,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
-      expect(result.message).toBe('Jar not found')
+      expect(result.message).toBe('Jar summary retrieved successfully')
     })
 
     it('should return jar summary with contributions when jar exists', async () => {
@@ -345,7 +345,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       // Should return 200 since the jar won't be found with invalid ID
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
-      expect(result.message).toBe('Jar not found')
+      expect(result.message).toBe('Jar summary retrieved successfully')
     })
   })
 
