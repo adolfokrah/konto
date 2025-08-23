@@ -1083,5 +1083,120 @@
   "categoryOther": "Other",
   "@categoryOther": {
     "description": "Category name for other types of jars"
+  },
+
+  "requestPayment": "Request Payment",
+  "@requestPayment": {
+    "description": "Title for request payment screen"
+  },
+
+  "amount": "Amount",
+  "@amount": {
+    "description": "Label for amount section"
+  },
+
+  "paymentMethod": "Payment Method",
+  "@paymentMethod": {
+    "description": "Label for payment method selection"
+  },
+
+  "paymentMethodMobileMoney": "Mobile Money",
+  "@paymentMethodMobileMoney": {
+    "description": "Mobile Money payment method option"
+  },
+
+  "paymentMethodCash": "Cash",
+  "@paymentMethodCash": {
+    "description": "Cash payment method option"
+  },
+
+  "paymentMethodBankTransfer": "Bank Transfer",
+  "@paymentMethodBankTransfer": {
+    "description": "Bank Transfer payment method option"
+  },
+
+  "operator": "Operator",
+  "@operator": {
+    "description": "Label for mobile money operator selection"
+  },
+
+  "mobileMoneyNumber": "Mobile Money Number",
+  "@mobileMoneyNumber": {
+    "description": "Label for mobile money number input"
+  },
+
+  "enterMobileMoneyNumber": "Enter mobile money number",
+  "@enterMobileMoneyNumber": {
+    "description": "Placeholder for mobile money number input"
+  },
+
+  "contributorName": "Contributor Name",
+  "@contributorName": {
+    "description": "Label for contributor name input"
+  },
+
+  "enterContributorName": "Enter contributor name",
+  "@enterContributorName": {
+    "description": "Placeholder for contributor name input"
+  },
+
+  "accountName": "Account Name",
+  "@accountName": {
+    "description": "Label for account name input"
+  },
+
+  "enterAccountName": "Enter account name",
+  "@enterAccountName": {
+    "description": "Placeholder for account name input"
+  },
+
+  "processing": "Processing...",
+  "@processing": {
+    "description": "Text shown when processing request"
+  },
+
+  "saveContribution": "Save Contribution",
+  "@saveContribution": {
+    "description": "Button text for saving contribution"
+  },
+
+  "pleaseEnterContributorName": "Please enter contributor name",
+  "@pleaseEnterContributorName": {
+    "description": "Error message for missing contributor name"
+  },
+
+  "pleaseEnterMobileMoneyNumber": "Please enter your mobile money number for Mobile Money payments",
+  "@pleaseEnterMobileMoneyNumber": {
+    "description": "Error message for missing mobile money number"
+  },
+
+  "pleaseEnterValidMobileMoneyNumber": "Please enter a valid mobile money number (e.g., 0241234567)",
+  "@pleaseEnterValidMobileMoneyNumber": {
+    "description": "Error message for invalid mobile money number"
+  },
+
+  "pleaseEnterAccountName": "Please enter account name",
+  "@pleaseEnterAccountName": {
+    "description": "Error message for missing account name"
+  },
+
+  "paymentRequestSentSuccessfully": "Payment request sent successfully!",
+  "@paymentRequestSentSuccessfully": {
+    "description": "Success message when payment request is sent"
+  },
+
+  "failedToSendPaymentRequest": "Failed to send payment request.",
+  "@failedToSendPaymentRequest": {
+    "description": "Error message when payment request fails"
+  },
+
+  "unknownError": "Unknown error",
+  "@unknownError": {
+    "description": "Generic unknown error message"
+  },
+
+  "unexpectedError": "An unexpected error occurred",
+  "@unexpectedError": {
+    "description": "Generic unexpected error message"
   }
 }

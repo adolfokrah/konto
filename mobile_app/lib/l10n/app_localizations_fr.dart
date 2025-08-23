@@ -648,4 +648,78 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get categoryOther => 'Autre';
+
+  @override
+  String get requestPayment => 'Demander un paiement';
+
+  @override
+  String get amount => 'Montant';
+
+  @override
+  String get paymentMethod => 'Méthode de paiement';
+
+  @override
+  String get paymentMethodMobileMoney => 'Mobile Money';
+
+  @override
+  String get paymentMethodCash => 'Espèces';
+
+  @override
+  String get paymentMethodBankTransfer => 'Virement bancaire';
+
+  @override
+  String get operator => 'Opérateur';
+
+  @override
+  String get mobileMoneyNumber => 'Numéro Mobile Money';
+
+  @override
+  String get enterMobileMoneyNumber => 'Entrez le numéro mobile money';
+
+  @override
+  String get contributorName => 'Nom du contributeur';
+
+  @override
+  String get enterContributorName => 'Entrez le nom du contributeur';
+
+  @override
+  String get accountName => 'Nom du compte';
+
+  @override
+  String get enterAccountName => 'Entrez le nom du compte';
+
+  @override
+  String get processing => 'Traitement...';
+
+  @override
+  String get saveContribution => 'Enregistrer la contribution';
+
+  @override
+  String get pleaseEnterContributorName =>
+      'Veuillez entrer le nom du contributeur';
+
+  @override
+  String get pleaseEnterMobileMoneyNumber =>
+      'Veuillez entrer votre numéro mobile money pour les paiements Mobile Money';
+
+  @override
+  String get pleaseEnterValidMobileMoneyNumber =>
+      'Veuillez entrer un numéro mobile money valide (ex: 0241234567)';
+
+  @override
+  String get pleaseEnterAccountName => 'Veuillez entrer le nom du compte';
+
+  @override
+  String get paymentRequestSentSuccessfully =>
+      'Demande de paiement envoyée avec succès !';
+
+  @override
+  String get failedToSendPaymentRequest =>
+      'Échec de l\'envoi de la demande de paiement.';
+
+  @override
+  String get unknownError => 'Erreur inconnue';
+
+  @override
+  String get unexpectedError => 'Une erreur inattendue s\'est produite';
 }

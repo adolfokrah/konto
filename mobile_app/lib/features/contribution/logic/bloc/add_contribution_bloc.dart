@@ -35,12 +35,10 @@ class AddContributionBloc
       if (response['success']) {
         emit(AddContributionSuccess());
       } else {
-        emit(AddContributionFailure(response['message'] ?? 'Unknown error'));
+        emit(AddContributionFailure(response['message'] ?? 'UNKNOWN_ERROR'));
       }
     } catch (e) {
-      emit(
-        AddContributionFailure('An unexpected error occurred: ${e.toString()}'),
-      );
+      emit(AddContributionFailure('UNEXPECTED_ERROR: ${e.toString()}'));
     }
   }
 }

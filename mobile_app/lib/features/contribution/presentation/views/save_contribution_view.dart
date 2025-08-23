@@ -9,23 +9,23 @@ import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/route.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
-class RequestMomoView extends StatefulWidget {
-  const RequestMomoView({super.key});
+class SaveContributionView extends StatefulWidget {
+  const SaveContributionView({super.key});
 
   @override
-  State<RequestMomoView> createState() => _RequestMomoViewState();
+  State<SaveContributionView> createState() => _SaveContributionViewState();
 }
 
-class _RequestMomoViewState extends State<RequestMomoView> {
+class _SaveContributionViewState extends State<SaveContributionView> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _accountNumberController =
       TextEditingController();
-  String _selectedPaymentMethod = 'Mobile Money';
+  String _selectedPaymentMethod = 'mobile-money'; // Store API format
   String _selectedOperator = 'MTN Mobile Money';
 
   // Arguments from previous screen
@@ -33,12 +33,6 @@ class _RequestMomoViewState extends State<RequestMomoView> {
   String? currency;
   String? jarName;
   String? jarId;
-
-  final List<String> _paymentMethods = [
-    'Mobile Money',
-    'Cash',
-    'Bank Transfer',
-  ];
 
   final List<String> _operators = [
     'MTN Mobile Money',
@@ -75,22 +69,42 @@ class _RequestMomoViewState extends State<RequestMomoView> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    // Create a mapping of API values to display names
+    final Map<String, String> paymentMethodMap = {
+      'mobile-money': localizations.paymentMethodMobileMoney,
+      'cash': localizations.paymentMethodCash,
+      'bank-transfer': localizations.paymentMethodBankTransfer,
+    };
+
     return BlocListener<AddContributionBloc, AddContributionState>(
       listener: (context, state) {
+        final localizations = AppLocalizations.of(context)!;
         if (state is AddContributionSuccess) {
           context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
           Navigator.popUntil(context, ModalRoute.withName(AppRoutes.jarDetail));
           // Show success message
           AppSnackBar.showSuccess(
             context,
-            message: 'Payment request sent successfully!',
+            message: localizations.paymentRequestSentSuccessfully,
           );
         } else if (state is AddContributionFailure) {
-          // Show error message
-          AppSnackBar.showError(
-            context,
-            message: 'Failed to send payment request.',
-          );
+          // Show error message with specific error handling
+          String errorMessage;
+          if (state.errorMessage == 'UNKNOWN_ERROR') {
+            errorMessage = localizations.unknownError;
+          } else if (state.errorMessage.startsWith('UNEXPECTED_ERROR:')) {
+            errorMessage = localizations.unexpectedError;
+          } else {
+            // Use the specific error message from server or fallback to generic
+            errorMessage =
+                state.errorMessage.isNotEmpty
+                    ? state.errorMessage
+                    : localizations.failedToSendPaymentRequest;
+          }
+
+          AppSnackBar.showError(context, message: errorMessage);
         }
       },
       child: BlocBuilder<AddContributionBloc, AddContributionState>(
@@ -98,16 +112,13 @@ class _RequestMomoViewState extends State<RequestMomoView> {
           final isLoading = state is AddContributionLoading;
 
           return Scaffold(
-            backgroundColor: AppColors.backgroundLight,
             appBar: AppBar(
-              backgroundColor: Colors.transparent,
               elevation: 0,
               automaticallyImplyLeading:
                   !isLoading, // Disable back button when loading
               title: Text(
-                'Request Payment',
+                localizations.requestPayment,
                 style: TextStyles.titleMediumLg.copyWith(
-                  color: AppColors.black,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -134,9 +145,8 @@ class _RequestMomoViewState extends State<RequestMomoView> {
                         children: [
                           // Amount section
                           Text(
-                            'Amount',
+                            localizations.amount,
                             style: TextStyles.titleMedium.copyWith(
-                              color: AppColors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -150,7 +160,6 @@ class _RequestMomoViewState extends State<RequestMomoView> {
                                 currency!,
                               ),
                               style: TextStyles.titleBoldXl.copyWith(
-                                color: AppColors.black,
                                 fontSize: 48,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -160,14 +169,16 @@ class _RequestMomoViewState extends State<RequestMomoView> {
 
                           // Payment method selection
                           SelectInput<String>(
-                            label: 'Payment Method',
+                            label: localizations.paymentMethod,
                             value: _selectedPaymentMethod,
                             options:
-                                _paymentMethods
+                                paymentMethodMap.entries
                                     .map(
-                                      (method) => SelectOption(
-                                        value: method,
-                                        label: method,
+                                      (entry) => SelectOption(
+                                        value: entry.key, // API value
+                                        label:
+                                            entry
+                                                .value, // Localized display name
                                       ),
                                     )
                                     .toList(),
@@ -181,9 +192,9 @@ class _RequestMomoViewState extends State<RequestMomoView> {
                           const SizedBox(height: AppSpacing.spacingM),
 
                           // Operator selection (only show if Mobile Money is selected)
-                          if (_selectedPaymentMethod == 'Mobile Money') ...[
+                          if (_selectedPaymentMethod == 'mobile-money') ...[
                             SelectInput<String>(
-                              label: 'Operator',
+                              label: localizations.operator,
                               value: _selectedOperator,
                               options:
                                   _operators
@@ -204,11 +215,11 @@ class _RequestMomoViewState extends State<RequestMomoView> {
                           ],
 
                           // Phone number input (only show for Mobile Money)
-                          if (_selectedPaymentMethod == 'Mobile Money') ...[
+                          if (_selectedPaymentMethod == 'mobile-money') ...[
                             AppTextInput(
                               controller: _phoneController,
-                              label: 'Mobile Money Number',
-                              hintText: 'Enter mobile money number',
+                              label: localizations.mobileMoneyNumber,
+                              hintText: localizations.enterMobileMoneyNumber,
                               keyboardType: TextInputType.phone,
                             ),
                             const SizedBox(height: AppSpacing.spacingM),
@@ -216,18 +227,18 @@ class _RequestMomoViewState extends State<RequestMomoView> {
 
                           AppTextInput(
                             controller: _nameController,
-                            label: 'Contributor Name',
-                            hintText: 'Enter contributor name',
+                            label: localizations.contributorName,
+                            hintText: localizations.enterContributorName,
                             keyboardType: TextInputType.name,
                           ),
 
                           // Account Name input (only show if Bank Transfer is selected)
-                          if (_selectedPaymentMethod == 'Bank Transfer') ...[
+                          if (_selectedPaymentMethod == 'bank-transfer') ...[
                             const SizedBox(height: AppSpacing.spacingM),
                             AppTextInput(
                               controller: _accountNumberController,
-                              label: 'Account Name',
-                              hintText: 'Enter account name',
+                              label: localizations.accountName,
+                              hintText: localizations.enterAccountName,
                               keyboardType: TextInputType.name,
                             ),
                           ],
@@ -240,10 +251,10 @@ class _RequestMomoViewState extends State<RequestMomoView> {
                             isLoading: state is AddContributionLoading,
                             text:
                                 state is AddContributionLoading
-                                    ? 'Processing...'
-                                    : _selectedPaymentMethod == 'Mobile Money'
-                                    ? 'Request Payment'
-                                    : 'Save Contribution',
+                                    ? localizations.processing
+                                    : _selectedPaymentMethod == 'mobile-money'
+                                    ? localizations.requestPayment
+                                    : localizations.saveContribution,
                             onPressed: () {
                               _handlePaymentRequest(context);
                             },
@@ -262,68 +273,52 @@ class _RequestMomoViewState extends State<RequestMomoView> {
   }
 
   void _handlePaymentRequest(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     // Manual validation - validate contributor name (always required)
     if (_nameController.text.trim().isEmpty) {
-      _showErrorSnackBar('Please enter contributor name');
+      _showErrorSnackBar(localizations.pleaseEnterContributorName);
       return;
     }
 
     // Validation for mobile money - phone number is required
-    if (_selectedPaymentMethod == 'Mobile Money') {
+    if (_selectedPaymentMethod == 'mobile-money') {
       // Validate phone number for mobile money
       if (_phoneController.text.trim().isEmpty) {
-        _showErrorSnackBar(
-          'Please enter your mobile money number for Mobile Money payments',
-        );
+        _showErrorSnackBar(localizations.pleaseEnterMobileMoneyNumber);
         return;
       }
 
       // Basic phone number validation (should start with 0 and be at least 10 digits)
       String phoneNumber = _phoneController.text.trim();
       if (!RegExp(r'^0[0-9]{9,}$').hasMatch(phoneNumber)) {
-        _showErrorSnackBar(
-          'Please enter a valid mobile money number (e.g., 0241234567)',
-        );
+        _showErrorSnackBar(localizations.pleaseEnterValidMobileMoneyNumber);
         return;
       }
     }
 
-    if (_selectedPaymentMethod == 'Bank Transfer') {
+    if (_selectedPaymentMethod == 'bank-transfer') {
       // Validate account name for bank transfer
       if (_accountNumberController.text.trim().isEmpty) {
-        _showErrorSnackBar('Please enter account name');
+        _showErrorSnackBar(localizations.pleaseEnterAccountName);
         return;
       }
     }
 
-    // Convert UI payment method to API format
-    String apiPaymentMethod;
-    switch (_selectedPaymentMethod) {
-      case 'Mobile Money':
-        apiPaymentMethod = 'mobile-money';
-        break;
-      case 'Bank Transfer':
-        apiPaymentMethod = 'bank-transfer';
-        break;
-      case 'Cash':
-        apiPaymentMethod = 'cash';
-        break;
-      default:
-        apiPaymentMethod = 'mobile-money';
-    }
+    // Since we're now storing the API format directly, no conversion needed
 
     context.read<AddContributionBloc>().add(
       AddContributionSubmitted(
         jarId: jarId ?? '',
         contributor: _nameController.text.trim(),
         contributorPhoneNumber:
-            _selectedPaymentMethod == 'Mobile Money'
+            _selectedPaymentMethod == 'mobile-money'
                 ? _phoneController.text
                     .trim() // Only include phone number for Mobile Money
                 : null, // Phone number not required for Cash and Bank Transfer
-        paymentMethod: apiPaymentMethod,
+        paymentMethod: _selectedPaymentMethod,
         accountNumber:
-            _selectedPaymentMethod == 'Bank Transfer'
+            _selectedPaymentMethod == 'bank-transfer'
                 ? _accountNumberController.text.trim()
                 : null,
         amountContributed: double.tryParse(amount!) ?? 0.0,

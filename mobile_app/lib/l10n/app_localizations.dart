@@ -1225,6 +1225,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// Title for request payment screen
+  ///
+  /// In en, this message translates to:
+  /// **'Request Payment'**
+  String get requestPayment;
+
+  /// Label for amount section
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// Label for payment method selection
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// Mobile Money payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money'**
+  String get paymentMethodMobileMoney;
+
+  /// Cash payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get paymentMethodCash;
+
+  /// Bank Transfer payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get paymentMethodBankTransfer;
+
+  /// Label for mobile money operator selection
+  ///
+  /// In en, this message translates to:
+  /// **'Operator'**
+  String get operator;
+
+  /// Label for mobile money number input
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money Number'**
+  String get mobileMoneyNumber;
+
+  /// Placeholder for mobile money number input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter mobile money number'**
+  String get enterMobileMoneyNumber;
+
+  /// Label for contributor name input
+  ///
+  /// In en, this message translates to:
+  /// **'Contributor Name'**
+  String get contributorName;
+
+  /// Placeholder for contributor name input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter contributor name'**
+  String get enterContributorName;
+
+  /// Label for account name input
+  ///
+  /// In en, this message translates to:
+  /// **'Account Name'**
+  String get accountName;
+
+  /// Placeholder for account name input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter account name'**
+  String get enterAccountName;
+
+  /// Text shown when processing request
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get processing;
+
+  /// Button text for saving contribution
+  ///
+  /// In en, this message translates to:
+  /// **'Save Contribution'**
+  String get saveContribution;
+
+  /// Error message for missing contributor name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter contributor name'**
+  String get pleaseEnterContributorName;
+
+  /// Error message for missing mobile money number
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your mobile money number for Mobile Money payments'**
+  String get pleaseEnterMobileMoneyNumber;
+
+  /// Error message for invalid mobile money number
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid mobile money number (e.g., 0241234567)'**
+  String get pleaseEnterValidMobileMoneyNumber;
+
+  /// Error message for missing account name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter account name'**
+  String get pleaseEnterAccountName;
+
+  /// Success message when payment request is sent
+  ///
+  /// In en, this message translates to:
+  /// **'Payment request sent successfully!'**
+  String get paymentRequestSentSuccessfully;
+
+  /// Error message when payment request fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send payment request.'**
+  String get failedToSendPaymentRequest;
+
+  /// Generic unknown error message
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error'**
+  String get unknownError;
+
+  /// Generic unexpected error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred'**
+  String get unexpectedError;
 }
 
 class _AppLocalizationsDelegate

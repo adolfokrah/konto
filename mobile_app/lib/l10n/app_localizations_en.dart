@@ -637,4 +637,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get requestPayment => 'Request Payment';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get paymentMethodMobileMoney => 'Mobile Money';
+
+  @override
+  String get paymentMethodCash => 'Cash';
+
+  @override
+  String get paymentMethodBankTransfer => 'Bank Transfer';
+
+  @override
+  String get operator => 'Operator';
+
+  @override
+  String get mobileMoneyNumber => 'Mobile Money Number';
+
+  @override
+  String get enterMobileMoneyNumber => 'Enter mobile money number';
+
+  @override
+  String get contributorName => 'Contributor Name';
+
+  @override
+  String get enterContributorName => 'Enter contributor name';
+
+  @override
+  String get accountName => 'Account Name';
+
+  @override
+  String get enterAccountName => 'Enter account name';
+
+  @override
+  String get processing => 'Processing...';
+
+  @override
+  String get saveContribution => 'Save Contribution';
+
+  @override
+  String get pleaseEnterContributorName => 'Please enter contributor name';
+
+  @override
+  String get pleaseEnterMobileMoneyNumber =>
+      'Please enter your mobile money number for Mobile Money payments';
+
+  @override
+  String get pleaseEnterValidMobileMoneyNumber =>
+      'Please enter a valid mobile money number (e.g., 0241234567)';
+
+  @override
+  String get pleaseEnterAccountName => 'Please enter account name';
+
+  @override
+  String get paymentRequestSentSuccessfully =>
+      'Payment request sent successfully!';
+
+  @override
+  String get failedToSendPaymentRequest => 'Failed to send payment request.';
+
+  @override
+  String get unknownError => 'Unknown error';
+
+  @override
+  String get unexpectedError => 'An unexpected error occurred';
 }

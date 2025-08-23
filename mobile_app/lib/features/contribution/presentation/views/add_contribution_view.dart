@@ -153,16 +153,12 @@ class _AddContributionViewState extends State<AddContributionView> {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           localizations.addContribution,
-          style: TextStyles.titleMediumLg.copyWith(
-            color: AppColors.black,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -172,7 +168,7 @@ class _AddContributionViewState extends State<AddContributionView> {
             if (state is JarSummaryLoaded) {
               // Initialize currency symbol on first load
               _initializeCurrencySymbol(state.jarData.currency);
-
+              final isDark = Theme.of(context).brightness == Brightness.dark;
               return Padding(
                 padding: const EdgeInsets.all(AppSpacing.spacingL),
                 child: Column(
@@ -192,9 +188,9 @@ class _AddContributionViewState extends State<AddContributionView> {
                               signed: false,
                             ),
                             inputFormatters: [_currencyFormatter],
-                            cursorColor: AppColors.black,
+                            cursorColor:
+                                isDark ? Colors.white : AppColors.black,
                             style: TextStyles.titleBoldXl.copyWith(
-                              color: AppColors.black,
                               fontSize: 64,
                               fontWeight: FontWeight.bold,
                             ),
@@ -211,7 +207,6 @@ class _AddContributionViewState extends State<AddContributionView> {
                           Text(
                             state.jarData.name,
                             style: TextStyles.titleMediumLg.copyWith(
-                              color: AppColors.black,
                               fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.center,
@@ -251,7 +246,7 @@ class _AddContributionViewState extends State<AddContributionView> {
                         // Navigate to request momo screen with jar and amount data
                         Navigator.pushNamed(
                           context,
-                          AppRoutes.requestMomo,
+                          AppRoutes.saveContribution,
                           arguments: {
                             'jar': state.jarData,
                             'amount': plainAmount.replaceAll(',', ''),
