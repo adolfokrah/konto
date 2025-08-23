@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/currency_utils.dart';
@@ -55,8 +54,15 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       // Extract jar details from the jar object
       final jar = arguments['jar'];
       if (jar != null) {
-        jarId = jar.id as String?;
-        jarName = jar.name as String?;
+        // Handle both Map and object types for jar data
+        if (jar is Map<String, dynamic>) {
+          jarId = jar['id'] as String?;
+          jarName = jar['name'] as String?;
+        } else {
+          // Assume it's a jar model object
+          jarId = jar.id as String?;
+          jarName = jar.name as String?;
+        }
       }
     }
   }

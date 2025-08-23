@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:contacts_service/contacts_service.dart' as contacts_service;
+import 'package:flutter_contacts/flutter_contacts.dart' as flutter_contacts;
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:konto/core/constants/app_radius.dart';
@@ -185,19 +185,24 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
       final localizations = AppLocalizations.of(context)!;
       final unknownText = localizations.unknown;
 
-      List<contacts_service.Contact> contacts = await contacts_service
-              .ContactsService.getContacts()
-          .timeout(const Duration(seconds: 10));
+      List<flutter_contacts.Contact> contacts = await flutter_contacts
+          .FlutterContacts.getContacts(
+        withProperties: true,
+      ).timeout(const Duration(seconds: 10));
 
       List<Contact> phoneContacts = [];
 
       for (var contact in contacts) {
-        if (contact.phones != null && contact.phones!.isNotEmpty) {
-          String phoneNumber = contact.phones!.first.value!;
+        if (contact.phones.isNotEmpty) {
+          String phoneNumber = contact.phones.first.number;
           phoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
 
           if (phoneNumber.isNotEmpty) {
-            String name = _sanitizeString(contact.displayName ?? unknownText);
+            String name = _sanitizeString(
+              contact.displayName.isNotEmpty
+                  ? contact.displayName
+                  : unknownText,
+            );
             String initials = _getInitials(name);
 
             phoneContacts.add(
