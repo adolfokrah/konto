@@ -1,8 +1,6 @@
 import type { PayloadRequest } from 'payload'
 
 export const getJarSummary = async (req: PayloadRequest) => {
-  console.log('jar id is this')
-
   if (!req.user) {
     return Response.json(
       {

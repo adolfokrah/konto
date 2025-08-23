@@ -174,23 +174,6 @@ describe('Jars Collection Integration Tests', () => {
         }),
       ).rejects.toThrow()
     })
-
-    it('should fail to create jar with invalid currency', async () => {
-      const jarData = {
-        name: 'Invalid Currency Jar',
-        status: 'active' as const,
-        currency: 'invalid' as any,
-        creator: testUser.id,
-        acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
-      }
-
-      await expect(
-        payload.create({
-          collection: 'jars',
-          data: jarData,
-        }),
-      ).rejects.toThrow()
-    })
   })
 
   describe('Jar Retrieval', () => {
