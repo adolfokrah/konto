@@ -184,7 +184,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                 jarImageId = state.media.id;
               });
             } else if (state is MediaError) {
-              // Handle media error state
+              AppSnackBar.showError(context, message: state.errorMessage);
             }
           },
         ),

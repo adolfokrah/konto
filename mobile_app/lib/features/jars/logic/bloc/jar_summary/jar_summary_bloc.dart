@@ -27,6 +27,10 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
+      print(jarId);
+
+      // return;
+
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
@@ -65,6 +69,8 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     Emitter<JarSummaryState> emit,
   ) async {
     try {
+      final serviceRegistry = ServiceRegistry();
+      serviceRegistry.jarStorageService.saveCurrentJarId(event.jarId);
       add(GetJarSummaryRequested());
     } catch (e) {
       final serviceRegistry = ServiceRegistry();
