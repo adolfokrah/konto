@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/category_translation_utils.dart';
 
 /// A reusable horizontal category selector widget
 /// Displays a horizontal list of selectable categories with visual feedback
@@ -78,7 +79,10 @@ class CategorySelector extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      category,
+                      CategoryTranslationUtils.translateCategory(
+                        context,
+                        category,
+                      ),
                       style: TextStyles.titleMediumXs,
                       textAlign: TextAlign.center,
                     ),

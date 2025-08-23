@@ -506,6 +506,12 @@ abstract class AppLocalizations {
   /// **'Jars'**
   String get jars;
 
+  /// Singular jar text
+  ///
+  /// In en, this message translates to:
+  /// **'Jar'**
+  String get jar;
+
   /// Contribute button text
   ///
   /// In en, this message translates to:
@@ -625,6 +631,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days left'**
   String daysLeft(int days);
+
+  /// Text shown when deadline has passed
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'
+  ///
+  /// In en, this message translates to:
+  /// **'at'**
+  String get at;
 
   /// Percentage completion text
   ///
@@ -901,6 +919,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to load your jars'**
   String get tapToLoadYourJars;
+
+  /// Title text for jar creation screen
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your jar'**
+  String get setUpYourJar;
+
+  /// Label for jar name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Jar name'**
+  String get jarName;
+
+  /// Placeholder text for jar name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter jar name'**
+  String get enterJarName;
+
+  /// Label for currency selection
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// Label for collaborators section
+  ///
+  /// In en, this message translates to:
+  /// **'Collaborators'**
+  String get collaborators;
+
+  /// Button text to invite collaborators
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get invite;
+
+  /// Error message when jar name field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Jar name cannot be empty'**
+  String get jarNameCannotBeEmpty;
+
+  /// Error message when no jar group is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a jar group'**
+  String get pleaseSelectJarGroup;
+
+  /// Success message when jar is created
+  ///
+  /// In en, this message translates to:
+  /// **'Jar created successfully'**
+  String get jarCreatedSuccessfully;
+
+  /// Default text for unknown or missing names
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// Title for invite collaborators screen
+  ///
+  /// In en, this message translates to:
+  /// **'Invite collaborators'**
+  String get inviteCollaborators;
+
+  /// Placeholder text for contact search input
+  ///
+  /// In en, this message translates to:
+  /// **'Search contacts...'**
+  String get searchContacts;
+
+  /// Button text to retry an action
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// Section header for recent contacts
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recent;
+
+  /// Section header for other contacts
+  ///
+  /// In en, this message translates to:
+  /// **'Other contacts'**
+  String get otherContacts;
+
+  /// Message when no contacts match search query
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found for \"{searchQuery}\"'**
+  String noContactsFoundFor(String searchQuery);
+
+  /// Message when no contacts are available
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found'**
+  String get noContactsFound;
+
+  /// Error message when contacts cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading contacts. Please check app permissions.'**
+  String get errorLoadingContacts;
+
+  /// Default text for unnamed contact
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get contact;
+
+  /// Placeholder text for currency search input
+  ///
+  /// In en, this message translates to:
+  /// **'Search currencies...'**
+  String get searchCurrencies;
+
+  /// Title for currency selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get selectCurrency;
+
+  /// Section header for currently selected currency
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Currency'**
+  String get selectedCurrency;
+
+  /// Section header for available currencies list
+  ///
+  /// In en, this message translates to:
+  /// **'Available Currencies'**
+  String get availableCurrencies;
+
+  /// Button text to change currency selection
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// Error message when jar creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create jar'**
+  String get failedToCreateJar;
+
+  /// Title for image upload bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Image'**
+  String get uploadImage;
+
+  /// Option to take photo with camera
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// Description for take photo option
+  ///
+  /// In en, this message translates to:
+  /// **'Use camera to take a photo'**
+  String get useCameraToTakePhoto;
+
+  /// Option to choose image from gallery
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// Description for gallery selection option
+  ///
+  /// In en, this message translates to:
+  /// **'Select an image from your gallery'**
+  String get selectImageFromGallery;
+
+  /// Loading text when uploading image
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading image...'**
+  String get uploadingImage;
+
+  /// Error message when image upload fails
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get uploadFailed;
+
+  /// Category name for funeral-related jars
+  ///
+  /// In en, this message translates to:
+  /// **'Funeral'**
+  String get categoryFuneral;
+
+  /// Category name for party-related jars
+  ///
+  /// In en, this message translates to:
+  /// **'Parties'**
+  String get categoryParties;
+
+  /// Category name for trip-related jars
+  ///
+  /// In en, this message translates to:
+  /// **'Trips'**
+  String get categoryTrips;
+
+  /// Category name for wedding-related jars
+  ///
+  /// In en, this message translates to:
+  /// **'Weddings'**
+  String get categoryWeddings;
+
+  /// Category name for saving group jars
+  ///
+  /// In en, this message translates to:
+  /// **'Saving groups'**
+  String get categorySavingGroups;
+
+  /// Category name for other types of jars
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,7 @@ import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
 import 'package:konto/core/widgets/searh_input.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class Contact {
   final String name;
@@ -86,7 +87,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
   List<Contact> _selectedContacts = [];
   List<Contact> _phoneContacts = [];
   List<Contact> _filteredPhoneContacts = [];
-  List<Contact> _recentContacts = [];
+  final List<Contact> _recentContacts = [];
   String _searchQuery = '';
   bool _isLoadingContacts = false;
   String? _errorMessage;
@@ -111,6 +112,10 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
       _errorMessage = null;
     });
 
+    // Store localized strings before async operation
+    final unknownText = AppLocalizations.of(context)!.unknown;
+    final errorText = AppLocalizations.of(context)!.errorLoadingContacts;
+
     try {
       List<contacts_service.Contact> contacts =
           await contacts_service.ContactsService.getContacts();
@@ -123,7 +128,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
           phoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
 
           if (phoneNumber.isNotEmpty) {
-            String name = _sanitizeString(contact.displayName ?? 'Unknown');
+            String name = _sanitizeString(contact.displayName ?? unknownText);
             String initials = _getInitials(name);
 
             phoneContacts.add(
@@ -144,7 +149,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
       print('Error loading contacts: $e');
       setState(() {
         _isLoadingContacts = false;
-        _errorMessage = 'Error loading contacts. Please check app permissions.';
+        _errorMessage = errorText;
       });
     }
   }
@@ -258,7 +263,10 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
     try {
       displayName = contact.name.split(' ').first;
     } catch (e) {
-      displayName = contact.name.isNotEmpty ? contact.name : 'Contact';
+      displayName =
+          contact.name.isNotEmpty
+              ? contact.name
+              : AppLocalizations.of(context)!.contact;
     }
 
     // Create a curved animation for smoother scaling
@@ -430,7 +438,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                   children: [
                     Expanded(
                       child: Text(
-                        'Invite collaborators',
+                        AppLocalizations.of(context)!.inviteCollaborators,
                         style: TextStyles.titleMediumLg.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -458,7 +466,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                 ),
                 child: SearchInput(
                   controller: _searchController,
-                  hintText: 'Search contacts...',
+                  hintText: AppLocalizations.of(context)!.searchContacts,
                 ),
               ),
               const SizedBox(height: AppSpacing.spacingM),
@@ -533,7 +541,9 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                                     vertical: AppSpacing.spacingM,
                                   ),
                                 ),
-                                child: const Text('Try Again'),
+                                child: Text(
+                                  AppLocalizations.of(context)!.tryAgain,
+                                ),
                               ),
                             ],
                           ),
@@ -546,7 +556,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                           children: [
                             if (_recentContacts.isNotEmpty) ...[
                               Text(
-                                'Recent',
+                                AppLocalizations.of(context)!.recent,
                                 style: TextStyles.titleMedium.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -569,7 +579,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
 
                             if (_filteredPhoneContacts.isNotEmpty) ...[
                               Text(
-                                'Other contacts',
+                                AppLocalizations.of(context)!.otherContacts,
                                 style: TextStyles.titleMedium.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -599,8 +609,12 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                               Center(
                                 child: Text(
                                   _searchQuery.isNotEmpty
-                                      ? 'No contacts found for "$_searchQuery"'
-                                      : 'No contacts found',
+                                      ? AppLocalizations.of(
+                                        context,
+                                      )!.noContactsFoundFor(_searchQuery)
+                                      : AppLocalizations.of(
+                                        context,
+                                      )!.noContactsFound,
                                   style: TextStyles.titleRegularM.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme

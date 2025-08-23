@@ -22,6 +22,7 @@ import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:konto/features/jars/data/models/jar_model.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarCreateView extends StatefulWidget {
   const JarCreateView({super.key});
@@ -52,7 +53,7 @@ class _JarCreateViewState extends State<JarCreateView> {
         invitedContributors
             .map(
               (contributor) => Contact(
-                name: contributor.name ?? 'Unknown',
+                name: contributor.name ?? AppLocalizations.of(context)!.unknown,
                 phoneNumber: contributor.phoneNumber ?? '',
                 initials: _generateInitials(contributor.name ?? ''),
               ),
@@ -102,14 +103,36 @@ class _JarCreateViewState extends State<JarCreateView> {
     });
   }
 
+  String _translateError(String error) {
+    // Handle translation keys from BLoC
+    switch (error) {
+      case 'failedToCreateJar':
+        return AppLocalizations.of(context)!.failedToCreateJar;
+      default:
+        // Check if error starts with known translation keys
+        if (error.startsWith('unexpectedErrorOccurred:')) {
+          final details = error.substring('unexpectedErrorOccurred:'.length);
+          return AppLocalizations.of(context)!.unexpectedErrorOccurred(details);
+        }
+        // Return original error if no translation found
+        return error;
+    }
+  }
+
   void _createJar() {
     if (nameController.text.isEmpty) {
-      AppSnackBar.showError(context, message: 'Jar name cannot be empty');
+      AppSnackBar.showError(
+        context,
+        message: AppLocalizations.of(context)!.jarNameCannotBeEmpty,
+      );
       return;
     }
 
     if (selectedJarGroup.isEmpty) {
-      AppSnackBar.showError(context, message: 'Please select a jar group');
+      AppSnackBar.showError(
+        context,
+        message: AppLocalizations.of(context)!.pleaseSelectJarGroup,
+      );
       return;
     }
 
@@ -170,7 +193,7 @@ class _JarCreateViewState extends State<JarCreateView> {
             if (state is JarCreateSuccess) {
               AppSnackBar.showSuccess(
                 context,
-                message: 'Jar created successfully',
+                message: AppLocalizations.of(context)!.jarCreatedSuccessfully,
               );
 
               // Get the newly created jar ID from the JarModel
@@ -189,7 +212,10 @@ class _JarCreateViewState extends State<JarCreateView> {
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.jarDetail, (route) => false);
             } else if (state is JarCreateFailure) {
-              AppSnackBar.showError(context, message: state.error);
+              AppSnackBar.showError(
+                context,
+                message: _translateError(state.error),
+              );
             }
           },
         ),
@@ -261,7 +287,9 @@ class _JarCreateViewState extends State<JarCreateView> {
                                         (32.0 *
                                             scrollProgress), // Adjusted to center properly when fully scrolled
                                     child: Text(
-                                      'Set up your jar',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.setUpYourJar,
                                       style: TextStyle(
                                         fontSize:
                                             24.0 -
@@ -306,8 +334,12 @@ class _JarCreateViewState extends State<JarCreateView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   AppTextInput(
-                                    label: 'Jar name',
-                                    hintText: "Enter jar name",
+                                    label:
+                                        AppLocalizations.of(context)!.jarName,
+                                    hintText:
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.enterJarName,
                                     controller: nameController,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
@@ -324,9 +356,10 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     },
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
-                                  const Text(
-                                    'Currency',
-                                    style: TextStyles.titleMedium,
+                                  Text(
+                                    AppLocalizations.of(context)!.currency,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
                                   CurrencyPicker(
@@ -342,8 +375,10 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
-                                        'Collaborators',
+                                      Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.collaborators,
                                         style: TextStyles.titleMedium,
                                       ),
                                       AppSmallButton(
@@ -359,8 +394,10 @@ class _JarCreateViewState extends State<JarCreateView> {
                                             const SizedBox(
                                               width: AppSpacing.spacingXs,
                                             ),
-                                            const Text(
-                                              "Invite",
+                                            Text(
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.invite,
                                               style: TextStyles.titleMediumS,
                                             ),
                                           ],
@@ -414,7 +451,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                   ),
                   child: Center(
                     child: AppButton(
-                      text: 'Create Jar',
+                      text: AppLocalizations.of(context)!.createJar,
                       onPressed: isLoading ? null : _createJar,
                       isLoading: isLoading,
                     ),

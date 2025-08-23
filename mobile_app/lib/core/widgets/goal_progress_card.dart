@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -146,7 +147,9 @@ class GoalProgressCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    localizations.deadlineDate(_formatDate(deadline!)),
+                    localizations.deadlineDate(
+                      _formatDate(deadline!, localizations),
+                    ),
                     style: TextStyles.titleRegularSm,
                   ),
                 ],
@@ -156,7 +159,9 @@ class GoalProgressCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      localizations.daysLeft(daysLeft),
+                      daysLeft < 0
+                          ? localizations.overdue
+                          : localizations.daysLeft(daysLeft),
                       style: TextStyles.titleRegularSm,
                     ),
                   ],
@@ -210,23 +215,10 @@ class GoalProgressCard extends StatelessWidget {
     }
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  String _formatDate(DateTime date, AppLocalizations localizations) {
+    // Use Flutter's built-in date formatting with proper locale
+    final formatter = DateFormat.yMMMd(localizations.localeName);
+    return formatter.format(date);
   }
 
   int? _calculateDaysLeft() {

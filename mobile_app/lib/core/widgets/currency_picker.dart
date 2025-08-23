@@ -6,6 +6,7 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/generic_picker.dart';
 import 'package:konto/core/widgets/small_button.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class CurrencyPicker extends StatefulWidget {
   final Function(Currency)? onCurrencySelected;
@@ -48,10 +49,10 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
       searchFilter: (currency) => '${currency.name} ${currency.code}',
       isItemSelected:
           (currency, selectedValue) => currency.code == selectedValue,
-      searchHint: 'Search currencies...',
-      title: 'Select Currency',
-      recentSectionTitle: 'Selected Currency',
-      otherSectionTitle: 'Available Currencies',
+      searchHint: AppLocalizations.of(context)!.searchCurrencies,
+      title: AppLocalizations.of(context)!.selectCurrency,
+      recentSectionTitle: AppLocalizations.of(context)!.selectedCurrency,
+      otherSectionTitle: AppLocalizations.of(context)!.availableCurrencies,
       showSearch: true, // Enable search with 4 currencies
       initialHeight: 0.9, // Adjusted height for 4 currencies
     );
@@ -104,7 +105,10 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
           backgroundColor:
               isDark ? AppColors.onSurfaceDark : AppColors.backgroundLight,
           onPressed: _showCurrencyPicker,
-          child: const Text("Change", style: TextStyles.titleMediumM),
+          child: Text(
+            AppLocalizations.of(context)!.change,
+            style: TextStyles.titleMediumM,
+          ),
         ),
       ),
     );

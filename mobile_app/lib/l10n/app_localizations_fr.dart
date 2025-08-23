@@ -233,6 +233,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get jars => 'Pots';
 
   @override
+  String get jar => 'Pot';
+
+  @override
   String get contribute => 'Contribuer';
 
   @override
@@ -306,6 +309,12 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get overdue => 'En retard';
+
+  @override
+  String get at => 'at';
+
+  @override
   String percentageCompleted(String percentage) {
     return '$percentage% terminé';
   }
@@ -369,7 +378,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String unexpectedErrorOccurred(String error) {
-    return 'Une erreur inattendue s\'est produite : $error';
+    return 'Une erreur inattendue s\'est produite';
   }
 
   @override
@@ -476,4 +485,123 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tapToLoadYourJars => 'Appuyez pour charger vos pots';
+
+  @override
+  String get setUpYourJar => 'Configurez votre pot';
+
+  @override
+  String get jarName => 'Nom du pot';
+
+  @override
+  String get enterJarName => 'Entrez le nom du pot';
+
+  @override
+  String get currency => 'Devise';
+
+  @override
+  String get collaborators => 'Collaborateurs';
+
+  @override
+  String get invite => 'Inviter';
+
+  @override
+  String get jarNameCannotBeEmpty => 'Le nom du pot ne peut pas être vide';
+
+  @override
+  String get pleaseSelectJarGroup => 'Veuillez sélectionner un groupe de pot';
+
+  @override
+  String get jarCreatedSuccessfully => 'Pot créé avec succès';
+
+  @override
+  String get unknown => 'Inconnu';
+
+  @override
+  String get inviteCollaborators => 'Inviter des collaborateurs';
+
+  @override
+  String get searchContacts => 'Rechercher des contacts...';
+
+  @override
+  String get tryAgain => 'Réessayer';
+
+  @override
+  String get recent => 'Récent';
+
+  @override
+  String get otherContacts => 'Autres contacts';
+
+  @override
+  String noContactsFoundFor(String searchQuery) {
+    return 'Aucun contact trouvé pour \"$searchQuery\"';
+  }
+
+  @override
+  String get noContactsFound => 'Aucun contact trouvé';
+
+  @override
+  String get errorLoadingContacts =>
+      'Erreur lors du chargement des contacts. Veuillez vérifier les autorisations de l\'application.';
+
+  @override
+  String get contact => 'Contact';
+
+  @override
+  String get searchCurrencies => 'Rechercher des devises...';
+
+  @override
+  String get selectCurrency => 'Sélectionner la devise';
+
+  @override
+  String get selectedCurrency => 'Devise sélectionnée';
+
+  @override
+  String get availableCurrencies => 'Devises disponibles';
+
+  @override
+  String get change => 'Modifier';
+
+  @override
+  String get failedToCreateJar => 'Échec de la création du pot';
+
+  @override
+  String get uploadImage => 'Télécharger une image';
+
+  @override
+  String get takePhoto => 'Prendre une photo';
+
+  @override
+  String get useCameraToTakePhoto =>
+      'Utiliser l\'appareil photo pour prendre une photo';
+
+  @override
+  String get chooseFromGallery => 'Choisir dans la galerie';
+
+  @override
+  String get selectImageFromGallery =>
+      'Sélectionner une image de votre galerie';
+
+  @override
+  String get uploadingImage => 'Téléchargement de l\'image...';
+
+  @override
+  String get uploadFailed => 'Échec du téléchargement';
+
+  @override
+  String get categoryFuneral => 'Funérailles';
+
+  @override
+  String get categoryParties => 'Fêtes';
+
+  @override
+  String get categoryTrips => 'Voyages';
+
+  @override
+  String get categoryWeddings => 'Mariages';
+
+  @override
+  String get categorySavingGroups => 'Groupes d\'épargne';
+
+  @override
+  String get categoryOther => 'Autre';
 }

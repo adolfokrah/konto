@@ -5,6 +5,7 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/services/jar_expansion_state_service.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/category_translation_utils.dart';
 import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/icon_button.dart';
@@ -147,6 +148,7 @@ class _JarsListViewState extends State<JarsListView> {
                     },
                   ),
                 ),
+                const SizedBox(height: AppSpacing.spacingM),
                 Center(
                   child: AppSmallButton(
                     padding: EdgeInsets.only(
@@ -304,15 +306,15 @@ class _JarsListViewState extends State<JarsListView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          jarGroup.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurface,
+                          CategoryTranslationUtils.translateCategory(
+                            context,
+                            jarGroup.name,
                           ),
+                          style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${jarGroup.jars.length} ${jarGroup.jars.length == 1 ? 'Jar' : localizations.jars}',
+                          '${jarGroup.jars.length} ${jarGroup.jars.length == 1 ? localizations.jar : localizations.jars}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.7,

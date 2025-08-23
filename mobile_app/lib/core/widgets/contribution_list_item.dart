@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -156,7 +156,7 @@ class ContributionListItem extends StatelessWidget {
 
     // If more than 2 days ago, show exact date and time
     if (difference.inDays > 2) {
-      return _formatExactDateTime(dateTime);
+      return _formatExactDateTime(dateTime, localizations);
     } else if (difference.inDays > 0) {
       return difference.inDays == 1
           ? localizations.dayAgo(difference.inDays)
@@ -175,35 +175,18 @@ class ContributionListItem extends StatelessWidget {
   }
 
   /// Format the exact date and time for contributions older than 2 days
-  String _formatExactDateTime(DateTime dateTime) {
-    // Format: "Jan 15, 2025 at 2:30 PM"
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
+  String _formatExactDateTime(
+    DateTime dateTime,
+    AppLocalizations localizations,
+  ) {
+    // Use Flutter's built-in date and time formatting with proper locale
+    final dateFormatter = DateFormat.yMMMd(localizations.localeName);
+    final timeFormatter = DateFormat.jm(localizations.localeName);
 
-    final month = months[dateTime.month - 1];
-    final day = dateTime.day;
-    final year = dateTime.year;
+    final formattedDate = dateFormatter.format(dateTime);
+    final formattedTime = timeFormatter.format(dateTime);
 
-    final hour = dateTime.hour;
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-
-    // Convert to 12-hour format
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-
-    return '$month $day, $year at $displayHour:$minute $period';
+    return '$formattedDate, $formattedTime';
   }
 
   String _getInitials(String name) {

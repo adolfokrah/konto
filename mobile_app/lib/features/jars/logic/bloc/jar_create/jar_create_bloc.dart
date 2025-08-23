@@ -7,6 +7,10 @@ part 'jar_create_event.dart';
 part 'jar_create_state.dart';
 
 class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
+  // Error constants for translation keys
+  static const String _errorFailedToCreateJar = 'failedToCreateJar';
+  static const String _errorUnexpected = 'unexpectedErrorOccurred';
+
   JarCreateBloc() : super(JarCreateInitial()) {
     on<JarCreateSubmitted>(_onJarCreateSubmitted);
   }
@@ -41,10 +45,10 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
         final jar = JarModel.fromJson(result['data']);
         emit(JarCreateSuccess(jar));
       } else {
-        emit(JarCreateFailure(result['message'] ?? 'Failed to create jar'));
+        emit(JarCreateFailure(result['message'] ?? _errorFailedToCreateJar));
       }
     } catch (e) {
-      emit(JarCreateFailure('An unexpected error occurred: ${e.toString()}'));
+      emit(JarCreateFailure('$_errorUnexpected:${e.toString()}'));
     }
   }
 }

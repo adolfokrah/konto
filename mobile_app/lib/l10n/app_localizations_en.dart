@@ -230,6 +230,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jars => 'Jars';
 
   @override
+  String get jar => 'Jar';
+
+  @override
   String get contribute => 'Contribute';
 
   @override
@@ -298,6 +301,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String daysLeft(int days) {
     return '$days days left';
   }
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get at => 'at';
 
   @override
   String percentageCompleted(String percentage) {
@@ -467,4 +476,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToLoadYourJars => 'Tap to load your jars';
+
+  @override
+  String get setUpYourJar => 'Set up your jar';
+
+  @override
+  String get jarName => 'Jar name';
+
+  @override
+  String get enterJarName => 'Enter jar name';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get collaborators => 'Collaborators';
+
+  @override
+  String get invite => 'Invite';
+
+  @override
+  String get jarNameCannotBeEmpty => 'Jar name cannot be empty';
+
+  @override
+  String get pleaseSelectJarGroup => 'Please select a jar group';
+
+  @override
+  String get jarCreatedSuccessfully => 'Jar created successfully';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get inviteCollaborators => 'Invite collaborators';
+
+  @override
+  String get searchContacts => 'Search contacts...';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get recent => 'Recent';
+
+  @override
+  String get otherContacts => 'Other contacts';
+
+  @override
+  String noContactsFoundFor(String searchQuery) {
+    return 'No contacts found for \"$searchQuery\"';
+  }
+
+  @override
+  String get noContactsFound => 'No contacts found';
+
+  @override
+  String get errorLoadingContacts =>
+      'Error loading contacts. Please check app permissions.';
+
+  @override
+  String get contact => 'Contact';
+
+  @override
+  String get searchCurrencies => 'Search currencies...';
+
+  @override
+  String get selectCurrency => 'Select Currency';
+
+  @override
+  String get selectedCurrency => 'Selected Currency';
+
+  @override
+  String get availableCurrencies => 'Available Currencies';
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String get failedToCreateJar => 'Failed to create jar';
+
+  @override
+  String get uploadImage => 'Upload Image';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get useCameraToTakePhoto => 'Use camera to take a photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get selectImageFromGallery => 'Select an image from your gallery';
+
+  @override
+  String get uploadingImage => 'Uploading image...';
+
+  @override
+  String get uploadFailed => 'Upload failed';
+
+  @override
+  String get categoryFuneral => 'Funeral';
+
+  @override
+  String get categoryParties => 'Parties';
+
+  @override
+  String get categoryTrips => 'Trips';
+
+  @override
+  String get categoryWeddings => 'Weddings';
+
+  @override
+  String get categorySavingGroups => 'Saving groups';
+
+  @override
+  String get categoryOther => 'Other';
 }

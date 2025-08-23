@@ -367,6 +367,11 @@
     "description": "Jars text on button"
   },
 
+  "jar": "Jar",
+  "@jar": {
+    "description": "Singular jar text"
+  },
+
   "contribute": "Contribute",
   "@contribute": {
     "description": "Contribute button text"
@@ -493,6 +498,16 @@
         "example": "30"
       }
     }
+  },
+
+  "overdue": "Overdue",
+  "@overdue": {
+    "description": "Text shown when deadline has passed"
+  },
+
+  "at": "at",
+  "@at": {
+    "description": "Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'"
   },
 
   "percentageCompleted": "{percentage}% completed",
@@ -801,5 +816,201 @@
   "tapToLoadYourJars": "Tap to load your jars",
   "@tapToLoadYourJars": {
     "description": "Message for initial state before loading jars"
+  },
+
+  "setUpYourJar": "Set up your jar",
+  "@setUpYourJar": {
+    "description": "Title text for jar creation screen"
+  },
+
+  "jarName": "Jar name",
+  "@jarName": {
+    "description": "Label for jar name input field"
+  },
+
+  "enterJarName": "Enter jar name",
+  "@enterJarName": {
+    "description": "Placeholder text for jar name input field"
+  },
+
+  "currency": "Currency",
+  "@currency": {
+    "description": "Label for currency selection"
+  },
+
+  "collaborators": "Collaborators",
+  "@collaborators": {
+    "description": "Label for collaborators section"
+  },
+
+  "invite": "Invite",
+  "@invite": {
+    "description": "Button text to invite collaborators"
+  },
+
+  "jarNameCannotBeEmpty": "Jar name cannot be empty",
+  "@jarNameCannotBeEmpty": {
+    "description": "Error message when jar name field is empty"
+  },
+
+  "pleaseSelectJarGroup": "Please select a jar group",
+  "@pleaseSelectJarGroup": {
+    "description": "Error message when no jar group is selected"
+  },
+
+  "jarCreatedSuccessfully": "Jar created successfully",
+  "@jarCreatedSuccessfully": {
+    "description": "Success message when jar is created"
+  },
+
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Default text for unknown or missing names"
+  },
+
+  "inviteCollaborators": "Invite collaborators",
+  "@inviteCollaborators": {
+    "description": "Title for invite collaborators screen"
+  },
+
+  "searchContacts": "Search contacts...",
+  "@searchContacts": {
+    "description": "Placeholder text for contact search input"
+  },
+
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Button text to retry an action"
+  },
+
+  "recent": "Recent",
+  "@recent": {
+    "description": "Section header for recent contacts"
+  },
+
+  "otherContacts": "Other contacts",
+  "@otherContacts": {
+    "description": "Section header for other contacts"
+  },
+
+  "noContactsFoundFor": "No contacts found for \"{searchQuery}\"",
+  "@noContactsFoundFor": {
+    "description": "Message when no contacts match search query",
+    "placeholders": {
+      "searchQuery": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "noContactsFound": "No contacts found",
+  "@noContactsFound": {
+    "description": "Message when no contacts are available"
+  },
+
+  "errorLoadingContacts": "Error loading contacts. Please check app permissions.",
+  "@errorLoadingContacts": {
+    "description": "Error message when contacts cannot be loaded"
+  },
+
+  "contact": "Contact",
+  "@contact": {
+    "description": "Default text for unnamed contact"
+  },
+
+  "searchCurrencies": "Search currencies...",
+  "@searchCurrencies": {
+    "description": "Placeholder text for currency search input"
+  },
+
+  "selectCurrency": "Select Currency",
+  "@selectCurrency": {
+    "description": "Title for currency selection dialog"
+  },
+
+  "selectedCurrency": "Selected Currency",
+  "@selectedCurrency": {
+    "description": "Section header for currently selected currency"
+  },
+
+  "availableCurrencies": "Available Currencies",
+  "@availableCurrencies": {
+    "description": "Section header for available currencies list"
+  },
+
+  "change": "Change",
+  "@change": {
+    "description": "Button text to change currency selection"
+  },
+
+  "failedToCreateJar": "Failed to create jar",
+  "@failedToCreateJar": {
+    "description": "Error message when jar creation fails"
+  },
+
+  "uploadImage": "Upload Image",
+  "@uploadImage": {
+    "description": "Title for image upload bottom sheet"
+  },
+
+  "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Option to take photo with camera"
+  },
+
+  "useCameraToTakePhoto": "Use camera to take a photo",
+  "@useCameraToTakePhoto": {
+    "description": "Description for take photo option"
+  },
+
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {
+    "description": "Option to choose image from gallery"
+  },
+
+  "selectImageFromGallery": "Select an image from your gallery",
+  "@selectImageFromGallery": {
+    "description": "Description for gallery selection option"
+  },
+
+  "uploadingImage": "Uploading image...",
+  "@uploadingImage": {
+    "description": "Loading text when uploading image"
+  },
+
+  "uploadFailed": "Upload failed",
+  "@uploadFailed": {
+    "description": "Error message when image upload fails"
+  },
+
+  "categoryFuneral": "Funeral",
+  "@categoryFuneral": {
+    "description": "Category name for funeral-related jars"
+  },
+
+  "categoryParties": "Parties",
+  "@categoryParties": {
+    "description": "Category name for party-related jars"
+  },
+
+  "categoryTrips": "Trips",
+  "@categoryTrips": {
+    "description": "Category name for trip-related jars"
+  },
+
+  "categoryWeddings": "Weddings",
+  "@categoryWeddings": {
+    "description": "Category name for wedding-related jars"
+  },
+
+  "categorySavingGroups": "Saving groups",
+  "@categorySavingGroups": {
+    "description": "Category name for saving group jars"
+  },
+
+  "categoryOther": "Other",
+  "@categoryOther": {
+    "description": "Category name for other types of jars"
   }
 }

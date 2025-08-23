@@ -7,6 +7,7 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
+import 'package:konto/l10n/app_localizations.dart';
 import '../../logic/bloc/media_bloc.dart';
 
 /// A bottom sheet widget for selecting and uploading images (camera or gallery)
@@ -43,7 +44,9 @@ class ImageUploaderBottomSheet extends StatelessWidget {
           // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Upload failed: ${state.errorMessage}'),
+              content: Text(
+                '${AppLocalizations.of(context)!.uploadFailed}: ${state.errorMessage}',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -79,7 +82,7 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Upload Image',
+                          AppLocalizations.of(context)!.uploadImage,
                           style: TextStyles.titleMediumLg.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -105,8 +108,11 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                         _buildOptionTile(
                           context,
                           icon: Icons.camera_alt_outlined,
-                          title: 'Take Photo',
-                          subtitle: 'Use camera to take a photo',
+                          title: AppLocalizations.of(context)!.takePhoto,
+                          subtitle:
+                              AppLocalizations.of(
+                                context,
+                              )!.useCameraToTakePhoto,
                           onTap:
                               () => _handleImageSelection(
                                 context,
@@ -119,8 +125,12 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                         _buildOptionTile(
                           context,
                           icon: Icons.photo_library_outlined,
-                          title: 'Choose from Gallery',
-                          subtitle: 'Select an image from your gallery',
+                          title:
+                              AppLocalizations.of(context)!.chooseFromGallery,
+                          subtitle:
+                              AppLocalizations.of(
+                                context,
+                              )!.selectImageFromGallery,
                           onTap:
                               () => _handleImageSelection(
                                 context,
@@ -131,13 +141,13 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                     ),
                   ),
                 ] else ...[
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(AppSpacing.spacingL),
                     child: Column(
                       children: [
                         CircularProgressIndicator(),
                         SizedBox(height: AppSpacing.spacingM),
-                        Text('Uploading image...'),
+                        Text(AppLocalizations.of(context)!.uploadingImage),
                       ],
                     ),
                   ),
