@@ -307,7 +307,15 @@ class _JarDetailViewState extends State<JarDetailView> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        AppIconButton(onPressed: () {}, icon: Icons.add),
+                        AppIconButton(
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.addContribution,
+                            );
+                          },
+                          icon: Icons.add,
+                        ),
                         const SizedBox(height: AppSpacing.spacingXs),
                         Text(
                           localizations.contribute,
@@ -417,7 +425,11 @@ class _JarDetailViewState extends State<JarDetailView> {
                           ),
                           const SizedBox(height: AppSpacing.spacingXs),
                           RevolutStyleCounterWithCurrency(
-                            value: jarData.formattedTotalContributions,
+                            value:
+                                CurrencyUtils.getCurrencySymbol(
+                                  jarData.currency,
+                                ) +
+                                jarData.totalContributedAmount.toString(),
                             style: TextStyles.titleBoldLg,
                             duration: const Duration(milliseconds: 800),
                           ),
@@ -439,7 +451,7 @@ class _JarDetailViewState extends State<JarDetailView> {
               const SizedBox(height: AppSpacing.spacingXs),
               // Goal Progress Card
               GoalProgressCard(
-                currentAmount: jarData.totalContributions,
+                currentAmount: jarData.totalContributedAmount,
                 goalAmount: jarData.goalAmount,
                 currency: jarData.currency,
                 deadline: jarData.deadline,
@@ -534,16 +546,20 @@ class _JarDetailViewState extends State<JarDetailView> {
                                           ContributionListItem(
                                             contributorName:
                                                 contribution.contributor ??
-                                                localizations.userWithLastDigits(
-                                                  contribution
-                                                      .contributorPhoneNumber
-                                                      .substring(
-                                                        contribution
-                                                                .contributorPhoneNumber
-                                                                .length -
-                                                            4,
-                                                      ),
-                                                ),
+                                                (contribution
+                                                            .contributorPhoneNumber !=
+                                                        null
+                                                    ? localizations.userWithLastDigits(
+                                                      contribution
+                                                          .contributorPhoneNumber!
+                                                          .substring(
+                                                            contribution
+                                                                    .contributorPhoneNumber!
+                                                                    .length -
+                                                                4,
+                                                          ),
+                                                    )
+                                                    : localizations.anonymous),
                                             amount:
                                                 contribution.amountContributed,
                                             currency: jarData.currency,

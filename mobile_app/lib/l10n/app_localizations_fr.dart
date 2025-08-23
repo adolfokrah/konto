@@ -239,6 +239,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contribute => 'Contribuer';
 
   @override
+  String get addContribution => 'Ajouter une contribution';
+
+  @override
   String get request => 'Demander';
 
   @override
@@ -297,6 +300,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String goalAmountOf(String currency, String amount) {
     return 'sur $currency$amount';
   }
+
+  @override
+  String get pleaseEnterValidAmount => 'Veuillez saisir un montant valide';
 
   @override
   String deadlineDate(String date) {

@@ -203,16 +203,15 @@ class ContributionListItem extends StatelessWidget {
   }
 
   IconData _getOverlayIcon() {
+    if (paymentStatus == 'pending') {
+      return Icons.info;
+    }
     if (viaPaymentLink == true) {
       return Icons.call_received;
     }
     if (paymentStatus == 'transferred') {
       return Icons.arrow_forward;
     }
-    if (paymentMethod != null &&
-        ['cash', 'bank-transfer'].contains(paymentMethod!.toLowerCase())) {
-      return Icons.add;
-    }
-    return Icons.info; // fallback
+    return Icons.add;
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
+import 'package:konto/features/contribution/presentation/views/add_contribution_view.dart';
 import 'package:konto/features/contribution/presentation/views/request_contribution_view.dart';
+import 'package:konto/features/contribution/presentation/views/request_momo_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
@@ -17,6 +19,8 @@ class AppRoutes {
     '/otp': (context) => const OtpView(),
     '/jar_detail': (context) => const JarDetailView(),
     '/request_contribution': (context) => RequestContributionView(),
+    '/add_contribution': (context) => const AddContributionView(),
+    '/request_momo': (context) => const RequestMomoView(),
     '/jar_create': (context) => const JarCreateView(),
   };
 
@@ -28,5 +32,7 @@ class AppRoutes {
   static const String otp = '/otp';
   static const String jarDetail = '/jar_detail';
   static const String contributionRequest = '/request_contribution';
+  static const String addContribution = '/add_contribution';
+  static const String requestMomo = '/request_momo';
   static const String jarCreate = '/jar_create';
 }

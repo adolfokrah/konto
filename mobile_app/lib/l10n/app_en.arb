@@ -377,6 +377,11 @@
     "description": "Contribute button text"
   },
 
+  "addContribution": "Add contribution",
+  "@addContribution": {
+    "description": "Add contribution page title"
+  },
+
   "request": "Request",
   "@request": {
     "description": "Request button text"
@@ -476,6 +481,11 @@
         "example": "1000"
       }
     }
+  },
+
+  "pleaseEnterValidAmount": "Please enter a valid amount",
+  "@pleaseEnterValidAmount": {
+    "description": "Error message for invalid amount input"
   },
 
   "deadlineDate": "Deadline {date}",

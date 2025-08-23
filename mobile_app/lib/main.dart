@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
+import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -45,6 +46,7 @@ class MainApp extends StatelessWidget {
         BlocProvider(create: (context) => JarListBloc()),
         BlocProvider(create: (context) => JarCreateBloc()),
         BlocProvider(create: (context) => MediaBloc()),
+        BlocProvider(create: (context) => AddContributionBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

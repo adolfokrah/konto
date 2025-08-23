@@ -518,6 +518,12 @@ abstract class AppLocalizations {
   /// **'Contribute'**
   String get contribute;
 
+  /// Add contribution page title
+  ///
+  /// In en, this message translates to:
+  /// **'Add contribution'**
+  String get addContribution;
+
   /// Request button text
   ///
   /// In en, this message translates to:
@@ -619,6 +625,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'of {currency}{amount}'**
   String goalAmountOf(String currency, String amount);
+
+  /// Error message for invalid amount input
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get pleaseEnterValidAmount;
 
   /// Deadline text with date
   ///

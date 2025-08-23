@@ -274,8 +274,15 @@ export interface Contribution {
    */
   jar: string | Jar;
   contributor?: string | null;
-  contributorPhoneNumber: string;
+  /**
+   * Phone number of the contributor
+   */
+  contributorPhoneNumber?: string | null;
   paymentMethod?: ('mobile-money' | 'bank-transfer' | 'cash') | null;
+  /**
+   * Account number for bank transfers
+   */
+  accountNumber?: string | null;
   amountContributed: number;
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
@@ -455,6 +462,7 @@ export interface ContributionsSelect<T extends boolean = true> {
   contributor?: T;
   contributorPhoneNumber?: T;
   paymentMethod?: T;
+  accountNumber?: T;
   amountContributed?: T;
   paymentStatus?: T;
   collector?: T;

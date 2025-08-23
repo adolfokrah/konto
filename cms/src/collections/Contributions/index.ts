@@ -5,7 +5,7 @@ import { setPaymentStatus } from './hooks'
 export const Contributions: CollectionConfig = {
   slug: 'contributions',
   admin: {
-    useAsTitle: 'contributorPhoneNumber',
+    useAsTitle: 'contributor',
   },
   fields: [
     {
@@ -26,7 +26,20 @@ export const Contributions: CollectionConfig = {
     {
       name: 'contributorPhoneNumber',
       type: 'text',
-      required: true,
+      required: false,
+      admin: {
+        description: 'Phone number of the contributor',
+      },
+      hooks: {
+        beforeChange: [
+          ({ data }) => {
+            // Phone number is only required for mobile-money payments
+            if (data?.paymentMethod === 'mobile-money' && !data?.contributorPhoneNumber) {
+              throw new Error('Phone number is required for mobile-money payments')
+            }
+          },
+        ],
+      },
     },
     {
       name: 'paymentMethod',
@@ -36,6 +49,25 @@ export const Contributions: CollectionConfig = {
         { label: 'Bank Transfer', value: 'bank-transfer' },
         { label: 'Cash', value: 'cash' },
       ],
+    },
+    {
+      name: 'accountNumber',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'Account number for bank transfers',
+        condition: data => data?.paymentMethod === 'bank-transfer',
+      },
+      hooks: {
+        beforeChange: [
+          ({ data }) => {
+            // Account number is only required for bank-transfer payments
+            if (data?.paymentMethod === 'bank-transfer' && !data?.accountNumber) {
+              throw new Error('Account number is required for bank-transfer payments')
+            }
+          },
+        ],
+      },
     },
     {
       name: 'amountContributed',

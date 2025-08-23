@@ -150,6 +150,7 @@ describe('Contributions Collection Integration Tests', () => {
         contributor: 'Jane Smith',
         contributorPhoneNumber: '+233541234571',
         paymentMethod: 'bank-transfer' as const,
+        accountNumber: '1234567890',
         amountContributed: 200,
         collector: collectorUser.id,
         viaPaymentLink: true,
@@ -216,6 +217,7 @@ describe('Contributions Collection Integration Tests', () => {
           contributor: 'Bob Wilson',
           contributorPhoneNumber: '+233541222222',
           paymentMethod: 'bank-transfer' as const,
+          accountNumber: '9876543210',
           amountContributed: 250,
           collector: testUser.id,
           viaPaymentLink: true,
@@ -392,6 +394,7 @@ describe('Contributions Collection Integration Tests', () => {
         id: testContribution.id,
         data: {
           paymentMethod: 'bank-transfer',
+          accountNumber: '5555555555',
         },
       })
 
@@ -489,6 +492,7 @@ describe('Contributions Collection Integration Tests', () => {
           contributor: 'Medium Value Contributor',
           contributorPhoneNumber: '+233541222222',
           paymentMethod: 'bank-transfer' as const,
+          accountNumber: '1111111111',
           amountContributed: 200,
           collector: testUser.id,
           viaPaymentLink: false,
@@ -506,6 +510,7 @@ describe('Contributions Collection Integration Tests', () => {
           contributor: 'Bank Transfer User',
           contributorPhoneNumber: '+233541444444',
           paymentMethod: 'bank-transfer' as const,
+          accountNumber: '2222222222',
           amountContributed: 300,
           collector: testUser.id,
           viaPaymentLink: true,

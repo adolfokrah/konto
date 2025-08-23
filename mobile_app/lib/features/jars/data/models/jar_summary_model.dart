@@ -335,7 +335,7 @@ class ContributionModel {
   final dynamic
   jar; // Can be String ID or populated JarModel - keep as dynamic for flexibility
   final String? contributor;
-  final String contributorPhoneNumber;
+  final String? contributorPhoneNumber;
   final String? paymentMethod; // 'mobile-money' | 'bank-transfer' | 'cash'
   final double amountContributed;
   final String
@@ -349,7 +349,7 @@ class ContributionModel {
     required this.id,
     required this.jar,
     this.contributor,
-    required this.contributorPhoneNumber,
+    this.contributorPhoneNumber,
     this.paymentMethod,
     required this.amountContributed,
     required this.paymentStatus,
@@ -364,7 +364,7 @@ class ContributionModel {
       id: json['id'] as String,
       jar: json['jar'], // Keep as dynamic - can be String or Map
       contributor: json['contributor'] as String?,
-      contributorPhoneNumber: json['contributorPhoneNumber'] as String,
+      contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
       paymentMethod: json['paymentMethod'] as String?,
       amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
       paymentStatus: json['paymentStatus'] as String,
