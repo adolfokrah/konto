@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_colors.dart';
+import 'package:konto/core/constants/app_images.dart';
 import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/features/onboarding/data/models/onboarding_data.dart'
     show OnBoardingData;
@@ -16,7 +17,7 @@ class LocalizedOnboardingData {
         backgroundColor: AppColors.primaryLight,
         buttonVariant: ButtonVariant.fill,
         buttonText: localizations.next,
-        illustration: "assets/images/onboarding_slide_1.png",
+        illustration: AppImages.onboardingSlide1,
       ),
       OnBoardingData(
         title: localizations.onboardingTitle2,
@@ -24,7 +25,7 @@ class LocalizedOnboardingData {
         backgroundColor: AppColors.secondaryGreen,
         buttonVariant: ButtonVariant.fill,
         buttonText: localizations.next,
-        illustration: "assets/images/onboarding_slide_2.png",
+        illustration: AppImages.onboardingSlide2,
       ),
       OnBoardingData(
         title: localizations.onboardingTitle3,
@@ -32,7 +33,7 @@ class LocalizedOnboardingData {
         backgroundColor: AppColors.backgroundLight,
         buttonVariant: ButtonVariant.outline,
         buttonText: localizations.continueText,
-        illustration: "assets/images/onboarding_slide_3.png",
+        illustration: AppImages.onboardingSlide3,
       ),
     ];
   }

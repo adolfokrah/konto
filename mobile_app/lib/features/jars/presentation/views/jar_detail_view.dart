@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/constants/app_colors.dart';
+import 'package:konto/core/constants/app_images.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/currency_utils.dart';
@@ -482,11 +484,14 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 child: Column(
                                   children: [
                                     Image.asset(
-                                      'assets/images/onboarding_slide_1.png',
+                                      AppImages.onboardingSlide1,
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.contain,
-                                      color: Colors.white,
+                                      color:
+                                          isDark
+                                              ? Colors.white
+                                              : AppColors.black,
                                       colorBlendMode: BlendMode.srcIn,
                                     ),
                                     const SizedBox(height: AppSpacing.spacingM),
@@ -615,7 +620,7 @@ class _JarDetailViewState extends State<JarDetailView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/onboarding_slide_1.png',
+                  AppImages.onboardingSlide1,
                   width: 200,
                   height: 200,
                   fit: BoxFit.contain,

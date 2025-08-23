@@ -1,4 +1,5 @@
 import 'package:konto/core/constants/app_colors.dart';
+import 'package:konto/core/constants/app_images.dart';
 import 'package:konto/core/constants/button_variants.dart';
 import 'package:konto/features/onboarding/data/models/onboarding_data.dart'
     show OnBoardingData;
@@ -11,7 +12,7 @@ final List<OnBoardingData> onBoardingData = [
     backgroundColor: AppColors.primaryLight,
     buttonVariant: ButtonVariant.fill,
     buttonText: "Next",
-    illustration: "assets/images/onboarding_slide_1.png",
+    illustration: AppImages.onboardingSlide1,
   ),
   OnBoardingData(
     title: "Give with\nConfidence",
@@ -20,7 +21,7 @@ final List<OnBoardingData> onBoardingData = [
     backgroundColor: AppColors.secondaryGreen,
     buttonVariant: ButtonVariant.fill,
     buttonText: "Next",
-    illustration: "assets/images/onboarding_slide_2.png",
+    illustration: AppImages.onboardingSlide2,
   ),
   OnBoardingData(
     title: "Track Every\nContribution",
@@ -29,6 +30,6 @@ final List<OnBoardingData> onBoardingData = [
     backgroundColor: AppColors.backgroundLight,
     buttonVariant: ButtonVariant.outline,
     buttonText: "Continue",
-    illustration: "assets/images/onboarding_slide_3.png",
+    illustration: AppImages.onboardingSlide3,
   ),
 ];
