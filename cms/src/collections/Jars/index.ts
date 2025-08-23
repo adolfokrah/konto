@@ -89,10 +89,6 @@ export const Jars: CollectionConfig = {
         if (typeof value !== 'string') {
           return 'Currency must be a string'
         }
-        const validCurrencies = ['ghc', 'ngn']
-        if (!validCurrencies.includes(value.toLowerCase())) {
-          return `Currency must be one of: ${validCurrencies.join(', ')}`
-        }
         return true
       },
       admin: {

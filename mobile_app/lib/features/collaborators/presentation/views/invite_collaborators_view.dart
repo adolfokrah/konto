@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart' as contacts_service;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -91,34 +93,100 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
   String _searchQuery = '';
   bool _isLoadingContacts = false;
   String? _errorMessage;
+  bool _hasInitialized = false;
+  Timer? _fallbackTimer;
 
   @override
   void initState() {
     super.initState();
     _selectedContacts = List.from(widget.selectedContacts);
-    _loadPhoneContacts();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      _handlePermissionRequest();
+
+      // Fallback timeout - if loading takes more than 15 seconds, stop it
+      _fallbackTimer = Timer(const Duration(seconds: 15), () {
+        if (mounted && _isLoadingContacts) {
+          setState(() {
+            _isLoadingContacts = false;
+            _errorMessage = AppLocalizations.of(context)!.errorLoadingContacts;
+          });
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _fallbackTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _loadPhoneContacts() async {
+  Future<void> _handlePermissionRequest() async {
+    try {
+      // Try to directly request contacts permission
+      final status = await Permission.contacts.request();
+
+      if (status.isGranted) {
+        await _loadContactsWithoutPermissionCheck();
+      } else if (status.isPermanentlyDenied) {
+        // iOS bug workaround: try to load contacts even if marked as permanently denied
+        try {
+          await _loadContactsWithoutPermissionCheck();
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _isLoadingContacts = false;
+              _errorMessage =
+                  AppLocalizations.of(
+                    context,
+                  )!.contactsPermissionPermanentlyDenied;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingContacts = false;
+            _errorMessage =
+                AppLocalizations.of(context)!.contactsPermissionRequired;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingContacts = false;
+          _errorMessage = AppLocalizations.of(
+            context,
+          )!.errorRequestingContactsPermission(e.toString());
+        });
+      }
+    }
+  }
+
+  Future<void> _loadContactsWithoutPermissionCheck() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoadingContacts = true;
       _errorMessage = null;
     });
 
-    // Store localized strings before async operation
-    final unknownText = AppLocalizations.of(context)!.unknown;
-    final errorText = AppLocalizations.of(context)!.errorLoadingContacts;
-
     try {
-      List<contacts_service.Contact> contacts =
-          await contacts_service.ContactsService.getContacts();
+      final localizations = AppLocalizations.of(context)!;
+      final unknownText = localizations.unknown;
+
+      List<contacts_service.Contact> contacts = await contacts_service
+              .ContactsService.getContacts()
+          .timeout(const Duration(seconds: 10));
 
       List<Contact> phoneContacts = [];
 
@@ -140,17 +208,20 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
 
       phoneContacts.sort((a, b) => a.name.compareTo(b.name));
 
-      setState(() {
-        _phoneContacts = phoneContacts;
-        _filteredPhoneContacts = phoneContacts;
-        _isLoadingContacts = false;
-      });
+      if (mounted) {
+        setState(() {
+          _phoneContacts = phoneContacts;
+          _filteredPhoneContacts = phoneContacts;
+          _isLoadingContacts = false;
+        });
+      }
     } catch (e) {
-      print('Error loading contacts: $e');
-      setState(() {
-        _isLoadingContacts = false;
-        _errorMessage = errorText;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingContacts = false;
+          _errorMessage = AppLocalizations.of(context)!.errorLoadingContacts;
+        });
+      }
     }
   }
 
@@ -183,7 +254,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
         return nameParts[0][0].toUpperCase();
       }
     } catch (e) {
-      print('Error generating initials for: $name - $e');
+      // Handle error silently
     }
     return '?';
   }
@@ -231,8 +302,10 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
       if (_selectedContacts.length >= 4) {
         // Show a snackbar to inform the user about the limit
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Maximum 4 collaborators can be selected'),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.maximumCollaboratorsSelected,
+            ),
             duration: Duration(seconds: 2),
           ),
         );
@@ -450,7 +523,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                         Navigator.pop(context);
                       },
                       child: Text(
-                        'Done (${_selectedContacts.length}/4)',
+                        '${AppLocalizations.of(context)!.done} (${_selectedContacts.length}/4)',
                         style: TextStyles.titleMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -529,21 +602,54 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                                 ),
                               ),
                               const SizedBox(height: AppSpacing.spacingM),
-                              ElevatedButton(
-                                onPressed: _loadPhoneContacts,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.spacingL,
-                                    vertical: AppSpacing.spacingM,
-                                  ),
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(context)!.tryAgain,
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_errorMessage!.contains('Settings'))
+                                    ElevatedButton(
+                                      onPressed: () => openAppSettings(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        foregroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.spacingL,
+                                          vertical: AppSpacing.spacingM,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.openSettings,
+                                      ),
+                                    )
+                                  else
+                                    ElevatedButton(
+                                      onPressed: _handlePermissionRequest,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        foregroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.spacingL,
+                                          vertical: AppSpacing.spacingM,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.tryAgain,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                           ),

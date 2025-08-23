@@ -919,6 +919,42 @@
     "description": "Default text for unnamed contact"
   },
 
+  "done": "Done",
+  "@done": {
+    "description": "Done button text"
+  },
+
+  "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Button text to open app settings"
+  },
+
+  "maximumCollaboratorsSelected": "Maximum 4 collaborators can be selected",
+  "@maximumCollaboratorsSelected": {
+    "description": "Error message when trying to select more than 4 collaborators"
+  },
+
+  "contactsPermissionPermanentlyDenied": "Contacts permission is permanently denied. Please enable it in Settings > Privacy & Security > Contacts.",
+  "@contactsPermissionPermanentlyDenied": {
+    "description": "Error message when contacts permission is permanently denied"
+  },
+
+  "contactsPermissionRequired": "Contacts permission is required to invite collaborators.",
+  "@contactsPermissionRequired": {
+    "description": "Error message when contacts permission is not granted"
+  },
+
+  "errorRequestingContactsPermission": "Error requesting contacts permission: {error}",
+  "@errorRequestingContactsPermission": {
+    "description": "Error message when there's an issue requesting contacts permission",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Permission denied"
+      }
+    }
+  },
+
   "searchCurrencies": "Search currencies...",
   "@searchCurrencies": {
     "description": "Placeholder text for currency search input"
@@ -937,6 +973,31 @@
   "availableCurrencies": "Available Currencies",
   "@availableCurrencies": {
     "description": "Section header for available currencies list"
+  },
+
+  "currencyNGN": "Nigerian Naira",
+  "@currencyNGN": {
+    "description": "Nigerian Naira currency name"
+  },
+
+  "currencyGHC": "Ghanaian Cedi",
+  "@currencyGHC": {
+    "description": "Ghanaian Cedi currency name"
+  },
+
+  "currencyUSD": "US Dollar",
+  "@currencyUSD": {
+    "description": "US Dollar currency name"
+  },
+
+  "currencyEUR": "Euro",
+  "@currencyEUR": {
+    "description": "Euro currency name"
+  },
+
+  "currencyGBP": "British Pound",
+  "@currencyGBP": {
+    "description": "British Pound currency name"
   },
 
   "change": "Change",

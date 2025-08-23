@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 
 export const getJarSummary = async (req: PayloadRequest) => {
+  console.log('jar id is this')
+
   if (!req.user) {
     return Response.json(
       {
@@ -16,6 +18,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   // Find the jar with the given ID
   let jar: any = null
+
   try {
     if (jarId != 'null') {
       jar = await req.payload.findByID({

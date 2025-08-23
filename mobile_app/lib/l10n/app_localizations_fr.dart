@@ -312,7 +312,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get overdue => 'En retard';
 
   @override
-  String get at => 'at';
+  String get at => 'à';
 
   @override
   String percentageCompleted(String percentage) {
@@ -547,6 +547,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contact => 'Contact';
 
   @override
+  String get done => 'Terminé';
+
+  @override
+  String get openSettings => 'Ouvrir les paramètres';
+
+  @override
+  String get maximumCollaboratorsSelected =>
+      'Maximum 4 collaborateurs peuvent être sélectionnés';
+
+  @override
+  String get contactsPermissionPermanentlyDenied =>
+      'L\'autorisation d\'accès aux contacts est définitivement refusée. Veuillez l\'activer dans Paramètres > Confidentialité et sécurité > Contacts.';
+
+  @override
+  String get contactsPermissionRequired =>
+      'L\'autorisation d\'accès aux contacts est requise pour inviter des collaborateurs.';
+
+  @override
+  String errorRequestingContactsPermission(String error) {
+    return 'Erreur lors de la demande d\'autorisation d\'accès aux contacts : $error';
+  }
+
+  @override
   String get searchCurrencies => 'Rechercher des devises...';
 
   @override
@@ -557,6 +580,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get availableCurrencies => 'Devises disponibles';
+
+  @override
+  String get currencyNGN => 'Naira nigérian';
+
+  @override
+  String get currencyGHC => 'Cedi ghanéen';
+
+  @override
+  String get currencyUSD => 'Dollar américain';
+
+  @override
+  String get currencyEUR => 'Euro';
+
+  @override
+  String get currencyGBP => 'Livre sterling';
 
   @override
   String get change => 'Modifier';

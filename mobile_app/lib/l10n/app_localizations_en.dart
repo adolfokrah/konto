@@ -538,6 +538,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contact => 'Contact';
 
   @override
+  String get done => 'Done';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get maximumCollaboratorsSelected =>
+      'Maximum 4 collaborators can be selected';
+
+  @override
+  String get contactsPermissionPermanentlyDenied =>
+      'Contacts permission is permanently denied. Please enable it in Settings > Privacy & Security > Contacts.';
+
+  @override
+  String get contactsPermissionRequired =>
+      'Contacts permission is required to invite collaborators.';
+
+  @override
+  String errorRequestingContactsPermission(String error) {
+    return 'Error requesting contacts permission: $error';
+  }
+
+  @override
   String get searchCurrencies => 'Search currencies...';
 
   @override
@@ -548,6 +571,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get availableCurrencies => 'Available Currencies';
+
+  @override
+  String get currencyNGN => 'Nigerian Naira';
+
+  @override
+  String get currencyGHC => 'Ghanaian Cedi';
+
+  @override
+  String get currencyUSD => 'US Dollar';
+
+  @override
+  String get currencyEUR => 'Euro';
+
+  @override
+  String get currencyGBP => 'British Pound';
 
   @override
   String get change => 'Change';

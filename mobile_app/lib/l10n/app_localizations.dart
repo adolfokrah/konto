@@ -1034,6 +1034,42 @@ abstract class AppLocalizations {
   /// **'Contact'**
   String get contact;
 
+  /// Done button text
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// Button text to open app settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// Error message when trying to select more than 4 collaborators
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum 4 collaborators can be selected'**
+  String get maximumCollaboratorsSelected;
+
+  /// Error message when contacts permission is permanently denied
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is permanently denied. Please enable it in Settings > Privacy & Security > Contacts.'**
+  String get contactsPermissionPermanentlyDenied;
+
+  /// Error message when contacts permission is not granted
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is required to invite collaborators.'**
+  String get contactsPermissionRequired;
+
+  /// Error message when there's an issue requesting contacts permission
+  ///
+  /// In en, this message translates to:
+  /// **'Error requesting contacts permission: {error}'**
+  String errorRequestingContactsPermission(String error);
+
   /// Placeholder text for currency search input
   ///
   /// In en, this message translates to:
@@ -1057,6 +1093,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Available Currencies'**
   String get availableCurrencies;
+
+  /// Nigerian Naira currency name
+  ///
+  /// In en, this message translates to:
+  /// **'Nigerian Naira'**
+  String get currencyNGN;
+
+  /// Ghanaian Cedi currency name
+  ///
+  /// In en, this message translates to:
+  /// **'Ghanaian Cedi'**
+  String get currencyGHC;
+
+  /// US Dollar currency name
+  ///
+  /// In en, this message translates to:
+  /// **'US Dollar'**
+  String get currencyUSD;
+
+  /// Euro currency name
+  ///
+  /// In en, this message translates to:
+  /// **'Euro'**
+  String get currencyEUR;
+
+  /// British Pound currency name
+  ///
+  /// In en, this message translates to:
+  /// **'British Pound'**
+  String get currencyGBP;
 
   /// Button text to change currency selection
   ///

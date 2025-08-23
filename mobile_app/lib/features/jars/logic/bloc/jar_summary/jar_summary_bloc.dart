@@ -27,13 +27,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
-      // If no jar ID is found, emit initial state
-      if (jarId == null) {
-        emit(JarSummaryInitial());
-        return;
-      }
-
-      final result = await jarRepository.getJarSummary(jarId: jarId);
+      final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
         if (result['data'] == null) {
@@ -71,21 +65,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     Emitter<JarSummaryState> emit,
   ) async {
     try {
-      final serviceRegistry = ServiceRegistry();
-      final jarStorageService = serviceRegistry.jarStorageService;
-      final translationService = serviceRegistry.translationService;
-
-      // Save the jar ID to storage
-      final success = await jarStorageService.saveCurrentJarId(event.jarId);
-
-      if (success) {
-        // Automatically fetch the jar summary after setting the current jar
-        add(GetJarSummaryRequested());
-      } else {
-        emit(
-          JarSummaryError(message: translationService.failedToSetCurrentJar),
-        );
-      }
+      add(GetJarSummaryRequested());
     } catch (e) {
       final serviceRegistry = ServiceRegistry();
       final translationService = serviceRegistry.translationService;

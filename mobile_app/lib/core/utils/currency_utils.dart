@@ -1,5 +1,6 @@
 /// Currency formatting utilities for jar currencies used throughout the app
 import 'package:konto/core/constants/currencies.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class CurrencyUtils {
   /// Get currency symbol based on currency code
@@ -76,6 +77,27 @@ class CurrencyUtils {
         return 'British Pound';
       default:
         return 'Ghanaian Cedi'; // Default fallback
+    }
+  }
+
+  /// Get localized currency name from code
+  static String getLocalizedCurrencyName(
+    String currency,
+    AppLocalizations localizations,
+  ) {
+    switch (currency.toLowerCase()) {
+      case 'ghc':
+        return localizations.currencyGHC;
+      case 'ngn':
+        return localizations.currencyNGN;
+      case 'usd':
+        return localizations.currencyUSD;
+      case 'eur':
+        return localizations.currencyEUR;
+      case 'gbp':
+        return localizations.currencyGBP;
+      default:
+        return localizations.currencyGHC; // Default fallback
     }
   }
 }

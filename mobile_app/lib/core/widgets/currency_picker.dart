@@ -3,6 +3,7 @@ import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/currencies.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/generic_picker.dart';
 import 'package:konto/core/widgets/small_button.dart';
@@ -33,6 +34,8 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
   }
 
   void _showCurrencyPicker() {
+    final localizations = AppLocalizations.of(context)!;
+
     GenericPicker.showPickerDialog<Currency>(
       context,
       selectedValue: _selectedCurrency.code,
@@ -43,10 +46,18 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
         });
         widget.onCurrencySelected?.call(currency);
       },
-      itemBuilder: _buildCurrencyItem,
-      recentItemBuilder: _buildCurrencyItem,
-      searchResultBuilder: _buildCurrencyItem,
-      searchFilter: (currency) => '${currency.name} ${currency.code}',
+      itemBuilder:
+          (currency, isSelected, onTap) =>
+              _buildCurrencyItem(currency, isSelected, onTap, localizations),
+      recentItemBuilder:
+          (currency, isSelected, onTap) =>
+              _buildCurrencyItem(currency, isSelected, onTap, localizations),
+      searchResultBuilder:
+          (currency, isSelected, onTap) =>
+              _buildCurrencyItem(currency, isSelected, onTap, localizations),
+      searchFilter:
+          (currency) =>
+              '${CurrencyUtils.getLocalizedCurrencyName(currency.code, localizations)} ${currency.code}',
       isItemSelected:
           (currency, selectedValue) => currency.code == selectedValue,
       searchHint: AppLocalizations.of(context)!.searchCurrencies,
@@ -62,10 +73,14 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
     Currency currency,
     bool isSelected,
     VoidCallback onTap,
+    AppLocalizations localizations,
   ) {
     return ListTile(
       leading: CircleAvatar(backgroundImage: NetworkImage(currency.flagUrl)),
-      title: Text(currency.name, style: TextStyles.titleMedium),
+      title: Text(
+        CurrencyUtils.getLocalizedCurrencyName(currency.code, localizations),
+        style: TextStyles.titleMedium,
+      ),
       subtitle: Text(currency.code, style: TextStyles.titleRegularSm),
       trailing:
           isSelected
@@ -81,6 +96,8 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = AppLocalizations.of(context)!;
+
     return AppCard(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.spacingS),
       variant: CardVariant.secondary,
@@ -90,7 +107,10 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
           backgroundImage: NetworkImage(_selectedCurrency.flagUrl),
         ),
         title: Text(
-          _selectedCurrency.name,
+          CurrencyUtils.getLocalizedCurrencyName(
+            _selectedCurrency.code,
+            localizations,
+          ),
           style: Theme.of(context).textTheme.titleMedium,
         ),
         subtitle: Text(
