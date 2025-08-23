@@ -106,6 +106,11 @@ class _JarsListViewState extends State<JarsListView> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark
+            ? Theme.of(context).colorScheme.surface
+            : Theme.of(context).colorScheme.onPrimary;
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -151,6 +156,10 @@ class _JarsListViewState extends State<JarsListView> {
                 const SizedBox(height: AppSpacing.spacingM),
                 Center(
                   child: AppSmallButton(
+                    backgroundColor:
+                        isDark
+                            ? Theme.of(context).colorScheme.onSurface
+                            : AppColors.black,
                     padding: EdgeInsets.only(
                       left: AppSpacing.spacingS,
                       right: AppSpacing.spacingL,
@@ -160,11 +169,13 @@ class _JarsListViewState extends State<JarsListView> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.add, size: 20),
+                        Icon(Icons.add, size: 20, color: textColor),
                         const SizedBox(width: AppSpacing.spacingXs),
                         Text(
                           localizations.createJar,
-                          style: TextStyles.titleMedium,
+                          style: TextStyles.titleMedium.copyWith(
+                            color: textColor,
+                          ),
                         ),
                       ],
                     ),
@@ -272,13 +283,6 @@ class _JarsListViewState extends State<JarsListView> {
       decoration: BoxDecoration(
         color: theme.colorScheme.primary,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [

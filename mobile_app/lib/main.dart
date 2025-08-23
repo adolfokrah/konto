@@ -53,7 +53,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Konto',
         theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        // darkTheme: AppTheme.darkTheme,
         themeMode:
             ThemeMode.system, // Automatically switch based on system setting
         debugShowCheckedModeBanner: false,

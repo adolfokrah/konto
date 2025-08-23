@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart' as contacts_service;
+import 'package:konto/core/constants/app_colors.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
@@ -299,7 +300,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
       }
     } else {
       // Check if maximum selection limit is reached
-      if (_selectedContacts.length >= 4) {
+      if (_selectedContacts.length >= 10) {
         // Show a snackbar to inform the user about the limit
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -418,7 +419,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
 
   Widget _buildContactItem(Contact contact) {
     final isSelected = _isContactSelected(contact);
-    final isMaxReached = _selectedContacts.length >= 4 && !isSelected;
+    final isMaxReached = _selectedContacts.length >= 10 && !isSelected;
     final isDark = Theme.of(context).colorScheme.brightness == Brightness.dark;
     return Opacity(
       opacity: isMaxReached ? 0.5 : 1.0,
@@ -433,7 +434,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
               activeColor:
                   isDark
                       ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.primary,
+                      : AppColors.black,
             ),
             const SizedBox(width: AppSpacing.spacingXs),
             CircleAvatar(
@@ -523,7 +524,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
                         Navigator.pop(context);
                       },
                       child: Text(
-                        '${AppLocalizations.of(context)!.done} (${_selectedContacts.length}/4)',
+                        '${AppLocalizations.of(context)!.done} (${_selectedContacts.length}/10)',
                         style: TextStyles.titleMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
