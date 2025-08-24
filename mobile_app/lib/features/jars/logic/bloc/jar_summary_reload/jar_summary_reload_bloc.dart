@@ -34,6 +34,10 @@ class JarSummaryReloadBloc
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
+        if (result['data'] == null) {
+          return;
+        }
+
         final JarSummaryModel jarData = JarSummaryModel.fromJson(
           result['data'],
         );

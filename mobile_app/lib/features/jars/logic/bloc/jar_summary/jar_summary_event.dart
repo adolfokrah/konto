@@ -22,3 +22,7 @@ final class SetCurrentJarRequested extends JarEvent {
 
   SetCurrentJarRequested({required this.jarId});
 }
+
+final class ClearCurrentJarRequested extends JarEvent {
+  ClearCurrentJarRequested();
+}

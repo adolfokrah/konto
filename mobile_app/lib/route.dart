@@ -7,6 +7,7 @@ import 'package:konto/features/contribution/presentation/views/request_contribut
 import 'package:konto/features/contribution/presentation/views/save_contribution_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
+import 'package:konto/features/jars/presentation/views/jar_info_view.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
 import 'package:konto/features/startup/presentation/views/startup_screen.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
@@ -24,6 +25,7 @@ class AppRoutes {
     '/save_contribution': (context) => const SaveContributionView(),
     '/jar_create': (context) => const JarCreateView(),
     '/jar_goal': (context) => const JarGoalView(),
+    '/jar_info': (context) => const JarInfoView(),
   };
 
   // Route names constants for easy access
@@ -38,4 +40,5 @@ class AppRoutes {
   static const String saveContribution = '/save_contribution';
   static const String jarCreate = '/jar_create';
   static const String jarGoal = '/jar_goal';
+  static const String jarInfo = '/jar_info';
 }

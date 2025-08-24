@@ -259,7 +259,7 @@ export interface Jar {
   /**
    * Current status of the jar
    */
-  status: 'active' | 'inactive' | 'frozen';
+  status: 'open' | 'broken' | 'sealed';
   updatedAt: string;
   createdAt: string;
 }

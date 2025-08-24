@@ -20,7 +20,7 @@ export const getUserJars = async (req: PayloadRequest) => {
               equals: req.user,
             },
             status: {
-              not_equals: 'inactive',
+              not_equals: 'broken',
             },
           },
           {
@@ -28,7 +28,7 @@ export const getUserJars = async (req: PayloadRequest) => {
               equals: req.user,
             },
             status: {
-              not_equals: 'inactive',
+              not_equals: 'broken',
             },
           },
         ],

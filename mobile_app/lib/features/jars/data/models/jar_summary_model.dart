@@ -1,6 +1,33 @@
 // Models for the Jar Summary API response
 import 'package:konto/core/utils/currency_utils.dart';
 
+/// Enum for jar status
+enum JarStatus {
+  open,
+  broken,
+  sealed;
+
+  /// Convert string to JarStatus
+  static JarStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return JarStatus.open;
+      case 'broken':
+        return JarStatus.broken;
+      case 'sealed':
+        return JarStatus.sealed;
+      default:
+        return JarStatus.open; // Default fallback
+    }
+  }
+
+  /// Convert JarStatus to string
+  @override
+  String toString() {
+    return name;
+  }
+}
+
 class JarSummaryModel {
   final String id;
   final String name;
@@ -10,6 +37,7 @@ class JarSummaryModel {
   final String currency; // 'ghc' | 'ngn'
   final bool isActive;
   final bool isFixedContribution;
+  final JarStatus status; // 'open' | 'broken' | 'sealed'
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
   final List<String> acceptedPaymentMethods;
@@ -33,6 +61,7 @@ class JarSummaryModel {
     required this.currency,
     required this.isActive,
     required this.isFixedContribution,
+    required this.status,
     required this.creator,
     this.invitedCollectors,
     required this.acceptedPaymentMethods,
@@ -74,6 +103,27 @@ class JarSummaryModel {
     return CurrencyUtils.getCurrencySymbol(currency);
   }
 
+  /// Check if jar is active
+  bool get isJarActive => status == JarStatus.open;
+
+  /// Check if jar is broken
+  bool get isJarBroken => status == JarStatus.broken;
+
+  /// Check if jar is closed
+  bool get isJarClosed => status == JarStatus.sealed;
+
+  /// Get status display name
+  String get statusDisplayName {
+    switch (status) {
+      case JarStatus.open:
+        return 'Open';
+      case JarStatus.broken:
+        return 'Broken';
+      case JarStatus.sealed:
+        return 'Sealed';
+    }
+  }
+
   factory JarSummaryModel.fromJson(Map<String, dynamic> json) {
     return JarSummaryModel(
       id: json['id'] as String,
@@ -85,6 +135,7 @@ class JarSummaryModel {
       currency: json['currency'] as String,
       isActive: json['isActive'] as bool,
       isFixedContribution: json['isFixedContribution'] as bool,
+      status: JarStatus.fromString(json['status'] as String? ?? 'open'),
       creator: UserModel.fromJson(json['creator'] as Map<String, dynamic>),
       invitedCollectors:
           (json['invitedCollectors'] as List<dynamic>?)
@@ -152,6 +203,7 @@ class JarSummaryModel {
       'currency': currency,
       'isActive': isActive,
       'isFixedContribution': isFixedContribution,
+      'status': status.toString(),
       'creator': creator.toJson(),
       'invitedCollectors':
           invitedCollectors

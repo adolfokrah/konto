@@ -11,18 +11,22 @@ class AppIconButton extends StatelessWidget {
   /// The size of the button
   final Size? size;
 
+  /// Whether the button is enabled or disabled
+  final bool enabled;
+
   const AppIconButton({
     super.key,
     required this.onPressed,
     required this.icon,
     this.size,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return IconButton(
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       icon: Icon(icon),
       style: IconButton.styleFrom(
         backgroundColor:

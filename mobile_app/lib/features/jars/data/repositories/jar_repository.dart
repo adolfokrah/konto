@@ -1,6 +1,4 @@
 import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
-import 'package:konto/features/jars/data/models/jar_list_model.dart';
-import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 
 /// Repository for jar operations
 /// Orchestrates business logic between UI and API calls
@@ -19,6 +17,11 @@ class JarRepository {
       if (apiResponse['success'] == true) {
         try {
           // Parse the API response data into the model
+
+          if (apiResponse['data'] == null) {
+            return {'success': true, 'data': null, 'message': 'No jar found'};
+          }
+
           final jarData = apiResponse['data'];
 
           return {
@@ -28,11 +31,7 @@ class JarRepository {
           };
         } catch (modelError) {
           // Handle JSON parsing errors
-          return {
-            'success': false,
-            'message': 'Failed to parse jar data',
-            'error': 'Model parsing error: ${modelError.toString()}',
-          };
+          return {'success': true, 'data': null, 'message': 'No jar found'};
         }
       } else {
         // Handle API errors
@@ -154,6 +153,7 @@ class JarRepository {
     double? goalAmount,
     DateTime? deadline,
     String? currency,
+    String? status,
     bool? acceptAnonymousContributions,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
@@ -171,6 +171,7 @@ class JarRepository {
         goalAmount: goalAmount,
         deadline: deadline,
         currency: currency,
+        status: status,
         acceptAnonymousContributions: acceptAnonymousContributions,
         acceptedPaymentMethods: acceptedPaymentMethods,
         invitedCollectors: invitedCollectors,

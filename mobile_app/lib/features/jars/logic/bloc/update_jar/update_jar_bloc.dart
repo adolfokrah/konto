@@ -14,6 +14,9 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
     UpdateJarRequested event,
     Emitter<UpdateJarState> emit,
   ) async {
+    print('UpdateJarBloc: Starting update for jar ${event.jarId}');
+    print('UpdateJarBloc: Updates to apply: ${event.updates}');
+
     emit(UpdateJarInProgress());
 
     final serviceRegistry = ServiceRegistry();
@@ -48,6 +51,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       goalAmount: event.updates['goalAmount'],
       deadline: event.updates['deadline'],
       currency: event.updates['currency'],
+      status: event.updates['status'],
       acceptAnonymousContributions:
           event.updates['acceptAnonymousContributions'],
       acceptedPaymentMethods:
@@ -55,9 +59,13 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       invitedCollectors: processedCollectors,
     );
 
+    print('UpdateJarBloc: API response: $response');
+
     if (response['success'] == true) {
+      print('UpdateJarBloc: Update successful');
       emit(UpdateJarSuccess());
     } else {
+      print('UpdateJarBloc: Update failed - ${response['error']}');
       emit(UpdateJarFailure(response['error'] ?? 'Unknown error'));
     }
   }

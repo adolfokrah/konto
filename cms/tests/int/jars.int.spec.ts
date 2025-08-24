@@ -71,7 +71,7 @@ describe('Jars Collection Integration Tests', () => {
         goalAmount: 1000,
         currency: 'ghc' as const,
         creator: testUser.id,
-        status: 'active' as const,
+        status: 'open' as const,
         acceptedPaymentMethods: ['mobile-money', 'bank-transfer'] as (
           | 'mobile-money'
           | 'bank-transfer'
@@ -102,7 +102,7 @@ describe('Jars Collection Integration Tests', () => {
         acceptedContributionAmount: 50,
         currency: 'ngn' as const,
         creator: testUser.id,
-        status: 'active' as const,
+        status: 'open' as const,
         acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
 
@@ -118,7 +118,7 @@ describe('Jars Collection Integration Tests', () => {
 
     it('should create a jar with invitedCollectors', async () => {
       const jarData = {
-        status: 'active' as const,
+        status: 'open' as const,
         name: 'Jar with Invited Collectors',
         currency: 'ghc' as const,
         creator: testUser.id,
@@ -148,7 +148,7 @@ describe('Jars Collection Integration Tests', () => {
         name: 'Anonymous Jar',
         currency: 'ghc' as const,
         creator: testUser.id,
-        status: 'active' as const,
+        status: 'open' as const,
         acceptAnonymousContributions: true,
         acceptedPaymentMethods: ['cash'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
@@ -186,7 +186,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: testUser.id,
           isActive: true,
           goalAmount: 1000,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
         {
@@ -195,7 +195,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: testUser.id,
           isActive: false,
           goalAmount: 2000,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['bank-transfer'] as (
             | 'mobile-money'
             | 'bank-transfer'
@@ -209,7 +209,7 @@ describe('Jars Collection Integration Tests', () => {
           isActive: true,
           isFixedContribution: true,
           acceptedContributionAmount: 100,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money', 'cash'] as (
             | 'mobile-money'
             | 'bank-transfer'
@@ -325,7 +325,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: testUser.id,
           isActive: true,
           goalAmount: 500,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
       })
@@ -413,7 +413,7 @@ describe('Jars Collection Integration Tests', () => {
           name: 'Delete Test Jar',
           currency: 'ghc' as const,
           creator: testUser.id,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
       })
@@ -458,7 +458,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: testUser.id,
           isActive: true,
           goalAmount: 5000,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
         {
@@ -467,7 +467,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: testUser.id,
           isActive: true,
           goalAmount: 500,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
         {
@@ -477,7 +477,7 @@ describe('Jars Collection Integration Tests', () => {
           isActive: false,
           isFixedContribution: true,
           acceptedContributionAmount: 200,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['bank-transfer'] as (
             | 'mobile-money'
             | 'bank-transfer'
@@ -490,7 +490,7 @@ describe('Jars Collection Integration Tests', () => {
           creator: secondUser.id,
           isActive: true,
           acceptAnonymousContributions: true,
-          status: 'active' as const,
+          status: 'open' as const,
           acceptedPaymentMethods: ['cash'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
       ]

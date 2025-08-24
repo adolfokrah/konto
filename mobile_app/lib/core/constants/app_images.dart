@@ -10,6 +10,9 @@ class AppImages {
   static const String onboardingSlide2 = '$_imagesPath/onboarding_slide_2.png';
   static const String onboardingSlide3 = '$_imagesPath/onboarding_slide_3.png';
 
+  // Jar Images
+  static const String brokenJar = '$_imagesPath/broken_jar.png';
+
   // TODO: Add more image categories as needed:
   // static const String logoPath = '$_imagesPath/logo.png';
   // static const String placeholderImage = '$_imagesPath/placeholder.png';

@@ -11,6 +11,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     on<GetJarSummaryRequested>(_getJarSummaryRequested);
     on<UpdateJarSummaryRequested>(_updateJarSummaryRequested);
     on<SetCurrentJarRequested>(_setCurrentJarRequested);
+    on<ClearCurrentJarRequested>(_clearCurrentJarRequested);
   }
 
   Future<void> _getJarSummaryRequested(
@@ -27,10 +28,6 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
 
-      print(jarId);
-
-      // return;
-
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
@@ -42,6 +39,8 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
           result['data'],
         );
         emit(JarSummaryLoaded(jarData: jarData));
+      } else if (result['statusCode'] == 404) {
+        emit(JarSummaryInitial());
       } else {
         emit(
           JarSummaryError(
@@ -71,6 +70,26 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     try {
       final serviceRegistry = ServiceRegistry();
       serviceRegistry.jarStorageService.saveCurrentJarId(event.jarId);
+      add(GetJarSummaryRequested());
+    } catch (e) {
+      final serviceRegistry = ServiceRegistry();
+      final translationService = serviceRegistry.translationService;
+      emit(
+        JarSummaryError(
+          message: translationService.unexpectedErrorSettingCurrentJar,
+        ),
+      );
+    }
+  }
+
+  Future<void> _clearCurrentJarRequested(
+    ClearCurrentJarRequested event,
+    Emitter<JarSummaryState> emit,
+  ) async {
+    try {
+      emit(JarSummaryLoading());
+      final serviceRegistry = ServiceRegistry();
+      serviceRegistry.jarStorageService.clearCurrentJarId();
       add(GetJarSummaryRequested());
     } catch (e) {
       final serviceRegistry = ServiceRegistry();

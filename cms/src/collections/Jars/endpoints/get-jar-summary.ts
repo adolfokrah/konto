@@ -18,7 +18,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   let jar: any = null
 
   try {
-    if (jarId != 'null') {
+    if (jarId != 'null' && jarId != null) {
       jar = await req.payload.findByID({
         collection: 'jars',
         id: jarId,
@@ -29,17 +29,18 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar = await getUserJar()
     }
   } catch (error) {
-    try {
-      jar = await getUserJar()
-    } catch (error) {
-      return Response.json(
-        {
-          success: true,
-          message: 'Jar not found',
-        },
-        { status: 200 },
-      )
-    }
+    jar = await getUserJar()
+  }
+
+  if (jar == null) {
+    return Response.json(
+      {
+        success: true,
+        message: 'Jar not found',
+        data: null,
+      },
+      { status: 200 },
+    )
   }
 
   async function getUserJar() {
@@ -53,10 +54,16 @@ export const getJarSummary = async (req: PayloadRequest) => {
             creator: {
               equals: req.user,
             },
+            status: {
+              not_equals: 'broken',
+            },
           },
           {
             'invitedCollectors.collector': {
               equals: req.user,
+            },
+            status: {
+              not_equals: 'broken',
             },
           },
         ],
@@ -64,10 +71,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
       limit: 1,
       depth: 2,
     })
+
     if (jarResult.docs.length > 0) {
       jar = jarResult.docs[0]
     }
-
     return jar
   }
 

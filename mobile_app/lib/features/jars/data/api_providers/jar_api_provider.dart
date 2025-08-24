@@ -227,6 +227,7 @@ class JarApiProvider {
     double? goalAmount,
     DateTime? deadline,
     String? currency,
+    String? status,
     bool? acceptAnonymousContributions,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
@@ -295,6 +296,7 @@ class JarApiProvider {
             '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
       }
       if (currency != null) jarData['currency'] = currency;
+      if (status != null) jarData['status'] = status;
       if (acceptAnonymousContributions != null) {
         jarData['acceptAnonymousContributions'] = acceptAnonymousContributions;
       }

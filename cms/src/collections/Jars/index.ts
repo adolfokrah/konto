@@ -256,11 +256,11 @@ export const Jars: CollectionConfig = {
     {
       name: 'status',
       type: 'select',
-      defaultValue: 'active',
+      defaultValue: 'open',
       options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Inactive', value: 'inactive' },
-        { label: 'Frozen', value: 'frozen' },
+        { label: 'Open', value: 'open' },
+        { label: 'Broken', value: 'broken' },
+        { label: 'Sealed', value: 'sealed' },
       ],
       required: true,
       admin: {

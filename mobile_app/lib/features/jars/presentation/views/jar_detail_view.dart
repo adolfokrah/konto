@@ -17,6 +17,7 @@ import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/utils/image_utils.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
@@ -205,6 +206,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   );
                                 },
                                 icon: Icons.qr_code,
+                                enabled:
+                                    state.jarData.status != JarStatus.sealed,
                                 size: const Size(40, 40),
                               ),
                             Padding(
@@ -308,6 +311,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         AppIconButton(
+                          enabled: jarData.status != JarStatus.sealed,
                           onPressed: () {
                             Navigator.pushNamed(
                               context,
@@ -319,7 +323,16 @@ class _JarDetailViewState extends State<JarDetailView> {
                         const SizedBox(height: AppSpacing.spacingXs),
                         Text(
                           localizations.contribute,
-                          style: TextStyles.titleMedium,
+                          style: TextStyles.titleMedium.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.color?.withValues(
+                              alpha:
+                                  jarData.status == JarStatus.sealed
+                                      ? 0.4
+                                      : 1.0,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -327,6 +340,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         AppIconButton(
+                          enabled: jarData.status != JarStatus.sealed,
                           onPressed: () {
                             Navigator.pushNamed(
                               context,
@@ -342,14 +356,28 @@ class _JarDetailViewState extends State<JarDetailView> {
                         const SizedBox(height: AppSpacing.spacingXs),
                         Text(
                           localizations.request,
-                          style: TextStyles.titleMedium,
+                          style: TextStyles.titleMedium.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.color?.withValues(
+                              alpha:
+                                  jarData.status == JarStatus.sealed
+                                      ? 0.4
+                                      : 1.0,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        AppIconButton(onPressed: () {}, icon: Icons.info),
+                        AppIconButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, AppRoutes.jarInfo);
+                          },
+                          icon: Icons.info,
+                        ),
                         const SizedBox(height: AppSpacing.spacingXs),
                         Text(localizations.info, style: TextStyles.titleMedium),
                       ],
@@ -627,11 +655,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                 AppButton.outlined(
                   text: localizations.createNewJar,
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(localizations.createJarFeatureComingSoon),
-                      ),
-                    );
+                    Navigator.pushNamed(context, AppRoutes.jarCreate);
                   },
                 ),
               ],
