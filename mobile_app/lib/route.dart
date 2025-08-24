@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/contribution/presentation/views/add_contribution_view.dart';
+import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:konto/features/contribution/presentation/views/request_contribution_view.dart';
 import 'package:konto/features/contribution/presentation/views/save_contribution_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
@@ -22,6 +23,7 @@ class AppRoutes {
     '/add_contribution': (context) => const AddContributionView(),
     '/save_contribution': (context) => const SaveContributionView(),
     '/jar_create': (context) => const JarCreateView(),
+    '/jar_goal': (context) => const JarGoalView(),
   };
 
   // Route names constants for easy access
@@ -35,4 +37,5 @@ class AppRoutes {
   static const String addContribution = '/add_contribution';
   static const String saveContribution = '/save_contribution';
   static const String jarCreate = '/jar_create';
+  static const String jarGoal = '/jar_goal';
 }

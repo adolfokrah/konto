@@ -1453,6 +1453,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Coming soon'**
   String get comingSoon;
+
+  /// Jar goal page title
+  ///
+  /// In en, this message translates to:
+  /// **'Jar Goal'**
+  String get jarGoal;
+
+  /// Remove goal button text
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Goal'**
+  String get removeGoal;
+
+  /// Cancel button text
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Deadline label
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get deadline;
+
+  /// Instruction text for setting deadline
+  ///
+  /// In en, this message translates to:
+  /// **'Tap calendar button to set deadline'**
+  String get tapCalendarButtonToSetDeadline;
+
+  /// Error message when jar goal update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update jar goal'**
+  String get failedToUpdateJarGoal;
 }
 
 class _AppLocalizationsDelegate

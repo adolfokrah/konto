@@ -245,13 +245,11 @@ class ContributionView extends StatelessWidget {
                                                       ?.withValues(alpha: 0.5),
                                                 ),
                                           ),
-                                          trailing: Flexible(
-                                            child: Text(
-                                              contribution.contributor ??
-                                                  localizations.unknown,
-                                              style: AppTextStyles.titleMediumS,
-                                              textAlign: TextAlign.end,
-                                            ),
+                                          trailing: Text(
+                                            contribution.contributor ??
+                                                localizations.unknown,
+                                            style: AppTextStyles.titleMediumS,
+                                            textAlign: TextAlign.end,
                                           ),
                                         ),
                                         ListTile(
@@ -268,14 +266,12 @@ class ContributionView extends StatelessWidget {
                                                       ?.withValues(alpha: 0.5),
                                                 ),
                                           ),
-                                          trailing: Flexible(
-                                            child: Text(
-                                              contribution
-                                                      .contributorPhoneNumber ??
-                                                  localizations.unknown,
-                                              style: AppTextStyles.titleMediumS,
-                                              textAlign: TextAlign.end,
-                                            ),
+                                          trailing: Text(
+                                            contribution
+                                                    .contributorPhoneNumber ??
+                                                localizations.unknown,
+                                            style: AppTextStyles.titleMediumS,
+                                            textAlign: TextAlign.end,
                                           ),
                                         ),
 
@@ -333,18 +329,14 @@ class ContributionView extends StatelessWidget {
                                                       ?.withValues(alpha: 0.5),
                                                 ),
                                           ),
-                                          trailing: Flexible(
-                                            child: Text(
-                                              contribution
-                                                      .collector
-                                                      ?.fullName ??
-                                                  localizations.unknown,
-                                              style: AppTextStyles.titleMediumS
-                                                  .copyWith(
-                                                    color: Colors.blueAccent,
-                                                  ),
-                                              textAlign: TextAlign.end,
-                                            ),
+                                          trailing: Text(
+                                            contribution.collector?.fullName ??
+                                                localizations.unknown,
+                                            style: AppTextStyles.titleMediumS
+                                                .copyWith(
+                                                  color: Colors.blueAccent,
+                                                ),
+                                            textAlign: TextAlign.end,
                                           ),
                                         ),
                                       ],

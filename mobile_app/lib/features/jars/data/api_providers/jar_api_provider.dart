@@ -187,7 +187,10 @@ class JarApiProvider {
         'isFixedContribution': isFixedContribution,
         'acceptedContributionAmount': acceptedContributionAmount,
         'goalAmount': goalAmount ?? 0,
-        'deadline': deadline?.toIso8601String(),
+        'deadline':
+            deadline != null
+                ? '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}'
+                : null,
         'currency': currency, // Now a text field
         'creator': user.id, // Set the authenticated user as creator
         'acceptAnonymousContributions': acceptAnonymousContributions,
@@ -208,6 +211,109 @@ class JarApiProvider {
       return response.data;
     } catch (e) {
       return _handleApiError(e, 'creating jar');
+    }
+  }
+
+  /// Update an existing jar
+  Future<Map<String, dynamic>> updateJar({
+    required String jarId,
+    String? name,
+    String? description,
+    String? jarGroup,
+    String? imageId,
+    bool? isActive,
+    bool? isFixedContribution,
+    double? acceptedContributionAmount,
+    double? goalAmount,
+    DateTime? deadline,
+    String? currency,
+    bool? acceptAnonymousContributions,
+    List<String>? acceptedPaymentMethods,
+    List<Map<String, dynamic>>? invitedCollectors,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Process and validate invitedCollectors data if provided
+      List<Map<String, dynamic>>? processedInvitedCollectors;
+      if (invitedCollectors != null) {
+        processedInvitedCollectors = [];
+        for (int i = 0; i < invitedCollectors.length; i++) {
+          final collector = invitedCollectors[i];
+
+          // Validate and clean collector data
+          final processedCollector = <String, dynamic>{};
+
+          // Extract name safely
+          final name = collector['name'];
+          if (name is String && name.isNotEmpty) {
+            processedCollector['name'] = name;
+          }
+
+          // Extract phoneNumber safely
+          final phoneNumber = collector['phoneNumber'];
+          if (phoneNumber is String && phoneNumber.isNotEmpty) {
+            processedCollector['phoneNumber'] = phoneNumber;
+          }
+
+          // Extract status safely
+          final status = collector['status'] ?? 'pending';
+          if (status is String) {
+            processedCollector['status'] = status;
+          }
+
+          // Explicitly set collector to null to avoid hook confusion
+          processedCollector['collector'] = null;
+
+          processedInvitedCollectors.add(processedCollector);
+        }
+      }
+
+      // Prepare jar data with only the fields that are being updated
+      final jarData = <String, dynamic>{};
+
+      if (name != null) jarData['name'] = name;
+      if (description != null) jarData['description'] = description;
+      if (jarGroup != null) jarData['jarGroup'] = jarGroup;
+      if (imageId != null) jarData['image'] = imageId;
+      if (isActive != null) jarData['isActive'] = isActive;
+      if (isFixedContribution != null) {
+        jarData['isFixedContribution'] = isFixedContribution;
+      }
+      if (acceptedContributionAmount != null) {
+        jarData['acceptedContributionAmount'] = acceptedContributionAmount;
+      }
+      if (goalAmount != null) jarData['goalAmount'] = goalAmount;
+      if (deadline != null) {
+        // Format date as YYYY-MM-DD to avoid timezone issues
+        jarData['deadline'] =
+            '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+      }
+      if (currency != null) jarData['currency'] = currency;
+      if (acceptAnonymousContributions != null) {
+        jarData['acceptAnonymousContributions'] = acceptAnonymousContributions;
+      }
+      if (acceptedPaymentMethods != null) {
+        jarData['acceptedPaymentMethods'] = acceptedPaymentMethods;
+      }
+      if (processedInvitedCollectors != null) {
+        jarData['invitedCollectors'] = processedInvitedCollectors;
+      }
+
+      final response = await _dio.patch(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',
+        data: jarData,
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'updating jar');
     }
   }
 }

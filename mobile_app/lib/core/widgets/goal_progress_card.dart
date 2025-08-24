@@ -7,6 +7,7 @@ import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/route.dart';
 
 class GoalProgressCard extends StatelessWidget {
   /// Current amount raised
@@ -27,9 +28,6 @@ class GoalProgressCard extends StatelessWidget {
   /// Whether the card should be collapsible
   final bool isCollapsible;
 
-  /// Callback for when "Set Goal" button is pressed (optional)
-  final VoidCallback? onSetGoal;
-
   const GoalProgressCard({
     super.key,
     required this.currentAmount,
@@ -38,7 +36,6 @@ class GoalProgressCard extends StatelessWidget {
     this.deadline,
     this.variant = CardVariant.primary,
     this.isCollapsible = false,
-    this.onSetGoal,
   });
 
   @override
@@ -63,7 +60,13 @@ class GoalProgressCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(localizations.goal, style: TextStyles.titleMedium),
-                Icon(Icons.chevron_right, size: 20),
+                GestureDetector(
+                  key: const Key('goalProgressCardEditIcon'),
+                  child: Icon(Icons.chevron_right, size: 20),
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.jarGoal);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.spacingS),
@@ -201,7 +204,9 @@ class GoalProgressCard extends StatelessWidget {
         // Set goal button
         AppButton.filled(
           text: localizations.setGoal,
-          onPressed: onSetGoal ?? () {},
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoutes.jarGoal);
+          },
         ),
       ],
     );

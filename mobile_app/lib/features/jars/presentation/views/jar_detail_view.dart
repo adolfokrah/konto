@@ -456,13 +456,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                 currency: jarData.currency,
                 deadline: jarData.deadline,
                 variant: CardVariant.primary,
-                onSetGoal: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(localizations.setGoalFeatureComingSoon),
-                    ),
-                  );
-                },
               ),
 
               // Recent Contributions Section

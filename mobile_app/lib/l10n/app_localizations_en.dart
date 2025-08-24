@@ -754,4 +754,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comingSoon => 'Coming soon';
+
+  @override
+  String get jarGoal => 'Jar Goal';
+
+  @override
+  String get removeGoal => 'Remove Goal';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get deadline => 'Deadline';
+
+  @override
+  String get tapCalendarButtonToSetDeadline =>
+      'Tap calendar button to set deadline';
+
+  @override
+  String get failedToUpdateJarGoal => 'Failed to update jar goal';
 }

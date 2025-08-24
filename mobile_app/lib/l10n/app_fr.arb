@@ -226,5 +226,12 @@
   "collector": "Collecteur",
   "help": "Aide",
   "unknown": "Inconnu",
-  "comingSoon": "Bientôt disponible"
+  "comingSoon": "Bientôt disponible",
+  "jarGoal": "Objectif du Pot",
+  "removeGoal": "Supprimer l'objectif",
+  "cancel": "Annuler",
+  "done": "Terminé",
+  "deadline": "Date limite",
+  "tapCalendarButtonToSetDeadline": "Appuyez sur le bouton calendrier pour définir la date limite",
+  "failedToUpdateJarGoal": "Échec de la mise à jour de l'objectif du pot"
 }

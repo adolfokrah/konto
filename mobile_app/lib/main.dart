@@ -10,6 +10,7 @@ import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
@@ -49,6 +50,7 @@ class MainApp extends StatelessWidget {
         BlocProvider(create: (context) => MediaBloc()),
         BlocProvider(create: (context) => AddContributionBloc()),
         BlocProvider(create: (context) => FetchContributionBloc()),
+        BlocProvider(create: (context) => UpdateJarBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),
@@ -57,7 +59,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Konto',
         theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        // darkTheme: AppTheme.darkTheme,
         themeMode:
             ThemeMode.system, // Automatically switch based on system setting
         debugShowCheckedModeBanner: false,

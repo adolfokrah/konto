@@ -13,6 +13,14 @@ class AppTheme {
       // Custom text theme from Figma
       textTheme: AppTextStyles.textTheme,
       fontFamily: 'Supreme',
+      // Configure tooltip theme to prevent ticker conflicts
+      tooltipTheme: const TooltipThemeData(
+        waitDuration: Duration(
+          milliseconds: 2000,
+        ), // Longer wait before showing
+        showDuration: Duration(milliseconds: 1000), // Reasonable show duration
+        triggerMode: TooltipTriggerMode.longPress, // Only show on long press
+      ),
     );
   }
 
@@ -25,6 +33,14 @@ class AppTheme {
       // Custom text theme from Figma
       textTheme: AppTextStyles.textTheme,
       fontFamily: 'Supreme',
+      // Configure tooltip theme to prevent ticker conflicts
+      tooltipTheme: const TooltipThemeData(
+        waitDuration: Duration(
+          milliseconds: 2000,
+        ), // Longer wait before showing
+        showDuration: Duration(milliseconds: 1000), // Reasonable show duration
+        triggerMode: TooltipTriggerMode.longPress, // Only show on long press
+      ),
     );
   }
 }

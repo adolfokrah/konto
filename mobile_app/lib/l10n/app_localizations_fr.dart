@@ -768,4 +768,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get comingSoon => 'Bientôt disponible';
+
+  @override
+  String get jarGoal => 'Objectif du Pot';
+
+  @override
+  String get removeGoal => 'Supprimer l\'objectif';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get deadline => 'Date limite';
+
+  @override
+  String get tapCalendarButtonToSetDeadline =>
+      'Appuyez sur le bouton calendrier pour définir la date limite';
+
+  @override
+  String get failedToUpdateJarGoal =>
+      'Échec de la mise à jour de l\'objectif du pot';
 }

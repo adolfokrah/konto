@@ -139,4 +139,65 @@ class JarRepository {
       };
     }
   }
+
+  /// Update an existing jar
+  /// Returns success response with updated jar data if successful
+  Future<Map<String, dynamic>> updateJar({
+    required String jarId,
+    String? name,
+    String? description,
+    String? jarGroup,
+    String? imageId,
+    bool? isActive,
+    bool? isFixedContribution,
+    double? acceptedContributionAmount,
+    double? goalAmount,
+    DateTime? deadline,
+    String? currency,
+    bool? acceptAnonymousContributions,
+    List<String>? acceptedPaymentMethods,
+    List<Map<String, dynamic>>? invitedCollectors,
+  }) async {
+    try {
+      final apiResponse = await _jarApiProvider.updateJar(
+        jarId: jarId,
+        name: name,
+        description: description,
+        jarGroup: jarGroup,
+        imageId: imageId,
+        isActive: isActive,
+        isFixedContribution: isFixedContribution,
+        acceptedContributionAmount: acceptedContributionAmount,
+        goalAmount: goalAmount,
+        deadline: deadline,
+        currency: currency,
+        acceptAnonymousContributions: acceptAnonymousContributions,
+        acceptedPaymentMethods: acceptedPaymentMethods,
+        invitedCollectors: invitedCollectors,
+      );
+
+      if (apiResponse['doc'] != null) {
+        return {
+          'success': true,
+          'data': apiResponse['data'],
+          'message': 'Jar updated successfully',
+        };
+      } else {
+        // Handle API errors
+        return {
+          'success': false,
+          'message': apiResponse['message'] ?? 'Failed to update jar',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while updating jar',
+        'error': e.toString(),
+      };
+    }
+  }
 }

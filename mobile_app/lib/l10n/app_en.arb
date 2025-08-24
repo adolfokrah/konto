@@ -1278,5 +1278,40 @@
   "comingSoon": "Coming soon",
   "@comingSoon": {
     "description": "Coming soon label"
+  },
+
+  "jarGoal": "Jar Goal",
+  "@jarGoal": {
+    "description": "Jar goal page title"
+  },
+
+  "removeGoal": "Remove Goal",
+  "@removeGoal": {
+    "description": "Remove goal button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "done": "Done",
+  "@done": {
+    "description": "Done button text"
+  },
+
+  "deadline": "Deadline",
+  "@deadline": {
+    "description": "Deadline label"
+  },
+
+  "tapCalendarButtonToSetDeadline": "Tap calendar button to set deadline",
+  "@tapCalendarButtonToSetDeadline": {
+    "description": "Instruction text for setting deadline"
+  },
+
+  "failedToUpdateJarGoal": "Failed to update jar goal",
+  "@failedToUpdateJarGoal": {
+    "description": "Error message when jar goal update fails"
   }
 }
