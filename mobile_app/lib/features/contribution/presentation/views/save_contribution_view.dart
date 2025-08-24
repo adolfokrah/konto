@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/currency_utils.dart';
+import 'package:konto/core/utils/payment_method_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
@@ -77,12 +78,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    // Create a mapping of API values to display names
-    final Map<String, String> paymentMethodMap = {
-      'mobile-money': localizations.paymentMethodMobileMoney,
-      'cash': localizations.paymentMethodCash,
-      'bank-transfer': localizations.paymentMethodBankTransfer,
-    };
+    // Create a mapping of API values to display names using utility function
+    final Map<String, String> paymentMethodMap =
+        PaymentMethodUtils.getPaymentMethodMap(localizations);
 
     return BlocListener<AddContributionBloc, AddContributionState>(
       listener: (context, state) {

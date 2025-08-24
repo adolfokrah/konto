@@ -68,10 +68,7 @@ class ImageUploaderBottomSheet extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: AppSpacing.spacingS),
-                  child: DragHandle(),
-                ),
+                DragHandle(),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(

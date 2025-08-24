@@ -331,7 +331,6 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
             ),
           ),
           padding: const EdgeInsets.only(
-            top: AppSpacing.spacingXs,
             left: AppSpacing.spacingM,
             right: AppSpacing.spacingM,
           ),

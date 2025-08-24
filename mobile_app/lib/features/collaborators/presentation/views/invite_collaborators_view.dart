@@ -490,8 +490,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
+      maxChildSize: 0.9,
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -503,10 +502,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView>
           ),
           child: Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.only(top: AppSpacing.spacingS),
-                child: DragHandle(),
-              ),
+              DragHandle(),
 
               Padding(
                 padding: const EdgeInsets.symmetric(

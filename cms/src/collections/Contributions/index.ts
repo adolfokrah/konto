@@ -75,6 +75,11 @@ export const Contributions: CollectionConfig = {
       required: true,
     },
     {
+      name: 'charges',
+      type: 'number',
+      required: false,
+    },
+    {
       name: 'paymentStatus',
       type: 'select',
       admin: {

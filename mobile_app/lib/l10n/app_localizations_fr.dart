@@ -318,6 +318,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get overdue => 'En retard';
 
   @override
+  String get goalReached => 'Objectif Atteint';
+
+  @override
+  String get failedToFetchContribution =>
+      'Échec de la récupération de la contribution.';
+
+  @override
+  String get paymentStatusPending => 'En attente';
+
+  @override
+  String get paymentStatusCompleted => 'Terminé';
+
+  @override
+  String get paymentStatusFailed => 'Échoué';
+
+  @override
+  String get paymentStatusTransferred => 'Transféré';
+
+  @override
   String get at => 'à';
 
   @override
@@ -722,4 +741,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get unexpectedError => 'Une erreur inattendue s\'est produite';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get charges => 'Frais';
+
+  @override
+  String get viaPaymentLink => 'Via lien de paiement';
+
+  @override
+  String get contributor => 'Contributeur';
+
+  @override
+  String get contributorPhoneNumber => 'Numéro de téléphone du contributeur';
+
+  @override
+  String get accountNumber => 'Numéro de compte';
+
+  @override
+  String get collector => 'Collecteur';
+
+  @override
+  String get help => 'Aide';
+
+  @override
+  String get comingSoon => 'Bientôt disponible';
 }

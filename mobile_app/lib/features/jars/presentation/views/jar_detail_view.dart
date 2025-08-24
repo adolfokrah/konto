@@ -523,15 +523,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     AppButton.filled(
                                       text: localizations.contribute,
                                       onPressed: () {
-                                        ScaffoldMessenger.of(
+                                        Navigator.pushNamed(
                                           context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              localizations
-                                                  .contributeFeatureComingSoon,
-                                            ),
-                                          ),
+                                          AppRoutes.addContribution,
                                         );
                                       },
                                     ),
@@ -544,6 +538,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       .map(
                                         (contribution) => [
                                           ContributionListItem(
+                                            contributionId: contribution.id,
                                             contributorName:
                                                 contribution.contributor ??
                                                 (contribution
@@ -575,18 +570,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                 contribution.viaPaymentLink,
                                             paymentStatus:
                                                 contribution.paymentStatus,
-                                            onTap: () {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    localizations
-                                                        .contributionDetailsComingSoon,
-                                                  ),
-                                                ),
-                                              );
-                                            },
                                           ),
                                         ],
                                       )

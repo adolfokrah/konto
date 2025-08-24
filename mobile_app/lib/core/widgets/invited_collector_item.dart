@@ -53,7 +53,6 @@ class InvitedCollectorItem extends StatelessWidget {
               top: Radius.circular(AppRadius.radiusM),
             ),
           ),
-          padding: const EdgeInsets.all(AppSpacing.spacingS),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

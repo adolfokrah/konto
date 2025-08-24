@@ -55,4 +55,40 @@ class ContributionRepository {
       };
     }
   }
+
+  /// Get a specific contribution by its ID
+  /// Returns success response with contribution data if found
+  Future<Map<String, dynamic>> getContributionById({
+    required String contributionId,
+  }) async {
+    try {
+      final apiResponse = await _contributionApiProvider.getContributionById(
+        contributionId: contributionId,
+      );
+
+      if (apiResponse['createdAt'] != null) {
+        return {
+          'success': true,
+          'data': apiResponse,
+          'message': 'Contribution retrieved successfully',
+        };
+      } else {
+        // Handle API errors
+        return {
+          'success': false,
+          'message':
+              apiResponse['message'] ?? 'Failed to retrieve contribution',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while retrieving contribution',
+        'error': e.toString(),
+      };
+    }
+  }
 }

@@ -284,6 +284,7 @@ export interface Contribution {
    */
   accountNumber?: string | null;
   amountContributed: number;
+  charges?: number | null;
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
    * User who collected the contribution
@@ -464,6 +465,7 @@ export interface ContributionsSelect<T extends boolean = true> {
   paymentMethod?: T;
   accountNumber?: T;
   amountContributed?: T;
+  charges?: T;
   paymentStatus?: T;
   collector?: T;
   viaPaymentLink?: T;

@@ -159,7 +159,9 @@ class GoalProgressCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      daysLeft < 0
+                      currentAmount >= goalAmount
+                          ? localizations.goalReached
+                          : daysLeft < 0
                           ? localizations.overdue
                           : localizations.daysLeft(daysLeft),
                       style: TextStyles.titleRegularSm,

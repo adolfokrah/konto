@@ -650,6 +650,42 @@ abstract class AppLocalizations {
   /// **'Overdue'**
   String get overdue;
 
+  /// Text shown when the goal amount has been reached or exceeded
+  ///
+  /// In en, this message translates to:
+  /// **'Goal Reached'**
+  String get goalReached;
+
+  /// Error message when fetching a contribution fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch contribution.'**
+  String get failedToFetchContribution;
+
+  /// Payment status: pending
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get paymentStatusPending;
+
+  /// Payment status: completed
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get paymentStatusCompleted;
+
+  /// Payment status: failed
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get paymentStatusFailed;
+
+  /// Payment status: transferred
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred'**
+  String get paymentStatusTransferred;
+
   /// Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'
   ///
   /// In en, this message translates to:
@@ -962,7 +998,7 @@ abstract class AppLocalizations {
   /// **'Collaborators'**
   String get collaborators;
 
-  /// Button text to invite collaborators
+  /// Button text to invite collectors
   ///
   /// In en, this message translates to:
   /// **'Invite'**
@@ -986,16 +1022,16 @@ abstract class AppLocalizations {
   /// **'Jar created successfully'**
   String get jarCreatedSuccessfully;
 
-  /// Default text for unknown or missing names
+  /// Unknown label
   ///
   /// In en, this message translates to:
   /// **'Unknown'**
   String get unknown;
 
-  /// Title for invite collaborators screen
+  /// Title for invite collectors screen
   ///
   /// In en, this message translates to:
-  /// **'Invite collaborators'**
+  /// **'Invite collectors'**
   String get inviteCollaborators;
 
   /// Placeholder text for contact search input
@@ -1058,10 +1094,10 @@ abstract class AppLocalizations {
   /// **'Open Settings'**
   String get openSettings;
 
-  /// Error message when trying to select more than 4 collaborators
+  /// Error message when trying to select more than 4 collectors
   ///
   /// In en, this message translates to:
-  /// **'Maximum 4 collaborators can be selected'**
+  /// **'Maximum 4 collectors can be selected'**
   String get maximumCollaboratorsSelected;
 
   /// Error message when contacts permission is permanently denied
@@ -1073,7 +1109,7 @@ abstract class AppLocalizations {
   /// Error message when contacts permission is not granted
   ///
   /// In en, this message translates to:
-  /// **'Contacts permission is required to invite collaborators.'**
+  /// **'Contacts permission is required to invite collectors.'**
   String get contactsPermissionRequired;
 
   /// Error message when there's an issue requesting contacts permission
@@ -1363,6 +1399,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred'**
   String get unexpectedError;
+
+  /// Status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// Charges label
+  ///
+  /// In en, this message translates to:
+  /// **'Charges'**
+  String get charges;
+
+  /// Via payment link label
+  ///
+  /// In en, this message translates to:
+  /// **'Via Payment Link'**
+  String get viaPaymentLink;
+
+  /// Contributor label
+  ///
+  /// In en, this message translates to:
+  /// **'Contributor'**
+  String get contributor;
+
+  /// Contributor phone number label
+  ///
+  /// In en, this message translates to:
+  /// **'Contributor Phone Number'**
+  String get contributorPhoneNumber;
+
+  /// Account number label
+  ///
+  /// In en, this message translates to:
+  /// **'Account Number'**
+  String get accountNumber;
+
+  /// Collector label
+  ///
+  /// In en, this message translates to:
+  /// **'Collector'**
+  String get collector;
+
+  /// Help label
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// Coming soon label
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
 }
 
 class _AppLocalizationsDelegate

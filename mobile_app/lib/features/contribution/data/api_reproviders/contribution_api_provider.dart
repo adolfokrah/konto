@@ -167,4 +167,37 @@ class ContributionApiProvider {
       return _handleApiError(e, 'adding contribution');
     }
   }
+
+  /// Get a specific contribution by its ID
+  /// Returns the contribution details if found
+  Future<Map<String, dynamic>> getContributionById({
+    required String contributionId,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Validate required fields
+      if (contributionId.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Contribution ID is required',
+          'statusCode': 400,
+        };
+      }
+
+      final response = await _dio.get(
+        '${BackendConfig.apiBaseUrl}/contributions/$contributionId',
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'fetching contribution');
+    }
+  }
 }

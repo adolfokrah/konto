@@ -312,6 +312,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overdue => 'Overdue';
 
   @override
+  String get goalReached => 'Goal Reached';
+
+  @override
+  String get failedToFetchContribution => 'Failed to fetch contribution.';
+
+  @override
+  String get paymentStatusPending => 'Pending';
+
+  @override
+  String get paymentStatusCompleted => 'Completed';
+
+  @override
+  String get paymentStatusFailed => 'Failed';
+
+  @override
+  String get paymentStatusTransferred => 'Transferred';
+
+  @override
   String get at => 'at';
 
   @override
@@ -514,7 +532,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unknown => 'Unknown';
 
   @override
-  String get inviteCollaborators => 'Invite collaborators';
+  String get inviteCollaborators => 'Invite collectors';
 
   @override
   String get searchContacts => 'Search contacts...';
@@ -551,7 +569,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get maximumCollaboratorsSelected =>
-      'Maximum 4 collaborators can be selected';
+      'Maximum 4 collectors can be selected';
 
   @override
   String get contactsPermissionPermanentlyDenied =>
@@ -559,7 +577,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactsPermissionRequired =>
-      'Contacts permission is required to invite collaborators.';
+      'Contacts permission is required to invite collectors.';
 
   @override
   String errorRequestingContactsPermission(String error) {
@@ -709,4 +727,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unexpectedError => 'An unexpected error occurred';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get charges => 'Charges';
+
+  @override
+  String get viaPaymentLink => 'Via Payment Link';
+
+  @override
+  String get contributor => 'Contributor';
+
+  @override
+  String get contributorPhoneNumber => 'Contributor Phone Number';
+
+  @override
+  String get accountNumber => 'Account Number';
+
+  @override
+  String get collector => 'Collector';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get comingSoon => 'Coming soon';
 }

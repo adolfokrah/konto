@@ -337,7 +337,9 @@ class ContributionModel {
   final String? contributor;
   final String? contributorPhoneNumber;
   final String? paymentMethod; // 'mobile-money' | 'bank-transfer' | 'cash'
+  final String? accountNumber; // Account number for bank transfers
   final double amountContributed;
+  final double? charges; // Optional charges associated with the contribution
   final String
   paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
   final UserModel? collector;
@@ -351,7 +353,9 @@ class ContributionModel {
     this.contributor,
     this.contributorPhoneNumber,
     this.paymentMethod,
+    this.accountNumber,
     required this.amountContributed,
+    this.charges,
     required this.paymentStatus,
     this.collector,
     this.viaPaymentLink,
@@ -366,7 +370,10 @@ class ContributionModel {
       contributor: json['contributor'] as String?,
       contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
       paymentMethod: json['paymentMethod'] as String?,
+      accountNumber: json['accountNumber'] as String?,
       amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
+      charges:
+          json['charges'] != null ? (json['charges'] as num).toDouble() : null,
       paymentStatus: json['paymentStatus'] as String,
       collector:
           json['collector'] != null
@@ -391,7 +398,9 @@ class ContributionModel {
       'contributor': contributor,
       'contributorPhoneNumber': contributorPhoneNumber,
       'paymentMethod': paymentMethod,
+      'accountNumber': accountNumber,
       'amountContributed': amountContributed,
+      'charges': charges,
       'paymentStatus': paymentStatus,
       'collector': collector?.toJson(),
       'viaPaymentLink': viaPaymentLink,

@@ -515,6 +515,36 @@
     "description": "Text shown when deadline has passed"
   },
 
+  "goalReached": "Goal Reached",
+  "@goalReached": {
+    "description": "Text shown when the goal amount has been reached or exceeded"
+  },
+
+  "failedToFetchContribution": "Failed to fetch contribution.",
+  "@failedToFetchContribution": {
+    "description": "Error message when fetching a contribution fails"
+  },
+
+  "paymentStatusPending": "Pending",
+  "@paymentStatusPending": {
+    "description": "Payment status: pending"
+  },
+
+  "paymentStatusCompleted": "Completed",
+  "@paymentStatusCompleted": {
+    "description": "Payment status: completed"
+  },
+
+  "paymentStatusFailed": "Failed",
+  "@paymentStatusFailed": {
+    "description": "Payment status: failed"
+  },
+
+  "paymentStatusTransferred": "Transferred",
+  "@paymentStatusTransferred": {
+    "description": "Payment status: transferred"
+  },
+
   "at": "at",
   "@at": {
     "description": "Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'"
@@ -855,7 +885,7 @@
 
   "invite": "Invite",
   "@invite": {
-    "description": "Button text to invite collaborators"
+    "description": "Button text to invite collectors"
   },
 
   "jarNameCannotBeEmpty": "Jar name cannot be empty",
@@ -878,9 +908,9 @@
     "description": "Default text for unknown or missing names"
   },
 
-  "inviteCollaborators": "Invite collaborators",
+  "inviteCollaborators": "Invite collectors",
   "@inviteCollaborators": {
-    "description": "Title for invite collaborators screen"
+    "description": "Title for invite collectors screen"
   },
 
   "searchContacts": "Search contacts...",
@@ -939,9 +969,9 @@
     "description": "Button text to open app settings"
   },
 
-  "maximumCollaboratorsSelected": "Maximum 4 collaborators can be selected",
+  "maximumCollaboratorsSelected": "Maximum 4 collectors can be selected",
   "@maximumCollaboratorsSelected": {
-    "description": "Error message when trying to select more than 4 collaborators"
+    "description": "Error message when trying to select more than 4 collectors"
   },
 
   "contactsPermissionPermanentlyDenied": "Contacts permission is permanently denied. Please enable it in Settings > Privacy & Security > Contacts.",
@@ -949,7 +979,7 @@
     "description": "Error message when contacts permission is permanently denied"
   },
 
-  "contactsPermissionRequired": "Contacts permission is required to invite collaborators.",
+  "contactsPermissionRequired": "Contacts permission is required to invite collectors.",
   "@contactsPermissionRequired": {
     "description": "Error message when contacts permission is not granted"
   },
@@ -1198,5 +1228,55 @@
   "unexpectedError": "An unexpected error occurred",
   "@unexpectedError": {
     "description": "Generic unexpected error message"
+  },
+
+  "status": "Status",
+  "@status": {
+    "description": "Status label"
+  },
+
+  "charges": "Charges",
+  "@charges": {
+    "description": "Charges label"
+  },
+
+  "viaPaymentLink": "Via Payment Link",
+  "@viaPaymentLink": {
+    "description": "Via payment link label"
+  },
+
+  "contributor": "Contributor",
+  "@contributor": {
+    "description": "Contributor label"
+  },
+
+  "contributorPhoneNumber": "Contributor Phone Number",
+  "@contributorPhoneNumber": {
+    "description": "Contributor phone number label"
+  },
+
+  "accountNumber": "Account Number",
+  "@accountNumber": {
+    "description": "Account number label"
+  },
+
+  "collector": "Collector",
+  "@collector": {
+    "description": "Collector label"
+  },
+
+  "help": "Help",
+  "@help": {
+    "description": "Help label"
+  },
+
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Unknown label"
+  },
+
+  "comingSoon": "Coming soon",
+  "@comingSoon": {
+    "description": "Coming soon label"
   }
 }
