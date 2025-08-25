@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,13 +22,63 @@ import 'package:konto/l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+
+  // Set initial system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+  );
+
   // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _updateSystemOverlay();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    _updateSystemOverlay();
+  }
+
+  void _updateSystemOverlay() {
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness:
+            brightness == Brightness.dark
+                ? Brightness
+                    .light // Light icons on dark theme
+                : Brightness.dark, // Dark icons on light theme
+        statusBarBrightness:
+            brightness == Brightness.dark
+                ? Brightness
+                    .dark // Dark status bar on iOS dark mode
+                : Brightness.light, // Light status bar on iOS light mode
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +111,7 @@ class MainApp extends StatelessWidget {
         title: 'Konto',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode:
-            ThemeMode.system, // Automatically switch based on system setting
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
           AppLocalizations.delegate,

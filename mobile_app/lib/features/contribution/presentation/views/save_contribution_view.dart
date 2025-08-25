@@ -241,7 +241,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                             const SizedBox(height: AppSpacing.spacingM),
                             AppTextInput(
                               controller: _accountNumberController,
-                              label: localizations.accountName,
+                              label: localizations.accountNumber,
                               hintText: localizations.enterAccountName,
                               keyboardType: TextInputType.name,
                             ),
@@ -302,7 +302,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     }
 
     if (_selectedPaymentMethod == 'bank-transfer') {
-      // Validate account name for bank transfer
+      // Validate account number for bank transfer
       if (_accountNumberController.text.trim().isEmpty) {
         _showErrorSnackBar(localizations.pleaseEnterAccountName);
         return;

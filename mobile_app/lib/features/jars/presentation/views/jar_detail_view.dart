@@ -168,6 +168,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
                         SliverAppBar(
+                          centerTitle: false,
                           title: BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, state) {
                               String firstName = localizations.user;
@@ -629,6 +630,7 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
       );
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SliverFillRemaining(
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.8,
@@ -644,7 +646,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                   width: 200,
                   height: 200,
                   fit: BoxFit.contain,
-                  color: Colors.white,
+                  color: isDark ? Colors.white : Colors.black,
                   colorBlendMode: BlendMode.srcIn,
                 ),
                 Text(

@@ -210,7 +210,12 @@ class _JarInfoViewState extends State<JarInfoView> {
                             radius: 30,
                             backgroundColor:
                                 Theme.of(context).colorScheme.primary,
-                            child: const Icon(Icons.local_drink, size: 18),
+                            child: Icon(
+                              Icons.local_drink,
+                              size: 18,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                            ),
                           ),
                         ],
                       ),
