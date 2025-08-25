@@ -116,7 +116,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
             {
@@ -124,7 +124,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
           ],
@@ -191,7 +191,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
             {
@@ -199,7 +199,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
           ],
@@ -241,7 +241,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
             {
@@ -249,7 +249,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
           ],
@@ -410,7 +410,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
             {
@@ -418,7 +418,7 @@ describe('getUserJars', () => {
                 equals: mockUser,
               },
               status: {
-                not_equals: 'inactive',
+                not_equals: 'broken',
               },
             },
           ],
@@ -449,7 +449,7 @@ describe('getUserJars', () => {
           equals: mockUser,
         },
         status: {
-          not_equals: 'inactive',
+          not_equals: 'broken',
         },
       })
       expect(callArgs.where.or[1]).toEqual({
@@ -457,7 +457,7 @@ describe('getUserJars', () => {
           equals: mockUser,
         },
         status: {
-          not_equals: 'inactive',
+          not_equals: 'broken',
         },
       })
     })
