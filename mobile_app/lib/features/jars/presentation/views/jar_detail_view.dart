@@ -17,6 +17,7 @@ import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/utils/image_utils.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:konto/features/collaborators/presentation/views/collectors_view.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -207,6 +208,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           actions: [
                             if (state is JarSummaryLoaded)
                               AppIconButton(
+                                key: const Key('request_button_qr_code'),
                                 onPressed: () {
                                   Navigator.pushNamed(
                                     context,
@@ -319,100 +321,112 @@ class _JarDetailViewState extends State<JarDetailView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AppIconButton(
-                          enabled: jarData.status != JarStatus.sealed,
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.addContribution,
-                            );
-                          },
-                          icon: Icons.add,
-                        ),
-                        const SizedBox(height: AppSpacing.spacingXs),
-                        Text(
-                          localizations.contribute,
-                          style: TextStyles.titleMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge?.color?.withValues(
-                              alpha:
-                                  jarData.status == JarStatus.sealed
-                                      ? 0.4
-                                      : 1.0,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AppIconButton(
+                            key: const Key('contribute_button'),
+                            enabled: jarData.status != JarStatus.sealed,
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.addContribution,
+                              );
+                            },
+                            icon: Icons.add,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                          Text(
+                            localizations.contribute,
+                            style: TextStyles.titleMedium.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color?.withValues(
+                                alpha:
+                                    jarData.status == JarStatus.sealed
+                                        ? 0.4
+                                        : 1.0,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AppIconButton(
-                          enabled: jarData.status != JarStatus.sealed,
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.contributionRequest,
-                              arguments: {
-                                'paymentLink': state.jarData.paymentLink,
-                                'jarName': state.jarData.name,
-                              },
-                            );
-                          },
-                          icon: Icons.call_received,
-                        ),
-                        const SizedBox(height: AppSpacing.spacingXs),
-                        Text(
-                          localizations.request,
-                          style: TextStyles.titleMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge?.color?.withValues(
-                              alpha:
-                                  jarData.status == JarStatus.sealed
-                                      ? 0.4
-                                      : 1.0,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AppIconButton(
+                            key: const Key('request_button'),
+                            enabled: jarData.status != JarStatus.sealed,
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.contributionRequest,
+                                arguments: {
+                                  'paymentLink': state.jarData.paymentLink,
+                                  'jarName': state.jarData.name,
+                                },
+                              );
+                            },
+                            icon: Icons.call_received,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                          Text(
+                            localizations.request,
+                            style: TextStyles.titleMedium.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color?.withValues(
+                                alpha:
+                                    jarData.status == JarStatus.sealed
+                                        ? 0.4
+                                        : 1.0,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, authState) {
-                            final isCreator =
-                                authState is AuthAuthenticated &&
-                                jarData.creator.id == authState.user.id;
-                            return Column(
-                              children: [
-                                AppIconButton(
-                                  enabled: isCreator,
-                                  onPressed:
-                                      isCreator
-                                          ? () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.jarInfo,
-                                            );
-                                          }
-                                          : null,
-                                  icon: Icons.info,
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.spacingXs),
-                        Text(localizations.info, style: TextStyles.titleMedium),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, authState) {
+                              final isCreator =
+                                  authState is AuthAuthenticated &&
+                                  jarData.creator.id == authState.user.id;
+                              return Column(
+                                children: [
+                                  AppIconButton(
+                                    key: const Key('info_button'),
+                                    enabled: isCreator,
+                                    onPressed:
+                                        isCreator
+                                            ? () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                AppRoutes.jarInfo,
+                                              );
+                                            }
+                                            : null,
+                                    icon: Icons.info,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                          Text(
+                            localizations.info,
+                            style: TextStyles.titleMedium,
+                          ),
+                        ],
+                      ),
                     ),
-                    JarMoreMenu(jarId: jarData.id),
+                    Expanded(child: JarMoreMenu(jarId: jarData.id)),
                   ],
                 ),
               ),
@@ -420,45 +434,50 @@ class _JarDetailViewState extends State<JarDetailView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: AppCard(
-                      margin: EdgeInsets.only(left: AppSpacing.spacingXs),
-                      variant: CardVariant.primary,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.person),
-                            style: IconButton.styleFrom(
-                              backgroundColor:
-                                  isDark
-                                      ? Theme.of(context).colorScheme.surface
-                                      : Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onSurface,
+                    child: GestureDetector(
+                      onTap: () {
+                        CollectorsView.show(context);
+                      },
+                      child: AppCard(
+                        margin: EdgeInsets.only(left: AppSpacing.spacingXs),
+                        variant: CardVariant.primary,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.person),
+                              style: IconButton.styleFrom(
+                                backgroundColor:
+                                    isDark
+                                        ? Theme.of(context).colorScheme.surface
+                                        : Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.spacingL),
-                          Text(
-                            localizations.collectors,
-                            style: TextStyles.titleRegularM,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          AnimatedNumberTextScale(
-                            value:
-                                (jarData.invitedCollectors
-                                            ?.where(
-                                              (collector) =>
-                                                  collector.status ==
-                                                  'accepted',
-                                            )
-                                            .length ??
-                                        0)
-                                    .toString(),
-                            style: TextStyles.titleBoldLg,
-                            duration: const Duration(milliseconds: 600),
-                          ),
-                        ],
+                            const SizedBox(height: AppSpacing.spacingL),
+                            Text(
+                              localizations.collectors,
+                              style: TextStyles.titleRegularM,
+                            ),
+                            const SizedBox(height: AppSpacing.spacingXs),
+                            AnimatedNumberTextScale(
+                              value:
+                                  (jarData.invitedCollectors
+                                              ?.where(
+                                                (collector) =>
+                                                    collector.status ==
+                                                    'accepted',
+                                              )
+                                              .length ??
+                                          0)
+                                      .toString(),
+                              style: TextStyles.titleBoldLg,
+                              duration: const Duration(milliseconds: 600),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

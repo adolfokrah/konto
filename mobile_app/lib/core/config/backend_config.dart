@@ -11,6 +11,10 @@ class BackendConfig {
     return dotenv.env['IMAGE_BASE_URL'] ?? '';
   }
 
+  static String get appBaseUrl {
+    return dotenv.env['APP_BASE_URL'] ?? 'https://konto.app';
+  }
+
   // API endpoints
   static const String usersEndpoint = '/users';
   static const String checkUserExistence = '/users/check-user-existence';

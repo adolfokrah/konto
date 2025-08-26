@@ -61,6 +61,7 @@ class JarMoreMenu extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 PopupMenuButton<String>(
+                  key: const Key('more_menu'),
                   color:
                       isDark
                           ? Theme.of(context).colorScheme.primary

@@ -17,7 +17,6 @@ class RequestContributionView extends StatefulWidget {
 }
 
 class _RequestContributionViewState extends State<RequestContributionView> {
-  double? _previousBrightness;
   late ScreenBrightness _screenBrightness;
 
   @override
@@ -35,27 +34,19 @@ class _RequestContributionViewState extends State<RequestContributionView> {
 
   Future<void> _increaseBrightness() async {
     try {
-      // Get current brightness
-      _previousBrightness = await _screenBrightness.current;
       // Set brightness to maximum (1.0) for better QR code visibility
       await _screenBrightness.setScreenBrightness(1.0);
     } catch (e) {
       // Handle error silently - brightness control is a nice-to-have feature
-      print('Could not control screen brightness: $e');
     }
   }
 
   Future<void> _restoreBrightness() async {
     try {
-      if (_previousBrightness != null) {
-        await _screenBrightness.setScreenBrightness(_previousBrightness!);
-      } else {
-        // Reset to system brightness if we couldn't get the previous value
-        await _screenBrightness.resetScreenBrightness();
-      }
+      await _screenBrightness.resetScreenBrightness();
     } catch (e) {
-      // Handle error silently
-      print('Could not restore screen brightness: $e');
+      // Handle error silently - brightness restoration is a nice-to-have feature
+      // This is especially important for tests where the plugin may not be available
     }
   }
 

@@ -269,5 +269,11 @@
   "done": "Terminé",
   "deadline": "Date limite",
   "tapCalendarButtonToSetDeadline": "Appuyez sur le bouton calendrier pour définir la date limite",
-  "failedToUpdateJarGoal": "Échec de la mise à jour de l'objectif du pot"
+  "failedToUpdateJarGoal": "Échec de la mise à jour de l'objectif du pot",
+  "active": "Actif",
+  "pending": "En attente",
+  "remind": "Rappeler",
+  "invite": "Inviter",
+  "smsInvitationMessage": "Salut ! 👋\n\n{inviterName} vous a invité(e) à contribuer au pot \"{jarName}\".\n\nRejoignez maintenant : {jarLink}\n\nTéléchargez l'application Konto pour commencer à contribuer et suivre vos économies ensemble !\n\nBonnes économies ! 💰",
+  "smsReminderMessage": "🔔 Rappel :\n\n{inviterName} attend que vous rejoigniez le pot \"{jarName}\" !\n\nRejoignez ici : {jarLink}\n\nNe ratez pas cette opportunité d'épargne !\n\nTéléchargez l'application Konto maintenant 📱"
 }

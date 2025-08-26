@@ -1499,5 +1499,63 @@
   "failedToUpdateJarGoal": "Failed to update jar goal",
   "@failedToUpdateJarGoal": {
     "description": "Error message when jar goal update fails"
+  },
+
+  "active": "Active",
+  "@active": {
+    "description": "Active status label"
+  },
+
+  "pending": "Pending",
+  "@pending": {
+    "description": "Pending status label"
+  },
+
+  "remind": "Remind",
+  "@remind": {
+    "description": "Remind button text"
+  },
+
+  "invite": "Invite",
+  "@invite": {
+    "description": "Invite button text"
+  },
+
+  "smsInvitationMessage": "Hi! 👋\n\n{inviterName} has invited you to contribute to \"{jarName}\" jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start contributing and track your savings together!\n\nHappy saving! 💰",
+  "@smsInvitationMessage": {
+    "description": "SMS message template for collector invitation",
+    "placeholders": {
+      "inviterName": {
+        "type": "String",
+        "example": "John"
+      },
+      "jarName": {
+        "type": "String",
+        "example": "Wedding Fund"
+      },
+      "jarLink": {
+        "type": "String",
+        "example": "https://konto.app/jar/123"
+      }
+    }
+  },
+
+  "smsReminderMessage": "🔔 Reminder:\n\n{inviterName} is waiting for you to join \"{jarName}\" jar!\n\nJoin here: {jarLink}\n\nDon't miss out on this savings opportunity!\n\nDownload Konto app now 📱",
+  "@smsReminderMessage": {
+    "description": "SMS message template for collector reminder",
+    "placeholders": {
+      "inviterName": {
+        "type": "String",
+        "example": "John"
+      },
+      "jarName": {
+        "type": "String",
+        "example": "Wedding Fund"
+      },
+      "jarLink": {
+        "type": "String",
+        "example": "https://konto.app/jar/123"
+      }
+    }
   }
 }

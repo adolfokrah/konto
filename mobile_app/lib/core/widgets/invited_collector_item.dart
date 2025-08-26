@@ -12,6 +12,7 @@ class InvitedCollectorItem extends StatelessWidget {
   final bool isNew;
   final VoidCallback? onRemind;
   final VoidCallback? onCancel;
+  final Color? backgroundColor;
 
   const InvitedCollectorItem({
     super.key,
@@ -19,6 +20,7 @@ class InvitedCollectorItem extends StatelessWidget {
     this.isNew = true,
     this.onRemind,
     this.onCancel,
+    this.backgroundColor,
   });
 
   /// Generate initials from the invited collector's name
@@ -44,6 +46,7 @@ class InvitedCollectorItem extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
           decoration: BoxDecoration(
             color:
                 isDark
@@ -85,16 +88,13 @@ class InvitedCollectorItem extends StatelessWidget {
                     contentPadding: const EdgeInsets.all(0),
                     leading: CircleAvatar(
                       radius: 25,
-                      backgroundColor:
-                          isDark
-                              ? Theme.of(context).colorScheme.surface
-                              : Theme.of(context).colorScheme.surface,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       child: Icon(
                         Icons.notifications_outlined,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    title: const Text('Remind'),
+                    title: Text('Remind', style: TextStyles.titleMedium),
                     onTap: () {
                       Navigator.pop(context);
                       onRemind?.call();
@@ -114,10 +114,7 @@ class InvitedCollectorItem extends StatelessWidget {
                   contentPadding: const EdgeInsets.all(0),
                   leading: CircleAvatar(
                     radius: 25,
-                    backgroundColor:
-                        isDark
-                            ? Theme.of(context).colorScheme.surface
-                            : Theme.of(context).colorScheme.surface,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     child: Icon(
                       Icons.delete_outline,
                       color: Theme.of(context).colorScheme.error,
@@ -151,6 +148,8 @@ class InvitedCollectorItem extends StatelessWidget {
         _showCollectorOptionsBottomSheet(context);
       },
       leading: CircleAvatar(
+        backgroundColor:
+            backgroundColor ?? Theme.of(context).colorScheme.primary,
         child: Text(
           _getInitials(invitedCollector.name),
           style: TextStyles.titleBoldM.copyWith(
@@ -165,6 +164,8 @@ class InvitedCollectorItem extends StatelessWidget {
       trailing:
           invitedCollector.status == 'pending' && !isNew
               ? AppSmallButton(
+                backgroundColor:
+                    backgroundColor ?? Theme.of(context).colorScheme.primary,
                 padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.spacingS,
                   vertical: 6,

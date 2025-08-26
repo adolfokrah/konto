@@ -880,4 +880,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToUpdateJarGoal => 'Failed to update jar goal';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get remind => 'Remind';
+
+  @override
+  String smsInvitationMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return 'Hi! 👋\n\n$inviterName has invited you to contribute to \"$jarName\" jar.\n\nJoin now: $jarLink\n\nDownload Konto app to start contributing and track your savings together!\n\nHappy saving! 💰';
+  }
+
+  @override
+  String smsReminderMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return '🔔 Reminder:\n\n$inviterName is waiting for you to join \"$jarName\" jar!\n\nJoin here: $jarLink\n\nDon\'t miss out on this savings opportunity!\n\nDownload Konto app now 📱';
+  }
 }

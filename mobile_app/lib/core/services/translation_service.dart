@@ -71,6 +71,24 @@ class TranslationService {
     return localizations.otpSmsMessage(otp, minutes);
   }
 
+  /// Get formatted SMS invitation message
+  String getSmsInvitationMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return localizations.smsInvitationMessage(inviterName, jarName, jarLink);
+  }
+
+  /// Get formatted SMS reminder message
+  String getSmsReminderMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return localizations.smsReminderMessage(inviterName, jarName, jarLink);
+  }
+
   /// Get formatted unexpected error message
   String unexpectedErrorOccurredWithDetails(String error) {
     return localizations.unexpectedErrorOccurred(error);

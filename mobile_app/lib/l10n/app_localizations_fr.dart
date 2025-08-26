@@ -895,4 +895,31 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get failedToUpdateJarGoal =>
       'Échec de la mise à jour de l\'objectif du pot';
+
+  @override
+  String get active => 'Actif';
+
+  @override
+  String get pending => 'En attente';
+
+  @override
+  String get remind => 'Rappeler';
+
+  @override
+  String smsInvitationMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return 'Salut ! 👋\n\n$inviterName vous a invité(e) à contribuer au pot \"$jarName\".\n\nRejoignez maintenant : $jarLink\n\nTéléchargez l\'application Konto pour commencer à contribuer et suivre vos économies ensemble !\n\nBonnes économies ! 💰';
+  }
+
+  @override
+  String smsReminderMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  ) {
+    return '🔔 Rappel :\n\n$inviterName attend que vous rejoigniez le pot \"$jarName\" !\n\nRejoignez ici : $jarLink\n\nNe ratez pas cette opportunité d\'épargne !\n\nTéléchargez l\'application Konto maintenant 📱';
+  }
 }

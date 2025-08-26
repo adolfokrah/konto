@@ -4,7 +4,9 @@ import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/currencies.dart';
 import 'package:konto/core/constants/jar_groups.dart';
+import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/utils/sms_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/category_selector.dart';
 import 'package:konto/core/widgets/currency_picker.dart';
@@ -94,6 +96,56 @@ class _JarCreateViewState extends State<JarCreateView> {
     } else {
       return '${words[0].substring(0, 1)}${words[words.length - 1].substring(0, 1)}'
           .toUpperCase();
+    }
+  }
+
+  /// Send SMS invitations for newly created jar
+  void _sendSmsInvitations(JarModel jar) async {
+    // Check if there are invited contributors with phone numbers
+    final phoneNumbers =
+        invitedContributors
+            .where(
+              (contributor) =>
+                  contributor.phoneNumber != null &&
+                  contributor.phoneNumber!.isNotEmpty,
+            )
+            .map((contributor) => contributor.phoneNumber!)
+            .toList();
+
+    if (phoneNumbers.isEmpty) {
+      return; // No phone numbers to send SMS to
+    }
+
+    try {
+      // Get current user data for the invitation message
+      final userStorageService = ServiceRegistry().userStorageService;
+      final currentUser = await userStorageService.getUserData();
+      final inviterName = currentUser?.fullName ?? 'Konto User';
+
+      // Generate jar link
+      final jarLink = '${BackendConfig.appBaseUrl}/jars/${jar.id}';
+
+      // Create custom invitation message for the newly created jar
+      final translationService = ServiceRegistry().translationService;
+      final message = translationService.getSmsInvitationMessage(
+        inviterName,
+        jar.name,
+        jarLink,
+      );
+
+      // Use the SMS utility to open SMS app with the invitation message
+      if (mounted) {
+        await SmsUtils.openSmsAppWithCustomMessage(
+          context,
+          phoneNumbers,
+          message,
+          showErrorMessages:
+              false, // Don't show errors for automatic invitations
+        );
+      }
+    } catch (e) {
+      // Silently handle errors - don't disrupt the jar creation flow
+      print('Could not send SMS invitations: $e');
     }
   }
 
@@ -207,7 +259,10 @@ class _JarCreateViewState extends State<JarCreateView> {
               // 2. Refresh the jar list to include the new jar
               context.read<JarListBloc>().add(LoadJarList());
 
-              // 3. Replace the entire navigation stack with the jar detail view
+              // 3. Send SMS invitations if there are invited contributors
+              _sendSmsInvitations(state.jar);
+
+              // 4. Replace the entire navigation stack with the jar detail view
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.jarDetail, (route) => false);

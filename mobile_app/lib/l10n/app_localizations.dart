@@ -998,7 +998,7 @@ abstract class AppLocalizations {
   /// **'Collaborators'**
   String get collaborators;
 
-  /// Button text to invite collectors
+  /// Invite button text
   ///
   /// In en, this message translates to:
   /// **'Invite'**
@@ -1687,6 +1687,40 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to update jar goal'**
   String get failedToUpdateJarGoal;
+
+  /// Active status label
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// Pending status label
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// Remind button text
+  ///
+  /// In en, this message translates to:
+  /// **'Remind'**
+  String get remind;
+
+  /// SMS message template for collector invitation
+  ///
+  /// In en, this message translates to:
+  /// **'Hi! 👋\n\n{inviterName} has invited you to contribute to \"{jarName}\" jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start contributing and track your savings together!\n\nHappy saving! 💰'**
+  String smsInvitationMessage(
+    String inviterName,
+    String jarName,
+    String jarLink,
+  );
+
+  /// SMS message template for collector reminder
+  ///
+  /// In en, this message translates to:
+  /// **'🔔 Reminder:\n\n{inviterName} is waiting for you to join \"{jarName}\" jar!\n\nJoin here: {jarLink}\n\nDon\'t miss out on this savings opportunity!\n\nDownload Konto app now 📱'**
+  String smsReminderMessage(String inviterName, String jarName, String jarLink);
 }
 
 class _AppLocalizationsDelegate
