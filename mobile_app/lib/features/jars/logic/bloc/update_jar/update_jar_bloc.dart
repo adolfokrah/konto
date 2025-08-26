@@ -55,11 +55,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
           event.updates['acceptedPaymentMethods']?.cast<String>(),
       invitedCollectors: processedCollectors,
     );
-
-    print('UpdateJarBloc: API response: $response');
-
     if (response['success'] == true) {
-      print('UpdateJarBloc: Update successful');
       emit(UpdateJarSuccess());
     } else {
       print('UpdateJarBloc: Update failed - ${response['error']}');

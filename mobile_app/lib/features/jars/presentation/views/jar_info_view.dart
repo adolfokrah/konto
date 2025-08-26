@@ -85,10 +85,6 @@ class _JarInfoViewState extends State<JarInfoView> {
         BlocListener<UpdateJarBloc, UpdateJarState>(
           listener: (context, state) {
             if (state is UpdateJarSuccess) {
-              context.read<JarSummaryReloadBloc>().add(
-                ReloadJarSummaryRequested(),
-              );
-
               // If we were breaking a jar, show success modal and then navigate
               if (_isBreakingJar) {
                 _isBreakingJar = false;
@@ -133,21 +129,18 @@ class _JarInfoViewState extends State<JarInfoView> {
         builder: (context, state) {
           if (state is JarSummaryLoading) {
             return Scaffold(
-              backgroundColor: const Color(0xFFEBE2D7),
               body: const Center(child: CircularProgressIndicator()),
             );
           }
 
           if (state is JarSummaryError) {
             return Scaffold(
-              backgroundColor: const Color(0xFFEBE2D7),
               body: Center(child: Text('Error: ${state.message}')),
             );
           }
 
           if (state is! JarSummaryLoaded) {
             return Scaffold(
-              backgroundColor: const Color(0xFFEBE2D7),
               body: const Center(child: Text('No jar data available')),
             );
           }
@@ -212,7 +205,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                             backgroundColor:
                                 Theme.of(context).colorScheme.primary,
                             child: Icon(
-                              Icons.local_drink,
+                              Icons.wallet,
                               size: 18,
                               color:
                                   Theme.of(context).textTheme.bodyLarge?.color,

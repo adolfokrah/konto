@@ -21,7 +21,9 @@ import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jars_list_view.dart';
+import 'package:konto/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
 
@@ -129,6 +131,15 @@ class _JarDetailViewState extends State<JarDetailView> {
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil('/login', (route) => false);
+            }
+          },
+        ),
+        BlocListener<UpdateJarBloc, UpdateJarState>(
+          listener: (context, state) {
+            if (state is UpdateJarSuccess) {
+              context.read<JarSummaryReloadBloc>().add(
+                ReloadJarSummaryRequested(),
+              );
             }
           },
         ),
@@ -373,24 +384,35 @@ class _JarDetailViewState extends State<JarDetailView> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        AppIconButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, AppRoutes.jarInfo);
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authState) {
+                            final isCreator =
+                                authState is AuthAuthenticated &&
+                                jarData.creator.id == authState.user.id;
+                            return Column(
+                              children: [
+                                AppIconButton(
+                                  enabled: isCreator,
+                                  onPressed:
+                                      isCreator
+                                          ? () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              AppRoutes.jarInfo,
+                                            );
+                                          }
+                                          : null,
+                                  icon: Icons.info,
+                                ),
+                              ],
+                            );
                           },
-                          icon: Icons.info,
                         ),
                         const SizedBox(height: AppSpacing.spacingXs),
                         Text(localizations.info, style: TextStyles.titleMedium),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AppIconButton(onPressed: () {}, icon: Icons.more_horiz),
-                        const SizedBox(height: AppSpacing.spacingXs),
-                        Text(localizations.more, style: TextStyles.titleMedium),
-                      ],
-                    ),
+                    JarMoreMenu(jarId: jarData.id),
                   ],
                 ),
               ),
