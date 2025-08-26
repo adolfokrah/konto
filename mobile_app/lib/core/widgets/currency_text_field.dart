@@ -110,6 +110,7 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
       decoration: const InputDecoration(
         border: InputBorder.none,
         contentPadding: EdgeInsets.zero,
+        hintText: '0.00',
       ),
     );
   }

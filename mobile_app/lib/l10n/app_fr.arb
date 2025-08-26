@@ -152,6 +152,7 @@
   "invite": "Inviter",
     "jarNameCannotBeEmpty": "Le nom du pot ne peut pas être vide",
   "pleaseSelectJarGroup": "Veuillez sélectionner un groupe de pot",
+  "selectJarGroup": "Sélectionner un Groupe de Pot",
   "jarCreatedSuccessfully": "Pot créé avec succès",
   "unknown": "Inconnu",
   "inviteCollaborators": "Inviter des collaborateurs",

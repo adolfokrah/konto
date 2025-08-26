@@ -536,6 +536,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pleaseSelectJarGroup => 'Veuillez sélectionner un groupe de pot';
 
   @override
+  String get selectJarGroup => 'Sélectionner un Groupe de Pot';
+
+  @override
   String get jarCreatedSuccessfully => 'Pot créé avec succès';
 
   @override

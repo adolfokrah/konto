@@ -15,6 +15,7 @@ import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/widgets/jar_group_picker.dart';
+import 'package:konto/route.dart';
 
 class JarInfoView extends StatefulWidget {
   const JarInfoView({super.key});
@@ -326,6 +327,12 @@ class _JarInfoViewState extends State<JarInfoView> {
                           children: [
                             ListTile(
                               contentPadding: EdgeInsets.zero,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.jarDescriptionEdit,
+                                );
+                              },
                               dense: true,
                               title: Text(
                                 'Description',
@@ -403,6 +410,12 @@ class _JarInfoViewState extends State<JarInfoView> {
                             if (jarData.isFixedContribution)
                               ListTile(
                                 contentPadding: EdgeInsets.zero,
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.jarFixedContributionAmountEdit,
+                                  );
+                                },
                                 dense: true,
                                 title: Text(
                                   'Fixed contribution Amount',

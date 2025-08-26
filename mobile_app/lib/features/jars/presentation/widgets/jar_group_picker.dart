@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/core/constants/jar_groups.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/generic_picker.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarGroupPicker {
   /// Shows a jar group picker dialog using the GenericPicker component
@@ -39,7 +40,7 @@ class JarGroupPicker {
       searchFilter: (String group) => group,
       isItemSelected:
           (String group, String selectedValue) => group == selectedValue,
-      title: 'Select Jar Group',
+      title: AppLocalizations.of(context)!.selectJarGroup,
       showSearch: false, // Since there are only a few jar groups
     );
   }

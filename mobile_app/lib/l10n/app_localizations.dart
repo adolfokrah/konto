@@ -1016,6 +1016,12 @@ abstract class AppLocalizations {
   /// **'Please select a jar group'**
   String get pleaseSelectJarGroup;
 
+  /// Title for jar group picker dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select Jar Group'**
+  String get selectJarGroup;
+
   /// Success message when jar is created
   ///
   /// In en, this message translates to:

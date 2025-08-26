@@ -526,6 +526,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseSelectJarGroup => 'Please select a jar group';
 
   @override
+  String get selectJarGroup => 'Select Jar Group';
+
+  @override
   String get jarCreatedSuccessfully => 'Jar created successfully';
 
   @override

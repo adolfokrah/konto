@@ -20,14 +20,12 @@ class AddContributionView extends StatefulWidget {
 class _AddContributionViewState extends State<AddContributionView> {
   final TextEditingController _amountController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Auto-focus the input field when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
+    // Auto-focus logic moved to BlocBuilder where we have access to jarData
   }
 
   @override
@@ -55,6 +53,25 @@ class _AddContributionViewState extends State<AddContributionView> {
         child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
           builder: (context, state) {
             if (state is JarSummaryLoaded) {
+              final jarData = state.jarData;
+              // Initialize the controller with the formatted amount if not already done
+              if (_isInitialized == false) {
+                final currencySymbol = CurrencyUtils.getCurrencySymbol(
+                  jarData.currency,
+                );
+                // Only auto-focus if the field is editable (isFixedContribution is false)
+                if (!jarData.isFixedContribution) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _focusNode.requestFocus();
+                  });
+                } else {
+                  // Format the amount with currency symbol for initial display
+                  _amountController.text =
+                      '$currencySymbol${jarData.acceptedContributionAmount}';
+                  _isInitialized = true;
+                }
+              }
+
               return Padding(
                 padding: const EdgeInsets.all(AppSpacing.spacingL),
                 child: Column(
@@ -66,11 +83,22 @@ class _AddContributionViewState extends State<AddContributionView> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Large amount display
-                          CurrencyTextField(
-                            controller: _amountController,
-                            focusNode: _focusNode,
-                            currencySymbol: CurrencyUtils.getCurrencySymbol(
-                              state.jarData.currency,
+                          Opacity(
+                            opacity: jarData.isFixedContribution ? 0.6 : 1.0,
+                            child: IgnorePointer(
+                              ignoring: jarData.isFixedContribution,
+                              child: CurrencyTextField(
+                                controller: _amountController,
+                                focusNode:
+                                    jarData.isFixedContribution
+                                        ? null
+                                        : _focusNode,
+                                currencySymbol: CurrencyUtils.getCurrencySymbol(
+                                  jarData.currency,
+                                ),
+                                onChanged:
+                                    jarData.isFixedContribution ? null : null,
+                              ),
                             ),
                           ),
 
@@ -78,7 +106,7 @@ class _AddContributionViewState extends State<AddContributionView> {
 
                           // Jar name
                           Text(
-                            state.jarData.name,
+                            jarData.name,
                             style: TextStyles.titleMediumLg.copyWith(
                               fontWeight: FontWeight.w500,
                             ),

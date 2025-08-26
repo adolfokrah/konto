@@ -898,6 +898,11 @@
     "description": "Error message when no jar group is selected"
   },
 
+  "selectJarGroup": "Select Jar Group",
+  "@selectJarGroup": {
+    "description": "Title for jar group picker dialog"
+  },
+
   "jarCreatedSuccessfully": "Jar created successfully",
   "@jarCreatedSuccessfully": {
     "description": "Success message when jar is created"

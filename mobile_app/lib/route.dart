@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/contribution/presentation/views/add_contribution_view.dart';
+import 'package:konto/features/jars/presentation/views/jar_description_edit_view.dart';
+import 'package:konto/features/jars/presentation/views/jar_fixed_contribution_amount_edit_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:konto/features/contribution/presentation/views/request_contribution_view.dart';
 import 'package:konto/features/contribution/presentation/views/save_contribution_view.dart';
@@ -26,6 +28,9 @@ class AppRoutes {
     '/jar_create': (context) => const JarCreateView(),
     '/jar_goal': (context) => const JarGoalView(),
     '/jar_info': (context) => const JarInfoView(),
+    '/jar_description_edit': (context) => const JarDescriptionEditView(),
+    '/jar_fixed_contribution_amount_edit':
+        (context) => const JarFixedContributionAmountEditView(),
   };
 
   // Route names constants for easy access
@@ -41,4 +46,7 @@ class AppRoutes {
   static const String jarCreate = '/jar_create';
   static const String jarGoal = '/jar_goal';
   static const String jarInfo = '/jar_info';
+  static const String jarDescriptionEdit = '/jar_description_edit';
+  static const String jarFixedContributionAmountEdit =
+      '/jar_fixed_contribution_amount_edit';
 }

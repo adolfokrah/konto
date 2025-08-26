@@ -14,9 +14,6 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
     UpdateJarRequested event,
     Emitter<UpdateJarState> emit,
   ) async {
-    print('UpdateJarBloc: Starting update for jar ${event.jarId}');
-    print('UpdateJarBloc: Updates to apply: ${event.updates}');
-
     emit(UpdateJarInProgress());
 
     final serviceRegistry = ServiceRegistry();
