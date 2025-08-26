@@ -977,7 +977,7 @@ abstract class AppLocalizations {
   /// Label for jar name input field
   ///
   /// In en, this message translates to:
-  /// **'Jar name'**
+  /// **'Jar Name'**
   String get jarName;
 
   /// Placeholder text for jar name input field
@@ -986,7 +986,7 @@ abstract class AppLocalizations {
   /// **'Enter jar name'**
   String get enterJarName;
 
-  /// Label for currency selection
+  /// Label for currency field
   ///
   /// In en, this message translates to:
   /// **'Currency'**
@@ -1021,6 +1021,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Jar Group'**
   String get selectJarGroup;
+
+  /// Menu option to change jar name
+  ///
+  /// In en, this message translates to:
+  /// **'Change name'**
+  String get changeName;
+
+  /// Menu option to change jar image
+  ///
+  /// In en, this message translates to:
+  /// **'Change jar image'**
+  String get changeJarImage;
+
+  /// Menu option to set initial jar image
+  ///
+  /// In en, this message translates to:
+  /// **'Set jar image'**
+  String get setJarImage;
+
+  /// Title for edit jar name screen
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Jar Name'**
+  String get editJarName;
+
+  /// Success message when jar name is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Jar name updated successfully'**
+  String get jarNameUpdatedSuccessfully;
+
+  /// Hint text for jar name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new jar name'**
+  String get enterNewJarName;
+
+  /// Generic save button text
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Title for edit jar description screen
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Jar Description'**
+  String get editJarDescription;
+
+  /// Success message when jar description is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Jar description updated successfully'**
+  String get jarDescriptionUpdatedSuccessfully;
+
+  /// Hint text for jar description input field
+  ///
+  /// In en, this message translates to:
+  /// **'{jarName} needs a story to tell and grow.'**
+  String jarDescriptionHint(String jarName);
+
+  /// Generic error label
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// Message when jar data is not available
+  ///
+  /// In en, this message translates to:
+  /// **'No jar data available'**
+  String get noJarDataAvailable;
+
+  /// Title when jar is broken
+  ///
+  /// In en, this message translates to:
+  /// **'Jar Broken'**
+  String get jarBroken;
+
+  /// Description shown when jar is broken
+  ///
+  /// In en, this message translates to:
+  /// **'The jar has been permanently broken and can no longer be accessed.'**
+  String get jarBrokenDescription;
+
+  /// Generic okay button text
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get okay;
+
+  /// Action to break a jar
+  ///
+  /// In en, this message translates to:
+  /// **'Break jar'**
+  String get breakJar;
+
+  /// Confirmation message before breaking a jar
+  ///
+  /// In en, this message translates to:
+  /// **'Once the jar is broken, you will permanently lose access to it.'**
+  String get breakJarConfirmationMessage;
+
+  /// Button text to confirm breaking
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get breakButton;
+
+  /// Default jar group when none specified
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// Label for jar group field
+  ///
+  /// In en, this message translates to:
+  /// **'Jar group'**
+  String get jarGroup;
+
+  /// Text shown when information is not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get notAvailable;
+
+  /// Status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// Label for description field
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Message when no description is provided
+  ///
+  /// In en, this message translates to:
+  /// **'No description available'**
+  String get noDescriptionAvailable;
+
+  /// Label asking if jar has fixed contribution amount
+  ///
+  /// In en, this message translates to:
+  /// **'is Fixed Contribution?'**
+  String get isFixedContribution;
+
+  /// Label for fixed contribution amount field
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed contribution Amount'**
+  String get fixedContributionAmount;
+
+  /// Success message when fixed contribution amount is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Jar fixed contribution amount updated successfully'**
+  String get fixedContributionAmountUpdatedSuccessfully;
+
+  /// Action to reopen a sealed jar
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen jar'**
+  String get reopenJar;
+
+  /// Action to seal a jar
+  ///
+  /// In en, this message translates to:
+  /// **'Seal jar'**
+  String get sealJar;
+
+  /// Message explaining what happens when jar is reopened
+  ///
+  /// In en, this message translates to:
+  /// **'People will be able to contribute to this jar again'**
+  String get reopenJarMessage;
+
+  /// Message explaining what happens when jar is sealed
+  ///
+  /// In en, this message translates to:
+  /// **'People will be no longer able to contribute to this jar until it is reopened'**
+  String get sealJarMessage;
+
+  /// Button text to reopen jar
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get reopen;
+
+  /// Button text to seal jar
+  ///
+  /// In en, this message translates to:
+  /// **'Seal'**
+  String get seal;
 
   /// Success message when jar is created
   ///
@@ -1405,12 +1603,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred'**
   String get unexpectedError;
-
-  /// Status label
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get status;
 
   /// Charges label
   ///

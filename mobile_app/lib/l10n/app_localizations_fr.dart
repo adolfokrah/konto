@@ -515,7 +515,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get setUpYourJar => 'Configurez votre pot';
 
   @override
-  String get jarName => 'Nom du pot';
+  String get jarName => 'Nom du Pot';
 
   @override
   String get enterJarName => 'Entrez le nom du pot';
@@ -537,6 +537,113 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get selectJarGroup => 'Sélectionner un Groupe de Pot';
+
+  @override
+  String get changeName => 'Changer le nom';
+
+  @override
+  String get changeJarImage => 'Changer l\'image du pot';
+
+  @override
+  String get setJarImage => 'Définir l\'image du pot';
+
+  @override
+  String get editJarName => 'Modifier le Nom du Pot';
+
+  @override
+  String get jarNameUpdatedSuccessfully => 'Nom du pot mis à jour avec succès';
+
+  @override
+  String get enterNewJarName => 'Entrez le nouveau nom du pot';
+
+  @override
+  String get save => 'Enregistrer';
+
+  @override
+  String get editJarDescription => 'Modifier la Description du Pot';
+
+  @override
+  String get jarDescriptionUpdatedSuccessfully =>
+      'Description du pot mise à jour avec succès';
+
+  @override
+  String jarDescriptionHint(String jarName) {
+    return '$jarName a besoin d\'une histoire à raconter et à faire grandir.';
+  }
+
+  @override
+  String get error => 'Erreur';
+
+  @override
+  String get noJarDataAvailable => 'Aucune donnée de pot disponible';
+
+  @override
+  String get jarBroken => 'Pot Cassé';
+
+  @override
+  String get jarBrokenDescription =>
+      'Le pot a été cassé de façon permanente et ne peut plus être accessible.';
+
+  @override
+  String get okay => 'D\'accord';
+
+  @override
+  String get breakJar => 'Casser le pot';
+
+  @override
+  String get breakJarConfirmationMessage =>
+      'Une fois le pot cassé, vous perdrez définitivement l\'accès à celui-ci.';
+
+  @override
+  String get breakButton => 'Casser';
+
+  @override
+  String get other => 'Autre';
+
+  @override
+  String get jarGroup => 'Groupe de pot';
+
+  @override
+  String get notAvailable => 'N/A';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get noDescriptionAvailable => 'Aucune description disponible';
+
+  @override
+  String get isFixedContribution => 'Contribution fixe ?';
+
+  @override
+  String get fixedContributionAmount => 'Montant de contribution fixe';
+
+  @override
+  String get fixedContributionAmountUpdatedSuccessfully =>
+      'Montant de contribution fixe du pot mis à jour avec succès';
+
+  @override
+  String get reopenJar => 'Rouvrir le pot';
+
+  @override
+  String get sealJar => 'Sceller le pot';
+
+  @override
+  String get reopenJarMessage =>
+      'Les gens pourront à nouveau contribuer à ce pot';
+
+  @override
+  String get sealJarMessage =>
+      'Les gens ne pourront plus contribuer à ce pot jusqu\'à ce qu\'il soit rouvert';
+
+  @override
+  String get reopen => 'Rouvrir';
+
+  @override
+  String get seal => 'Sceller';
 
   @override
   String get jarCreatedSuccessfully => 'Pot créé avec succès';
@@ -744,9 +851,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get unexpectedError => 'Une erreur inattendue s\'est produite';
-
-  @override
-  String get status => 'Statut';
 
   @override
   String get charges => 'Frais';

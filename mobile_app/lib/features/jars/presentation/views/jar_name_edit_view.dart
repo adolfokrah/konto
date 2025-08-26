@@ -6,6 +6,7 @@ import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarNameEditView extends StatelessWidget {
   const JarNameEditView({super.key});
@@ -13,15 +14,19 @@ class JarNameEditView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextEditingController textController = TextEditingController();
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Jar Name'), centerTitle: false),
+      appBar: AppBar(
+        title: Text(localizations.editJarName),
+        centerTitle: false,
+      ),
       body: BlocListener<UpdateJarBloc, UpdateJarState>(
         listener: (context, state) {
           if (state is UpdateJarSuccess) {
             Navigator.of(context).pop();
             AppSnackBar.showSuccess(
               context,
-              message: "Jar name updated successfully",
+              message: localizations.jarNameUpdatedSuccessfully,
             );
           }
         },
@@ -38,8 +43,8 @@ class JarNameEditView extends StatelessWidget {
                       child: SingleChildScrollView(
                         child: AppTextInput(
                           controller: textController,
-                          label: 'Jar Name',
-                          hintText: 'Enter new jar name',
+                          label: localizations.jarName,
+                          hintText: localizations.enterNewJarName,
                         ),
                       ),
                     ),
@@ -48,7 +53,7 @@ class JarNameEditView extends StatelessWidget {
                       builder: (context, state) {
                         return AppButton(
                           isLoading: state is UpdateJarInProgress,
-                          text: "Save",
+                          text: localizations.save,
                           onPressed: () {
                             context.read<UpdateJarBloc>().add(
                               UpdateJarRequested(

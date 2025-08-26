@@ -903,6 +903,187 @@
     "description": "Title for jar group picker dialog"
   },
 
+  "changeName": "Change name",
+  "@changeName": {
+    "description": "Menu option to change jar name"
+  },
+
+  "changeJarImage": "Change jar image",
+  "@changeJarImage": {
+    "description": "Menu option to change jar image"
+  },
+
+  "setJarImage": "Set jar image",
+  "@setJarImage": {
+    "description": "Menu option to set initial jar image"
+  },
+
+  "editJarName": "Edit Jar Name",
+  "@editJarName": {
+    "description": "Title for edit jar name screen"
+  },
+
+  "jarNameUpdatedSuccessfully": "Jar name updated successfully",
+  "@jarNameUpdatedSuccessfully": {
+    "description": "Success message when jar name is updated"
+  },
+
+  "jarName": "Jar Name",
+  "@jarName": {
+    "description": "Label for jar name input field"
+  },
+
+  "enterNewJarName": "Enter new jar name",
+  "@enterNewJarName": {
+    "description": "Hint text for jar name input field"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Generic save button text"
+  },
+
+  "editJarDescription": "Edit Jar Description",
+  "@editJarDescription": {
+    "description": "Title for edit jar description screen"
+  },
+
+  "jarDescriptionUpdatedSuccessfully": "Jar description updated successfully",
+  "@jarDescriptionUpdatedSuccessfully": {
+    "description": "Success message when jar description is updated"
+  },
+
+  "jarDescriptionHint": "{jarName} needs a story to tell and grow.",
+  "@jarDescriptionHint": {
+    "description": "Hint text for jar description input field",
+    "placeholders": {
+      "jarName": {
+        "type": "String",
+        "description": "The name of the jar"
+      }
+    }
+  },
+
+  "error": "Error",
+  "@error": {
+    "description": "Generic error label"
+  },
+
+  "noJarDataAvailable": "No jar data available",
+  "@noJarDataAvailable": {
+    "description": "Message when jar data is not available"
+  },
+
+  "jarBroken": "Jar Broken",
+  "@jarBroken": {
+    "description": "Title when jar is broken"
+  },
+
+  "jarBrokenDescription": "The jar has been permanently broken and can no longer be accessed.",
+  "@jarBrokenDescription": {
+    "description": "Description shown when jar is broken"
+  },
+
+  "okay": "Okay",
+  "@okay": {
+    "description": "Generic okay button text"
+  },
+
+  "breakJar": "Break jar",
+  "@breakJar": {
+    "description": "Action to break a jar"
+  },
+
+  "breakJarConfirmationMessage": "Once the jar is broken, you will permanently lose access to it.",
+  "@breakJarConfirmationMessage": {
+    "description": "Confirmation message before breaking a jar"
+  },
+
+  "breakButton": "Break",
+  "@breakButton": {
+    "description": "Button text to confirm breaking"
+  },
+
+  "other": "Other",
+  "@other": {
+    "description": "Default jar group when none specified"
+  },
+
+  "jarGroup": "Jar group",
+  "@jarGroup": {
+    "description": "Label for jar group field"
+  },
+
+  "notAvailable": "N/A",
+  "@notAvailable": {
+    "description": "Text shown when information is not available"
+  },
+
+  "currency": "Currency",
+  "@currency": {
+    "description": "Label for currency field"
+  },
+
+  "status": "Status",
+  "@status": {
+    "description": "Label for status field"
+  },
+
+  "description": "Description",
+  "@description": {
+    "description": "Label for description field"
+  },
+
+  "noDescriptionAvailable": "No description available",
+  "@noDescriptionAvailable": {
+    "description": "Message when no description is provided"
+  },
+
+  "isFixedContribution": "is Fixed Contribution?",
+  "@isFixedContribution": {
+    "description": "Label asking if jar has fixed contribution amount"
+  },
+
+  "fixedContributionAmount": "Fixed contribution Amount",
+  "@fixedContributionAmount": {
+    "description": "Label for fixed contribution amount field"
+  },
+
+  "fixedContributionAmountUpdatedSuccessfully": "Jar fixed contribution amount updated successfully",
+  "@fixedContributionAmountUpdatedSuccessfully": {
+    "description": "Success message when fixed contribution amount is updated"
+  },
+
+  "reopenJar": "Reopen jar",
+  "@reopenJar": {
+    "description": "Action to reopen a sealed jar"
+  },
+
+  "sealJar": "Seal jar",
+  "@sealJar": {
+    "description": "Action to seal a jar"
+  },
+
+  "reopenJarMessage": "People will be able to contribute to this jar again",
+  "@reopenJarMessage": {
+    "description": "Message explaining what happens when jar is reopened"
+  },
+
+  "sealJarMessage": "People will be no longer able to contribute to this jar until it is reopened",
+  "@sealJarMessage": {
+    "description": "Message explaining what happens when jar is sealed"
+  },
+
+  "reopen": "Reopen",
+  "@reopen": {
+    "description": "Button text to reopen jar"
+  },
+
+  "seal": "Seal",
+  "@seal": {
+    "description": "Button text to seal jar"
+  },
+
   "jarCreatedSuccessfully": "Jar created successfully",
   "@jarCreatedSuccessfully": {
     "description": "Success message when jar is created"

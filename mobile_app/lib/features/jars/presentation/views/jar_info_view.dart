@@ -12,10 +12,10 @@ import 'package:konto/core/widgets/operation_complete_modal.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/widgets/jar_group_picker.dart';
 import 'package:konto/route.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarInfoView extends StatefulWidget {
   const JarInfoView({super.key});
@@ -73,6 +73,7 @@ class _JarInfoViewState extends State<JarInfoView> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return MultiBlocListener(
       listeners: [
         BlocListener<JarSummaryBloc, JarSummaryState>(
@@ -105,10 +106,9 @@ class _JarInfoViewState extends State<JarInfoView> {
                       fit: BoxFit.contain,
                     ),
                   ),
-                  title: 'Jar Broken',
-                  subtitle:
-                      'The jar has been permanently broken and can no longer be accessed.',
-                  buttonText: 'Okay',
+                  title: localizations.jarBroken,
+                  subtitle: localizations.jarBrokenDescription,
+                  buttonText: localizations.okay,
                   onButtonPressed: () {
                     context.read<JarSummaryBloc>().add(
                       ClearCurrentJarRequested(),
@@ -135,13 +135,15 @@ class _JarInfoViewState extends State<JarInfoView> {
 
           if (state is JarSummaryError) {
             return Scaffold(
-              body: Center(child: Text('Error: ${state.message}')),
+              body: Center(
+                child: Text('${localizations.error}: ${state.message}'),
+              ),
             );
           }
 
           if (state is! JarSummaryLoaded) {
             return Scaffold(
-              body: const Center(child: Text('No jar data available')),
+              body: Center(child: Text(localizations.noJarDataAvailable)),
             );
           }
 
@@ -236,12 +238,12 @@ class _JarInfoViewState extends State<JarInfoView> {
                               contentPadding: EdgeInsets.zero,
                               onTap:
                                   () => _showJarGroupPicker(
-                                    jarData.jarGroup ?? 'Other',
+                                    jarData.jarGroup ?? localizations.other,
                                     jarData.id,
                                   ),
                               dense: true,
                               title: Text(
-                                'Jar group',
+                                localizations.jarGroup,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: Theme.of(context)
                                       .textTheme
@@ -251,7 +253,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                 ),
                               ),
                               subtitle: Text(
-                                jarData.jarGroup ?? 'N/A',
+                                jarData.jarGroup ?? localizations.notAvailable,
                                 style: AppTextStyles.titleMediumS,
                               ),
                               trailing: Icon(Icons.chevron_right),
@@ -260,7 +262,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               contentPadding: EdgeInsets.zero,
                               dense: true,
                               title: Text(
-                                'Currency',
+                                localizations.currency,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: Theme.of(context)
                                       .textTheme
@@ -278,7 +280,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               contentPadding: EdgeInsets.zero,
                               dense: true,
                               title: Text(
-                                'Status',
+                                localizations.status,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: Theme.of(context)
                                       .textTheme
@@ -328,7 +330,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               },
                               dense: true,
                               title: Text(
-                                'Description',
+                                localizations.description,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: Theme.of(context)
                                       .textTheme
@@ -339,7 +341,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               ),
                               subtitle: Text(
                                 jarData.description ??
-                                    'No description available',
+                                    localizations.noDescriptionAvailable,
                                 style: AppTextStyles.titleMediumS,
                               ),
                               trailing: Icon(Icons.chevron_right),
@@ -360,7 +362,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               contentPadding: EdgeInsets.zero,
                               dense: true,
                               title: Text(
-                                'is Fixed Contribution?',
+                                localizations.isFixedContribution,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: Theme.of(context)
                                       .textTheme
@@ -411,7 +413,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                 },
                                 dense: true,
                                 title: Text(
-                                  'Fixed contribution Amount',
+                                  localizations.fixedContributionAmount,
                                   style: AppTextStyles.titleMediumS.copyWith(
                                     color: Theme.of(context)
                                         .textTheme
@@ -446,14 +448,16 @@ class _JarInfoViewState extends State<JarInfoView> {
                                   context: context,
                                   title:
                                       isCurrentlyClosed
-                                          ? 'Reopen jar'
-                                          : 'Seal jar',
+                                          ? localizations.reopenJar
+                                          : localizations.sealJar,
                                   message:
                                       isCurrentlyClosed
-                                          ? 'People will be able to contribute to this jar again'
-                                          : 'People will be no longer able to contribute to this jar until it is reopened',
+                                          ? localizations.reopenJarMessage
+                                          : localizations.sealJarMessage,
                                   confirmText:
-                                      isCurrentlyClosed ? 'Reopen' : 'Seal',
+                                      isCurrentlyClosed
+                                          ? localizations.reopen
+                                          : localizations.seal,
                                   onConfirm: () {
                                     // Handle jar closing/reopening logic
                                     final newStatus =
@@ -474,8 +478,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                               dense: true,
                               title: Text(
                                 jarData.status == JarStatus.sealed
-                                    ? 'Reopen jar'
-                                    : 'Seal jar',
+                                    ? localizations.reopenJar
+                                    : localizations.sealJar,
                                 style: AppTextStyles.titleMediumS,
                               ),
                               trailing: Icon(Icons.chevron_right),
@@ -496,10 +500,10 @@ class _JarInfoViewState extends State<JarInfoView> {
                               onTap: () {
                                 AlertBottomSheet.show(
                                   context: context,
-                                  title: 'Break jar',
+                                  title: localizations.breakJar,
                                   message:
-                                      'Once the jar is broken, you will permanently lose access to it.',
-                                  confirmText: 'Break',
+                                      localizations.breakJarConfirmationMessage,
+                                  confirmText: localizations.breakButton,
                                   onConfirm: () {
                                     _isBreakingJar = true;
                                     context.read<UpdateJarBloc>().add(
@@ -514,7 +518,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               contentPadding: EdgeInsets.zero,
                               dense: true,
                               title: Text(
-                                'Brake jar',
+                                localizations.breakJar,
                                 style: AppTextStyles.titleMediumS.copyWith(
                                   color: AppColors.errorRed,
                                 ),

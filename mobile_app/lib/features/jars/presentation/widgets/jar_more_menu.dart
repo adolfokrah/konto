@@ -6,7 +6,6 @@ import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
@@ -74,19 +73,21 @@ class JarMoreMenu extends StatelessWidget {
                         PopupMenuItem<String>(
                           value: 'name',
                           child: ListTile(
-                            leading: Icon(Icons.wallet),
-                            title: Text('Change name'),
+                            leading: Icon(Icons.edit),
+                            title: Text(
+                              AppLocalizations.of(context)!.changeName,
+                            ),
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
                         PopupMenuItem<String>(
                           value: 'image',
                           child: ListTile(
-                            leading: Icon(Icons.photo),
+                            leading: Icon(Icons.image),
                             title: Text(
                               jarData.image != null
-                                  ? 'Change jar image'
-                                  : 'Set jar image',
+                                  ? AppLocalizations.of(context)!.changeJarImage
+                                  : AppLocalizations.of(context)!.setJarImage,
                             ),
                             contentPadding: EdgeInsets.zero,
                           ),

@@ -6,6 +6,7 @@ import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarDescriptionEditView extends StatefulWidget {
   const JarDescriptionEditView({super.key});
@@ -40,15 +41,16 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Jar Description')),
+      appBar: AppBar(title: Text(localizations.editJarDescription)),
       body: BlocListener<UpdateJarBloc, UpdateJarState>(
         listener: (context, state) {
           if (state is UpdateJarSuccess) {
             Navigator.of(context).pop();
             AppSnackBar.showSuccess(
               context,
-              message: "Jar description updated successfully",
+              message: localizations.jarDescriptionUpdatedSuccessfully,
             );
           }
         },
@@ -76,8 +78,9 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
                                 ? Colors.white
                                 : Colors.black,
                         decoration: InputDecoration(
-                          hintText:
-                              "${jarData.name} needs a story to tell and grow.",
+                          hintText: localizations.jarDescriptionHint(
+                            jarData.name,
+                          ),
                           hintStyle: AppTextStyles.headingOne.copyWith(
                             color: Theme.of(
                               context,
@@ -114,7 +117,7 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
                                 ),
                               );
                             },
-                            text: "Save",
+                            text: localizations.save,
                           );
                         },
                       ),

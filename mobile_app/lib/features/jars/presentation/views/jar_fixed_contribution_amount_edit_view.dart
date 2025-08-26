@@ -46,10 +46,9 @@ class _JarFixedContributionAmountEditViewState
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Jar fixed contribution amount',
+          localizations.fixedContributionAmount,
           style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
@@ -60,7 +59,7 @@ class _JarFixedContributionAmountEditViewState
             Navigator.of(context).pop();
             AppSnackBar.showSuccess(
               context,
-              message: "Jar fixed contribution amount updated successfully",
+              message: localizations.fixedContributionAmountUpdatedSuccessfully,
             );
           }
         },

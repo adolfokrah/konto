@@ -505,7 +505,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setUpYourJar => 'Set up your jar';
 
   @override
-  String get jarName => 'Jar name';
+  String get jarName => 'Jar Name';
 
   @override
   String get enterJarName => 'Enter jar name';
@@ -527,6 +527,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectJarGroup => 'Select Jar Group';
+
+  @override
+  String get changeName => 'Change name';
+
+  @override
+  String get changeJarImage => 'Change jar image';
+
+  @override
+  String get setJarImage => 'Set jar image';
+
+  @override
+  String get editJarName => 'Edit Jar Name';
+
+  @override
+  String get jarNameUpdatedSuccessfully => 'Jar name updated successfully';
+
+  @override
+  String get enterNewJarName => 'Enter new jar name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get editJarDescription => 'Edit Jar Description';
+
+  @override
+  String get jarDescriptionUpdatedSuccessfully =>
+      'Jar description updated successfully';
+
+  @override
+  String jarDescriptionHint(String jarName) {
+    return '$jarName needs a story to tell and grow.';
+  }
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get noJarDataAvailable => 'No jar data available';
+
+  @override
+  String get jarBroken => 'Jar Broken';
+
+  @override
+  String get jarBrokenDescription =>
+      'The jar has been permanently broken and can no longer be accessed.';
+
+  @override
+  String get okay => 'Okay';
+
+  @override
+  String get breakJar => 'Break jar';
+
+  @override
+  String get breakJarConfirmationMessage =>
+      'Once the jar is broken, you will permanently lose access to it.';
+
+  @override
+  String get breakButton => 'Break';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get jarGroup => 'Jar group';
+
+  @override
+  String get notAvailable => 'N/A';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get noDescriptionAvailable => 'No description available';
+
+  @override
+  String get isFixedContribution => 'is Fixed Contribution?';
+
+  @override
+  String get fixedContributionAmount => 'Fixed contribution Amount';
+
+  @override
+  String get fixedContributionAmountUpdatedSuccessfully =>
+      'Jar fixed contribution amount updated successfully';
+
+  @override
+  String get reopenJar => 'Reopen jar';
+
+  @override
+  String get sealJar => 'Seal jar';
+
+  @override
+  String get reopenJarMessage =>
+      'People will be able to contribute to this jar again';
+
+  @override
+  String get sealJarMessage =>
+      'People will be no longer able to contribute to this jar until it is reopened';
+
+  @override
+  String get reopen => 'Reopen';
+
+  @override
+  String get seal => 'Seal';
 
   @override
   String get jarCreatedSuccessfully => 'Jar created successfully';
@@ -730,9 +837,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unexpectedError => 'An unexpected error occurred';
-
-  @override
-  String get status => 'Status';
 
   @override
   String get charges => 'Charges';
