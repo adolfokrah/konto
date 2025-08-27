@@ -1874,6 +1874,12 @@ abstract class AppLocalizations {
   /// **'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.'**
   String get reVerificationWarning;
 
+  /// Success message when phone number is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number updated successfully'**
+  String get phoneNumberUpdatedSuccessfully;
+
   /// OK button text
   ///
   /// In en, this message translates to:

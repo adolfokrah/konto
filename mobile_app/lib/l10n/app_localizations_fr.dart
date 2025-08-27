@@ -1002,5 +1002,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l\'exactitude de vos informations.';
 
   @override
+  String get phoneNumberUpdatedSuccessfully =>
+      'Numéro de téléphone mis à jour avec succès';
+
+  @override
   String get ok => 'OK';
 }

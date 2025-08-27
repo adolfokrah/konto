@@ -987,5 +987,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.';
 
   @override
+  String get phoneNumberUpdatedSuccessfully =>
+      'Phone number updated successfully';
+
+  @override
   String get ok => 'OK';
 }

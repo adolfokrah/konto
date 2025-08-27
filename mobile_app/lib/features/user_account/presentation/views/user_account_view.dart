@@ -133,7 +133,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.changePhoneNumber,
               onTap: () {
                 // Navigate to change phone number
-                _showComingSoon(context);
+                Navigator.pushNamed(context, AppRoutes.changePhoneNumber);
               },
             ),
           ]),

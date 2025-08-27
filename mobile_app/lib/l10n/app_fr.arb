@@ -303,5 +303,6 @@
   "profileUpdatedSuccessfully": "Profil mis à jour avec succès !",
   "pleaseEnterFullName": "Veuillez entrer votre nom complet",
   "reVerificationWarning": "Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l'exactitude de vos informations.",
+  "phoneNumberUpdatedSuccessfully": "Numéro de téléphone mis à jour avec succès",
   "ok": "OK"
 }

@@ -255,7 +255,6 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
       UpdatePersonalDetails(
         fullName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
-        phoneNumber: _phoneNumberController.text.trim(),
         country: selectedCountry,
       ),
     );

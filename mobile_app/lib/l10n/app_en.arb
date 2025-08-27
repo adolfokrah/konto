@@ -1690,6 +1690,11 @@
     "description": "Warning message when user changes critical account information"
   },
 
+  "phoneNumberUpdatedSuccessfully": "Phone number updated successfully",
+  "@phoneNumberUpdatedSuccessfully": {
+    "description": "Success message when phone number is updated"
+  },
+
   "ok": "OK",
   "@ok": {
     "description": "OK button text"
