@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:konto/features/authentication/presentation/views/login_view.dart';
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/contribution/presentation/views/add_contribution_view.dart';
+import 'package:konto/features/contribution/presentation/views/await_momo_payment_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_description_edit_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_fixed_contribution_amount_edit_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
     '/personal_details': (context) => const PersonalDetailsView(),
     '/change_phone_number': (context) => const ChangePhoneNumberView(),
     '/withdrawal_account': (context) => const WithdrawalAccountView(),
+    '/await_momo_payment': (context) => const AwaitMomoPaymentView(),
   };
 
   // Route names constants for easy access
@@ -64,4 +66,5 @@ class AppRoutes {
   static const String personalDetails = '/personal_details';
   static const String changePhoneNumber = '/change_phone_number';
   static const String withdrawalAccount = '/withdrawal_account';
+  static const String awaitMomoPayment = '/await_momo_payment';
 }

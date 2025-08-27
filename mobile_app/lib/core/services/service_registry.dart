@@ -15,6 +15,8 @@ import 'package:konto/features/media/data/api_provider/media_api_provider.dart';
 import 'package:konto/features/media/data/repository_provider/media_repository.dart';
 import 'package:konto/features/contribution/data/api_reproviders/contribution_api_provider.dart';
 import 'package:konto/features/contribution/data/repositories/contribution_repository.dart';
+import 'package:konto/features/contribution/data/api_reproviders/momo_api_provider.dart';
+import 'package:konto/features/contribution/data/repositories/momo_repository.dart';
 import 'package:konto/features/user_account/data/api_providers/user_account_api_provider.dart';
 import 'package:konto/features/user_account/data/repositories/user_account_repository.dart';
 
@@ -42,6 +44,7 @@ class ServiceRegistry {
   late final JarApiProvider _jarApiProvider;
   late final MediaApiProvider _mediaApiProvider;
   late final ContributionApiProvider _contributionApiProvider;
+  late final MomoApiProvider _momoApiProvider;
   late final UserAccountApiProvider _userAccountApiProvider;
 
   // Repositories
@@ -51,6 +54,7 @@ class ServiceRegistry {
   late final JarRepository _jarRepository;
   late final MediaRepository _mediaRepository;
   late final ContributionRepository _contributionRepository;
+  late final MomoRepository _momoRepository;
   late final UserAccountRepository _userAccountRepository;
 
   /// Initialize all services with proper dependency injection
@@ -101,6 +105,10 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
+    _momoApiProvider = MomoApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
     _userAccountApiProvider = UserAccountApiProvider(
       dio: _dio,
       userStorageService: _userStorageService,
@@ -129,6 +137,7 @@ class ServiceRegistry {
     _contributionRepository = ContributionRepository(
       contributionApiProvider: _contributionApiProvider,
     );
+    _momoRepository = MomoRepository(momoApiProvider: _momoApiProvider);
     _userAccountRepository = UserAccountRepository(
       apiProvider: _userAccountApiProvider,
       userStorageService: _userStorageService,
@@ -159,6 +168,8 @@ class ServiceRegistry {
   MediaRepository get mediaRepository => _mediaRepository;
   ContributionRepository get contributionRepository => _contributionRepository;
   UserAccountRepository get userAccountRepository => _userAccountRepository;
+  MomoApiProvider get momoApiProvider => _momoApiProvider;
+  MomoRepository get momoRepository => _momoRepository;
 
   /// Reset the registry (useful for testing)
   void reset() {
@@ -202,6 +213,10 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
+    _momoApiProvider = MomoApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
     _userAccountApiProvider = UserAccountApiProvider(
       dio: _dio,
       userStorageService: _userStorageService,
@@ -230,6 +245,7 @@ class ServiceRegistry {
     _contributionRepository = ContributionRepository(
       contributionApiProvider: _contributionApiProvider,
     );
+    _momoRepository = MomoRepository(momoApiProvider: _momoApiProvider);
     _userAccountRepository = UserAccountRepository(
       apiProvider: _userAccountApiProvider,
       userStorageService: _userStorageService,

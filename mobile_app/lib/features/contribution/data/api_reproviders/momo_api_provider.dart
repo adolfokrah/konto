@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
-/// API Provider for contribution-related operations
-class ContributionApiProvider {
+/// API Provider for mobile money charge operations
+class MomoApiProvider {
   final Dio _dio;
   final UserStorageService _userStorageService;
 
-  ContributionApiProvider({
+  MomoApiProvider({
     required Dio dio,
     required UserStorageService userStorageService,
   }) : _dio = dio,
@@ -89,90 +89,9 @@ class ContributionApiProvider {
     }
   }
 
-  /// Add a contribution to a jar collection in the CMS
-  /// Creates a new contribution with payment method details
-  Future<Map<String, dynamic>> addContribution({
-    required String jarId,
-    String? contributor,
-    String? contributorPhoneNumber,
-    required String paymentMethod, // 'mobile-money' | 'bank-transfer' | 'cash'
-    String? accountNumber, // Required for bank transfers
-    required double amountContributed,
-    bool viaPaymentLink = false,
-    required String mobileMoneyProvider, // Required for mobile money
-  }) async {
-    try {
-      // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
-
-      if (headers == null) {
-        return _getUnauthenticatedError();
-      }
-
-      // Get the current user to set as collector
-      final user = await _userStorageService.getUserData();
-
-      if (user == null) {
-        return {
-          'success': false,
-          'message': 'User not authenticated',
-          'statusCode': 401,
-        };
-      }
-
-      // Validate required fields
-      if (jarId.isEmpty) {
-        return {
-          'success': false,
-          'message': 'Jar ID is required',
-          'statusCode': 400,
-        };
-      }
-
-      if (user.id.isEmpty) {
-        return {
-          'success': false,
-          'message': 'Invalid user ID',
-          'statusCode': 400,
-        };
-      }
-
-      // Prepare contribution data based on the collection schema
-      final contributionData = {
-        'jar': jarId,
-        'contributor': contributor,
-        'contributorPhoneNumber': contributorPhoneNumber,
-        'paymentMethod': paymentMethod,
-        'amountContributed': amountContributed,
-        'collector': user.id, // Set the authenticated user as collector
-        'viaPaymentLink': viaPaymentLink,
-        'mobileMoneyProvider': mobileMoneyProvider,
-        // paymentStatus defaults to 'pending' as set in the CMS schema
-      };
-
-      // Add account number if payment method is bank transfer
-      if (paymentMethod == 'bank-transfer' && accountNumber != null) {
-        contributionData['accountNumber'] = accountNumber;
-      }
-
-      // Remove null values to avoid sending unnecessary data
-      contributionData.removeWhere((key, value) => value == null);
-
-      final response = await _dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions',
-        data: contributionData,
-        options: Options(headers: headers),
-      );
-
-      return response.data;
-    } catch (e) {
-      return _handleApiError(e, 'adding contribution');
-    }
-  }
-
-  /// Get a specific contribution by its ID
-  /// Returns the contribution details if found
-  Future<Map<String, dynamic>> getContributionById({
+  /// Initiate mobile money charge for a contribution
+  /// Calls the charge-momo endpoint with contribution ID
+  Future<Map<String, dynamic>> chargeMomo({
     required String contributionId,
   }) async {
     try {
@@ -192,14 +111,87 @@ class ContributionApiProvider {
         };
       }
 
-      final response = await _dio.get(
-        '${BackendConfig.apiBaseUrl}/contributions/$contributionId',
+      // Make request to charge-momo endpoint
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}/contributions/charge-momo',
+        data: {'contributionId': contributionId},
         options: Options(headers: headers),
       );
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'fetching contribution');
+      return _handleApiError(e, 'initiating mobile money charge');
+    }
+  }
+
+  /// Submit OTP for mobile money verification (Vodafone)
+  /// Calls the send-otp endpoint with reference and OTP code
+  Future<Map<String, dynamic>> submitOtp({
+    required String reference,
+    required String otp,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Validate required fields
+      if (reference.isEmpty || otp.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Reference and OTP are required',
+          'statusCode': 400,
+        };
+      }
+
+      // Make request to send-otp endpoint
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}/contributions/send-otp',
+        data: {'reference': reference, 'otp': otp},
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'submitting OTP verification');
+    }
+  }
+
+  /// Verify payment status using transaction reference
+  /// Calls the verify-payment endpoint with payment reference
+  Future<Map<String, dynamic>> verifyPayment({
+    required String reference,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Validate required fields
+      if (reference.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Payment reference is required',
+          'statusCode': 400,
+        };
+      }
+
+      // Make request to verify-payment endpoint
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}/contributions/verify-payment',
+        data: {'reference': reference},
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'verifying payment status');
     }
   }
 }

@@ -282,6 +282,7 @@ export interface Contribution {
    */
   contributorPhoneNumber?: string | null;
   paymentMethod?: ('mobile-money' | 'bank-transfer' | 'cash') | null;
+  mobileMoneyProvider?: string | null;
   /**
    * Account number for bank transfers
    */
@@ -485,6 +486,7 @@ export interface ContributionsSelect<T extends boolean = true> {
   contributor?: T;
   contributorPhoneNumber?: T;
   paymentMethod?: T;
+  mobileMoneyProvider?: T;
   accountNumber?: T;
   amountContributed?: T;
   charges?: T;

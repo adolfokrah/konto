@@ -30,10 +30,11 @@ class AddContributionBloc
         accountNumber: event.accountNumber,
         amountContributed: event.amountContributed,
         viaPaymentLink: event.viaPaymentLink,
+        mobileMoneyProvider: event.mobileMoneyProvider,
       );
 
       if (response['success']) {
-        emit(AddContributionSuccess());
+        emit(AddContributionSuccess(response['data']['id'] as String));
       } else {
         emit(AddContributionFailure(response['message'] ?? 'UNKNOWN_ERROR'));
       }

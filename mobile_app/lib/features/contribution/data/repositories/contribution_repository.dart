@@ -19,6 +19,7 @@ class ContributionRepository {
     String? accountNumber,
     required double amountContributed,
     bool viaPaymentLink = false,
+    required String mobileMoneyProvider,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider.addContribution(
@@ -29,6 +30,7 @@ class ContributionRepository {
         accountNumber: accountNumber,
         amountContributed: amountContributed,
         viaPaymentLink: viaPaymentLink,
+        mobileMoneyProvider: mobileMoneyProvider,
       );
 
       if (apiResponse['doc'] != null) {

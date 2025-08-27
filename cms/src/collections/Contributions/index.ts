@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
+import { chargeMomo } from './endpoints/charge-momo'
+import { sendOtp } from './endpoints/send-otp'
+import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
 
 export const Contributions: CollectionConfig = {
@@ -49,6 +52,23 @@ export const Contributions: CollectionConfig = {
         { label: 'Bank Transfer', value: 'bank-transfer' },
         { label: 'Cash', value: 'cash' },
       ],
+    },
+    {
+      name: 'mobileMoneyProvider',
+      type: 'text',
+      admin: {
+        condition: data => data?.paymentMethod === 'mobile-money',
+      },
+      hooks: {
+        beforeChange: [
+          ({ data }) => {
+            // Mobile money provider is required for mobile-money payments
+            if (data?.paymentMethod === 'mobile-money' && !data?.mobileMoneyProvider) {
+              throw new Error('Mobile money provider is required for mobile-money payments')
+            }
+          },
+        ],
+      },
     },
     {
       name: 'accountNumber',
@@ -202,6 +222,23 @@ export const Contributions: CollectionConfig = {
       admin: {
         description: 'Check if this contribution was made via a payment link',
       },
+    },
+  ],
+  endpoints: [
+    {
+      path: '/charge-momo',
+      method: 'post',
+      handler: chargeMomo,
+    },
+    {
+      path: '/send-otp',
+      method: 'post',
+      handler: sendOtp,
+    },
+    {
+      path: '/verify-payment',
+      method: 'post',
+      handler: verifyPayment,
     },
   ],
   hooks: {

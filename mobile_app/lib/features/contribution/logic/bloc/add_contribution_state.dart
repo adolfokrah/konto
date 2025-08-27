@@ -7,7 +7,11 @@ final class AddContributionInitial extends AddContributionState {}
 
 final class AddContributionLoading extends AddContributionState {}
 
-final class AddContributionSuccess extends AddContributionState {}
+final class AddContributionSuccess extends AddContributionState {
+  final String contributionId;
+
+  AddContributionSuccess(this.contributionId);
+}
 
 final class AddContributionFailure extends AddContributionState {
   final String errorMessage;

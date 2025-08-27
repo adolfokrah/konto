@@ -11,6 +11,7 @@ final class AddContributionSubmitted extends AddContributionEvent {
   final String? accountNumber;
   final double amountContributed;
   final bool viaPaymentLink;
+  final String mobileMoneyProvider;
 
   AddContributionSubmitted({
     required this.jarId,
@@ -20,5 +21,6 @@ final class AddContributionSubmitted extends AddContributionEvent {
     this.accountNumber,
     required this.amountContributed,
     this.viaPaymentLink = false,
+    required this.mobileMoneyProvider,
   });
 }

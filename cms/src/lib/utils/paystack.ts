@@ -98,6 +98,13 @@ type InitializeTxData = {
   reference: string
 }
 
+type SubmitOTParams = {
+  reference: string
+  otp: string
+}
+
+type SubmitOTPResponse = PaystackEnvelope<unknown>
+
 export default class Paystack {
   private readonly secretKey: string
   public readonly publicKey?: string
@@ -245,5 +252,15 @@ export default class Paystack {
       body: params,
     })
     return resp.data.authorization_url
+  }
+
+  // Submit OTP for mobile money charge
+
+  async submitOtp(params: SubmitOTParams): Promise<SubmitOTPResponse> {
+    const resp = await this.request<SubmitOTPResponse>('POST', '/charge/submit_otp', {
+      body: params,
+    })
+
+    return resp
   }
 }

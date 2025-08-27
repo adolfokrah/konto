@@ -49,8 +49,8 @@ class PaymentMethodUtils {
   ) {
     return {
       'mtn': 'MTN Mobile Money',
-      'vodafone': 'Vodafone Cash',
-      'airteltigo': 'AirtelTigo Money',
+      'vod': 'Vodafone Cash',
+      'atl': 'AirtelTigo Money',
     };
   }
 

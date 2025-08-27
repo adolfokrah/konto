@@ -9,6 +9,7 @@ import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/route.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -87,7 +88,18 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         final localizations = AppLocalizations.of(context)!;
         if (state is AddContributionSuccess) {
           context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
-          Navigator.popUntil(context, ModalRoute.withName(AppRoutes.jarDetail));
+
+          if (_selectedPaymentMethod == 'mobile-money') {
+            context.read<MomoPaymentBloc>().add(
+              MomoPaymentRequested(state.contributionId),
+            );
+            Navigator.pushNamed(context, AppRoutes.awaitMomoPayment);
+          } else {
+            Navigator.popUntil(
+              context,
+              ModalRoute.withName(AppRoutes.jarDetail),
+            );
+          }
           // Show success message
           AppSnackBar.showSuccess(
             context,
@@ -327,6 +339,10 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                 : null,
         amountContributed: double.tryParse(amount!) ?? 0.0,
         viaPaymentLink: false,
+        mobileMoneyProvider:
+            PaymentMethodUtils.getMobileMoneyOperatorMap(localizations).entries
+                .firstWhere((entry) => entry.value == _selectedOperator)
+                .key,
       ),
     );
   }
