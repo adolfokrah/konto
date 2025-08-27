@@ -1396,12 +1396,12 @@
     "description": "Error message for missing account name"
   },
 
-  "paymentRequestSentSuccessfully": "Payment request sent successfully!",
+  "paymentRequestSentSuccessfully": "Payment add successfully!",
   "@paymentRequestSentSuccessfully": {
     "description": "Success message when payment request is sent"
   },
 
-  "failedToSendPaymentRequest": "Failed to send payment request.",
+  "failedToSendPaymentRequest": "Failed to add payment.",
   "@failedToSendPaymentRequest": {
     "description": "Error message when payment request fails"
   },
