@@ -1,4 +1,5 @@
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:konto/core/widgets/select_input.dart';
 
 /// Utility class for payment method related operations
 class PaymentMethodUtils {
@@ -40,5 +41,26 @@ class PaymentMethodUtils {
       'cash': localizations.paymentMethodCash,
       'bank-transfer': localizations.paymentMethodBankTransfer,
     };
+  }
+
+  /// Get mobile money operator mapping for use in dropdowns/selectors
+  static Map<String, String> getMobileMoneyOperatorMap(
+    AppLocalizations localizations,
+  ) {
+    return {
+      'mtn': 'MTN Mobile Money',
+      'vodafone': 'Vodafone Cash',
+      'airteltigo': 'AirtelTigo Money',
+    };
+  }
+
+  /// Get mobile money operator options as SelectOption list
+  static List<SelectOption<String>> getMobileMoneyOperatorOptions(
+    AppLocalizations localizations,
+  ) {
+    final operatorMap = getMobileMoneyOperatorMap(localizations);
+    return operatorMap.entries
+        .map((entry) => SelectOption(value: entry.key, label: entry.value))
+        .toList();
   }
 }

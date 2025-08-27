@@ -11,6 +11,9 @@ class User {
   final DateTime updatedAt;
   final List<UserSession> sessions;
   final AppSettings appSettings;
+  final String? accountHolder;
+  final String? accountNumber;
+  final String? bank;
 
   const User({
     required this.id,
@@ -24,6 +27,9 @@ class User {
     required this.updatedAt,
     required this.sessions,
     required this.appSettings,
+    this.accountHolder,
+    this.accountNumber,
+    this.bank,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -48,6 +54,9 @@ class User {
       appSettings: AppSettings.fromJson(
         json['appSettings'] as Map<String, dynamic>? ?? {},
       ),
+      accountHolder: json['accountHolder'] as String?,
+      accountNumber: json['accountNumber'] as String?,
+      bank: json['bank'] as String?,
     );
   }
 
@@ -64,6 +73,9 @@ class User {
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
       'appSettings': appSettings.toJson(),
+      if (accountHolder != null) 'accountHolder': accountHolder,
+      if (accountNumber != null) 'accountNumber': accountNumber,
+      if (bank != null) 'bank': bank,
     };
   }
 
@@ -79,6 +91,9 @@ class User {
     DateTime? updatedAt,
     List<UserSession>? sessions,
     AppSettings? appSettings,
+    String? accountHolder,
+    String? accountNumber,
+    String? bank,
   }) {
     return User(
       id: id ?? this.id,
@@ -92,6 +107,9 @@ class User {
       updatedAt: updatedAt ?? this.updatedAt,
       sessions: sessions ?? this.sessions,
       appSettings: appSettings ?? this.appSettings,
+      accountHolder: accountHolder ?? this.accountHolder,
+      accountNumber: accountNumber ?? this.accountNumber,
+      bank: bank ?? this.bank,
     );
   }
 }

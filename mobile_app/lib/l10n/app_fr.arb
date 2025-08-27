@@ -304,5 +304,12 @@
   "pleaseEnterFullName": "Veuillez entrer votre nom complet",
   "reVerificationWarning": "Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l'exactitude de vos informations.",
   "phoneNumberUpdatedSuccessfully": "Numéro de téléphone mis à jour avec succès",
-  "ok": "OK"
+  "ok": "OK",
+  "bank": "Banque",
+  "accountHolderName": "Nom du titulaire du compte",
+  "accountNumber": "Numéro de compte",
+  "pleaseEnterAccountNumber": "Veuillez entrer le numéro de compte",
+  "pleaseSelectBank": "Veuillez sélectionner une banque",
+  "withdrawalAccountUpdatedSuccessfully": "Compte de retrait mis à jour avec succès",
+  "contributionsTransferredAutomatically": "Les contributions mobile money seront automatiquement transférées vers ce compte."
 }

@@ -135,6 +135,9 @@ export interface User {
   phoneNumber: string;
   country: string;
   isKYCVerified?: boolean | null;
+  bank?: string | null;
+  accountNumber?: string | null;
+  accountHolder?: string | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;
     darkMode?: boolean | null;
@@ -287,6 +290,22 @@ export interface Contribution {
   charges?: number | null;
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
+   * Select the linked deposit for this contribution
+   */
+  linkedContribution?: (string | null) | Contribution;
+  /**
+   * Select the linked transfer for this contribution
+   */
+  linkedTransfer?: (string | null) | Contribution;
+  /**
+   * Check if this contribution has been transferred
+   */
+  isTransferred?: boolean | null;
+  /**
+   * Transaction reference for tracking payments
+   */
+  transactionReference?: string | null;
+  /**
    * User who collected the contribution
    */
   collector: string | User;
@@ -373,6 +392,9 @@ export interface UsersSelect<T extends boolean = true> {
   phoneNumber?: T;
   country?: T;
   isKYCVerified?: T;
+  bank?: T;
+  accountNumber?: T;
+  accountHolder?: T;
   appSettings?:
     | T
     | {
@@ -467,6 +489,10 @@ export interface ContributionsSelect<T extends boolean = true> {
   amountContributed?: T;
   charges?: T;
   paymentStatus?: T;
+  linkedContribution?: T;
+  linkedTransfer?: T;
+  isTransferred?: T;
+  transactionReference?: T;
   collector?: T;
   viaPaymentLink?: T;
   updatedAt?: T;

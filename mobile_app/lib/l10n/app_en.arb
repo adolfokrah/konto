@@ -1698,5 +1698,40 @@
   "ok": "OK",
   "@ok": {
     "description": "OK button text"
+  },
+
+  "bank": "Bank",
+  "@bank": {
+    "description": "Bank selection label for withdrawal account"
+  },
+
+  "accountHolderName": "Account holder name",
+  "@accountHolderName": {
+    "description": "Account holder name input label"
+  },
+
+  "accountNumber": "Account number",
+  "@accountNumber": {
+    "description": "Account number input label"
+  },
+
+  "pleaseEnterAccountNumber": "Please enter account number",
+  "@pleaseEnterAccountNumber": {
+    "description": "Error message for missing account number"
+  },
+
+  "pleaseSelectBank": "Please select a bank",
+  "@pleaseSelectBank": {
+    "description": "Error message for missing bank selection"
+  },
+
+  "withdrawalAccountUpdatedSuccessfully": "Withdrawal account updated successfully",
+  "@withdrawalAccountUpdatedSuccessfully": {
+    "description": "Success message when withdrawal account is updated"
+  },
+
+  "contributionsTransferredAutomatically": "Mobile money contributions will be automatically transferred to this account.",
+  "@contributionsTransferredAutomatically": {
+    "description": "Info text about automatic transfer of contributions"
   }
 }

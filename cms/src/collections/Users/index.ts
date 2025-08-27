@@ -73,7 +73,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Country code for the phone number, e.g., +233 for Ghana',
-      }
+      },
     },
     {
       name: 'phoneNumber',
@@ -89,6 +89,24 @@ export const Users: CollectionConfig = {
       name: 'isKYCVerified',
       type: 'checkbox',
       defaultValue: false,
+    },
+    {
+      label: 'withdrawalAccount',
+      type: 'group',
+      fields: [
+        {
+          name: 'bank',
+          type: 'text',
+        },
+        {
+          name: 'accountNumber',
+          type: 'text',
+        },
+        {
+          name: 'accountHolder',
+          type: 'text',
+        },
+      ],
     },
     {
       name: 'appSettings',

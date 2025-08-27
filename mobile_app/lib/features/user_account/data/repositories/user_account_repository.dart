@@ -22,6 +22,9 @@ class UserAccountRepository {
     String? countryCode,
     String? country,
     String? email,
+    String? accountNumber,
+    String? bank,
+    String? accountHolder,
   }) async {
     try {
       final result = await _apiProvider.updateUserDetails(
@@ -30,6 +33,9 @@ class UserAccountRepository {
         countryCode: countryCode,
         country: country,
         email: email,
+        accountNumber: accountNumber,
+        bank: bank,
+        accountHolder: accountHolder,
       );
 
       if (result['success'] == true) {

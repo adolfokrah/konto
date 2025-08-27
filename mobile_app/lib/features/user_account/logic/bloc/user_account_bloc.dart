@@ -29,6 +29,9 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         countryCode: event.countryCode,
         country: event.country,
         email: event.email,
+        accountNumber: event.accountNumber,
+        bank: event.bank,
+        accountHolder: event.accountHolder,
       );
 
       if (result.success && result.user != null) {

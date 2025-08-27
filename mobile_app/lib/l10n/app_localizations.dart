@@ -1628,10 +1628,10 @@ abstract class AppLocalizations {
   /// **'Contributor Phone Number'**
   String get contributorPhoneNumber;
 
-  /// Account number label
+  /// Account number input label
   ///
   /// In en, this message translates to:
-  /// **'Account Number'**
+  /// **'Account number'**
   String get accountNumber;
 
   /// Collector label
@@ -1885,6 +1885,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get ok;
+
+  /// Bank selection label for withdrawal account
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get bank;
+
+  /// Account holder name input label
+  ///
+  /// In en, this message translates to:
+  /// **'Account holder name'**
+  String get accountHolderName;
+
+  /// Error message for missing account number
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter account number'**
+  String get pleaseEnterAccountNumber;
+
+  /// Error message for missing bank selection
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a bank'**
+  String get pleaseSelectBank;
+
+  /// Success message when withdrawal account is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal account updated successfully'**
+  String get withdrawalAccountUpdatedSuccessfully;
+
+  /// Info text about automatic transfer of contributions
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile money contributions will be automatically transferred to this account.'**
+  String get contributionsTransferredAutomatically;
 }
 
 class _AppLocalizationsDelegate

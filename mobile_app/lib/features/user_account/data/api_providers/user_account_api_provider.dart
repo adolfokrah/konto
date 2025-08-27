@@ -20,6 +20,9 @@ class UserAccountApiProvider {
     String? countryCode,
     String? country,
     String? email,
+    String? accountNumber,
+    String? bank,
+    String? accountHolder,
   }) async {
     try {
       final user = await _userStorageService.getUserData();
@@ -38,6 +41,9 @@ class UserAccountApiProvider {
       if (countryCode != null) updateData['countryCode'] = countryCode;
       if (country != null) updateData['country'] = country;
       if (email != null) updateData['email'] = email;
+      if (accountNumber != null) updateData['accountNumber'] = accountNumber;
+      if (bank != null) updateData['bank'] = bank;
+      if (accountHolder != null) updateData['accountHolder'] = accountHolder;
 
       if (updateData.isEmpty) {
         return {'success': false, 'message': 'No data provided for update'};

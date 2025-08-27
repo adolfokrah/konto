@@ -1007,4 +1007,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String get bank => 'Banque';
+
+  @override
+  String get accountHolderName => 'Nom du titulaire du compte';
+
+  @override
+  String get pleaseEnterAccountNumber => 'Veuillez entrer le numéro de compte';
+
+  @override
+  String get pleaseSelectBank => 'Veuillez sélectionner une banque';
+
+  @override
+  String get withdrawalAccountUpdatedSuccessfully =>
+      'Compte de retrait mis à jour avec succès';
+
+  @override
+  String get contributionsTransferredAutomatically =>
+      'Les contributions mobile money seront automatiquement transférées vers ce compte.';
 }

@@ -111,36 +111,30 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
                   },
                 ),
               ],
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
-                      ),
-                      child: NumberInput(
-                        selectedCountry: _selectedCountry,
-                        countryCode: _countryCode,
-                        phoneNumber: _phoneNumber,
-                        placeholder: localizations.phoneNumber,
-                        textFieldKey: const Key('phone_number'),
-                        onCountryChanged: (country, code) {
-                          setState(() {
-                            _selectedCountry = country;
-                            _countryCode = code;
-                          });
-                        },
-                        onPhoneNumberChanged: (phoneNumber) {
-                          setState(() {
-                            _phoneNumber = phoneNumber;
-                          });
-                        },
-                      ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(AppSpacing.spacingXs),
+                child: Column(
+                  children: [
+                    NumberInput(
+                      selectedCountry: _selectedCountry,
+                      countryCode: _countryCode,
+                      phoneNumber: _phoneNumber,
+                      placeholder: localizations.phoneNumber,
+                      textFieldKey: const Key('phone_number'),
+                      onCountryChanged: (country, code) {
+                        setState(() {
+                          _selectedCountry = country;
+                          _countryCode = code;
+                        });
+                      },
+                      onPhoneNumberChanged: (phoneNumber) {
+                        setState(() {
+                          _phoneNumber = phoneNumber;
+                        });
+                      },
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.spacingXs),
-                    child: AppButton(
+                    const SizedBox(height: AppSpacing.spacingM),
+                    AppButton(
                       onPressed:
                           _isPhoneNumberChanged()
                               ? _handleChangePhoneNumber
@@ -148,9 +142,9 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
                       text: localizations.changePhoneNumber,
                       isLoading: state is UserAccountLoading,
                     ),
-                  ),
-                  SizedBox(height: AppSpacing.spacingM),
-                ],
+                    SizedBox(height: AppSpacing.spacingM),
+                  ],
+                ),
               ),
             ),
           );

@@ -96,6 +96,41 @@ export const Contributions: CollectionConfig = {
       defaultValue: 'pending',
     },
     {
+      name: 'linkedContribution',
+      type: 'relationship',
+      relationTo: 'contributions',
+      hasMany: false,
+      admin: {
+        description: 'Select the linked deposit for this contribution',
+      },
+    },
+    {
+      name: 'linkedTransfer',
+      type: 'relationship',
+      relationTo: 'contributions',
+      hasMany: false,
+      admin: {
+        description: 'Select the linked transfer for this contribution',
+      },
+    },
+    {
+      name: 'isTransferred',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Check if this contribution has been transferred',
+      },
+    },
+    {
+      name: 'transactionReference',
+      type: 'text',
+      required: false,
+      admin: {
+        description: 'Transaction reference for tracking payments',
+        condition: data => data?.paymentMethod === 'mobile-money',
+      },
+    },
+    {
       name: 'collector',
       type: 'relationship',
       relationTo: 'users',

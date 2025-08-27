@@ -125,7 +125,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.withdrawalAccount,
               onTap: () {
                 // Navigate to withdrawal account
-                _showComingSoon(context);
+                Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
               },
             ),
             _buildMenuItem(

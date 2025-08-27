@@ -14,19 +14,4 @@ class AppSelectOptions {
       SelectOption(value: 'nigeria', label: localizations.countryNigeria),
     ];
   }
-
-  /// Static country options (without localization)
-  static const List<SelectOption<String>> staticCountryOptions = [
-    SelectOption(value: 'ghana', label: 'Ghana'),
-    SelectOption(value: 'nigeria', label: 'Nigeria'),
-    SelectOption(value: 'kenya', label: 'Kenya'),
-    SelectOption(value: 'south_africa', label: 'South Africa'),
-  ];
-
-  /// Mobile money operator options
-  static const List<SelectOption<String>> operatorOptions = [
-    SelectOption(value: 'mtn', label: 'MTN Mobile Money'),
-    SelectOption(value: 'vodafone', label: 'Vodafone Cash'),
-    SelectOption(value: 'airteltigo', label: 'AirtelTigo Money'),
-  ];
 }

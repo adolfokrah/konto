@@ -851,7 +851,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contributorPhoneNumber => 'Contributor Phone Number';
 
   @override
-  String get accountNumber => 'Account Number';
+  String get accountNumber => 'Account number';
 
   @override
   String get collector => 'Collector';
@@ -992,4 +992,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String get bank => 'Bank';
+
+  @override
+  String get accountHolderName => 'Account holder name';
+
+  @override
+  String get pleaseEnterAccountNumber => 'Please enter account number';
+
+  @override
+  String get pleaseSelectBank => 'Please select a bank';
+
+  @override
+  String get withdrawalAccountUpdatedSuccessfully =>
+      'Withdrawal account updated successfully';
+
+  @override
+  String get contributionsTransferredAutomatically =>
+      'Mobile money contributions will be automatically transferred to this account.';
 }

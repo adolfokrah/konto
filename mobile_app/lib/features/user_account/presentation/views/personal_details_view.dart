@@ -59,9 +59,10 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     // Set country based on user's country
     final countryValue = user.country.toLowerCase();
     // Check if the country exists in our options
-    final countryExists = AppSelectOptions.staticCountryOptions.any(
-      (option) => option.value == countryValue,
-    );
+    final localizations = AppLocalizations.of(context)!;
+    final countryExists = AppSelectOptions.getCountryOptions(
+      localizations,
+    ).any((option) => option.value == countryValue);
     if (countryExists) {
       setState(() {
         selectedCountry = countryValue;
