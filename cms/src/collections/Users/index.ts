@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
+import { verifyAccountDetails } from './endpoints/verify-account-details'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -51,6 +52,11 @@ export const Users: CollectionConfig = {
       path: '/register-user',
       method: 'post',
       handler: registerUser,
+    },
+    {
+      path: '/verify-account-details',
+      method: 'post',
+      handler: verifyAccountDetails,
     },
   ],
   fields: [

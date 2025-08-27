@@ -85,196 +85,33 @@ class UserAccountRepository {
     }
   }
 
-  /// Update user app settings
-  // Future<({bool success, String message, User? user})> updateAppSettings({
-  //   String? language,
-  //   bool? darkMode,
-  //   bool? biometricAuthEnabled,
-  //   bool? pushNotificationsEnabled,
-  //   bool? emailNotificationsEnabled,
-  //   bool? smsNotificationsEnabled,
-  // }) async {
-  //   try {
-  //     final result = await _apiProvider.updateAppSettings(
-  //       language: language,
-  //       darkMode: darkMode,
-  //       biometricAuthEnabled: biometricAuthEnabled,
-  //       pushNotificationsEnabled: pushNotificationsEnabled,
-  //       emailNotificationsEnabled: emailNotificationsEnabled,
-  //       smsNotificationsEnabled: smsNotificationsEnabled,
-  //     );
-
-  //     if (result['success'] == true) {
-  //       // Parse the updated user data
-  //       final userData = result['data'];
-  //       if (userData != null) {
-  //         final updatedUser = User.fromJson(userData);
-
-  //         // Update local storage with new user data
-  //         final token = await _userStorageService.getAuthToken();
-  //         final tokenExpiry = await _userStorageService.getTokenExpiry();
-
-  //         if (token != null && tokenExpiry != null) {
-  //           await _userStorageService.saveUserData(
-  //             user: updatedUser,
-  //             token: token,
-  //             tokenExpiry: tokenExpiry,
-  //           );
-  //         }
-
-  //         return (
-  //           success: true,
-  //           message:
-  //               (result['message'] as String?) ??
-  //               'App settings updated successfully',
-  //           user: updatedUser,
-  //         );
-  //       }
-  //     }
-
-  //     return (
-  //       success: false,
-  //       message:
-  //           (result['message'] as String?) ?? 'Failed to update app settings',
-  //       user: null,
-  //     );
-  //   } catch (e) {
-  //     return (
-  //       success: false,
-  //       message: 'Error updating app settings: ${e.toString()}',
-  //       user: null,
-  //     );
-  //   }
-  // }
-
-  // /// Update user phone number
-  // Future<({bool success, String message, User? user})> updatePhoneNumber({
-  //   required String newPhoneNumber,
-  //   required String countryCode,
-  // }) async {
-  //   try {
-  //     final result = await _apiProvider.updatePhoneNumber(
-  //       newPhoneNumber: newPhoneNumber,
-  //       countryCode: countryCode,
-  //     );
-
-  //     if (result['success'] == true) {
-  //       // Parse the updated user data
-  //       final userData = result['data'];
-  //       if (userData != null) {
-  //         final updatedUser = User.fromJson(userData);
-
-  //         // Update local storage with new user data
-  //         final token = await _userStorageService.getAuthToken();
-  //         final tokenExpiry = await _userStorageService.getTokenExpiry();
-
-  //         if (token != null && tokenExpiry != null) {
-  //           await _userStorageService.saveUserData(
-  //             user: updatedUser,
-  //             token: token,
-  //             tokenExpiry: tokenExpiry,
-  //           );
-  //         }
-
-  //         return (
-  //           success: true,
-  //           message:
-  //               (result['message'] as String?) ??
-  //               'Phone number updated successfully',
-  //           user: updatedUser,
-  //         );
-  //       }
-  //     }
-
-  //     return (
-  //       success: false,
-  //       message:
-  //           (result['message'] as String?) ?? 'Failed to update phone number',
-  //       user: null,
-  //     );
-  //   } catch (e) {
-  //     return (
-  //       success: false,
-  //       message: 'Error updating phone number: ${e.toString()}',
-  //       user: null,
-  //     );
-  //   }
-  // }
-
-  // /// Get fresh user profile data from server
-  // Future<({bool success, String message, User? user})>
-  // refreshUserProfile() async {
-  //   try {
-  //     final result = await _apiProvider.getCurrentUserProfile();
-
-  //     if (result['success'] == true) {
-  //       // Parse the updated user data
-  //       final userData = result['data'];
-  //       if (userData != null) {
-  //         final updatedUser = User.fromJson(userData);
-
-  //         // Update local storage with fresh user data
-  //         final token = await _userStorageService.getAuthToken();
-  //         final tokenExpiry = await _userStorageService.getTokenExpiry();
-
-  //         if (token != null && tokenExpiry != null) {
-  //           await _userStorageService.saveUserData(
-  //             user: updatedUser,
-  //             token: token,
-  //             tokenExpiry: tokenExpiry,
-  //           );
-  //         }
-
-  //         return (
-  //           success: true,
-  //           message:
-  //               (result['message'] as String?) ??
-  //               'Profile refreshed successfully',
-  //           user: updatedUser,
-  //         );
-  //       }
-  //     }
-
-  //     return (
-  //       success: false,
-  //       message:
-  //           (result['message'] as String?) ?? 'Failed to refresh user profile',
-  //       user: null,
-  //     );
-  //   } catch (e) {
-  //     return (
-  //       success: false,
-  //       message: 'Error refreshing user profile: ${e.toString()}',
-  //       user: null,
-  //     );
-  //   }
-  // }
-
-  // /// Delete user account
-  // Future<({bool success, String message})> deleteAccount() async {
-  //   try {
-  //     final result = await _apiProvider.deleteUserAccount();
-
-  //     if (result['success'] == true) {
-  //       // Clear local storage
-  //       await _userStorageService.clearUserData();
-
-  //       return (
-  //         success: true,
-  //         message:
-  //             (result['message'] as String?) ?? 'Account deleted successfully',
-  //       );
-  //     }
-
-  //     return (
-  //       success: false,
-  //       message: (result['message'] as String?) ?? 'Failed to delete account',
-  //     );
-  //   } catch (e) {
-  //     return (
-  //       success: false,
-  //       message: 'Error deleting account: ${e.toString()}',
-  //     );
-  //   }
-  // }
+  /// Verify account details using Paystack
+  /// Returns a record with success status, message, and validity
+  Future<({bool success, String message, bool valid})> verifyAccountDetails({
+    required String phoneNumber,
+    required String bank,
+    required String name,
+  }) async {
+    try {
+      final result = await _apiProvider.verifyAccountDetails(
+        phoneNumber: phoneNumber,
+        bank: bank,
+        name: name,
+      );
+      return (
+        success: result['success'] == true,
+        message:
+            result['success'] == true
+                ? 'Account verification completed'
+                : 'Account verification failed',
+        valid: result['valid'] == true,
+      );
+    } catch (e) {
+      return (
+        success: false,
+        message: 'Error verifying account details: ${e.toString()}',
+        valid: false,
+      );
+    }
+  }
 }

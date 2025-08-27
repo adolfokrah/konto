@@ -8,6 +8,7 @@ import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
@@ -119,13 +120,12 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       return;
     }
 
-    Navigator.pushNamed(
-      context,
-      AppRoutes.otp,
-      arguments: {
-        'phoneNumber': _accountNumberController.text.trim(),
-        'countryCode': "",
-      },
+    context.read<WithdrawalAccountVerificationBloc>().add(
+      RequestValidateWithdrawalAccountEvent(
+        phoneNumber: _accountNumberController.text.trim(),
+        bank: _selectedOperator,
+        name: _accountHolderController.text.trim(),
+      ),
     );
   }
 
@@ -176,6 +176,27 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
             }
           },
         ),
+        BlocListener<
+          WithdrawalAccountVerificationBloc,
+          WithdrawalAccountVerificationState
+        >(
+          listener: (context, state) {
+            if (state is WithdrawalAccountVerificationSuccess) {
+              // Handle successful verification
+              Navigator.pushNamed(
+                context,
+                AppRoutes.otp,
+                arguments: {
+                  'phoneNumber': _accountNumberController.text.trim(),
+                  'countryCode': "",
+                },
+              );
+            } else if (state is WithdrawalAccountVerificationFailure) {
+              // Show error message
+              AppSnackBar.showError(context, message: state.message);
+            }
+          },
+        ),
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
@@ -186,91 +207,100 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
             });
           }
 
-          return BlocBuilder<UserAccountBloc, UserAccountState>(
-            builder: (context, userAccountState) {
-              final isLoading = userAccountState is UserAccountLoading;
+          return BlocBuilder<
+            WithdrawalAccountVerificationBloc,
+            WithdrawalAccountVerificationState
+          >(
+            builder: (context, state) {
+              return BlocBuilder<UserAccountBloc, UserAccountState>(
+                builder: (context, userAccountState) {
+                  final isLoading =
+                      userAccountState is UserAccountLoading ||
+                      state is WithdrawalAccountVerificationLoading;
 
-              return Scaffold(
-                appBar: AppBar(
-                  elevation: 0,
-                  title: Text(localizations.withdrawalAccount),
-                  centerTitle: true,
-                ),
-                body: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-
-                        // Form section
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(0),
-                          child: Column(
-                            children: [
-                              // Bank selector
-                              SelectInput<String>(
-                                label: localizations.bank,
-                                value: _selectedOperator,
-                                options:
-                                    PaymentMethodUtils.getMobileMoneyOperatorOptions(
-                                      localizations,
-                                    ),
-                                enabled: !isLoading,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedOperator = value;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 19),
-
-                              // Account holder name input
-                              AppTextInput(
-                                label: localizations.accountHolderName,
-                                controller: _accountHolderController,
-                                enabled: !isLoading,
-                              ),
-                              const SizedBox(height: 19),
-
-                              // Account number input
-                              AppTextInput(
-                                label: localizations.accountNumber,
-                                controller: _accountNumberController,
-                                keyboardType: TextInputType.phone,
-                                enabled: !isLoading,
-                              ),
-                              const SizedBox(height: 19),
-
-                              // Info text
-                              Container(
-                                width: double.infinity,
-                                child: Text(
-                                  localizations
-                                      .contributionsTransferredAutomatically,
-                                  style: AppTextStyles.titleRegularM,
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-
-                              // Update button
-                              AppButton.filled(
-                                text: localizations.updateAccount,
-                                isLoading: isLoading,
-                                onPressed:
-                                    isLoading || !_hasChanges()
-                                        ? null
-                                        : _handleUpdateAccount,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                  return Scaffold(
+                    appBar: AppBar(
+                      elevation: 0,
+                      title: Text(localizations.withdrawalAccount),
+                      centerTitle: true,
                     ),
-                  ),
-                ),
+                    body: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 20),
+
+                            // Form section
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(0),
+                              child: Column(
+                                children: [
+                                  // Bank selector
+                                  SelectInput<String>(
+                                    label: localizations.bank,
+                                    value: _selectedOperator,
+                                    options:
+                                        PaymentMethodUtils.getMobileMoneyOperatorOptions(
+                                          localizations,
+                                        ),
+                                    enabled: !isLoading,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedOperator = value;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 19),
+
+                                  // Account holder name input
+                                  AppTextInput(
+                                    label: localizations.accountHolderName,
+                                    controller: _accountHolderController,
+                                    enabled: !isLoading,
+                                  ),
+                                  const SizedBox(height: 19),
+
+                                  // Account number input
+                                  AppTextInput(
+                                    label: localizations.accountNumber,
+                                    controller: _accountNumberController,
+                                    keyboardType: TextInputType.phone,
+                                    enabled: !isLoading,
+                                  ),
+                                  const SizedBox(height: 19),
+
+                                  // Info text
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: Text(
+                                      localizations
+                                          .contributionsTransferredAutomatically,
+                                      style: AppTextStyles.titleRegularM,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 30),
+
+                                  // Update button
+                                  AppButton.filled(
+                                    text: localizations.updateAccount,
+                                    isLoading: isLoading,
+                                    onPressed:
+                                        isLoading || !_hasChanges()
+                                            ? null
+                                            : _handleUpdateAccount,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           );

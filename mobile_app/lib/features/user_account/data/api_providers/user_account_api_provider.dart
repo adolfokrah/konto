@@ -93,4 +93,55 @@ class UserAccountApiProvider {
       };
     }
   }
+
+  /// Verify account details using Paystack
+  Future<Map<String, dynamic>> verifyAccountDetails({
+    required String phoneNumber,
+    required String bank,
+    required String name,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}/users/verify-account-details',
+        data: {'phoneNumber': phoneNumber, 'bank': bank, 'name': name},
+        options: Options(headers: BackendConfig.defaultHeaders),
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ??
+              'Account details verified successfully',
+          'valid': response.data['valid'] ?? true,
+        };
+      } else {
+        return {
+          'success': false,
+          'message':
+              response.data['message'] ?? 'Account details verification failed',
+          'valid': false,
+          'statusCode': response.statusCode,
+        };
+      }
+    } catch (e) {
+      if (e is DioException) {
+        return {
+          'success': false,
+          'message':
+              e.response?.data?['message'] ??
+              'Network error during account verification',
+          'valid': false,
+          'error': e.toString(),
+          'statusCode': e.response?.statusCode,
+        };
+      }
+      return {
+        'success': false,
+        'message': 'Error verifying account details: ${e.toString()}',
+        'valid': false,
+        'error': e.toString(),
+      };
+    }
+  }
 }
