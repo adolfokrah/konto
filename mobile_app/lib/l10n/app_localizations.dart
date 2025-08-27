@@ -1709,12 +1709,8 @@ abstract class AppLocalizations {
   /// SMS message template for collector invitation
   ///
   /// In en, this message translates to:
-  /// **'Hi! 👋\n\n{inviterName} has invited you to contribute to \"{jarName}\" jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start contributing and track your savings together!\n\nHappy saving! 💰'**
-  String smsInvitationMessage(
-    String inviterName,
-    String jarName,
-    String jarLink,
-  );
+  /// **'Hi! 👋, I invite you to be a collector for \"{jarName}\" jar.\n\nAs a collector, you\'ll help collect contributions on behalf of this jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start helping collect contributions!\n\nHappy saving! 💰'**
+  String smsInvitationMessage(String jarName, String jarLink);
 
   /// SMS message template for collector reminder
   ///

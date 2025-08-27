@@ -1521,14 +1521,10 @@
     "description": "Invite button text"
   },
 
-  "smsInvitationMessage": "Hi! 👋\n\n{inviterName} has invited you to contribute to \"{jarName}\" jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start contributing and track your savings together!\n\nHappy saving! 💰",
+  "smsInvitationMessage": "Hi! 👋, I invite you to be a collector for \"{jarName}\" jar.\n\nAs a collector, you'll help collect contributions on behalf of this jar.\n\nJoin now: {jarLink}\n\nDownload Konto app to start helping collect contributions!\n\nHappy saving! 💰",
   "@smsInvitationMessage": {
     "description": "SMS message template for collector invitation",
     "placeholders": {
-      "inviterName": {
-        "type": "String",
-        "example": "John"
-      },
       "jarName": {
         "type": "String",
         "example": "Wedding Fund"

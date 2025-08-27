@@ -906,12 +906,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get remind => 'Rappeler';
 
   @override
-  String smsInvitationMessage(
-    String inviterName,
-    String jarName,
-    String jarLink,
-  ) {
-    return 'Salut ! 👋\n\n$inviterName vous a invité(e) à contribuer au pot \"$jarName\".\n\nRejoignez maintenant : $jarLink\n\nTéléchargez l\'application Konto pour commencer à contribuer et suivre vos économies ensemble !\n\nBonnes économies ! 💰';
+  String smsInvitationMessage(String jarName, String jarLink) {
+    return 'Salut ! 👋, je vous invite à être collecteur pour le pot \"$jarName\".\n\nEn tant que collecteur, vous aiderez à collecter les contributions au nom de ce pot.\n\nRejoignez maintenant : $jarLink\n\nTéléchargez l\'application Konto pour commencer à aider à collecter les contributions !\n\nBonnes économies ! 💰';
   }
 
   @override

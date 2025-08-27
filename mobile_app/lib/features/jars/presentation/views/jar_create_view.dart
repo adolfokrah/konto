@@ -117,30 +117,13 @@ class _JarCreateViewState extends State<JarCreateView> {
     }
 
     try {
-      // Get current user data for the invitation message
-      final userStorageService = ServiceRegistry().userStorageService;
-      final currentUser = await userStorageService.getUserData();
-      final inviterName = currentUser?.fullName ?? 'Konto User';
-
-      // Generate jar link
-      final jarLink = '${BackendConfig.appBaseUrl}/jars/${jar.id}';
-
-      // Create custom invitation message for the newly created jar
-      final translationService = ServiceRegistry().translationService;
-      final message = translationService.getSmsInvitationMessage(
-        inviterName,
-        jar.name,
-        jarLink,
-      );
-
       // Use the SMS utility to open SMS app with the invitation message
       if (mounted) {
-        await SmsUtils.openSmsAppWithCustomMessage(
+        await SmsUtils.openSmsAppForInvitation(
           context,
+          jar.id,
+          jar.name,
           phoneNumbers,
-          message,
-          showErrorMessages:
-              false, // Don't show errors for automatic invitations
         );
       }
     } catch (e) {

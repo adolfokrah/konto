@@ -274,6 +274,6 @@
   "pending": "En attente",
   "remind": "Rappeler",
   "invite": "Inviter",
-  "smsInvitationMessage": "Salut ! 👋\n\n{inviterName} vous a invité(e) à contribuer au pot \"{jarName}\".\n\nRejoignez maintenant : {jarLink}\n\nTéléchargez l'application Konto pour commencer à contribuer et suivre vos économies ensemble !\n\nBonnes économies ! 💰",
+  "smsInvitationMessage": "Salut ! 👋, je vous invite à être collecteur pour le pot \"{jarName}\".\n\nEn tant que collecteur, vous aiderez à collecter les contributions au nom de ce pot.\n\nRejoignez maintenant : {jarLink}\n\nTéléchargez l'application Konto pour commencer à aider à collecter les contributions !\n\nBonnes économies ! 💰",
   "smsReminderMessage": "🔔 Rappel :\n\n{inviterName} attend que vous rejoigniez le pot \"{jarName}\" !\n\nRejoignez ici : {jarLink}\n\nNe ratez pas cette opportunité d'épargne !\n\nTéléchargez l'application Konto maintenant 📱"
 }

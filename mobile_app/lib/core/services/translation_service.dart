@@ -72,12 +72,8 @@ class TranslationService {
   }
 
   /// Get formatted SMS invitation message
-  String getSmsInvitationMessage(
-    String inviterName,
-    String jarName,
-    String jarLink,
-  ) {
-    return localizations.smsInvitationMessage(inviterName, jarName, jarLink);
+  String getSmsInvitationMessage(String jarName, String jarLink) {
+    return localizations.smsInvitationMessage(jarName, jarLink);
   }
 
   /// Get formatted SMS reminder message

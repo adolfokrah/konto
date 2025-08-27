@@ -79,7 +79,8 @@ class _CollectorsViewState extends State<CollectorsView> {
                   // Also open SMS app with the new collectors
                   SmsUtils.openSmsAppForInvitation(
                     context,
-                    jarSummaryState.jarData,
+                    jarSummaryState.jarData.id,
+                    jarSummaryState.jarData.name,
                     phoneNumbers,
                     showErrorMessages: false,
                   );
@@ -374,7 +375,8 @@ class _CollectorsViewState extends State<CollectorsView> {
                                 ? () {
                                   SmsUtils.openSmsAppForInvitation(
                                     context,
-                                    jarData,
+                                    jarData.id,
+                                    jarData.name,
                                     [collector.phoneNumber!],
                                   );
                                 }
