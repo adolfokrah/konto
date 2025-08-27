@@ -231,9 +231,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                               ),
                               child: AppIconButton(
                                 onPressed: () {
-                                  context.read<AuthBloc>().add(
-                                    SignOutRequested(),
-                                  );
+                                  Navigator.of(
+                                    context,
+                                  ).pushNamed(AppRoutes.userAccountView);
                                 },
                                 icon: Icons.person,
                                 size: const Size(40, 40),

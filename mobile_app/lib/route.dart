@@ -13,6 +13,8 @@ import 'package:konto/features/jars/presentation/views/jar_info_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
 import 'package:konto/features/startup/presentation/views/startup_screen.dart';
+import 'package:konto/features/user_account/presentation/views/personal_details_view.dart';
+import 'package:konto/features/user_account/presentation/views/user_account_view.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
 
 class AppRoutes {
@@ -33,6 +35,8 @@ class AppRoutes {
     '/jar_fixed_contribution_amount_edit':
         (context) => const JarFixedContributionAmountEditView(),
     '/jar_name_edit': (context) => const JarNameEditView(),
+    '/user_account_view': (context) => const UserAccountView(),
+    '/personal_details': (context) => const PersonalDetailsView(),
   };
 
   // Route names constants for easy access
@@ -52,4 +56,6 @@ class AppRoutes {
   static const String jarFixedContributionAmountEdit =
       '/jar_fixed_contribution_amount_edit';
   static const String jarNameEdit = '/jar_name_edit';
+  static const String userAccountView = '/user_account_view';
+  static const String personalDetails = '/personal_details';
 }

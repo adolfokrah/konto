@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckUserExistence>(_onCheckUserExistence);
     on<RequestLogin>(_onRequestLogin);
     on<SignOutRequested>(_onSignOutRequested);
+    on<UpdateUserData>(_onUpdateUserData);
   }
 
   /// Checks if the phone number is available for registration
@@ -192,5 +193,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
     }
+  }
+
+  Future<void> _onUpdateUserData(
+    UpdateUserData event,
+    Emitter<AuthState> emit,
+  ) async {
+    final updatedUser = event.updatedUser;
+    final token = event.token;
+
+    emit(AuthAuthenticated(user: updatedUser, token: token));
   }
 }

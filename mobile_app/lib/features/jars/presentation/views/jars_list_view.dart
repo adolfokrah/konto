@@ -278,10 +278,11 @@ class _JarsListViewState extends State<JarsListView> {
   ) {
     final isExpanded = expandedGroupIds.contains(jarGroup.name);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
+        color: isDark ? theme.colorScheme.primary : Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -296,12 +297,6 @@ class _JarsListViewState extends State<JarsListView> {
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
-                color:
-                    isExpanded
-                        ? theme.colorScheme.primaryContainer.withValues(
-                          alpha: 0.3,
-                        )
-                        : null,
               ),
               child: Row(
                 children: [
@@ -395,12 +390,13 @@ class _JarsListViewState extends State<JarsListView> {
           children: [
             // Jar icon
             CircleAvatar(
+              radius: 25,
               backgroundColor:
                   isDark
                       ? Theme.of(context).colorScheme.surface
                       : Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onSurface,
-              child: const Icon(Icons.wallet),
+              child: const Icon(Icons.wallet, size: 20),
             ),
             const SizedBox(width: AppSpacing.spacingM),
 

@@ -1553,5 +1553,145 @@
         "example": "https://konto.app/jar/123"
       }
     }
+  },
+
+  "account": "Account",
+  "@account": {
+    "description": "Account page title"
+  },
+
+  "personalDetails": "Personal details",
+  "@personalDetails": {
+    "description": "Personal details menu item"
+  },
+
+  "withdrawalAccount": "Withdrawal account",
+  "@withdrawalAccount": {
+    "description": "Withdrawal account menu item"
+  },
+
+  "changePhoneNumber": "Change phone number",
+  "@changePhoneNumber": {
+    "description": "Change phone number menu item"
+  },
+
+  "security": "Security",
+  "@security": {
+    "description": "Security section title"
+  },
+
+  "accountPin": "Account PIN",
+  "@accountPin": {
+    "description": "Account PIN menu item"
+  },
+
+  "enableDisableBiometric": "Enable/disable Face or Touch ID",
+  "@enableDisableBiometric": {
+    "description": "Biometric authentication toggle menu item"
+  },
+
+  "about": "About",
+  "@about": {
+    "description": "About section title"
+  },
+
+  "aboutKonto": "About Konto",
+  "@aboutKonto": {
+    "description": "About Konto menu item"
+  },
+
+  "socialMedia": "Social Media",
+  "@socialMedia": {
+    "description": "Social media menu item"
+  },
+
+  "termsOfServices": "Terms of services",
+  "@termsOfServices": {
+    "description": "Terms of services menu item"
+  },
+
+  "contactUs": "Contact us",
+  "@contactUs": {
+    "description": "Contact us menu item"
+  },
+
+  "appRating": "App rating",
+  "@appRating": {
+    "description": "App rating menu item"
+  },
+
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout menu item"
+  },
+
+  "closeAccount": "Close Account",
+  "@closeAccount": {
+    "description": "Close account menu item"
+  },
+
+  "doYouWantToLogout": "Do you want to logout?",
+  "@doYouWantToLogout": {
+    "description": "Logout confirmation title"
+  },
+
+  "logoutDescription": "You will need to sign in again to access your account.",
+  "@logoutDescription": {
+    "description": "Logout confirmation description"
+  },
+
+  "doYouWantToCloseAccount": "Do you want to close account?",
+  "@doYouWantToCloseAccount": {
+    "description": "Close account confirmation title"
+  },
+
+  "closeAccountDescription": "This action cannot be undone. All your data will be permanently deleted.",
+  "@closeAccountDescription": {
+    "description": "Close account confirmation description"
+  },
+
+  "comingSoonTitle": "Coming Soon",
+  "@comingSoonTitle": {
+    "description": "Coming soon dialog title"
+  },
+
+  "comingSoonDescription": "This feature will be available in a future update.",
+  "@comingSoonDescription": {
+    "description": "Coming soon dialog description"
+  },
+
+  "editProfile": "Edit profile",
+  "@editProfile": {
+    "description": "Edit profile page title"
+  },
+
+  "personalInformation": "Personal information",
+  "@personalInformation": {
+    "description": "Personal information section title"
+  },
+
+  "updateAccount": "Update Account",
+  "@updateAccount": {
+    "description": "Update account button text"
+  },
+
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "@profileUpdatedSuccessfully": {
+    "description": "Profile update success message"
+  },
+
+  "pleaseEnterFullName": "Please enter your full name",
+  "@pleaseEnterFullName": {
+    "description": "Full name validation error message"
+  },
+
+  "reVerificationWarning": "Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.",
+  "@reVerificationWarning": {
+    "description": "Warning message when user changes critical account information"
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
   }
 }

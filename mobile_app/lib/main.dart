@@ -13,6 +13,7 @@ import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/route.dart';
 import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
@@ -102,6 +103,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider(create: (context) => AddContributionBloc()),
         BlocProvider(create: (context) => FetchContributionBloc()),
         BlocProvider(create: (context) => UpdateJarBloc()),
+        BlocProvider(create: (context) => UserAccountBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

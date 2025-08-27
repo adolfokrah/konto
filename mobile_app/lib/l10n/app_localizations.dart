@@ -410,7 +410,7 @@ abstract class AppLocalizations {
   /// **'Please enter a phone number'**
   String get pleaseEnterPhoneNumber;
 
-  /// Error message when full name is empty
+  /// Full name validation error message
   ///
   /// In en, this message translates to:
   /// **'Please enter your full name'**
@@ -1717,6 +1717,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'🔔 Reminder:\n\n{inviterName} is waiting for you to join \"{jarName}\" jar!\n\nJoin here: {jarLink}\n\nDon\'t miss out on this savings opportunity!\n\nDownload Konto app now 📱'**
   String smsReminderMessage(String inviterName, String jarName, String jarLink);
+
+  /// Account page title
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// Personal details menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Personal details'**
+  String get personalDetails;
+
+  /// Withdrawal account menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal account'**
+  String get withdrawalAccount;
+
+  /// Change phone number menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Change phone number'**
+  String get changePhoneNumber;
+
+  /// Security section title
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// Account PIN menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Account PIN'**
+  String get accountPin;
+
+  /// Biometric authentication toggle menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Enable/disable Face or Touch ID'**
+  String get enableDisableBiometric;
+
+  /// About section title
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// About Konto menu item
+  ///
+  /// In en, this message translates to:
+  /// **'About Konto'**
+  String get aboutKonto;
+
+  /// Social media menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Social Media'**
+  String get socialMedia;
+
+  /// Terms of services menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of services'**
+  String get termsOfServices;
+
+  /// Contact us menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
+  /// App rating menu item
+  ///
+  /// In en, this message translates to:
+  /// **'App rating'**
+  String get appRating;
+
+  /// Logout menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// Close account menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Close Account'**
+  String get closeAccount;
+
+  /// Logout confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to logout?'**
+  String get doYouWantToLogout;
+
+  /// Logout confirmation description
+  ///
+  /// In en, this message translates to:
+  /// **'You will need to sign in again to access your account.'**
+  String get logoutDescription;
+
+  /// Close account confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to close account?'**
+  String get doYouWantToCloseAccount;
+
+  /// Close account confirmation description
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. All your data will be permanently deleted.'**
+  String get closeAccountDescription;
+
+  /// Coming soon dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoonTitle;
+
+  /// Coming soon dialog description
+  ///
+  /// In en, this message translates to:
+  /// **'This feature will be available in a future update.'**
+  String get comingSoonDescription;
+
+  /// Edit profile page title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfile;
+
+  /// Personal information section title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal information'**
+  String get personalInformation;
+
+  /// Update account button text
+  ///
+  /// In en, this message translates to:
+  /// **'Update Account'**
+  String get updateAccount;
+
+  /// Profile update success message
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profileUpdatedSuccessfully;
+
+  /// Warning message when user changes critical account information
+  ///
+  /// In en, this message translates to:
+  /// **'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.'**
+  String get reVerificationWarning;
+
+  /// OK button text
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
 }
 
 class _AppLocalizationsDelegate

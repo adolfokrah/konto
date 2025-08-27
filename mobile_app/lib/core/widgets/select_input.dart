@@ -89,11 +89,13 @@ class SelectInput<T> extends StatelessWidget {
                   if (label != null && hasValue) const SizedBox(height: 2),
 
                   // Display value or placeholder
-                  Text(
-                    effectiveDisplayText ?? label ?? hintText ?? '',
-                    style: TextStyles.titleMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: hasValue ? 1.0 : 0.6,
+                  Opacity(
+                    opacity: enabled ? 1.0 : 0.6,
+                    child: Text(
+                      effectiveDisplayText ?? label ?? hintText ?? '',
+                      style: TextStyles.titleMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(alpha: hasValue ? 1.0 : 0.6),
                       ),
                     ),
                   ),
@@ -102,7 +104,11 @@ class SelectInput<T> extends StatelessWidget {
             ),
 
             // Suffix icon (chevron or custom)
-            suffixIcon ?? const Icon(Icons.keyboard_arrow_down, size: 20),
+            Opacity(
+              opacity: enabled ? 1.0 : 0.6,
+              child:
+                  suffixIcon ?? const Icon(Icons.keyboard_arrow_down, size: 20),
+            ),
           ],
         ),
       ),

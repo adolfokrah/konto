@@ -175,7 +175,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pleaseEnterPhoneNumber => 'Veuillez saisir un numéro de téléphone';
 
   @override
-  String get pleaseEnterFullName => 'Veuillez saisir votre nom complet';
+  String get pleaseEnterFullName => 'Veuillez entrer votre nom complet';
 
   @override
   String get pleaseEnterEmailAddress => 'Veuillez saisir votre adresse e-mail';
@@ -918,4 +918,89 @@ class AppLocalizationsFr extends AppLocalizations {
   ) {
     return '🔔 Rappel :\n\n$inviterName attend que vous rejoigniez le pot \"$jarName\" !\n\nRejoignez ici : $jarLink\n\nNe ratez pas cette opportunité d\'épargne !\n\nTéléchargez l\'application Konto maintenant 📱';
   }
+
+  @override
+  String get account => 'Compte';
+
+  @override
+  String get personalDetails => 'Détails personnels';
+
+  @override
+  String get withdrawalAccount => 'Compte de retrait';
+
+  @override
+  String get changePhoneNumber => 'Changer le numéro de téléphone';
+
+  @override
+  String get security => 'Sécurité';
+
+  @override
+  String get accountPin => 'Code PIN du compte';
+
+  @override
+  String get enableDisableBiometric => 'Activer/désactiver Face ID ou Touch ID';
+
+  @override
+  String get about => 'À propos';
+
+  @override
+  String get aboutKonto => 'À propos de Konto';
+
+  @override
+  String get socialMedia => 'Réseaux sociaux';
+
+  @override
+  String get termsOfServices => 'Conditions de service';
+
+  @override
+  String get contactUs => 'Contactez-nous';
+
+  @override
+  String get appRating => 'Évaluation de l\'app';
+
+  @override
+  String get logout => 'Déconnexion';
+
+  @override
+  String get closeAccount => 'Fermer le compte';
+
+  @override
+  String get doYouWantToLogout => 'Voulez-vous vous déconnecter ?';
+
+  @override
+  String get logoutDescription =>
+      'Vous devrez vous reconnecter pour accéder à votre compte.';
+
+  @override
+  String get doYouWantToCloseAccount => 'Voulez-vous fermer le compte ?';
+
+  @override
+  String get closeAccountDescription =>
+      'Cette action ne peut pas être annulée. Toutes vos données seront définitivement supprimées.';
+
+  @override
+  String get comingSoonTitle => 'Bientôt disponible';
+
+  @override
+  String get comingSoonDescription =>
+      'Cette fonctionnalité sera disponible dans une prochaine mise à jour.';
+
+  @override
+  String get editProfile => 'Modifier le profil';
+
+  @override
+  String get personalInformation => 'Informations personnelles';
+
+  @override
+  String get updateAccount => 'Mettre à jour le compte';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profil mis à jour avec succès !';
+
+  @override
+  String get reVerificationWarning =>
+      'Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l\'exactitude de vos informations.';
+
+  @override
+  String get ok => 'OK';
 }

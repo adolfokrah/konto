@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
+import 'package:konto/core/constants/select_options.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/number_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
@@ -25,7 +26,7 @@ class _RegisterViewState extends State<RegisterView> {
   String _phoneNumber = '';
   String _countryCode = '+233'; // Default to Ghana
   String _selectedPhoneCountry = 'Ghana';
-  String _selectedCountry = 'Ghana';
+  String _selectedCountry = 'ghana';
   final _isLoading = false;
 
   @override
@@ -90,12 +91,6 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-
-    // Define options for the SelectInput
-    final List<SelectOption<String>> countryOptions = [
-      SelectOption(value: 'ghana', label: localizations.countryGhana),
-      SelectOption(value: 'nigeria', label: localizations.countryNigeria),
-    ];
 
     return MultiBlocListener(
       listeners: [
@@ -174,7 +169,7 @@ class _RegisterViewState extends State<RegisterView> {
               SelectInput<String>(
                 key: const Key('country'),
                 label: localizations.country,
-                options: countryOptions,
+                options: AppSelectOptions.getCountryOptions(localizations),
                 value: _selectedCountry,
                 onChanged: (value) {
                   print(value);

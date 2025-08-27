@@ -41,3 +41,10 @@ final class RequestRegistration extends AuthEvent {
 final class SignOutRequested extends AuthEvent {}
 
 final class AutoLoginRequested extends AuthEvent {}
+
+final class UpdateUserData extends AuthEvent {
+  final User updatedUser;
+  final String token;
+
+  UpdateUserData({required this.updatedUser, required this.token});
+}

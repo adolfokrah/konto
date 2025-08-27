@@ -903,4 +903,89 @@ class AppLocalizationsEn extends AppLocalizations {
   ) {
     return '🔔 Reminder:\n\n$inviterName is waiting for you to join \"$jarName\" jar!\n\nJoin here: $jarLink\n\nDon\'t miss out on this savings opportunity!\n\nDownload Konto app now 📱';
   }
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get personalDetails => 'Personal details';
+
+  @override
+  String get withdrawalAccount => 'Withdrawal account';
+
+  @override
+  String get changePhoneNumber => 'Change phone number';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get accountPin => 'Account PIN';
+
+  @override
+  String get enableDisableBiometric => 'Enable/disable Face or Touch ID';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get aboutKonto => 'About Konto';
+
+  @override
+  String get socialMedia => 'Social Media';
+
+  @override
+  String get termsOfServices => 'Terms of services';
+
+  @override
+  String get contactUs => 'Contact us';
+
+  @override
+  String get appRating => 'App rating';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get closeAccount => 'Close Account';
+
+  @override
+  String get doYouWantToLogout => 'Do you want to logout?';
+
+  @override
+  String get logoutDescription =>
+      'You will need to sign in again to access your account.';
+
+  @override
+  String get doYouWantToCloseAccount => 'Do you want to close account?';
+
+  @override
+  String get closeAccountDescription =>
+      'This action cannot be undone. All your data will be permanently deleted.';
+
+  @override
+  String get comingSoonTitle => 'Coming Soon';
+
+  @override
+  String get comingSoonDescription =>
+      'This feature will be available in a future update.';
+
+  @override
+  String get editProfile => 'Edit profile';
+
+  @override
+  String get personalInformation => 'Personal information';
+
+  @override
+  String get updateAccount => 'Update Account';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully!';
+
+  @override
+  String get reVerificationWarning =>
+      'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.';
+
+  @override
+  String get ok => 'OK';
 }
