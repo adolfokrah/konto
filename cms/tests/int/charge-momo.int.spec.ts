@@ -1,26 +1,25 @@
 import { getPayload, Payload } from 'payload'
 import { describe, it, beforeAll, expect, beforeEach, vi } from 'vitest'
 
-import { paystack } from '@/payload.config'
-
 import { chargeMomo } from '../../src/collections/Contributions/endpoints/charge-momo'
 import config from '../../src/payload.config'
 import { clearAllCollections } from '../utils/testCleanup'
 
-let payload: Payload
+// Create the mock function using vi.hoisted for proper hoisting
+const mockChargeMomo = vi.hoisted(() => vi.fn())
 
-// Mock the Paystack service - must be before any imports that use it
-vi.mock('@/payload.config', async () => {
-  const actual = await vi.importActual('@/payload.config')
+// Mock the Paystack service with hoisted mock
+vi.mock('@/payload.config', async importOriginal => {
+  const actual = (await importOriginal()) as any
   return {
     ...actual,
     paystack: {
-      chargeMomo: vi.fn(),
+      chargeMomo: mockChargeMomo,
     },
   }
 })
 
-const mockPaystack = vi.mocked(paystack)
+let payload: Payload
 
 describe('ChargeMomo Endpoint - Step by Step Tests', () => {
   beforeAll(async () => {
@@ -34,7 +33,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     vi.clearAllMocks() // Clear all mocks before each test
 
     // Set up default mock return for paystack
-    mockPaystack.chargeMomo = vi.fn().mockResolvedValue({
+    mockChargeMomo.mockResolvedValue({
       status: true,
       data: { reference: 'test-ref-123', status: 'success' },
     })
@@ -292,7 +291,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     })
 
     // Mock successful Paystack response
-    mockPaystack.chargeMomo = vi.fn().mockResolvedValue({
+    mockChargeMomo.mockResolvedValue({
       status: true,
       data: {
         id: 12345,
@@ -331,7 +330,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     })
 
     // Verify that Paystack was called with correct data
-    expect(mockPaystack.chargeMomo).toHaveBeenCalledWith({
+    expect(mockChargeMomo).toHaveBeenCalledWith({
       email: 'success.test@example.com',
       amount: 5000, // 50.00 * 100
       currency: 'ghc', // Currency from jar (lowercase)
