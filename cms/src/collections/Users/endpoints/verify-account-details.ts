@@ -76,12 +76,13 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
         { status: 400 },
       )
     }
-  } catch (error) {
+  } catch (error: any) {
     return Response.json(
       {
         success: false,
         message: 'An error occurred while verifying account details',
         valid: false,
+        error: error.message || 'Unknown error',
       },
       { status: 500 },
     )

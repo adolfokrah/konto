@@ -554,10 +554,10 @@ abstract class AppLocalizations {
   /// **'Contributions'**
   String get contributions;
 
-  /// Recent contributions section title
+  /// Recent transactions section title
   ///
   /// In en, this message translates to:
-  /// **'Recent Contributions'**
+  /// **'Recent Transactions'**
   String get recentContributions;
 
   /// Message when there are no contributions

@@ -407,9 +407,9 @@
     "description": "Contributions card title"
   },
 
-  "recentContributions": "Recent Contributions",
+  "recentContributions": "Recent Transactions",
   "@recentContributions": {
-    "description": "Recent contributions section title"
+    "description": "Recent transactions section title"
   },
 
   "noContributionsYet": "No contributions yet",

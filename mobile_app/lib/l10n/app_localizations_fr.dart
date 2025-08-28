@@ -257,7 +257,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contributions => 'Contributions';
 
   @override
-  String get recentContributions => 'Contributions Récentes';
+  String get recentContributions => 'Transactions Récentes';
 
   @override
   String get noContributionsYet => 'Aucune contribution pour l\'instant';

@@ -129,6 +129,12 @@ export const transferMomo = async (req: PayloadRequest) => {
           paymentStatus: 'transferred',
         },
       })
+
+      return Response.json({
+        success: true,
+        message: 'Transfer record created successfully',
+        transfer: linkedTransfer,
+      })
     } else {
       const response = await paystack.initiateTransfer({
         amount: foundContribution.amountContributed,
@@ -179,8 +185,6 @@ export const transferMomo = async (req: PayloadRequest) => {
         )
       }
     }
-
-    // Proceed with the transfer logic
   } catch (error: any) {
     return Response.json(
       {

@@ -158,12 +158,13 @@ export const getUserJars = async (req: PayloadRequest) => {
       success: true,
       data: groupedJarsArray,
     })
-  } catch (error) {
+  } catch (error: any) {
     // If jar is not found, Payload throws a NotFound error
     return Response.json(
       {
         success: true,
         message: 'No Jars found',
+        error: error.message || 'Unknown error',
       },
       { status: 200 },
     )

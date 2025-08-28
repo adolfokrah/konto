@@ -254,7 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contributions => 'Contributions';
 
   @override
-  String get recentContributions => 'Recent Contributions';
+  String get recentContributions => 'Recent Transactions';
 
   @override
   String get noContributionsYet => 'No contributions yet';
