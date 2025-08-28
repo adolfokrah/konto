@@ -9,7 +9,7 @@ import { clearAllCollections } from '../utils/testCleanup'
 
 let payload: Payload
 
-// Mock the Paystack service
+// Mock the Paystack service - must be before any imports that use it
 vi.mock('@/payload.config', async () => {
   const actual = await vi.importActual('@/payload.config')
   return {
