@@ -231,32 +231,37 @@ class ContributionView extends StatelessWidget {
                                     ),
                                     child: Column(
                                       children: [
+                                        if (contribution.contributor != null)
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            dense: true,
+                                            title: Text(
+                                              localizations.contributor,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: Text(
+                                              contribution.contributor ??
+                                                  localizations.unknown,
+                                              style: AppTextStyles.titleMediumS,
+                                              textAlign: TextAlign.end,
+                                            ),
+                                          ),
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
-                                          dense: true,
                                           title: Text(
-                                            localizations.contributor,
-                                            style: AppTextStyles.titleMediumS
-                                                .copyWith(
-                                                  color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .color
-                                                      ?.withValues(alpha: 0.5),
-                                                ),
-                                          ),
-                                          trailing: Text(
-                                            contribution.contributor ??
-                                                localizations.unknown,
-                                            style: AppTextStyles.titleMediumS,
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ),
-                                        ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          title: Text(
-                                            localizations
-                                                .contributorPhoneNumber,
+                                            contribution.contributor == null
+                                                ? localizations.transferredTo
+                                                : localizations
+                                                    .contributorPhoneNumber,
                                             style: AppTextStyles.titleMediumS
                                                 .copyWith(
                                                   color: Theme.of(context)
@@ -302,46 +307,54 @@ class ContributionView extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  AppCard(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.spacingM,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          onTap: () {
-                                            AppSnackBar.show(
-                                              context,
-                                              message: localizations.comingSoon,
-                                            );
-                                          },
-                                          dense: true,
-                                          title: Text(
-                                            localizations.collector,
-                                            style: AppTextStyles.titleMediumS
-                                                .copyWith(
-                                                  color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .color
-                                                      ?.withValues(alpha: 0.5),
-                                                ),
+
+                                  if (contribution.contributor != null) ...[
+                                    const SizedBox(height: AppSpacing.spacingM),
+                                    AppCard(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingM,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            onTap: () {
+                                              AppSnackBar.show(
+                                                context,
+                                                message:
+                                                    localizations.comingSoon,
+                                              );
+                                            },
+                                            dense: true,
+                                            title: Text(
+                                              localizations.collector,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: Text(
+                                              contribution
+                                                      .collector
+                                                      ?.fullName ??
+                                                  localizations.unknown,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Colors.blueAccent,
+                                                  ),
+                                              textAlign: TextAlign.end,
+                                            ),
                                           ),
-                                          trailing: Text(
-                                            contribution.collector?.fullName ??
-                                                localizations.unknown,
-                                            style: AppTextStyles.titleMediumS
-                                                .copyWith(
-                                                  color: Colors.blueAccent,
-                                                ),
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                   const SizedBox(height: AppSpacing.spacingM),
                                   AppCard(
                                     padding: const EdgeInsets.symmetric(

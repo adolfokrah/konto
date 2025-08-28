@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_colors.dart';
+import 'package:konto/core/constants/app_radius.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/services/jar_expansion_state_service.dart';
 import 'package:konto/core/theme/text_styles.dart';
@@ -291,11 +292,11 @@ class _JarsListViewState extends State<JarsListView> {
           GestureDetector(
             onTap: () => _toggleGroupExpansion(jarGroup.name),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.spacingS),
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                  topLeft: Radius.circular(AppRadius.radiusM),
+                  topRight: Radius.circular(AppRadius.radiusM),
                 ),
               ),
               child: Row(
@@ -311,7 +312,7 @@ class _JarsListViewState extends State<JarsListView> {
                           ),
                           style: theme.textTheme.titleMedium,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.spacingXs),
                         Text(
                           '${jarGroup.jars.length} ${jarGroup.jars.length == 1 ? localizations.jar : localizations.jars}',
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -377,7 +378,7 @@ class _JarsListViewState extends State<JarsListView> {
   Widget _buildJarItem(JarListItem jar, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
       child: InkWell(
         onTap: () {
           Navigator.pop(context);

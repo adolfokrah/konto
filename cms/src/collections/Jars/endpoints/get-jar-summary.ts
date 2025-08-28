@@ -84,6 +84,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
+      collector: {
+        equals: req.user,
+      },
     },
     limit: 10,
     sort: '-createdAt', // Sort by createdAt in descending order
@@ -94,6 +97,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
     where: {
       jar: {
         equals: jar.id,
+      },
+      collector: {
+        equals: req.user,
       },
     },
     limit: 100, // Fetch the last 100 contributions for detailed analysis
@@ -148,6 +154,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
       },
       paymentStatus: {
         equals: 'completed',
+      },
+      collector: {
+        equals: req.user,
       },
     },
     pagination: false,

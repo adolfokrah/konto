@@ -2,6 +2,8 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
 import { paystack } from '@/payload.config'
 
+import { transferMomo } from './transfer-momo'
+
 export const verifyPayment = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
@@ -39,13 +41,47 @@ export const verifyPayment = async (req: PayloadRequest) => {
         )
       }
 
-      const updated = await req.payload.update({
+      const isTransfer = foundContribution.docs[0].contributor == null
+
+      // console.log(linkedContributionId);
+
+      await req.payload.update({
         collection: 'contributions',
         id: foundContribution.docs[0].id,
         data: {
-          paymentStatus: 'completed',
+          paymentStatus: isTransfer ? 'transferred' : 'completed',
         },
       })
+
+      if (isTransfer) {
+        const linkedContribution = foundContribution.docs[0].linkedContribution
+        const linkedContributionId =
+          typeof linkedContribution === 'string' ? linkedContribution : linkedContribution?.id
+
+        if (linkedContributionId && typeof linkedContributionId === 'string') {
+          await req.payload.update({
+            collection: 'contributions',
+            id: linkedContributionId,
+            data: {
+              linkedTransfer: foundContribution.docs[0].id,
+              isTransferred: true,
+            },
+          })
+        }
+      }
+
+      if (!isTransfer) {
+        //insert a transfer transaction
+        try {
+          transferMomo({
+            ...req,
+            data: { contributionId: foundContribution.docs[0].id },
+          } as PayloadRequest)
+        } catch (transferError) {
+          console.error('Transfer creation failed:', transferError)
+          // Continue with verification success even if transfer fails
+        }
+      }
 
       return Response.json({
         success: true,

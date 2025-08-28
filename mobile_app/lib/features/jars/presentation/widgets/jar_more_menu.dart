@@ -52,80 +52,85 @@ class JarMoreMenu extends StatelessWidget {
           },
         ),
       ],
-      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-        builder: (context, state) {
-          if (state is JarSummaryLoaded) {
-            final jarData = state.jarData;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                PopupMenuButton<String>(
-                  key: const Key('more_menu'),
-                  color:
-                      isDark
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.white,
-                  onSelected: (String value) {
-                    _handleMenuSelection(context, value);
-                  },
-                  itemBuilder:
-                      (BuildContext context) => <PopupMenuEntry<String>>[
-                        PopupMenuItem<String>(
-                          value: 'name',
-                          child: ListTile(
-                            leading: Icon(Icons.edit),
-                            title: Text(
-                              AppLocalizations.of(context)!.changeName,
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          return BlocBuilder<JarSummaryBloc, JarSummaryState>(
+            builder: (context, state) {
+              if (state is JarSummaryLoaded) {
+                final jarData = state.jarData;
+                final isCreator =
+                    authState is AuthAuthenticated &&
+                    jarData.creator.id == authState.user.id;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    PopupMenuButton<String>(
+                      key: const Key('more_menu'),
+                      enabled: isCreator,
+                      color:
+                          isDark
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.white,
+                      onSelected: (String value) {
+                        _handleMenuSelection(context, value);
+                      },
+                      itemBuilder:
+                          (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              value: 'name',
+                              child: ListTile(
+                                leading: Icon(Icons.edit),
+                                title: Text(
+                                  AppLocalizations.of(context)!.changeName,
+                                ),
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'image',
-                          child: ListTile(
-                            leading: Icon(Icons.image),
-                            title: Text(
-                              jarData.image != null
-                                  ? AppLocalizations.of(context)!.changeJarImage
-                                  : AppLocalizations.of(context)!.setJarImage,
+                            PopupMenuItem<String>(
+                              value: 'image',
+                              child: ListTile(
+                                leading: Icon(Icons.image),
+                                title: Text(
+                                  jarData.image != null
+                                      ? AppLocalizations.of(
+                                        context,
+                                      )!.changeJarImage
+                                      : AppLocalizations.of(
+                                        context,
+                                      )!.setJarImage,
+                                ),
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                        // Add additional menu items if provided
-                        if (additionalMenuItems != null)
-                          ...additionalMenuItems!,
-                      ],
-                  child: BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      final isCreator =
-                          authState is AuthAuthenticated &&
-                          jarData.creator.id == authState.user.id;
-                      return isCreator
-                          ? CircleAvatar(
-                            radius: 27,
-                            foregroundColor:
-                                isDark ? Colors.white : Colors.black,
-                            backgroundColor:
-                                isDark
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Colors.white,
-                            child: Icon(Icons.more_horiz),
-                          )
-                          : AppIconButton(
-                            onPressed: null,
-                            icon: Icons.more_horiz,
-                          );
-                    },
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.spacingXs),
-                Text(localizations.more, style: TextStyles.titleMedium),
-              ],
-            );
-          }
-          return Container();
+                            // Add additional menu items if provided
+                            if (additionalMenuItems != null)
+                              ...additionalMenuItems!,
+                          ],
+                      child:
+                          isCreator
+                              ? CircleAvatar(
+                                radius: 27,
+                                foregroundColor:
+                                    isDark ? Colors.white : Colors.black,
+                                backgroundColor:
+                                    isDark
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.white,
+                                child: Icon(Icons.more_horiz),
+                              )
+                              : AppIconButton(
+                                onPressed: null,
+                                icon: Icons.more_horiz,
+                              ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacingXs),
+                    Text(localizations.more, style: TextStyles.titleMedium),
+                  ],
+                );
+              }
+              return Container();
+            },
+          );
         },
       ),
     );

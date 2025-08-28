@@ -1,7 +1,9 @@
 import type { CollectionConfig } from 'payload'
 
 import { chargeMomo } from './endpoints/charge-momo'
+import { paystackWebhook } from './endpoints/paystack-webhook'
 import { sendOtp } from './endpoints/send-otp'
+import { transferMomo } from './endpoints/transfer-momo'
 import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
 
@@ -239,6 +241,16 @@ export const Contributions: CollectionConfig = {
       path: '/verify-payment',
       method: 'post',
       handler: verifyPayment,
+    },
+    {
+      path: '/transfer-momo',
+      method: 'post',
+      handler: transferMomo,
+    },
+    {
+      path: '/paystack-webhook',
+      method: 'post',
+      handler: paystackWebhook,
     },
   ],
   hooks: {

@@ -545,6 +545,56 @@
     "description": "Payment status: transferred"
   },
 
+  "momoPaymentSuccessful": "Payment Successful! ✅",
+  "@momoPaymentSuccessful": {
+    "description": "Message shown when mobile money payment is successful"
+  },
+
+  "momoPaymentFailed": "Payment failed ❌",
+  "@momoPaymentFailed": {
+    "description": "Message shown when mobile money payment fails"
+  },
+
+  "momoCompleteAuthorization": "Please complete authorization process on your mobile phone",
+  "@momoCompleteAuthorization": {
+    "description": "Default message asking user to complete mobile money authorization"
+  },
+
+  "momoDontClosePage": "Please don't close this page.",
+  "@momoDontClosePage": {
+    "description": "Warning message to keep the page open during mobile money payment"
+  },
+
+  "momoEnterVoucherCode": "Enter voucher code",
+  "@momoEnterVoucherCode": {
+    "description": "Label for voucher code input field"
+  },
+
+  "momoSubmitVoucher": "Submit Voucher",
+  "@momoSubmitVoucher": {
+    "description": "Button text to submit voucher code"
+  },
+
+  "momoValidVoucherCodeRequired": "Please enter a valid voucher code",
+  "@momoValidVoucherCodeRequired": {
+    "description": "Error message when voucher code is empty or invalid"
+  },
+
+  "momoWaitingAuthorization": "Waiting for contributor to authorize payment...",
+  "@momoWaitingAuthorization": {
+    "description": "Message shown while waiting for payment authorization"
+  },
+
+  "momoPaymentFailedTryAgain": "Payment failed. Please try again.",
+  "@momoPaymentFailedTryAgain": {
+    "description": "Error message when payment fails with suggestion to retry"
+  },
+
+  "transferredTo": "Transferred to",
+  "@transferredTo": {
+    "description": "Label indicating the recipient of a transfer"
+  },
+
   "at": "at",
   "@at": {
     "description": "Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'"
@@ -571,7 +621,7 @@
     "description": "Set goal button text"
   },
 
-  "anonymous": "Anonymous",
+  "anonymous": "Unknown",
   "@anonymous": {
     "description": "Anonymous contributor name"
   },

@@ -80,6 +80,11 @@ export const getUserJars = async (req: PayloadRequest) => {
                 equals: 'completed',
               },
             },
+            {
+              collector: {
+                equals: req.user,
+              },
+            },
           ],
         },
         pagination: false,

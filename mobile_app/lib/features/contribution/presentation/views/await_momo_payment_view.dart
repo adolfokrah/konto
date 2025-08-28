@@ -10,6 +10,7 @@ import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
 
 class AwaitMomoPaymentView extends StatefulWidget {
@@ -61,7 +62,11 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         SubmitOtpRequested(otpCode: voucherCode, reference: reference),
       );
     } else {
-      AppSnackBar.show(context, message: "Please enter a valid voucher code");
+      final localizations = AppLocalizations.of(context)!;
+      AppSnackBar.show(
+        context,
+        message: localizations.momoValidVoucherCodeRequired,
+      );
     }
   }
 
@@ -73,6 +78,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         listener: (context, state) {
           if (state is MomoPaymentSuccess) {
             final charge = state.charge;
+            final localizations = AppLocalizations.of(context)!;
 
             if (charge.status == 'success') {
               if (_verificationTimer == null) {
@@ -96,31 +102,33 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
               }
               AppSnackBar.show(
                 context,
-                message: "Waiting for contributor to authorize payment...",
+                message: localizations.momoWaitingAuthorization,
               );
             } else if (charge.status == 'pending') {
               AppSnackBar.show(
                 context,
-                message: "Waiting for contributor to authorize payment...",
+                message: localizations.momoWaitingAuthorization,
               );
             } else if (charge.status == 'failed') {
               _stopPaymentVerification(); // Stop verification timer
               AppSnackBar.show(
                 context,
-                message: "Payment failed. Please try again.",
+                message: localizations.momoPaymentFailedTryAgain,
               );
             }
           }
         },
         child: BlocBuilder<MomoPaymentBloc, MomoPaymentState>(
           builder: (context, state) {
+            final localizations = AppLocalizations.of(context)!;
+
             if (state is MomoPaymentLoading) {
               return Center(child: CircularProgressIndicator());
             } else if (state is MomoPaymentSuccess) {
               return builderContent(context, state);
             }
 
-            return Center(child: Text('Payment failed'));
+            return Center(child: Text(localizations.momoPaymentFailed));
           },
         ),
       ),
@@ -129,12 +137,14 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
 
   builderContent(BuildContext context, MomoPaymentState state) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = AppLocalizations.of(context)!;
+
     if (state is MomoPaymentSuccess) {
       final charge = state.charge;
 
       switch (charge.status) {
         case 'success':
-          return Center(child: Text('Payment Successful! ✅'));
+          return Center(child: Text(localizations.momoPaymentSuccessful));
 
         case 'pay_offline':
           return Center(
@@ -154,13 +164,13 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
                   const SizedBox(height: AppSpacing.spacingM),
                   Text(
                     charge.displayText ??
-                        'Please complete authorization process on your mobile phone',
+                        localizations.momoCompleteAuthorization,
                     style: AppTextStyles.titleMediumLg,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.spacingM),
                   Text(
-                    "Please don't close this page.",
+                    localizations.momoDontClosePage,
                     style: AppTextStyles.titleMediumS,
                   ),
                 ],
@@ -175,22 +185,21 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  charge.displayText ??
-                      'Please complete authorization process on your mobile phone',
+                  charge.displayText ?? localizations.momoCompleteAuthorization,
                   style: AppTextStyles.titleMediumS,
                 ),
                 const SizedBox(height: AppSpacing.spacingXs),
                 AppTextInput(
                   controller: _otpController,
                   keyboardType: TextInputType.number,
-                  label: 'Enter voucher code',
+                  label: localizations.momoEnterVoucherCode,
                 ),
                 const SizedBox(height: AppSpacing.spacingXs),
                 AppButton(
                   onPressed: () {
                     _submitVoucher(charge.reference!);
                   },
-                  text: "Submit Voucher",
+                  text: localizations.momoSubmitVoucher,
                 ),
               ],
             ),
@@ -199,7 +208,10 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         case 'failed':
         default:
           return Center(
-            child: Text('Payment failed ❌', style: AppTextStyles.titleMedium),
+            child: Text(
+              localizations.momoPaymentFailed,
+              style: AppTextStyles.titleMedium,
+            ),
           );
       }
     }

@@ -433,53 +433,67 @@ class _JarDetailViewState extends State<JarDetailView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        CollectorsView.show(context);
-                      },
-                      child: AppCard(
-                        margin: EdgeInsets.only(left: AppSpacing.spacingXs),
-                        variant: CardVariant.primary,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.person),
-                              style: IconButton.styleFrom(
-                                backgroundColor:
-                                    isDark
-                                        ? Theme.of(context).colorScheme.surface
-                                        : Theme.of(context).colorScheme.primary,
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.onSurface,
-                              ),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, authState) {
+                      final isCreator =
+                          authState is AuthAuthenticated &&
+                          jarData.creator.id == authState.user.id;
+                      if (!isCreator) {
+                        return Container();
+                      }
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            CollectorsView.show(context);
+                          },
+                          child: AppCard(
+                            margin: EdgeInsets.only(left: AppSpacing.spacingXs),
+                            variant: CardVariant.primary,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(Icons.person),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor:
+                                        isDark
+                                            ? Theme.of(
+                                              context,
+                                            ).colorScheme.surface
+                                            : Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.spacingL),
+                                Text(
+                                  localizations.collectors,
+                                  style: TextStyles.titleRegularM,
+                                ),
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                AnimatedNumberTextScale(
+                                  value:
+                                      (jarData.invitedCollectors
+                                                  ?.where(
+                                                    (collector) =>
+                                                        collector.status ==
+                                                        'accepted',
+                                                  )
+                                                  .length ??
+                                              0)
+                                          .toString(),
+                                  style: TextStyles.titleBoldLg,
+                                  duration: const Duration(milliseconds: 600),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: AppSpacing.spacingL),
-                            Text(
-                              localizations.collectors,
-                              style: TextStyles.titleRegularM,
-                            ),
-                            const SizedBox(height: AppSpacing.spacingXs),
-                            AnimatedNumberTextScale(
-                              value:
-                                  (jarData.invitedCollectors
-                                              ?.where(
-                                                (collector) =>
-                                                    collector.status ==
-                                                    'accepted',
-                                              )
-                                              .length ??
-                                          0)
-                                      .toString(),
-                              style: TextStyles.titleBoldLg,
-                              duration: const Duration(milliseconds: 600),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(width: AppSpacing.spacingXs),
                   Expanded(
@@ -520,12 +534,22 @@ class _JarDetailViewState extends State<JarDetailView> {
               //end of top section
               const SizedBox(height: AppSpacing.spacingXs),
               // Goal Progress Card
-              GoalProgressCard(
-                currentAmount: jarData.totalContributedAmount,
-                goalAmount: jarData.goalAmount,
-                currency: jarData.currency,
-                deadline: jarData.deadline,
-                variant: CardVariant.primary,
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  final isCreator =
+                      state is AuthAuthenticated &&
+                      state.user.id == jarData.creator.id;
+                  if (!isCreator) {
+                    return Container();
+                  }
+                  return GoalProgressCard(
+                    currentAmount: jarData.totalContributedAmount,
+                    goalAmount: jarData.goalAmount,
+                    currency: jarData.currency,
+                    deadline: jarData.deadline,
+                    variant: CardVariant.primary,
+                  );
+                },
               ),
 
               // Recent Contributions Section

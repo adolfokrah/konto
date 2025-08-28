@@ -337,6 +337,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get paymentStatusTransferred => 'Transféré';
 
   @override
+  String get momoPaymentSuccessful => 'Paiement réussi ! ✅';
+
+  @override
+  String get momoPaymentFailed => 'Paiement échoué ❌';
+
+  @override
+  String get momoCompleteAuthorization =>
+      'Veuillez terminer le processus d\'autorisation sur votre téléphone mobile';
+
+  @override
+  String get momoDontClosePage => 'Veuillez ne pas fermer cette page.';
+
+  @override
+  String get momoEnterVoucherCode => 'Entrez le code de bon';
+
+  @override
+  String get momoSubmitVoucher => 'Soumettre le bon';
+
+  @override
+  String get momoValidVoucherCodeRequired =>
+      'Veuillez entrer un code de bon valide';
+
+  @override
+  String get momoWaitingAuthorization =>
+      'En attente de l\'autorisation du contributeur pour le paiement...';
+
+  @override
+  String get momoPaymentFailedTryAgain =>
+      'Le paiement a échoué. Veuillez réessayer.';
+
+  @override
+  String get transferredTo => 'Transféré à';
+
+  @override
   String get at => 'à';
 
   @override
@@ -351,7 +385,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get setGoal => 'Définir un objectif';
 
   @override
-  String get anonymous => 'Anonyme';
+  String get anonymous => 'Inconnu';
 
   @override
   String dayAgo(int days) {

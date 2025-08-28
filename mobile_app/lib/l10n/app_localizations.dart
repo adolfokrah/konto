@@ -686,6 +686,66 @@ abstract class AppLocalizations {
   /// **'Transferred'**
   String get paymentStatusTransferred;
 
+  /// Message shown when mobile money payment is successful
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Successful! ✅'**
+  String get momoPaymentSuccessful;
+
+  /// Message shown when mobile money payment fails
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed ❌'**
+  String get momoPaymentFailed;
+
+  /// Default message asking user to complete mobile money authorization
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete authorization process on your mobile phone'**
+  String get momoCompleteAuthorization;
+
+  /// Warning message to keep the page open during mobile money payment
+  ///
+  /// In en, this message translates to:
+  /// **'Please don\'t close this page.'**
+  String get momoDontClosePage;
+
+  /// Label for voucher code input field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter voucher code'**
+  String get momoEnterVoucherCode;
+
+  /// Button text to submit voucher code
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Voucher'**
+  String get momoSubmitVoucher;
+
+  /// Error message when voucher code is empty or invalid
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid voucher code'**
+  String get momoValidVoucherCodeRequired;
+
+  /// Message shown while waiting for payment authorization
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for contributor to authorize payment...'**
+  String get momoWaitingAuthorization;
+
+  /// Error message when payment fails with suggestion to retry
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed. Please try again.'**
+  String get momoPaymentFailedTryAgain;
+
+  /// Label indicating the recipient of a transfer
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred to'**
+  String get transferredTo;
+
   /// Preposition used in time expressions like 'Jan 15, 2025 at 2:30 PM'
   ///
   /// In en, this message translates to:
@@ -713,7 +773,7 @@ abstract class AppLocalizations {
   /// Anonymous contributor name
   ///
   /// In en, this message translates to:
-  /// **'Anonymous'**
+  /// **'Unknown'**
   String get anonymous;
 
   /// Single day ago text
@@ -1583,13 +1643,13 @@ abstract class AppLocalizations {
   /// Success message when payment request is sent
   ///
   /// In en, this message translates to:
-  /// **'Payment request sent successfully!'**
+  /// **'Payment add successfully!'**
   String get paymentRequestSentSuccessfully;
 
   /// Error message when payment request fails
   ///
   /// In en, this message translates to:
-  /// **'Failed to send payment request.'**
+  /// **'Failed to add payment.'**
   String get failedToSendPaymentRequest;
 
   /// Generic unknown error message

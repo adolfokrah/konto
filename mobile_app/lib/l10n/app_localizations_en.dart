@@ -330,6 +330,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentStatusTransferred => 'Transferred';
 
   @override
+  String get momoPaymentSuccessful => 'Payment Successful! ✅';
+
+  @override
+  String get momoPaymentFailed => 'Payment failed ❌';
+
+  @override
+  String get momoCompleteAuthorization =>
+      'Please complete authorization process on your mobile phone';
+
+  @override
+  String get momoDontClosePage => 'Please don\'t close this page.';
+
+  @override
+  String get momoEnterVoucherCode => 'Enter voucher code';
+
+  @override
+  String get momoSubmitVoucher => 'Submit Voucher';
+
+  @override
+  String get momoValidVoucherCodeRequired =>
+      'Please enter a valid voucher code';
+
+  @override
+  String get momoWaitingAuthorization =>
+      'Waiting for contributor to authorize payment...';
+
+  @override
+  String get momoPaymentFailedTryAgain => 'Payment failed. Please try again.';
+
+  @override
+  String get transferredTo => 'Transferred to';
+
+  @override
   String get at => 'at';
 
   @override
@@ -344,7 +377,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setGoal => 'Set Goal';
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Unknown';
 
   @override
   String dayAgo(int days) {
@@ -826,11 +859,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterAccountName => 'Please enter account name';
 
   @override
-  String get paymentRequestSentSuccessfully =>
-      'Payment request sent successfully!';
+  String get paymentRequestSentSuccessfully => 'Payment add successfully!';
 
   @override
-  String get failedToSendPaymentRequest => 'Failed to send payment request.';
+  String get failedToSendPaymentRequest => 'Failed to add payment.';
 
   @override
   String get unknownError => 'Unknown error';
