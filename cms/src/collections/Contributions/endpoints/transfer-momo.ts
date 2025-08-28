@@ -133,7 +133,6 @@ export const transferMomo = async (req: PayloadRequest) => {
       return Response.json({
         success: true,
         message: 'Transfer record created successfully',
-        transfer: linkedTransfer,
       })
     } else {
       const response = await paystack.initiateTransfer({

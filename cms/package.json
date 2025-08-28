@@ -27,6 +27,7 @@
     "@payloadcms/next": "3.53.0",
     "@payloadcms/payload-cloud": "3.53.0",
     "@payloadcms/richtext-lexical": "3.53.0",
+    "@payloadcms/storage-uploadthing": "^3.53.0",
     "@payloadcms/ui": "3.53.0",
     "@tailwindcss/postcss": "4.1.12",
     "clsx": "2.1.1",

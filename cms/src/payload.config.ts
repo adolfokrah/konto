@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
@@ -41,6 +42,19 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    // Only add UploadthingStorage plugin if UPLOADTHING_TOKEN is available
+    ...(process.env.UPLOADTHING_TOKEN
+      ? [
+          uploadthingStorage({
+            collections: {
+              media: true, // Apply to 'media' collection
+            },
+            options: {
+              token: process.env.UPLOADTHING_TOKEN,
+              acl: 'public-read', // This is optional
+            },
+          }),
+        ]
+      : []),
   ],
 })
