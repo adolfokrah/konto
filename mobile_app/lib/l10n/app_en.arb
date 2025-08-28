@@ -1780,7 +1780,7 @@
     "description": "Success message when withdrawal account is updated"
   },
 
-  "contributionsTransferredAutomatically": "Mobile money contributions will be automatically transferred to this account.",
+  "contributionsTransferredAutomatically": "Note: Mobile money contributions will be automatically transferred to this account.",
   "@contributionsTransferredAutomatically": {
     "description": "Info text about automatic transfer of contributions"
   }

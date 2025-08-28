@@ -359,6 +359,7 @@ describe('getUserJars', () => {
       expect(responseData).toEqual({
         success: true,
         message: 'No Jars found',
+        error: 'Database connection failed',
       })
     })
 
@@ -381,6 +382,7 @@ describe('getUserJars', () => {
       expect(responseData).toEqual({
         success: true,
         message: 'No Jars found',
+        error: 'Not Found',
       })
     })
   })
@@ -524,6 +526,7 @@ describe('getUserJars', () => {
 
       expect(responseData).toHaveProperty('success', true)
       expect(responseData).toHaveProperty('message', 'No Jars found')
+      expect(responseData).toHaveProperty('error', 'Database error')
     })
   })
 })

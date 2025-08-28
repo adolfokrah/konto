@@ -42,8 +42,8 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // Only add UploadthingStorage plugin if UPLOADTHING_TOKEN is available
-    ...(process.env.UPLOADTHING_TOKEN
+    // Only add UploadthingStorage plugin if UPLOADTHING_TOKEN is available AND not in test mode
+    ...(process.env.UPLOADTHING_TOKEN && process.env.NODE_ENV !== 'test'
       ? [
           uploadthingStorage({
             collections: {

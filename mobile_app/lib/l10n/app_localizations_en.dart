@@ -1043,5 +1043,5 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contributionsTransferredAutomatically =>
-      'Mobile money contributions will be automatically transferred to this account.';
+      'Note: Mobile money contributions will be automatically transferred to this account.';
 }

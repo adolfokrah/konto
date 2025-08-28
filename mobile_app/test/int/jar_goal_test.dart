@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/widgets/currency_text_field.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
@@ -15,6 +18,7 @@ import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
@@ -34,7 +38,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+      '{"id": "test-user-id", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
     );
     await prefs.setString('konto_current_jar_id', 'test-jar-1');
   });
@@ -69,7 +73,7 @@ void main() {
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
-                  'id': 'test-user-123',
+                  'id': 'test-user-id',
                   'fullName': 'Test User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
@@ -157,10 +161,14 @@ void main() {
       );
 
       // Create widget with proper BLoC providers and navigation
+      late AuthBloc authBloc;
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+            BlocProvider<AuthBloc>(create: (context) => authBloc = AuthBloc()),
+            BlocProvider<VerificationBloc>(
+              create: (context) => VerificationBloc(),
+            ),
             BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
             BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
             BlocProvider<JarSummaryReloadBloc>(
@@ -171,6 +179,15 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<AddContributionBloc>(
+              create: (context) => AddContributionBloc(),
+            ),
+            BlocProvider<FetchContributionBloc>(
+              create: (context) => FetchContributionBloc(),
+            ),
+            BlocProvider<MomoPaymentBloc>(
+              create: (context) => MomoPaymentBloc(),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -189,6 +206,10 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Trigger auto-login to authenticate user
+      authBloc.add(AutoLoginRequested());
       await tester.pumpAndSettle();
 
       // Add debugging to see what's displayed
@@ -306,7 +327,7 @@ void main() {
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
-                  'id': 'test-user-123',
+                  'id': 'test-user-id',
                   'fullName': 'Test User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
@@ -400,6 +421,9 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+            BlocProvider<VerificationBloc>(
+              create: (context) => VerificationBloc(),
+            ),
             BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
             BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
             BlocProvider<JarSummaryReloadBloc>(
@@ -410,6 +434,15 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<AddContributionBloc>(
+              create: (context) => AddContributionBloc(),
+            ),
+            BlocProvider<FetchContributionBloc>(
+              create: (context) => FetchContributionBloc(),
+            ),
+            BlocProvider<MomoPaymentBloc>(
+              create: (context) => MomoPaymentBloc(),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -428,6 +461,13 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Trigger auto-login to authenticate user
+      final authBloc = BlocProvider.of<AuthBloc>(
+        tester.element(find.byType(JarDetailView)),
+      );
+      authBloc.add(AutoLoginRequested());
       await tester.pumpAndSettle();
 
       // Add debugging to see what's displayed
@@ -466,6 +506,9 @@ void main() {
               MultiBlocProvider(
                 providers: [
                   BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+                  BlocProvider<VerificationBloc>(
+                    create: (context) => VerificationBloc(),
+                  ),
                   BlocProvider<JarSummaryBloc>(
                     create: (context) => JarSummaryBloc(),
                   ),
@@ -482,6 +525,15 @@ void main() {
                     create: (context) => UpdateJarBloc(),
                   ),
                   BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+                  BlocProvider<AddContributionBloc>(
+                    create: (context) => AddContributionBloc(),
+                  ),
+                  BlocProvider<FetchContributionBloc>(
+                    create: (context) => FetchContributionBloc(),
+                  ),
+                  BlocProvider<MomoPaymentBloc>(
+                    create: (context) => MomoPaymentBloc(),
+                  ),
                 ],
                 child: MaterialApp(
                   localizationsDelegates: const [
@@ -568,7 +620,7 @@ void main() {
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
-                  'id': 'test-user-123',
+                  'id': 'test-user-id',
                   'fullName': 'Test User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
@@ -659,6 +711,9 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+            BlocProvider<VerificationBloc>(
+              create: (context) => VerificationBloc(),
+            ),
             BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
             BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
             BlocProvider<JarSummaryReloadBloc>(
@@ -669,6 +724,15 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<AddContributionBloc>(
+              create: (context) => AddContributionBloc(),
+            ),
+            BlocProvider<FetchContributionBloc>(
+              create: (context) => FetchContributionBloc(),
+            ),
+            BlocProvider<MomoPaymentBloc>(
+              create: (context) => MomoPaymentBloc(),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -687,6 +751,13 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Trigger auto-login to authenticate user
+      final authBloc = BlocProvider.of<AuthBloc>(
+        tester.element(find.byType(JarDetailView)),
+      );
+      authBloc.add(AutoLoginRequested());
       await tester.pumpAndSettle();
 
       // Add debugging to see what's displayed

@@ -321,5 +321,5 @@
   "pleaseEnterAccountNumber": "Veuillez entrer le numéro de compte",
   "pleaseSelectBank": "Veuillez sélectionner une banque",
   "withdrawalAccountUpdatedSuccessfully": "Compte de retrait mis à jour avec succès",
-  "contributionsTransferredAutomatically": "Les contributions mobile money seront automatiquement transférées vers ce compte."
+  "contributionsTransferredAutomatically": "Remarque: Les contributions mobile money seront automatiquement transférées vers ce compte."
 }

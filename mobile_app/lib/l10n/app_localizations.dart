@@ -1979,7 +1979,7 @@ abstract class AppLocalizations {
   /// Info text about automatic transfer of contributions
   ///
   /// In en, this message translates to:
-  /// **'Mobile money contributions will be automatically transferred to this account.'**
+  /// **'Note: Mobile money contributions will be automatically transferred to this account.'**
   String get contributionsTransferredAutomatically;
 }
 
