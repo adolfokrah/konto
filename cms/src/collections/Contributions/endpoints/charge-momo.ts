@@ -192,6 +192,17 @@ export const chargeMomo = async (req: PayloadRequest) => {
       console.error('💥 Mobile money charge error:', error)
     }
 
+    // Handle specific errors
+    if (error?.status === 404 || error?.name === 'NotFound') {
+      return Response.json(
+        {
+          success: false,
+          message: 'Contribution not found',
+        },
+        { status: 404 },
+      )
+    }
+
     return Response.json(
       {
         success: false,
