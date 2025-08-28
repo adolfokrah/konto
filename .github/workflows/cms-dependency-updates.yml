@@ -96,6 +96,7 @@ jobs:
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
       DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
       NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+      PAYSTACK_SECRET: test-paystack-secret
 
     steps:
       - name: Checkout code
