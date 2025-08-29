@@ -6,11 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/contribution/presentation/views/save_contribution_view.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
-import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
 import '../lib/test_setup.dart';
@@ -111,6 +111,7 @@ void main() {
                         BlocProvider(
                           create: (context) => AddContributionBloc(),
                         ),
+                        BlocProvider(create: (context) => MomoPaymentBloc()),
                       ],
                       child: const SaveContributionView(),
                     ),
@@ -180,7 +181,7 @@ void main() {
 
       // Verify the form is displayed
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('\$ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsOneWidget);
 
       // Fill in contributor name
       final nameFields = find.byType(AppTextInput);
@@ -329,7 +330,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify the save contribution view is loaded with proper data
-        expect(find.text('\$ 100.00'), findsOneWidget);
+        expect(find.text('₵ 100.00'), findsOneWidget);
 
         // Leave contributor name empty and try to find the submit button
         final submitButton = find.text('Request Payment').first;
@@ -431,7 +432,7 @@ void main() {
       // are difficult to test reliably in integration tests.
       expect(find.text('Request Payment'), findsWidgets);
       expect(find.text('Amount'), findsOneWidget);
-      expect(find.text('\$ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsOneWidget);
     });
 
     testWidgets('should handle network error gracefully', (
@@ -480,7 +481,7 @@ void main() {
       // are difficult to test reliably in integration tests.
       expect(find.text('Request Payment'), findsWidgets);
       expect(find.text('Amount'), findsOneWidget);
-      expect(find.text('\$ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsOneWidget);
     });
 
     testWidgets('should show loading state during submission', (
@@ -689,7 +690,7 @@ void main() {
         // Verify initial state - form is displayed
         expect(find.byType(AppBar), findsOneWidget);
         expect(
-          find.text('\$ ${contributionAmount.toStringAsFixed(2)}'),
+          find.text('₵ ${contributionAmount.toStringAsFixed(2)}'),
           findsOneWidget,
         );
 
