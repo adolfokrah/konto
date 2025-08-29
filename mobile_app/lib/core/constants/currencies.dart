@@ -3,12 +3,15 @@ class Currency {
   final String name;
   final String code;
   final String symbol;
+  final String
+  androidFallbackSymbol; // Fallback for Android if symbol doesn't render
   final String flagUrl;
 
   const Currency({
     required this.name,
     required this.code,
     required this.symbol,
+    this.androidFallbackSymbol = '',
     required this.flagUrl,
   });
 }
@@ -26,6 +29,7 @@ class Currencies {
       name: 'Ghanaian Cedi',
       code: 'GHC',
       symbol: '₵',
+      androidFallbackSymbol: 'GHS',
       flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',
     ),
     // Currency(
@@ -53,6 +57,7 @@ class Currencies {
     name: 'Ghanaian Cedi',
     code: 'GHS',
     symbol: '₵',
+    androidFallbackSymbol: 'GHS',
     flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',
   );
 }

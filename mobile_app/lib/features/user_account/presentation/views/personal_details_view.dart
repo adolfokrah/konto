@@ -5,7 +5,6 @@ import 'package:konto/core/constants/select_options.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contributor_avatar.dart';
-import 'package:konto/core/widgets/number_country_picker.dart';
 import 'package:konto/core/widgets/text_input.dart';
 import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/button.dart';

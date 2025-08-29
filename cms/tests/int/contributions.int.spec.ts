@@ -101,6 +101,7 @@ describe('Contributions Collection Integration Tests', () => {
         amountContributed: 100,
         collector: collectorUser.id,
         viaPaymentLink: false,
+        type: 'contribution' as const,
       }
 
       const contribution = await payload.create({
@@ -132,6 +133,7 @@ describe('Contributions Collection Integration Tests', () => {
         paymentMethod: 'cash' as const,
         amountContributed: 50,
         collector: testUser.id,
+        type: 'contribution' as const,
       }
 
       const contribution = await payload.create({
@@ -155,6 +157,7 @@ describe('Contributions Collection Integration Tests', () => {
         amountContributed: 200,
         collector: collectorUser.id,
         viaPaymentLink: true,
+        type: 'contribution' as const,
       }
 
       const contribution = await payload.create({
@@ -189,6 +192,7 @@ describe('Contributions Collection Integration Tests', () => {
         paymentMethod: 'invalid-method' as any,
         amountContributed: 100,
         collector: collectorUser.id,
+        type: 'contribution' as const,
       }
 
       await expect(
@@ -213,6 +217,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 150,
           collector: collectorUser.id,
           viaPaymentLink: false,
+          type: 'contribution' as const,
         },
         {
           jar: testJar.id,
@@ -223,6 +228,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 250,
           collector: testUser.id,
           viaPaymentLink: true,
+          type: 'contribution' as const,
         },
         {
           jar: testJar.id,
@@ -231,6 +237,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 75,
           collector: collectorUser.id,
           viaPaymentLink: false,
+          type: 'contribution' as const,
         },
       ]
 
@@ -363,6 +370,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 120,
           collector: collectorUser.id,
           viaPaymentLink: false,
+          type: 'contribution' as const,
         },
       })
     })
@@ -444,6 +452,7 @@ describe('Contributions Collection Integration Tests', () => {
           paymentMethod: 'cash' as const,
           amountContributed: 90,
           collector: testUser.id,
+          type: 'contribution' as const,
         },
       })
     })
@@ -490,6 +499,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 500,
           collector: collectorUser.id,
           viaPaymentLink: true,
+          type: 'contribution' as const,
         },
         {
           jar: testJar.id,
@@ -500,6 +510,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 200,
           collector: testUser.id,
           viaPaymentLink: false,
+          type: 'contribution' as const,
         },
         {
           jar: testJar.id,
@@ -508,6 +519,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 50,
           collector: collectorUser.id,
           viaPaymentLink: false,
+          type: 'contribution' as const,
         },
         {
           jar: testJar.id,
@@ -518,6 +530,7 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 300,
           collector: testUser.id,
           viaPaymentLink: true,
+          type: 'contribution' as const,
         },
       ]
 

@@ -4,7 +4,6 @@ import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/currencies.dart';
 import 'package:konto/core/constants/jar_groups.dart';
-import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/sms_utils.dart';
 import 'package:konto/core/widgets/button.dart';

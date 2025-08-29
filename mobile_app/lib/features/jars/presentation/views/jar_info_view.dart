@@ -176,9 +176,9 @@ class _JarInfoViewState extends State<JarInfoView> {
                     background: Container(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       padding: const EdgeInsets.only(
-                        top: 120,
-                        left: 17,
-                        right: 17,
+                        top: 80,
+                        left: AppSpacing.spacingXs,
+                        right: AppSpacing.spacingXs,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,15 +188,24 @@ class _JarInfoViewState extends State<JarInfoView> {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  jarData.name,
-                                  style: TextStyles.titleMedium,
+                                Flexible(
+                                  child: Text(
+                                    jarData.name,
+                                    style: TextStyles.titleMedium,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.totalContributedAmount.toStringAsFixed(2)}',
-                                  style: TextStyles.titleBoldXl,
+                                Flexible(
+                                  child: Text(
+                                    '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.totalContributedAmount.toStringAsFixed(2)}',
+                                    style: TextStyles.titleBoldXl,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               ],
                             ),

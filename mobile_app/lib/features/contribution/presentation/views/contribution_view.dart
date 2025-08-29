@@ -11,6 +11,7 @@ import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contributor_avatar.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:konto/features/contribution/data/models/contribution_model.dart';
 import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -266,13 +267,13 @@ class ContributionView extends StatelessWidget {
                                                   .copyWith(
                                                     decoration:
                                                         contribution.paymentStatus ==
-                                                                'cancelled'
+                                                                'failed'
                                                             ? TextDecoration
                                                                 .lineThrough
                                                             : null,
                                                     decorationThickness:
                                                         contribution.paymentStatus ==
-                                                                'cancelled'
+                                                                'failed'
                                                             ? 2.0
                                                             : null,
                                                   ),
@@ -282,7 +283,9 @@ class ContributionView extends StatelessWidget {
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           title: Text(
-                                            contribution.contributor == null
+                                            // ignore: unrelated_type_equality_checks
+                                            contribution.type ==
+                                                    ContributionType.transfer
                                                 ? localizations.transferredTo
                                                 : localizations
                                                     .contributorPhoneNumber,
@@ -332,7 +335,9 @@ class ContributionView extends StatelessWidget {
                                     ),
                                   ),
 
-                                  if (contribution.contributor != null) ...[
+                                  // ignore: unrelated_type_equality_checks
+                                  if (contribution.type !=
+                                      ContributionType.transfer) ...[
                                     const SizedBox(height: AppSpacing.spacingM),
                                     AppCard(
                                       padding: const EdgeInsets.symmetric(

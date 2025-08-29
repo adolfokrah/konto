@@ -1,19 +1,35 @@
 /// Currency formatting utilities for jar currencies used throughout the app
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:konto/core/constants/currencies.dart';
 import 'package:konto/l10n/app_localizations.dart';
 
 class CurrencyUtils {
-  /// Get currency symbol based on currency code
+  /// Get currency symbol based on currency code with Android fallback
   ///
   /// Supports: GHC (₵), NGN (₦), USD ($), EUR (€), GBP (£)
   /// Returns GHC symbol (₵) as fallback for unsupported currencies
+  /// On Android, uses androidFallbackSymbol (GHS for Cedi) if ₵ doesn't render well
   static String getCurrencySymbol(String currency) {
     try {
-      return Currencies.all
-          .firstWhere((c) => c.code.toLowerCase() == currency.toLowerCase())
-          .symbol;
+      final currencyObj = Currencies.all.firstWhere(
+        (c) => c.code.toLowerCase() == currency.toLowerCase(),
+      );
+
+      // For Android, use fallback symbol if available
+      if (!kIsWeb &&
+          Platform.isAndroid &&
+          currencyObj.androidFallbackSymbol.isNotEmpty) {
+        return currencyObj.androidFallbackSymbol;
+      }
+
+      return currencyObj.symbol;
     } catch (e) {
-      return '₵'; // Default fallback
+      // Default fallback
+      if (!kIsWeb && Platform.isAndroid) {
+        return 'GHS'; // Use GHS as fallback on Android
+      }
+      return '₵';
     }
   }
 

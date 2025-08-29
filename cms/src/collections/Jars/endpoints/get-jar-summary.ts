@@ -171,7 +171,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const data = {
     ...jar,
-    totalContributedAmount,
+    totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
     contributions: recentJarContributions, // Return the full paginated structure
     chartData: totalContributionsChart(), // Add chart data for the last 10 days
   }

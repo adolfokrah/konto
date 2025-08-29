@@ -8,21 +8,31 @@ export const checkUserExistence = async (req: PayloadRequest) => {
 
     const { phoneNumber, countryCode, email } = req.data || {}
 
+    // Format phone number by removing leading 0 if present
+    const formattedPhoneNumber =
+      phoneNumber?.startsWith('0') && phoneNumber.length > 1
+        ? phoneNumber.substring(1)
+        : phoneNumber
 
-    if (!phoneNumber) {
-      return Response.json({
-        success: false,
-        message: 'Phone number is required',
-      }, { status: 400 })
+    if (!formattedPhoneNumber) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Phone number is required',
+        },
+        { status: 400 },
+      )
     }
 
     if (!countryCode) {
-      return Response.json({
-        success: false,
-        message: 'Country code is required',
-      }, { status: 400 })
+      return Response.json(
+        {
+          success: false,
+          message: 'Country code is required',
+        },
+        { status: 400 },
+      )
     }
-
 
     // Find the user with the phone number and country code OR email
     const whereConditions: any = {
@@ -32,7 +42,7 @@ export const checkUserExistence = async (req: PayloadRequest) => {
           and: [
             {
               phoneNumber: {
-                equals: phoneNumber,
+                equals: formattedPhoneNumber,
               },
             },
             {
@@ -60,21 +70,22 @@ export const checkUserExistence = async (req: PayloadRequest) => {
       limit: 1,
     })
 
-
     return Response.json({
       success: true,
       exists: existingUser.docs.length > 0,
-      message: existingUser.docs.length > 0 
-        ? 'Phone number found in system' 
-        : 'Phone number not found in system',
+      message:
+        existingUser.docs.length > 0
+          ? 'Phone number found in system'
+          : 'Phone number not found in system',
     })
   } catch (error) {
-    return Response.json({
-      success: false,
-      message: 'Error checking phone number',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 })
+    return Response.json(
+      {
+        success: false,
+        message: 'Error checking phone number',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    )
   }
 }
-
-

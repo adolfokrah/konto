@@ -303,6 +303,7 @@ export interface Contribution {
    * Check if this contribution has been transferred
    */
   isTransferred?: boolean | null;
+  type: 'transfer' | 'contribution';
   /**
    * Transaction reference for tracking payments
    */
@@ -496,6 +497,7 @@ export interface ContributionsSelect<T extends boolean = true> {
   linkedContribution?: T;
   linkedTransfer?: T;
   isTransferred?: T;
+  type?: T;
   transactionReference?: T;
   collector?: T;
   viaPaymentLink?: T;

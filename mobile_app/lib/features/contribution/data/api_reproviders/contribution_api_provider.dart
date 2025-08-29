@@ -147,6 +147,7 @@ class ContributionApiProvider {
         'collector': user.id, // Set the authenticated user as collector
         'viaPaymentLink': viaPaymentLink,
         'mobileMoneyProvider': mobileMoneyProvider,
+        'type': 'contributioin',
         // paymentStatus defaults to 'pending' as set in the CMS schema
       };
 

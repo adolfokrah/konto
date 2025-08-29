@@ -125,9 +125,11 @@ export const chargeMomo = async (req: PayloadRequest) => {
     }
 
     // Prepare charge request data
+    console.log(contribution.amountContributed)
+    console.log(contribution.amountContributed * 100)
     const chargeData = {
       email: collectorEmail,
-      amount: contribution.amountContributed * 100, // Convert to subunits (pesewas/cents)
+      amount: Number(Number(contribution.amountContributed * 100).toFixed(2)), // Convert to subunits (pesewas/cents)
       currency: jar.currency as 'GHS' | 'KES',
       phone: contribution.contributorPhoneNumber,
       provider: contribution.mobileMoneyProvider,

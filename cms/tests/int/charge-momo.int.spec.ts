@@ -110,6 +110,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         paymentStatus: 'pending',
         contributor: 'Jane Bank User',
         accountNumber: '1234567890', // Required for bank-transfer
+        type: 'contribution',
       },
     })
 
@@ -166,6 +167,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         contributorPhoneNumber: '+233541234567',
         mobileMoneyProvider: 'MTN',
         contributor: 'Jane Completed User',
+        type: 'contribution',
       },
     })
 
@@ -230,6 +232,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         contributorPhoneNumber: '+233541234567',
         mobileMoneyProvider: 'MTN',
         contributor: 'Jane Valid User',
+        type: 'contribution',
       },
     })
 
@@ -287,6 +290,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         contributorPhoneNumber: '+233541234567',
         mobileMoneyProvider: 'MTN',
         contributor: 'Jane Success User',
+        type: 'contribution',
       },
     })
 

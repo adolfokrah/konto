@@ -1,6 +1,26 @@
 // Models for the Jar Summary API response
 import 'package:konto/core/utils/currency_utils.dart';
 
+/// Enum representing the type of contribution
+enum ContributionType {
+  contribution('contribution'),
+  transfer('transfer');
+
+  const ContributionType(this.value);
+  final String value;
+
+  static ContributionType fromString(String value) {
+    switch (value) {
+      case 'contribution':
+        return ContributionType.contribution;
+      case 'transfer':
+        return ContributionType.transfer;
+      default:
+        return ContributionType.contribution; // Default fallback
+    }
+  }
+}
+
 /// Enum for jar status
 enum JarStatus {
   open,
@@ -396,6 +416,7 @@ class ContributionModel {
   paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
   final UserModel? collector;
   final bool? viaPaymentLink;
+  final ContributionType type; // contribution | transfer
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -411,6 +432,7 @@ class ContributionModel {
     required this.paymentStatus,
     this.collector,
     this.viaPaymentLink,
+    required this.type,
     this.createdAt,
     this.updatedAt,
   });
@@ -432,6 +454,9 @@ class ContributionModel {
               ? UserModel.fromJson(json['collector'] as Map<String, dynamic>)
               : null, // Provide a fallback empty UserModel
       viaPaymentLink: json['viaPaymentLink'] as bool?,
+      type: ContributionType.fromString(
+        json['type'] as String? ?? 'contribution',
+      ),
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)
@@ -456,10 +481,15 @@ class ContributionModel {
       'paymentStatus': paymentStatus,
       'collector': collector?.toJson(),
       'viaPaymentLink': viaPaymentLink,
+      'type': type.value,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
   }
+
+  /// Helper getters for contribution type
+  bool get isContribution => type == ContributionType.contribution;
+  bool get isTransfer => type == ContributionType.transfer;
 }
 
 class ContributionsPaginatedModel {

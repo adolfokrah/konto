@@ -82,6 +82,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
           isTransferred: true,
           contributorPhoneNumber: '+233500000002',
           mobileMoneyProvider: 'mtn',
+          type: 'contribution' as const,
         },
       })
 
@@ -114,6 +115,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
           paymentStatus: 'completed',
           contributorPhoneNumber: '+233500000002',
           mobileMoneyProvider: 'mtn',
+          type: 'contribution' as const,
         },
       })
 
@@ -155,6 +157,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
           paymentStatus: 'completed',
           contributorPhoneNumber: '+233500000002',
           mobileMoneyProvider: 'mtn',
+          type: 'contribution' as const,
         },
       })
 
@@ -198,6 +201,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
           paymentStatus: 'completed',
           contributorPhoneNumber: '+233500000002',
           mobileMoneyProvider: 'mtn',
+          type: 'contribution' as const,
         },
       })
 

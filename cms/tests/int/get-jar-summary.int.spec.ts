@@ -72,6 +72,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
           mobileMoneyProvider: 'mtn',
           paymentStatus: 'completed',
           collector: testUser.id,
+          type: 'contribution' as const,
         },
       })
       testContributions.push(contribution)
@@ -232,6 +233,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
             mobileMoneyProvider: 'mtn',
             paymentStatus: 'completed',
             collector: testUser.id,
+            type: 'contribution' as const,
           },
         })
         extraContributions.push(contribution)

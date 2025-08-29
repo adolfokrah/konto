@@ -1,5 +1,26 @@
 /// Comprehensive Contribution model representing a single contribution with all its properties and relationships
 /// Based on the Contributions collection schema from PayloadCMS
+library;
+
+/// Enum representing the type of contribution
+enum ContributionType {
+  contribution('contribution'),
+  transfer('transfer');
+
+  const ContributionType(this.value);
+  final String value;
+
+  static ContributionType fromString(String value) {
+    switch (value) {
+      case 'contribution':
+        return ContributionType.contribution;
+      case 'transfer':
+        return ContributionType.transfer;
+      default:
+        return ContributionType.contribution; // Default fallback
+    }
+  }
+}
 
 /// Model representing a user session within a user object
 class UserSession {
@@ -336,6 +357,7 @@ class ContributionModel {
   paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
   final ContributionUser collector;
   final bool viaPaymentLink;
+  final ContributionType type; // contribution | transfer
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -351,6 +373,7 @@ class ContributionModel {
     required this.paymentStatus,
     required this.collector,
     required this.viaPaymentLink,
+    required this.type,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -371,6 +394,9 @@ class ContributionModel {
         json['collector'] as Map<String, dynamic>,
       ),
       viaPaymentLink: json['viaPaymentLink'] as bool? ?? false,
+      type: ContributionType.fromString(
+        json['type'] as String? ?? 'contribution',
+      ),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -390,6 +416,7 @@ class ContributionModel {
       'paymentStatus': paymentStatus,
       'collector': collector.toJson(),
       'viaPaymentLink': viaPaymentLink,
+      'type': type.value,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -408,6 +435,7 @@ class ContributionModel {
     String? paymentStatus,
     ContributionUser? collector,
     bool? viaPaymentLink,
+    ContributionType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -424,6 +452,7 @@ class ContributionModel {
       paymentStatus: paymentStatus ?? this.paymentStatus,
       collector: collector ?? this.collector,
       viaPaymentLink: viaPaymentLink ?? this.viaPaymentLink,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -438,6 +467,10 @@ class ContributionModel {
   bool get isMobileMoney => paymentMethod == 'mobile-money';
   bool get isBankTransfer => paymentMethod == 'bank-transfer';
   bool get isCash => paymentMethod == 'cash';
+
+  /// Helper getters for contribution type
+  bool get isContribution => type == ContributionType.contribution;
+  bool get isTransfer => type == ContributionType.transfer;
 
   /// Get formatted amount with currency
   String get formattedAmount =>

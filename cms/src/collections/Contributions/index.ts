@@ -144,6 +144,15 @@ export const Contributions: CollectionConfig = {
       },
     },
     {
+      name: 'type',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'transfer', value: 'transfer' },
+        { label: 'contribution', value: 'contribution' },
+      ],
+    },
+    {
       name: 'transactionReference',
       type: 'text',
       required: false,

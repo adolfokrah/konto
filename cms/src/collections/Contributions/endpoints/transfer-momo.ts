@@ -110,6 +110,8 @@ export const transferMomo = async (req: PayloadRequest) => {
           amountContributed: -foundContribution.amountContributed,
           collector: foundContribution.collector,
           contributorPhoneNumber: creator.accountNumber,
+          contributor: 'konto',
+          type: 'transfer',
         },
       })
 
@@ -166,6 +168,8 @@ export const transferMomo = async (req: PayloadRequest) => {
             mobileMoneyProvider: creator.bank,
             amountContributed: foundContribution.amountContributed,
             collector: foundContribution.collector,
+            contributor: 'konto',
+            type: 'transfer',
           },
         })
 
