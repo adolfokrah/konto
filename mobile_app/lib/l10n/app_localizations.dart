@@ -554,6 +554,24 @@ abstract class AppLocalizations {
   /// **'Contributions'**
   String get contributions;
 
+  /// Search contributions placeholder text
+  ///
+  /// In en, this message translates to:
+  /// **'Search contributions'**
+  String get searchContributions;
+
+  /// Today date label
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Yesterday date label
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
   /// Recent transactions section title
   ///
   /// In en, this message translates to:
@@ -565,6 +583,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No contributions yet'**
   String get noContributionsYet;
+
+  /// Message when search returns no contributions
+  ///
+  /// In en, this message translates to:
+  /// **'No contributions found'**
+  String get noContributionsFound;
 
   /// Encouragement message when there are no contributions
   ///

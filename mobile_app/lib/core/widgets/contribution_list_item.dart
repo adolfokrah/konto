@@ -81,7 +81,7 @@ class ContributionListItem extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              isAnonymous ? localizations.anonymous : contributorName,
+              isAnonymous ? 'Konto' : contributorName,
               style: TextStyles.titleMedium,
               overflow: TextOverflow.ellipsis,
             ),
@@ -93,6 +93,8 @@ class ContributionListItem extends StatelessWidget {
                   paymentStatus?.toLowerCase() == 'failed'
                       ? TextDecoration.lineThrough
                       : null,
+              decorationThickness:
+                  paymentStatus?.toLowerCase() == 'failed' ? 2.0 : null,
             ),
           ),
         ],

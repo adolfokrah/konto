@@ -257,10 +257,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contributions => 'Contributions';
 
   @override
+  String get searchContributions => 'Rechercher des contributions';
+
+  @override
+  String get today => 'Aujourd\'hui';
+
+  @override
+  String get yesterday => 'Hier';
+
+  @override
   String get recentContributions => 'Transactions Récentes';
 
   @override
   String get noContributionsYet => 'Aucune contribution pour l\'instant';
+
+  @override
+  String get noContributionsFound => 'Aucune contribution trouvée';
 
   @override
   String get beTheFirstToContribute =>

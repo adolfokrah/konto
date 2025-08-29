@@ -407,6 +407,21 @@
     "description": "Contributions card title"
   },
 
+  "searchContributions": "Search contributions",
+  "@searchContributions": {
+    "description": "Search contributions placeholder text"
+  },
+
+  "today": "Today",
+  "@today": {
+    "description": "Today date label"
+  },
+
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Yesterday date label"
+  },
+
   "recentContributions": "Recent Transactions",
   "@recentContributions": {
     "description": "Recent transactions section title"
@@ -415,6 +430,11 @@
   "noContributionsYet": "No contributions yet",
   "@noContributionsYet": {
     "description": "Message when there are no contributions"
+  },
+
+  "noContributionsFound": "No contributions found",
+  "@noContributionsFound": {
+    "description": "Message when search returns no contributions"
   },
 
   "beTheFirstToContribute": "Be the first to contribute to this jar!",

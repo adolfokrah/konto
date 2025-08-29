@@ -3,6 +3,7 @@ import 'package:konto/features/authentication/presentation/views/login_view.dart
 import 'package:konto/features/authentication/presentation/views/register_view.dart';
 import 'package:konto/features/contribution/presentation/views/add_contribution_view.dart';
 import 'package:konto/features/contribution/presentation/views/await_momo_payment_view.dart';
+import 'package:konto/features/contribution/presentation/views/contributions_list_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_description_edit_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_fixed_contribution_amount_edit_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
@@ -43,6 +44,7 @@ class AppRoutes {
     '/change_phone_number': (context) => const ChangePhoneNumberView(),
     '/withdrawal_account': (context) => const WithdrawalAccountView(),
     '/await_momo_payment': (context) => const AwaitMomoPaymentView(),
+    '/contributions_list': (context) => const ContributionsListView(),
   };
 
   // Route names constants for easy access
@@ -67,4 +69,5 @@ class AppRoutes {
   static const String changePhoneNumber = '/change_phone_number';
   static const String withdrawalAccount = '/withdrawal_account';
   static const String awaitMomoPayment = '/await_momo_payment';
+  static const String contributionsList = '/contributions_list';
 }

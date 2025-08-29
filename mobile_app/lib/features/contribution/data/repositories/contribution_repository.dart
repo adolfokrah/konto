@@ -93,4 +93,55 @@ class ContributionRepository {
       };
     }
   }
+
+  /// Fetch list of contributions with optional filtering
+  /// Returns paginated contributions based on query parameters
+  Future<Map<String, dynamic>> getContributions({
+    String? jarId,
+    List<String>? paymentMethods,
+    List<String>? statuses,
+    List<String>? collectors,
+    DateTime? date,
+    int? limit,
+    int? page,
+    String? contributor,
+  }) async {
+    try {
+      final apiResponse = await _contributionApiProvider.getContributions(
+        jarId: jarId,
+        paymentMethods: paymentMethods,
+        statuses: statuses,
+        collectors: collectors,
+        date: date,
+        limit: limit,
+        page: page,
+        contributor: contributor,
+      );
+
+      if (apiResponse['docs'] != null) {
+        return {
+          'success': true,
+          'data': apiResponse,
+          'message': 'Contributions retrieved successfully',
+        };
+      } else {
+        // Handle API errors
+        return {
+          'success': false,
+          'message':
+              apiResponse['message'] ?? 'Failed to retrieve contributions',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      return {
+        'success': false,
+        'message':
+            'An unexpected error occurred while retrieving contributions',
+        'error': e.toString(),
+      };
+    }
+  }
 }

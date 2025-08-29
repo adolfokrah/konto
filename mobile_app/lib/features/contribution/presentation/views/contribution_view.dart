@@ -93,13 +93,13 @@ class ContributionView extends StatelessWidget {
                                       backgroundColor:
                                           Theme.of(context).colorScheme.primary,
                                       contributorName:
-                                          contribution.contributor ?? 'Unknown',
+                                          contribution.contributor ?? 'Konto',
                                       paymentStatus: contribution.paymentStatus,
                                       viaPaymentLink:
                                           contribution.viaPaymentLink,
                                     ),
                                     title: Text(
-                                      contribution.contributor ?? 'Unknown',
+                                      contribution.contributor ?? 'Konto',
                                       style: AppTextStyles.titleMedium,
                                     ),
                                     subtitle: Text(
@@ -118,7 +118,18 @@ class ContributionView extends StatelessWidget {
                                     ),
                                     trailing: Text(
                                       '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.amountContributed}',
-                                      style: AppTextStyles.titleBoldXl,
+                                      style: AppTextStyles.titleBoldXl.copyWith(
+                                        decoration:
+                                            contribution.paymentStatus ==
+                                                    'failed'
+                                                ? TextDecoration.lineThrough
+                                                : null,
+                                        decorationThickness:
+                                            contribution.paymentStatus ==
+                                                    'failed'
+                                                ? 2.0
+                                                : null,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
@@ -251,7 +262,20 @@ class ContributionView extends StatelessWidget {
                                             trailing: Text(
                                               contribution.contributor ??
                                                   localizations.unknown,
-                                              style: AppTextStyles.titleMediumS,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    decoration:
+                                                        contribution.paymentStatus ==
+                                                                'cancelled'
+                                                            ? TextDecoration
+                                                                .lineThrough
+                                                            : null,
+                                                    decorationThickness:
+                                                        contribution.paymentStatus ==
+                                                                'cancelled'
+                                                            ? 2.0
+                                                            : null,
+                                                  ),
                                               textAlign: TextAlign.end,
                                             ),
                                           ),

@@ -445,7 +445,7 @@ class ContributionModel {
 
   /// Get contributor display name (fallback to phone number if name is null)
   String get contributorDisplayName =>
-      contributor ?? contributorPhoneNumber ?? 'Anonymous';
+      contributor ?? contributorPhoneNumber ?? 'Konto';
 
   @override
   bool operator ==(Object other) {

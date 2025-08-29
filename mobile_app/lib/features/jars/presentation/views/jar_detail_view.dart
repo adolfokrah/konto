@@ -18,6 +18,7 @@ import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/utils/image_utils.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/collaborators/presentation/views/collectors_view.dart';
+import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -641,7 +642,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                                 4,
                                                           ),
                                                     )
-                                                    : localizations.anonymous),
+                                                    : 'Konto'),
                                             amount:
                                                 contribution.amountContributed,
                                             currency: jarData.currency,
@@ -663,17 +664,15 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       .expand((list) => list),
                                   InkWell(
                                     onTap: () {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            localizations
-                                                .viewAllContributionsComingSoon(
-                                                  jarData.contributions.length,
-                                                ),
-                                          ),
+                                      context.read<ContributionsListBloc>().add(
+                                        FetchContributions(
+                                          jarId: jarData.id,
+                                          page: 1,
                                         ),
+                                      );
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.contributionsList,
                                       );
                                     },
                                     child: Text(

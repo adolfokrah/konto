@@ -80,9 +80,11 @@ class ContributorAvatar extends StatelessWidget {
               height: _getOverlaySize(),
               decoration: BoxDecoration(
                 color:
-                    isDark
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.primary,
+                    paymentStatus?.toLowerCase() != 'failed'
+                        ? isDark
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.primary
+                        : AppColors.errorRed,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Theme.of(context).colorScheme.surface,
@@ -121,6 +123,9 @@ class ContributorAvatar extends StatelessWidget {
   IconData _getOverlayIcon() {
     if (paymentStatus == 'pending') {
       return Icons.info;
+    }
+    if (paymentStatus == 'failed') {
+      return Icons.close;
     }
     if (viaPaymentLink == true) {
       return Icons.call_received;

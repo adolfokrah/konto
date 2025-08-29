@@ -202,4 +202,109 @@ class ContributionApiProvider {
       return _handleApiError(e, 'fetching contribution');
     }
   }
+
+  /// Fetch list of contributions with optional filtering
+  /// Returns paginated contributions based on query parameters
+  Future<Map<String, dynamic>> getContributions({
+    String? jarId, // Filter contributions by jar ID
+    List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank-transfer']
+    List<String>? statuses, // ['pending', 'failed', 'transferred', 'completed]
+    List<String>? collectors, // List of collector user IDs
+    DateTime? date, // Filter contributions from this date onwards
+    int? limit, // Number of results per page (default: 10)
+    int? page, // Page number (default: 1)
+    String? contributor,
+  }) async {
+    try {
+      // Get authenticated headers
+      final headers = await _getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return _getUnauthenticatedError();
+      }
+
+      // Build query parameters
+      final Map<String, dynamic> queryParams = {};
+
+      // Add jar filter
+      if (jarId != null && jarId.isNotEmpty) {
+        queryParams['where[jar][equals]'] = jarId;
+      }
+
+      // Add payment method filter
+      if (paymentMethods != null && paymentMethods.isNotEmpty) {
+        final validPaymentMethods =
+            paymentMethods
+                .where(
+                  (method) => [
+                    'mobile-money',
+                    'cash',
+                    'bank-transfer',
+                  ].contains(method),
+                )
+                .toList();
+        if (validPaymentMethods.isNotEmpty) {
+          queryParams['where[paymentMethod][in]'] = validPaymentMethods.join(
+            ',',
+          );
+        }
+      }
+
+      // Add status filter (using paymentStatus field from CMS)
+      if (statuses != null && statuses.isNotEmpty) {
+        final validStatuses =
+            statuses
+                .where(
+                  (status) => [
+                    'pending',
+                    'failed',
+                    'transferred',
+                    'completed',
+                  ].contains(status),
+                )
+                .toList();
+        if (validStatuses.isNotEmpty) {
+          queryParams['where[paymentStatus][in]'] = validStatuses.join(',');
+        }
+      }
+
+      // Add collectors filter
+      if (collectors != null && collectors.isNotEmpty) {
+        queryParams['where[collector][in]'] = collectors.join(',');
+      }
+
+      // Add date filter (contributions created on or after the specified date)
+      if (date != null) {
+        queryParams['where[createdAt][greater_than_equal]'] =
+            date.toIso8601String();
+      }
+
+      // Add pagination parameters
+      if (limit != null) {
+        queryParams['limit'] = limit.toString();
+      }
+      if (page != null) {
+        queryParams['page'] = page.toString();
+      }
+
+      //Add contributor name search
+      if (contributor != null && contributor.isNotEmpty) {
+        queryParams['where[contributor][contains]'] = contributor;
+      }
+
+      // Add sorting and depth
+      queryParams['sort'] = '-createdAt'; // Sort by newest first
+      queryParams['depth'] = '2'; // Include related data
+
+      final response = await _dio.get(
+        '${BackendConfig.apiBaseUrl}/contributions',
+        queryParameters: queryParams,
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return _handleApiError(e, 'fetching contributions list');
+    }
+  }
 }
