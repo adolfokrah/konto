@@ -35,7 +35,7 @@ class ContributionsListBloc
   ) async {
     // Don't emit loading state if we're paginating and already have data
     final currentState = state;
-    if (event.page == 1 || currentState is! ContributionsListLoaded) {
+    if (event.page == 1) {
       emit(ContributionsListLoading());
     }
 
@@ -59,6 +59,16 @@ class ContributionsListBloc
 
           // Collectors are already strings (user IDs)
           collectors = filterState.selectedCollectors;
+
+          // If current user is not the jar creator, add their ID to collectors
+          if (event.currentUserId != null &&
+              event.jarCreatorId != null &&
+              event.currentUserId != event.jarCreatorId) {
+            collectors =
+                collectors != null
+                    ? [...collectors, event.currentUserId!]
+                    : [event.currentUserId!];
+          }
 
           // Convert date string to DateTime range if applicable
           if (filterState.selectedDate != null &&

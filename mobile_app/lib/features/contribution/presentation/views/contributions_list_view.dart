@@ -10,6 +10,7 @@ import 'package:konto/core/widgets/contribution_list_item.dart';
 import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/searh_input.dart';
 import 'package:konto/core/widgets/small_button.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:konto/features/contribution/presentation/widgets/contribtions_list_filter.dart';
@@ -73,15 +74,25 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
   void _fetchContributions({int page = 1, String? contributor}) {
     final jarSummaryState = context.read<JarSummaryBloc>().state;
+    final authState = context.read<AuthBloc>().state;
+
     if (jarSummaryState is JarSummaryLoaded) {
       if (page == 1) {
         context.read<FilterContributionsBloc>().add(ClearAllFilters());
       }
+
+      String? currentUserId;
+      if (authState is AuthAuthenticated) {
+        currentUserId = authState.user.id;
+      }
+
       context.read<ContributionsListBloc>().add(
         FetchContributions(
           jarId: jarSummaryState.jarData.id,
           page: page,
           contributor: contributor?.isNotEmpty == true ? contributor : null,
+          currentUserId: currentUserId,
+          jarCreatorId: jarSummaryState.jarData.creator.id,
         ),
       );
     }

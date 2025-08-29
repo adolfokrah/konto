@@ -29,11 +29,15 @@ final class FetchContributions extends ContributionsListEvent {
   final String? contributor; // Filter contributions by contributor name
   final int page;
   final int limit;
+  final String? currentUserId; // Current user ID
+  final String? jarCreatorId; // Jar creator ID
 
   FetchContributions({
     required this.jarId,
     this.page = 1,
     this.limit = 10,
     this.contributor,
+    this.currentUserId,
+    this.jarCreatorId,
   });
 }

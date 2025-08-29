@@ -200,7 +200,7 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
           amountContributed: 90, // After fees
           paymentMethod: 'mobile-money',
           mobileMoneyProvider: 'mtn',
-          type: 'contribution' as const,
+          type: 'transfer' as const,
           transactionReference: 'transfer-ref-123',
           paymentStatus: 'pending',
           linkedContribution: regularContribution.id,
