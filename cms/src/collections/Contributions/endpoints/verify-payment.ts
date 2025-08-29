@@ -41,7 +41,7 @@ export const verifyPayment = async (req: PayloadRequest) => {
         )
       }
 
-      const isTransfer = foundContribution.docs[0].contributor == null
+      const isTransfer = foundContribution.docs[0].type == 'transfer'
 
       await req.payload.update({
         collection: 'contributions',

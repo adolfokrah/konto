@@ -150,7 +150,7 @@ export const Jars: CollectionConfig = {
             beforeChange: [
               async ({ data, siblingData, req }) => {
                 // Auto-populate phone number from selected collector
-                if (siblingData?.collector && siblingData.collector !== null) {
+                if (siblingData?.collector && siblingData.collector !== null && data) {
                   try {
                     // Get the collector ID
                     const collectorId =
@@ -165,8 +165,10 @@ export const Jars: CollectionConfig = {
                     })
 
                     if (user?.phoneNumber) {
-                      user.phoneNumber
+                      siblingData.phoneNumber = user.phoneNumber
+                      siblingData.name = user.fullName
                     }
+                    // return data;
                   } catch (error) {
                     req.payload.logger.error('Error fetching collector phone number:', error)
                   }
@@ -182,34 +184,6 @@ export const Jars: CollectionConfig = {
           admin: {
             description: 'Name of the invited collector (auto-populated from selected collector)',
             readOnly: true,
-          },
-          hooks: {
-            beforeChange: [
-              async ({ data, siblingData, req }) => {
-                // Auto-populate name from selected collector
-                if (siblingData?.collector && siblingData.collector !== null) {
-                  try {
-                    // Get the collector ID
-                    const collectorId =
-                      typeof siblingData.collector === 'object'
-                        ? siblingData.collector.id
-                        : siblingData.collector
-
-                    // Fetch the user to get their full name
-                    const user = await req.payload.findByID({
-                      collection: 'users',
-                      id: collectorId,
-                    })
-
-                    if (user?.fullName) {
-                      user.fullName
-                    }
-                  } catch (error) {
-                    req.payload.logger.error('Error fetching collector name:', error)
-                  }
-                }
-              },
-            ],
           },
         },
         {

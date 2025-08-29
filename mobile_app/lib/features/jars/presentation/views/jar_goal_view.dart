@@ -7,6 +7,7 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/currency_text_field.dart';
+import 'package:konto/core/widgets/date_range_picker.dart';
 import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
@@ -44,7 +45,6 @@ class _JarGoalViewState extends State<JarGoalView>
   }
 
   Future<void> _selectDeadline(BuildContext context) async {
-    final localizations = AppLocalizations.of(context)!;
     final DateTime now = DateTime.now();
 
     // Always use existing deadline if available, otherwise default to 7 days from now
@@ -57,74 +57,19 @@ class _JarGoalViewState extends State<JarGoalView>
             ? _selectedDeadline!
             : now;
 
-    await showCupertinoModalPopup<void>(
+    final DateTime? selectedDate = await DateRangePicker.showSingleDatePicker(
       context: context,
-      builder: (BuildContext context) {
-        DateTime tempPickedDate = initialDate;
-        return Container(
-          height: 300,
-          padding: const EdgeInsets.only(top: 6.0),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          color: CupertinoColors.systemBackground.resolveFrom(context),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                // Header with Cancel and Done buttons
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CupertinoButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          localizations.cancel,
-                          style: TextStyles.titleMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      CupertinoButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedDeadline = tempPickedDate;
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          localizations.done,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 0),
-                // Date picker
-                Expanded(
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.date,
-                    initialDateTime: initialDate,
-                    minimumDate: minimumDate,
-                    maximumDate: DateTime.now().add(
-                      const Duration(days: 365 * 5),
-                    ),
-                    onDateTimeChanged: (DateTime newDate) {
-                      tempPickedDate = newDate;
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      initialDate: initialDate,
+      minimumDate: minimumDate,
+      maximumDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      title: 'Select Deadline',
     );
+
+    if (selectedDate != null) {
+      setState(() {
+        _selectedDeadline = selectedDate;
+      });
+    }
   }
 
   @override

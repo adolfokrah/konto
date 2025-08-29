@@ -8,6 +8,7 @@ import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/select_input.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/widgets/text_input.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
@@ -310,6 +311,16 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       if (!RegExp(r'^0[0-9]{9,}$').hasMatch(phoneNumber)) {
         _showErrorSnackBar(localizations.pleaseEnterValidMobileMoneyNumber);
         return;
+      }
+
+      // Check if user has set up withdrawal account using AuthBloc
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        if (authState.user.accountHolder == null ||
+            authState.user.accountHolder!.isEmpty) {
+          Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+          return;
+        }
       }
     }
 

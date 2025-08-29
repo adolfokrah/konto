@@ -147,7 +147,7 @@ class ContributionApiProvider {
         'collector': user.id, // Set the authenticated user as collector
         'viaPaymentLink': viaPaymentLink,
         'mobileMoneyProvider': mobileMoneyProvider,
-        'type': 'contributioin',
+        'type': 'contribution',
         // paymentStatus defaults to 'pending' as set in the CMS schema
       };
 
@@ -211,7 +211,8 @@ class ContributionApiProvider {
     List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank-transfer']
     List<String>? statuses, // ['pending', 'failed', 'transferred', 'completed]
     List<String>? collectors, // List of collector user IDs
-    DateTime? date, // Filter contributions from this date onwards
+    DateTime? startDate, // Filter contributions from this date onwards
+    DateTime? endDate, // Filter contributions up to this date
     int? limit, // Number of results per page (default: 10)
     int? page, // Page number (default: 1)
     String? contributor,
@@ -274,10 +275,14 @@ class ContributionApiProvider {
         queryParams['where[collector][in]'] = collectors.join(',');
       }
 
-      // Add date filter (contributions created on or after the specified date)
-      if (date != null) {
+      // Add date range filter
+      if (startDate != null) {
         queryParams['where[createdAt][greater_than_equal]'] =
-            date.toIso8601String();
+            startDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['where[createdAt][less_than_equal]'] =
+            endDate.toIso8601String();
       }
 
       // Add pagination parameters

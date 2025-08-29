@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:konto/core/constants/filter_options.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/features/contribution/data/repositories/contribution_repository.dart';
+import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:meta/meta.dart';
 
@@ -10,12 +12,21 @@ part 'contributions_list_state.dart';
 class ContributionsListBloc
     extends Bloc<ContributionsListEvent, ContributionsListState> {
   final ContributionRepository _contributionRepository;
+  FilterContributionsBloc? _filterBloc;
 
-  ContributionsListBloc({ContributionRepository? contributionRepository})
-    : _contributionRepository =
-          contributionRepository ?? ServiceRegistry().contributionRepository,
-      super(ContributionsListInitial()) {
+  ContributionsListBloc({
+    ContributionRepository? contributionRepository,
+    FilterContributionsBloc? filterBloc,
+  }) : _contributionRepository =
+           contributionRepository ?? ServiceRegistry().contributionRepository,
+       _filterBloc = filterBloc,
+       super(ContributionsListInitial()) {
     on<FetchContributions>(_onFetchContributions);
+  }
+
+  // Method to set the filter bloc later if needed
+  void setFilterBloc(FilterContributionsBloc filterBloc) {
+    _filterBloc = filterBloc;
   }
 
   Future<void> _onFetchContributions(
@@ -29,17 +40,91 @@ class ContributionsListBloc
     }
 
     try {
-      // Convert enums to string values for API
-      final paymentMethodStrings =
-          event.paymentMethods?.map((e) => e.value).toList();
-      final statusStrings = event.statuses?.map((e) => e.value).toList();
+      // Get filter values from FilterContributionsBloc state if available
+      List<String>? paymentMethodStrings;
+      List<String>? statusStrings;
+      List<String>? collectors;
+      DateTime? startDate;
+      DateTime? endDate;
+
+      if (_filterBloc != null) {
+        final filterState = _filterBloc!.state;
+
+        if (filterState is FilterContributionsLoaded) {
+          // Payment methods are already strings
+          paymentMethodStrings = filterState.selectedPaymentMethods;
+
+          // Statuses are already strings
+          statusStrings = filterState.selectedStatuses;
+
+          // Collectors are already strings (user IDs)
+          collectors = filterState.selectedCollectors;
+
+          // Convert date string to DateTime range if applicable
+          if (filterState.selectedDate != null &&
+              filterState.selectedDate != FilterOptions.defaultDateOption) {
+            if (filterState.selectedDate == FilterOptions.todayOption) {
+              final today = DateTime.now();
+              startDate = DateTime(
+                today.year,
+                today.month,
+                today.day,
+              ); // Start of today
+              endDate = DateTime(
+                today.year,
+                today.month,
+                today.day,
+                23,
+                59,
+                59,
+                999,
+              ); // End of today
+            } else if (filterState.selectedDate ==
+                FilterOptions.yesterdayOption) {
+              final yesterday = DateTime.now().subtract(
+                const Duration(days: 1),
+              );
+              startDate = DateTime(
+                yesterday.year,
+                yesterday.month,
+                yesterday.day,
+              ); // Start of yesterday
+              endDate = DateTime(
+                yesterday.year,
+                yesterday.month,
+                yesterday.day,
+                23,
+                59,
+                59,
+                999,
+              ); // End of yesterday
+            } else if (filterState.selectedDate ==
+                FilterOptions.last7DaysOption) {
+              final now = DateTime.now();
+              // Calculate 7 days ago from today
+              startDate = now.subtract(const Duration(days: 6));
+              endDate = now;
+            } else if (filterState.selectedDate ==
+                FilterOptions.last30DaysOption) {
+              final now = DateTime.now();
+              // Calculate 30 days ago from today
+              startDate = now.subtract(const Duration(days: 29));
+              endDate = now;
+            } else {
+              startDate = filterState.startDate;
+              endDate = filterState.endDate;
+            }
+          }
+        }
+      }
 
       final result = await _contributionRepository.getContributions(
         jarId: event.jarId,
         paymentMethods: paymentMethodStrings,
         statuses: statusStrings,
-        collectors: event.collectors,
-        date: event.date,
+        collectors: collectors,
+        startDate: startDate,
+        endDate: endDate,
         limit: event.limit,
         page: event.page,
         contributor: event.contributor,

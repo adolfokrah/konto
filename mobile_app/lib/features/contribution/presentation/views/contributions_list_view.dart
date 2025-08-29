@@ -11,6 +11,8 @@ import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/searh_input.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:konto/features/contribution/presentation/widgets/contribtions_list_filter.dart';
 import 'package:konto/features/jars/data/models/jar_summary_model.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
@@ -72,6 +74,9 @@ class _ContributionsListViewState extends State<ContributionsListView> {
   void _fetchContributions({int page = 1, String? contributor}) {
     final jarSummaryState = context.read<JarSummaryBloc>().state;
     if (jarSummaryState is JarSummaryLoaded) {
+      if (page == 1) {
+        context.read<FilterContributionsBloc>().add(ClearAllFilters());
+      }
       context.read<ContributionsListBloc>().add(
         FetchContributions(
           jarId: jarSummaryState.jarData.id,
@@ -119,7 +124,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.contributions),
+        title: Text('Transactions'),
         centerTitle: false,
         elevation: 0,
       ),
@@ -164,7 +169,10 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           // Filter Button
           AppIconButton(
             onPressed: () {
-              // TODO: Implement filter functionality
+              ContributionsListFilter.show(
+                context,
+                contributor: _currentSearchQuery,
+              );
             },
             icon: Icons.tune,
             size: const Size(50, 50),

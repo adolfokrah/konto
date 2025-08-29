@@ -243,7 +243,8 @@ class ContributionView extends StatelessWidget {
                                     ),
                                     child: Column(
                                       children: [
-                                        if (contribution.contributor != null)
+                                        if (contribution.type.value ==
+                                            ContributionType.contribution.value)
                                           ListTile(
                                             contentPadding: EdgeInsets.zero,
                                             dense: true,
@@ -283,9 +284,10 @@ class ContributionView extends StatelessWidget {
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           title: Text(
-                                            // ignore: unrelated_type_equality_checks
-                                            contribution.type ==
-                                                    ContributionType.transfer
+                                            contribution.type.value ==
+                                                    ContributionType
+                                                        .transfer
+                                                        .value
                                                 ? localizations.transferredTo
                                                 : localizations
                                                     .contributorPhoneNumber,

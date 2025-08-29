@@ -8,6 +8,7 @@ import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
@@ -109,7 +110,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider(create: (context) => UserAccountBloc()),
         BlocProvider(create: (context) => WithdrawalAccountVerificationBloc()),
         BlocProvider(create: (context) => MomoPaymentBloc()),
-        BlocProvider(create: (context) => ContributionsListBloc()),
+        BlocProvider(create: (context) => FilterContributionsBloc()),
+        BlocProvider(
+          create:
+              (context) => ContributionsListBloc(
+                filterBloc: context.read<FilterContributionsBloc>(),
+              ),
+        ),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

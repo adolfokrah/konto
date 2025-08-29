@@ -125,8 +125,6 @@ export const chargeMomo = async (req: PayloadRequest) => {
     }
 
     // Prepare charge request data
-    console.log(contribution.amountContributed)
-    console.log(contribution.amountContributed * 100)
     const chargeData = {
       email: collectorEmail,
       amount: Number(Number(contribution.amountContributed * 100).toFixed(2)), // Convert to subunits (pesewas/cents)
@@ -141,8 +139,6 @@ export const chargeMomo = async (req: PayloadRequest) => {
         contributorPhone: contribution.contributorPhoneNumber,
       },
     }
-
-    console.log(jar.currency)
 
     // Charge mobile money via Paystack
     const chargeResult = await paystack.chargeMomo(chargeData)

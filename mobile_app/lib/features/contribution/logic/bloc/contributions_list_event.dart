@@ -26,20 +26,12 @@ sealed class ContributionsListEvent {}
 
 final class FetchContributions extends ContributionsListEvent {
   final String jarId;
-  final List<PaymentMethod>? paymentMethods;
-  final List<ContributionStatus>? statuses;
-  final List<String>? collectors; // List of collector user IDs
-  final DateTime? date; // Filter contributions from this date onwards
   final String? contributor; // Filter contributions by contributor name
   final int page;
   final int limit;
 
   FetchContributions({
     required this.jarId,
-    this.paymentMethods,
-    this.statuses,
-    this.collectors,
-    this.date,
     this.page = 1,
     this.limit = 10,
     this.contributor,
