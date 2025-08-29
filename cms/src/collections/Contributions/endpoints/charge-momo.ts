@@ -140,6 +140,8 @@ export const chargeMomo = async (req: PayloadRequest) => {
       },
     }
 
+    console.log(jar.currency)
+
     // Charge mobile money via Paystack
     const chargeResult = await paystack.chargeMomo(chargeData)
 

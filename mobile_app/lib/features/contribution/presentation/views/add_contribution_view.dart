@@ -146,9 +146,7 @@ class _AddContributionViewState extends State<AddContributionView> {
                           arguments: {
                             'jar': state.jarData,
                             'amount': amount.toString(),
-                            'currency': CurrencyUtils.getCurrencySymbol(
-                              state.jarData.currency,
-                            ),
+                            'currency': state.jarData.currency,
                           },
                         );
                       },

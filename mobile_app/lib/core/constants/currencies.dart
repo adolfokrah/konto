@@ -16,36 +16,36 @@ class Currency {
 class Currencies {
   // Available currencies - Nigeria, Ghana, USD, Euro, and GBP
   static const List<Currency> all = [
-    Currency(
-      name: 'Nigerian Naira',
-      code: 'NGN',
-      symbol: '₦',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/ng.png',
-    ),
+    // Currency(
+    //   name: 'Nigerian Naira',
+    //   code: 'NGN',
+    //   symbol: '₦',
+    //   flagUrl: 'https://flagpedia.net/data/flags/w580/ng.png',
+    // ),
     Currency(
       name: 'Ghanaian Cedi',
       code: 'GHC',
       symbol: '₵',
       flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',
     ),
-    Currency(
-      name: 'US Dollar',
-      code: 'USD',
-      symbol: '\$',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/us.png',
-    ),
-    Currency(
-      name: 'Euro',
-      code: 'EUR',
-      symbol: '€',
-      flagUrl: 'https://flagpedia.net/data/org/w580/eu.png',
-    ),
-    Currency(
-      name: 'British Pound',
-      code: 'GBP',
-      symbol: '£',
-      flagUrl: 'https://flagpedia.net/data/flags/w580/gb.png',
-    ),
+    // Currency(
+    //   name: 'US Dollar',
+    //   code: 'USD',
+    //   symbol: '\$',
+    //   flagUrl: 'https://flagpedia.net/data/flags/w580/us.png',
+    // ),
+    // Currency(
+    //   name: 'Euro',
+    //   code: 'EUR',
+    //   symbol: '€',
+    //   flagUrl: 'https://flagpedia.net/data/org/w580/eu.png',
+    // ),
+    // Currency(
+    //   name: 'British Pound',
+    //   code: 'GBP',
+    //   symbol: '£',
+    //   flagUrl: 'https://flagpedia.net/data/flags/w580/gb.png',
+    // ),
   ];
 
   // Default currency (Ghanaian Cedi)
