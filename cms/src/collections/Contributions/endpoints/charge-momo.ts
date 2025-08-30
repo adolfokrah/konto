@@ -124,10 +124,23 @@ export const chargeMomo = async (req: PayloadRequest) => {
       )
     }
 
+    // Validate charges breakdown
+    if (!contribution.chargesBreakdown?.amountPaidByContributor) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Contribution amount not found',
+        },
+        { status: 400 },
+      )
+    }
+
     // Prepare charge request data
     const chargeData = {
       email: collectorEmail,
-      amount: Number(Number(contribution.amountContributed * 100).toFixed(2)), // Convert to subunits (pesewas/cents)
+      amount: Number(
+        Number(contribution.chargesBreakdown.amountPaidByContributor * 100).toFixed(2),
+      ), // Convert to subunits (pesewas/cents)
       currency: jar.currency as 'GHS' | 'KES',
       phone: contribution.contributorPhoneNumber,
       provider: contribution.mobileMoneyProvider,

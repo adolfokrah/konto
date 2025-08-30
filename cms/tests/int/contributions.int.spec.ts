@@ -116,7 +116,7 @@ describe('Contributions Collection Integration Tests', () => {
       expect(contribution.contributor).toBe('John Doe')
       expect(contribution.contributorPhoneNumber).toBe('+233541234569')
       expect(contribution.paymentMethod).toBe('mobile-money')
-      expect(contribution.amountContributed).toBe(100)
+      expect(contribution.amountContributed).toBe(97) // Amount after charges (100 -> 97)
       expect(
         typeof contribution.collector === 'object'
           ? contribution.collector.id
@@ -527,7 +527,7 @@ describe('Contributions Collection Integration Tests', () => {
           contributorPhoneNumber: '+233541444444',
           paymentMethod: 'bank-transfer' as const,
           accountNumber: '2222222222',
-          amountContributed: 300,
+          amountContributed: 294,
           collector: testUser.id,
           viaPaymentLink: true,
           type: 'contribution' as const,
@@ -580,8 +580,8 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(result.docs).toHaveLength(2)
-      expect(result.docs[0].amountContributed).toBe(300)
-      expect(result.docs[1].amountContributed).toBe(200)
+      expect(result.docs[0].amountContributed).toBe(294) // 300 GHS after charges
+      expect(result.docs[1].amountContributed).toBe(200) // Bank transfer (no charges applied)
     })
 
     it('should calculate total contributions for jar', async () => {
@@ -599,7 +599,7 @@ describe('Contributions Collection Integration Tests', () => {
         0,
       )
 
-      expect(totalAmount).toBe(1050) // 500 + 200 + 50 + 300
+      expect(totalAmount).toBe(1034) // 490 (mobile-money after charges) + 200 (bank-transfer) + 50 (cash) + 294 (bank-transfer)
       expect(jarContributions.docs).toHaveLength(4)
     })
 
@@ -630,7 +630,7 @@ describe('Contributions Collection Integration Tests', () => {
 
       expect(page1.docs).toHaveLength(1)
       expect(page2.docs).toHaveLength(1)
-      expect(page1.docs[0].amountContributed).toBe(500) // Highest amount first
+      expect(page1.docs[0].amountContributed).toBe(490) // 500 GHS after charges (highest amount first)
       expect(page2.docs[0].amountContributed).toBe(50) // Lowest amount second
       expect(page1.page).toBe(1)
       expect(page2.page).toBe(2)

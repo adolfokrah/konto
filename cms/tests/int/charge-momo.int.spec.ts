@@ -336,7 +336,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     // Verify that Paystack was called with correct data
     expect(mockChargeMomo).toHaveBeenCalledWith({
       email: 'success.test@example.com',
-      amount: 5000, // 50.00 * 100
+      amount: 5098, // 50.98 * 100 (contributor total amount including charges)
       currency: 'ghc', // Currency from jar (lowercase)
       phone: '+233541234567',
       provider: 'MTN',
