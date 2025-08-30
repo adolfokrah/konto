@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/jars/data/models/jar_summary_model.dart';
+import 'package:konto/features/contribution/data/models/contribution_model.dart';
 import 'package:meta/meta.dart';
 
 part 'fetch_contribution_event.dart';

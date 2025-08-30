@@ -1989,5 +1989,30 @@
   "contributionsTransferredAutomatically": "Note: Mobile money contributions will be automatically transferred to this account.",
   "@contributionsTransferredAutomatically": {
     "description": "Info text about automatic transfer of contributions"
+  },
+
+  "contributorPaid": "Contributor Paid",
+  "@contributorPaid": {
+    "description": "Contributor paid label for charge breakdown"
+  },
+
+  "platformCharge": "Platform Charge",
+  "@platformCharge": {
+    "description": "Platform charge label for charge breakdown"
+  },
+
+  "paymentProcessing": "Payment Processing",
+  "@paymentProcessing": {
+    "description": "Payment processing label for charge breakdown"
+  },
+
+  "transferFee": "Transfer Fee",
+  "@transferFee": {
+    "description": "Transfer fee label for charge breakdown"
+  },
+
+  "chargeBreakdown": "Charge Breakdown",
+  "@chargeBreakdown": {
+    "description": "Charge breakdown title"
   }
 }

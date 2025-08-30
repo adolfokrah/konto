@@ -1172,4 +1172,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get contributionsTransferredAutomatically =>
       'Remarque: Les contributions mobile money seront automatiquement transférées vers ce compte.';
+
+  @override
+  String get contributorPaid => 'Contributeur payé';
+
+  @override
+  String get platformCharge => 'Frais de plateforme';
+
+  @override
+  String get paymentProcessing => 'Traitement de paiement';
+
+  @override
+  String get transferFee => 'Frais de transfert';
+
+  @override
+  String get chargeBreakdown => 'Répartition des frais';
 }

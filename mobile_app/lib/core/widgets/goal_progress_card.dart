@@ -50,7 +50,13 @@ class GoalProgressCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
       variant: variant,
       isCollapsible: isCollapsible,
-      title: isCollapsible ? localizations.goal : null,
+      title:
+          isCollapsible
+              ? Text(
+                localizations.goal,
+                style: Theme.of(context).textTheme.titleMedium,
+              )
+              : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

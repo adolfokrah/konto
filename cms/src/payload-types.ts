@@ -290,6 +290,27 @@ export interface Contribution {
   accountNumber?: string | null;
   amountContributed: number;
   charges?: number | null;
+  /**
+   * Detailed breakdown of all charges applied to this contribution
+   */
+  chargesBreakdown?: {
+    /**
+     * Mobile money transfer fee (₵1)
+     */
+    paystackTransferFeeMomo?: number | null;
+    /**
+     * Platform service charge (2%)
+     */
+    platformCharge?: number | null;
+    /**
+     * Total amount paid by contributor (including all fees)
+     */
+    amountPaidByContributor?: number | null;
+    /**
+     * Paystack processing fee (1.95%)
+     */
+    paystackCharge?: number | null;
+  };
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
    * Select the linked deposit for this contribution
@@ -493,6 +514,14 @@ export interface ContributionsSelect<T extends boolean = true> {
   accountNumber?: T;
   amountContributed?: T;
   charges?: T;
+  chargesBreakdown?:
+    | T
+    | {
+        paystackTransferFeeMomo?: T;
+        platformCharge?: T;
+        amountPaidByContributor?: T;
+        paystackCharge?: T;
+      };
   paymentStatus?: T;
   linkedContribution?: T;
   linkedTransfer?: T;

@@ -1155,4 +1155,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contributionsTransferredAutomatically =>
       'Note: Mobile money contributions will be automatically transferred to this account.';
+
+  @override
+  String get contributorPaid => 'Contributor Paid';
+
+  @override
+  String get platformCharge => 'Platform Charge';
+
+  @override
+  String get paymentProcessing => 'Payment Processing';
+
+  @override
+  String get transferFee => 'Transfer Fee';
+
+  @override
+  String get chargeBreakdown => 'Charge Breakdown';
 }

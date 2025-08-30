@@ -18,7 +18,7 @@ class AppCard extends StatefulWidget {
   final bool isCollapsible;
 
   /// The title for collapsible cards (optional)
-  final String? title;
+  final Widget? title;
 
   /// Initial expanded state for collapsible cards
   final bool initiallyExpanded;
@@ -142,13 +142,7 @@ class _CardState extends State<AppCard> with SingleTickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (widget.title != null)
-                  Expanded(
-                    child: Text(
-                      widget.title!,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
+                if (widget.title != null) Expanded(child: widget.title!),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0,
                   duration: const Duration(milliseconds: 300),

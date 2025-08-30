@@ -2191,6 +2191,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Note: Mobile money contributions will be automatically transferred to this account.'**
   String get contributionsTransferredAutomatically;
+
+  /// Contributor paid label for charge breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Contributor Paid'**
+  String get contributorPaid;
+
+  /// Platform charge label for charge breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Platform Charge'**
+  String get platformCharge;
+
+  /// Payment processing label for charge breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Processing'**
+  String get paymentProcessing;
+
+  /// Transfer fee label for charge breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Fee'**
+  String get transferFee;
+
+  /// Charge breakdown title
+  ///
+  /// In en, this message translates to:
+  /// **'Charge Breakdown'**
+  String get chargeBreakdown;
 }
 
 class _AppLocalizationsDelegate

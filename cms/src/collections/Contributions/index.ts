@@ -6,6 +6,7 @@ import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
 import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
+import { getCharges } from './hooks/getCharges'
 
 export const Contributions: CollectionConfig = {
   slug: 'contributions',
@@ -100,6 +101,48 @@ export const Contributions: CollectionConfig = {
       name: 'charges',
       type: 'number',
       required: false,
+    },
+    {
+      name: 'chargesBreakdown',
+      type: 'group',
+      admin: {
+        description: 'Detailed breakdown of all charges applied to this contribution',
+        condition: data => data?.paymentMethod === 'mobile-money',
+      },
+      fields: [
+        {
+          name: 'paystackTransferFeeMomo',
+          type: 'number',
+          admin: {
+            description: 'Mobile money transfer fee (₵1)',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'platformCharge',
+          type: 'number',
+          admin: {
+            description: 'Platform service charge (2%)',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'amountPaidByContributor',
+          type: 'number',
+          admin: {
+            description: 'Total amount paid by contributor (including all fees)',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'paystackCharge',
+          type: 'number',
+          admin: {
+            description: 'Paystack processing fee (1.95%)',
+            readOnly: true,
+          },
+        },
+      ],
     },
     {
       name: 'paymentStatus',
@@ -265,6 +308,6 @@ export const Contributions: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [setPaymentStatus],
+    beforeChange: [setPaymentStatus, getCharges],
   },
 }

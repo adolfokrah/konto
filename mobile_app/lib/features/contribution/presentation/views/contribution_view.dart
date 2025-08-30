@@ -185,24 +185,6 @@ class ContributionView extends StatelessWidget {
                                             style: AppTextStyles.titleMediumS,
                                           ),
                                         ),
-                                        ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          title: Text(
-                                            localizations.charges,
-                                            style: AppTextStyles.titleMediumS
-                                                .copyWith(
-                                                  color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .color
-                                                      ?.withValues(alpha: 0.5),
-                                                ),
-                                          ),
-                                          trailing: Text(
-                                            '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.charges ?? 0.00}',
-                                            style: AppTextStyles.titleMediumS,
-                                          ),
-                                        ),
                                         // Only show "Via Payment Link" when viaPaymentLink is true
                                         if (contribution.viaPaymentLink ==
                                             true) ...[
@@ -224,8 +206,7 @@ class ContributionView extends StatelessWidget {
                                             ),
                                             trailing: CupertinoSwitch(
                                               value:
-                                                  contribution.viaPaymentLink ??
-                                                  false,
+                                                  contribution.viaPaymentLink,
                                               onChanged: (value) {
                                                 // Handle switch change
                                               },
@@ -235,6 +216,122 @@ class ContributionView extends StatelessWidget {
                                       ],
                                     ),
                                   ),
+
+                                  if (contribution.chargesBreakdown != null &&
+                                      contribution
+                                          .chargesBreakdown!
+                                          .hasCompleteBreakdown) ...[
+                                    const SizedBox(height: AppSpacing.spacingM),
+
+                                    AppCard(
+                                      isCollapsible: true,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingM,
+                                        vertical: AppSpacing.spacingXs,
+                                      ),
+                                      title: Text(
+                                        localizations.chargeBreakdown,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(
+                                              localizations.contributorPaid,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: Text(
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.amountPaidByContributor!.toStringAsFixed(2)}',
+                                              style: AppTextStyles.titleMediumS,
+                                            ),
+                                          ),
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(
+                                              localizations.platformCharge,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: Text(
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.platformCharge!.toStringAsFixed(2)}',
+                                              style: AppTextStyles.titleMediumS,
+                                            ),
+                                          ),
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(
+                                              localizations.paymentProcessing,
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: Text(
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackCharge!.toStringAsFixed(2)}',
+                                              style: AppTextStyles.titleMediumS,
+                                            ),
+                                          ),
+                                          if (contribution
+                                                  .chargesBreakdown!
+                                                  .paystackTransferFeeMomo !=
+                                              null)
+                                            ListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              title: Text(
+                                                localizations.transferFee,
+                                                style: AppTextStyles
+                                                    .titleMediumS
+                                                    .copyWith(
+                                                      color: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall!
+                                                          .color
+                                                          ?.withValues(
+                                                            alpha: 0.5,
+                                                          ),
+                                                    ),
+                                              ),
+                                              trailing: Text(
+                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackTransferFeeMomo!.toStringAsFixed(2)}',
+                                                style:
+                                                    AppTextStyles.titleMediumS,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: AppSpacing.spacingM),
                                   // Payment method as a ListTile
                                   AppCard(

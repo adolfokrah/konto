@@ -343,6 +343,73 @@ class ContributionJar {
   }
 }
 
+/// Model representing the detailed charges breakdown for a contribution
+class ChargesBreakdown {
+  final double? paystackTransferFeeMomo;
+  final double? platformCharge;
+  final double? amountPaidByContributor;
+  final double? paystackCharge;
+
+  const ChargesBreakdown({
+    this.paystackTransferFeeMomo,
+    this.platformCharge,
+    this.amountPaidByContributor,
+    this.paystackCharge,
+  });
+
+  factory ChargesBreakdown.fromJson(Map<String, dynamic> json) {
+    return ChargesBreakdown(
+      paystackTransferFeeMomo:
+          json['paystackTransferFeeMomo'] != null
+              ? (json['paystackTransferFeeMomo'] as num).toDouble()
+              : null,
+      platformCharge:
+          json['platformCharge'] != null
+              ? (json['platformCharge'] as num).toDouble()
+              : null,
+      amountPaidByContributor:
+          json['amountPaidByContributor'] != null
+              ? (json['amountPaidByContributor'] as num).toDouble()
+              : null,
+      paystackCharge:
+          json['paystackCharge'] != null
+              ? (json['paystackCharge'] as num).toDouble()
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (paystackTransferFeeMomo != null)
+        'paystackTransferFeeMomo': paystackTransferFeeMomo,
+      if (platformCharge != null) 'platformCharge': platformCharge,
+      if (amountPaidByContributor != null)
+        'amountPaidByContributor': amountPaidByContributor,
+      if (paystackCharge != null) 'paystackCharge': paystackCharge,
+    };
+  }
+
+  /// Get total charges (excluding amount paid by contributor)
+  double get totalCharges {
+    return (paystackTransferFeeMomo ?? 0) +
+        (platformCharge ?? 0) +
+        (paystackCharge ?? 0);
+  }
+
+  /// Check if all charges are present
+  bool get hasCompleteBreakdown {
+    return paystackTransferFeeMomo != null &&
+        platformCharge != null &&
+        amountPaidByContributor != null &&
+        paystackCharge != null;
+  }
+
+  @override
+  String toString() {
+    return 'ChargesBreakdown(transfer: $paystackTransferFeeMomo, platform: $platformCharge, paystack: $paystackCharge, total: $amountPaidByContributor)';
+  }
+}
+
 /// Main Contribution model
 class ContributionModel {
   final String id;
@@ -353,6 +420,7 @@ class ContributionModel {
   final String? accountNumber;
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
+  final ChargesBreakdown? chargesBreakdown; // Detailed charges breakdown
   final String
   paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
   final ContributionUser collector;
@@ -370,6 +438,7 @@ class ContributionModel {
     this.accountNumber,
     required this.amountContributed,
     this.charges,
+    this.chargesBreakdown,
     required this.paymentStatus,
     required this.collector,
     required this.viaPaymentLink,
@@ -389,6 +458,12 @@ class ContributionModel {
       amountContributed: (json['amountContributed'] as num).toDouble(),
       charges:
           json['charges'] != null ? (json['charges'] as num).toDouble() : null,
+      chargesBreakdown:
+          json['chargesBreakdown'] != null
+              ? ChargesBreakdown.fromJson(
+                json['chargesBreakdown'] as Map<String, dynamic>,
+              )
+              : null,
       paymentStatus: json['paymentStatus'] as String,
       collector: ContributionUser.fromJson(
         json['collector'] as Map<String, dynamic>,
@@ -413,6 +488,8 @@ class ContributionModel {
       if (accountNumber != null) 'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       if (charges != null) 'charges': charges,
+      if (chargesBreakdown != null)
+        'chargesBreakdown': chargesBreakdown!.toJson(),
       'paymentStatus': paymentStatus,
       'collector': collector.toJson(),
       'viaPaymentLink': viaPaymentLink,
@@ -432,6 +509,7 @@ class ContributionModel {
     String? accountNumber,
     double? amountContributed,
     double? charges,
+    ChargesBreakdown? chargesBreakdown,
     String? paymentStatus,
     ContributionUser? collector,
     bool? viaPaymentLink,
@@ -449,6 +527,7 @@ class ContributionModel {
       accountNumber: accountNumber ?? this.accountNumber,
       amountContributed: amountContributed ?? this.amountContributed,
       charges: charges ?? this.charges,
+      chargesBreakdown: chargesBreakdown ?? this.chargesBreakdown,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       collector: collector ?? this.collector,
       viaPaymentLink: viaPaymentLink ?? this.viaPaymentLink,
