@@ -317,7 +317,11 @@ class _JarDetailViewState extends State<JarDetailView> {
               ),
               const SizedBox(height: 2),
               Text(
-                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalAmountTobeTransferred} to be transferred',
+                localizations.amountToBeTransferred(
+                  CurrencyUtils.getCurrencySymbol(jarData.currency),
+                  jarData.balanceBreakDown.totalAmountTobeTransferred
+                      .toString(),
+                ),
                 style: TextStyles.titleRegularXs,
               ),
               const SizedBox(height: AppSpacing.spacingXs),

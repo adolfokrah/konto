@@ -124,6 +124,7 @@ export const Contributions: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'Select the linked deposit for this contribution',
+        readOnly: true,
       },
     },
     {
@@ -133,6 +134,7 @@ export const Contributions: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'Select the linked transfer for this contribution',
+        readOnly: true,
       },
     },
     {

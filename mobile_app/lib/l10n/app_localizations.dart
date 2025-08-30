@@ -560,6 +560,210 @@ abstract class AppLocalizations {
   /// **'Search contributions'**
   String get searchContributions;
 
+  /// Amount to be transferred text with currency and amount
+  ///
+  /// In en, this message translates to:
+  /// **'{currency}{amount} to be transferred'**
+  String amountToBeTransferred(String currency, String amount);
+
+  /// Balance breakdown title
+  ///
+  /// In en, this message translates to:
+  /// **'Balance Breakdown'**
+  String get balanceBreakdown;
+
+  /// Balance breakdown description text
+  ///
+  /// In en, this message translates to:
+  /// **'Below is a detailed breakdown of your jar balance, contributions and how much we owe you.'**
+  String get balanceBreakdownDescription;
+
+  /// Cash payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// Bank transfer payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get bankTransfer;
+
+  /// Mobile money payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile money'**
+  String get mobileMoney;
+
+  /// Number of contributions with count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Contributions'**
+  String contributionsCount(int count);
+
+  /// Total contributions label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Contributions'**
+  String get totalContributions;
+
+  /// Total transfers label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Transfers'**
+  String get totalTransfers;
+
+  /// Total amount owed to user
+  ///
+  /// In en, this message translates to:
+  /// **'Total we owe you'**
+  String get totalWeOweYou;
+
+  /// Note about transfers excluding certain payment methods
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Transfers exclude cash and bank contributions'**
+  String get transfersNote;
+
+  /// Title for date range selection
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date Range'**
+  String get selectDateRange;
+
+  /// Title for jar filter modal
+  ///
+  /// In en, this message translates to:
+  /// **'Jar filter'**
+  String get jarFilter;
+
+  /// Clear all filters button text
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAll;
+
+  /// Select all filters button text
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAll;
+
+  /// Label for payment method selection
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// Status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// Collector label
+  ///
+  /// In en, this message translates to:
+  /// **'Collector'**
+  String get collector;
+
+  /// Date section title
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// Select date field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// Filter button text
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get filter;
+
+  /// Mobile money payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile money'**
+  String get mobileMoneyPayment;
+
+  /// Cash payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cashPayment;
+
+  /// Bank transfer payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer'**
+  String get bankTransferPayment;
+
+  /// Pending status option
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// Completed status option
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get statusCompleted;
+
+  /// Failed status option
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get statusFailed;
+
+  /// Transferred status option
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred'**
+  String get statusTransferred;
+
+  /// All dates filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get dateAll;
+
+  /// Today date filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dateToday;
+
+  /// Yesterday date filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get dateYesterday;
+
+  /// Last 7 days filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 Days'**
+  String get dateLast7Days;
+
+  /// Last 30 days filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 Days'**
+  String get dateLast30Days;
+
+  /// Custom date range filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Range'**
+  String get dateCustomRange;
+
   /// Today date label
   ///
   /// In en, this message translates to:
@@ -1232,12 +1436,6 @@ abstract class AppLocalizations {
   /// **'N/A'**
   String get notAvailable;
 
-  /// Status label
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get status;
-
   /// Label for description field
   ///
   /// In en, this message translates to:
@@ -1562,12 +1760,6 @@ abstract class AppLocalizations {
   /// **'Amount'**
   String get amount;
 
-  /// Label for payment method selection
-  ///
-  /// In en, this message translates to:
-  /// **'Payment Method'**
-  String get paymentMethod;
-
   /// Mobile Money payment method option
   ///
   /// In en, this message translates to:
@@ -1717,12 +1909,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account number'**
   String get accountNumber;
-
-  /// Collector label
-  ///
-  /// In en, this message translates to:
-  /// **'Collector'**
-  String get collector;
 
   /// Help label
   ///

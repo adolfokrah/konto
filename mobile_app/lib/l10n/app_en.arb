@@ -412,6 +412,192 @@
     "description": "Search contributions placeholder text"
   },
 
+  "amountToBeTransferred": "{currency}{amount} to be transferred",
+  "@amountToBeTransferred": {
+    "description": "Amount to be transferred text with currency and amount",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "description": "Currency symbol"
+      },
+      "amount": {
+        "type": "String", 
+        "description": "Amount value"
+      }
+    }
+  },
+
+  "balanceBreakdown": "Balance Breakdown",
+  "@balanceBreakdown": {
+    "description": "Balance breakdown title"
+  },
+
+  "balanceBreakdownDescription": "Below is a detailed breakdown of your jar balance, contributions and how much we owe you.",
+  "@balanceBreakdownDescription": {
+    "description": "Balance breakdown description text"
+  },
+
+  "cash": "Cash",
+  "@cash": {
+    "description": "Cash payment method"
+  },
+
+  "bankTransfer": "Bank Transfer",
+  "@bankTransfer": {
+    "description": "Bank transfer payment method"
+  },
+
+  "mobileMoney": "Mobile money",
+  "@mobileMoney": {
+    "description": "Mobile money payment method"
+  },
+
+  "contributionsCount": "{count} Contributions",
+  "@contributionsCount": {
+    "description": "Number of contributions with count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of contributions"
+      }
+    }
+  },
+
+  "totalContributions": "Total Contributions",
+  "@totalContributions": {
+    "description": "Total contributions label"
+  },
+
+  "totalTransfers": "Total Transfers",
+  "@totalTransfers": {
+    "description": "Total transfers label"
+  },
+
+  "totalWeOweYou": "Total we owe you",
+  "@totalWeOweYou": {
+    "description": "Total amount owed to user"
+  },
+
+  "transfersNote": "Note: Transfers exclude cash and bank contributions",
+  "@transfersNote": {
+    "description": "Note about transfers excluding certain payment methods"
+  },
+
+  "selectDateRange": "Select Date Range",
+  "@selectDateRange": {
+    "description": "Title for date range selection"
+  },
+
+  "jarFilter": "Jar filter",
+  "@jarFilter": {
+    "description": "Title for jar filter modal"
+  },
+
+  "clearAll": "Clear all",
+  "@clearAll": {
+    "description": "Clear all filters button text"
+  },
+
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Select all filters button text"
+  },
+
+  "paymentMethod": "Payment method",
+  "@paymentMethod": {
+    "description": "Payment method section title"
+  },
+
+  "status": "Status",
+  "@status": {
+    "description": "Status section title"
+  },
+
+  "collector": "Collector",
+  "@collector": {
+    "description": "Collector section title"
+  },
+
+  "date": "Date",
+  "@date": {
+    "description": "Date section title"
+  },
+
+  "selectDate": "Select date",
+  "@selectDate": {
+    "description": "Select date field placeholder"
+  },
+
+  "filter": "Filter",
+  "@filter": {
+    "description": "Filter button text"
+  },
+
+  "mobileMoneyPayment": "Mobile money",
+  "@mobileMoneyPayment": {
+    "description": "Mobile money payment method option"
+  },
+
+  "cashPayment": "Cash",
+  "@cashPayment": {
+    "description": "Cash payment method option"
+  },
+
+  "bankTransferPayment": "Bank transfer",
+  "@bankTransferPayment": {
+    "description": "Bank transfer payment method option"
+  },
+
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Pending status option"
+  },
+
+  "statusCompleted": "Completed",
+  "@statusCompleted": {
+    "description": "Completed status option"
+  },
+
+  "statusFailed": "Failed",
+  "@statusFailed": {
+    "description": "Failed status option"
+  },
+
+  "statusTransferred": "Transferred",
+  "@statusTransferred": {
+    "description": "Transferred status option"
+  },
+
+  "dateAll": "All",
+  "@dateAll": {
+    "description": "All dates filter option"
+  },
+
+  "dateToday": "Today",
+  "@dateToday": {
+    "description": "Today date filter option"
+  },
+
+  "dateYesterday": "Yesterday",
+  "@dateYesterday": {
+    "description": "Yesterday date filter option"
+  },
+
+  "dateLast7Days": "Last 7 Days",
+  "@dateLast7Days": {
+    "description": "Last 7 days filter option"
+  },
+
+  "dateLast30Days": "Last 30 Days",
+  "@dateLast30Days": {
+    "description": "Last 30 days filter option"
+  },
+
+  "dateCustomRange": "Custom Range",
+  "@dateCustomRange": {
+    "description": "Custom date range filter option"
+  },
+
   "today": "Today",
   "@today": {
     "description": "Today date label"

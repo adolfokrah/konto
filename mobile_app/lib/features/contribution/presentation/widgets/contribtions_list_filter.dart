@@ -15,6 +15,7 @@ import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class ContributionsListFilter extends StatelessWidget {
   final String? contributor;
@@ -48,6 +49,8 @@ class ContributionsListFilter extends StatelessWidget {
   }
 
   void _showDateOptions(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     showModalBottomSheet(
       context: context,
       builder:
@@ -61,6 +64,16 @@ class ContributionsListFilter extends StatelessWidget {
                       ? state.selectedDate ?? FilterOptions.defaultDateOption
                       : FilterOptions.defaultDateOption;
 
+              // Get translated date options
+              final translatedDateOptions = [
+                localizations.dateAll,
+                localizations.dateToday,
+                localizations.dateYesterday,
+                localizations.dateLast7Days,
+                localizations.dateLast30Days,
+                localizations.dateCustomRange,
+              ];
+
               return Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.spacingM,
@@ -70,44 +83,44 @@ class ContributionsListFilter extends StatelessWidget {
                   children: [
                     const DragHandle(),
                     const SizedBox(height: AppSpacing.spacingM),
-                    const Text(
-                      'Select Date Range',
+                    Text(
+                      localizations.selectDateRange,
                       style: TextStyles.titleBoldLg,
                     ),
                     const SizedBox(height: AppSpacing.spacingM),
                     AppCard(
                       child: Column(
                         children:
-                            FilterOptions.dateOptions
-                                .map(
-                                  (option) => ListTile(
-                                    title: Text(
-                                      option,
-                                      style: TextStyles.titleMediumM,
-                                    ),
-                                    onTap: () {
-                                      if (option ==
-                                          FilterOptions.customDateRangeOption) {
-                                        Navigator.pop(modalContext);
-                                        _showCustomDateRangePicker(context);
-                                      } else {
-                                        context
-                                            .read<FilterContributionsBloc>()
-                                            .add(
-                                              UpdateDateRange(
-                                                selectedDate: option,
-                                              ),
-                                            );
-                                        Navigator.pop(modalContext);
-                                      }
-                                    },
-                                    trailing:
-                                        selectedDate == option
-                                            ? const Icon(Icons.check, size: 18)
-                                            : null,
-                                  ),
-                                )
-                                .toList(),
+                            translatedDateOptions.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final translatedOption = entry.value;
+                              final originalOption =
+                                  FilterOptions.dateOptions[index];
+
+                              return ListTile(
+                                title: Text(
+                                  translatedOption,
+                                  style: TextStyles.titleMediumM,
+                                ),
+                                onTap: () {
+                                  if (originalOption == 'dateCustomRange') {
+                                    Navigator.pop(modalContext);
+                                    _showCustomDateRangePicker(context);
+                                  } else {
+                                    context.read<FilterContributionsBloc>().add(
+                                      UpdateDateRange(
+                                        selectedDate: originalOption,
+                                      ),
+                                    );
+                                    Navigator.pop(modalContext);
+                                  }
+                                },
+                                trailing:
+                                    selectedDate == originalOption
+                                        ? const Icon(Icons.check, size: 18)
+                                        : null,
+                              );
+                            }).toList(),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.spacingL),
@@ -141,8 +154,36 @@ class ContributionsListFilter extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  String _getTranslatedDateOption(BuildContext context, String dateOptionKey) {
+    final localizations = AppLocalizations.of(context)!;
+
+    // If it's a custom date range (contains " - "), return as is
+    if (dateOptionKey.contains(' - ')) {
+      return dateOptionKey;
+    }
+
+    switch (dateOptionKey) {
+      case 'dateAll':
+        return localizations.dateAll;
+      case 'dateToday':
+        return localizations.dateToday;
+      case 'dateYesterday':
+        return localizations.dateYesterday;
+      case 'dateLast7Days':
+        return localizations.dateLast7Days;
+      case 'dateLast30Days':
+        return localizations.dateLast30Days;
+      case 'dateCustomRange':
+        return localizations.dateCustomRange;
+      default:
+        return dateOptionKey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, jarState) {
         // Extract accepted collector IDs
@@ -190,8 +231,8 @@ class ContributionsListFilter extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Jar filter',
+                            Text(
+                              localizations.jarFilter,
                               style: TextStyles.titleBoldLg,
                             ),
                             GestureDetector(
@@ -204,7 +245,9 @@ class ContributionsListFilter extends StatelessWidget {
                                             : SelectAllFilters(allCollectorIds),
                                       ),
                               child: Text(
-                                state.hasFilters ? 'Clear all' : 'Select all',
+                                state.hasFilters
+                                    ? localizations.clearAll
+                                    : localizations.selectAll,
                                 style: TextStyles.titleMediumM,
                               ),
                             ),
@@ -218,8 +261,8 @@ class ContributionsListFilter extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Payment Method Section
-                                const Text(
-                                  'Payment method',
+                                Text(
+                                  localizations.paymentMethod,
                                   style: TextStyles.titleMedium,
                                 ),
                                 const SizedBox(height: AppSpacing.spacingS),
@@ -256,8 +299,8 @@ class ContributionsListFilter extends StatelessWidget {
                                 const SizedBox(height: AppSpacing.spacingM),
 
                                 // Status Section
-                                const Text(
-                                  'Status',
+                                Text(
+                                  localizations.status,
                                   style: TextStyles.titleMedium,
                                 ),
                                 const SizedBox(height: AppSpacing.spacingS),
@@ -336,8 +379,8 @@ class ContributionsListFilter extends StatelessWidget {
                                               ),
 
                                               // Collector Section
-                                              const Text(
-                                                'Collector',
+                                              Text(
+                                                localizations.collector,
                                                 style: TextStyles.titleMedium,
                                               ),
                                               const SizedBox(
@@ -434,8 +477,8 @@ class ContributionsListFilter extends StatelessWidget {
                                 const SizedBox(height: AppSpacing.spacingM),
 
                                 // Date Section
-                                const Text(
-                                  'Date',
+                                Text(
+                                  localizations.date,
                                   style: TextStyles.titleMedium,
                                 ),
                                 const SizedBox(height: AppSpacing.spacingS),
@@ -446,7 +489,7 @@ class ContributionsListFilter extends StatelessWidget {
                                     padding: EdgeInsets.zero,
                                     child: ListTile(
                                       title: Text(
-                                        'Select date',
+                                        localizations.selectDate,
                                         style: TextStyles.titleMediumXs
                                             .copyWith(
                                               color: Theme.of(context)
@@ -456,8 +499,11 @@ class ContributionsListFilter extends StatelessWidget {
                                             ),
                                       ),
                                       subtitle: Text(
-                                        state.selectedDate ??
-                                            FilterOptions.defaultDateOption,
+                                        _getTranslatedDateOption(
+                                          context,
+                                          state.selectedDate ??
+                                              FilterOptions.defaultDateOption,
+                                        ),
                                         style: TextStyles.titleMediumS,
                                       ),
                                       trailing: const Icon(
@@ -476,7 +522,7 @@ class ContributionsListFilter extends StatelessWidget {
 
                         // Filter Button
                         AppButton.filled(
-                          text: 'Filter',
+                          text: localizations.filter,
                           onPressed: () => _applyFilters(context),
                         ),
                       ],
@@ -497,6 +543,21 @@ class ContributionsListFilter extends StatelessWidget {
     PaymentMethodOption method,
     bool isSelected,
   ) {
+    final localizations = AppLocalizations.of(context)!;
+
+    String getTranslatedLabel(String labelKey) {
+      switch (labelKey) {
+        case 'mobileMoneyPayment':
+          return localizations.mobileMoneyPayment;
+        case 'cashPayment':
+          return localizations.cashPayment;
+        case 'bankTransferPayment':
+          return localizations.bankTransferPayment;
+        default:
+          return labelKey;
+      }
+    }
+
     return GestureDetector(
       onTap:
           () => context.read<FilterContributionsBloc>().add(
@@ -514,7 +575,10 @@ class ContributionsListFilter extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          title: Text(method.label, style: TextStyles.titleMediumM),
+          title: Text(
+            getTranslatedLabel(method.label),
+            style: TextStyles.titleMediumM,
+          ),
           trailing: Icon(
             isSelected ? Icons.check_box : Icons.check_box_outline_blank,
             size: 16,
@@ -529,6 +593,23 @@ class ContributionsListFilter extends StatelessWidget {
     StatusOption status,
     bool isSelected,
   ) {
+    final localizations = AppLocalizations.of(context)!;
+
+    String getTranslatedLabel(String labelKey) {
+      switch (labelKey) {
+        case 'statusPending':
+          return localizations.statusPending;
+        case 'statusCompleted':
+          return localizations.statusCompleted;
+        case 'statusFailed':
+          return localizations.statusFailed;
+        case 'statusTransferred':
+          return localizations.statusTransferred;
+        default:
+          return labelKey;
+      }
+    }
+
     return GestureDetector(
       onTap:
           () => context.read<FilterContributionsBloc>().add(
@@ -537,7 +618,10 @@ class ContributionsListFilter extends StatelessWidget {
       child: AppCard(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
         child: ListTile(
-          title: Text(status.label, style: TextStyles.titleMediumM),
+          title: Text(
+            getTranslatedLabel(status.label),
+            style: TextStyles.titleMediumM,
+          ),
           trailing: Icon(
             isSelected ? Icons.check_box : Icons.check_box_outline_blank,
             size: 16,

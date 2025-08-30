@@ -7,6 +7,7 @@ import 'package:konto/core/utils/currency_utils.dart';
 import 'package:konto/core/widgets/divider.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:konto/l10n/app_localizations.dart';
 
 class JarBalanceBreakdown extends StatelessWidget {
   const JarBalanceBreakdown({super.key});
@@ -25,6 +26,8 @@ class JarBalanceBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
@@ -80,12 +83,12 @@ class JarBalanceBreakdown extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Balance Breakdown',
+                            localizations.balanceBreakdown,
                             style: TextStyles.titleBoldLg,
                           ),
                           const SizedBox(height: AppSpacing.spacingXs),
                           Text(
-                            'Below is a detailed breakdown of your jar balance,  contributions and how much we owe you.',
+                            localizations.balanceBreakdownDescription,
                             style: TextStyles.titleRegularM,
                           ),
                         ],
@@ -96,9 +99,10 @@ class JarBalanceBreakdown extends StatelessWidget {
 
                     _buildPaymentMethodContribution(
                       context,
-                      title: 'Cash',
-                      subtitle:
-                          '${jarData.cashContributionCount} Contributions',
+                      title: localizations.cash,
+                      subtitle: localizations.contributionsCount(
+                        jarData.cashContributionCount,
+                      ),
                       amount: jarData.balanceBreakDown.cash.totalAmount,
                       currency: jarData.currency,
                       icon: Icons.money,
@@ -106,9 +110,10 @@ class JarBalanceBreakdown extends StatelessWidget {
 
                     _buildPaymentMethodContribution(
                       context,
-                      title: 'Bank Transfer',
-                      subtitle:
-                          '${jarData.bankTransferContributionCount} Contributions',
+                      title: localizations.bankTransfer,
+                      subtitle: localizations.contributionsCount(
+                        jarData.bankTransferContributionCount,
+                      ),
                       amount: jarData.balanceBreakDown.bankTransfer.totalAmount,
                       currency: jarData.currency,
                       icon: Icons.account_balance,
@@ -116,9 +121,10 @@ class JarBalanceBreakdown extends StatelessWidget {
 
                     _buildPaymentMethodContribution(
                       context,
-                      title: 'Mobile money',
-                      subtitle:
-                          '${jarData.mobileMoneyContributionCount} Contributions',
+                      title: localizations.mobileMoney,
+                      subtitle: localizations.contributionsCount(
+                        jarData.mobileMoneyContributionCount,
+                      ),
                       amount: jarData.balanceBreakDown.mobileMoney.totalAmount,
                       currency: jarData.currency,
                       icon: Icons.phone_android,
@@ -130,21 +136,21 @@ class JarBalanceBreakdown extends StatelessWidget {
                     // Balance breakdown items
                     _buildBalanceItem(
                       context,
-                      title: 'Total Contributions',
+                      title: localizations.totalContributions,
                       amount: jarData.balanceBreakDown.totalContributedAmount,
                       currency: jarData.currency,
                     ),
 
                     _buildBalanceItem(
                       context,
-                      title: 'Total Transfers',
+                      title: localizations.totalTransfers,
                       amount: jarData.balanceBreakDown.totalTransfers,
                       currency: jarData.currency,
                     ),
 
                     _buildBalanceItem(
                       context,
-                      title: 'Total we owe you',
+                      title: localizations.totalWeOweYou,
                       amount:
                           jarData.balanceBreakDown.totalAmountTobeTransferred,
                       currency: jarData.currency,
@@ -159,7 +165,7 @@ class JarBalanceBreakdown extends StatelessWidget {
                         horizontal: AppSpacing.spacingXs,
                       ),
                       child: Text(
-                        'Note: Transfers exclude cash and bank contributions',
+                        localizations.transfersNote,
                         style: TextStyles.titleRegularM.copyWith(
                           color: Theme.of(
                             context,

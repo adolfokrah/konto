@@ -23,38 +23,42 @@ class FilterOptions {
 
   /// Payment method options for contributions filter
   static const List<PaymentMethodOption> paymentMethods = [
-    PaymentMethodOption('mobile-money', 'Mobile money', Icons.phone_android),
-    PaymentMethodOption('cash', 'Cash', Icons.money),
+    PaymentMethodOption(
+      'mobile-money',
+      'mobileMoneyPayment',
+      Icons.phone_android,
+    ),
+    PaymentMethodOption('cash', 'cashPayment', Icons.money),
     PaymentMethodOption(
       'bank-transfer',
-      'Bank transfer',
+      'bankTransferPayment',
       Icons.account_balance,
     ),
   ];
 
   /// Status options for contributions filter
   static const List<StatusOption> statuses = [
-    StatusOption('pending', 'Pending'),
-    StatusOption('completed', 'Completed'),
-    StatusOption('failed', 'Failed'),
-    StatusOption('transferred', 'Transferred'),
+    StatusOption('pending', 'statusPending'),
+    StatusOption('completed', 'statusCompleted'),
+    StatusOption('failed', 'statusFailed'),
+    StatusOption('transferred', 'statusTransferred'),
   ];
 
-  /// Date filter options
+  /// Date filter options (using translation keys)
   static const List<String> dateOptions = [
-    'All',
-    'Today',
-    'Yesterday',
-    'Last 7 Days',
-    'Last 30 Days',
-    'Custom Range',
+    'dateAll',
+    'dateToday',
+    'dateYesterday',
+    'dateLast7Days',
+    'dateLast30Days',
+    'dateCustomRange',
   ];
 
-  /// Individual date option constants
-  static const String defaultDateOption = 'All';
-  static const String todayOption = 'Today';
-  static const String yesterdayOption = 'Yesterday';
-  static const String last7DaysOption = 'Last 7 Days';
-  static const String last30DaysOption = 'Last 30 Days';
-  static const String customDateRangeOption = 'Custom Range';
+  /// Individual date option constants (using translation keys)
+  static const String defaultDateOption = 'dateAll';
+  static const String todayOption = 'dateToday';
+  static const String yesterdayOption = 'dateYesterday';
+  static const String last7DaysOption = 'dateLast7Days';
+  static const String last30DaysOption = 'dateLast30Days';
+  static const String customDateRangeOption = 'dateCustomRange';
 }

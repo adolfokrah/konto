@@ -257,6 +257,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchContributions => 'Search contributions';
 
   @override
+  String amountToBeTransferred(String currency, String amount) {
+    return '$currency$amount to be transferred';
+  }
+
+  @override
+  String get balanceBreakdown => 'Balance Breakdown';
+
+  @override
+  String get balanceBreakdownDescription =>
+      'Below is a detailed breakdown of your jar balance, contributions and how much we owe you.';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get bankTransfer => 'Bank Transfer';
+
+  @override
+  String get mobileMoney => 'Mobile money';
+
+  @override
+  String contributionsCount(int count) {
+    return '$count Contributions';
+  }
+
+  @override
+  String get totalContributions => 'Total Contributions';
+
+  @override
+  String get totalTransfers => 'Total Transfers';
+
+  @override
+  String get totalWeOweYou => 'Total we owe you';
+
+  @override
+  String get transfersNote =>
+      'Note: Transfers exclude cash and bank contributions';
+
+  @override
+  String get selectDateRange => 'Select Date Range';
+
+  @override
+  String get jarFilter => 'Jar filter';
+
+  @override
+  String get clearAll => 'Clear all';
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get collector => 'Collector';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get selectDate => 'Select date';
+
+  @override
+  String get filter => 'Filter';
+
+  @override
+  String get mobileMoneyPayment => 'Mobile money';
+
+  @override
+  String get cashPayment => 'Cash';
+
+  @override
+  String get bankTransferPayment => 'Bank transfer';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusCompleted => 'Completed';
+
+  @override
+  String get statusFailed => 'Failed';
+
+  @override
+  String get statusTransferred => 'Transferred';
+
+  @override
+  String get dateAll => 'All';
+
+  @override
+  String get dateToday => 'Today';
+
+  @override
+  String get dateYesterday => 'Yesterday';
+
+  @override
+  String get dateLast7Days => 'Last 7 Days';
+
+  @override
+  String get dateLast30Days => 'Last 30 Days';
+
+  @override
+  String get dateCustomRange => 'Custom Range';
+
+  @override
   String get today => 'Today';
 
   @override
@@ -642,9 +750,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notAvailable => 'N/A';
 
   @override
-  String get status => 'Status';
-
-  @override
   String get description => 'Description';
 
   @override
@@ -818,9 +923,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get amount => 'Amount';
 
   @override
-  String get paymentMethod => 'Payment Method';
-
-  @override
   String get paymentMethodMobileMoney => 'Mobile Money';
 
   @override
@@ -896,9 +998,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountNumber => 'Account number';
-
-  @override
-  String get collector => 'Collector';
 
   @override
   String get help => 'Help';

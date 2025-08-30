@@ -260,6 +260,114 @@ class AppLocalizationsFr extends AppLocalizations {
   String get searchContributions => 'Rechercher des contributions';
 
   @override
+  String amountToBeTransferred(String currency, String amount) {
+    return '$currency$amount à transférer';
+  }
+
+  @override
+  String get balanceBreakdown => 'Répartition du Solde';
+
+  @override
+  String get balanceBreakdownDescription =>
+      'Voici une répartition détaillée du solde de votre pot, des contributions et de ce que nous vous devons.';
+
+  @override
+  String get cash => 'Espèces';
+
+  @override
+  String get bankTransfer => 'Virement bancaire';
+
+  @override
+  String get mobileMoney => 'Mobile money';
+
+  @override
+  String contributionsCount(int count) {
+    return '$count Contributions';
+  }
+
+  @override
+  String get totalContributions => 'Total des Contributions';
+
+  @override
+  String get totalTransfers => 'Total des Virements';
+
+  @override
+  String get totalWeOweYou => 'Total que nous vous devons';
+
+  @override
+  String get transfersNote =>
+      'Remarque : Les virements excluent les contributions en espèces et par virement bancaire';
+
+  @override
+  String get selectDateRange => 'Sélectionner la Plage de Dates';
+
+  @override
+  String get jarFilter => 'Filtre de pot';
+
+  @override
+  String get clearAll => 'Tout effacer';
+
+  @override
+  String get selectAll => 'Tout sélectionner';
+
+  @override
+  String get paymentMethod => 'Méthode de paiement';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get collector => 'Collecteur';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get selectDate => 'Sélectionner une date';
+
+  @override
+  String get filter => 'Filtrer';
+
+  @override
+  String get mobileMoneyPayment => 'Mobile money';
+
+  @override
+  String get cashPayment => 'Espèces';
+
+  @override
+  String get bankTransferPayment => 'Virement bancaire';
+
+  @override
+  String get statusPending => 'En attente';
+
+  @override
+  String get statusCompleted => 'Terminé';
+
+  @override
+  String get statusFailed => 'Échoué';
+
+  @override
+  String get statusTransferred => 'Transféré';
+
+  @override
+  String get dateAll => 'Tout';
+
+  @override
+  String get dateToday => 'Aujourd\'hui';
+
+  @override
+  String get dateYesterday => 'Hier';
+
+  @override
+  String get dateLast7Days => '7 derniers jours';
+
+  @override
+  String get dateLast30Days => '30 derniers jours';
+
+  @override
+  String get dateCustomRange => 'Plage personnalisée';
+
+  @override
   String get today => 'Aujourd\'hui';
 
   @override
@@ -653,9 +761,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notAvailable => 'N/A';
 
   @override
-  String get status => 'Statut';
-
-  @override
   String get description => 'Description';
 
   @override
@@ -831,9 +936,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get amount => 'Montant';
 
   @override
-  String get paymentMethod => 'Méthode de paiement';
-
-  @override
   String get paymentMethodMobileMoney => 'Mobile Money';
 
   @override
@@ -912,9 +1014,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountNumber => 'Numéro de compte';
-
-  @override
-  String get collector => 'Collecteur';
 
   @override
   String get help => 'Aide';
