@@ -81,7 +81,12 @@ void main() {
         'updatedAt': now.toIso8601String(),
         'chartData': [0, 500, 1000, 1500, 2000],
         'contributions': [],
-        'totalContributedAmount': totalContributedAmount,
+        'balanceBreakDown': {
+          'totalContributedAmount': totalContributedAmount,
+          'totalTransfers': 0.0,
+          'totalAmountTobeTransferred': totalContributedAmount,
+        },
+        'isCreator': true,
       },
       'message': 'Jar details retrieved successfully',
     };

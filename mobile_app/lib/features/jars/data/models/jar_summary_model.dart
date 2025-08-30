@@ -48,6 +48,98 @@ enum JarStatus {
   }
 }
 
+/// Model for payment method breakdown data
+class PaymentMethodBreakdown {
+  final double totalAmount;
+  final int totalCount;
+
+  const PaymentMethodBreakdown({
+    required this.totalAmount,
+    required this.totalCount,
+  });
+
+  factory PaymentMethodBreakdown.fromJson(Map<String, dynamic> json) {
+    return PaymentMethodBreakdown(
+      totalAmount: (json['totalAmount'] as num? ?? 0).toDouble(),
+      totalCount: (json['totalCount'] as num? ?? 0).toInt(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'totalAmount': totalAmount, 'totalCount': totalCount};
+  }
+}
+
+/// Model for balance breakdown financial data
+class BalanceBreakDown {
+  final double totalContributedAmount;
+  final double totalTransfers;
+  final double totalAmountTobeTransferred;
+  final PaymentMethodBreakdown cash;
+  final PaymentMethodBreakdown bankTransfer;
+  final PaymentMethodBreakdown mobileMoney;
+
+  const BalanceBreakDown({
+    required this.totalContributedAmount,
+    required this.totalTransfers,
+    required this.totalAmountTobeTransferred,
+    required this.cash,
+    required this.bankTransfer,
+    required this.mobileMoney,
+  });
+
+  factory BalanceBreakDown.fromJson(Map<String, dynamic> json) {
+    // Helper function to extract payment method breakdown from nested structure
+    PaymentMethodBreakdown extractPaymentMethodBreakdown(
+      Map<String, dynamic> json,
+      String key,
+    ) {
+      final methodData = json[key] as Map<String, dynamic>? ?? {};
+      final capitalizedKey =
+          key.substring(0, 1).toUpperCase() + key.substring(1);
+
+      return PaymentMethodBreakdown(
+        totalAmount:
+            (methodData['total${capitalizedKey}Amount'] as num? ?? 0)
+                .toDouble(),
+        totalCount:
+            (methodData['total${capitalizedKey}Count'] as num? ?? 0).toInt(),
+      );
+    }
+
+    return BalanceBreakDown(
+      totalContributedAmount:
+          (json['totalContributedAmount'] as num? ?? 0).toDouble(),
+      totalTransfers: (json['totalTransfers'] as num? ?? 0).toDouble(),
+      totalAmountTobeTransferred:
+          (json['totalAmountTobeTransferred'] as num? ?? 0).toDouble(),
+      cash: extractPaymentMethodBreakdown(json, 'cash'),
+      bankTransfer: extractPaymentMethodBreakdown(json, 'bankTransfer'),
+      mobileMoney: extractPaymentMethodBreakdown(json, 'mobileMoney'),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'totalContributedAmount': totalContributedAmount,
+      'totalTransfers': totalTransfers,
+      'totalAmountTobeTransferred': totalAmountTobeTransferred,
+      'cash': {
+        'totalCashAmount': cash.totalAmount,
+        'totalCashCount': cash.totalCount,
+      },
+      'bankTransfer': {
+        'totalBankTransferAmount': bankTransfer.totalAmount,
+        'totalBankTransferCount': bankTransfer.totalCount,
+      },
+      'mobileMoney': {
+        'totalMobileMoneyAmount': mobileMoney.totalAmount,
+        'totalMobileMoneyCount': mobileMoney.totalCount,
+      },
+    };
+  }
+}
+
 class JarSummaryModel {
   final String id;
   final String name;
@@ -70,7 +162,8 @@ class JarSummaryModel {
   final DateTime updatedAt;
   final List<ContributionModel> contributions;
   final List<double>? chartData; // Chart data for last 10 days
-  final double totalContributedAmount; // Total amount from all contributions
+  final BalanceBreakDown balanceBreakDown; // Financial breakdown
+  final bool isCreator; // Whether the current user is the creator of this jar
 
   const JarSummaryModel({
     required this.id,
@@ -94,7 +187,8 @@ class JarSummaryModel {
     required this.updatedAt,
     required this.contributions,
     this.chartData,
-    required this.totalContributedAmount,
+    required this.balanceBreakDown,
+    required this.isCreator,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -115,8 +209,62 @@ class JarSummaryModel {
 
   /// Utility function to get formatted total contributed amount from API with currency
   String get formattedTotalContributedAmount {
-    return CurrencyUtils.formatAmount(totalContributedAmount, currency);
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.totalContributedAmount,
+      currency,
+    );
   }
+
+  /// Get formatted total transfers amount
+  String get formattedTotalTransfers {
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.totalTransfers,
+      currency,
+    );
+  }
+
+  /// Get formatted total amount to be transferred
+  String get formattedTotalAmountTobeTransferred {
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.totalAmountTobeTransferred,
+      currency,
+    );
+  }
+
+  /// Get formatted cash amount
+  String get formattedCashAmount {
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.cash.totalAmount,
+      currency,
+    );
+  }
+
+  /// Get formatted bank transfer amount
+  String get formattedBankTransferAmount {
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.bankTransfer.totalAmount,
+      currency,
+    );
+  }
+
+  /// Get formatted mobile money amount
+  String get formattedMobileMoneyAmount {
+    return CurrencyUtils.formatAmount(
+      balanceBreakDown.mobileMoney.totalAmount,
+      currency,
+    );
+  }
+
+  /// Get cash contribution count
+  int get cashContributionCount => balanceBreakDown.cash.totalCount;
+
+  /// Get bank transfer contribution count
+  int get bankTransferContributionCount =>
+      balanceBreakDown.bankTransfer.totalCount;
+
+  /// Get mobile money contribution count
+  int get mobileMoneyContributionCount =>
+      balanceBreakDown.mobileMoney.totalCount;
 
   /// Get currency symbol
   String get currencySymbol {
@@ -208,8 +356,26 @@ class JarSummaryModel {
                   .map((value) => (value as num? ?? 0).toDouble())
                   .toList()
               : null,
-      totalContributedAmount:
-          (json['totalContributedAmount'] as num? ?? 0).toDouble(),
+      balanceBreakDown:
+          json['balanceBreakDown'] != null
+              ? BalanceBreakDown.fromJson(
+                json['balanceBreakDown'] as Map<String, dynamic>,
+              )
+              : const BalanceBreakDown(
+                totalContributedAmount: 0,
+                totalTransfers: 0,
+                totalAmountTobeTransferred: 0,
+                cash: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
+                bankTransfer: PaymentMethodBreakdown(
+                  totalAmount: 0,
+                  totalCount: 0,
+                ),
+                mobileMoney: PaymentMethodBreakdown(
+                  totalAmount: 0,
+                  totalCount: 0,
+                ),
+              ),
+      isCreator: json['isCreator'] as bool? ?? false,
     );
   }
 
@@ -240,7 +406,8 @@ class JarSummaryModel {
       'contributions':
           contributions.map((contribution) => contribution.toJson()).toList(),
       'chartData': chartData,
-      'totalContributedAmount': totalContributedAmount,
+      'balanceBreakDown': balanceBreakDown.toJson(),
+      'isCreator': isCreator,
     };
   }
 }

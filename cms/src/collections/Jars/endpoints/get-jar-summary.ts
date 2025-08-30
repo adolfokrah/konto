@@ -152,9 +152,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
-      paymentStatus: {
-        equals: 'completed',
-      },
       collector: {
         equals: req.user,
       },
@@ -162,18 +159,78 @@ export const getJarSummary = async (req: PayloadRequest) => {
     pagination: false,
     select: {
       amountContributed: true,
+      paymentStatus: true,
+      isTransferred: true,
+      paymentMethod: true,
+      type: true,
     },
   })
 
-  const totalContributedAmount = allContributions.docs.reduce((sum: number, contribution: any) => {
-    return sum + contribution.amountContributed
-  }, 0)
+  // Helper function to calculate payment method breakdown
+  const calculatePaymentMethodBreakdown = (contributions: any[]) => {
+    const paymentMethods = {
+      cash: { paymentMethod: 'cash', status: 'completed' },
+      bankTransfer: { paymentMethod: 'bank-transfer', status: 'completed' },
+      mobileMoney: { paymentMethod: 'mobile-money', status: 'completed' },
+    }
+
+    const breakdown: any = {}
+
+    Object.entries(paymentMethods).forEach(([key, config]) => {
+      const filtered = contributions.filter(
+        contribution =>
+          contribution.paymentMethod === config.paymentMethod &&
+          contribution.paymentStatus === config.status,
+      )
+
+      breakdown[key] = {
+        [`total${key.charAt(0).toUpperCase() + key.slice(1)}Amount`]: filtered.reduce(
+          (sum, contrib) => sum + contrib.amountContributed,
+          0,
+        ),
+        [`total${key.charAt(0).toUpperCase() + key.slice(1)}Count`]: filtered.length,
+      }
+    })
+
+    return breakdown
+  }
+
+  const totalContributedAmount = allContributions.docs
+    .filter(
+      contribution =>
+        contribution.paymentStatus === 'completed' && contribution.type === 'contribution',
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
+  const totalTransfers = allContributions.docs
+    .filter(
+      contribution =>
+        contribution.paymentStatus === 'transferred' && contribution.type === 'transfer',
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
+  const totalAmountTobeTransferred = allContributions.docs
+    .filter(
+      contribution =>
+        contribution.isTransferred === false &&
+        contribution.paymentMethod === 'mobile-money' &&
+        contribution.type === 'contribution',
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
+  const paymentBreakdown = calculatePaymentMethodBreakdown(allContributions.docs)
 
   const data = {
     ...jar,
-    totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
-    contributions: recentJarContributions, // Return the full paginated structure
-    chartData: totalContributionsChart(), // Add chart data for the last 10 days
+    contributions: recentJarContributions,
+    chartData: totalContributionsChart(),
+    isCreator: jar.creator?.id === req.user.id,
+    balanceBreakDown: {
+      totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
+      totalTransfers: Number(totalTransfers.toFixed(2)),
+      totalAmountTobeTransferred: Number(totalAmountTobeTransferred.toFixed(2)),
+      ...paymentBreakdown,
+    },
   }
 
   return Response.json({

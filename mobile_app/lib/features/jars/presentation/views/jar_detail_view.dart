@@ -25,6 +25,7 @@ import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jars_list_view.dart';
+import 'package:konto/features/jars/presentation/widgets/jar_balance_breakdown.dart';
 import 'package:konto/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
@@ -298,13 +299,26 @@ class _JarDetailViewState extends State<JarDetailView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(jarData.name, style: TextStyles.titleMediumM),
-              const SizedBox(height: AppSpacing.spacingXs),
-              RevolutStyleCounterWithCurrency(
-                value:
-                    CurrencyUtils.getCurrencySymbol(jarData.currency) +
-                    jarData.totalContributedAmount.toString(),
-                style: TextStyles.titleBoldXl,
-                duration: const Duration(milliseconds: 1000),
+              const SizedBox(height: 2),
+              GestureDetector(
+                onTap: () {
+                  if (jarData.isCreator) {
+                    JarBalanceBreakdown.show(context);
+                  }
+                },
+                child: RevolutStyleCounterWithCurrency(
+                  value:
+                      CurrencyUtils.getCurrencySymbol(jarData.currency) +
+                      jarData.balanceBreakDown.totalContributedAmount
+                          .toString(),
+                  style: TextStyles.titleBoldXl,
+                  duration: const Duration(milliseconds: 1000),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalAmountTobeTransferred} to be transferred',
+                style: TextStyles.titleRegularXs,
               ),
               const SizedBox(height: AppSpacing.spacingXs),
               AppSmallButton(
@@ -514,7 +528,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 CurrencyUtils.getCurrencySymbol(
                                   jarData.currency,
                                 ) +
-                                jarData.totalContributedAmount.toString(),
+                                jarData.balanceBreakDown.totalContributedAmount
+                                    .toString(),
                             style: TextStyles.titleBoldLg,
                             duration: const Duration(milliseconds: 800),
                           ),
@@ -544,7 +559,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                     return Container();
                   }
                   return GoalProgressCard(
-                    currentAmount: jarData.totalContributedAmount,
+                    currentAmount:
+                        jarData.balanceBreakDown.totalContributedAmount,
                     goalAmount: jarData.goalAmount,
                     currency: jarData.currency,
                     deadline: jarData.deadline,

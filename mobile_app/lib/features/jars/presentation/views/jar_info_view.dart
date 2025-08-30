@@ -194,7 +194,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               const SizedBox(height: 4),
                               Flexible(
                                 child: Text(
-                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.totalContributedAmount.toStringAsFixed(2)}',
+                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalContributedAmount.toStringAsFixed(2)}',
                                   style: TextStyles.titleBoldXl,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,

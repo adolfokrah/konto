@@ -625,8 +625,12 @@ void main() {
                     'updatedAt': DateTime.now().toIso8601String(),
                   },
                 ],
-                'totalContributedAmount':
-                    expectedNewTotal, // Updated total amount
+                'balanceBreakDown': {
+                  'totalContributedAmount': expectedNewTotal,
+                  'totalTransfers': 0.0,
+                  'totalAmountTobeTransferred': expectedNewTotal,
+                },
+                'isCreator': true,
                 'chartData': [
                   0,
                   50,
@@ -784,8 +788,12 @@ void main() {
                         .toIso8601String(),
                 'updatedAt': DateTime.now().toIso8601String(),
                 'contributions': [],
-                'totalContributedAmount':
-                    expectedNewTotal, // The key verification point
+                'balanceBreakDown': {
+                  'totalContributedAmount': expectedNewTotal,
+                  'totalTransfers': 0.0,
+                  'totalAmountTobeTransferred': expectedNewTotal,
+                },
+                'isCreator': true,
                 'chartData': null,
               },
             },
