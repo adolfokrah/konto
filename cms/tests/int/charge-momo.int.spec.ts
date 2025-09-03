@@ -265,6 +265,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         email: 'success.test@example.com',
         password: 'testPassword123',
         isKYCVerified: true,
+        paystackSubAccountCode: 'ACCT_TEST_123',
       },
     })
 
@@ -293,6 +294,15 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         type: 'contribution',
       },
     })
+
+    // Fetch stored contribution to read calculated platform charge for expected transaction charge
+    const storedContribution = await payload.findByID({
+      collection: 'contributions',
+      id: pendingContribution.id,
+    })
+    const expectedTransactionCharge = Math.round(
+      (storedContribution as any)?.chargesBreakdown?.platformCharge * 100,
+    )
 
     // Mock successful Paystack response
     mockChargeMomo.mockResolvedValue({
@@ -334,19 +344,24 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     })
 
     // Verify that Paystack was called with correct data
-    expect(mockChargeMomo).toHaveBeenCalledWith({
-      email: 'success.test@example.com',
-      amount: 5098, // 50.98 * 100 (contributor total amount including charges)
-      currency: 'ghc', // Currency from jar (lowercase)
-      phone: '+233541234567',
-      provider: 'MTN',
-      reference: pendingContribution.id,
-      metadata: {
-        description: 'Charge contribution for jar: Test Success Jar by collector: John Doe',
-        contributionId: pendingContribution.id,
-        jarId: testJar.id,
-        contributorPhone: '+233541234567',
-      },
-    })
+    expect(mockChargeMomo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'success.test@example.com',
+        amount: 5098, // 50.98 * 100 (contributor total amount including charges)
+        currency: 'ghc', // Currency from jar (lowercase)
+        phone: '+233541234567',
+        provider: 'MTN',
+        reference: pendingContribution.id,
+        metadata: expect.objectContaining({
+          description: 'Charge contribution for jar: Test Success Jar by collector: John Doe',
+          contributionId: pendingContribution.id,
+          jarId: testJar.id,
+          contributorPhone: '+233541234567',
+        }),
+        subaccount: 'ACCT_TEST_123', // User’s withdrawal MoMo account
+        bearer: 'subaccount',
+        transaction_charge: expectedTransactionCharge,
+      }),
+    )
   })
 })

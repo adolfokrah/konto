@@ -213,7 +213,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       contribution =>
         contribution.isTransferred === false &&
         contribution.paymentMethod === 'mobile-money' &&
-        contribution.type === 'contribution',
+        contribution.type === 'contribution' &&
+        contribution.paymentStatus === 'completed',
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
