@@ -75,21 +75,21 @@ export const verifyPayment = async (req: PayloadRequest) => {
         }
       }
 
-      if (!isTransfer && (res.data as any)?.status === 'success') {
-        //insert a transfer transaction
-        try {
-          transferMomo({
-            ...req,
-            data: { contributionId: foundContribution.docs[0].id, testing: false },
-          } as PayloadRequest)
-        } catch (transferError: any) {
-          return Response.json({
-            success: false,
-            message: transferError.message || 'Unknown error',
-          })
-          // Continue with verification success even if transfer fails
-        }
-      }
+      // if (!isTransfer && (res.data as any)?.status === 'success') {
+      //   //insert a transfer transaction
+      //   try {
+      //     transferMomo({
+      //       ...req,
+      //       data: { contributionId: foundContribution.docs[0].id, testing: false },
+      //     } as PayloadRequest)
+      //   } catch (transferError: any) {
+      //     return Response.json({
+      //       success: false,
+      //       message: transferError.message || 'Unknown error',
+      //     })
+      //     // Continue with verification success even if transfer fails
+      //   }
+      // }
 
       return Response.json({
         success: true,

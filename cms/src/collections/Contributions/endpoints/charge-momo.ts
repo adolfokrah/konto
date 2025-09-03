@@ -135,6 +135,16 @@ export const chargeMomo = async (req: PayloadRequest) => {
       )
     }
 
+    if (!contribution.chargesBreakdown?.platformCharge) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Platform charge not found',
+        },
+        { status: 400 },
+      )
+    }
+
     // Prepare charge request data
     const chargeData = {
       email: collectorEmail,
@@ -153,7 +163,7 @@ export const chargeMomo = async (req: PayloadRequest) => {
       },
       subaccount: req.user?.paystackSubAccountCode, // User’s withdrawal MoMo account
       bearer: 'subaccount',
-      transaction_charge: 2000, // 2% platform fee = ₵20.00
+      transaction_charge: contribution.chargesBreakdown.platformCharge * 100,
     }
 
     // Charge mobile money via Paystack

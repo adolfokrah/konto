@@ -204,8 +204,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const totalTransfers = allContributions.docs
     .filter(
-      contribution =>
-        contribution.paymentStatus === 'transferred' && contribution.type === 'transfer',
+      contribution => contribution.paymentStatus === 'completed' && contribution.isTransferred,
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
