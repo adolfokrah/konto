@@ -137,9 +137,22 @@ export const transferMomo = async (req: PayloadRequest) => {
         message: 'Transfer record created successfully',
       })
     } else {
+      const amount = Math.max(
+        1,
+        Math.round(
+          Math.abs(
+            Number(
+              foundContribution.amountContributed < 1 ? 1 : foundContribution.amountContributed,
+            ),
+          ) * 100,
+        ),
+      )
+
       const response = await paystack.initiateTransfer({
-        amount: foundContribution.amountContributed,
-        currency: 'NGN',
+        amount,
+        currency: (typeof foundContribution.jar === 'string'
+          ? 'GHS'
+          : foundContribution.jar.currency) as 'GHS' | 'KES',
         recipient: {
           type: 'mobile_money',
           name: creator.accountHolder,
@@ -155,6 +168,8 @@ export const transferMomo = async (req: PayloadRequest) => {
         },
         reason: `Transfer for contribution ${contributionId}`,
       })
+
+      console.log(response, 'transfer response')
 
       if (response.status) {
         await req.payload.create({

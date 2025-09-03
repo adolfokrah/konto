@@ -6,6 +6,9 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation }
   // Set payment status based on payment method for new contributions
   if (operation === 'create') {
     if (data.paymentMethod === 'mobile-money' && data.type == 'contribution') {
+      // if(data.amountContributed < 2){
+      //   throw new Error('Minimum contribution amount is 2 cedis')
+      // }
       const transactionCharges = new TransactionCharges()
       const {
         totalAmount,
@@ -25,6 +28,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation }
         amountPaidByContributor: totalAmount,
         paystackCharge,
       }
+
+      //  console.log(amountAfterCharges,  'amount after charges');
     }
   }
 

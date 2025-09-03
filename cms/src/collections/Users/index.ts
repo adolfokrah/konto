@@ -4,6 +4,7 @@ import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
+import { createSubAccount } from './hooks/create-sub-account'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -97,7 +98,7 @@ export const Users: CollectionConfig = {
       defaultValue: false,
     },
     {
-      label: 'withdrawalAccount',
+      label: 'Withdrawal Account',
       type: 'group',
       fields: [
         {
@@ -111,6 +112,13 @@ export const Users: CollectionConfig = {
         {
           name: 'accountHolder',
           type: 'text',
+        },
+        {
+          name: 'paystackSubAccountCode',
+          type: 'text',
+          admin: {
+            readOnly: true,
+          },
         },
       ],
     },
@@ -161,4 +169,7 @@ export const Users: CollectionConfig = {
       ],
     },
   ],
+  hooks: {
+    beforeChange: [createSubAccount],
+  },
 }

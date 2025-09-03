@@ -104,7 +104,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
                 context,
                 message: localizations.momoWaitingAuthorization,
               );
-            } else if (charge.status == 'pending') {
+            } else if (charge.status == 'send_otp') {
               AppSnackBar.show(
                 context,
                 message: localizations.momoWaitingAuthorization,
@@ -147,6 +147,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
           return Center(child: Text(localizations.momoPaymentSuccessful));
 
         case 'pay_offline':
+        case 'ongoing':
           return Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -178,7 +179,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
             ),
           );
 
-        case 'send_otp' || 'pending':
+        case 'send_otp':
           return Padding(
             padding: const EdgeInsets.all(AppSpacing.spacingM),
             child: Column(

@@ -151,6 +151,9 @@ export const chargeMomo = async (req: PayloadRequest) => {
         jarId: jar.id,
         contributorPhone: contribution.contributorPhoneNumber,
       },
+      subaccount: req.user?.paystackSubAccountCode, // User’s withdrawal MoMo account
+      bearer: 'subaccount',
+      transaction_charge: 2000, // 2% platform fee = ₵20.00
     }
 
     // Charge mobile money via Paystack

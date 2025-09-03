@@ -105,6 +105,35 @@ type SubmitOTParams = {
 
 type SubmitOTPResponse = PaystackEnvelope<unknown>
 
+// ---------- Subaccounts ----------
+export interface CreateSubaccountParams {
+  business_name: string
+  settlement_bank: string // bank code (e.g., from List Banks)
+  account_number: string
+  percentage_charge: number // percentage main account receives
+  description?: string
+  primary_contact_email?: string
+  primary_contact_name?: string
+  primary_contact_phone?: string
+  metadata?: string | Record<string, unknown> // stringified JSON per Paystack docs
+}
+export type CreateSubaccountResponse = PaystackEnvelope<unknown>
+
+export interface UpdateSubaccountParams {
+  business_name?: string
+  description?: string
+  bank_code?: string
+  account_number?: string
+  active?: boolean
+  percentage_charge?: number
+  primary_contact_email?: string
+  primary_contact_name?: string
+  primary_contact_phone?: string
+  settlement_schedule?: 'auto' | 'weekly' | 'monthly' | 'manual' | string
+  metadata?: string | Record<string, unknown>
+}
+export type UpdateSubaccountResponse = PaystackEnvelope<unknown>
+
 export default class Paystack {
   private readonly secretKey: string
   public readonly publicKey?: string
@@ -133,7 +162,7 @@ export default class Paystack {
   }
 
   private async request<T = unknown>(
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PUT',
     path: string,
     opts: {
       query?: Record<string, string | number | boolean | undefined | null>
@@ -262,5 +291,45 @@ export default class Paystack {
     })
 
     return resp
+  }
+
+  // ------------------ 5) Subaccounts: Create ------------------
+
+  /**
+   * Create a subaccount on your integration.
+   * Docs: https://paystack.com/docs/api/subaccount/#create
+   */
+  async createSubaccount(params: CreateSubaccountParams): Promise<CreateSubaccountResponse> {
+    const { metadata, ...rest } = params
+    const body: Record<string, unknown> = { ...rest }
+    if (metadata !== undefined) {
+      body.metadata = typeof metadata === 'string' ? metadata : JSON.stringify(metadata)
+    }
+    return this.request<CreateSubaccountResponse['data']>('POST', '/subaccount', {
+      body,
+    })
+  }
+
+  // ------------------ 6) Subaccounts: Update ------------------
+
+  /**
+   * Update a subaccount by ID or code.
+   * Docs: https://paystack.com/docs/api/subaccount/#update
+   */
+  async updateSubaccount(
+    idOrCode: string,
+    params: UpdateSubaccountParams,
+  ): Promise<UpdateSubaccountResponse> {
+    if (!idOrCode) throw new Error('idOrCode is required')
+    const { metadata, ...rest } = params || {}
+    const body: Record<string, unknown> = { ...rest }
+    if (metadata !== undefined) {
+      body.metadata = typeof metadata === 'string' ? metadata : JSON.stringify(metadata)
+    }
+    return this.request<UpdateSubaccountResponse['data']>(
+      'PUT',
+      `/subaccount/${encodeURIComponent(idOrCode)}`,
+      { body },
+    )
   }
 }

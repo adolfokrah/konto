@@ -22,7 +22,9 @@ export const verifyPayment = async (req: PayloadRequest) => {
 
     const res = await paystack.checkTransactionStatus(reference)
 
-    if (res.status && (res.data as any)?.status === 'success') {
+    // console.log(res, 'paystack');
+
+    if (res.status && (res.data as any)?.status != 'ongoing') {
       const foundContribution = await req.payload.find({
         collection: 'contributions',
         where: {
@@ -47,7 +49,12 @@ export const verifyPayment = async (req: PayloadRequest) => {
         collection: 'contributions',
         id: foundContribution.docs[0].id,
         data: {
-          paymentStatus: isTransfer ? 'transferred' : 'completed',
+          paymentStatus:
+            (res.data as any)?.status === 'success'
+              ? isTransfer
+                ? 'transferred'
+                : 'completed'
+              : 'failed',
         },
       })
 
@@ -68,12 +75,12 @@ export const verifyPayment = async (req: PayloadRequest) => {
         }
       }
 
-      if (!isTransfer) {
+      if (!isTransfer && (res.data as any)?.status === 'success') {
         //insert a transfer transaction
         try {
           transferMomo({
             ...req,
-            data: { contributionId: foundContribution.docs[0].id },
+            data: { contributionId: foundContribution.docs[0].id, testing: false },
           } as PayloadRequest)
         } catch (transferError: any) {
           return Response.json({
@@ -88,6 +95,12 @@ export const verifyPayment = async (req: PayloadRequest) => {
         success: true,
         data: res.data,
         message: 'Transaction verified successfully',
+      })
+    } else if (res.status && (res.data as any)?.status === 'ongoing') {
+      return Response.json({
+        success: true,
+        message: res.message || 'Pending verification',
+        data: res.data,
       })
     } else {
       return Response.json(

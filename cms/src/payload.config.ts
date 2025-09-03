@@ -25,6 +25,9 @@ const dbUrl =
 
 export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
 
+const transactionCharges = new TransactionCharges()
+// console.log(transactionCharges.calculateAmountAndCharges(2), 'charges')
+
 export default buildConfig({
   admin: {
     user: Users.slug,
