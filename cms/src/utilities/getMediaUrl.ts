@@ -1,4 +1,5 @@
-import { getClientSideURL } from '@/utilities/getURL'
+import { getClientSideURL, getServerSideURL } from '@/utilities/getURL'
+import canUseDOM from './canUseDOM'
 
 /**
  * Processes media resource URL to ensure proper formatting
@@ -14,7 +15,7 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
-  // Otherwise prepend client-side URL
-  const baseUrl = getClientSideURL()
+  // Use server-side URL for SSR, client-side URL for client rendering
+  const baseUrl = canUseDOM ? getClientSideURL() : getServerSideURL()
   return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
 }
