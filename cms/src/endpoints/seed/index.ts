@@ -1,10 +1,13 @@
 import type { CollectionSlug, GlobalSlug, Payload, PayloadRequest, File } from 'payload'
+import path from 'path'
+import fs from 'fs'
 
 import { contactForm as contactFormData } from './contact-form'
 import { contact as contactPageData } from './contact-page'
 import { home } from './home'
 import { image1 } from './image-1'
 import { image2 } from './image-2'
+import { image3 } from './image-3'
 import { imageHero1 } from './image-hero-1'
 import { post1 } from './post-1'
 import { post2 } from './post-2'
@@ -20,6 +23,43 @@ const collections: CollectionSlug[] = [
   'search',
 ]
 const globals: GlobalSlug[] = ['header', 'footer']
+
+// Helper function to create media with retry logic for UploadThing failures
+async function createMediaWithRetry(
+  payload: Payload,
+  collection: CollectionSlug,
+  data: any,
+  file: File,
+  fileName: string,
+  maxRetries: number = 3,
+): Promise<any> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      payload.logger.info(`Attempting to upload ${fileName} (attempt ${attempt}/${maxRetries})`)
+
+      const result = await payload.create({
+        collection,
+        data,
+        file,
+      })
+
+      payload.logger.info(`Successfully uploaded ${fileName}`)
+      return result
+    } catch (error) {
+      payload.logger.error(`Upload attempt ${attempt} failed for ${fileName}:`, error)
+
+      if (attempt === maxRetries) {
+        payload.logger.error(`All ${maxRetries} attempts failed for ${fileName}`)
+        throw error
+      }
+
+      // Wait before retrying (exponential backoff)
+      const delay = Math.pow(2, attempt) * 1000
+      payload.logger.info(`Waiting ${delay}ms before retry...`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+}
 
 // Next.js revalidation errors are normal when seeding the database without a server running
 // i.e. running `yarn seed` locally instead of using the admin UI within an active app
@@ -80,20 +120,40 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding media...`)
 
-  const [image1Buffer, image2Buffer, image3Buffer, hero1Buffer] = await Promise.all([
-    fetchFileByURL(
+  let image1Buffer: File, image2Buffer: File, image3Buffer: File, hero1Buffer: File
+
+  try {
+    ;[image1Buffer, image2Buffer, image3Buffer, hero1Buffer] = await Promise.all([
+      fetchLocalFile(path.join(__dirname, 'image-post1.webp')),
+      fetchLocalFile(path.join(__dirname, 'image-post2.webp')),
+      fetchLocalFile(path.join(__dirname, 'image-post3.webp')),
+      fetchLocalFile(path.join(__dirname, 'image-hero1.webp')),
+    ])
+  } catch (error) {
+    payload.logger.error('Failed to load local image files, falling back to remote URLs...')
+    console.error('Local file error:', error)
+
+    // Fallback to remote URLs with individual error handling
+    const imagePromises: Promise<File>[] = [
       'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post1.webp',
-    ),
-    fetchFileByURL(
       'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post2.webp',
-    ),
-    fetchFileByURL(
       'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post3.webp',
-    ),
-    fetchFileByURL(
       'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-hero1.webp',
-    ),
-  ])
+    ].map(async (url) => {
+      try {
+        return await fetchFileByURL(url)
+      } catch (urlError) {
+        payload.logger.error(`Failed to fetch ${url}:`, urlError)
+        throw urlError
+      }
+    })
+
+    const results = await Promise.all(imagePromises)
+    image1Buffer = results[0]
+    image2Buffer = results[1]
+    image3Buffer = results[2]
+    hero1Buffer = results[3]
+  }
 
   const [demoAuthor, image1Doc, image2Doc, image3Doc, imageHomeDoc] = await Promise.all([
     payload.create({
@@ -106,26 +166,10 @@ export const seed = async ({
         country: 'us',
       },
     }),
-    payload.create({
-      collection: 'media',
-      data: image1,
-      file: image1Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image2Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image3Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: imageHero1,
-      file: hero1Buffer,
-    }),
+    createMediaWithRetry(payload, 'media', image1, image1Buffer, 'image-post1.webp'),
+    createMediaWithRetry(payload, 'media', image2, image2Buffer, 'image-post2.webp'),
+    createMediaWithRetry(payload, 'media', image3, image3Buffer, 'image-post3.webp'),
+    createMediaWithRetry(payload, 'media', imageHero1, hero1Buffer, 'image-hero1.webp'),
 
     payload.create({
       collection: 'categories',
@@ -342,6 +386,19 @@ export const seed = async ({
   ])
 
   payload.logger.info('Seeded database successfully!')
+}
+
+async function fetchLocalFile(filePath: string): Promise<File> {
+  const data = await fs.promises.readFile(filePath)
+  const fileName = path.basename(filePath)
+  const fileExtension = path.extname(filePath).slice(1)
+
+  return {
+    name: fileName,
+    data: data,
+    mimetype: `image/${fileExtension}`,
+    size: data.byteLength,
+  }
 }
 
 async function fetchFileByURL(url: string): Promise<File> {
