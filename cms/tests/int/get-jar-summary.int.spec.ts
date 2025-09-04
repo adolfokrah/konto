@@ -1,7 +1,7 @@
 import { getPayload, Payload } from 'payload'
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 
-import { getJarSummary } from '@collections/Jars/endpoints/get-jar-summary'
+import { getJarSummary } from '../../src/collections/Jars/endpoints/get-jar-summary'
 
 import config from '../../src/payload.config'
 import { clearAllCollections } from '../utils/testCleanup'

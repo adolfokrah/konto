@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
-import { mobile_money_bank_codes } from '@/lib/constants/bank_codes'
+import { mobile_money_bank_codes } from '../../../lib/constants/bank_codes'
 import { paystack } from '@/payload.config'
 
 export const transferMomo = async (req: PayloadRequest) => {

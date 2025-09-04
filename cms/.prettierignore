@@ -1,29 +1,14 @@
-# Dependencies
-node_modules/
-pnpm-lock.yaml
-package-lock.json
-yarn.lock
+**/payload-types.ts
+.tmp
+**/.git
+**/.hg
+**/.pnp.*
+**/.svn
+**/.yarn/**
+**/build
+**/dist/**
+**/node_modules
+**/temp
+**/docs/**
+tsconfig.json
 
-# Build outputs
-.next/
-build/
-dist/
-
-# Generated files
-next-env.d.ts
-payload-types.ts
-
-# Test outputs
-coverage/
-test-results/
-playwright-report/
-blob-report/
-
-# Logs
-*.log
-
-# Environment files
-.env*
-
-# Other
-.DS_Store
