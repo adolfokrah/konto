@@ -114,6 +114,7 @@ export interface CreateSubaccountParams {
   description?: string
   primary_contact_email?: string
   primary_contact_name?: string
+  is_verified?: boolean
   primary_contact_phone?: string
   metadata?: string | Record<string, unknown> // stringified JSON per Paystack docs
 }
@@ -122,7 +123,7 @@ export type CreateSubaccountResponse = PaystackEnvelope<unknown>
 export interface UpdateSubaccountParams {
   business_name?: string
   description?: string
-  bank_code?: string
+  settlement_bank?: string
   account_number?: string
   active?: boolean
   percentage_charge?: number
@@ -130,9 +131,31 @@ export interface UpdateSubaccountParams {
   primary_contact_name?: string
   primary_contact_phone?: string
   settlement_schedule?: 'auto' | 'weekly' | 'monthly' | 'manual' | string
+  is_verified?: boolean
   metadata?: string | Record<string, unknown>
 }
 export type UpdateSubaccountResponse = PaystackEnvelope<unknown>
+
+export interface VerifySubaccountParams {
+  ids: string[]
+}
+
+export interface VerifiedSubaccount {
+  id: string
+  business_name: string
+  account_number: string
+  bank_code: string
+  bank_name: string
+  percentage_charge: number
+  is_verified: boolean
+  primary_contact_email: string
+  primary_contact_name: string
+  primary_contact_phone: string
+  settlement_bank: string
+  subaccount_code: string
+}
+
+export type VerifySubaccountResponse = PaystackEnvelope<VerifiedSubaccount[]>
 
 // ---------- Settlements ----------
 export interface ListSettlementsParams {
@@ -420,6 +443,22 @@ export default class Paystack {
       `/subaccount/${encodeURIComponent(idOrCode)}`,
       { body },
     )
+  }
+
+  // ------------------ 6) Subaccounts: Verify ------------------
+
+  /**
+   * Verify subaccounts by their IDs.
+   * Docs: https://api.paystack.co/subaccount/verify
+   */
+  async verifySubaccount(params: VerifySubaccountParams): Promise<VerifySubaccountResponse> {
+    if (!params.ids || !Array.isArray(params.ids) || params.ids.length === 0) {
+      throw new Error('id array is required and cannot be empty')
+    }
+
+    return this.request<VerifySubaccountResponse['data']>('POST', '/subaccount/verify', {
+      body: params,
+    })
   }
 
   // ------------------ 7) Settlements: List ------------------
