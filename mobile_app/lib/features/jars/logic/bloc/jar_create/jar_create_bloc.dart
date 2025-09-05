@@ -36,8 +36,6 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
         goalAmount: event.goalAmount,
         deadline: event.deadline,
         currency: event.currency,
-        acceptAnonymousContributions: event.acceptAnonymousContributions,
-        acceptedPaymentMethods: event.acceptedPaymentMethods,
         invitedCollectors: event.invitedCollectors,
       );
 

@@ -596,11 +596,6 @@ void main() {
                   'isKYCVerified': true,
                 },
                 'invitedCollectors': [],
-                'acceptedPaymentMethods': [
-                  'mobile-money',
-                  'cash',
-                  'bank-transfer',
-                ],
                 'acceptAnonymousContributions': false,
                 'paymentLink': null,
                 'jarGroup': null,
@@ -772,11 +767,6 @@ void main() {
                   'email': 'test@example.com',
                 },
                 'invitedCollectors': [],
-                'acceptedPaymentMethods': [
-                  'mobile-money',
-                  'cash',
-                  'bank-transfer',
-                ],
                 'acceptAnonymousContributions': false,
                 'paymentLink': null,
                 'jarGroup': null,

@@ -71,7 +71,7 @@ void main() {
           'updatedAt': now.toIso8601String(),
         },
         'invitedCollectors': [],
-        'acceptedPaymentMethods': ['momo', 'card'],
+
         'acceptAnonymousContributions': true,
         'paymentLink': null,
         'jarGroup': null,

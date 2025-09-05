@@ -261,7 +261,6 @@ class ContributionJar {
   final ContributionUser creator;
   final List<JarInvitedCollector> invitedCollectors;
   final bool acceptAnonymousContributions;
-  final List<String> acceptedPaymentMethods;
   final String status;
   final String paymentLink;
   final DateTime createdAt;
@@ -279,7 +278,6 @@ class ContributionJar {
     required this.creator,
     required this.invitedCollectors,
     required this.acceptAnonymousContributions,
-    required this.acceptedPaymentMethods,
     required this.status,
     required this.paymentLink,
     required this.createdAt,
@@ -310,9 +308,6 @@ class ContributionJar {
           [],
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool? ?? false,
-      acceptedPaymentMethods: List<String>.from(
-        json['acceptedPaymentMethods'] as List<dynamic>? ?? [],
-      ),
       status: json['status'] as String,
       paymentLink: json['paymentLink'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -334,7 +329,6 @@ class ContributionJar {
       'invitedCollectors':
           invitedCollectors.map((collector) => collector.toJson()).toList(),
       'acceptAnonymousContributions': acceptAnonymousContributions,
-      'acceptedPaymentMethods': acceptedPaymentMethods,
       'status': status,
       'paymentLink': paymentLink,
       'createdAt': createdAt.toIso8601String(),

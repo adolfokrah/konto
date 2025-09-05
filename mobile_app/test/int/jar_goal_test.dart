@@ -87,7 +87,7 @@ void main() {
                   'updatedAt': DateTime.now().toIso8601String(),
                 },
                 'collectors': [],
-                'acceptedPaymentMethods': ['momo', 'card'],
+
                 'acceptAnonymousContributions': true,
                 'paymentLink': null,
                 'jarGroup': null,
@@ -341,7 +341,7 @@ void main() {
                   'updatedAt': DateTime.now().toIso8601String(),
                 },
                 'collectors': [],
-                'acceptedPaymentMethods': ['momo', 'card'],
+
                 'acceptAnonymousContributions': true,
                 'paymentLink': null,
                 'jarGroup': null,
@@ -634,7 +634,7 @@ void main() {
                   'updatedAt': DateTime.now().toIso8601String(),
                 },
                 'collectors': [],
-                'acceptedPaymentMethods': ['momo', 'card'],
+
                 'acceptAnonymousContributions': true,
                 'paymentLink': null,
                 'jarGroup': null,

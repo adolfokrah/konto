@@ -190,7 +190,6 @@ class _JarCreateViewState extends State<JarCreateView> {
         invitedCollectors: invitedCollectorsData,
         imageId: jarImageId,
         isActive: true,
-        acceptedPaymentMethods: ['mobile-money', 'bank-transfer', 'cash'],
         goalAmount: 0,
       ),
     );

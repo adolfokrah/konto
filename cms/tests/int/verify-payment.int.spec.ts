@@ -44,7 +44,7 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
         currency: 'ghc',
         status: 'open',
         isActive: true,
-        acceptedPaymentMethods: ['mobile-money'],
+
         acceptAnonymousContributions: false,
         isFixedContribution: false,
         goalAmount: 0,

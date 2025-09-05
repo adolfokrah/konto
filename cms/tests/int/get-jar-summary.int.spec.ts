@@ -47,7 +47,6 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
         isActive: true,
         isFixedContribution: false,
         creator: testUser.id,
-        acceptedPaymentMethods: ['mobile-money', 'bank-transfer'],
         acceptAnonymousContributions: false,
       },
     })
@@ -306,7 +305,6 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
           isActive: true,
           isFixedContribution: false,
           creator: testUser.id,
-          acceptedPaymentMethods: ['mobile-money'],
           acceptAnonymousContributions: false,
         },
       })
@@ -383,7 +381,6 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       expect(data).toHaveProperty('isActive')
       expect(data).toHaveProperty('isFixedContribution')
       expect(data).toHaveProperty('creator')
-      expect(data).toHaveProperty('acceptedPaymentMethods')
       expect(data).toHaveProperty('createdAt')
       expect(data).toHaveProperty('updatedAt')
 

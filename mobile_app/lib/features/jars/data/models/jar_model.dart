@@ -56,7 +56,6 @@ class JarModel {
   final List<InvitedCollector> invitedCollectors;
   final String? paymentLink;
   final bool acceptAnonymousContributions;
-  final List<String> acceptedPaymentMethods;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -81,7 +80,6 @@ class JarModel {
     required this.invitedCollectors,
     this.paymentLink,
     required this.acceptAnonymousContributions,
-    required this.acceptedPaymentMethods,
     required this.createdAt,
     required this.updatedAt,
     required this.totalContributions,
@@ -126,11 +124,6 @@ class JarModel {
       paymentLink: json['paymentLink'] as String?,
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool? ?? false,
-      acceptedPaymentMethods:
-          (json['acceptedPaymentMethods'] as List<dynamic>?)
-              ?.map((method) => method as String)
-              .toList() ??
-          [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       totalContributions: totalContributions,
@@ -162,7 +155,6 @@ class JarModel {
               .toList(),
       'paymentLink': paymentLink,
       'acceptAnonymousContributions': acceptAnonymousContributions,
-      'acceptedPaymentMethods': acceptedPaymentMethods,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'totalContributions': totalContributions,
@@ -213,8 +205,6 @@ class JarModel {
       paymentLink: paymentLink ?? this.paymentLink,
       acceptAnonymousContributions:
           acceptAnonymousContributions ?? this.acceptAnonymousContributions,
-      acceptedPaymentMethods:
-          acceptedPaymentMethods ?? this.acceptedPaymentMethods,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalContributions: totalContributions ?? this.totalContributions,

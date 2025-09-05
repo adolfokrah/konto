@@ -94,7 +94,6 @@ class JarRepository {
     DateTime? deadline,
     required String currency,
     bool acceptAnonymousContributions = false,
-    required List<String> acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
   }) async {
     try {
@@ -110,7 +109,6 @@ class JarRepository {
         deadline: deadline,
         currency: currency,
         acceptAnonymousContributions: acceptAnonymousContributions,
-        acceptedPaymentMethods: acceptedPaymentMethods,
         invitedCollectors: invitedCollectors,
       );
 

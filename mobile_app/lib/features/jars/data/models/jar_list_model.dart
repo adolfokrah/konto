@@ -132,7 +132,6 @@ class JarListItem {
   final List<JarInvitedCollector> invitedCollectors;
   final String? paymentLink;
   final bool acceptAnonymousContributions;
-  final List<String> acceptedPaymentMethods;
   final String createdAt;
   final String updatedAt;
   final double totalContributions;
@@ -152,7 +151,6 @@ class JarListItem {
     required this.invitedCollectors,
     this.paymentLink,
     required this.acceptAnonymousContributions,
-    required this.acceptedPaymentMethods,
     required this.createdAt,
     required this.updatedAt,
     required this.totalContributions,
@@ -186,11 +184,6 @@ class JarListItem {
       paymentLink: json['paymentLink'],
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] ?? false,
-      acceptedPaymentMethods:
-          (json['acceptedPaymentMethods'] as List<dynamic>?)
-              ?.map((item) => item.toString())
-              .toList() ??
-          [],
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
       totalContributions: (json['totalContributions'] ?? 0).toDouble(),
@@ -214,7 +207,6 @@ class JarListItem {
           invitedCollectors.map((collector) => collector.toJson()).toList(),
       'paymentLink': paymentLink,
       'acceptAnonymousContributions': acceptAnonymousContributions,
-      'acceptedPaymentMethods': acceptedPaymentMethods,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'totalContributions': totalContributions,

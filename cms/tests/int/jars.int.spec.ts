@@ -72,11 +72,6 @@ describe('Jars Collection Integration Tests', () => {
         currency: 'ghc' as const,
         creator: testUser.id,
         status: 'open' as const,
-        acceptedPaymentMethods: ['mobile-money', 'bank-transfer'] as (
-          | 'mobile-money'
-          | 'bank-transfer'
-          | 'cash'
-        )[],
       }
 
       const jar = await payload.create({
@@ -92,7 +87,6 @@ describe('Jars Collection Integration Tests', () => {
       expect(jar.goalAmount).toBe(1000)
       expect(jar.currency).toBe('ghc')
       expect(typeof jar.creator === 'object' ? jar.creator.id : jar.creator).toBe(testUser.id)
-      expect(jar.acceptedPaymentMethods).toEqual(['mobile-money', 'bank-transfer'])
     })
 
     it('should create a jar with fixed contribution amount', async () => {
@@ -103,7 +97,6 @@ describe('Jars Collection Integration Tests', () => {
         currency: 'ngn' as const,
         creator: testUser.id,
         status: 'open' as const,
-        acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
 
       const jar = await payload.create({
@@ -128,7 +121,6 @@ describe('Jars Collection Integration Tests', () => {
             status: 'accepted' as const,
           },
         ],
-        acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
 
       const jar = await payload.create({
@@ -150,7 +142,6 @@ describe('Jars Collection Integration Tests', () => {
         creator: testUser.id,
         status: 'open' as const,
         acceptAnonymousContributions: true,
-        acceptedPaymentMethods: ['cash'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
       }
 
       const jar = await payload.create({
@@ -164,7 +155,6 @@ describe('Jars Collection Integration Tests', () => {
     it('should fail to create jar without required fields', async () => {
       const incompleteJarData = {
         name: 'Incomplete Jar',
-        // Missing currency, creator, acceptedPaymentMethods
       } as any
 
       await expect(
@@ -187,7 +177,6 @@ describe('Jars Collection Integration Tests', () => {
           isActive: true,
           goalAmount: 1000,
           status: 'open' as const,
-          acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
         },
         {
           name: 'Inactive Investment Jar',
@@ -196,11 +185,6 @@ describe('Jars Collection Integration Tests', () => {
           isActive: false,
           goalAmount: 2000,
           status: 'open' as const,
-          acceptedPaymentMethods: ['bank-transfer'] as (
-            | 'mobile-money'
-            | 'bank-transfer'
-            | 'cash'
-          )[],
         },
         {
           name: 'Emergency Fund',
@@ -210,11 +194,6 @@ describe('Jars Collection Integration Tests', () => {
           isFixedContribution: true,
           acceptedContributionAmount: 100,
           status: 'open' as const,
-          acceptedPaymentMethods: ['mobile-money', 'cash'] as (
-            | 'mobile-money'
-            | 'bank-transfer'
-            | 'cash'
-          )[],
         },
       ]
 
@@ -246,7 +225,7 @@ describe('Jars Collection Integration Tests', () => {
       })
 
       expect(ghcJars.docs).toHaveLength(2)
-      ghcJars.docs.forEach(jar => {
+      ghcJars.docs.forEach((jar) => {
         expect(jar.currency).toBe('ghc')
       })
     })
@@ -262,7 +241,7 @@ describe('Jars Collection Integration Tests', () => {
       })
 
       expect(activeJars.docs).toHaveLength(2)
-      activeJars.docs.forEach(jar => {
+      activeJars.docs.forEach((jar) => {
         expect(jar.isActive).toBe(true)
       })
     })
@@ -278,7 +257,7 @@ describe('Jars Collection Integration Tests', () => {
       })
 
       expect(userJars.docs).toHaveLength(2)
-      userJars.docs.forEach(jar => {
+      userJars.docs.forEach((jar) => {
         expect(typeof jar.creator === 'object' ? jar.creator.id : jar.creator).toBe(testUser.id)
       })
     })
@@ -326,7 +305,7 @@ describe('Jars Collection Integration Tests', () => {
           isActive: true,
           goalAmount: 500,
           status: 'open' as const,
-          acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
+          // acceptedPaymentMethods removed
         },
       })
     })
@@ -390,17 +369,7 @@ describe('Jars Collection Integration Tests', () => {
       ).toEqual([secondUser.id])
     })
 
-    it('should update payment methods', async () => {
-      const updatedJar = await payload.update({
-        collection: 'jars',
-        id: testJar.id,
-        data: {
-          acceptedPaymentMethods: ['mobile-money', 'bank-transfer', 'cash'],
-        },
-      })
-
-      expect(updatedJar.acceptedPaymentMethods).toEqual(['mobile-money', 'bank-transfer', 'cash'])
-    })
+    // Removed test: update payment methods (field removed)
   })
 
   describe('Jar Deletion', () => {
@@ -414,7 +383,7 @@ describe('Jars Collection Integration Tests', () => {
           currency: 'ghc' as const,
           creator: testUser.id,
           status: 'open' as const,
-          acceptedPaymentMethods: ['mobile-money'] as ('mobile-money' | 'bank-transfer' | 'cash')[],
+          // acceptedPaymentMethods removed
         },
       })
     })
@@ -564,30 +533,6 @@ describe('Jars Collection Integration Tests', () => {
       expect(page1.totalPages).toBe(2)
     })
 
-    it('should find jars by currency and payment method', async () => {
-      const result = await payload.find({
-        collection: 'jars',
-        where: {
-          and: [
-            {
-              currency: {
-                equals: 'ghc',
-              },
-            },
-            {
-              acceptedPaymentMethods: {
-                contains: 'mobile-money',
-              },
-            },
-          ],
-        },
-      })
-
-      expect(result.docs).toHaveLength(2)
-      result.docs.forEach(jar => {
-        expect(jar.currency).toBe('ghc')
-        expect(jar.acceptedPaymentMethods).toContain('mobile-money')
-      })
-    })
+    // Removed test querying by currency and payment method (field removed)
   })
 })

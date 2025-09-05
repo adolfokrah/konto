@@ -9,7 +9,7 @@ import { clearAllCollections } from '../utils/testCleanup'
 const mockChargeMomo = vi.hoisted(() => vi.fn())
 
 // Mock the Paystack service with hoisted mock
-vi.mock('@/payload.config', async importOriginal => {
+vi.mock('@/payload.config', async (importOriginal) => {
   const actual = (await importOriginal()) as any
   return {
     ...actual,
@@ -95,7 +95,6 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         currency: 'ghc',
         creator: testUser.id,
         status: 'open',
-        acceptedPaymentMethods: ['bank-transfer', 'mobile-money'],
       },
     })
 
@@ -151,7 +150,6 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         currency: 'ghc',
         creator: testUser.id,
         status: 'open',
-        acceptedPaymentMethods: ['mobile-money'],
       },
     })
 
@@ -217,7 +215,6 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         currency: 'ghc',
         creator: testUser.id,
         status: 'open',
-        acceptedPaymentMethods: ['mobile-money'],
       },
     })
 
@@ -276,7 +273,6 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         currency: 'ghc',
         creator: testUser.id,
         status: 'open',
-        acceptedPaymentMethods: ['mobile-money'],
       },
     })
 

@@ -121,7 +121,6 @@ class JarApiProvider {
     DateTime? deadline,
     required String currency,
     bool acceptAnonymousContributions = false,
-    required List<String> acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
   }) async {
     try {
@@ -194,8 +193,6 @@ class JarApiProvider {
         'currency': currency, // Now a text field
         'creator': user.id, // Set the authenticated user as creator
         'acceptAnonymousContributions': acceptAnonymousContributions,
-        'acceptedPaymentMethods':
-            acceptedPaymentMethods, // Already in correct format from UI
         'invitedCollectors': processedInvitedCollectors,
       };
 
@@ -306,9 +303,6 @@ class JarApiProvider {
       if (status != null) jarData['status'] = status;
       if (acceptAnonymousContributions != null) {
         jarData['acceptAnonymousContributions'] = acceptAnonymousContributions;
-      }
-      if (acceptedPaymentMethods != null) {
-        jarData['acceptedPaymentMethods'] = acceptedPaymentMethods;
       }
       if (processedInvitedCollectors != null) {
         jarData['invitedCollectors'] = processedInvitedCollectors;

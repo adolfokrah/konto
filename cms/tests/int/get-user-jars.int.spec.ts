@@ -70,7 +70,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -90,7 +90,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -165,7 +165,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -283,7 +283,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -303,7 +303,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -484,7 +484,7 @@ describe('getUserJars', () => {
         currency: 'ghc',
         paymentLink: null,
         acceptAnonymousContributions: false,
-        acceptedPaymentMethods: ['mobile-money'],
+
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }

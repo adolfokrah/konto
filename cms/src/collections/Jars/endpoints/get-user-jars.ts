@@ -131,7 +131,6 @@ export const getUserJars = async (req: PayloadRequest) => {
         },
         paymentLink: jar.paymentLink,
         acceptAnonymousContributions: jar.acceptAnonymousContributions,
-        acceptedPaymentMethods: jar.acceptedPaymentMethods,
         createdAt: jar.createdAt,
         updatedAt: jar.updatedAt,
         totalContributions: jarTotalContributions,

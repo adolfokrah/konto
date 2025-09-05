@@ -86,7 +86,7 @@ void main() {
               'updatedAt': '2025-08-21T18:32:42.806Z',
             },
             'invitedCollectors': [],
-            'acceptedPaymentMethods': ['mobile-money'],
+
             'acceptAnonymousContributions': false,
             'paymentLink': null,
             'status': 'open',
@@ -130,7 +130,7 @@ void main() {
                   'invitedCollectors': [],
                   'paymentLink': null,
                   'acceptAnonymousContributions': false,
-                  'acceptedPaymentMethods': ['mobile-money'],
+
                   'createdAt': '2025-08-21T18:32:42.806Z',
                   'updatedAt': '2025-08-21T18:32:42.806Z',
                   'totalContributions': 0.0,
@@ -372,7 +372,6 @@ void main() {
                     'status': 'pending',
                   },
                 ],
-                'acceptedPaymentMethods': ['mobile-money', 'bank-transfer'],
                 'acceptAnonymousContributions': false,
                 'paymentLink': null,
                 'status': 'open',
@@ -400,7 +399,6 @@ void main() {
           jarGroup: 'savings',
           currency: 'ghc',
           goalAmount: 10000.0,
-          acceptedPaymentMethods: ['mobile-money', 'bank-transfer'],
           invitedCollectors: [
             {'email': 'collaborator1@example.com', 'name': 'John Doe'},
             {'email': 'collaborator2@example.com', 'name': 'Jane Smith'},
@@ -420,7 +418,6 @@ void main() {
         expect(jarCreateEvent.currency, equals('ghc'));
         expect(jarCreateEvent.invitedCollectors, isNotNull);
         expect(jarCreateEvent.invitedCollectors!.length, equals(2));
-        expect(jarCreateEvent.acceptedPaymentMethods, contains('mobile-money'));
 
         print('✅ Jar created successfully with complete parameters:');
         print('   - Name: Complete Test Jar');
@@ -450,7 +447,6 @@ void main() {
         name: '', // Empty name should cause validation error
         jarGroup: 'personal',
         currency: 'usd',
-        acceptedPaymentMethods: ['mobile-money'],
       );
 
       jarCreateBloc.add(invalidJarCreateEvent);
@@ -483,7 +479,6 @@ void main() {
               'jarGroup': 'investment',
               'creator': {'id': 'test-user-123'},
               'invitedCollectors': [],
-              'acceptedPaymentMethods': ['bank-transfer'],
               'createdAt': '2025-08-22T10:15:30.000Z',
               'updatedAt': '2025-08-22T10:15:30.000Z',
             },
@@ -503,7 +498,6 @@ void main() {
         name: 'USD Test Jar',
         jarGroup: 'investment',
         currency: 'usd',
-        acceptedPaymentMethods: ['bank-transfer'],
       );
 
       jarCreateBloc.add(usdJarEvent);
@@ -535,7 +529,7 @@ void main() {
               'jarGroup': 'group-savings',
               'creator': {'id': 'test-user-123'},
               'invitedCollectors': capturedInvitedCollectors,
-              'acceptedPaymentMethods': ['mobile-money'],
+
               'createdAt': '2025-08-22T10:15:30.000Z',
               'updatedAt': '2025-08-22T10:15:30.000Z',
             },
@@ -555,7 +549,6 @@ void main() {
         name: 'Collaboration Test Jar',
         jarGroup: 'group-savings',
         currency: 'ghc',
-        acceptedPaymentMethods: ['mobile-money'],
         invitedCollectors: [
           {'email': 'user1@test.com', 'name': 'Alice Johnson'},
           {'email': 'user2@test.com', 'name': 'Bob Wilson'},

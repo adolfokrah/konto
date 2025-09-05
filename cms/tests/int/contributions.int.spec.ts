@@ -81,11 +81,6 @@ describe('Contributions Collection Integration Tests', () => {
           },
         ],
         isActive: true,
-        acceptedPaymentMethods: ['mobile-money', 'bank-transfer'] as (
-          | 'mobile-money'
-          | 'bank-transfer'
-          | 'cash'
-        )[],
       },
     })
   })

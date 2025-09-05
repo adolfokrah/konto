@@ -14,7 +14,6 @@ final class JarCreateSubmitted extends JarCreateEvent {
   final DateTime? deadline;
   final String currency;
   final bool acceptAnonymousContributions;
-  final List<String> acceptedPaymentMethods;
   final List<Map<String, dynamic>>? invitedCollectors;
   final String jarGroup;
 
@@ -29,7 +28,6 @@ final class JarCreateSubmitted extends JarCreateEvent {
     this.deadline,
     required this.currency,
     this.acceptAnonymousContributions = false,
-    required this.acceptedPaymentMethods,
     this.invitedCollectors,
     required this.jarGroup,
   });

@@ -99,7 +99,7 @@ void main() {
                       'invitedCollectors': [],
                       'paymentLink': null,
                       'acceptAnonymousContributions': true,
-                      'acceptedPaymentMethods': ['momo', 'card'],
+
                       'createdAt':
                           now
                               .subtract(const Duration(days: 20))
@@ -136,7 +136,6 @@ void main() {
                       'invitedCollectors': [],
                       'paymentLink': null,
                       'acceptAnonymousContributions': true,
-                      'acceptedPaymentMethods': ['momo'],
                       'createdAt':
                           now
                               .subtract(const Duration(days: 15))
@@ -186,7 +185,6 @@ void main() {
                       'invitedCollectors': [],
                       'paymentLink': null,
                       'acceptAnonymousContributions': false,
-                      'acceptedPaymentMethods': ['card'],
                       'createdAt':
                           now
                               .subtract(const Duration(days: 10))
@@ -302,7 +300,7 @@ void main() {
                       'invitedCollectors': [],
                       'paymentLink': null,
                       'acceptAnonymousContributions': true,
-                      'acceptedPaymentMethods': ['momo', 'card'],
+
                       'createdAt':
                           now
                               .subtract(const Duration(days: 20))
@@ -352,7 +350,7 @@ void main() {
                     'updatedAt': now.toIso8601String(),
                   },
                   'collectors': [],
-                  'acceptedPaymentMethods': ['momo', 'card'],
+
                   'acceptAnonymousContributions': true,
                   'paymentLink': null,
                   'jarGroup': null,

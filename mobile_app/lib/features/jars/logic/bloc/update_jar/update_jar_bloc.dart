@@ -51,8 +51,6 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       status: event.updates['status'],
       acceptAnonymousContributions:
           event.updates['acceptAnonymousContributions'],
-      acceptedPaymentMethods:
-          event.updates['acceptedPaymentMethods']?.cast<String>(),
       invitedCollectors: processedCollectors,
       thankYouMessage: event.updates['thankYouMessage'],
     );

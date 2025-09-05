@@ -112,6 +112,10 @@ export class SMSClient {
     form.append('is_schedule', isSchedule ? 'true' : 'false')
     form.append('schedule_date', scheduleDate || '')
 
+    if (process.env.NODE_ENV !== 'production') {
+      return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
+    }
+
     try {
       const url = this.composeUrl()
       const res = await fetch(url, {
