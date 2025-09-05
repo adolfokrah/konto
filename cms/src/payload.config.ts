@@ -30,6 +30,13 @@ const dbUrl =
 
 export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
 
+//test to get all settlements
+const settlements = await paystack.getSettlementTransactions(8293501)
+// const settlements = await paystack.listSettlements();
+
+if (settlements.status) {
+  console.log('Settlements', settlements)
+}
 export default buildConfig({
   admin: {
     components: {

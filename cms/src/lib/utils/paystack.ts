@@ -134,6 +134,95 @@ export interface UpdateSubaccountParams {
 }
 export type UpdateSubaccountResponse = PaystackEnvelope<unknown>
 
+// ---------- Settlements ----------
+export interface ListSettlementsParams {
+  perPage?: number
+  page?: number
+  from?: string // Date in YYYY-MM-DD format
+  to?: string // Date in YYYY-MM-DD format
+  subaccount?: string // subaccount ID
+}
+
+export interface Settlement {
+  id: number
+  domain: string
+  status: 'success' | 'pending' | 'processing' | 'failed'
+  currency: Currency
+  integration: number
+  total_amount: number
+  effective_amount: number
+  total_fees: number
+  total_processed: number
+  deducted_fees: boolean
+  settlement_date: string
+  settled_by: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ListSettlementsResponse = PaystackEnvelope<Settlement[]>
+
+export interface ListSettlementTransactionsParams {
+  perPage?: number
+  page?: number
+  from?: string // Date in YYYY-MM-DD format
+  to?: string // Date in YYYY-MM-DD format
+}
+
+export interface SettlementTransaction {
+  id: number
+  domain: string
+  status: string
+  reference: string
+  amount: number
+  message: string | null
+  gateway_response: string
+  paid_at: string
+  created_at: string
+  channel: string
+  currency: Currency
+  ip_address: string | null
+  metadata: Record<string, unknown>
+  log: {
+    start_time: number
+    time_spent: number
+    attempts: number
+    errors: number
+    success: boolean
+    mobile: boolean
+    input: unknown[]
+    history: unknown[]
+  }
+  fees: number
+  fees_split: unknown | null
+  authorization: Record<string, unknown>
+  customer: {
+    id: number
+    first_name: string | null
+    last_name: string | null
+    email: string
+    customer_code: string
+    phone: string | null
+    metadata: Record<string, unknown>
+    risk_action: string
+    international_format_phone: string | null
+  }
+  plan: unknown | null
+  split: Record<string, unknown>
+  order_id: unknown | null
+  paidAt: string
+  createdAt: string
+  requested_amount: number
+  pos_transaction_data: unknown | null
+  source: unknown | null
+  fees_breakdown: unknown | null
+  transaction_date: string
+  plan_object: Record<string, unknown>
+  subaccount: Record<string, unknown>
+}
+
+export type ListSettlementTransactionsResponse = PaystackEnvelope<SettlementTransaction[]>
+
 export default class Paystack {
   private readonly secretKey: string
   public readonly publicKey?: string
@@ -330,6 +419,52 @@ export default class Paystack {
       'PUT',
       `/subaccount/${encodeURIComponent(idOrCode)}`,
       { body },
+    )
+  }
+
+  // ------------------ 7) Settlements: List ------------------
+
+  /**
+   * Get all settlements on your integration.
+   * Docs: https://paystack.com/docs/api/settlement/#list
+   */
+  async listSettlements(params: ListSettlementsParams = {}): Promise<ListSettlementsResponse> {
+    const query: Record<string, string | number | boolean | undefined | null> = {}
+
+    if (params.perPage !== undefined) query.perPage = params.perPage
+    if (params.page !== undefined) query.page = params.page
+    if (params.from !== undefined) query.from = params.from
+    if (params.to !== undefined) query.to = params.to
+    if (params.subaccount !== undefined) query.subaccount = params.subaccount
+
+    return this.request<ListSettlementsResponse['data']>('GET', '/settlement', {
+      query,
+    })
+  }
+
+  // ------------------ 8) Settlements: Get Transactions ------------------
+
+  /**
+   * Get the transactions that make up a particular settlement.
+   * Docs: https://paystack.com/docs/api/settlement/#transactions
+   */
+  async getSettlementTransactions(
+    settlementId: string | number,
+    params: ListSettlementTransactionsParams = {},
+  ): Promise<ListSettlementTransactionsResponse> {
+    if (!settlementId) throw new Error('settlementId is required')
+
+    const query: Record<string, string | number | boolean | undefined | null> = {}
+
+    if (params.perPage !== undefined) query.perPage = params.perPage
+    if (params.page !== undefined) query.page = params.page
+    if (params.from !== undefined) query.from = params.from
+    if (params.to !== undefined) query.to = params.to
+
+    return this.request<ListSettlementTransactionsResponse['data']>(
+      'GET',
+      `/settlement/${encodeURIComponent(settlementId)}/transactions`,
+      { query },
     )
   }
 }

@@ -214,7 +214,7 @@ export const chargeMomo = async (req: PayloadRequest) => {
   } catch (error: any) {
     // Log error in development only
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
+       
       console.error('💥 Mobile money charge error:', error)
     }
 

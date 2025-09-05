@@ -25,7 +25,6 @@ export const createSubAccount: CollectionBeforeChangeHook = async ({
 
       if (res?.status && res?.data) {
         data.paystackSubAccountCode = (res.data as any)?.subaccount_code
-        data.bank = (res.data as any)?.bank_code
         data.accountNumber = (res.data as any)?.account_number
         data.accountHolder = (res.data as any)?.account_name
       }
@@ -50,7 +49,6 @@ export const createSubAccount: CollectionBeforeChangeHook = async ({
 
       if (res?.status && res?.data) {
         data.paystackSubAccountCode = (res.data as any)?.subaccount_code
-        data.bank = (res.data as any)?.bank_code
         data.accountNumber = (res.data as any)?.account_number
         data.accountHolder = (res.data as any)?.account_name
       }
