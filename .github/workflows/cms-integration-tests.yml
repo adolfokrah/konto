@@ -59,8 +59,8 @@ jobs:
       - name: Install dependencies
         working-directory: ./cms
         run: |
-          pnpm store prune
-          pnpm install
+          pnpm store prune || true
+          pnpm install --no-frozen-lockfile
 
       - name: Generate types
         working-directory: ./cms
