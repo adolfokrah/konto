@@ -45,7 +45,6 @@ describe('TransferMomo Endpoint Integration Tests', () => {
         currency: 'ghc' as const,
         creator: testUser.id,
         isActive: true,
-        acceptedPaymentMethods: ['mobile-money'] as 'mobile-money'[],
         invitedCollectors: [],
       },
     })
