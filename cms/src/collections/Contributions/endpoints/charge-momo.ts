@@ -217,7 +217,7 @@ export const chargeMomo = async (req: PayloadRequest) => {
 
     console.error('💥 Mobile money charge error:', error)
 
-    throw new Error(error)
+    // throw new Error(error)
     // }
 
     // Handle specific errors
