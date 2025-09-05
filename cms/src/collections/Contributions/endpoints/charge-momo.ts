@@ -216,6 +216,8 @@ export const chargeMomo = async (req: PayloadRequest) => {
     // if (process.env.NODE_ENV !== 'production') {
 
     console.error('💥 Mobile money charge error:', error)
+
+    throw new Error(error)
     // }
 
     // Handle specific errors
