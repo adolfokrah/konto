@@ -54,15 +54,23 @@ export class SMSClient {
   private readonly signal?: AbortSignal
 
   constructor(opts: SMSClientOptions = {}) {
-    this.apiKey = opts.apiKey || process.env.MNOTIFY_API_KEY || ''
-    this.senderId = opts.senderId || process.env.MNOTIFY_SENDER_ID || ''
+    const isTest = process.env.NODE_ENV === 'test'
+    let apiKey = opts.apiKey || process.env.MNOTIFY_API_KEY || ''
+    let senderId = opts.senderId || process.env.MNOTIFY_SENDER_ID || ''
+
+    if (isTest) {
+      if (!apiKey) apiKey = 'test_api_key'
+      if (!senderId) senderId = 'TESTSENDER'
+    }
+
+    this.apiKey = apiKey
+    this.senderId = senderId
     this.baseUrl = (
       opts.baseUrl ||
       process.env.MNOTIFY_API_BASE_URL ||
       'https://api.mnotify.com/api/sms/quick'
     ).replace(/\/$/, '')
     this.signal = opts.signal
-
     if (!this.apiKey) throw new Error('MNotify API key (MNOTIFY_API_KEY) is required')
     if (!this.senderId) throw new Error('MNotify Sender ID (MNOTIFY_SENDER_ID) is required')
   }
@@ -111,6 +119,16 @@ export class SMSClient {
     const isSchedule = !!scheduleDate
     form.append('is_schedule', isSchedule ? 'true' : 'false')
     form.append('schedule_date', scheduleDate || '')
+
+    if (process.env.NODE_ENV === 'test') {
+      return {
+        success: true,
+        message: 'Test mode: SMS send skipped',
+        recipients,
+        sent: recipients.length,
+        failed: 0,
+      }
+    }
 
     if (process.env.NODE_ENV !== 'production') {
       return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
