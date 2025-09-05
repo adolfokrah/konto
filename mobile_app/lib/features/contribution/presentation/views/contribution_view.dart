@@ -135,7 +135,6 @@ class ContributionView extends StatelessWidget {
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
 
-                                  // Payment method as a ListTile
                                   AppCard(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: AppSpacing.spacingM,
