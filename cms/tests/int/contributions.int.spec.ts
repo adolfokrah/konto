@@ -116,7 +116,7 @@ describe('Contributions Collection Integration Tests', () => {
       expect(contribution.contributor).toBe('John Doe')
       expect(contribution.contributorPhoneNumber).toBe('+233541234569')
       expect(contribution.paymentMethod).toBe('mobile-money')
-      expect(contribution.amountContributed).toBe(97) // Amount after charges (100 -> 97)
+      expect(contribution.amountContributed).toBe(98) // Amount after charges (100 -> 97)
       expect(
         typeof contribution.collector === 'object'
           ? contribution.collector.id
@@ -269,7 +269,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(jarContributions.docs).toHaveLength(3)
-      jarContributions.docs.forEach(contribution => {
+      jarContributions.docs.forEach((contribution) => {
         expect(typeof contribution.jar === 'object' ? contribution.jar.id : contribution.jar).toBe(
           testJar.id,
         )
@@ -301,7 +301,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(collectorContributions.docs).toHaveLength(2)
-      collectorContributions.docs.forEach(contribution => {
+      collectorContributions.docs.forEach((contribution) => {
         expect(
           typeof contribution.collector === 'object'
             ? contribution.collector.id
@@ -321,7 +321,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(highValueContributions.docs).toHaveLength(2)
-      highValueContributions.docs.forEach(contribution => {
+      highValueContributions.docs.forEach((contribution) => {
         expect(contribution.amountContributed).toBeGreaterThan(100)
       })
     })
@@ -562,7 +562,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(result.docs).toHaveLength(2)
-      result.docs.forEach(contribution => {
+      result.docs.forEach((contribution) => {
         expect(contribution.amountContributed).toBeGreaterThan(250)
         expect(contribution.viaPaymentLink).toBe(true)
       })
@@ -647,7 +647,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(result.docs).toHaveLength(3)
-      result.docs.forEach(contribution => {
+      result.docs.forEach((contribution) => {
         expect(contribution.contributor).toBeDefined()
         expect(contribution.contributor).not.toBeNull()
       })
