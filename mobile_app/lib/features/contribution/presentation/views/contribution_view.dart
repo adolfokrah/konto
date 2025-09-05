@@ -134,7 +134,6 @@ class ContributionView extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
-
                                   AppCard(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: AppSpacing.spacingM,
