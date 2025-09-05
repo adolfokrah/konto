@@ -71,7 +71,8 @@ runs:
               "apiBaseUrl": "${{ inputs.api-base-url }}",
               "MNOTIFY_API_KEY": "${{ inputs.mnotify-api-key }}",
               "MNOTIFY_SENDER_ID": "${{ inputs.mnotify-sender-id }}",
-              "MNOTIFY_API_BASE_URL": "${{ inputs.mnotify-api-base-url }}"
+              "MNOTIFY_API_BASE_URL": "${{ inputs.mnotify-api-base-url }}",
+              "IMAGE_BASE_URL": "${{ inputs.image-base-url }}"
             }
           }
         }' \
