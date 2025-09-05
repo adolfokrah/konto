@@ -53,6 +53,7 @@ class ContributionsListFilter extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder:
           (
             modalContext,
@@ -74,57 +75,66 @@ class ContributionsListFilter extends StatelessWidget {
                 localizations.dateCustomRange,
               ];
 
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const DragHandle(),
-                    const SizedBox(height: AppSpacing.spacingM),
-                    Text(
-                      localizations.selectDateRange,
-                      style: TextStyles.titleBoldLg,
-                    ),
-                    const SizedBox(height: AppSpacing.spacingM),
-                    AppCard(
-                      child: Column(
-                        children:
-                            translatedDateOptions.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final translatedOption = entry.value;
-                              final originalOption =
-                                  FilterOptions.dateOptions[index];
-
-                              return ListTile(
-                                title: Text(
-                                  translatedOption,
-                                  style: TextStyles.titleMediumM,
-                                ),
-                                onTap: () {
-                                  if (originalOption == 'dateCustomRange') {
-                                    Navigator.pop(modalContext);
-                                    _showCustomDateRangePicker(context);
-                                  } else {
-                                    context.read<FilterContributionsBloc>().add(
-                                      UpdateDateRange(
-                                        selectedDate: originalOption,
-                                      ),
-                                    );
-                                    Navigator.pop(modalContext);
-                                  }
-                                },
-                                trailing:
-                                    selectedDate == originalOption
-                                        ? const Icon(Icons.check, size: 18)
-                                        : null,
-                              );
-                            }).toList(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.spacingM,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const DragHandle(),
+                      const SizedBox(height: AppSpacing.spacingM),
+                      Text(
+                        localizations.selectDateRange,
+                        style: TextStyles.titleBoldLg,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.spacingL),
-                  ],
+                      const SizedBox(height: AppSpacing.spacingM),
+                      AppCard(
+                        child: Column(
+                          children:
+                              translatedDateOptions.asMap().entries.map((
+                                entry,
+                              ) {
+                                final index = entry.key;
+                                final translatedOption = entry.value;
+                                final originalOption =
+                                    FilterOptions.dateOptions[index];
+
+                                return ListTile(
+                                  title: Text(
+                                    translatedOption,
+                                    style: TextStyles.titleMediumM,
+                                  ),
+                                  onTap: () {
+                                    if (originalOption == 'dateCustomRange') {
+                                      Navigator.pop(modalContext);
+                                      _showCustomDateRangePicker(context);
+                                    } else {
+                                      context
+                                          .read<FilterContributionsBloc>()
+                                          .add(
+                                            UpdateDateRange(
+                                              selectedDate: originalOption,
+                                            ),
+                                          );
+                                      Navigator.pop(modalContext);
+                                    }
+                                  },
+                                  trailing:
+                                      selectedDate == originalOption
+                                          ? const Icon(Icons.check, size: 18)
+                                          : null,
+                                );
+                              }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.spacingL),
+                    ],
+                  ),
                 ),
               );
             },

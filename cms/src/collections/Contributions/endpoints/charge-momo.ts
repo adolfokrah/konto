@@ -166,6 +166,8 @@ export const chargeMomo = async (req: PayloadRequest) => {
       transaction_charge: contribution.chargesBreakdown.platformCharge * 100,
     }
 
+    console.log(chargeData, process.env.PAYSTACK_SECRET)
+
     // Charge mobile money via Paystack
     const chargeResult = await paystack.chargeMomo(chargeData)
 

@@ -123,102 +123,104 @@ class DateRangePicker {
       builder:
           (context) => StatefulBuilder(
             builder:
-                (context, setState) => Container(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                (context, setState) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingXs,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const DragHandle(),
-                      const SizedBox(height: AppSpacing.spacingM),
-                      Text(
-                        title ?? 'Select Date Range',
-                        style: TextStyles.titleBoldLg,
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
-
-                      // From date input
-                      GestureDetector(
-                        onTap: () async {
-                          final selectedDate = await showSingleDatePicker(
-                            context: context,
-                            initialDate: startDate,
-                            minimumDate: defaultMinimumDate,
-                            maximumDate: endDate,
-                            title: 'Select From Date',
-                          );
-                          if (selectedDate != null) {
-                            setState(() {
-                              startDate = selectedDate;
-                            });
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: AppTextInput(
-                            label: 'From',
-                            value: DateRange._formatDate(startDate),
-                            enabled: false,
-                          ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.spacingXs,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const DragHandle(),
+                        const SizedBox(height: AppSpacing.spacingM),
+                        Text(
+                          title ?? 'Select Date Range',
+                          style: TextStyles.titleBoldLg,
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
+                        const SizedBox(height: AppSpacing.spacingM),
 
-                      // To date input
-                      GestureDetector(
-                        onTap: () async {
-                          final selectedDate = await showSingleDatePicker(
-                            context: context,
-                            initialDate: endDate,
-                            minimumDate: startDate,
-                            maximumDate: defaultMaximumDate,
-                            title: 'Select To Date',
-                          );
-                          if (selectedDate != null) {
-                            setState(() {
-                              endDate = selectedDate;
-                            });
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: AppTextInput(
-                            label: 'To',
-                            value: DateRange._formatDate(endDate),
-                            enabled: false,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
-
-                      // Action buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppButton.outlined(
-                              text: 'Cancel',
-                              onPressed: () => Navigator.pop(context),
+                        // From date input
+                        GestureDetector(
+                          onTap: () async {
+                            final selectedDate = await showSingleDatePicker(
+                              context: context,
+                              initialDate: startDate,
+                              minimumDate: defaultMinimumDate,
+                              maximumDate: endDate,
+                              title: 'Select From Date',
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                startDate = selectedDate;
+                              });
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: AppTextInput(
+                              label: 'From',
+                              value: DateRange._formatDate(startDate),
+                              enabled: false,
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.spacingM),
-                          Expanded(
-                            child: AppButton.filled(
-                              text: 'Apply',
-                              onPressed: () {
-                                selectedRange = DateRange(
-                                  startDate: startDate,
-                                  endDate: endDate,
-                                );
-                                Navigator.pop(context);
-                              },
+                        ),
+                        const SizedBox(height: AppSpacing.spacingM),
+
+                        // To date input
+                        GestureDetector(
+                          onTap: () async {
+                            final selectedDate = await showSingleDatePicker(
+                              context: context,
+                              initialDate: endDate,
+                              minimumDate: startDate,
+                              maximumDate: defaultMaximumDate,
+                              title: 'Select To Date',
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                endDate = selectedDate;
+                              });
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: AppTextInput(
+                              label: 'To',
+                              value: DateRange._formatDate(endDate),
+                              enabled: false,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.spacingL),
-                    ],
+                        ),
+                        const SizedBox(height: AppSpacing.spacingM),
+
+                        // Action buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton.outlined(
+                                text: 'Cancel',
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.spacingM),
+                            Expanded(
+                              child: AppButton.filled(
+                                text: 'Apply',
+                                onPressed: () {
+                                  selectedRange = DateRange(
+                                    startDate: startDate,
+                                    endDate: endDate,
+                                  );
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.spacingL),
+                      ],
+                    ),
                   ),
                 ),
           ),
