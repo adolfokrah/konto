@@ -56,6 +56,11 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         .map(([, value]) => `(max-width: ${value}px) ${value * 2}w`)
         .join(', ')
 
+  // Don't render if src is empty or invalid
+  if (!src || src === '') {
+    return null
+  }
+
   return (
     <picture className={cn(pictureClassName)}>
       <NextImage

@@ -37,6 +37,8 @@ export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! }
 // if (settlements.status) {
 //   console.log('Settlements', settlements)
 // }
+
+// Removed test error throw that was used to verify Sentry integration.
 export default buildConfig({
   admin: {
     components: {
