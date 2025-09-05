@@ -251,6 +251,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collectors => 'Collectors';
 
   @override
+  String get updatingJar => 'Updating jar...';
+
+  @override
   String get contributions => 'Contributions';
 
   @override

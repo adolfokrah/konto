@@ -398,6 +398,8 @@
   },
 
   "collectors": "Collectors",
+  "updatingJar": "Updating jar...",
+  "@updatingJar": {"description": "Overlay text shown while updating a jar"},
   "@collectors": {
     "description": "Collectors card title"
   },

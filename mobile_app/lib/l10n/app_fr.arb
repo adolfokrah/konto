@@ -74,6 +74,7 @@
   "info": "Info",
   "more": "Plus",
   "collectors": "Collecteurs",
+  "updatingJar": "Mise à jour du pot...",
   "contributions": "Contributions",
   "searchContributions": "Rechercher des contributions",
   "amountToBeTransferred": "{currency}{amount} à transférer",

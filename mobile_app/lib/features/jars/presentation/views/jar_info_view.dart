@@ -162,425 +162,477 @@ class _JarInfoViewState extends State<JarInfoView> {
                       )
                       : null,
             ),
-            body: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                children: [
-                  // Collapsible app bar that shows jar name when scrolled
-                  Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    padding: const EdgeInsets.only(
-                      left: AppSpacing.spacingXs,
-                      right: AppSpacing.spacingXs,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title and amount - Large when expanded
-                        Expanded(
+            body: Stack(
+              children: [
+                SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      // Collapsible app bar that shows jar name when scrolled
+                      Container(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        padding: const EdgeInsets.only(
+                          left: AppSpacing.spacingXs,
+                          right: AppSpacing.spacingXs,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title and amount - Large when expanded
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      jarData.name,
+                                      style: TextStyles.titleMedium,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalContributedAmount.toStringAsFixed(2)}',
+                                      style: TextStyles.titleBoldXl,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              child: Icon(
+                                Icons.wallet,
+                                size: 18,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Content as slivers
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 40,
+                        ),
+                        child: Container(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  jarData.name,
-                                  style: TextStyles.titleMedium,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            children: <Widget>[
+                              // Jar group and Currency info
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      onTap:
+                                          () => _showJarGroupPicker(
+                                            jarData.jarGroup ??
+                                                localizations.other,
+                                            jarData.id,
+                                          ),
+                                      dense: true,
+                                      title: Text(
+                                        localizations.jarGroup,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        jarData.jarGroup ??
+                                            localizations.notAvailable,
+                                        style: AppTextStyles.titleMediumS,
+                                      ),
+                                      trailing: Icon(Icons.chevron_right),
+                                    ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        localizations.currency,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      trailing: Text(
+                                        jarData.currency.toUpperCase(),
+                                        style: AppTextStyles.titleMediumS,
+                                      ),
+                                    ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        localizations.status,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      trailing: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _getStatusColor(
+                                            jarData.status,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          jarData.statusDisplayName,
+                                          style: AppTextStyles.titleMediumS
+                                              .copyWith(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Flexible(
-                                child: Text(
-                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalContributedAmount.toStringAsFixed(2)}',
-                                  style: TextStyles.titleBoldXl,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+
+                              // Description
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.jarThankYouMessageEdit,
+                                        );
+                                      },
+                                      dense: true,
+                                      title: Text(
+                                        'Thank You Message',
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        jarData.thankYouMessage?.isNotEmpty ==
+                                                true
+                                            ? jarData.thankYouMessage!
+                                            : 'No thank you message',
+                                        style: AppTextStyles.titleMediumS,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      trailing: Icon(Icons.chevron_right),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.jarDescriptionEdit,
+                                        );
+                                      },
+                                      dense: true,
+                                      title: Text(
+                                        localizations.description,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        jarData.description ??
+                                            localizations
+                                                .noDescriptionAvailable,
+                                        style: AppTextStyles.titleMediumS,
+                                      ),
+                                      trailing: Icon(Icons.chevron_right),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        localizations.isFixedContribution,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      trailing: CupertinoSwitch(
+                                        value: jarData.isFixedContribution,
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress)
+                                            return;
+                                          final updates = <String, dynamic>{
+                                            'isFixedContribution': value,
+                                          };
+
+                                          // Only set acceptedContributionAmount when enabling fixed contribution
+                                          if (value) {
+                                            // Set to current amount if it exists, otherwise a default
+                                            updates['acceptedContributionAmount'] =
+                                                jarData.acceptedContributionAmount >
+                                                        0
+                                                    ? jarData
+                                                        .acceptedContributionAmount
+                                                    : 10.0; // Reasonable default
+                                          } else {
+                                            // When disabling fixed contribution, clear the amount
+                                            updates['acceptedContributionAmount'] =
+                                                null;
+                                          }
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    if (jarData.isFixedContribution)
+                                      ListTile(
+                                        contentPadding: EdgeInsets.zero,
+                                        onTap: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            AppRoutes
+                                                .jarFixedContributionAmountEdit,
+                                          );
+                                        },
+                                        dense: true,
+                                        title: Text(
+                                          localizations.fixedContributionAmount,
+                                          style: AppTextStyles.titleMediumS
+                                              .copyWith(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall!
+                                                    .color
+                                                    ?.withValues(alpha: 0.5),
+                                              ),
+                                        ),
+                                        subtitle: Text(
+                                          '${CurrencyUtils.getCurrencySymbol(jarData.currency)}${jarData.acceptedContributionAmount.toStringAsFixed(2)}',
+                                          style: AppTextStyles.titleMediumS,
+                                        ),
+                                        trailing: Icon(Icons.chevron_right),
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () {
+                                        final isCurrentlyClosed =
+                                            jarData.status == JarStatus.sealed;
+                                        AlertBottomSheet.show(
+                                          context: context,
+                                          title:
+                                              isCurrentlyClosed
+                                                  ? localizations.reopenJar
+                                                  : localizations.sealJar,
+                                          message:
+                                              isCurrentlyClosed
+                                                  ? localizations
+                                                      .reopenJarMessage
+                                                  : localizations
+                                                      .sealJarMessage,
+                                          confirmText:
+                                              isCurrentlyClosed
+                                                  ? localizations.reopen
+                                                  : localizations.seal,
+                                          onConfirm: () {
+                                            // Handle jar closing/reopening logic
+                                            final newStatus =
+                                                jarData.status ==
+                                                        JarStatus.sealed
+                                                    ? 'open'
+                                                    : 'sealed';
+
+                                            context.read<UpdateJarBloc>().add(
+                                              UpdateJarRequested(
+                                                jarId: jarData.id,
+                                                updates: {'status': newStatus},
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        jarData.status == JarStatus.sealed
+                                            ? localizations.reopenJar
+                                            : localizations.sealJar,
+                                        style: AppTextStyles.titleMediumS,
+                                      ),
+                                      trailing: Icon(Icons.chevron_right),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () {
+                                        AlertBottomSheet.show(
+                                          context: context,
+                                          title: localizations.breakJar,
+                                          message:
+                                              localizations
+                                                  .breakJarConfirmationMessage,
+                                          confirmText:
+                                              localizations.breakButton,
+                                          onConfirm: () {
+                                            _isBreakingJar = true;
+                                            context.read<UpdateJarBloc>().add(
+                                              UpdateJarRequested(
+                                                jarId: jarData.id,
+                                                updates: {'status': 'broken'},
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        localizations.breakJar,
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: AppColors.errorRed,
+                                            ),
+                                      ),
+                                      trailing: Icon(Icons.chevron_right),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          child: Icon(
-                            Icons.wallet,
-                            size: 18,
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ],
+                  ),
+                ),
+                // Loading overlay during jar update
+                BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                  builder: (context, updateState) {
+                    if (updateState is UpdateJarInProgress) {
+                      return Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.35),
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 16),
+                              Text(
+                                localizations.updatingJar,
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  // Content as slivers
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 40,
-                    ),
-                    child: Container(
-                      child: Column(
-                        children: <Widget>[
-                          // Jar group and Currency info
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  onTap:
-                                      () => _showJarGroupPicker(
-                                        jarData.jarGroup ?? localizations.other,
-                                        jarData.id,
-                                      ),
-                                  dense: true,
-                                  title: Text(
-                                    localizations.jarGroup,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    jarData.jarGroup ??
-                                        localizations.notAvailable,
-                                    style: AppTextStyles.titleMediumS,
-                                  ),
-                                  trailing: Icon(Icons.chevron_right),
-                                ),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
-                                  title: Text(
-                                    localizations.currency,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  trailing: Text(
-                                    jarData.currency.toUpperCase(),
-                                    style: AppTextStyles.titleMediumS,
-                                  ),
-                                ),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
-                                  title: Text(
-                                    localizations.status,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  trailing: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _getStatusColor(jarData.status),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      jarData.statusDisplayName,
-                                      style: AppTextStyles.titleMediumS
-                                          .copyWith(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingXs),
-
-                          // Description
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.jarThankYouMessageEdit,
-                                    );
-                                  },
-                                  dense: true,
-                                  title: Text(
-                                    'Thank You Message',
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    jarData.thankYouMessage?.isNotEmpty == true
-                                        ? jarData.thankYouMessage!
-                                        : 'No thank you message',
-                                    style: AppTextStyles.titleMediumS,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  trailing: Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingXs),
-
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.jarDescriptionEdit,
-                                    );
-                                  },
-                                  dense: true,
-                                  title: Text(
-                                    localizations.description,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    jarData.description ??
-                                        localizations.noDescriptionAvailable,
-                                    style: AppTextStyles.titleMediumS,
-                                  ),
-                                  trailing: Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
-                                  title: Text(
-                                    localizations.isFixedContribution,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color
-                                          ?.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  trailing: CupertinoSwitch(
-                                    value: jarData.isFixedContribution,
-                                    onChanged: (value) {
-                                      if (state is UpdateJarInProgress) return;
-                                      final updates = <String, dynamic>{
-                                        'isFixedContribution': value,
-                                      };
-
-                                      // Only set acceptedContributionAmount when enabling fixed contribution
-                                      if (value) {
-                                        // Set to current amount if it exists, otherwise a default
-                                        updates['acceptedContributionAmount'] =
-                                            jarData.acceptedContributionAmount >
-                                                    0
-                                                ? jarData
-                                                    .acceptedContributionAmount
-                                                : 10.0; // Reasonable default
-                                      } else {
-                                        // When disabling fixed contribution, clear the amount
-                                        updates['acceptedContributionAmount'] =
-                                            null;
-                                      }
-
-                                      context.read<UpdateJarBloc>().add(
-                                        UpdateJarRequested(
-                                          jarId: jarData.id,
-                                          updates: updates,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-
-                                if (jarData.isFixedContribution)
-                                  ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes
-                                            .jarFixedContributionAmountEdit,
-                                      );
-                                    },
-                                    dense: true,
-                                    title: Text(
-                                      localizations.fixedContributionAmount,
-                                      style: AppTextStyles.titleMediumS
-                                          .copyWith(
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall!
-                                                .color
-                                                ?.withValues(alpha: 0.5),
-                                          ),
-                                    ),
-                                    subtitle: Text(
-                                      '${CurrencyUtils.getCurrencySymbol(jarData.currency)}${jarData.acceptedContributionAmount.toStringAsFixed(2)}',
-                                      style: AppTextStyles.titleMediumS,
-                                    ),
-                                    trailing: Icon(Icons.chevron_right),
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingXs),
-
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  onTap: () {
-                                    final isCurrentlyClosed =
-                                        jarData.status == JarStatus.sealed;
-                                    AlertBottomSheet.show(
-                                      context: context,
-                                      title:
-                                          isCurrentlyClosed
-                                              ? localizations.reopenJar
-                                              : localizations.sealJar,
-                                      message:
-                                          isCurrentlyClosed
-                                              ? localizations.reopenJarMessage
-                                              : localizations.sealJarMessage,
-                                      confirmText:
-                                          isCurrentlyClosed
-                                              ? localizations.reopen
-                                              : localizations.seal,
-                                      onConfirm: () {
-                                        // Handle jar closing/reopening logic
-                                        final newStatus =
-                                            jarData.status == JarStatus.sealed
-                                                ? 'open'
-                                                : 'sealed';
-
-                                        context.read<UpdateJarBloc>().add(
-                                          UpdateJarRequested(
-                                            jarId: jarData.id,
-                                            updates: {'status': newStatus},
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
-                                  title: Text(
-                                    jarData.status == JarStatus.sealed
-                                        ? localizations.reopenJar
-                                        : localizations.sealJar,
-                                    style: AppTextStyles.titleMediumS,
-                                  ),
-                                  trailing: Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingXs),
-
-                          AppCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingM,
-                            ),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  onTap: () {
-                                    AlertBottomSheet.show(
-                                      context: context,
-                                      title: localizations.breakJar,
-                                      message:
-                                          localizations
-                                              .breakJarConfirmationMessage,
-                                      confirmText: localizations.breakButton,
-                                      onConfirm: () {
-                                        _isBreakingJar = true;
-                                        context.read<UpdateJarBloc>().add(
-                                          UpdateJarRequested(
-                                            jarId: jarData.id,
-                                            updates: {'status': 'broken'},
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
-                                  title: Text(
-                                    localizations.breakJar,
-                                    style: AppTextStyles.titleMediumS.copyWith(
-                                      color: AppColors.errorRed,
-                                    ),
-                                  ),
-                                  trailing: Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
             ),
           );
         },

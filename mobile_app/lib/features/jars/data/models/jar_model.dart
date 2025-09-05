@@ -97,8 +97,9 @@ class JarModel {
       name: json['name'] as String,
       description: json['description'] as String?,
       jarGroup: json['jarGroup'] as String,
+      // image may be populated doc (Map) or an ID (String) or null
       image:
-          json['image'] != null
+          json['image'] is Map<String, dynamic>
               ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
               : null,
       isActive: json['isActive'] as bool? ?? true,
@@ -180,7 +181,6 @@ class JarModel {
     List<InvitedCollector>? invitedCollectors,
     String? paymentLink,
     bool? acceptAnonymousContributions,
-    List<String>? acceptedPaymentMethods,
     DateTime? createdAt,
     DateTime? updatedAt,
     double? totalContributions,
@@ -368,6 +368,16 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final rawPhoto = json['photo'];
+    MediaModel? parsedPhoto;
+    if (rawPhoto is Map<String, dynamic>) {
+      // Fully populated media doc
+      parsedPhoto = MediaModel.fromJson(rawPhoto);
+    } else if (rawPhoto is String) {
+      // Just an ID reference; keep as null to avoid incomplete MediaModel
+      // (Optionally could store photoId separately if needed.)
+    }
+
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
@@ -376,10 +386,7 @@ class UserModel {
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String,
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
-      photo:
-          json['photo'] != null
-              ? MediaModel.fromJson(json['photo'] as Map<String, dynamic>)
-              : null,
+      photo: parsedPhoto,
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)

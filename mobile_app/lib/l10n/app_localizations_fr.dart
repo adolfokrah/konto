@@ -254,6 +254,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get collectors => 'Collecteurs';
 
   @override
+  String get updatingJar => 'Mise à jour du pot...';
+
+  @override
   String get contributions => 'Contributions';
 
   @override

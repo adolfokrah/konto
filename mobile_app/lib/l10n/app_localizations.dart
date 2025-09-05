@@ -548,6 +548,12 @@ abstract class AppLocalizations {
   /// **'Collectors'**
   String get collectors;
 
+  /// Overlay text shown while updating a jar
+  ///
+  /// In en, this message translates to:
+  /// **'Updating jar...'**
+  String get updatingJar;
+
   /// Contributions card title
   ///
   /// In en, this message translates to:
