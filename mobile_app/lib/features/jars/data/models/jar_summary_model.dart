@@ -149,7 +149,7 @@ class JarSummaryModel {
   final String? thankYouMessage;
   final double goalAmount;
   final double acceptedContributionAmount;
-  final String currency; // 'ghc' | 'ngn'
+  final String currency; // 'GHS' | 'ngn'
   final bool isActive;
   final bool isFixedContribution;
   final JarStatus status; // 'open' | 'broken' | 'sealed'

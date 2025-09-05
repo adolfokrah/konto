@@ -92,7 +92,7 @@ export const Jars: CollectionConfig = {
         return true
       },
       admin: {
-        description: 'Currency code (ghc or ngn)',
+        description: 'Currency code (GHS or ngn)',
       },
     },
     {

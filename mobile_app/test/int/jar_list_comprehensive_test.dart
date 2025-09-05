@@ -81,7 +81,7 @@ void main() {
                       'goalAmount': 5000.0,
                       'deadline':
                           now.add(const Duration(days: 30)).toIso8601String(),
-                      'currency': 'ghc',
+                      'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
                         'fullName': 'Test User',
@@ -118,7 +118,7 @@ void main() {
                       'goalAmount': 5000.0,
                       'deadline':
                           now.add(const Duration(days: 365)).toIso8601String(),
-                      'currency': 'ghc',
+                      'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
                         'fullName': 'Test User',
@@ -167,7 +167,7 @@ void main() {
                       'goalAmount': 3000.0,
                       'deadline':
                           now.add(const Duration(days: 60)).toIso8601String(),
-                      'currency': 'ghc',
+                      'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
                         'fullName': 'Test User',
@@ -282,7 +282,7 @@ void main() {
                       'goalAmount': 5000.0,
                       'deadline':
                           now.add(const Duration(days: 30)).toIso8601String(),
-                      'currency': 'ghc',
+                      'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
                         'fullName': 'Test User',
@@ -332,7 +332,7 @@ void main() {
                   'description': 'For unexpected expenses',
                   'goalAmount': 5000.0,
                   'acceptedContributionAmount': null,
-                  'currency': 'ghc',
+                  'currency': 'GHS',
                   'isActive': true,
                   'isFixedContribution': false,
                   'creator': {
@@ -412,7 +412,7 @@ void main() {
                   'description': 'For unexpected expenses',
                   'goalAmount': 5000.0,
                   'totalContributions': 2000.0,
-                  'currency': 'ghc',
+                  'currency': 'GHS',
                   'isActive': true,
                   'progress': 40.0,
                   'creator': {'id': 'test-user-123', 'fullName': 'Test User'},

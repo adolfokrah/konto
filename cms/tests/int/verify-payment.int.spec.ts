@@ -41,7 +41,7 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
       data: {
         name: 'Test Verify Jar',
         creator: testUser.id,
-        currency: 'ghc',
+        currency: 'GHS',
         status: 'open',
         isActive: true,
 

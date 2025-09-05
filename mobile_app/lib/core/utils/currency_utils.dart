@@ -7,8 +7,8 @@ import 'package:konto/l10n/app_localizations.dart';
 class CurrencyUtils {
   /// Get currency symbol based on currency code with Android fallback
   ///
-  /// Supports: GHC (₵), NGN (₦), USD ($), EUR (€), GBP (£)
-  /// Returns GHC symbol (₵) as fallback for unsupported currencies
+  /// Supports: GHS (₵), NGN (₦), USD ($), EUR (€), GBP (£)
+  /// Returns GHS symbol (₵) as fallback for unsupported currencies
   /// On Android, uses androidFallbackSymbol (GHS for Cedi) if ₵ doesn't render well
   static String getCurrencySymbol(String currency) {
     try {
@@ -35,7 +35,7 @@ class CurrencyUtils {
 
   /// Format amount with currency symbol
   ///
-  /// Example: formatAmount(1000.50, 'ghc') returns "₵ 1000.50"
+  /// Example: formatAmount(1000.50, 'GHS') returns "₵ 1000.50"
   static String formatAmount(
     double amount,
     String currency, {
@@ -47,14 +47,14 @@ class CurrencyUtils {
 
   /// Format amount with currency symbol and no decimal places
   ///
-  /// Example: formatAmountWhole(1000.50, 'ghc') returns "₵ 1001"
+  /// Example: formatAmountWhole(1000.50, 'GHS') returns "₵ 1001"
   static String formatAmountWhole(double amount, String currency) {
     return formatAmount(amount, currency, decimalPlaces: 0);
   }
 
   /// Format amount with currency symbol and compact notation for large numbers
   ///
-  /// Example: formatAmountCompact(1500000, 'ghc') returns "₵ 1.5M"
+  /// Example: formatAmountCompact(1500000, 'GHS') returns "₵ 1.5M"
   static String formatAmountCompact(double amount, String currency) {
     final symbol = getCurrencySymbol(currency);
 
@@ -81,7 +81,7 @@ class CurrencyUtils {
   /// Get currency name from code
   static String getCurrencyName(String currency) {
     switch (currency.toLowerCase()) {
-      case 'ghc':
+      case 'GHS':
         return 'Ghanaian Cedi';
       case 'ngn':
         return 'Nigerian Naira';
@@ -102,8 +102,8 @@ class CurrencyUtils {
     AppLocalizations localizations,
   ) {
     switch (currency.toLowerCase()) {
-      case 'ghc':
-        return localizations.currencyGHC;
+      case 'GHS':
+        return localizations.currencyGHS;
       case 'ngn':
         return localizations.currencyNGN;
       case 'usd':
@@ -113,7 +113,7 @@ class CurrencyUtils {
       case 'gbp':
         return localizations.currencyGBP;
       default:
-        return localizations.currencyGHC; // Default fallback
+        return localizations.currencyGHS; // Default fallback
     }
   }
 }

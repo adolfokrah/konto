@@ -874,7 +874,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get currencyNGN => 'Naira nigérian';
 
   @override
-  String get currencyGHC => 'Cedi ghanéen';
+  String get currencyGHS => 'Cedi ghanéen';
 
   @override
   String get currencyUSD => 'Dollar américain';

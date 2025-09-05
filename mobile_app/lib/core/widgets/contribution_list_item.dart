@@ -18,7 +18,7 @@ class ContributionListItem extends StatelessWidget {
   /// The contribution amount
   final double amount;
 
-  /// The currency code (e.g., 'ghc', 'ngn', 'usd')
+  /// The currency code (e.g., 'GHS', 'ngn', 'usd')
   final String currency;
 
   /// The date and time of the contribution

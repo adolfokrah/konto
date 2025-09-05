@@ -69,7 +69,7 @@ void main() {
                 'description': 'Test jar description',
                 'goalAmount': 0.0, // No goal set initially
                 'acceptedContributionAmount': 100.0,
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
@@ -122,7 +122,7 @@ void main() {
                   'name': 'Test Jar',
                   'totalAmount': 500.0,
                   'goalAmount': 0.0,
-                  'currency': 'GHC',
+                  'currency': 'GHS',
                 },
               ],
               'message': 'User jars retrieved successfully',
@@ -147,7 +147,7 @@ void main() {
                 'description': 'Test jar description',
                 'totalAmount': 500.0,
                 'goalAmount': 1000.0,
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'createdAt': DateTime.now().toIso8601String(),
                 'deadline':
                     DateTime.now()
@@ -323,7 +323,7 @@ void main() {
                 'description': 'Test jar with existing goal',
                 'goalAmount': 1500.0, // Existing goal
                 'acceptedContributionAmount': 100.0,
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
@@ -379,7 +379,7 @@ void main() {
                   'name': 'Test Jar with Goal',
                   'totalAmount': 750.0,
                   'goalAmount': 1500.0,
-                  'currency': 'GHC',
+                  'currency': 'GHS',
                 },
               ],
               'message': 'User jars retrieved successfully',
@@ -404,7 +404,7 @@ void main() {
                 'description': 'Test jar with existing goal',
                 'totalAmount': 750.0,
                 'goalAmount': 2000.0, // Updated goal
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'createdAt': DateTime.now().toIso8601String(),
                 'deadline':
                     DateTime.now()
@@ -616,7 +616,7 @@ void main() {
                 'description': 'Test jar for goal removal',
                 'goalAmount': 600.0, // Existing goal to be removed
                 'acceptedContributionAmount': 100.0,
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'isActive': true,
                 'isFixedContribution': false,
                 'creator': {
@@ -672,7 +672,7 @@ void main() {
                   'name': 'Test Jar for Removal',
                   'totalAmount': 300.0,
                   'goalAmount': 600.0,
-                  'currency': 'GHC',
+                  'currency': 'GHS',
                 },
               ],
               'message': 'User jars retrieved successfully',
@@ -697,7 +697,7 @@ void main() {
                 'description': 'Test jar for goal removal',
                 'totalAmount': 300.0,
                 'goalAmount': 0.0, // Goal removed
-                'currency': 'GHC',
+                'currency': 'GHS',
                 'createdAt': DateTime.now().toIso8601String(),
                 'deadline': null, // Deadline also removed
               },

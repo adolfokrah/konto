@@ -67,7 +67,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 
@@ -87,7 +87,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 
@@ -162,7 +162,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 
@@ -280,7 +280,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 
@@ -300,7 +300,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 
@@ -481,7 +481,7 @@ describe('getUserJars', () => {
         acceptedContributionAmount: null,
         goalAmount: 0,
         deadline: null,
-        currency: 'ghc',
+        currency: 'GHS',
         paymentLink: null,
         acceptAnonymousContributions: false,
 

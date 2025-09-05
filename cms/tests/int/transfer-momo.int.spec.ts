@@ -42,7 +42,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
       data: {
         name: 'Test Transfer Jar',
         status: 'open',
-        currency: 'ghc' as const,
+        currency: 'GHS' as const,
         creator: testUser.id,
         isActive: true,
         invitedCollectors: [],

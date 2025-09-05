@@ -127,7 +127,7 @@ class JarListItem {
   final double? acceptedContributionAmount;
   final double goalAmount;
   final String? deadline;
-  final String currency; // 'ghc' | 'ngn'
+  final String currency; // 'GHS' | 'ngn'
   final JarCreator creator;
   final List<JarInvitedCollector> invitedCollectors;
   final String? paymentLink;
@@ -171,7 +171,7 @@ class JarListItem {
           json['acceptedContributionAmount']?.toDouble(),
       goalAmount: (json['goalAmount'] ?? 0).toDouble(),
       deadline: json['deadline'],
-      currency: json['currency'] ?? 'ghc',
+      currency: json['currency'] ?? 'GHS',
       creator: JarCreator.fromJson(json['creator'] as Map<String, dynamic>),
       invitedCollectors:
           (json['invitedCollectors'] as List<dynamic>?)

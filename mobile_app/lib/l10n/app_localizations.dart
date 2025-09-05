@@ -1644,7 +1644,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Ghanaian Cedi'**
-  String get currencyGHC;
+  String get currencyGHS;
 
   /// US Dollar currency name
   ///

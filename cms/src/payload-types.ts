@@ -884,7 +884,7 @@ export interface Jar {
    */
   deadline?: string | null;
   /**
-   * Currency code (ghc or ngn)
+   * Currency code (GHS or ngn)
    */
   currency: string;
   /**

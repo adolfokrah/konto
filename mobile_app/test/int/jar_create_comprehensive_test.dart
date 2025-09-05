@@ -73,7 +73,7 @@ void main() {
             'acceptedContributionAmount': null,
             'goalAmount': 5000.0,
             'deadline': null,
-            'currency': 'ghc',
+            'currency': 'GHS',
             'creator': {
               'id': 'test-user-123',
               'email': 'test@example.com',
@@ -121,7 +121,7 @@ void main() {
                   'acceptedContributionAmount': null,
                   'goalAmount': 5000.0,
                   'deadline': null,
-                  'currency': 'ghc',
+                  'currency': 'GHS',
                   'creator': {
                     'id': 'test-user-123',
                     'name': 'Test User',
@@ -348,7 +348,7 @@ void main() {
                 'acceptedContributionAmount': null,
                 'goalAmount': 10000.0,
                 'deadline': null,
-                'currency': 'ghc',
+                'currency': 'GHS',
                 'creator': {
                   'id': 'test-user-123',
                   'email': 'test@example.com',
@@ -397,7 +397,7 @@ void main() {
           name: 'Complete Test Jar',
           description: 'A comprehensive test jar with all parameters',
           jarGroup: 'savings',
-          currency: 'ghc',
+          currency: 'GHS',
           goalAmount: 10000.0,
           invitedCollectors: [
             {'email': 'collaborator1@example.com', 'name': 'John Doe'},
@@ -415,14 +415,14 @@ void main() {
         // Validate the event parameters that were dispatched
         expect(jarCreateEvent.name, equals('Complete Test Jar'));
         expect(jarCreateEvent.jarGroup, equals('savings'));
-        expect(jarCreateEvent.currency, equals('ghc'));
+        expect(jarCreateEvent.currency, equals('GHS'));
         expect(jarCreateEvent.invitedCollectors, isNotNull);
         expect(jarCreateEvent.invitedCollectors!.length, equals(2));
 
         print('✅ Jar created successfully with complete parameters:');
         print('   - Name: Complete Test Jar');
         print('   - Jar Group: savings');
-        print('   - Currency: ghc');
+        print('   - Currency: GHS');
         print('   - Invited Collaborators: 2 invitations');
         print('   - Goal Amount: 10000.0');
         print('   - Payment Methods: mobile-money, bank-transfer');
@@ -525,7 +525,7 @@ void main() {
             'doc': {
               'id': 'collab-jar-999',
               'name': 'Collaboration Test Jar',
-              'currency': 'ghc',
+              'currency': 'GHS',
               'jarGroup': 'group-savings',
               'creator': {'id': 'test-user-123'},
               'invitedCollectors': capturedInvitedCollectors,
@@ -548,7 +548,7 @@ void main() {
       final collaborativeJarEvent = JarCreateSubmitted(
         name: 'Collaboration Test Jar',
         jarGroup: 'group-savings',
-        currency: 'ghc',
+        currency: 'GHS',
         invitedCollectors: [
           {'email': 'user1@test.com', 'name': 'Alice Johnson'},
           {'email': 'user2@test.com', 'name': 'Bob Wilson'},

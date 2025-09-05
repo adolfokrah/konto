@@ -27,7 +27,7 @@ class Currencies {
     // ),
     Currency(
       name: 'Ghanaian Cedi',
-      code: 'GHC',
+      code: 'GHS',
       symbol: '₵',
       androidFallbackSymbol: 'GHS',
       flagUrl: 'https://flagpedia.net/data/flags/w580/gh.png',

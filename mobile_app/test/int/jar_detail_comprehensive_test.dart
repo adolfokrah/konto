@@ -78,7 +78,7 @@ void main() {
             'description': 'Personal jar for emergency expenses',
             'goalAmount': 5000.0,
             'acceptedContributionAmount': 500.0,
-            'currency': 'ghc',
+            'currency': 'GHS',
             'isActive': true,
             'isFixedContribution': false,
             'creator': {
@@ -174,7 +174,7 @@ void main() {
                     'acceptedContributionAmount': 500.0,
                     'goalAmount': 5000.0,
                     'deadline': null,
-                    'currency': 'ghc',
+                    'currency': 'GHS',
                     'creator': {
                       'id': 'test-user-id',
                       'name': 'Test User',
@@ -549,7 +549,7 @@ void main() {
               'description': 'A jar with no contributions',
               'goalAmount': 1000.0,
               'acceptedContributionAmount': 100.0,
-              'currency': 'ghc',
+              'currency': 'GHS',
               'isActive': true,
               'isFixedContribution': false,
               'creator': {

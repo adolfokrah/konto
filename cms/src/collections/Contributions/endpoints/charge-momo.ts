@@ -166,8 +166,6 @@ export const chargeMomo = async (req: PayloadRequest) => {
       transaction_charge: contribution.chargesBreakdown.platformCharge * 100,
     }
 
-    console.log(chargeData, process.env.PAYSTACK_SECRET)
-
     // Charge mobile money via Paystack
     const chargeResult = await paystack.chargeMomo(chargeData)
 
@@ -216,8 +214,6 @@ export const chargeMomo = async (req: PayloadRequest) => {
   } catch (error: any) {
     // Log error in development only
     // if (process.env.NODE_ENV !== 'production') {
-
-    console.error('💥 Mobile money charge error:', error)
 
     // throw new Error(error)
     // }

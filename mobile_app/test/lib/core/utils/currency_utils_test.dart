@@ -5,7 +5,7 @@ import 'package:konto/core/utils/currency_utils.dart';
 void main() {
   group('CurrencyUtils', () {
     test('should return correct currency symbols', () {
-      expect(CurrencyUtils.getCurrencySymbol('ghc'), '₵');
+      expect(CurrencyUtils.getCurrencySymbol('GHS'), '₵');
       // Since other currencies are commented out in constants, they return fallback
       expect(CurrencyUtils.getCurrencySymbol('ngn'), '₵');
       expect(CurrencyUtils.getCurrencySymbol('usd'), '₵');
@@ -18,26 +18,26 @@ void main() {
     });
 
     test('should format amount correctly', () {
-      expect(CurrencyUtils.formatAmount(1000.50, 'ghc'), '₵ 1000.50');
-      // Since NGN and USD fallback to GHC symbol
+      expect(CurrencyUtils.formatAmount(1000.50, 'GHS'), '₵ 1000.50');
+      // Since NGN and USD fallback to GHS symbol
       expect(CurrencyUtils.formatAmount(500.0, 'ngn'), '₵ 500.00');
       expect(CurrencyUtils.formatAmountWhole(1000.99, 'usd'), '₵ 1001');
     });
 
     test('should format compact amounts correctly', () {
-      expect(CurrencyUtils.formatAmountCompact(1500000, 'ghc'), '₵ 1.5M');
-      // Since NGN and USD fallback to GHC symbol
+      expect(CurrencyUtils.formatAmountCompact(1500000, 'GHS'), '₵ 1.5M');
+      // Since NGN and USD fallback to GHS symbol
       expect(CurrencyUtils.formatAmountCompact(1500, 'ngn'), '₵ 1.5K');
       expect(CurrencyUtils.formatAmountCompact(500, 'usd'), '₵ 500');
     });
 
     test('should check currency support correctly', () {
-      expect(CurrencyUtils.isCurrencySupported('ghc'), true);
+      expect(CurrencyUtils.isCurrencySupported('GHS'), true);
       expect(CurrencyUtils.isCurrencySupported('unknown'), false);
     });
 
     test('should return correct currency names', () {
-      expect(CurrencyUtils.getCurrencyName('ghc'), 'Ghanaian Cedi');
+      expect(CurrencyUtils.getCurrencyName('GHS'), 'Ghanaian Cedi');
       expect(CurrencyUtils.getCurrencyName('ngn'), 'Nigerian Naira');
       expect(CurrencyUtils.getCurrencyName('usd'), 'US Dollar');
     });

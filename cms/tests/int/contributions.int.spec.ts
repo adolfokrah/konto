@@ -72,7 +72,7 @@ describe('Contributions Collection Integration Tests', () => {
       data: {
         name: 'Test Contribution Jar',
         status: 'open',
-        currency: 'ghc' as const,
+        currency: 'GHS' as const,
         creator: testUser.id,
         invitedCollectors: [
           {

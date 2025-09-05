@@ -16,7 +16,7 @@ class GoalProgressCard extends StatelessWidget {
   /// Target goal amount
   final double goalAmount;
 
-  /// Currency code (e.g., 'ghc', 'ngn', 'usd')
+  /// Currency code (e.g., 'GHS', 'ngn', 'usd')
   final String currency;
 
   /// Deadline date

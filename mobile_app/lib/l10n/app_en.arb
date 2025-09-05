@@ -1464,8 +1464,8 @@
     "description": "Nigerian Naira currency name"
   },
 
-  "currencyGHC": "Ghanaian Cedi",
-  "@currencyGHC": {
+  "currencyGHS": "Ghanaian Cedi",
+  "@currencyGHS": {
     "description": "Ghanaian Cedi currency name"
   },
 

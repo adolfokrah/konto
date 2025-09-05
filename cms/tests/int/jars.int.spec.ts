@@ -69,7 +69,7 @@ describe('Jars Collection Integration Tests', () => {
         isActive: true,
         isFixedContribution: false,
         goalAmount: 1000,
-        currency: 'ghc' as const,
+        currency: 'GHS' as const,
         creator: testUser.id,
         status: 'open' as const,
       }
@@ -85,7 +85,7 @@ describe('Jars Collection Integration Tests', () => {
       expect(jar.isActive).toBe(true)
       expect(jar.isFixedContribution).toBe(false)
       expect(jar.goalAmount).toBe(1000)
-      expect(jar.currency).toBe('ghc')
+      expect(jar.currency).toBe('GHS')
       expect(typeof jar.creator === 'object' ? jar.creator.id : jar.creator).toBe(testUser.id)
     })
 
@@ -113,7 +113,7 @@ describe('Jars Collection Integration Tests', () => {
       const jarData = {
         status: 'open' as const,
         name: 'Jar with Invited Collectors',
-        currency: 'ghc' as const,
+        currency: 'GHS' as const,
         creator: testUser.id,
         invitedCollectors: [
           {
@@ -138,7 +138,7 @@ describe('Jars Collection Integration Tests', () => {
     it('should create a jar with anonymous contributions enabled', async () => {
       const jarData = {
         name: 'Anonymous Jar',
-        currency: 'ghc' as const,
+        currency: 'GHS' as const,
         creator: testUser.id,
         status: 'open' as const,
         acceptAnonymousContributions: true,
@@ -172,7 +172,7 @@ describe('Jars Collection Integration Tests', () => {
       const jarsData = [
         {
           name: 'Active Savings Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: testUser.id,
           isActive: true,
           goalAmount: 1000,
@@ -188,7 +188,7 @@ describe('Jars Collection Integration Tests', () => {
         },
         {
           name: 'Emergency Fund',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: secondUser.id,
           isActive: true,
           isFixedContribution: true,
@@ -215,18 +215,18 @@ describe('Jars Collection Integration Tests', () => {
     })
 
     it('should find jars by currency', async () => {
-      const ghcJars = await payload.find({
+      const GHSJars = await payload.find({
         collection: 'jars',
         where: {
           currency: {
-            equals: 'ghc',
+            equals: 'GHS',
           },
         },
       })
 
-      expect(ghcJars.docs).toHaveLength(2)
-      ghcJars.docs.forEach((jar) => {
-        expect(jar.currency).toBe('ghc')
+      expect(GHSJars.docs).toHaveLength(2)
+      GHSJars.docs.forEach((jar) => {
+        expect(jar.currency).toBe('GHS')
       })
     })
 
@@ -300,7 +300,7 @@ describe('Jars Collection Integration Tests', () => {
         collection: 'jars',
         data: {
           name: 'Update Test Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: testUser.id,
           isActive: true,
           goalAmount: 500,
@@ -380,7 +380,7 @@ describe('Jars Collection Integration Tests', () => {
         collection: 'jars',
         data: {
           name: 'Delete Test Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: testUser.id,
           status: 'open' as const,
           // acceptedPaymentMethods removed
@@ -423,7 +423,7 @@ describe('Jars Collection Integration Tests', () => {
       const jarsData = [
         {
           name: 'High Goal Active Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: testUser.id,
           isActive: true,
           goalAmount: 5000,
@@ -432,7 +432,7 @@ describe('Jars Collection Integration Tests', () => {
         },
         {
           name: 'Low Goal Active Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: testUser.id,
           isActive: true,
           goalAmount: 500,
@@ -455,7 +455,7 @@ describe('Jars Collection Integration Tests', () => {
         },
         {
           name: 'Anonymous Contribution Jar',
-          currency: 'ghc' as const,
+          currency: 'GHS' as const,
           creator: secondUser.id,
           isActive: true,
           acceptAnonymousContributions: true,

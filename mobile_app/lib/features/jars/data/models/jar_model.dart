@@ -51,7 +51,7 @@ class JarModel {
   final double? acceptedContributionAmount;
   final double goalAmount;
   final DateTime? deadline;
-  final String currency; // 'ghc' | 'ngn'
+  final String currency; // 'GHS' | 'ngn'
   final UserModel creator;
   final List<InvitedCollector> invitedCollectors;
   final String? paymentLink;
@@ -241,7 +241,7 @@ class JarModel {
   /// Get formatted currency symbol for this jar
   String get currencySymbol {
     switch (currency.toLowerCase()) {
-      case 'ghc':
+      case 'GHS':
         return '₵';
       case 'ngn':
         return '₦';

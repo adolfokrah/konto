@@ -55,7 +55,7 @@ void main() {
         'description': 'For unexpected expenses',
         'goalAmount': goalAmount,
         'acceptedContributionAmount': 100.0,
-        'currency': 'ghc',
+        'currency': 'GHS',
         'isActive': true,
         'isFixedContribution': false,
         'status': 'open',

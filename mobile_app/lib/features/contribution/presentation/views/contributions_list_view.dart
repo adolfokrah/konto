@@ -323,12 +323,12 @@ class _ContributionsListViewState extends State<ContributionsListView> {
     AppLocalizations localizations,
   ) {
     // Get currency from jar - handle both String and object types
-    String currency = 'ghc'; // Default fallback
+    String currency = 'GHS'; // Default fallback
     if (contribution.jar is Map) {
-      currency = contribution.jar['currency'] ?? 'ghc';
+      currency = contribution.jar['currency'] ?? 'GHS';
     } else if (contribution.jar is String) {
       // If jar is just a String ID, we can't get the currency, use default
-      currency = 'ghc';
+      currency = 'GHS';
     }
 
     return ContributionListItem(

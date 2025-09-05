@@ -43,7 +43,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
         description: 'A test jar for summary endpoint testing',
         goalAmount: 1000,
         acceptedContributionAmount: 100,
-        currency: 'ghc',
+        currency: 'GHS',
         isActive: true,
         isFixedContribution: false,
         creator: testUser.id,
@@ -194,7 +194,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       expect(result.data.description).toBe('A test jar for summary endpoint testing')
       expect(result.data.goalAmount).toBe(1000)
       expect(result.data.acceptedContributionAmount).toBe(100)
-      expect(result.data.currency).toBe('ghc')
+      expect(result.data.currency).toBe('GHS')
       expect(result.data.isActive).toBe(true)
       expect(result.data.isFixedContribution).toBe(false)
 
@@ -301,7 +301,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
           description: 'A jar with no contributions',
           goalAmount: 500,
           acceptedContributionAmount: 50,
-          currency: 'ghc',
+          currency: 'GHS',
           isActive: true,
           isFixedContribution: false,
           creator: testUser.id,
