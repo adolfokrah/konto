@@ -12,6 +12,7 @@ import 'package:konto/features/contribution/presentation/views/save_contribution
 import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_info_view.dart';
+import 'package:konto/features/jars/presentation/views/jar_thank_you_message_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:konto/features/onboarding/prensentation/pages/on_boarding_page.dart';
 import 'package:konto/features/startup/presentation/views/startup_screen.dart';
@@ -36,6 +37,8 @@ class AppRoutes {
     '/jar_goal': (context) => const JarGoalView(),
     '/jar_info': (context) => const JarInfoView(),
     '/jar_description_edit': (context) => const JarDescriptionEditView(),
+    '/jar_thank_you_message_edit':
+        (context) => const JarThankYouMessageEditView(),
     '/jar_fixed_contribution_amount_edit':
         (context) => const JarFixedContributionAmountEditView(),
     '/jar_name_edit': (context) => const JarNameEditView(),
@@ -61,6 +64,7 @@ class AppRoutes {
   static const String jarGoal = '/jar_goal';
   static const String jarInfo = '/jar_info';
   static const String jarDescriptionEdit = '/jar_description_edit';
+  static const String jarThankYouMessageEdit = '/jar_thank_you_message_edit';
   static const String jarFixedContributionAmountEdit =
       '/jar_fixed_contribution_amount_edit';
   static const String jarNameEdit = '/jar_name_edit';

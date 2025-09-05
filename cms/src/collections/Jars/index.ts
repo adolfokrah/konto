@@ -61,7 +61,7 @@ export const Jars: CollectionConfig = {
       required: true,
       admin: {
         description: 'Accepted contribution amount for fixed contributions',
-        condition: data => data.isFixedContribution,
+        condition: (data) => data.isFixedContribution,
       },
     },
     {
@@ -214,18 +214,8 @@ export const Jars: CollectionConfig = {
       },
     },
     {
-      name: 'acceptedPaymentMethods',
-      type: 'select',
-      options: [
-        { label: 'Mobile Money', value: 'mobile-money' },
-        { label: 'Bank Transfer', value: 'bank-transfer' },
-        { label: 'Cash', value: 'cash' },
-      ],
-      hasMany: true,
-      required: true,
-      admin: {
-        description: 'Payment methods accepted for contributions to this jar',
-      },
+      name: 'thankYouMessage',
+      type: 'text',
     },
     {
       name: 'status',

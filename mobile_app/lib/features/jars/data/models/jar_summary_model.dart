@@ -144,6 +144,9 @@ class JarSummaryModel {
   final String id;
   final String name;
   final String? description;
+
+  /// Optional thank you message to display to contributors
+  final String? thankYouMessage;
   final double goalAmount;
   final double acceptedContributionAmount;
   final String currency; // 'ghc' | 'ngn'
@@ -152,7 +155,6 @@ class JarSummaryModel {
   final JarStatus status; // 'open' | 'broken' | 'sealed'
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
-  final List<String> acceptedPaymentMethods;
   final bool acceptAnonymousContributions;
   final String? paymentLink;
   final String? jarGroup;
@@ -169,6 +171,7 @@ class JarSummaryModel {
     required this.id,
     required this.name,
     this.description,
+    this.thankYouMessage,
     required this.goalAmount,
     required this.acceptedContributionAmount,
     required this.currency,
@@ -177,7 +180,6 @@ class JarSummaryModel {
     required this.status,
     required this.creator,
     this.invitedCollectors,
-    required this.acceptedPaymentMethods,
     required this.acceptAnonymousContributions,
     this.paymentLink,
     this.jarGroup,
@@ -297,6 +299,7 @@ class JarSummaryModel {
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
+      thankYouMessage: json['thankYouMessage'] as String?,
       goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
       acceptedContributionAmount:
           (json['acceptedContributionAmount'] as num? ?? 0).toDouble(),
@@ -312,10 +315,6 @@ class JarSummaryModel {
                   invitedCollector as Map<String, dynamic>,
                 ),
               )
-              .toList(),
-      acceptedPaymentMethods:
-          (json['acceptedPaymentMethods'] as List<dynamic>)
-              .map((method) => method as String)
               .toList(),
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool,
@@ -384,6 +383,7 @@ class JarSummaryModel {
       'id': id,
       'name': name,
       'description': description,
+      'thankYouMessage': thankYouMessage,
       'goalAmount': goalAmount,
       'acceptedContributionAmount': acceptedContributionAmount,
       'currency': currency,
@@ -395,7 +395,6 @@ class JarSummaryModel {
           invitedCollectors
               ?.map((invitedCollector) => invitedCollector.toJson())
               .toList(),
-      'acceptedPaymentMethods': acceptedPaymentMethods,
       'acceptAnonymousContributions': acceptAnonymousContributions,
       'paymentLink': paymentLink,
       'jarGroup': jarGroup,

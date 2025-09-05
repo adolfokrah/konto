@@ -327,6 +327,47 @@ class _JarInfoViewState extends State<JarInfoView> {
                                   onTap: () {
                                     Navigator.pushNamed(
                                       context,
+                                      AppRoutes.jarThankYouMessageEdit,
+                                    );
+                                  },
+                                  dense: true,
+                                  title: Text(
+                                    'Thank You Message',
+                                    style: AppTextStyles.titleMediumS.copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .color
+                                          ?.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    jarData.thankYouMessage?.isNotEmpty == true
+                                        ? jarData.thankYouMessage!
+                                        : 'No thank you message',
+                                    style: AppTextStyles.titleMediumS,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  trailing: Icon(Icons.chevron_right),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: AppSpacing.spacingXs),
+
+                          AppCard(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.spacingM,
+                            ),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
                                       AppRoutes.jarDescriptionEdit,
                                     );
                                   },
@@ -353,7 +394,6 @@ class _JarInfoViewState extends State<JarInfoView> {
                           ),
 
                           const SizedBox(height: AppSpacing.spacingXs),
-
                           AppCard(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.spacingM,

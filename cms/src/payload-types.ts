@@ -914,10 +914,7 @@ export interface Jar {
    * Allow anonymous contributions to this jar
    */
   acceptAnonymousContributions?: boolean | null;
-  /**
-   * Payment methods accepted for contributions to this jar
-   */
-  acceptedPaymentMethods: ('mobile-money' | 'bank-transfer' | 'cash')[];
+  thankYouMessage?: string | null;
   /**
    * Current status of the jar
    */
@@ -1580,7 +1577,7 @@ export interface JarsSelect<T extends boolean = true> {
       };
   paymentLink?: T;
   acceptAnonymousContributions?: T;
-  acceptedPaymentMethods?: T;
+  thankYouMessage?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

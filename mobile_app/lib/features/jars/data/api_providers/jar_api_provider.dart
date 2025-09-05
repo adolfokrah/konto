@@ -231,6 +231,7 @@ class JarApiProvider {
     bool? acceptAnonymousContributions,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
+    String? thankYouMessage,
   }) async {
     try {
       // Get authenticated headers
@@ -266,6 +267,12 @@ class JarApiProvider {
           final status = collector['status'] ?? 'pending';
           if (status is String) {
             processedCollector['status'] = status;
+          }
+
+          // Extract thankYouMessage safely
+          final thankYouMessage = collector['thankYouMessage'];
+          if (thankYouMessage is String && thankYouMessage.isNotEmpty) {
+            processedCollector['thankYouMessage'] = thankYouMessage;
           }
 
           // Explicitly set collector to null to avoid hook confusion
@@ -305,6 +312,9 @@ class JarApiProvider {
       }
       if (processedInvitedCollectors != null) {
         jarData['invitedCollectors'] = processedInvitedCollectors;
+      }
+      if (thankYouMessage != null) {
+        jarData['thankYouMessage'] = thankYouMessage;
       }
 
       final response = await _dio.patch(

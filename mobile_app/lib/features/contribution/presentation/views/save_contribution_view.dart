@@ -232,15 +232,13 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           ],
 
                           // Phone number input (only show for Mobile Money)
-                          if (_selectedPaymentMethod == 'mobile-money') ...[
-                            AppTextInput(
-                              controller: _phoneController,
-                              label: localizations.mobileMoneyNumber,
-                              hintText: localizations.enterMobileMoneyNumber,
-                              keyboardType: TextInputType.phone,
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
-                          ],
+                          AppTextInput(
+                            controller: _phoneController,
+                            label: localizations.phoneNumber,
+                            hintText: localizations.enterMobileMoneyNumber,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
 
                           AppTextInput(
                             controller: _nameController,
@@ -339,10 +337,8 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         jarId: jarId ?? '',
         contributor: _nameController.text.trim(),
         contributorPhoneNumber:
-            _selectedPaymentMethod == 'mobile-money'
-                ? _phoneController.text
-                    .trim() // Only include phone number for Mobile Money
-                : null, // Phone number not required for Cash and Bank Transfer
+            _phoneController.text
+                .trim(), // Phone number not required for Cash and Bank Transfer
         paymentMethod: _selectedPaymentMethod,
         accountNumber:
             _selectedPaymentMethod == 'bank-transfer'

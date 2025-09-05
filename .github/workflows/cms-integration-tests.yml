@@ -38,7 +38,7 @@ jobs:
       PAYLOAD_SECRET: test-secret-for-github-actions
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
       NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
-      PAYSTACK_SECRET: test-paystack-secret
+      PAYSTACK_SECRET: sk_test_9c41909a7c7d8341d529b7d0ceaa07e7c97099af
 
     steps:
       - name: Checkout code

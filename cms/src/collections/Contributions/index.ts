@@ -7,6 +7,7 @@ import { transferMomo } from './endpoints/transfer-momo'
 import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
+import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 
 export const Contributions: CollectionConfig = {
   slug: 'contributions',
@@ -60,7 +61,7 @@ export const Contributions: CollectionConfig = {
       name: 'mobileMoneyProvider',
       type: 'text',
       admin: {
-        condition: data => data?.paymentMethod === 'mobile-money',
+        condition: (data) => data?.paymentMethod === 'mobile-money',
       },
       hooks: {
         beforeChange: [
@@ -79,7 +80,7 @@ export const Contributions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Account number for bank transfers',
-        condition: data => data?.paymentMethod === 'bank-transfer',
+        condition: (data) => data?.paymentMethod === 'bank-transfer',
       },
       hooks: {
         beforeChange: [
@@ -107,7 +108,7 @@ export const Contributions: CollectionConfig = {
       type: 'group',
       admin: {
         description: 'Detailed breakdown of all charges applied to this contribution',
-        condition: data => data?.paymentMethod === 'mobile-money',
+        condition: (data) => data?.paymentMethod === 'mobile-money',
       },
       fields: [
         {
@@ -203,7 +204,7 @@ export const Contributions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Transaction reference for tracking payments',
-        condition: data => data?.paymentMethod === 'mobile-money',
+        condition: (data) => data?.paymentMethod === 'mobile-money',
       },
     },
     {
@@ -243,7 +244,7 @@ export const Contributions: CollectionConfig = {
 
           // Add invited collectors with 'accepted' status to allowed users
           if (jar.invitedCollectors && Array.isArray(jar.invitedCollectors)) {
-            jar.invitedCollectors.forEach(invitedCollector => {
+            jar.invitedCollectors.forEach((invitedCollector) => {
               if (invitedCollector.collector && invitedCollector.status === 'accepted') {
                 // Handle both ObjectId string and populated object
                 const collectorId =
@@ -265,7 +266,7 @@ export const Contributions: CollectionConfig = {
             },
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
+           
           console.error('Error filtering collector options:', error)
           return false
         }
@@ -309,5 +310,6 @@ export const Contributions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
+    afterChange: [sendContributionReceipt],
   },
 }
