@@ -213,10 +213,10 @@ export const chargeMomo = async (req: PayloadRequest) => {
     })
   } catch (error: any) {
     // Log error in development only
-    if (process.env.NODE_ENV !== 'production') {
-       
-      console.error('💥 Mobile money charge error:', error)
-    }
+    // if (process.env.NODE_ENV !== 'production') {
+
+    console.error('💥 Mobile money charge error:', error)
+    // }
 
     // Handle specific errors
     if (error?.status === 404 || error?.name === 'NotFound') {
