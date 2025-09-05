@@ -104,6 +104,9 @@ importers:
       react-hook-form:
         specifier: 7.62.0
         version: 7.62.0(react@19.1.1)
+      require-in-the-middle:
+        specifier: 7.5.2
+        version: 7.5.2
       sharp:
         specifier: 0.34.3
         version: 0.34.3
