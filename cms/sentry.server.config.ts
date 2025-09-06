@@ -14,7 +14,7 @@ Sentry.init({
   enableLogs: false, // Disabled to reduce overhead
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: false, // Enable debug for testing
 
   // Only enable necessary integrations
   integrations: [
@@ -22,3 +22,5 @@ Sentry.init({
     Sentry.nodeContextIntegration(),
   ],
 });
+
+console.log('[Sentry] Server config initialized');

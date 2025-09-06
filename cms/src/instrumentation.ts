@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/nextjs'
 
 export async function register() {
   // Only enable Sentry in production on Vercel to reduce local noise.
-  if (!(process.env.NODE_ENV === 'production' && process.env.VERCEL)) return
+  // if (!(process.env.NODE_ENV === 'production' && process.env.VERCEL)) return
 
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Explicitly import require-in-the-middle so it gets bundled for Vercel

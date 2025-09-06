@@ -93,8 +93,8 @@ withPayload(nextConfig, { devBundleServerPackages: false }),
     // Automatically tree-shake Sentry logger statements to reduce bundle size
     disableLogger: true,
 
-    // Disable automatic instrumentation that can cause issues on Vercel
-    autoInstrumentServerFunctions: false,
+    // Enable automatic instrumentation for server functions
+    autoInstrumentServerFunctions: true,
     
     // Disable Vercel Cron monitoring to reduce dependencies
     automaticVercelMonitors: false,
