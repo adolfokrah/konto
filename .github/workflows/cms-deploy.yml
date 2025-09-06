@@ -216,7 +216,6 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--target=staging'
-          working-directory: ./cms
           # Deploy to preview/staging (no --prod flag)
 
   approval-production:
@@ -245,4 +244,3 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--prod'
-          working-directory: ./cms
