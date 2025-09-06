@@ -7,6 +7,7 @@ on:
     paths:
       - 'cms/**'
       - '.github/workflows/cms-integration-tests.yml'
+      - '.github/workflows/cms-deploy.yml'
   pull_request:
     branches: [ main ]
     paths:
