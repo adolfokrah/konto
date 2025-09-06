@@ -1,7 +1,16 @@
 // Keep Sentry import at module scope (Next.js expects this file) but we guard runtime usage.
 import * as Sentry from '@sentry/nextjs'
 
+// Global flag to prevent multiple initializations
+let sentryInitialized = false
+
 export async function register() {
+  // Prevent multiple initializations (can happen during hot reloads)
+  if (sentryInitialized) {
+    console.log('[sentry] Already initialized, skipping...')
+    return
+  }
+
   // Only enable Sentry in production on Vercel to reduce local noise.
   // if (!(process.env.NODE_ENV === 'production' && process.env.VERCEL)) return
 
@@ -16,10 +25,12 @@ export async function register() {
       console.warn('[sentry] optional require-in-the-middle not available', e)
     }
     await import('../sentry.server.config')
+    sentryInitialized = true
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {
     await import('../sentry.edge.config')
+    sentryInitialized = true
   }
 }
 
