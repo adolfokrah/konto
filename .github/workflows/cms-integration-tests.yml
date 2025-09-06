@@ -72,7 +72,7 @@ jobs:
           identity-id: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
           domain: "https://app.infisical.com"
           env-slug: "dev"
-          project-slug: "cli-integration-tests-9-edj"
+          project-slug: "konto-cms"
 
       - name: Generate types
         working-directory: ./cms
