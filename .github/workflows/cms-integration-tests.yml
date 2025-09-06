@@ -73,7 +73,7 @@ jobs:
         working-directory: ./cms
         env:
           CI: true
-        run: pnpm test:int:raw
+        run: pnpm test:int
 
       - name: Upload test artifacts on failure
         if: failure()
