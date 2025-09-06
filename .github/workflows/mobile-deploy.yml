@@ -73,32 +73,34 @@ jobs:
           IFS='.' read -r major minor patch <<< "$current_version"
           
           # Determine version bump based on commit message
-          if [[ "$last_commit_message" =~ ^(feat|feature)(\(.+\))?!: ]] || [[ "$last_commit_message" =~ BREAKING[[:space:]]CHANGE ]]; then
+          echo "Analyzing commit message: '$last_commit_message'"
+          
+          if [[ "$last_commit_message" =~ ^feat(\(.+\))?!: ]] || [[ "$last_commit_message" =~ ^feature(\(.+\))?!: ]] || [[ "$last_commit_message" =~ BREAKING[[:space:]]CHANGE ]]; then
             # Major version bump for breaking changes
             major=$((major + 1))
             minor=0
             patch=0
             bump_type="major"
             echo "🚀 BREAKING CHANGE detected - Major version bump"
-          elif [[ "$last_commit_message" =~ ^(feat|feature)(\(.+\))?: ]]; then
+          elif [[ "$last_commit_message" =~ ^feat(\(.+\))?: ]] || [[ "$last_commit_message" =~ ^feature(\(.+\))?: ]]; then
             # Minor version bump for new features
             minor=$((minor + 1))
             patch=0
             bump_type="minor"
             echo "✨ New feature detected - Minor version bump"
-          elif [[ "$last_commit_message" =~ ^(fix|bugfix)(\(.+\))?: ]]; then
+          elif [[ "$last_commit_message" =~ ^fix(\(.+\))?: ]] || [[ "$last_commit_message" =~ ^bugfix(\(.+\))?: ]]; then
             # Patch version bump for bug fixes
             patch=$((patch + 1))
             bump_type="patch"
             echo "🐛 Bug fix detected - Patch version bump"
-          elif [[ "$last_commit_message" =~ ^(perf)(\(.+\))?: ]]; then
+          elif [[ "$last_commit_message" =~ ^perf(\(.+\))?: ]]; then
             # Patch version bump for performance improvements
             patch=$((patch + 1))
             bump_type="patch"
             echo "⚡ Performance improvement detected - Patch version bump"
           else
             # No version bump for other commit types (docs, style, refactor, test, chore, etc.)
-            echo "📝 No version bump needed for commit type"
+            echo "📝 No version bump needed for commit type: $last_commit_message"
             echo "new-version=$current_version" >> $GITHUB_OUTPUT
             echo "version-changed=false" >> $GITHUB_OUTPUT
             echo "bump-type=none" >> $GITHUB_OUTPUT
