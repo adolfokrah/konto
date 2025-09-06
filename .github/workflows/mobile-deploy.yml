@@ -156,6 +156,9 @@ jobs:
     name: Staging Build
     runs-on: ubuntu-latest
     needs: version-bump
+    permissions:
+      id-token: write
+      contents: read
     # Run if version was bumped OR manual trigger (regardless of version change)
     if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' }}
     # Skip staging if manual trigger requests production only
@@ -164,20 +167,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
+      - name: Fetch secrets from Infisical (Staging)
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: universal
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://app.infisical.com"
+          env-slug: "staging"
+          project-slug: "konto-mobile-app"
+        
       - name: Trigger Staging Build
         uses: ./.github/actions/trigger-codemagic-build
         with:
-          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
-          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
+          codemagic-api-token: ${{ env.CODEMAGIC_API_TOKEN }}
+          codemagic-app-id: ${{ env.CODEMAGIC_APP_ID }}
           workflow-id: 'staging-workflow'
           environment: 'staging'
           custom-message: ${{ github.event.inputs.custom_message || format('Staging build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
           branch: 'main'
-          api-base-url: ${{ secrets.API_BASE_URL  }}
-          mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
-          mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
-          mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
-          image-base-url: ${{ secrets.STAGING_IMAGE_BASE_URL }}
+          api-base-url: ${{ env.API_BASE_URL }}
+          mnotify-api-key: ${{ env.MNOTIFY_API_KEY }}
+          mnotify-sender-id: ${{ env.MNOTIFY_SENDER_ID }}
+          mnotify-api-base-url: ${{ env.MNOTIFY_API_BASE_URL }}
+          image-base-url: ${{ env.IMAGE_BASE_URL }}
 
   production-approval:
     name: Production Approval
@@ -192,6 +205,9 @@ jobs:
     name: Production Build  
     runs-on: ubuntu-latest
     needs: [version-bump, production-approval]
+    permissions:
+      id-token: write
+      contents: read
     # Run if version was bumped OR manual trigger (regardless of version change)
     if: ${{ always() && (needs.version-bump.outputs.version-changed == 'true' || github.event_name == 'workflow_dispatch') && needs.version-bump.result == 'success' && needs.production-approval.result == 'success' }}
     # Skip production if manual trigger requests staging only
@@ -200,17 +216,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
+      - name: Fetch secrets from Infisical (Production)
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: universal
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://app.infisical.com"
+          env-slug: "production"
+          project-slug: "konto-mobile-app"
+        
       - name: Trigger Production Build
         uses: ./.github/actions/trigger-codemagic-build
         with:
-          codemagic-api-token: ${{ secrets.CODEMAGIC_API_TOKEN }}
-          codemagic-app-id: ${{ secrets.CODEMAGIC_APP_ID }}
+          codemagic-api-token: ${{ env.CODEMAGIC_API_TOKEN }}
+          codemagic-app-id: ${{ env.CODEMAGIC_APP_ID }}
           workflow-id: 'production-workflow'
           environment: 'production'
           custom-message: ${{ github.event.inputs.custom_message || format('Production build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
           branch: 'main'
-          api-base-url: ${{ secrets.API_BASE_URL }}
-          mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
-          mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
-          mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
-          image-base-url: ${{ secrets.PRODUCTION_IMAGE_BASE_URL }}
+          api-base-url: ${{ env.API_BASE_URL }}
+          mnotify-api-key: ${{ env.MNOTIFY_API_KEY }}
+          mnotify-sender-id: ${{ env.MNOTIFY_SENDER_ID }}
+          mnotify-api-base-url: ${{ env.MNOTIFY_API_BASE_URL }}
+          image-base-url: ${{ env.IMAGE_BASE_URL }}
