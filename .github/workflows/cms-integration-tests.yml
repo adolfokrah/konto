@@ -64,24 +64,28 @@ jobs:
 
       - name: Install Infisical CLI
         run: |
-          # Install from new official Infisical CLI apt repository (Cloudsmith deprecated)
-          echo "deb [trusted=yes] https://artifacts-cli.infisical.com/apt/ stable main" | sudo tee /etc/apt/sources.list.d/infisical.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install -y infisical
+          set -euo pipefail
+          VERSION="0.41.90"
+          echo "Installing Infisical CLI ${VERSION} via GitHub release (apt repo fallback avoided)"
+          curl -fsSL -o infisical.tgz "https://github.com/Infisical/infisical-cli/releases/download/v${VERSION}/infisical_${VERSION}_linux_amd64.tar.gz"
+          tar -xzf infisical.tgz
+          sudo mv infisical /usr/local/bin/infisical
+          rm -f infisical.tgz
+          infisical --version
 
-      - name: Generate types with Infisical
+      - name: Generate types with Infisical (test env)
         working-directory: ./cms
         env:
           # Provide a service token (read access) scoped to project root (/) and environment "test" in GitHub secret INFISICAL_TOKEN
           INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-        run: infisical run --env=dev -- pnpm generate:types
+        run: infisical run --env=test -- pnpm generate:types
 
-      - name: Run integration tests with Infisical
+      - name: Run integration tests with Infisical (test env)
         working-directory: ./cms
         env:
           INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
           CI: true
-        run: infisical run --env=dev -- pnpm test:int:raw
+        run: infisical run --env=test -- pnpm test:int:raw
 
       - name: Upload test artifacts on failure
         if: failure()
