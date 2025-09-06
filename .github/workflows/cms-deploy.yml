@@ -208,6 +208,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://app.infisical.com"
+          env-slug: "staging"
+          project-slug: "konto-cms"
+          export-type: "file"
+          file-output-path: "./cms/.env.staging"
+
       - name: Deploy to Vercel Staging
         id: deploy-staging
         uses: amondnet/vercel-action@v25
@@ -216,6 +228,7 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--target=staging'
+          working-directory: ./cms
           # Deploy to preview/staging (no --prod flag)
 
   approval-production:
@@ -236,6 +249,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://app.infisical.com"
+          env-slug: "production"
+          project-slug: "konto-cms"
+          export-type: "file"
+          file-output-path: "./cms/.env.production"
+
       - name: Deploy to Vercel Production
         id: deploy
         uses: amondnet/vercel-action@v25
@@ -244,3 +269,4 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--prod'
+          working-directory: ./cms
