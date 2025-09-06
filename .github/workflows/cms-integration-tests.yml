@@ -56,19 +56,31 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'cms/pnpm-lock.yaml'
 
+      - name: Install Infisical CLI
+        run: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo -E bash
+          sudo apt-get update && sudo apt-get install -y infisical
+
+      - name: Authenticate with Infisical
+        working-directory: ./cms
+        run: |
+          infisical login --method=identity --identity-id="${{ secrets.INFISICAL_IDENTITY_TOKEN }}"
+        env:
+          INFISICAL_IDENTITY_TOKEN: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
+
       - name: Install dependencies
         working-directory: ./cms
         run: |
           pnpm store prune || true
-          pnpm install --no-frozen-lockfile
+          infisical run --env=dev -- pnpm install --no-frozen-lockfile
 
       - name: Generate types
         working-directory: ./cms
-        run: pnpm generate:types
+        run: infisical run --env=dev -- pnpm generate:types
 
       - name: Run integration tests
         working-directory: ./cms
-        run: pnpm test:int
+        run: infisical run --env=dev -- pnpm test:int
         env:
           CI: true
 
