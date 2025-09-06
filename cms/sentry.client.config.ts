@@ -18,4 +18,6 @@ Sentry.init({
   integrations: [
     // Removed replayIntegration to fix "Multiple Sentry Session Replay instances" error
   ],
+ environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+
 });

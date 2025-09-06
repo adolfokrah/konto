@@ -22,6 +22,8 @@ if (!global.__SENTRY_SERVER_INITIALIZED__) {
     // Enable logs to be sent to Sentry
     enableLogs: false, // Disabled to reduce overhead
 
+    environment: process.env.SENTRY_ENVIRONMENT,
+
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false, // Enable debug for testing
 
