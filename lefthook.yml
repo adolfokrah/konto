@@ -46,7 +46,7 @@ pre-push:
     # Run Flutter tests before push
     flutter-test:
       glob: "mobile_app/**/*.{dart}"
-      run: cd mobile_app && flutter test
+      run: cd mobile_app && make test
       skip:
         - merge
         - rebase

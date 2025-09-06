@@ -173,7 +173,7 @@ jobs:
           environment: 'staging'
           custom-message: ${{ github.event.inputs.custom_message || format('Staging build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
           branch: 'main'
-          api-base-url: ${{ secrets.STAGING_API_BASE_URL  }}
+          api-base-url: ${{ secrets.API_BASE_URL  }}
           mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
           mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
           mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}
@@ -209,7 +209,7 @@ jobs:
           environment: 'production'
           custom-message: ${{ github.event.inputs.custom_message || format('Production build v{0} triggered after successful integration tests', needs.version-bump.outputs.new-version) }}
           branch: 'main'
-          api-base-url: ${{ secrets.STAGING_API_BASE_URL }}
+          api-base-url: ${{ secrets.API_BASE_URL }}
           mnotify-api-key: ${{ secrets.MNOTIFY_API_KEY }}
           mnotify-sender-id: ${{ secrets.MNOTIFY_SENDER_ID}}
           mnotify-api-base-url: ${{ secrets.MNOTIFY_API_BASE_URL }}

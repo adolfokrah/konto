@@ -1,18 +1,18 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:konto/core/config/app_config.dart';
 
 /// Backend configuration constants
 class BackendConfig {
   // Base URL for the backend API
   static String get apiBaseUrl {
-    return dotenv.env['API_BASE_URL'] ?? '';
+    return AppConfig.apiBaseUrl;
   }
 
   static String get imageBaseUrl {
-    return dotenv.env['IMAGE_BASE_URL'] ?? '';
+    return AppConfig.imageBaseUrl;
   }
 
   static String get appBaseUrl {
-    return dotenv.env['APP_BASE_URL'] ?? 'https://konto.app';
+    return AppConfig.imageBaseUrl; // Using imageBaseUrl as app base URL
   }
 
   // API endpoints

@@ -24,6 +24,9 @@ jobs:
   flutter-integration-tests:
     name: Flutter Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     
     env:
       FLUTTER_CHANNEL: 'stable'
@@ -81,26 +84,39 @@ jobs:
           echo "Analysis can be run locally with: flutter analyze"
         continue-on-error: true
 
-      - name: Create .env file for tests
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: universal
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://app.infisical.com"
+          env-slug: "dev"
+          project-slug: "konto-mobile-app"
+
+      - name: Run Flutter Integration tests with Infisical secrets
         working-directory: ./mobile_app
         run: |
-          echo "# Environment variables for CI testing" > .env
-          echo "API_BASE_URL=http://localhost:3000/api" >> .env
-          echo "MNOTIFY_API_KEY=test_api_key" >> .env
-          echo "MNOTIFY_SENDER_ID=TestApp" >> .env
-          echo "MNOTIFY_API_BASE_URL=https://api.mnotify.com/api/sms/quick" >> .env
-          echo "APP_ENV=test" >> .env
-          echo "Created .env file for CI testing"
-
-      - name: Run Flutter Integration tests
-        working-directory: ./mobile_app
-        run: flutter test test/int/ --reporter expanded
+          flutter test test/int/ --reporter expanded \
+            --dart-define=API_BASE_URL="${API_BASE_URL}" \
+            --dart-define=IMAGE_BASE_URL="${IMAGE_BASE_URL}" \
+            --dart-define=MNOTIFY_API_KEY="${MNOTIFY_API_KEY}" \
+            --dart-define=MNOTIFY_API_BASE_URL="${MNOTIFY_API_BASE_URL}" \
+            --dart-define=MNOTIFY_SENDER_ID="${MNOTIFY_SENDER_ID}" \
+            --dart-define=FLUTTER_ENV=test
         env:
           CI: true
 
       - name: Generate test coverage
         working-directory: ./mobile_app
-        run: flutter test --coverage test/int/
+        run: |
+          flutter test --coverage test/int/ \
+            --dart-define=API_BASE_URL="${API_BASE_URL}" \
+            --dart-define=IMAGE_BASE_URL="${IMAGE_BASE_URL}" \
+            --dart-define=MNOTIFY_API_KEY="${MNOTIFY_API_KEY}" \
+            --dart-define=MNOTIFY_API_BASE_URL="${MNOTIFY_API_BASE_URL}" \
+            --dart-define=MNOTIFY_SENDER_ID="${MNOTIFY_SENDER_ID}" \
+            --dart-define=FLUTTER_ENV=test
         continue-on-error: true
 
       - name: Upload test coverage to Codecov

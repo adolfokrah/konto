@@ -1,21 +1,21 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:konto/core/config/app_config.dart';
 import 'package:konto/core/services/service_registry.dart';
 
 // SMS Configuration - Store your Mnotify credentials here
 class SmsConfig {
   // Mnotify API key
   static String get mnotifyApiKey {
-    return dotenv.env['MNOTIFY_API_KEY'] ?? '';
+    return AppConfig.mnotifyApiKey;
   }
 
   // Sender ID from Mnotify
   static String get senderId {
-    return dotenv.env['MNOTIFY_SENDER_ID'] ?? '';
+    return AppConfig.mnotifySenderId;
   }
 
   // Mnotify API endpoints
   static String get apiBaseUrl {
-    return dotenv.env['MNOTIFY_API_BASE_URL'] ?? '';
+    return AppConfig.mnotifyApiBaseUrl;
   }
 
   // OTP settings

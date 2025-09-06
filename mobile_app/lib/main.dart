@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:konto/core/config/app_config.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
@@ -26,7 +26,9 @@ import 'package:konto/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+
+  // Print configuration for debugging
+  AppConfig.printConfig();
 
   // Set initial system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
