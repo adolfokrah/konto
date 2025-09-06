@@ -70,13 +70,13 @@ jobs:
       - name: Generate types with Infisical
         working-directory: ./cms
         env:
-          INFISICAL_MACHINE_IDENTITY_ID: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
+          INFISICAL_TOKEN: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
         run: infisical run --env=test -- pnpm generate:types
 
       - name: Run integration tests with Infisical
         working-directory: ./cms
         env:
-          INFISICAL_MACHINE_IDENTITY_ID: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
+          INFISICAL_TOKEN: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
           CI: true
         run: infisical run --env=test -- pnpm test:int
 
