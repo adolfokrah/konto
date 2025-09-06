@@ -68,7 +68,7 @@ jobs:
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.9
         with:
-          method: "oidc"
+          method: "universal"
           identity-id: ${{ secrets.INFISICAL_IDENTITY_TOKEN }}
           domain: "https://app.infisical.com"
           env-slug: "dev"
