@@ -4,6 +4,8 @@ import * as Sentry from '@sentry/nextjs'
 // Global flag to prevent multiple initializations
 let sentryInitialized = false
 
+console.log(process.env.NODE_ENV)
+
 export async function register() {
   // Prevent multiple initializations (can happen during hot reloads)
   if (sentryInitialized) {

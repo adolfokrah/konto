@@ -14,7 +14,7 @@ if (!global.__SENTRY_SERVER_INITIALIZED__) {
   global.__SENTRY_SERVER_INITIALIZED__ = true;
 
   Sentry.init({
-    dsn: "https://625119fe2561ac059d226347b34a906d@o296861.ingest.us.sentry.io/4509968117792768",
+    dsn: process.env.SENTRY_DSN,
 
     // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
     tracesSampleRate: 0.1, // Reduced from 1 for production
