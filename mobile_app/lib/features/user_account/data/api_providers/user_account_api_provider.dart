@@ -27,6 +27,7 @@ class UserAccountApiProvider {
     String? accountHolder,
     AppTheme? appTheme,
     AppLanguage? appLanguage,
+    String? photoId,
   }) async {
     try {
       final user = await _userStorageService.getUserData();
@@ -48,6 +49,8 @@ class UserAccountApiProvider {
       if (accountNumber != null) updateData['accountNumber'] = accountNumber;
       if (bank != null) updateData['bank'] = bank;
       if (accountHolder != null) updateData['accountHolder'] = accountHolder;
+      if (photoId != null)
+        updateData['photo'] = photoId; // attach media document id
       if (appTheme != null || appLanguage != null) {
         final settings = <String, dynamic>{};
         if (appTheme != null) settings['theme'] = appTheme.name;

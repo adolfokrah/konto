@@ -8,10 +8,15 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contributor_avatar.dart';
+import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
+import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/core/enums/media_upload_context.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,17 +32,33 @@ class UserAccountView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(localizations.account), centerTitle: true),
       body: SafeArea(
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthInitial) {
-              // Navigate to login screen when user is logged out
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.login,
-                (route) => false,
-              );
-            }
-          },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthInitial) {
+                  // Navigate to login screen when user is logged out
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                }
+              },
+            ),
+            BlocListener<MediaBloc, MediaState>(
+              listener: (context, state) {
+                if (state is MediaLoaded &&
+                    state.context == MediaUploadContext.userPhoto) {
+                  final media = state.media;
+                  // Dispatch update to attach new photo to user
+                  context.read<UserAccountBloc>().add(
+                    UpdatePersonalDetails(photoId: media.id),
+                  );
+                }
+              },
+            ),
+          ],
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               User? currentUser;
@@ -83,10 +104,43 @@ class UserAccountView extends StatelessWidget {
     return Column(
       children: [
         // User avatar
-        ContributorAvatar(
-          contributorName: user?.fullName ?? '',
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          radius: 50,
+        GestureDetector(
+          onTap: () {
+            ImageUploaderBottomSheet.show(
+              context,
+              uploadContext: MediaUploadContext.userPhoto,
+            );
+          },
+          child: BlocBuilder<UserAccountBloc, UserAccountState>(
+            builder: (context, uaState) {
+              final effectiveUser =
+                  uaState is UserAccountSuccess ? uaState.updatedUser : user;
+              return Stack(
+                children: [
+                  ContributorAvatar(
+                    contributorName: effectiveUser?.fullName ?? '',
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    radius: 50,
+                    avatarUrl: effectiveUser?.photo?.thumbnailURL,
+                  ),
+                  Positioned(
+                    bottom: -4,
+                    right: -4,
+                    child: AppIconButton(
+                      onPressed: () {
+                        ImageUploaderBottomSheet.show(
+                          context,
+                          uploadContext: MediaUploadContext.userPhoto,
+                        );
+                      },
+                      icon: Icons.camera_alt,
+                      size: const Size(24, 24),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
 
         const SizedBox(height: 10),

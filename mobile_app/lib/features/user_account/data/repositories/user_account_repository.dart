@@ -29,6 +29,7 @@ class UserAccountRepository {
     String? accountHolder,
     AppTheme? appTheme,
     AppLanguage? appLanguage,
+    String? photoId,
   }) async {
     try {
       final result = await _apiProvider.updateUserDetails(
@@ -42,6 +43,7 @@ class UserAccountRepository {
         accountHolder: accountHolder,
         appTheme: appTheme,
         appLanguage: appLanguage,
+        photoId: photoId,
       );
 
       if (result['success'] == true) {

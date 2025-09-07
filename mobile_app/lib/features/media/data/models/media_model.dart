@@ -16,6 +16,12 @@ class MediaModel {
   final double? focalX;
   final double? focalY;
 
+  /// Optional Payload generated key (present in nested objects sometimes)
+  final String? key;
+
+  /// Map of size name (thumbnail, small, medium, etc) to its variant metadata
+  final Map<String, MediaSizeVariant>? sizes;
+
   const MediaModel({
     required this.id,
     required this.alt,
@@ -30,14 +36,27 @@ class MediaModel {
     this.height,
     this.focalX,
     this.focalY,
+    this.key,
+    this.sizes,
   });
 
   factory MediaModel.fromJson(Map<String, dynamic> json) {
+    // Parse sizes map if present
+    Map<String, MediaSizeVariant>? parsedSizes;
+    final rawSizes = json['sizes'];
+    if (rawSizes is Map<String, dynamic>) {
+      parsedSizes = rawSizes.map((key, value) {
+        if (value is Map<String, dynamic>) {
+          return MapEntry(key, MediaSizeVariant.fromJson(value));
+        }
+        return MapEntry(key, MediaSizeVariant.empty());
+      });
+      if (parsedSizes.isEmpty) parsedSizes = null;
+    }
+
     return MediaModel(
       id: json['id'] as String,
-      alt:
-          json['alt'] as String? ??
-          '', // alt is required in PayloadCMS but make it safe
+      alt: json['alt'] as String? ?? '',
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
       url: json['url'] as String?,
@@ -49,6 +68,8 @@ class MediaModel {
       height: json['height'] as int?,
       focalX: (json['focalX'] as num?)?.toDouble(),
       focalY: (json['focalY'] as num?)?.toDouble(),
+      key: json['_key'] as String?,
+      sizes: parsedSizes,
     );
   }
 
@@ -67,6 +88,8 @@ class MediaModel {
       if (height != null) 'height': height,
       if (focalX != null) 'focalX': focalX,
       if (focalY != null) 'focalY': focalY,
+      if (key != null) '_key': key,
+      if (sizes != null) 'sizes': sizes!.map((k, v) => MapEntry(k, v.toJson())),
     };
   }
 
@@ -121,6 +144,8 @@ class MediaModel {
     int? height,
     double? focalX,
     double? focalY,
+    String? key,
+    Map<String, MediaSizeVariant>? sizes,
   }) {
     return MediaModel(
       id: id ?? this.id,
@@ -136,6 +161,8 @@ class MediaModel {
       height: height ?? this.height,
       focalX: focalX ?? this.focalX,
       focalY: focalY ?? this.focalY,
+      key: key ?? this.key,
+      sizes: sizes ?? this.sizes,
     );
   }
 
@@ -151,5 +178,52 @@ class MediaModel {
   @override
   String toString() {
     return 'MediaModel(id: $id, alt: $alt, filename: $filename, url: $url)';
+  }
+}
+
+/// Variant metadata for a particular media size (e.g., thumbnail, small, medium)
+class MediaSizeVariant {
+  final String? key;
+  final int? width;
+  final int? height;
+  final String? mimeType;
+  final int? filesize;
+  final String? filename;
+  final String? url;
+
+  const MediaSizeVariant({
+    this.key,
+    this.width,
+    this.height,
+    this.mimeType,
+    this.filesize,
+    this.filename,
+    this.url,
+  });
+
+  factory MediaSizeVariant.fromJson(Map<String, dynamic> json) {
+    return MediaSizeVariant(
+      key: json['_key'] as String?,
+      width: json['width'] as int?,
+      height: json['height'] as int?,
+      mimeType: json['mimeType'] as String?,
+      filesize: json['filesize'] as int?,
+      filename: json['filename'] as String?,
+      url: json['url'] as String?,
+    );
+  }
+
+  factory MediaSizeVariant.empty() => const MediaSizeVariant();
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (key != null) '_key': key,
+      'width': width,
+      'height': height,
+      'mimeType': mimeType,
+      'filesize': filesize,
+      'filename': filename,
+      'url': url,
+    };
   }
 }

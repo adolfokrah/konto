@@ -4,6 +4,7 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:konto/core/enums/media_upload_context.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
@@ -38,7 +39,8 @@ class JarMoreMenu extends StatelessWidget {
       listeners: [
         BlocListener<MediaBloc, MediaState>(
           listener: (context, state) {
-            if (state is MediaLoaded) {
+            if (state is MediaLoaded &&
+                state.context == MediaUploadContext.jarImage) {
               final jarImageId = state.media.id;
               context.read<UpdateJarBloc>().add(
                 UpdateJarRequested(
@@ -143,7 +145,10 @@ class JarMoreMenu extends StatelessWidget {
         break;
       case 'image':
         // Navigate to jar info/edit
-        ImageUploaderBottomSheet.show(context);
+        ImageUploaderBottomSheet.show(
+          context,
+          uploadContext: MediaUploadContext.jarImage,
+        );
         break;
     }
   }

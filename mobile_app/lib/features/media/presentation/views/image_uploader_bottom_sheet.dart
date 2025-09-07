@@ -7,6 +7,7 @@ import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/utils/haptic_utils.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/drag_handle.dart';
+import 'package:konto/core/enums/media_upload_context.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../../logic/bloc/media_bloc.dart';
 
@@ -16,17 +17,26 @@ import '../../logic/bloc/media_bloc.dart';
 ///
 /// Usage example:
 /// ```dart
-/// ImageUploaderBottomSheet.show(context);
+/// ImageUploaderBottomSheet.show(context, context: MediaUploadContext.userPhoto);
 /// ```
 class ImageUploaderBottomSheet extends StatelessWidget {
-  const ImageUploaderBottomSheet({super.key});
+  final MediaUploadContext uploadContext;
 
-  static void show(BuildContext context) {
+  const ImageUploaderBottomSheet({
+    super.key,
+    this.uploadContext = MediaUploadContext.general,
+  });
+
+  static void show(
+    BuildContext context, {
+    MediaUploadContext uploadContext = MediaUploadContext.general,
+  }) {
     HapticUtils.light();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => const ImageUploaderBottomSheet(),
+      builder:
+          (context) => ImageUploaderBottomSheet(uploadContext: uploadContext),
     );
   }
 
@@ -183,7 +193,11 @@ class ImageUploaderBottomSheet extends StatelessWidget {
 
         // Trigger the upload using MediaBloc
         context.read<MediaBloc>().add(
-          RequestUploadMedia(imageFile: image, alt: generatedAltText),
+          RequestUploadMedia(
+            imageFile: image,
+            alt: generatedAltText,
+            context: uploadContext,
+          ),
         );
       } else if (context.mounted) {
         Navigator.pop(context);

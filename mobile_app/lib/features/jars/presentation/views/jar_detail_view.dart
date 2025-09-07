@@ -10,6 +10,7 @@ import 'package:konto/core/widgets/button.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contribution_chart.dart';
 import 'package:konto/core/widgets/contribution_list_item.dart';
+import 'package:konto/core/widgets/contributor_avatar.dart';
 import 'package:konto/core/widgets/goal_progress_card.dart';
 import 'package:konto/core/widgets/icon_button.dart';
 import 'package:konto/core/widgets/scrollable_background_image.dart';
@@ -29,6 +30,7 @@ import 'package:konto/features/jars/presentation/widgets/jar_balance_breakdown.d
 import 'package:konto/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import 'package:konto/route.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -102,7 +104,7 @@ class _JarDetailViewState extends State<JarDetailView> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return MultiBlocListener(
       listeners: [
         BlocListener<JarSummaryBloc, JarSummaryState>(
@@ -231,14 +233,50 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 left: AppSpacing.spacingXs,
                                 right: AppSpacing.spacingM,
                               ),
-                              child: AppIconButton(
-                                onPressed: () {
-                                  Navigator.of(
-                                    context,
-                                  ).pushNamed(AppRoutes.userAccountView);
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, authState) {
+                                  String contributorName = '';
+                                  String? avatarUrl;
+                                  if (authState is AuthAuthenticated) {
+                                    contributorName = authState.user.fullName;
+                                    avatarUrl =
+                                        authState.user.photo?.thumbnailURL;
+                                  }
+                                  return BlocBuilder<
+                                    UserAccountBloc,
+                                    UserAccountState
+                                  >(
+                                    builder: (context, uaState) {
+                                      if (uaState is UserAccountSuccess) {
+                                        contributorName =
+                                            uaState.updatedUser.fullName;
+                                        avatarUrl =
+                                            uaState
+                                                .updatedUser
+                                                .photo
+                                                ?.thumbnailURL;
+                                      }
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(
+                                            AppRoutes.userAccountView,
+                                          );
+                                        },
+                                        child: ContributorAvatar(
+                                          contributorName: contributorName,
+                                          backgroundColor:
+                                              isDark
+                                                  ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary
+                                                  : Colors.white,
+                                          radius: 20,
+                                          avatarUrl: avatarUrl,
+                                        ),
+                                      );
+                                    },
+                                  );
                                 },
-                                icon: Icons.person,
-                                size: const Size(40, 40),
                               ),
                             ),
                           ],

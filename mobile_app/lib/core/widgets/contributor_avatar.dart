@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/theme/text_styles.dart';
+import 'package:konto/core/config/app_config.dart';
 
 /// A reusable avatar widget for displaying contributor information
 /// with optional status overlay icon
@@ -54,7 +55,10 @@ class ContributorAvatar extends StatelessWidget {
               (isDark
                   ? Theme.of(context).colorScheme.surface
                   : Theme.of(context).colorScheme.primary),
-          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+          backgroundImage:
+              avatarUrl != null
+                  ? NetworkImage(_resolveAvatarUrl(avatarUrl!))
+                  : null,
           child:
               avatarUrl == null
                   ? Text(
@@ -154,6 +158,21 @@ class ContributorAvatar extends StatelessWidget {
     if (radius <= 30) return 18;
     return 20;
   }
+}
+
+/// Resolve the avatar URL by prefixing with image base when it's a relative path
+String _resolveAvatarUrl(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Guard against double slashes
+  final base =
+      AppConfig.imageBaseUrl.endsWith('/')
+          ? AppConfig.imageBaseUrl.substring(
+            0,
+            AppConfig.imageBaseUrl.length - 1,
+          )
+          : AppConfig.imageBaseUrl;
+  final cleaned = url.startsWith('/') ? url : '/$url';
+  return '$base$cleaned';
 }
 
 /// Factory constructors for common use cases

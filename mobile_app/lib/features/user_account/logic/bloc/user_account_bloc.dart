@@ -36,6 +36,7 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         accountHolder: event.accountHolder,
         appTheme: event.appTheme,
         appLanguage: event.appLanguage,
+        photoId: event.photoId,
       );
 
       if (result.success && result.user != null) {

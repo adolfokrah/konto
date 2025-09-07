@@ -1,4 +1,5 @@
 import '../../../../core/enums/index.dart';
+import '../../../media/data/models/media_model.dart';
 
 /// User model representing the authenticated user data
 class User {
@@ -17,6 +18,12 @@ class User {
   final String? accountNumber;
   final String? bank;
 
+  /// Rich media document for the user's profile photo (can include size variants)
+  final MediaModel? photo;
+  final String? paystackSubAccountCode;
+  final String? collection; // e.g., 'users'
+  final String? strategy; // _strategy in JSON
+
   const User({
     required this.id,
     required this.email,
@@ -32,6 +39,10 @@ class User {
     this.accountHolder,
     this.accountNumber,
     this.bank,
+    this.photo,
+    this.paystackSubAccountCode,
+    this.collection,
+    this.strategy,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -59,7 +70,24 @@ class User {
       accountHolder: json['accountHolder'] as String?,
       accountNumber: json['accountNumber'] as String?,
       bank: json['bank'] as String?,
+      photo: _parsePhoto(json['photo']),
+      paystackSubAccountCode: json['paystackSubAccountCode'] as String?,
+      collection: json['collection'] as String?,
+      strategy: json['_strategy'] as String?,
     );
+  }
+
+  static MediaModel? _parsePhoto(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is Map<String, dynamic>) {
+      try {
+        return MediaModel.fromJson(raw);
+      } catch (_) {
+        return null;
+      }
+    }
+    // If backend sends just an ID/string, we ignore to avoid incomplete model
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -78,6 +106,11 @@ class User {
       if (accountHolder != null) 'accountHolder': accountHolder,
       if (accountNumber != null) 'accountNumber': accountNumber,
       if (bank != null) 'bank': bank,
+      if (photo != null) 'photo': photo!.toJson(),
+      if (paystackSubAccountCode != null)
+        'paystackSubAccountCode': paystackSubAccountCode,
+      if (collection != null) 'collection': collection,
+      if (strategy != null) '_strategy': strategy,
     };
   }
 
@@ -96,6 +129,10 @@ class User {
     String? accountHolder,
     String? accountNumber,
     String? bank,
+    MediaModel? photo,
+    String? paystackSubAccountCode,
+    String? collection,
+    String? strategy,
   }) {
     return User(
       id: id ?? this.id,
@@ -112,6 +149,11 @@ class User {
       accountHolder: accountHolder ?? this.accountHolder,
       accountNumber: accountNumber ?? this.accountNumber,
       bank: bank ?? this.bank,
+      photo: photo ?? this.photo,
+      paystackSubAccountCode:
+          paystackSubAccountCode ?? this.paystackSubAccountCode,
+      collection: collection ?? this.collection,
+      strategy: strategy ?? this.strategy,
     );
   }
 }

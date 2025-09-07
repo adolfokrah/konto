@@ -14,6 +14,7 @@ final class UpdatePersonalDetails extends UserAccountEvent {
   final String? accountHolder;
   final AppTheme? appTheme;
   final AppLanguage? appLanguage;
+  final String? photoId; // newly uploaded media document id
 
   UpdatePersonalDetails({
     this.fullName,
@@ -26,5 +27,6 @@ final class UpdatePersonalDetails extends UserAccountEvent {
     this.accountHolder,
     this.appTheme,
     this.appLanguage,
+    this.photoId,
   });
 }

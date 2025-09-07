@@ -9,8 +9,9 @@ final class MediaLoading extends MediaState {}
 
 final class MediaLoaded extends MediaState {
   final MediaModel media;
+  final MediaUploadContext context;
 
-  MediaLoaded({required this.media});
+  MediaLoaded({required this.media, required this.context});
 }
 
 final class MediaError extends MediaState {

@@ -17,6 +17,7 @@ import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart
 import 'package:konto/route.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
 import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
+import 'package:konto/core/enums/media_upload_context.dart';
 import 'package:konto/core/widgets/invited_collector_item.dart';
 import 'package:konto/core/widgets/scrollable_background_image.dart';
 import 'package:konto/core/widgets/small_button.dart';
@@ -83,7 +84,10 @@ class _JarCreateViewState extends State<JarCreateView> {
   }
 
   void _showImageUploaderSheet() {
-    ImageUploaderBottomSheet.show(context);
+    ImageUploaderBottomSheet.show(
+      context,
+      uploadContext: MediaUploadContext.jarImage,
+    );
   }
 
   String _generateInitials(String name) {
@@ -210,7 +214,8 @@ class _JarCreateViewState extends State<JarCreateView> {
       listeners: [
         BlocListener<MediaBloc, MediaState>(
           listener: (context, state) {
-            if (state is MediaLoaded) {
+            if (state is MediaLoaded &&
+                state.context == MediaUploadContext.jarImage) {
               setState(() {
                 jarImageUrl =
                     "${BackendConfig.imageBaseUrl}/${state.media.url}";

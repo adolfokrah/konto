@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 import 'package:konto/core/services/service_registry.dart';
+import 'package:konto/core/enums/media_upload_context.dart';
 
 import '../../data/models/media_model.dart';
 
@@ -38,7 +39,7 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
         print('DEBUG: Media data: $mediaData');
         final mediaModel = MediaModel.fromJson(mediaData);
 
-        emit(MediaLoaded(media: mediaModel));
+        emit(MediaLoaded(media: mediaModel, context: event.context));
       } else {
         // Handle upload failure
         final errorMessage = response['message'] ?? 'Failed to upload image';
