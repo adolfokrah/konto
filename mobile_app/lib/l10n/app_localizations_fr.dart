@@ -263,6 +263,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get updatingThemeSettings => 'Mise à jour des paramètres du thème...';
 
   @override
+  String get updatingLanguageSettings =>
+      'Mise à jour des paramètres de la langue...';
+
+  @override
   String get theme => 'Thème';
 
   @override

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/core/enums/app_theme.dart';
+import 'package:konto/core/enums/app_language.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
 /// API Provider for updating user details
@@ -25,6 +26,7 @@ class UserAccountApiProvider {
     String? bank,
     String? accountHolder,
     AppTheme? appTheme,
+    AppLanguage? appLanguage,
   }) async {
     try {
       final user = await _userStorageService.getUserData();
@@ -46,8 +48,11 @@ class UserAccountApiProvider {
       if (accountNumber != null) updateData['accountNumber'] = accountNumber;
       if (bank != null) updateData['bank'] = bank;
       if (accountHolder != null) updateData['accountHolder'] = accountHolder;
-      if (appTheme != null) {
-        updateData['appSettings'] = {'theme': appTheme.name};
+      if (appTheme != null || appLanguage != null) {
+        final settings = <String, dynamic>{};
+        if (appTheme != null) settings['theme'] = appTheme.name;
+        if (appLanguage != null) settings['language'] = appLanguage.value;
+        updateData['appSettings'] = settings;
       }
 
       print('Update Data: $updateData');

@@ -260,6 +260,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updatingThemeSettings => 'Updating theme settings...';
 
   @override
+  String get updatingLanguageSettings => 'Updating language settings...';
+
+  @override
   String get theme => 'Theme';
 
   @override

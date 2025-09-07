@@ -408,6 +408,8 @@
   "@themeSettingsTitle": {"description": "Title for theme settings page"},
   "updatingThemeSettings": "Updating theme settings...",
   "@updatingThemeSettings": {"description": "Loading overlay text when updating theme"},
+  "updatingLanguageSettings": "Updating language settings...",
+  "@updatingLanguageSettings": {"description": "Loading overlay text when updating language"},
   "theme": "Theme",
   "@theme": {"description": "Theme menu item"},
   "language": "Language",

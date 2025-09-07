@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/constants/app_images.dart';
+import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
@@ -29,58 +30,58 @@ class ThemeSettingsView extends StatelessWidget {
               final isUpdating = userAccountState is UserAccountLoading;
               return Scaffold(
                 appBar: AppBar(title: Text(translation.themeSettingsTitle)),
-                body: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.spacingS),
-                  child: Stack(
-                    children: [
-                      SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppCard(
-                              variant: CardVariant.secondary,
-                              child: Padding(
-                                padding: const EdgeInsets.all(
-                                  AppSpacing.spacingM,
-                                ),
-                                child: _ThemeOptionsRow(
-                                  selected: selectedTheme,
-                                  onSelect: (theme_enum.AppTheme value) {
-                                    context.read<UserAccountBloc>().add(
-                                      UpdatePersonalDetails(appTheme: value),
-                                    );
-                                  },
-                                ),
+                body: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppSpacing.spacingS),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppCard(
+                            variant: CardVariant.secondary,
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                AppSpacing.spacingM,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (isUpdating)
-                        Positioned.fill(
-                          child: Container(
-                            color: Colors.black.withAlpha(102),
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const CircularProgressIndicator(),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    translation.updatingThemeSettings,
-                                    style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                              child: _ThemeOptionsRow(
+                                selected: selectedTheme,
+                                onSelect: (theme_enum.AppTheme value) {
+                                  context.read<UserAccountBloc>().add(
+                                    UpdatePersonalDetails(appTheme: value),
+                                  );
+                                },
                               ),
                             ),
                           ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                        ],
+                      ),
+                    ),
+                    if (isUpdating)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CircularProgressIndicator(),
+                                const SizedBox(height: 16),
+                                Text(
+                                  translation.updatingThemeSettings,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               );
             }
@@ -178,9 +179,7 @@ class _ThemeOption extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.titleMediumS.copyWith(
                   color:
                       isSelected
                           ? Theme.of(context).colorScheme.surface

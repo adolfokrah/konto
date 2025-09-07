@@ -192,6 +192,29 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               }
               appTheme ??= theme_enum.AppTheme.system;
 
+              // Determine selected language locale from appSettings; fallback to system locale
+              String? languageCode;
+              if (userAccountState is UserAccountSuccess) {
+                languageCode =
+                    userAccountState.updatedUser.appSettings.language.value;
+              } else if (authState is AuthAuthenticated) {
+                languageCode = authState.user.appSettings.language.value;
+              }
+
+              // If no user preference, use system language (only if supported)
+              if (languageCode == null || languageCode.isEmpty) {
+                final systemLocale =
+                    WidgetsBinding.instance.platformDispatcher.locale;
+                if (systemLocale.languageCode == 'en' ||
+                    systemLocale.languageCode == 'fr') {
+                  languageCode = systemLocale.languageCode;
+                }
+              }
+              final Locale? resolvedLocale =
+                  (languageCode == null || languageCode.isEmpty)
+                      ? null
+                      : Locale(languageCode);
+
               final ThemeMode resolvedThemeMode = switch (appTheme) {
                 theme_enum.AppTheme.light => ThemeMode.light,
                 theme_enum.AppTheme.dark => ThemeMode.dark,
@@ -203,6 +226,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: resolvedThemeMode,
+                // Use user-selected locale or fallback (null lets Flutter resolve)
+                locale: resolvedLocale,
                 debugShowCheckedModeBanner: false,
                 localizationsDelegates: const [
                   AppLocalizations.delegate,
@@ -215,11 +240,27 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                   Locale('fr'), // French
                 ],
                 localeResolutionCallback: (locale, supportedLocales) {
-                  // Update translation service when locale changes
-                  if (locale != null) {
-                    ServiceRegistry().translationService.updateLocale(locale);
+                  // If we already have a resolvedLocale, use that.
+                  if (resolvedLocale != null) {
+                    ServiceRegistry().translationService.updateLocale(
+                      resolvedLocale,
+                    );
+                    return resolvedLocale;
                   }
-                  return locale;
+                  // Else use system provided locale if supported
+                  if (locale != null) {
+                    final match = supportedLocales.firstWhere(
+                      (l) => l.languageCode == locale.languageCode,
+                      orElse: () => supportedLocales.first,
+                    );
+                    ServiceRegistry().translationService.updateLocale(match);
+                    return match;
+                  }
+                  // Fallback to first supported
+                  ServiceRegistry().translationService.updateLocale(
+                    supportedLocales.first,
+                  );
+                  return supportedLocales.first;
                 },
                 routes: AppRoutes.routes,
                 initialRoute: AppRoutes.initial,

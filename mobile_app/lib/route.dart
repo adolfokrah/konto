@@ -19,6 +19,7 @@ import 'package:konto/features/startup/presentation/views/startup_screen.dart';
 import 'package:konto/features/user_account/presentation/views/change_phone_number_view.dart';
 import 'package:konto/features/user_account/presentation/views/personal_details_view.dart';
 import 'package:konto/features/user_account/presentation/views/theme_settings_view.dart';
+import 'package:konto/features/user_account/presentation/views/language_settings_view.dart';
 import 'package:konto/features/user_account/presentation/views/user_account_view.dart';
 import 'package:konto/features/user_account/presentation/views/withdrawal_account_view.dart';
 import 'package:konto/features/verification/presentation/pages/otp_view.dart';
@@ -50,6 +51,7 @@ class AppRoutes {
     '/await_momo_payment': (context) => const AwaitMomoPaymentView(),
     '/contributions_list': (context) => const ContributionsListView(),
     '/theme_settings': (context) => const ThemeSettingsView(),
+    '/language_settings': (context) => const LanguageSettingsView(),
   };
 
   // Route names constants for easy access
@@ -77,4 +79,5 @@ class AppRoutes {
   static const String awaitMomoPayment = '/await_momo_payment';
   static const String contributionsList = '/contributions_list';
   static const String themeSettings = '/theme_settings';
+  static const String languageSettings = '/language_settings';
 }

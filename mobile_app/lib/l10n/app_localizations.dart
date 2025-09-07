@@ -566,6 +566,12 @@ abstract class AppLocalizations {
   /// **'Updating theme settings...'**
   String get updatingThemeSettings;
 
+  /// Loading overlay text when updating language
+  ///
+  /// In en, this message translates to:
+  /// **'Updating language settings...'**
+  String get updatingLanguageSettings;
+
   /// Theme menu item
   ///
   /// In en, this message translates to:

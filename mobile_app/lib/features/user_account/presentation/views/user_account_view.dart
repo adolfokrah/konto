@@ -8,6 +8,7 @@ import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:konto/core/widgets/card.dart';
 import 'package:konto/core/widgets/contributor_avatar.dart';
+import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
@@ -184,6 +185,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.language,
               onTap: () {
                 // _showComingSoon(context);
+                Navigator.pushNamed(context, AppRoutes.languageSettings);
               },
             ),
             _buildMenuItem(
@@ -191,6 +193,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.notifications,
               onTap: () {
                 // _showComingSoon(context);
+                AppSnackBar.show(context, message: localizations.comingSoon);
               },
             ),
           ]),
