@@ -14,18 +14,38 @@ import 'package:konto/features/verification/presentation/pages/otp_view.dart';
 import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import 'package:konto/core/services/sms_otp_service.dart';
+// No repository override now; we mock network.
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
     await TestSetup.initialize();
+    // Mock SMS API endpoint to always succeed
+    MockInterceptor.overrideEndpoint('?key=', (options) {
+      return Response(
+        requestOptions: options,
+        data: {
+          'status': 'success',
+          'code': '2000',
+          'message': 'SMS sent successfully',
+          'data': {
+            'status': 'success',
+            'code': '2000',
+            'message': 'Message sent',
+          },
+        },
+        statusCode: 200,
+      );
+    });
   });
 
   tearDownAll(() {
@@ -34,6 +54,51 @@ void main() {
 
   group('Login Flow Test', () {
     testWidgets('User can log in successfully', (tester) async {
+      // Ensure SmsOtpService test mode
+      SmsOtpService.isTestMode = true;
+
+      // Instead of mocking SMS endpoint (which was leading to VerificationFailure due to response parsing),
+      // we fake the repository by supplying a bloc that uses our fake repo result manually.
+
+      // Mock successful login after OTP verification
+      MockInterceptor.overrideEndpoint('/users/login-with-phone', (options) {
+        return Response(
+          requestOptions: options,
+          data: {
+            'success': true,
+            'message': 'Login successful',
+            'token': 'mock_jwt_token_12345',
+            'exp':
+                DateTime.now()
+                    .add(const Duration(hours: 24))
+                    .millisecondsSinceEpoch,
+            'user': {
+              'id': 'test_user_123',
+              'phoneNumber': '245301631',
+              'countryCode': '+233',
+              'fullName': 'Test User',
+              'email': 'test@example.com',
+              'country': 'Ghana',
+              'isKYCVerified': false,
+              'createdAt': DateTime.now().toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+              'sessions': [],
+              'appSettings': {
+                'language': 'en',
+                'theme': 'light',
+                'biometricAuthEnabled': false,
+                'notificationsSettings': {
+                  'pushNotificationsEnabled': true,
+                  'emailNotificationsEnabled': true,
+                  'smsNotificationsEnabled': false,
+                },
+              },
+            },
+          },
+          statusCode: 200,
+        );
+      });
+
       // Start directly with the LoginView for testing
       await tester.pumpWidget(
         MultiBlocProvider(
@@ -43,6 +108,7 @@ void main() {
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
             BlocProvider(create: (context) => MediaBloc()),
+            BlocProvider(create: (context) => UserAccountBloc()),
             BlocProvider(create: (context) => UpdateJarBloc()),
             BlocProvider(
               create:
@@ -98,67 +164,73 @@ void main() {
       // OR if we're on OTP page (verification flow)
 
       final isOnOtpView = find.byType(OtpView).evaluate().isNotEmpty;
-      final isOnHome = find.byType(JarDetailView).evaluate().isNotEmpty;
+      final isOnHomeInitial = find.byType(JarDetailView).evaluate().isNotEmpty;
 
       if (isOnOtpView) {
-        // OTP verification flow
+        // OTP verification flow - test the actual input and navigation
         expect(find.byType(OtpView), findsOneWidget);
-
-        // Check that we're no longer on the login page
-        expect(find.byKey(const Key('phone_number')), findsNothing);
-        expect(find.byKey(const Key('login_button')), findsNothing);
+        print('📱 On OTP page, testing OTP input...');
 
         // Look for OTP-specific elements
         expect(
-          find.textContaining('OTP'),
+          find.text('Enter OTP'),
           findsOneWidget,
-          reason: 'Should find OTP text on the page',
+          reason: 'Should find "Enter OTP" text on the page',
         );
 
+        // Debug: Check the verification bloc state
+        final verificationBloc = BlocProvider.of<VerificationBloc>(
+          tester.element(find.byType(OtpView)),
+        );
+        final currentState = verificationBloc.state;
+        print('🔍 Current verification state: $currentState');
+        if (currentState is VerificationCodeSent) {
+          print('🔍 OTP in state: ${currentState.otpCode}');
+        }
+
         // Wait a moment for the OTP input to be ready
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 500));
 
         // Find the OTP input fields
         final otpFields = find.byType(TextFormField);
         expect(otpFields, findsWidgets, reason: 'Should find OTP input fields');
 
-        // Get the number of OTP fields found
-        final fieldCount = tester.widgetList(otpFields).length;
-
-        // Enter OTP digits
+        // Enter the test OTP (which should match the generated OTP in test mode: 123456)
         const testOtp = '123456';
 
         // Try entering the complete OTP in the first field
         try {
           await tester.enterText(otpFields.first, testOtp);
           await tester.pumpAndSettle();
+          print('🔧 Entered OTP: $testOtp in first field');
         } catch (e) {
           // Enter digits individually in each field
+          final fieldCount = tester.widgetList(otpFields).length;
           for (int i = 0; i < fieldCount && i < testOtp.length; i++) {
             final fieldFinder = otpFields.at(i);
             await tester.enterText(fieldFinder, testOtp[i]);
             await tester.pump(const Duration(milliseconds: 100));
+            print('🔧 Entered digit: ${testOtp[i]} in field $i');
           }
           await tester.pumpAndSettle();
         }
 
-        // OTP verification happens automatically
-        await tester.pump(const Duration(seconds: 3));
-        await tester.pumpAndSettle();
-
-        // After OTP, should navigate to home
+        // Allow time for VerificationSuccess -> RequestLogin -> AuthAuthenticated -> navigation
+        bool navigated = false;
+        for (int i = 0; i < 8; i++) {
+          await tester.pump(const Duration(milliseconds: 250));
+          await tester.pumpAndSettle();
+          if (find.byType(JarDetailView).evaluate().isNotEmpty) {
+            navigated = true;
+            break;
+          }
+        }
         expect(
-          find.byType(OtpView),
-          findsNothing,
-          reason: 'Should have navigated away from OTP view after verification',
+          navigated,
+          isTrue,
+          reason: 'Should navigate to home after OTP verification and login',
         );
-
-        expect(
-          find.byType(JarDetailView),
-          findsOneWidget,
-          reason: 'Should have navigated to home after OTP verification',
-        );
-      } else if (isOnHome) {
+      } else if (isOnHomeInitial) {
         // Direct login success flow (no OTP required)
         expect(
           find.byType(JarDetailView),

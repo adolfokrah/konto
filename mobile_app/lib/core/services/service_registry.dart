@@ -50,6 +50,7 @@ class ServiceRegistry {
   // Repositories
   late final AuthRepository _authRepository;
   late final VerificationRepository _verificationRepository;
+  // VerificationRepository? _overrideVerificationRepository; // test override
   late final OnboardingRepository _onboardingRepository;
   late final JarRepository _jarRepository;
   late final MediaRepository _mediaRepository;
@@ -174,6 +175,7 @@ class ServiceRegistry {
   /// Reset the registry (useful for testing)
   void reset() {
     _isInitialized = false;
+    // _overrideVerificationRepository = null;
   }
 
   /// Initialize with custom Dio instance (useful for testing)
@@ -254,4 +256,9 @@ class ServiceRegistry {
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with custom Dio for testing');
   }
+
+  // /// TEST ONLY: override the verification repository
+  // void setVerificationRepositoryForTest(VerificationRepository repo) {
+  //   _overrideVerificationRepository = repo;
+  // }
 }

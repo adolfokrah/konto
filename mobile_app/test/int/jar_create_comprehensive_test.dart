@@ -12,6 +12,7 @@ import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_create_view.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
@@ -177,6 +178,7 @@ void main() {
         BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
         BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
         BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+        BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
       ],
       child: MaterialApp(
         localizationsDelegates: const [

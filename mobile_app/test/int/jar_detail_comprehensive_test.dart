@@ -17,6 +17,7 @@ import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart
 import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
@@ -214,6 +215,7 @@ void main() {
         BlocProvider(create: (context) => JarListBloc()),
         BlocProvider(create: (context) => UpdateJarBloc()),
         BlocProvider(create: (context) => MediaBloc()),
+        BlocProvider(create: (context) => UserAccountBloc()),
         BlocProvider(
           create:
               (context) => JarSummaryReloadBloc(
@@ -403,6 +405,7 @@ void main() {
           BlocProvider(create: (context) => JarListBloc()),
           BlocProvider(create: (context) => UpdateJarBloc()),
           BlocProvider(create: (context) => MediaBloc()),
+          BlocProvider(create: (context) => UserAccountBloc()),
           BlocProvider(
             create:
                 (context) => JarSummaryReloadBloc(

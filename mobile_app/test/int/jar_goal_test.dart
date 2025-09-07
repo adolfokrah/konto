@@ -18,6 +18,7 @@ import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:konto/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:konto/features/media/logic/bloc/media_bloc.dart';
+import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
@@ -179,6 +180,7 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -434,6 +436,7 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -525,6 +528,7 @@ void main() {
                     create: (context) => UpdateJarBloc(),
                   ),
                   BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
                   BlocProvider<AddContributionBloc>(
                     create: (context) => AddContributionBloc(),
                   ),
@@ -724,6 +728,7 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -794,6 +799,7 @@ void main() {
               ),
               BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
               BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
+            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
             ],
             child: MaterialApp(
               localizationsDelegates: const [
