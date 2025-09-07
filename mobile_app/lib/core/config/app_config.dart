@@ -30,33 +30,12 @@ class AppConfig {
     'FLUTTER_ENV',
     defaultValue: 'development',
   );
-  static bool get isDevelopment => flutterEnv != 'production';
+
+  static const String sentryDsn = String.fromEnvironment(
+    'SENTRY_DSN',
+    defaultValue: '',
+  );
+
+  static bool get isDevelopment => flutterEnv == 'development';
   static bool get isProduction => flutterEnv == 'production';
-
-  // Debug helper
-  static void printConfig() {
-    print('🔧 App Configuration:');
-    print('API Base URL: $apiBaseUrl');
-    print('Image Base URL: $imageBaseUrl');
-    print('Environment: ${isDevelopment ? "Development" : "Production"}');
-    print(
-      'MNotify API Key: ${mnotifyApiKey.isNotEmpty ? "✅ Set (${mnotifyApiKey.length} chars)" : "❌ Missing"}',
-    );
-    print(
-      'MNotify API Base URL: ${mnotifyApiBaseUrl.isNotEmpty ? "✅ Set" : "❌ Missing"}',
-    );
-    print(
-      'MNotify Sender ID: ${mnotifySenderId.isNotEmpty ? "✅ Set" : "❌ Missing"}',
-    );
-
-    // Also print raw Platform.environment for comparison
-    print('🔍 Platform.environment check:');
-    print('API_BASE_URL: ${Platform.environment['API_BASE_URL'] ?? 'NOT_SET'}');
-    print(
-      'IMAGE_BASE_URL: ${Platform.environment['IMAGE_BASE_URL'] ?? 'NOT_SET'}',
-    );
-    print(
-      'MNOTIFY_API_KEY: ${Platform.environment['MNOTIFY_API_KEY']?.isNotEmpty == true ? "SET" : "NOT_SET"}',
-    );
-  }
 }

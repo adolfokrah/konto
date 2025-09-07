@@ -1,0 +1,85 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "make-run",
+      "type": "shell",
+      "command": "make",
+      "args": ["run"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/mobile_app"
+      },
+      "problemMatcher": [],
+      "detail": "Run Flutter app with Infisical secrets using make run"
+    },
+    {
+      "label": "make-run-ios",
+      "type": "shell",
+      "command": "make",
+      "args": ["run-ios"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/mobile_app"
+      },
+      "problemMatcher": [],
+      "detail": "Run Flutter app on iOS with Infisical secrets"
+    },
+    {
+      "label": "make-run-android",
+      "type": "shell",
+      "command": "make",
+      "args": ["run-android"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/mobile_app"
+      },
+      "problemMatcher": [],
+      "detail": "Run Flutter app on Android with Infisical secrets"
+    },
+    {
+      "label": "make-test",
+      "type": "shell",
+      "command": "make",
+      "args": ["test"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/mobile_app"
+      },
+      "problemMatcher": [],
+      "detail": "Run Flutter tests with Infisical secrets"
+    }
+  ]
+}

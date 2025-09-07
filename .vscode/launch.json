@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter (Make Run)",
+      "type": "dart",
+      "request": "launch",
+      "program": "mobile_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/mobile_app",
+      "toolArgs": [
+        "--dart-define-from-file=.env"
+      ],
+      "preLaunchTask": "make-run",
+      "console": "terminal"
+    },
+    {
+      "name": "Flutter (Make Run - iOS)",
+      "type": "dart",
+      "request": "launch",
+      "program": "mobile_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/mobile_app",
+      "toolArgs": [
+        "--dart-define-from-file=.env"
+      ],
+      "preLaunchTask": "make-run-ios",
+      "console": "terminal"
+    },
+    {
+      "name": "Flutter (Make Run - Android)",
+      "type": "dart",
+      "request": "launch",
+      "program": "mobile_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/mobile_app",
+      "toolArgs": [
+        "--dart-define-from-file=.env"
+      ],
+      "preLaunchTask": "make-run-android",
+      "console": "terminal"
+    },
+    {
+      "name": "Flutter (No Secrets - Fallback)",
+      "type": "dart",
+      "request": "launch",
+      "program": "mobile_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/mobile_app",
+      "console": "terminal"
+    }
+  ]
+}

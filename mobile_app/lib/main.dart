@@ -23,12 +23,10 @@ import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:konto/l10n/app_localizations.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Print configuration for debugging
-  AppConfig.printConfig();
 
   // Set initial system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -37,7 +35,40 @@ void main() async {
 
   // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
-  runApp(const MainApp());
+
+  // Initialize Sentry only for production and staging environments
+  if (!AppConfig.isDevelopment) {
+    await SentryFlutter.init((options) {
+      options.dsn = AppConfig.sentryDsn;
+      options.environment = AppConfig.flutterEnv;
+
+      // Production vs Staging settings
+      if (AppConfig.isProduction) {
+        // Production: Optimized sampling rates
+        options.debug = false;
+        options.tracesSampleRate = 0.1; // Capture 10% of transactions
+        options.profilesSampleRate = 0.1;
+        options.replay.sessionSampleRate = 0.1; // Capture 10% of sessions
+        options.replay.onErrorSampleRate =
+            1.0; // Still capture all error sessions
+      } else {
+        // Staging: Higher sampling for testing
+        options.debug = true;
+        options.tracesSampleRate = 1.0; // Capture 100% for testing
+        options.profilesSampleRate = 1.0;
+        options.replay.sessionSampleRate =
+            1.0; // Capture all sessions in staging
+        options.replay.onErrorSampleRate = 1.0;
+      }
+
+      // Common settings for production and staging
+      options.sendDefaultPii = true;
+      options.enableLogs = true;
+    }, appRunner: () => runApp(SentryWidget(child: const MainApp())));
+  } else {
+    // Development: No Sentry, just run the app normally
+    runApp(const MainApp());
+  }
 }
 
 class MainApp extends StatefulWidget {
