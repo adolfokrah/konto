@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:konto/core/config/app_config.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/core/theme/app_theme.dart';
+import 'package:konto/core/enums/app_theme.dart' as theme_enum;
 import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
@@ -155,31 +156,77 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         //   create: (context) => HomeBloc(),
         // ),
       ],
-      child: MaterialApp(
-        title: 'Konto',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'), // English
-          Locale('fr'), // French
-        ],
-        localeResolutionCallback: (locale, supportedLocales) {
-          // Update translation service when locale changes
-          if (locale != null) {
-            ServiceRegistry().translationService.updateLocale(locale);
-          }
-          return locale;
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          return BlocBuilder<UserAccountBloc, UserAccountState>(
+            // Only rebuild when theme or language value changes compared to previous snapshot
+            buildWhen: (prev, curr) {
+              // Helper to extract (theme, language) tuple
+              (theme_enum.AppTheme, String)? extract(UserAccountState s) {
+                if (s is UserAccountSuccess) {
+                  return (
+                    s.updatedUser.appSettings.theme,
+                    s.updatedUser.appSettings.language.value,
+                  );
+                }
+                return null;
+              }
+
+              final prevVals = extract(prev);
+              final currVals = extract(curr);
+
+              // If neither had values, don't rebuild
+              if (prevVals == null && currVals == null) return false;
+              // If one is null and the other not, rebuild (first load)
+              if (prevVals == null || currVals == null) return true;
+              // Rebuild only when theme or language changed
+              return prevVals != currVals;
+            },
+            builder: (context, userAccountState) {
+              // Determine selected theme from UserAccount updates first, else fall back to authenticated user
+              theme_enum.AppTheme? appTheme;
+              if (userAccountState is UserAccountSuccess) {
+                appTheme = userAccountState.updatedUser.appSettings.theme;
+              } else if (authState is AuthAuthenticated) {
+                appTheme = authState.user.appSettings.theme;
+              }
+              appTheme ??= theme_enum.AppTheme.system;
+
+              final ThemeMode resolvedThemeMode = switch (appTheme) {
+                theme_enum.AppTheme.light => ThemeMode.light,
+                theme_enum.AppTheme.dark => ThemeMode.dark,
+                theme_enum.AppTheme.system => ThemeMode.system,
+              };
+
+              return MaterialApp(
+                title: 'Konto',
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: resolvedThemeMode,
+                debugShowCheckedModeBanner: false,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('en'), // English
+                  Locale('fr'), // French
+                ],
+                localeResolutionCallback: (locale, supportedLocales) {
+                  // Update translation service when locale changes
+                  if (locale != null) {
+                    ServiceRegistry().translationService.updateLocale(locale);
+                  }
+                  return locale;
+                },
+                routes: AppRoutes.routes,
+                initialRoute: AppRoutes.initial,
+              );
+            },
+          );
         },
-        routes: AppRoutes.routes,
-        initialRoute: AppRoutes.initial,
       ),
     );
   }

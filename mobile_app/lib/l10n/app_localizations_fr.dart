@@ -257,6 +257,33 @@ class AppLocalizationsFr extends AppLocalizations {
   String get updatingJar => 'Mise à jour du pot...';
 
   @override
+  String get themeSettingsTitle => 'Paramètres du thème';
+
+  @override
+  String get updatingThemeSettings => 'Mise à jour des paramètres du thème...';
+
+  @override
+  String get theme => 'Thème';
+
+  @override
+  String get language => 'Langue';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get appSettings => 'Paramètres de l\'application';
+
+  @override
+  String get light => 'Clair';
+
+  @override
+  String get dark => 'Sombre';
+
+  @override
+  String get system => 'Système';
+
+  @override
   String get contributions => 'Contributions';
 
   @override

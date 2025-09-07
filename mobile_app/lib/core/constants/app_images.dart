@@ -13,6 +13,11 @@ class AppImages {
   // Jar Images
   static const String brokenJar = '$_imagesPath/broken_jar.png';
 
+  // Theme mode Images
+  static const String lightMode = '$_imagesPath/light-theme.png';
+  static const String darkMode = '$_imagesPath/dark-theme.png';
+  static const String systemMode = '$_imagesPath/system-theme.png';
+
   // TODO: Add more image categories as needed:
   // static const String logoPath = '$_imagesPath/logo.png';
   // static const String placeholderImage = '$_imagesPath/placeholder.png';

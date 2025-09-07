@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:konto/core/enums/app_theme.dart';
 import 'package:meta/meta.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
@@ -32,6 +33,7 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         accountNumber: event.accountNumber,
         bank: event.bank,
         accountHolder: event.accountHolder,
+        appTheme: event.appTheme,
       );
 
       if (result.success && result.user != null) {

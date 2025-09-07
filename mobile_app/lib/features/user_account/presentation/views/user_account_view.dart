@@ -166,6 +166,37 @@ class UserAccountView extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.spacingXs),
 
+          // App Settings section
+          _buildSectionTitle(localizations.appSettings),
+
+          const SizedBox(height: AppSpacing.spacingXs),
+
+          _buildSectionCard([
+            _buildMenuItem(
+              context: context,
+              title: localizations.theme,
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.themeSettings);
+              },
+            ),
+            _buildMenuItem(
+              context: context,
+              title: localizations.language,
+              onTap: () {
+                // _showComingSoon(context);
+              },
+            ),
+            _buildMenuItem(
+              context: context,
+              title: localizations.notifications,
+              onTap: () {
+                // _showComingSoon(context);
+              },
+            ),
+          ]),
+
+          const SizedBox(height: AppSpacing.spacingXs),
+
           // About section
           _buildSectionTitle(localizations.about),
 

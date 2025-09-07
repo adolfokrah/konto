@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/enums/app_language.dart';
+import 'package:konto/core/enums/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:konto/core/config/backend_config.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
@@ -382,8 +384,8 @@ void main() {
         updatedAt: DateTime.now(),
         sessions: [],
         appSettings: const AppSettings(
-          language: 'en',
-          darkMode: false,
+          language: AppLanguage.english,
+          theme: AppTheme.system,
           biometricAuthEnabled: false,
           notificationsSettings: NotificationSettings(
             pushNotificationsEnabled: true,

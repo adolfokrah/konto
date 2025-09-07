@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "🚀 Run Flutter with Infisical",
+      "label": "Run with Infisical (Default)",
       "type": "shell",
-      "command": "make",
+      "command": "/usr/bin/make",
       "args": ["run"],
       "group": {
         "kind": "build",
@@ -19,17 +19,17 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
         "env": {
           "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
         }
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "detail": "🚀 Run Flutter app with Infisical secrets"
     },
     {
-      "label": "🍎 Run iOS with Infisical",
+      "label": "Run iOS with Infisical",
       "type": "shell",
-      "command": "make",
+      "command": "/usr/bin/make",
       "args": ["run-ios"],
       "group": "build",
       "presentation": {
@@ -41,17 +41,17 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
         "env": {
           "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
         }
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "detail": "🍎 Run Flutter app on iOS with Infisical secrets"
     },
     {
-      "label": "🤖 Run Android with Infisical",
+      "label": "Run Android with Infisical",
       "type": "shell",
-      "command": "make",
+      "command": "/usr/bin/make",
       "args": ["run-android"],
       "group": "build",
       "presentation": {
@@ -63,33 +63,34 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
         "env": {
           "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
         }
       },
-      "problemMatcher": []
-    }
-    ,{
-      "label": "🔄 Generate Dart Defines (Infisical)",
+      "problemMatcher": [],
+      "detail": "🤖 Run Flutter app on Android with Infisical secrets"
+    },
+    {
+      "label": "Test with Infisical",
       "type": "shell",
-      "command": "make",
-      "args": ["generate-defines"],
+      "command": "/usr/bin/make",
+      "args": ["test"],
+      "group": "test",
       "presentation": {
         "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
+        "reveal": "always",
+        "focus": true,
+        "panel": "new",
         "showReuseMessage": false,
-        "clear": false
+        "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
         "env": {
           "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
         }
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "detail": "🧪 Run Flutter tests with Infisical secrets"
     }
   ]
 }

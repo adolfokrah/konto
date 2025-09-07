@@ -12,6 +12,7 @@ final class UpdatePersonalDetails extends UserAccountEvent {
   final String? accountNumber;
   final String? bank;
   final String? accountHolder;
+  final AppTheme? appTheme;
 
   UpdatePersonalDetails({
     this.fullName,
@@ -22,5 +23,6 @@ final class UpdatePersonalDetails extends UserAccountEvent {
     this.accountNumber,
     this.bank,
     this.accountHolder,
+    this.appTheme,
   });
 }

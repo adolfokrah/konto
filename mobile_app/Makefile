@@ -3,28 +3,28 @@
 
 # Development commands
 run:
-	@echo "🚀 Running Flutter app with Infisical secrets..."
-	@infisical secrets --env=dev --plain | \
-	awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | \
-	xargs infisical run --env=dev -- flutter run
+	@echo "🚀 Running Flutter app with Infisical secrets (interactive hot-reload enabled)..."
+	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
+	echo "🔑 Injecting defines: $$DEFINES"; \
+	infisical run --env=dev -- flutter run $$DEFINES
 
 run-android:
-	@echo "🚀 Running Flutter app on Android with Infisical secrets..."
-	@infisical secrets --env=dev --plain | \
-	awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | \
-	xargs infisical run --env=dev -- flutter run -d android
+	@echo "🚀 Running Flutter app on Android with Infisical secrets (interactive)..."
+	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
+	echo "🔑 Injecting defines: $$DEFINES"; \
+	infisical run --env=dev -- flutter run -d android $$DEFINES
 
 run-ios:
-	@echo "🚀 Running Flutter app on iOS with Infisical secrets..."
-	@infisical secrets --env=dev --plain | \
-	awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | \
-	xargs infisical run --env=dev -- flutter run -d ios
+	@echo "🚀 Running Flutter app on iOS with Infisical secrets (interactive)..."
+	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
+	echo "🔑 Injecting defines: $$DEFINES"; \
+	infisical run --env=dev -- flutter run -d ios $$DEFINES
 
 run-release:
 	@echo "🚀 Running Flutter app in release mode with Infisical secrets..."
-	@infisical secrets --env=dev --plain | \
-	awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | \
-	xargs infisical run --env=dev -- flutter run --release
+	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
+	echo "🔑 Injecting defines: $$DEFINES"; \
+	infisical run --env=dev -- flutter run --release $$DEFINES
 
 # Build commands
 build-android:
@@ -46,9 +46,15 @@ env:
 # Test commands
 test:
 	@echo "🧪 Running Flutter tests with Infisical secrets..."
-	@infisical secrets --env=dev --plain | \
-	awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | \
-	xargs infisical run --env=dev -- flutter test
+	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
+	echo "🔑 Injecting defines: $$DEFINES"; \
+	infisical run --env=dev -- flutter test $$DEFINES
+
+# NOTE:
+# Previous implementation piped secrets through xargs into flutter run.
+# That broke hot-reload because flutter's stdin was not attached to an interactive TTY.
+# We now build the --dart-define list in a shell variable and invoke flutter directly
+# so the terminal remains interactive (r / R for hot reload & restart).
 
 # Fallback commands without secrets
 run-no-secrets:
@@ -72,6 +78,12 @@ analyze:
 
 format:
 	dart format .
+
+# Generate .dart-defines.env file (Infisical -> dotenv) for VS Code debug launch
+generate-defines:
+	@echo "🛠  Generating .dart-defines.env from Infisical (dev env)...";
+	infisical secrets --env=dev --format=dotenv > .dart-defines.env; \
+	echo "✅ Wrote .dart-defines.env"; head -n 3 .dart-defines.env || true
 
 # Infisical utilities
 secrets:

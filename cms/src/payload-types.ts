@@ -403,7 +403,7 @@ export interface User {
   paystackSubAccountCode?: string | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;
-    darkMode?: boolean | null;
+    theme?: ('light' | 'dark' | 'system') | null;
     biometricAuthEnabled?: boolean | null;
     notificationsSettings?: {
       pushNotificationsEnabled?: boolean | null;
@@ -1491,7 +1491,7 @@ export interface UsersSelect<T extends boolean = true> {
     | T
     | {
         language?: T;
-        darkMode?: T;
+        theme?: T;
         biometricAuthEnabled?: T;
         notificationsSettings?:
           | T

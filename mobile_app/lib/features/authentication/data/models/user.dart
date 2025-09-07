@@ -1,3 +1,5 @@
+import '../../../../core/enums/index.dart';
+
 /// User model representing the authenticated user data
 class User {
   final String id;
@@ -145,22 +147,37 @@ class UserSession {
 
 /// App settings model
 class AppSettings {
-  final String language;
-  final bool darkMode;
+  final AppLanguage language; // Type-safe language enum
+  final AppTheme theme; // Type-safe theme enum
   final bool biometricAuthEnabled;
   final NotificationSettings notificationsSettings;
 
   const AppSettings({
     required this.language,
-    required this.darkMode,
+    required this.theme,
     required this.biometricAuthEnabled,
     required this.notificationsSettings,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
+    // Parse language from JSON string to enum
+    final AppLanguage language = AppLanguage.fromString(
+      json['language'] as String? ?? 'en',
+    );
+
+    // Handle backward compatibility: if theme is not present, derive from darkMode
+    AppTheme theme;
+    if (json['theme'] != null) {
+      theme = AppTheme.fromString(json['theme'] as String);
+    } else {
+      // Backward compatibility: derive theme from darkMode
+      final darkMode = json['darkMode'] as bool? ?? false;
+      theme = darkMode ? AppTheme.dark : AppTheme.light;
+    }
+
     return AppSettings(
-      language: json['language'] as String? ?? 'en',
-      darkMode: json['darkMode'] as bool? ?? false,
+      language: language,
+      theme: theme,
       biometricAuthEnabled: json['biometricAuthEnabled'] as bool? ?? false,
       notificationsSettings: NotificationSettings.fromJson(
         json['notificationsSettings'] as Map<String, dynamic>? ?? {},
@@ -170,11 +187,27 @@ class AppSettings {
 
   Map<String, dynamic> toJson() {
     return {
-      'language': language,
-      'darkMode': darkMode,
+      'language': language.value, // Convert enum to string
+      'theme': theme.value,
       'biometricAuthEnabled': biometricAuthEnabled,
       'notificationsSettings': notificationsSettings.toJson(),
     };
+  }
+
+  AppSettings copyWith({
+    AppLanguage? language,
+    bool? darkMode,
+    AppTheme? theme,
+    bool? biometricAuthEnabled,
+    NotificationSettings? notificationsSettings,
+  }) {
+    return AppSettings(
+      language: language ?? this.language,
+      theme: theme ?? this.theme,
+      biometricAuthEnabled: biometricAuthEnabled ?? this.biometricAuthEnabled,
+      notificationsSettings:
+          notificationsSettings ?? this.notificationsSettings,
+    );
   }
 }
 

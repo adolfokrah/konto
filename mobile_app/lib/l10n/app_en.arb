@@ -404,6 +404,25 @@
     "description": "Collectors card title"
   },
 
+  "themeSettingsTitle": "Theme Settings",
+  "@themeSettingsTitle": {"description": "Title for theme settings page"},
+  "updatingThemeSettings": "Updating theme settings...",
+  "@updatingThemeSettings": {"description": "Loading overlay text when updating theme"},
+  "theme": "Theme",
+  "@theme": {"description": "Theme menu item"},
+  "language": "Language",
+  "@language": {"description": "Language menu item"},
+  "notifications": "Notifications",
+  "@notifications": {"description": "Notifications menu item"},
+  "appSettings": "App Settings",
+  "@appSettings": {"description": "App settings section title"},
+  "light": "Light",
+  "@light": {"description": "Light theme label"},
+  "dark": "Dark",
+  "@dark": {"description": "Dark theme label"},
+  "system": "System",
+  "@system": {"description": "System theme label"},
+
   "contributions": "Contributions",
   "@contributions": {
     "description": "Contributions card title"

@@ -136,9 +136,14 @@ export const Users: CollectionConfig = {
           defaultValue: 'en',
         },
         {
-          name: 'darkMode',
-          type: 'checkbox',
-          defaultValue: false,
+          name: 'theme',
+          type: 'select',
+          options: [
+            { label: 'Light', value: 'light' },
+            { label: 'Dark', value: 'dark' },
+            { label: 'System', value: 'system' },
+          ],
+          defaultValue: 'system',
         },
         {
           name: 'biometricAuthEnabled',

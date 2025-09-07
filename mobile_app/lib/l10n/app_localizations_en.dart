@@ -254,6 +254,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updatingJar => 'Updating jar...';
 
   @override
+  String get themeSettingsTitle => 'Theme Settings';
+
+  @override
+  String get updatingThemeSettings => 'Updating theme settings...';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get appSettings => 'App Settings';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get dark => 'Dark';
+
+  @override
+  String get system => 'System';
+
+  @override
   String get contributions => 'Contributions';
 
   @override

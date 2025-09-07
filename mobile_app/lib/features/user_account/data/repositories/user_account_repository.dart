@@ -1,3 +1,4 @@
+import 'package:konto/core/enums/app_theme.dart' show AppTheme;
 import 'package:konto/core/services/user_storage_service.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
 import 'package:konto/features/user_account/data/api_providers/user_account_api_provider.dart';
@@ -25,6 +26,7 @@ class UserAccountRepository {
     String? accountNumber,
     String? bank,
     String? accountHolder,
+    AppTheme? appTheme,
   }) async {
     try {
       final result = await _apiProvider.updateUserDetails(
@@ -36,6 +38,7 @@ class UserAccountRepository {
         accountNumber: accountNumber,
         bank: bank,
         accountHolder: accountHolder,
+        appTheme: appTheme,
       );
 
       if (result['success'] == true) {

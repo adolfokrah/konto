@@ -554,6 +554,60 @@ abstract class AppLocalizations {
   /// **'Updating jar...'**
   String get updatingJar;
 
+  /// Title for theme settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Settings'**
+  String get themeSettingsTitle;
+
+  /// Loading overlay text when updating theme
+  ///
+  /// In en, this message translates to:
+  /// **'Updating theme settings...'**
+  String get updatingThemeSettings;
+
+  /// Theme menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// Language menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// Notifications menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// App settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// Light theme label
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get light;
+
+  /// Dark theme label
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get dark;
+
+  /// System theme label
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
+
   /// Contributions card title
   ///
   /// In en, this message translates to:

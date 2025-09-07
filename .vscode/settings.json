@@ -1,5 +1,7 @@
 {
     "postman.settings.dotenv-detection-notification-visibility": false,
+    "dart.flutterSdkPath": "/Users/adolphus.okrah/Desktop/my-stuffs/flutter",
+    "dart.flutterExecutablePath": "/Users/adolphus.okrah/Desktop/my-stuffs/konto/mobile_app/flutter",
     "[dart]": {
         "editor.formatOnSave": true,
         "editor.formatOnType": true,

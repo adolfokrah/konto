@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/core/enums/app_theme.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
 /// API Provider for updating user details
@@ -23,6 +24,7 @@ class UserAccountApiProvider {
     String? accountNumber,
     String? bank,
     String? accountHolder,
+    AppTheme? appTheme,
   }) async {
     try {
       final user = await _userStorageService.getUserData();
@@ -44,6 +46,11 @@ class UserAccountApiProvider {
       if (accountNumber != null) updateData['accountNumber'] = accountNumber;
       if (bank != null) updateData['bank'] = bank;
       if (accountHolder != null) updateData['accountHolder'] = accountHolder;
+      if (appTheme != null) {
+        updateData['appSettings'] = {'theme': appTheme.name};
+      }
+
+      print('Update Data: $updateData');
 
       if (updateData.isEmpty) {
         return {'success': false, 'message': 'No data provided for update'};
@@ -59,6 +66,8 @@ class UserAccountApiProvider {
           },
         ),
       );
+
+      print('Response Data: ${response.data} (✅)');
 
       if (response.statusCode == 200) {
         return {
