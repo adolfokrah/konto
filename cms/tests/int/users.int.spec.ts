@@ -64,11 +64,12 @@ describe('Users Collection Integration Tests', () => {
         password: 'testPassword123',
         fullName: 'Jane Smith',
         phoneNumber: '+234801234567',
+
         country: 'ng' as const,
         isKYCVerified: true,
         appSettings: {
           language: 'fr' as const,
-          darkMode: true,
+          theme: 'dark' as const,
           biometricAuthEnabled: true,
           notificationsSettings: {
             pushNotificationsEnabled: false,
@@ -86,7 +87,7 @@ describe('Users Collection Integration Tests', () => {
       expect(user).toBeDefined()
       expect(user.isKYCVerified).toBe(true)
       expect(user.appSettings?.language).toBe('fr')
-      expect(user.appSettings?.darkMode).toBe(true)
+      expect(user.appSettings?.theme).toBe('dark')
       expect(user.appSettings?.biometricAuthEnabled).toBe(true)
       expect(user.appSettings?.notificationsSettings?.pushNotificationsEnabled).toBe(false)
       expect(user.appSettings?.notificationsSettings?.emailNotificationsEnabled).toBe(true)
@@ -196,7 +197,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       expect(ghanaUsers.docs).toHaveLength(2)
-      ghanaUsers.docs.forEach(user => {
+      ghanaUsers.docs.forEach((user) => {
         expect(user.country).toBe('gh')
       })
     })
@@ -212,7 +213,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       expect(verifiedUsers.docs).toHaveLength(2)
-      verifiedUsers.docs.forEach(user => {
+      verifiedUsers.docs.forEach((user) => {
         expect(user.isKYCVerified).toBe(true)
       })
     })
@@ -285,7 +286,7 @@ describe('Users Collection Integration Tests', () => {
         data: {
           appSettings: {
             language: 'fr' as const,
-            darkMode: true,
+            theme: 'dark' as const,
             biometricAuthEnabled: true,
             notificationsSettings: {
               pushNotificationsEnabled: false,
@@ -297,7 +298,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       expect(updatedUser.appSettings?.language).toBe('fr')
-      expect(updatedUser.appSettings?.darkMode).toBe(true)
+      expect(updatedUser.appSettings?.theme).toBe('dark')
       expect(updatedUser.appSettings?.biometricAuthEnabled).toBe(true)
       expect(updatedUser.appSettings?.notificationsSettings?.smsNotificationsEnabled).toBe(true)
     })
@@ -315,8 +316,6 @@ describe('Users Collection Integration Tests', () => {
       expect(updatedUser.phoneNumber).toBe('+234801234567')
       expect(updatedUser.country).toBe('ng')
     })
-
-   
   })
 
   describe('User Deletion', () => {
@@ -421,6 +420,7 @@ describe('Users Collection Integration Tests', () => {
         fullName: 'Default User',
         phoneNumber: '+233541234567',
         country: 'gh' as const,
+        theme: 'dark' as const,
       }
 
       const user = await payload.create({
@@ -431,7 +431,7 @@ describe('Users Collection Integration Tests', () => {
       // Check default values
       expect(user.isKYCVerified).toBe(false)
       expect(user.appSettings?.language).toBe('en')
-      expect(user.appSettings?.darkMode).toBe(false)
+      expect(user.appSettings?.theme).toBe('dark')
       expect(user.appSettings?.biometricAuthEnabled).toBe(false)
       expect(user.appSettings?.notificationsSettings?.pushNotificationsEnabled).toBe(true)
       expect(user.appSettings?.notificationsSettings?.emailNotificationsEnabled).toBe(true)
@@ -521,7 +521,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       expect(result.docs).toHaveLength(2)
-      result.docs.forEach(user => {
+      result.docs.forEach((user) => {
         expect(user.isKYCVerified).toBe(false)
       })
     })
