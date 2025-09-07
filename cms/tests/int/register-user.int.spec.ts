@@ -47,7 +47,6 @@ describe('Register User Endpoint Integration Tests', () => {
     }
   })
 
-
   describe('POST /api/users/register-user', () => {
     it('should be a valid test file', () => {
       expect(true).toBe(true)
@@ -69,7 +68,7 @@ describe('Register User Endpoint Integration Tests', () => {
           isKYCVerified: false,
           appSettings: {
             language: 'en',
-            darkMode: false,
+            theme: 'system',
             biometricAuthEnabled: false,
             notificationsSettings: {
               pushNotificationsEnabled: true,
@@ -153,7 +152,9 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Missing required fields: phoneNumber, countryCode, country, fullName are required')
+      expect(result.message).toBe(
+        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+      )
     })
 
     it('should return 400 when countryCode is missing', async () => {
@@ -170,7 +171,9 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Missing required fields: phoneNumber, countryCode, country, fullName are required')
+      expect(result.message).toBe(
+        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+      )
     })
 
     it('should return 400 when country is missing', async () => {
@@ -187,7 +190,9 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Missing required fields: phoneNumber, countryCode, country, fullName are required')
+      expect(result.message).toBe(
+        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+      )
     })
 
     it('should return 400 when fullName is missing', async () => {
@@ -204,7 +209,9 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Missing required fields: phoneNumber, countryCode, country, fullName are required')
+      expect(result.message).toBe(
+        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+      )
     })
 
     it('should return 400 when all required fields are missing', async () => {
@@ -215,7 +222,9 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Missing required fields: phoneNumber, countryCode, country, fullName are required')
+      expect(result.message).toBe(
+        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+      )
     })
   })
 
@@ -360,10 +369,10 @@ describe('Register User Endpoint Integration Tests', () => {
 
     it('should handle different country values', async () => {
       const countries = ['ghana', 'nigeria', 'kenya', 'south africa']
-      
+
       for (const country of countries) {
         const phoneNumber = generateUniquePhone('+233')
-        
+
         const mockRequest = createMockRequest({
           phoneNumber,
           countryCode: '+233',
@@ -396,7 +405,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(201)
       expect(result.doc.appSettings).toBeDefined()
       expect(result.doc.appSettings.language).toBe('en')
-      expect(result.doc.appSettings.darkMode).toBe(false)
+      expect(result.doc.appSettings.theme).toBe('system')
       expect(result.doc.appSettings.biometricAuthEnabled).toBe(false)
       expect(result.doc.appSettings.notificationsSettings.pushNotificationsEnabled).toBe(true)
       expect(result.doc.appSettings.notificationsSettings.emailNotificationsEnabled).toBe(true)
@@ -410,10 +419,10 @@ describe('Register User Endpoint Integration Tests', () => {
         'user+tag@example.com',
         'user123@sub.example.com',
       ]
-      
+
       for (const email of emailFormats) {
         const phoneNumber = generateUniquePhone('+233')
-        
+
         const mockRequest = createMockRequest({
           phoneNumber,
           countryCode: '+233',

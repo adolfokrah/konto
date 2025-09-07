@@ -5,6 +5,7 @@ import config from '@/payload.config'
 import { clearAllCollections } from 'tests/utils/testCleanup'
 
 let payload: Payload
+const ADMIN_EMAIL = 'admin@test.com'
 
 const generateUniqueEmail = (prefix: string = 'test') =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@example.com`
@@ -22,7 +23,7 @@ describe('Users Collection Integration Tests', () => {
       collection: 'users',
       where: {
         email: {
-          not_equals: 'admin@test.com',
+          not_equals: ADMIN_EMAIL,
         },
       },
     })
@@ -180,6 +181,11 @@ describe('Users Collection Integration Tests', () => {
     it('should find all users', async () => {
       const result = await payload.find({
         collection: 'users',
+        where: {
+          email: {
+            not_equals: ADMIN_EMAIL,
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(3)
@@ -190,9 +196,18 @@ describe('Users Collection Integration Tests', () => {
       const ghanaUsers = await payload.find({
         collection: 'users',
         where: {
-          country: {
-            equals: 'gh',
-          },
+          and: [
+            {
+              country: {
+                equals: 'gh',
+              },
+            },
+            {
+              email: {
+                not_equals: ADMIN_EMAIL,
+              },
+            },
+          ],
         },
       })
 
@@ -206,9 +221,18 @@ describe('Users Collection Integration Tests', () => {
       const verifiedUsers = await payload.find({
         collection: 'users',
         where: {
-          isKYCVerified: {
-            equals: true,
-          },
+          and: [
+            {
+              isKYCVerified: {
+                equals: true,
+              },
+            },
+            {
+              email: {
+                not_equals: ADMIN_EMAIL,
+              },
+            },
+          ],
         },
       })
 
@@ -221,6 +245,12 @@ describe('Users Collection Integration Tests', () => {
     it('should find user by ID', async () => {
       const allUsers = await payload.find({
         collection: 'users',
+        where: {
+          email: {
+            not_equals: ADMIN_EMAIL,
+          },
+        },
+        limit: 1,
       })
       const firstUser = allUsers.docs[0]
 
@@ -420,7 +450,16 @@ describe('Users Collection Integration Tests', () => {
         fullName: 'Default User',
         phoneNumber: '+233541234567',
         country: 'gh' as const,
-        theme: 'dark' as const,
+        appSettings: {
+          language: 'en' as const,
+          theme: 'dark' as const,
+          biometricAuthEnabled: false,
+          notificationsSettings: {
+            pushNotificationsEnabled: true,
+            emailNotificationsEnabled: true,
+            smsNotificationsEnabled: false,
+          },
+        },
       }
 
       const user = await payload.create({
@@ -500,6 +539,11 @@ describe('Users Collection Integration Tests', () => {
                 equals: true,
               },
             },
+            {
+              email: {
+                not_equals: ADMIN_EMAIL,
+              },
+            },
           ],
         },
       })
@@ -513,9 +557,18 @@ describe('Users Collection Integration Tests', () => {
       const result = await payload.find({
         collection: 'users',
         where: {
-          isKYCVerified: {
-            equals: false,
-          },
+          and: [
+            {
+              isKYCVerified: {
+                equals: false,
+              },
+            },
+            {
+              email: {
+                not_equals: ADMIN_EMAIL,
+              },
+            },
+          ],
         },
         sort: 'country',
       })
@@ -527,19 +580,19 @@ describe('Users Collection Integration Tests', () => {
     })
 
     it('should paginate user results', async () => {
-      const page1 = await payload.find({
-        collection: 'users',
+      const baseQuery = {
+        collection: 'users' as const,
+        where: {
+          email: {
+            not_equals: ADMIN_EMAIL,
+          },
+        },
         limit: 2,
-        page: 1,
         sort: 'email',
-      })
+      }
 
-      const page2 = await payload.find({
-        collection: 'users',
-        limit: 2,
-        page: 2,
-        sort: 'email',
-      })
+      const page1 = await payload.find({ ...baseQuery, page: 1 })
+      const page2 = await payload.find({ ...baseQuery, page: 2 })
 
       expect(page1.docs).toHaveLength(2)
       expect(page2.docs).toHaveLength(2)
