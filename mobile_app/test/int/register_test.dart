@@ -70,7 +70,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -167,7 +171,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             navigatorKey: navigatorKey,
@@ -260,7 +268,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -306,7 +318,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -352,7 +368,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -417,7 +437,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -472,7 +496,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -519,7 +547,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -558,7 +590,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -595,7 +631,11 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [

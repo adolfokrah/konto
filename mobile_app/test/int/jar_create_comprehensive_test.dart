@@ -178,7 +178,10 @@ void main() {
         BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
         BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
         BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-        BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+        BlocProvider<UserAccountBloc>(
+          create:
+              (context) => UserAccountBloc(authBloc: context.read<AuthBloc>()),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: const [

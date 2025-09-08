@@ -33,8 +33,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
       );
 
-      print(response);
-
       if (response['exists'] == true) {
         // Emit a success state indicating phone number is available
         emit(

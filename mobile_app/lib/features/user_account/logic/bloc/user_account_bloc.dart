@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:konto/core/enums/app_theme.dart';
 import 'package:konto/core/enums/app_language.dart';
+import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:konto/core/services/service_registry.dart';
 import 'package:konto/features/authentication/data/models/user.dart';
@@ -11,9 +12,11 @@ part 'user_account_state.dart';
 
 class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
   final UserAccountRepository _userAccountRepository;
+  final AuthBloc _authBloc;
 
-  UserAccountBloc()
+  UserAccountBloc({required AuthBloc authBloc})
     : _userAccountRepository = ServiceRegistry().userAccountRepository,
+      _authBloc = authBloc,
       super(UserAccountInitial()) {
     on<UpdatePersonalDetails>(_updatePersonalDetails);
   }
@@ -42,6 +45,9 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
       if (result.success && result.user != null) {
         emit(
           UserAccountSuccess(updatedUser: result.user!, token: result.token!),
+        );
+        _authBloc.add(
+          UpdateUserData(updatedUser: result.user!, token: result.token!),
         );
       } else {
         emit(UserAccountError(message: result.message));

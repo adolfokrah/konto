@@ -141,7 +141,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider(create: (context) => AddContributionBloc()),
         BlocProvider(create: (context) => FetchContributionBloc()),
         BlocProvider(create: (context) => UpdateJarBloc()),
-        BlocProvider(create: (context) => UserAccountBloc()),
+        BlocProvider(
+          create:
+              (context) =>
+                  UserAccountBloc(authBloc: BlocProvider.of<AuthBloc>(context)),
+        ),
         BlocProvider(create: (context) => WithdrawalAccountVerificationBloc()),
         BlocProvider(create: (context) => MomoPaymentBloc()),
         BlocProvider(create: (context) => FilterContributionsBloc()),

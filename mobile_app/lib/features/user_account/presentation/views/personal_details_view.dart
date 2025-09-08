@@ -181,6 +181,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                 contributorName: user.fullName,
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 radius: 30,
+                avatarUrl: user.photo?.thumbnailURL,
               ),
             ],
           ),

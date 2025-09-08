@@ -108,7 +108,11 @@ void main() {
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
             BlocProvider(create: (context) => MediaBloc()),
-            BlocProvider(create: (context) => UserAccountBloc()),
+            BlocProvider(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
             BlocProvider(create: (context) => UpdateJarBloc()),
             BlocProvider(
               create:

@@ -180,7 +180,11 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+            BlocProvider<UserAccountBloc>(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -436,7 +440,11 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+            BlocProvider<UserAccountBloc>(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -528,7 +536,11 @@ void main() {
                     create: (context) => UpdateJarBloc(),
                   ),
                   BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+                  BlocProvider<UserAccountBloc>(
+                    create:
+                        (context) =>
+                            UserAccountBloc(authBloc: context.read<AuthBloc>()),
+                  ),
                   BlocProvider<AddContributionBloc>(
                     create: (context) => AddContributionBloc(),
                   ),
@@ -728,7 +740,11 @@ void main() {
             ),
             BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
             BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+            BlocProvider<UserAccountBloc>(
+              create:
+                  (context) =>
+                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
+            ),
             BlocProvider<AddContributionBloc>(
               create: (context) => AddContributionBloc(),
             ),
@@ -799,7 +815,11 @@ void main() {
               ),
               BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
               BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(create: (context) => UserAccountBloc()),
+              BlocProvider<UserAccountBloc>(
+                create:
+                    (context) =>
+                        UserAccountBloc(authBloc: context.read<AuthBloc>()),
+              ),
             ],
             child: MaterialApp(
               localizationsDelegates: const [
