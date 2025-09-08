@@ -155,7 +155,7 @@ jobs:
             # Install and test
             pnpm install --frozen-lockfile
             pnpm generate:types
-            pnpm test:int
+            pnpm test:int:ci
             
             # Commit and push (go back to root for git operations)
             cd ..
@@ -293,7 +293,7 @@ jobs:
           pnpm generate:types
 
           # Test (don't fail if tests break)
-          if pnpm test:int; then
+          if pnpm test:int:ci; then
             echo "tests-passing=true" >> $GITHUB_OUTPUT
           else
             echo "tests-passing=false" >> $GITHUB_OUTPUT
