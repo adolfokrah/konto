@@ -3,52 +3,66 @@
 
 # Development commands
 run:
-	@echo "🚀 Running Flutter app with Infisical secrets (interactive hot-reload enabled)..."
-	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
-	echo "🔑 Injecting defines: $$DEFINES"; \
-	infisical run --env=dev -- flutter run $$DEFINES
+	@echo "🚀 Running Flutter app with Infisical secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter run
 
 run-android:
-	@echo "🚀 Running Flutter app on Android with Infisical secrets (interactive)..."
-	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
-	echo "🔑 Injecting defines: $$DEFINES"; \
-	infisical run --env=dev -- flutter run -d android $$DEFINES
+	@echo "🚀 Running Flutter app on Android with Infisical secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter run -d android
 
 run-ios:
-	@echo "🚀 Running Flutter app on iOS with Infisical secrets (interactive)..."
-	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
-	echo "🔑 Injecting defines: $$DEFINES"; \
-	infisical run --env=dev -- flutter run -d ios $$DEFINES
+	@echo "🚀 Running Flutter app on iOS with Infisical secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter run -d ios
 
 run-release:
-	@echo "🚀 Running Flutter app in release mode with Infisical secrets..."
-	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
-	echo "🔑 Injecting defines: $$DEFINES"; \
-	infisical run --env=dev -- flutter run --release $$DEFINES
+	@echo "🚀 Running Flutter app in release mode with Infisical secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter run --release
 
 # Build commands
 build-android:
-	infisical run --env=dev -- flutter build apk
+	@echo "🔧 Building Android APK with secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter build apk
 
 build-android-release:
-	infisical run --env=dev -- flutter build apk --release
+	@echo "🔧 Building Android APK (release) with secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter build apk --release
 
 build-ios:
-	infisical run --env=dev -- flutter build ios
+	@echo "🔧 Building iOS with secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter build ios
 
 build-ios-release:
-	infisical run --env=dev -- flutter build ios --release
+	@echo "🔧 Building iOS (release) with secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter build ios --release
 
-# Generate .env file for IDE (optional, for flutter_dotenv compatibility)
-env:
-	infisical run --env=dev --command="env | grep -E '^(API_BASE_URL|IMAGE_BASE_URL|MNOTIFY_API_KEY|PAYLOAD_SECRET)=' > .env && echo '✅ Environment file generated for IDE'"
+# Download secrets from Infisical to .env file
+download-secrets:
+	@echo "🔑 Downloading secrets from Infisical to .env file..."
+	@if ! command -v infisical >/dev/null 2>&1; then \
+		echo "❌ Infisical CLI not found. Please install it first."; \
+		exit 1; \
+	fi
+	@infisical export --env=staging --format=dotenv > .env
+	@echo "✅ Secrets downloaded to .env file"
+	@echo "📄 Contents preview:"
+	@head -n 3 .env || true
+
+# Generate .env file for IDE (same as download-secrets for consistency)
+env: download-secrets
 
 # Test commands
 test:
-	@echo "🧪 Running Flutter tests with Infisical secrets..."
-	@DEFINES=$$(infisical secrets --env=dev --plain | awk -F '=' '{print "--dart-define=" $$1 "=" $$2}' | tr '\n' ' '); \
-	echo "🔑 Injecting defines: $$DEFINES"; \
-	infisical run --env=dev -- flutter test $$DEFINES
+	@echo "🧪 Running Flutter tests with Infisical secrets from .env file..."
+	@$(MAKE) download-secrets
+	@flutter test
 
 # NOTE:
 # Previous implementation piped secrets through xargs into flutter run.
@@ -82,12 +96,12 @@ format:
 # Generate .dart-defines.env file (Infisical -> dotenv) for VS Code debug launch
 generate-defines:
 	@echo "🛠  Generating .dart-defines.env from Infisical (dev env)...";
-	infisical secrets --env=dev --format=dotenv > .dart-defines.env; \
+	infisical export --env=dev --format=dotenv > .dart-defines.env; \
 	echo "✅ Wrote .dart-defines.env"; head -n 3 .dart-defines.env || true
 
 # Infisical utilities
 secrets:
-	infisical secrets --env=dev
+	infisical export --env=dev
 
 # Show available commands
 help:
@@ -106,7 +120,8 @@ help:
 	@echo "  make build-ios-release   - Build iOS (release)"
 	@echo ""
 	@echo "📝 Environment:"
-	@echo "  make env                 - Generate .env file for IDE"
+	@echo "  make download-secrets    - Download secrets from Infisical to .env file"
+	@echo "  make env                 - Generate .env file for IDE (same as download-secrets)"
 	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  make test                - Run tests with development environment"
@@ -123,4 +138,4 @@ help:
 	@echo "  make run-android-no-secrets - Run Android without Infisical"
 	@echo "  make run-ios-no-secrets  - Run iOS without Infisical"
 
-.PHONY: help run run-android run-ios run-release build-android build-android-release build-ios build-ios-release env test run-no-secrets run-android-no-secrets run-ios-no-secrets clean upgrade analyze format secrets
+.PHONY: help run run-android run-ios run-release build-android build-android-release build-ios build-ios-release download-secrets env test run-no-secrets run-android-no-secrets run-ios-no-secrets clean upgrade analyze format secrets

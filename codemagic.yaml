@@ -43,33 +43,15 @@ workflows:
       - name: Flutter Integration tests
         script: |
           cd mobile_app
-          flutter test \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter test
       - name: Build APK
         script: |
           cd mobile_app
-          flutter build apk --profile \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter build apk --profile
       - name: Build iOS
         script: |
           cd mobile_app
-          flutter build ios --profile --no-codesign \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter build ios --profile --no-codesign
     artifacts:
       - mobile_app/build/**/outputs/**/*.apk
       - mobile_app/build/**/outputs/**/*.aab
@@ -133,33 +115,15 @@ workflows:
       - name: Flutter integration tests
         script: |
           cd mobile_app
-          flutter test \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter test 
       - name: Build app bundle (Release)
         script: |
           cd mobile_app
-          flutter build appbundle --release \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter build appbundle --release 
       - name: Build iOS (Release)
         script: |
           cd mobile_app
-          flutter build ios --release --no-codesign \
-            --dart-define=API_BASE_URL=$apiBaseUrl \
-            --dart-define=MNOTIFY_API_KEY=$MNOTIFY_API_KEY \
-            --dart-define=MNOTIFY_API_BASE_URL=$MNOTIFY_API_BASE_URL \
-            --dart-define=MNOTIFY_SENDER_ID=$MNOTIFY_SENDER_ID \
-            --dart-define=IMAGE_BASE_URL=$IMAGE_BASE_URL \
-            --dart-define=FLUTTER_ENV=$BUILD_ENV
+          flutter build ios --release --no-codesign 
     artifacts:
       - mobile_app/build/**/outputs/**/*.apk
       - mobile_app/build/**/outputs/**/*.aab

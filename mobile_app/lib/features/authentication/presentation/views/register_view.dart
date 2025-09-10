@@ -27,7 +27,6 @@ class _RegisterViewState extends State<RegisterView> {
   String _countryCode = '+233'; // Default to Ghana
   String _selectedPhoneCountry = 'Ghana';
   String _selectedCountry = 'ghana';
-  final _isLoading = false;
 
   @override
   void initState() {
@@ -104,6 +103,7 @@ class _RegisterViewState extends State<RegisterView> {
                 (route) => false,
               );
             }
+
             if (state is PhoneNumberAvailable) {
               AppSnackBar.showError(
                 context,
@@ -238,32 +238,37 @@ class _RegisterViewState extends State<RegisterView> {
               const SizedBox(height: AppSpacing.spacingL),
 
               // Action Buttons Section
-              Column(
-                children: [
-                  // Create Account Button
-                  AppButton.filled(
-                    text: localizations.createAccount,
-                    isLoading: _isLoading,
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () {
-                              _handleCreateAccount(context);
-                            },
-                  ),
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      // Create Account Button
+                      AppButton.filled(
+                        text: localizations.createAccount,
+                        isLoading: state is AuthLoading,
+                        onPressed:
+                            state is AuthLoading
+                                ? null
+                                : () {
+                                  _handleCreateAccount(context);
+                                },
+                      ),
 
-                  const SizedBox(height: AppSpacing.spacingS),
+                      const SizedBox(height: AppSpacing.spacingS),
 
-                  // Login Button
-                  AppButton.outlined(
-                    key: const Key('login_button'),
-                    text: localizations.login,
-                    onPressed: () {
-                      // Handle login navigation
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
+                      // Login Button
+                      AppButton.outlined(
+                        key: const Key('login_button'),
+                        text: localizations.login,
+                        onPressed: () {
+                          if (state is AuthLoading) return;
+                          // Handle login navigation
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: AppSpacing.spacingS),

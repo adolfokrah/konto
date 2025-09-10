@@ -49,6 +49,7 @@ flutter:
   assets:
     - shorebird.yaml
     - assets/images/
+    - .env
   
   fonts:
     - family: Chubbo

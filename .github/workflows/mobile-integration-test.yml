@@ -93,30 +93,19 @@ jobs:
           domain: "https://app.infisical.com"
           env-slug: "dev"
           project-slug: "konto-mobile-app"
-
-      - name: Run Flutter Integration tests with Infisical secrets
+          export-type: "file"
+          file-output-path: "/src/.env" # defaults to "/.env"
+      - name: Run Flutter Integration tests with .env file
         working-directory: ./mobile_app
         run: |
-          flutter test test/int/ --reporter expanded \
-            --dart-define=API_BASE_URL="${API_BASE_URL}" \
-            --dart-define=IMAGE_BASE_URL="${IMAGE_BASE_URL}" \
-            --dart-define=MNOTIFY_API_KEY="${MNOTIFY_API_KEY}" \
-            --dart-define=MNOTIFY_API_BASE_URL="${MNOTIFY_API_BASE_URL}" \
-            --dart-define=MNOTIFY_SENDER_ID="${MNOTIFY_SENDER_ID}" \
-            --dart-define=FLUTTER_ENV=test
+          flutter test test/int/ --reporter expanded
         env:
           CI: true
 
       - name: Generate test coverage
         working-directory: ./mobile_app
         run: |
-          flutter test --coverage test/int/ \
-            --dart-define=API_BASE_URL="${API_BASE_URL}" \
-            --dart-define=IMAGE_BASE_URL="${IMAGE_BASE_URL}" \
-            --dart-define=MNOTIFY_API_KEY="${MNOTIFY_API_KEY}" \
-            --dart-define=MNOTIFY_API_BASE_URL="${MNOTIFY_API_BASE_URL}" \
-            --dart-define=MNOTIFY_SENDER_ID="${MNOTIFY_SENDER_ID}" \
-            --dart-define=FLUTTER_ENV=test
+          flutter test --coverage test/int/
         continue-on-error: true
 
       - name: Upload test coverage to Codecov
