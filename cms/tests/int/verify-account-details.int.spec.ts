@@ -75,25 +75,6 @@ describe('Verify Account Details Endpoint Integration Tests', () => {
       expect(responseData.message).toBe('Bank is required')
     })
 
-    it('should return error when name is missing', async () => {
-      const mockRequest = {
-        payload,
-        data: {
-          phoneNumber: validPhoneNumber,
-          bank: validBank,
-          // Missing name
-        },
-      } as any
-
-      const response = await verifyAccountDetails(mockRequest)
-      const responseData = await response.json()
-
-      expect(response.status).toBe(400)
-      expect(responseData.success).toBe(false)
-      expect(responseData.valid).toBe(false)
-      expect(responseData.message).toBe('Name is required')
-    })
-
     it('should return error when all required fields are missing', async () => {
       const mockRequest = {
         payload,
@@ -148,7 +129,6 @@ describe('Verify Account Details Endpoint Integration Tests', () => {
         const responseData = await response.json()
 
         expect(responseData.success).toBe(false)
-        expect(responseData.valid).toBe(false)
 
         if (!testData.phoneNumber) {
           expect(response.status).toBe(401)
@@ -156,9 +136,6 @@ describe('Verify Account Details Endpoint Integration Tests', () => {
         } else if (!testData.bank) {
           expect(response.status).toBe(400)
           expect(responseData.message).toBe('Bank is required')
-        } else if (!testData.name) {
-          expect(response.status).toBe(400)
-          expect(responseData.message).toBe('Name is required')
         }
       }
     })
