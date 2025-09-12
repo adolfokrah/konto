@@ -56,6 +56,19 @@ const config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        // Mobile app colors
+        'primary-light': '#FDF7EC',
+        'primary-dark': '#2D3849',
+        'secondary-green': '#F4FDDF',
+        'background-light': '#EBE2D7',
+        'surface-white': '#FFFFFF',
+        'error-red': '#EF4444',
+        'on-primary-white': '#FFFFFF',
+        'on-surface-dark': '#1B232E',
+        'label': '#747373',
+        'black': '#000000',
+        
+        // Existing shadcn/ui colors
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
@@ -96,6 +109,8 @@ const config = {
       fontFamily: {
         mono: ['var(--font-geist-mono)'],
         sans: ['var(--font-geist-sans)'],
+        supreme: ['Supreme', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        chubbo: ['Chubbo', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

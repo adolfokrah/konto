@@ -20,15 +20,29 @@ class FetchContributionBloc
 
     final serviceRegistry = ServiceRegistry();
 
-    final response = await serviceRegistry.contributionRepository
-        .getContributionById(contributionId: event.contributionId);
+    try {
+      final response = await serviceRegistry.contributionRepository
+          .getContributionById(contributionId: event.contributionId);
 
-    if (response['success']) {
-      emit(
-        FetchContributionLoaded(ContributionModel.fromJson(response['data'])),
-      );
-    } else {
-      emit(FetchContributionError('Failed to fetch contribution'));
+      print('🔍 Contribution API Response: $response'); // Debug logging
+
+      if (response['success']) {
+        emit(
+          FetchContributionLoaded(ContributionModel.fromJson(response['data'])),
+        );
+      } else {
+        print(
+          '❌ Contribution API Error: ${response['message']}',
+        ); // Debug logging
+        emit(
+          FetchContributionError(
+            response['message'] ?? 'Failed to fetch contribution',
+          ),
+        );
+      }
+    } catch (e) {
+      print('💥 Contribution API Exception: $e'); // Debug logging
+      emit(FetchContributionError('An unexpected error occurred: $e'));
     }
   }
 }

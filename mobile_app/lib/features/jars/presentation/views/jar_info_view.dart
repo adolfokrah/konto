@@ -319,6 +319,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                                                 color: Colors.white,
                                                 fontSize: 10,
                                               ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                       ),
                                     ),
@@ -328,7 +330,6 @@ class _JarInfoViewState extends State<JarInfoView> {
 
                               const SizedBox(height: AppSpacing.spacingXs),
 
-                              // Description
                               AppCard(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
@@ -403,6 +404,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                                             localizations
                                                 .noDescriptionAvailable,
                                         style: AppTextStyles.titleMediumS,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
                                       ),
                                       trailing: Icon(Icons.chevron_right),
                                     ),
@@ -490,6 +493,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                                         subtitle: Text(
                                           '${CurrencyUtils.getCurrencySymbol(jarData.currency)}${jarData.acceptedContributionAmount.toStringAsFixed(2)}',
                                           style: AppTextStyles.titleMediumS,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                         trailing: Icon(Icons.chevron_right),
                                       ),

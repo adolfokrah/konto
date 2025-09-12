@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { chargeMomo } from './endpoints/charge-momo'
+import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { paystackWebhook } from './endpoints/paystack-webhook'
 import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
@@ -266,7 +267,6 @@ export const Contributions: CollectionConfig = {
             },
           }
         } catch (error) {
-           
           console.error('Error filtering collector options:', error)
           return false
         }
@@ -282,6 +282,11 @@ export const Contributions: CollectionConfig = {
     },
   ],
   endpoints: [
+    {
+      path: '/create-payment-link-contribution',
+      method: 'post',
+      handler: createPaymentLinkContribution,
+    },
     {
       path: '/charge-momo',
       method: 'post',

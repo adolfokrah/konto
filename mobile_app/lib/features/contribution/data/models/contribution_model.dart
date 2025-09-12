@@ -36,9 +36,13 @@ class UserSession {
 
   factory UserSession.fromJson(Map<String, dynamic> json) {
     return UserSession(
-      id: json['id'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
+      id: json['id'] as String? ?? '',
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      expiresAt: DateTime.parse(
+        json['expiresAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -148,15 +152,19 @@ class ContributionUser {
 
   factory ContributionUser.fromJson(Map<String, dynamic> json) {
     return ContributionUser(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      phoneNumber: json['phoneNumber'] as String,
-      countryCode: json['countryCode'] as String,
-      country: json['country'] as String,
+      id: json['id'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      fullName: json['fullName'] as String? ?? '',
+      phoneNumber: json['phoneNumber'] as String? ?? '',
+      countryCode: json['countryCode'] as String? ?? '',
+      country: json['country'] as String? ?? '',
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
       sessions:
           (json['sessions'] as List<dynamic>?)
               ?.map(
@@ -286,14 +294,14 @@ class ContributionJar {
 
   factory ContributionJar.fromJson(Map<String, dynamic> json) {
     return ContributionJar(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
       jarGroup: json['jarGroup'] as String? ?? '',
       image: json['image'], // Keep as dynamic for now
       isActive: json['isActive'] as bool? ?? true,
       isFixedContribution: json['isFixedContribution'] as bool? ?? false,
       goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
-      currency: json['currency'] as String,
+      currency: json['currency'] as String? ?? 'GHS',
       creator: ContributionUser.fromJson(
         json['creator'] as Map<String, dynamic>,
       ),
@@ -308,10 +316,14 @@ class ContributionJar {
           [],
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool? ?? false,
-      status: json['status'] as String,
+      status: json['status'] as String? ?? 'open',
       paymentLink: json['paymentLink'] as String? ?? '',
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -443,13 +455,13 @@ class ContributionModel {
 
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
     return ContributionModel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       jar: ContributionJar.fromJson(json['jar'] as Map<String, dynamic>),
       contributor: json['contributor'] as String?,
       contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
       paymentMethod: json['paymentMethod'] as String?,
       accountNumber: json['accountNumber'] as String?,
-      amountContributed: (json['amountContributed'] as num).toDouble(),
+      amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
       charges:
           json['charges'] != null ? (json['charges'] as num).toDouble() : null,
       chargesBreakdown:
@@ -458,7 +470,7 @@ class ContributionModel {
                 json['chargesBreakdown'] as Map<String, dynamic>,
               )
               : null,
-      paymentStatus: json['paymentStatus'] as String,
+      paymentStatus: json['paymentStatus'] as String? ?? 'pending',
       collector: ContributionUser.fromJson(
         json['collector'] as Map<String, dynamic>,
       ),
@@ -466,8 +478,12 @@ class ContributionModel {
       type: ContributionType.fromString(
         json['type'] as String? ?? 'contribution',
       ),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
