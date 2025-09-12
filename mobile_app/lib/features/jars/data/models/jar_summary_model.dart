@@ -156,7 +156,9 @@ class JarSummaryModel {
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
   final bool acceptAnonymousContributions;
-  final String? paymentLink;
+  final String? link;
+  final bool? showGoal;
+  final bool? showRecentContributions;
   final String? jarGroup;
   final MediaModel? image;
   final DateTime? deadline;
@@ -181,7 +183,9 @@ class JarSummaryModel {
     required this.creator,
     this.invitedCollectors,
     required this.acceptAnonymousContributions,
-    this.paymentLink,
+    this.link,
+    this.showGoal,
+    this.showRecentContributions,
     this.jarGroup,
     this.image,
     this.deadline,
@@ -318,7 +322,18 @@ class JarSummaryModel {
               .toList(),
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool,
-      paymentLink: json['paymentLink'] as String?,
+      link:
+          json['paymentPage'] != null
+              ? json['paymentPage']['link'] as String?
+              : null,
+      showGoal:
+          json['paymentPage'] != null
+              ? json['paymentPage']['showGoal'] as bool?
+              : null,
+      showRecentContributions:
+          json['paymentPage'] != null
+              ? json['paymentPage']['showRecentContributions'] as bool?
+              : null,
       jarGroup: json['jarGroup'] as String?,
       image:
           json['image'] != null
@@ -396,7 +411,11 @@ class JarSummaryModel {
               ?.map((invitedCollector) => invitedCollector.toJson())
               .toList(),
       'acceptAnonymousContributions': acceptAnonymousContributions,
-      'paymentLink': paymentLink,
+      'paymentPage': {
+        'link': link,
+        'showGoal': showGoal,
+        'showRecentContributions': showRecentContributions,
+      },
       'jarGroup': jarGroup,
       'image': image?.toJson(),
       'deadline': deadline?.toIso8601String(),

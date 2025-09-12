@@ -89,7 +89,7 @@ void main() {
             'invitedCollectors': [],
 
             'acceptAnonymousContributions': false,
-            'paymentLink': null,
+            'link': null,
             'status': 'open',
             'createdAt': '2025-08-21T18:32:42.806Z',
             'updatedAt': '2025-08-21T18:32:42.806Z',
@@ -129,7 +129,7 @@ void main() {
                     'profilePicture': null,
                   },
                   'invitedCollectors': [],
-                  'paymentLink': null,
+                  'link': null,
                   'acceptAnonymousContributions': false,
 
                   'createdAt': '2025-08-21T18:32:42.806Z',
@@ -378,7 +378,7 @@ void main() {
                   },
                 ],
                 'acceptAnonymousContributions': false,
-                'paymentLink': null,
+                'link': null,
                 'status': 'open',
                 'createdAt': '2025-08-22T10:15:30.000Z',
                 'updatedAt': '2025-08-22T10:15:30.000Z',

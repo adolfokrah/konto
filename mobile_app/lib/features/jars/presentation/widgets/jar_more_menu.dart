@@ -126,7 +126,7 @@ class JarMoreMenu extends StatelessWidget {
                               ),
                     ),
                     const SizedBox(height: AppSpacing.spacingXs),
-                    Text(localizations.more, style: TextStyles.titleMedium),
+                    Text(localizations.more, style: TextStyles.titleMediumS),
                   ],
                 );
               }

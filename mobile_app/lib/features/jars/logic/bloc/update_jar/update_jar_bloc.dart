@@ -53,6 +53,8 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
           event.updates['acceptAnonymousContributions'],
       invitedCollectors: processedCollectors,
       thankYouMessage: event.updates['thankYouMessage'],
+      showGoal: event.updates['showGoal'],
+      showRecentContributions: event.updates['showRecentContributions'],
     );
     if (response['success'] == true) {
       emit(UpdateJarSuccess());

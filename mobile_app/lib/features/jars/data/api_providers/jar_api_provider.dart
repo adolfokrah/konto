@@ -222,6 +222,8 @@ class JarApiProvider extends BaseApiProvider {
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
     String? thankYouMessage,
+    bool? showGoal,
+    bool? showRecentContributions,
   }) async {
     try {
       // Get authenticated headers
@@ -304,21 +306,14 @@ class JarApiProvider extends BaseApiProvider {
         jarData['thankYouMessage'] = thankYouMessage;
       }
 
-      // Log jarData structure to Sentry for investigation
-      Sentry.addBreadcrumb(
-        Breadcrumb(
-          message: 'Updating jar with data structure',
-          category: 'jar_update',
-          data: {
-            'jarId': jarId,
-            'jarData': jarData,
-            'platform': 'mobile',
-            'operation': 'updateJar',
-          },
-          level: SentryLevel.info,
-        ),
-      );
-
+      if (showGoal != null) {
+        jarData['paymentPage'] = {'showGoal': showGoal};
+      }
+      if (showRecentContributions != null) {
+        jarData['paymentPage'] = {
+          'showRecentContributions': showRecentContributions,
+        };
+      }
       final response = await dio.patch(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',
         data: jarData,

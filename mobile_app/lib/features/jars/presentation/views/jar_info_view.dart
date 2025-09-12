@@ -498,6 +498,93 @@ class _JarInfoViewState extends State<JarInfoView> {
                               ),
 
                               const SizedBox(height: AppSpacing.spacingXs),
+                              AppCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        "Show jar Goal",
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        'Display jar goal in jar in on payment page',
+                                      ),
+                                      trailing: CupertinoSwitch(
+                                        value: jarData.showGoal ?? false,
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          final updates = <String, dynamic>{
+                                            'showGoal': value,
+                                          };
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        "Show Recent Contributions",
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        'Display jar recent contributions in jar in on payment page',
+                                      ),
+                                      trailing: CupertinoSwitch(
+                                        value:
+                                            jarData.showRecentContributions ??
+                                            false,
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          final updates = <String, dynamic>{
+                                            'showRecentContributions': value,
+                                          };
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
 
                               AppCard(
                                 padding: const EdgeInsets.symmetric(

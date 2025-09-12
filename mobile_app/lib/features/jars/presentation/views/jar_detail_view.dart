@@ -218,7 +218,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     context,
                                     AppRoutes.contributionRequest,
                                     arguments: {
-                                      'paymentLink': state.jarData.paymentLink,
+                                      'paymentLink': state.jarData.link,
                                       'jarName': state.jarData.name,
                                     },
                                   );
@@ -396,7 +396,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           const SizedBox(height: AppSpacing.spacingXs),
                           Text(
                             localizations.contribute,
-                            style: TextStyles.titleMedium.copyWith(
+                            style: TextStyles.titleMediumS.copyWith(
                               color: Theme.of(
                                 context,
                               ).textTheme.bodyLarge?.color?.withValues(
@@ -422,7 +422,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 context,
                                 AppRoutes.contributionRequest,
                                 arguments: {
-                                  'paymentLink': state.jarData.paymentLink,
+                                  'paymentLink': state.jarData.link,
                                   'jarName': state.jarData.name,
                                 },
                               );
@@ -432,7 +432,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           const SizedBox(height: AppSpacing.spacingXs),
                           Text(
                             localizations.request,
-                            style: TextStyles.titleMedium.copyWith(
+                            style: TextStyles.titleMediumS.copyWith(
                               color: Theme.of(
                                 context,
                               ).textTheme.bodyLarge?.color?.withValues(
@@ -478,7 +478,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           const SizedBox(height: AppSpacing.spacingXs),
                           Text(
                             localizations.info,
-                            style: TextStyles.titleMedium,
+                            style: TextStyles.titleMediumS,
                           ),
                         ],
                       ),

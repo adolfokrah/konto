@@ -198,12 +198,28 @@ export const Jars: CollectionConfig = {
       ],
     },
     {
-      name: 'paymentLink',
-      type: 'text',
-      required: false,
-      admin: {
-        readOnly: true,
-      },
+      name: 'paymentPage',
+      type: 'group',
+      fields: [
+        {
+          name: 'link',
+          type: 'text',
+          required: false,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'showGoal',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'showRecentContributions',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+      ],
     },
     {
       name: 'acceptAnonymousContributions',

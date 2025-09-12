@@ -156,6 +156,8 @@ class JarRepository {
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
     String? thankYouMessage,
+    bool? showGoal,
+    bool? showRecentContributions,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -175,6 +177,8 @@ class JarRepository {
         acceptedPaymentMethods: acceptedPaymentMethods,
         invitedCollectors: invitedCollectors,
         thankYouMessage: thankYouMessage,
+        showGoal: showGoal,
+        showRecentContributions: showRecentContributions,
       );
 
       if (apiResponse['doc'] != null) {
