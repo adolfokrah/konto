@@ -9,7 +9,7 @@ export const generatePaymentLink: CollectionAfterChangeHook = async ({ doc, oper
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
-    const paymentLink = `${process.env.NEXT_PUBLIC_SERVER_URL}/pay/${doc.id}/${urlFriendlyName}`
+    const paymentLink = `${process.env.NEXT_PUBLIC_SERVER_URL}/pay/${doc.id}`
 
     // Update the document with the generated payment link
     try {
