@@ -3,72 +3,15 @@ import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/core/services/base_api_provider.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
 /// API Provider for media-related operations (image uploads to PayloadCMS)
-class MediaApiProvider {
-  final Dio _dio;
-  final UserStorageService _userStorageService;
-
+class MediaApiProvider extends BaseApiProvider {
   MediaApiProvider({
     required Dio dio,
     required UserStorageService userStorageService,
-  }) : _dio = dio,
-       _userStorageService = userStorageService;
-
-  /// Get authenticated headers with Bearer token
-  /// Returns null if user is not authenticated
-  Future<Map<String, String>?> _getAuthenticatedHeaders() async {
-    final authToken = await _userStorageService.getAuthToken();
-
-    if (authToken == null) {
-      return null;
-    }
-
-    return {
-      'Authorization': 'Bearer $authToken',
-      // Note: Don't set Content-Type for multipart uploads - Dio handles this
-    };
-  }
-
-  /// Standard authentication error response
-  Map<String, dynamic> _getUnauthenticatedError() {
-    return {
-      'success': false,
-      'message': 'User not authenticated. Please log in again.',
-      'error': 'No auth token found',
-    };
-  }
-
-  /// Handle standard API errors with consistent error responses
-  Map<String, dynamic> _handleApiError(dynamic error, String operation) {
-    if (error is DioException) {
-      // Handle 401 Unauthorized specifically
-      if (error.response?.statusCode == 401) {
-        return {
-          'success': false,
-          'message': 'Your session has expired. Please log in again.',
-          'error': 'Unauthorized',
-          'dioErrorType': error.type.toString(),
-          'statusCode': 401,
-        };
-      }
-
-      return {
-        'success': false,
-        'message': 'Network error: ${error.message}',
-        'error': error.toString(),
-        'dioErrorType': error.type.toString(),
-        'statusCode': error.response?.statusCode,
-      };
-    }
-
-    return {
-      'success': false,
-      'message': 'Error $operation: ${error.toString()}',
-      'error': error.toString(),
-    };
-  }
+  }) : super(dio: dio, userStorageService: userStorageService);
 
   /// Upload image to PayloadCMS media collection
   ///
@@ -80,10 +23,10 @@ class MediaApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Create alt text from filename (always use filename-based alt for consistency)
@@ -116,7 +59,7 @@ class MediaApiProvider {
       print('DEBUG: Alt text being sent: "$imageAlt"');
 
       // Upload to PayloadCMS media endpoint
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/media',
         data: formData,
         options: Options(
@@ -132,7 +75,7 @@ class MediaApiProvider {
         'message': 'Image uploaded successfully',
       };
     } catch (e) {
-      return _handleApiError(e, 'uploading image');
+      return handleApiError(e, 'uploading image');
     }
   }
 
@@ -140,13 +83,13 @@ class MediaApiProvider {
   Future<Map<String, dynamic>> deleteMedia({required String mediaId}) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
-      final response = await _dio.delete(
+      final response = await dio.delete(
         '${BackendConfig.apiBaseUrl}/media/$mediaId',
         options: Options(headers: headers),
       );
@@ -157,7 +100,7 @@ class MediaApiProvider {
         'message': 'Media deleted successfully',
       };
     } catch (e) {
-      return _handleApiError(e, 'deleting media');
+      return handleApiError(e, 'deleting media');
     }
   }
 

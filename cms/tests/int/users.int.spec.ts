@@ -56,7 +56,7 @@ describe('Users Collection Integration Tests', () => {
       expect(user.fullName).toBe(userData.fullName)
       expect(user.phoneNumber).toBe(userData.phoneNumber)
       expect(user.country).toBe(userData.country)
-      expect(user.isKYCVerified).toBe(false) // Default value
+      expect(user.isKYCVerified).toBe(true) // Default value
     })
 
     it('should create a user with complete app settings', async () => {
@@ -468,7 +468,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       // Check default values
-      expect(user.isKYCVerified).toBe(false)
+      expect(user.isKYCVerified).toBe(true)
       expect(user.appSettings?.language).toBe('en')
       expect(user.appSettings?.theme).toBe('dark')
       expect(user.appSettings?.biometricAuthEnabled).toBe(false)

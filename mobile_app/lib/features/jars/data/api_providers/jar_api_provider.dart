@@ -1,89 +1,34 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/core/services/base_api_provider.dart';
 import 'package:konto/core/services/user_storage_service.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// API Provider for jar-related operations
-class JarApiProvider {
-  final Dio _dio;
-  final UserStorageService _userStorageService;
-
+class JarApiProvider extends BaseApiProvider {
   JarApiProvider({
     required Dio dio,
     required UserStorageService userStorageService,
-  }) : _dio = dio,
-       _userStorageService = userStorageService;
-
-  /// Get authenticated headers with Bearer token
-  /// Returns null if user is not authenticated
-  Future<Map<String, String>?> _getAuthenticatedHeaders() async {
-    final authToken = await _userStorageService.getAuthToken();
-
-    if (authToken == null) {
-      return null;
-    }
-
-    return {
-      ...BackendConfig.defaultHeaders,
-      'Authorization': 'Bearer $authToken',
-    };
-  }
-
-  /// Standard authentication error response
-  Map<String, dynamic> _getUnauthenticatedError() {
-    return {
-      'success': false,
-      'message': 'User not authenticated. Please log in again.',
-      'error': 'No auth token found',
-    };
-  }
-
-  /// Handle standard API errors with consistent error responses
-  Map<String, dynamic> _handleApiError(dynamic error, String operation) {
-    if (error is DioException) {
-      // Handle 401 Unauthorized specifically
-      if (error.response?.statusCode == 401) {
-        return {
-          'success': false,
-          'message': 'Your session has expired. Please log in again.',
-          'error': 'Unauthorized',
-          'dioErrorType': error.type.toString(),
-          'statusCode': 401,
-        };
-      }
-
-      return {
-        'success': false,
-        'message': 'Network error: ${error.message}',
-        'error': error.toString(),
-        'dioErrorType': error.type.toString(),
-      };
-    }
-
-    return {
-      'success': false,
-      'message': 'Error $operation: ${error.toString()}',
-      'error': error.toString(),
-    };
-  }
+  }) : super(dio: dio, userStorageService: userStorageService);
 
   /// Get jar summary with contributions
   Future<Map<String, dynamic>> getJarSummary({required String jarId}) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId/summary',
         options: Options(headers: headers),
       );
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'fetching jar summary');
+      return handleApiError(e, 'fetching jar summary');
     }
   }
 
@@ -91,20 +36,20 @@ class JarApiProvider {
   Future<Map<String, dynamic>> getUserJars() async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/user-jars',
         options: Options(headers: headers),
       );
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'fetching user jars');
+      return handleApiError(e, 'fetching user jars');
     }
   }
 
@@ -125,14 +70,14 @@ class JarApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Get the current user to set as creator
-      final user = await _userStorageService.getUserData();
+      final user = await userStorageService.getUserData();
 
       if (user == null) {
         return {
@@ -154,13 +99,13 @@ class JarApiProvider {
           // Extract name safely
           final name = collector['name'];
           if (name is String && name.isNotEmpty) {
-            processedCollector['name'] = name;
+            processedCollector['name'] = name.trim();
           }
 
           // Extract phoneNumber safely
           final phoneNumber = collector['phoneNumber'];
           if (phoneNumber is String && phoneNumber.isNotEmpty) {
-            processedCollector['phoneNumber'] = phoneNumber;
+            processedCollector['phoneNumber'] = phoneNumber.trim();
           }
 
           // Extract status safely
@@ -177,37 +122,85 @@ class JarApiProvider {
       }
 
       // Prepare jar data based on the collection schema
-      final jarData = {
-        'name': name,
-        'description': description,
+      final jarData = <String, dynamic>{
+        'name': name.trim(),
         'jarGroup': jarGroup,
-        'image': imageId,
         'isActive': isActive,
         'isFixedContribution': isFixedContribution,
         'acceptedContributionAmount': acceptedContributionAmount,
-        'goalAmount': goalAmount ?? 0,
+        'goalAmount': goalAmount ?? 0.0,
         'deadline':
             deadline != null
                 ? '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}'
                 : null,
-        'currency': currency, // Now a text field
-        'creator': user.id, // Set the authenticated user as creator
+        'currency': currency.trim(),
+        'creator': user.id,
         'acceptAnonymousContributions': acceptAnonymousContributions,
         'invitedCollectors': processedInvitedCollectors,
       };
 
-      // Remove null values to avoid sending unnecessary data
-      jarData.removeWhere((key, value) => value == null);
+      // Only add optional fields if they have valid values
+      if (description != null && description.isNotEmpty) {
+        jarData['description'] = description.trim();
+      }
 
-      final response = await _dio.post(
+      // CRITICAL FIX: Only add image if it's not null AND not empty
+      if (imageId != null && imageId.isNotEmpty) {
+        jarData['image'] = imageId;
+      }
+
+      // Remove null values and empty strings to avoid sending problematic data
+      jarData.removeWhere(
+        (key, value) => value == null || (value is String && value.isEmpty),
+      );
+
+      // Log jarData structure to Sentry for investigation
+      logDataStructureToSentry(
+        operation: 'createJar',
+        data: jarData,
+        additionalContext: {
+          'jarName': name,
+          'jarGroup': jarGroup,
+          'currency': currency,
+          'hasInvitedCollectors': invitedCollectors?.isNotEmpty ?? false,
+        },
+      );
+
+      // Force explicit Content-Type to avoid device-specific defaults
+      final enhancedHeaders = {
+        ...headers,
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json',
+        'Accept-Charset': 'utf-8',
+      };
+
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}',
         data: jarData,
-        options: Options(headers: headers),
+        options: Options(
+          headers: enhancedHeaders,
+          contentType: 'application/json',
+          responseType: ResponseType.json,
+        ),
       );
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'creating jar');
+      // Enhanced error handling for jar creation with additional context
+      return handleApiError(
+        e,
+        'creating jar',
+        context: 'JarApiProvider.createJar',
+        additionalData: {
+          'jarName': name,
+          'jarGroup': jarGroup,
+          'currency': currency,
+          'hasInvitedCollectors': invitedCollectors?.isNotEmpty ?? false,
+          'invitedCollectorsCount': invitedCollectors?.length ?? 0,
+          'requestUrl':
+              '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}',
+        },
+      );
     }
   }
 
@@ -232,10 +225,10 @@ class JarApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Process and validate invitedCollectors data if provided
@@ -311,7 +304,22 @@ class JarApiProvider {
         jarData['thankYouMessage'] = thankYouMessage;
       }
 
-      final response = await _dio.patch(
+      // Log jarData structure to Sentry for investigation
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: 'Updating jar with data structure',
+          category: 'jar_update',
+          data: {
+            'jarId': jarId,
+            'jarData': jarData,
+            'platform': 'mobile',
+            'operation': 'updateJar',
+          },
+          level: SentryLevel.info,
+        ),
+      );
+
+      final response = await dio.patch(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',
         data: jarData,
         options: Options(headers: headers),
@@ -319,7 +327,7 @@ class JarApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'updating jar');
+      return handleApiError(e, 'updating jar');
     }
   }
 }

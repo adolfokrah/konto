@@ -1,93 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/core/services/base_api_provider.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
 /// API Provider for contribution-related operations
-class ContributionApiProvider {
-  final Dio _dio;
-  final UserStorageService _userStorageService;
-
+class ContributionApiProvider extends BaseApiProvider {
   ContributionApiProvider({
     required Dio dio,
     required UserStorageService userStorageService,
-  }) : _dio = dio,
-       _userStorageService = userStorageService;
-
-  /// Get authenticated headers with Bearer token
-  /// Returns null if user is not authenticated
-  Future<Map<String, String>?> _getAuthenticatedHeaders() async {
-    final authToken = await _userStorageService.getAuthToken();
-
-    if (authToken == null) {
-      return null;
-    }
-
-    return {
-      ...BackendConfig.defaultHeaders,
-      'Authorization': 'Bearer $authToken',
-    };
-  }
-
-  /// Standard authentication error response
-  Map<String, dynamic> _getUnauthenticatedError() {
-    return {
-      'success': false,
-      'message': 'User not authenticated. Please log in again.',
-      'statusCode': 401,
-    };
-  }
-
-  /// Standard error handling for API responses
-  /// Returns a consistent error response with operation context
-  Map<String, dynamic> _handleApiError(dynamic error, String operation) {
-    if (error is DioException) {
-      switch (error.type) {
-        case DioExceptionType.connectionTimeout:
-        case DioExceptionType.sendTimeout:
-        case DioExceptionType.receiveTimeout:
-          return {
-            'success': false,
-            'message': 'Request timeout while $operation',
-            'error': 'Connection timeout',
-            'statusCode': 408,
-          };
-        case DioExceptionType.badResponse:
-          final statusCode = error.response?.statusCode ?? 500;
-          final errorData = error.response?.data;
-
-          return {
-            'success': false,
-            'message': errorData?['message'] ?? 'Server error while $operation',
-            'error': errorData?['error'] ?? 'Bad response',
-            'statusCode': statusCode,
-          };
-        case DioExceptionType.cancel:
-          return {
-            'success': false,
-            'message': 'Request cancelled while $operation',
-            'error': 'Request cancelled',
-            'statusCode': 499,
-          };
-        case DioExceptionType.connectionError:
-        case DioExceptionType.unknown:
-        default:
-          return {
-            'success': false,
-            'message':
-                'Network error while $operation. Please check your connection.',
-            'error': error.message ?? 'Unknown error',
-            'statusCode': 500,
-          };
-      }
-    } else {
-      return {
-        'success': false,
-        'message': 'Unexpected error while $operation',
-        'error': error.toString(),
-        'statusCode': 500,
-      };
-    }
-  }
+  }) : super(dio: dio, userStorageService: userStorageService);
 
   /// Add a contribution to a jar collection in the CMS
   /// Creates a new contribution with payment method details
@@ -103,14 +24,14 @@ class ContributionApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Get the current user to set as collector
-      final user = await _userStorageService.getUserData();
+      final user = await userStorageService.getUserData();
 
       if (user == null) {
         return {
@@ -159,7 +80,7 @@ class ContributionApiProvider {
       // Remove null values to avoid sending unnecessary data
       contributionData.removeWhere((key, value) => value == null);
 
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/contributions',
         data: contributionData,
         options: Options(headers: headers),
@@ -167,7 +88,7 @@ class ContributionApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'adding contribution');
+      return handleApiError(e, 'adding contribution');
     }
   }
 
@@ -178,10 +99,10 @@ class ContributionApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Validate required fields
@@ -193,14 +114,14 @@ class ContributionApiProvider {
         };
       }
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/contributions/$contributionId',
         options: Options(headers: headers),
       );
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'fetching contribution');
+      return handleApiError(e, 'fetching contribution');
     }
   }
 
@@ -219,10 +140,10 @@ class ContributionApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Build query parameters
@@ -302,7 +223,7 @@ class ContributionApiProvider {
       queryParams['sort'] = '-createdAt'; // Sort by newest first
       queryParams['depth'] = '2'; // Include related data
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/contributions',
         queryParameters: queryParams,
         options: Options(headers: headers),
@@ -310,7 +231,7 @@ class ContributionApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'fetching contributions list');
+      return handleApiError(e, 'fetching contributions list');
     }
   }
 }

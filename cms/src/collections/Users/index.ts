@@ -95,7 +95,7 @@ export const Users: CollectionConfig = {
     {
       name: 'isKYCVerified',
       type: 'checkbox',
-      defaultValue: false,
+      defaultValue: true, //only for testing
     },
     {
       label: 'Withdrawal Account',

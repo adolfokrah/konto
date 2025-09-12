@@ -1,93 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:konto/core/config/backend_config.dart';
+import 'package:konto/core/services/base_api_provider.dart';
 import 'package:konto/core/services/user_storage_service.dart';
 
 /// API Provider for mobile money charge operations
-class MomoApiProvider {
-  final Dio _dio;
-  final UserStorageService _userStorageService;
-
+class MomoApiProvider extends BaseApiProvider {
   MomoApiProvider({
     required Dio dio,
     required UserStorageService userStorageService,
-  }) : _dio = dio,
-       _userStorageService = userStorageService;
-
-  /// Get authenticated headers with Bearer token
-  /// Returns null if user is not authenticated
-  Future<Map<String, String>?> _getAuthenticatedHeaders() async {
-    final authToken = await _userStorageService.getAuthToken();
-
-    if (authToken == null) {
-      return null;
-    }
-
-    return {
-      ...BackendConfig.defaultHeaders,
-      'Authorization': 'Bearer $authToken',
-    };
-  }
-
-  /// Standard authentication error response
-  Map<String, dynamic> _getUnauthenticatedError() {
-    return {
-      'success': false,
-      'message': 'User not authenticated. Please log in again.',
-      'statusCode': 401,
-    };
-  }
-
-  /// Standard error handling for API responses
-  /// Returns a consistent error response with operation context
-  Map<String, dynamic> _handleApiError(dynamic error, String operation) {
-    if (error is DioException) {
-      switch (error.type) {
-        case DioExceptionType.connectionTimeout:
-        case DioExceptionType.sendTimeout:
-        case DioExceptionType.receiveTimeout:
-          return {
-            'success': false,
-            'message': 'Request timeout while $operation',
-            'error': 'Connection timeout',
-            'statusCode': 408,
-          };
-        case DioExceptionType.badResponse:
-          final statusCode = error.response?.statusCode ?? 500;
-          final errorData = error.response?.data;
-
-          return {
-            'success': false,
-            'message': errorData?['message'] ?? 'Server error while $operation',
-            'error': errorData?['error'] ?? 'Bad response',
-            'statusCode': statusCode,
-          };
-        case DioExceptionType.cancel:
-          return {
-            'success': false,
-            'message': 'Request cancelled while $operation',
-            'error': 'Request cancelled',
-            'statusCode': 499,
-          };
-        case DioExceptionType.connectionError:
-        case DioExceptionType.unknown:
-        default:
-          return {
-            'success': false,
-            'message':
-                'Network error while $operation. Please check your connection.',
-            'error': error.message ?? 'Unknown error',
-            'statusCode': 500,
-          };
-      }
-    } else {
-      return {
-        'success': false,
-        'message': 'Unexpected error while $operation',
-        'error': error.toString(),
-        'statusCode': 500,
-      };
-    }
-  }
+  }) : super(dio: dio, userStorageService: userStorageService);
 
   /// Initiate mobile money charge for a contribution
   /// Calls the charge-momo endpoint with contribution ID
@@ -96,10 +17,10 @@ class MomoApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Validate required fields
@@ -112,7 +33,7 @@ class MomoApiProvider {
       }
 
       // Make request to charge-momo endpoint
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/contributions/charge-momo',
         data: {'contributionId': contributionId},
         options: Options(headers: headers),
@@ -120,7 +41,7 @@ class MomoApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'initiating mobile money charge');
+      return handleApiError(e, 'initiating mobile money charge');
     }
   }
 
@@ -132,10 +53,10 @@ class MomoApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Validate required fields
@@ -148,7 +69,7 @@ class MomoApiProvider {
       }
 
       // Make request to send-otp endpoint
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/contributions/send-otp',
         data: {'reference': reference, 'otp': otp},
         options: Options(headers: headers),
@@ -156,7 +77,7 @@ class MomoApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'submitting OTP verification');
+      return handleApiError(e, 'submitting OTP verification');
     }
   }
 
@@ -167,10 +88,10 @@ class MomoApiProvider {
   }) async {
     try {
       // Get authenticated headers
-      final headers = await _getAuthenticatedHeaders();
+      final headers = await getAuthenticatedHeaders();
 
       if (headers == null) {
-        return _getUnauthenticatedError();
+        return getUnauthenticatedError();
       }
 
       // Validate required fields
@@ -183,7 +104,7 @@ class MomoApiProvider {
       }
 
       // Make request to verify-payment endpoint
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/contributions/verify-payment',
         data: {'reference': reference},
         options: Options(headers: headers),
@@ -191,7 +112,7 @@ class MomoApiProvider {
 
       return response.data;
     } catch (e) {
-      return _handleApiError(e, 'verifying payment status');
+      return handleApiError(e, 'verifying payment status');
     }
   }
 }

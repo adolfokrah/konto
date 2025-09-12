@@ -57,12 +57,14 @@ void main() async {
             1.0; // Still capture all error sessions
       } else {
         // Staging: Higher sampling for testing
+
         options.debug = true;
         options.tracesSampleRate = 1.0; // Capture 100% for testing
         options.profilesSampleRate = 1.0;
         options.replay.sessionSampleRate =
             1.0; // Capture all sessions in staging
         options.replay.onErrorSampleRate = 1.0;
+        options.enableLogs = true;
       }
 
       // Common settings for production and staging
