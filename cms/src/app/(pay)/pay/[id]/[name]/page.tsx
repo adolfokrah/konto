@@ -15,11 +15,20 @@ export default async function Page({ params }: any) {
 
   try {
     // Get jar data directly using Payload
-    const jar = await payload.findByID({
+    const res = await payload.find({
       collection: 'jars',
-      id: jarId,
+      where: {
+        id: {
+          equals: jarId,
+        },
+        status: {
+          equals: 'open',
+        }
+      },
       depth: 2, // Include related data like creator
     })
+
+    const jar = res?.docs?.[0];
     
     // Get all contributions for this jar to calculate total
     const allContributions = await payload.find({

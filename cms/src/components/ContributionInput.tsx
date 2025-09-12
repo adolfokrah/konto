@@ -196,7 +196,6 @@ export default function ContributionInput({
         }
       })
     } catch (error: any) {
-      console.error('Error creating contribution:', error)
       setIsLoading(false)
       toast.error('Contribution Failed', {
         description: error.message || 'Failed to process contribution. Please try again.',

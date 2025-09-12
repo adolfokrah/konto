@@ -21,6 +21,9 @@ class AppConfig {
 
   static String get sentryDsn => dotenv.env['SENTRY_DSN'] ?? '';
 
+  static String get nextProjectBaseUrl =>
+      dotenv.env['NEXT_PROJECT_BASE_URL'] ?? '';
+
   static bool get isDevelopment => flutterEnv == 'development';
   static bool get isProduction => flutterEnv == 'production';
 

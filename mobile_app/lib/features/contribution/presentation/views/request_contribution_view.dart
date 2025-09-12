@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:konto/core/config/app_config.dart';
 import 'package:konto/core/constants/app_colors.dart';
 import 'package:konto/core/constants/app_spacing.dart';
 import 'package:konto/core/widgets/small_button.dart';
+import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:konto/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
@@ -76,7 +79,6 @@ class _RequestContributionViewState extends State<RequestContributionView> {
     // Extract arguments from the route
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final String paymentLink = args?['paymentLink'] ?? '';
     final String? jarName = args?['jarName'];
 
     return Scaffold(
@@ -90,63 +92,82 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           style: TextStyles.titleMediumLg,
         ),
       ),
-      body: SizedBox(
-        width: double.infinity,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.spacingL),
-                margin: const EdgeInsets.only(top: 80),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceWhite,
-                  borderRadius: BorderRadius.circular(AppSpacing.spacingM),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.spacingM),
-                  child: QrImageView(
-                    data: paymentLink,
-                    version: QrVersions.auto,
-                    size: 200.0,
-                    backgroundColor: Colors.white,
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: Colors.black,
-                    ),
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Colors.black,
-                    ),
-                    errorCorrectionLevel: QrErrorCorrectLevel.M,
-                    gapless: true,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.spacingL),
-              Text(jarName ?? '', style: TextStyles.titleBoldLg),
-              const SizedBox(height: AppSpacing.spacingS),
-              Text(
-                localizations.scanTheQRCodeToContribute,
-                style: TextStyles.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              AppSmallButton(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+      body: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          if (state is JarSummaryLoaded) {
+            final paymentLink =
+                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name}";
+            return SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.share, size: 16),
-                    const SizedBox(width: AppSpacing.spacingS),
-                    Text(localizations.share, style: TextStyles.titleMedium),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.spacingL),
+                      margin: const EdgeInsets.only(top: 80),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.spacingM,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.spacingM,
+                        ),
+                        child: QrImageView(
+                          data: paymentLink,
+                          version: QrVersions.auto,
+                          size: 200.0,
+                          backgroundColor: Colors.white,
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Colors.black,
+                          ),
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: Colors.black,
+                          ),
+                          errorCorrectionLevel: QrErrorCorrectLevel.M,
+                          gapless: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacingL),
+                    Text(jarName ?? '', style: TextStyles.titleBoldLg),
+                    const SizedBox(height: AppSpacing.spacingS),
+                    Text(
+                      localizations.scanTheQRCodeToContribute,
+                      style: TextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.spacingS),
+                    AppSmallButton(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.share, size: 16),
+                          const SizedBox(width: AppSpacing.spacingS),
+                          Text(
+                            localizations.share,
+                            style: TextStyles.titleMedium,
+                          ),
+                        ],
+                      ),
+                      onPressed:
+                          () => _sharePaymentLink(
+                            paymentLink,
+                            jarName,
+                            localizations,
+                          ),
+                    ),
                   ],
                 ),
-                onPressed:
-                    () =>
-                        _sharePaymentLink(paymentLink, jarName, localizations),
               ),
-            ],
-          ),
-        ),
+            );
+          }
+          return Container();
+        },
       ),
     );
   }

@@ -379,11 +379,8 @@ class ContributionView extends StatelessWidget {
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           title: Text(
-                                            contribution.type.value ==
-                                                    ContributionType
-                                                        .transfer
-                                                        .value
-                                                ? localizations.transferredTo
+                                            contribution.viaPaymentLink
+                                                ? 'Contributor Email'
                                                 : localizations
                                                     .contributorPhoneNumber,
                                             style: AppTextStyles.titleMediumS
