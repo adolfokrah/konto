@@ -218,12 +218,12 @@ export default function ContributionInput({
       
       {/* Preset Amount Buttons */}
       {!isFixedAmount && (
-        <div className="flex flex-wrap justify-evenly gap-1 mb-6">
+        <div className="flex flex-wrap gap-2 sm:gap-1 mb-6">
           {presetAmounts.map((amount) => (
             <Button
               key={amount}
               onClick={() => handlePresetClick(amount)}
-              className={`px-6 py-3 rounded-full border-2 font-supreme font-medium transition-all duration-200 ${
+              className={`px-3 sm:px-6 py-3 rounded-full border-2 font-supreme font-medium transition-all duration-200 text-sm sm:text-base ${
                 selectedAmount === amount && !isCustom
                   ? 'bg-black text-white border-black'
                   : 'bg-white text-black border-gray-300 hover:border-gray-400'
@@ -239,7 +239,7 @@ export default function ContributionInput({
       <div className="mb-6">
         <div className="relative">
           <div className="flex items-center border-2 border-gray-300 rounded-2xl p-4 bg-white focus-within:border-gray-400 transition-colors">
-            <span className="text-xl font-supreme font-medium text-black mr-4">
+            <span className="text-lg sm:text-xl font-supreme font-medium text-black mr-2 sm:mr-4 flex-shrink-0">
               {currency}
             </span>
             <input
@@ -248,7 +248,7 @@ export default function ContributionInput({
               onChange={(e) => handleCustomAmountChange(e.target.value)}
               placeholder="0.00"
               disabled={isFixedAmount}
-              className="flex-1 text-right text-3xl font-supreme font-bold text-black bg-transparent outline-none disabled:opacity-50"
+              className="flex-1 min-w-0 text-right text-xl sm:text-2xl lg:text-3xl font-supreme font-bold text-black bg-transparent outline-none disabled:opacity-50"
             />
           </div>
         </div>

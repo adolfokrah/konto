@@ -69,7 +69,7 @@ export default async function Page({ params }: any) {
           
           {/* Jar Details */}
           <div className="p-6">
-            <h1 className="text-title-bold-lg mb-4 truncate">{jarWithBalance.name}</h1>
+            <h1 className="font-bold mb-4 truncate text-2xl">{jarWithBalance.name}</h1>
 
              {/* Jar Image - Full Width */}
           {imageUrl && (
