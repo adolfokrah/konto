@@ -29,12 +29,6 @@ class AppConfig {
   static Future<void> initialize() async {
     try {
       await dotenv.load(fileName: '.env');
-      print('✅ Successfully loaded .env file');
-      print('🔗 API Base URL: $apiBaseUrl');
-    } catch (e) {
-      print('⚠️  Warning: Could not load .env file: $e');
-      print('📝 Using default configuration values');
-      print('🔗 API Base URL (default): $apiBaseUrl');
-    }
+    } catch (e) {}
   }
 }

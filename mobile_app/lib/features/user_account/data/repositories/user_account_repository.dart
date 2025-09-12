@@ -95,30 +95,21 @@ class UserAccountRepository {
 
   /// Verify account details using Paystack
   /// Returns a record with success status, message, and validity
-  Future<({bool success, String message, bool valid})> verifyAccountDetails({
+  Future verifyAccountDetails({
     required String phoneNumber,
     required String bank,
-    required String name,
   }) async {
     try {
       final result = await _apiProvider.verifyAccountDetails(
         phoneNumber: phoneNumber,
         bank: bank,
-        name: name,
       );
-      return (
-        success: result['success'] == true,
-        message:
-            result['success'] == true
-                ? 'Account verification completed'
-                : 'Account verification failed',
-        valid: result['valid'] == true,
-      );
+      return (success: true, message: result['message'], data: result['data']);
     } catch (e) {
       return (
         success: false,
         message: 'Error verifying account details: ${e.toString()}',
-        valid: false,
+        data: null,
       );
     }
   }

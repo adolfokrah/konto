@@ -57,7 +57,6 @@ void main() async {
             1.0; // Still capture all error sessions
       } else {
         // Staging: Higher sampling for testing
-
         options.debug = true;
         options.tracesSampleRate = 1.0; // Capture 100% for testing
         options.profilesSampleRate = 1.0;

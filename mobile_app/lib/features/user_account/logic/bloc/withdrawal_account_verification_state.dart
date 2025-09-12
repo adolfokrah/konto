@@ -11,12 +11,12 @@ final class WithdrawalAccountVerificationLoading
 
 final class WithdrawalAccountVerificationSuccess
     extends WithdrawalAccountVerificationState {
-  final String message;
-  final bool valid;
+  final String name;
+  final String phoneNumber;
 
   WithdrawalAccountVerificationSuccess({
-    required this.message,
-    required this.valid,
+    required this.name,
+    required this.phoneNumber,
   });
 }
 

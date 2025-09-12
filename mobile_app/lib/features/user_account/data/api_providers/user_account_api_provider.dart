@@ -115,29 +115,26 @@ class UserAccountApiProvider {
   Future<Map<String, dynamic>> verifyAccountDetails({
     required String phoneNumber,
     required String bank,
-    required String name,
   }) async {
     try {
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}/users/verify-account-details',
-        data: {'phoneNumber': phoneNumber, 'bank': bank, 'name': name},
+        data: {'phoneNumber': phoneNumber, 'bank': bank},
         options: Options(headers: BackendConfig.defaultHeaders),
       );
 
       if (response.data['success'] == true) {
         return {
           'success': true,
-          'message':
-              response.data['message'] ??
-              'Account details verified successfully',
-          'valid': response.data['valid'] ?? true,
+          'message': response.data['message'],
+          'data': response.data['data'],
         };
       } else {
         return {
           'success': false,
           'message':
               response.data['message'] ?? 'Account details verification failed',
-          'valid': false,
+          'data': null,
           'statusCode': response.statusCode,
         };
       }

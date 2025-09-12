@@ -7,7 +7,7 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    const { phoneNumber, name, bank } = req.data || {}
+    const { phoneNumber, bank } = req.data || {}
 
     if (!phoneNumber) {
       return Response.json(
@@ -29,16 +29,6 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
         { status: 400 },
       )
     }
-    if (!name) {
-      return Response.json(
-        {
-          success: false,
-          message: 'Name is required',
-          valid: false,
-        },
-        { status: 400 },
-      )
-    }
 
     const response = await paystack.verifyAccountDetails({
       account_number: phoneNumber,
@@ -47,22 +37,11 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
     })
 
     if (response.status && response.data) {
-      if ((response.data as any).account_name?.toLowerCase() !== name.toLowerCase()) {
-        return Response.json(
-          {
-            success: false,
-            message: 'Name does not match account details',
-            valid: false,
-          },
-          { status: 400 },
-        )
-      }
-
       return Response.json(
         {
           success: true,
-          message: response.data,
-          valid: true,
+          message: 'Account details verified successfully',
+          data: response.data,
         },
         { status: 200 },
       )
@@ -71,7 +50,7 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
         {
           success: false,
           message: 'Account details verification failed',
-          valid: false,
+          data: null,
         },
         { status: 400 },
       )

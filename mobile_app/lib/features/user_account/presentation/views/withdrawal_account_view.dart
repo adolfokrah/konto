@@ -9,9 +9,8 @@ import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:konto/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
-import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:konto/features/user_account/presentation/widgets/review_withdrawal_account.dart';
 import 'package:konto/l10n/app_localizations.dart';
-import 'package:konto/route.dart';
 
 class WithdrawalAccountView extends StatefulWidget {
   const WithdrawalAccountView({super.key});
@@ -21,25 +20,17 @@ class WithdrawalAccountView extends StatefulWidget {
 }
 
 class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
-  final TextEditingController _accountHolderController =
-      TextEditingController();
   final TextEditingController _accountNumberController =
       TextEditingController();
 
   String _selectedOperator = '';
   String _initialOperator = '';
-  String _initialAccountHolder = '';
   String _initialAccountNumber = '';
   bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Add listeners to text controllers to trigger UI updates when text changes
-    _accountHolderController.addListener(() {
-      setState(() {}); // Trigger rebuild to update button state
-    });
 
     _accountNumberController.addListener(() {
       setState(() {}); // Trigger rebuild to update button state
@@ -48,7 +39,6 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
 
   @override
   void dispose() {
-    _accountHolderController.dispose();
     _accountNumberController.dispose();
     super.dispose();
   }
@@ -60,14 +50,11 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       // Initialize with user's existing withdrawal account data
       _initialOperator = _getBankOperatorValue(user.bank) ?? '';
 
-      _initialAccountHolder = user.accountHolder ?? '';
-
       _initialAccountNumber = user.accountNumber ?? '';
 
       // Update the UI state
       setState(() {
         _selectedOperator = _initialOperator;
-        _accountHolderController.text = _initialAccountHolder;
         _accountNumberController.text = _initialAccountNumber;
         _hasInitialized = true;
       });
@@ -81,31 +68,19 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
     final bankLower = bank.toLowerCase();
     if (bankLower.contains('mtn')) return 'mtn';
     if (bankLower.contains('vodafone')) return 'vodafone';
-    if (bankLower.contains('airteltigo') || bankLower.contains('airtel'))
+    if (bankLower.contains('airteltigo') || bankLower.contains('airtel')) {
       return 'airteltigo';
-
+    }
     return null;
   }
 
   bool _hasChanges() {
     return _selectedOperator != _initialOperator ||
-        _accountHolderController.text.trim() != _initialAccountHolder ||
         _accountNumberController.text.trim() != _initialAccountNumber;
   }
 
   void _handleUpdateAccount() {
     final localizations = AppLocalizations.of(context)!;
-
-    // Validate form
-    if (_accountHolderController.text.trim().isEmpty) {
-      AppSnackBar.showError(
-        context,
-        message:
-            localizations
-                .pleaseEnterFullName, // We can reuse this or add specific validation
-      );
-      return;
-    }
 
     if (_accountNumberController.text.trim().isEmpty) {
       AppSnackBar.showError(
@@ -124,17 +99,16 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       RequestValidateWithdrawalAccountEvent(
         phoneNumber: _accountNumberController.text.trim(),
         bank: _selectedOperator,
-        name: _accountHolderController.text.trim(),
       ),
     );
   }
 
-  _handleUpdateWithdrawalAccount() {
+  _handleUpdateWithdrawalAccount(String accountHolder, String accountNumber) {
     // Trigger user account update
     context.read<UserAccountBloc>().add(
       UpdatePersonalDetails(
-        accountHolder: _accountHolderController.text.trim(),
-        accountNumber: _accountNumberController.text.trim(),
+        accountHolder: accountHolder,
+        accountNumber: accountNumber,
         bank: _selectedOperator,
       ),
     );
@@ -165,30 +139,21 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
             }
           },
         ),
-        BlocListener<VerificationBloc, VerificationState>(
-          listener: (context, state) {
-            if (state is VerificationSuccess) {
-              // Handle successful verification
-              _handleUpdateWithdrawalAccount();
-            } else if (state is VerificationFailure) {
-              // Show error message
-              AppSnackBar.showError(context, message: state.errorMessage);
-            }
-          },
-        ),
         BlocListener<
           WithdrawalAccountVerificationBloc,
           WithdrawalAccountVerificationState
         >(
           listener: (context, state) {
             if (state is WithdrawalAccountVerificationSuccess) {
-              // Handle successful verification
-              Navigator.pushNamed(
-                context,
-                AppRoutes.otp,
-                arguments: {
-                  'phoneNumber': _accountNumberController.text.trim(),
-                  'countryCode': "",
+              // Show the review bottom sheet
+              ReviewWithdrawalAccountBottomSheet.show(
+                context: context,
+                verificationData: state,
+                onConfirm: () {
+                  _handleUpdateWithdrawalAccount(state.name, state.phoneNumber);
+                },
+                onCancel: () {
+                  // Handle cancellation if needed
                 },
               );
             } else if (state is WithdrawalAccountVerificationFailure) {
@@ -252,14 +217,6 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
                                         _selectedOperator = value;
                                       });
                                     },
-                                  ),
-                                  const SizedBox(height: 19),
-
-                                  // Account holder name input
-                                  AppTextInput(
-                                    label: localizations.accountHolderName,
-                                    controller: _accountHolderController,
-                                    enabled: !isLoading,
                                   ),
                                   const SizedBox(height: 19),
 
