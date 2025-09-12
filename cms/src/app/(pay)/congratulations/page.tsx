@@ -2,8 +2,9 @@
 
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
+import { Suspense } from 'react'
 
-export default function CongratulationsPage() {
+function CongratulationsContent() {
   const searchParams = useSearchParams()
   const reference = searchParams.get('reference')
   const amount = searchParams.get('amount')
@@ -61,9 +62,32 @@ export default function CongratulationsPage() {
         {/* Footer Message */}
         <p className="text-xs text-gray-500 font-supreme mt-6 leading-relaxed">
           Your contribution has been recorded and the organizer will be notified. 
-          You'll receive an email confirmation shortly.
+          You&apos;ll receive an email confirmation shortly.
         </p>
       </div>
     </div>
+  )
+}
+
+function CongratulationsLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center">
+        <div className="mb-6">
+          <CheckCircle className="w-20 h-20 text-green-500 mx-auto animate-pulse" />
+        </div>
+        <h1 className="text-2xl font-supreme font-bold text-black mb-2">
+          Loading...
+        </h1>
+      </div>
+    </div>
+  )
+}
+
+export default function CongratulationsPage() {
+  return (
+    <Suspense fallback={<CongratulationsLoadingFallback />}>
+      <CongratulationsContent />
+    </Suspense>
   )
 }
