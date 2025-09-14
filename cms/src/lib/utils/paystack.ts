@@ -312,6 +312,7 @@ export default class Paystack {
     })
 
     let json: PaystackEnvelope<T> | undefined
+
     try {
       json = (await res.json()) as PaystackEnvelope<T>
     } catch {

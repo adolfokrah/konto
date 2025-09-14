@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/button'
-import PaystackPop from '@paystack/inline-js'
 import { toast } from 'sonner'
 import TransactionCharges from '@/lib/utils/transaction-charges'
 import { Separator } from './ui/separator'
@@ -151,6 +150,8 @@ export default function ContributionInput({
       const amountInSmallestUnit =
         contributionData.data?.chargesBreakdown?.amountPaidByContributor * 100
 
+      // Dynamically import PaystackPop to avoid SSR issues
+      const { default: PaystackPop } = await import('@paystack/inline-js')
       const popup = new PaystackPop()
 
       const reference = contributionData.data.id
