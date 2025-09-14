@@ -9,6 +9,7 @@ import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
+import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 
 export const Contributions: CollectionConfig = {
   slug: 'contributions',
@@ -311,6 +312,11 @@ export const Contributions: CollectionConfig = {
       path: '/paystack-webhook',
       method: 'post',
       handler: paystackWebhook,
+    },
+    {
+      path: '/queue-pending-transactions',
+      method: 'post',
+      handler: verifyPendingTransactions,
     },
   ],
   hooks: {

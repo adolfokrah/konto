@@ -94,7 +94,7 @@ jobs:
           env-slug: "dev"
           project-slug: "konto-mobile-app"
           export-type: "file"
-          file-output-path: "/src/.env" # defaults to "/.env"
+          file-output-path: "./mobile_app/.env"
       - name: Run Flutter Integration tests with .env file
         working-directory: ./mobile_app
         run: |

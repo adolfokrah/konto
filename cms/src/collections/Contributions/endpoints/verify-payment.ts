@@ -2,11 +2,12 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
 import { paystack } from '@/payload.config'
 
-import { transferMomo } from './transfer-momo'
-
 export const verifyPayment = async (req: PayloadRequest) => {
   try {
-    await addDataAndFileToRequest(req)
+    // Only call addDataAndFileToRequest if we don't already have data
+    if (!req.data) {
+      await addDataAndFileToRequest(req)
+    }
     const { reference } = req.data || {}
 
     // Validate required fields
@@ -20,15 +21,38 @@ export const verifyPayment = async (req: PayloadRequest) => {
       )
     }
 
-    const res = await paystack.checkTransactionStatus(reference)
+    let res
+    try {
+      res = await paystack.checkTransactionStatus(reference)
+    } catch (paystackError: any) {
+      // If transaction not found, update database status to failed
+      if (paystackError.message && paystackError.message.includes('not found')) {
+        await req.payload.update({
+          collection: 'contributions',
+          where: {
+            transactionReference: { equals: reference },
+          },
+          data: {
+            paymentStatus: 'failed',
+          },
+          limit: 1,
+        })
+        return Response.json({
+          success: true,
+          message: 'Transaction not found on Paystack, marked as failed',
+          reference: reference,
+          status: 'failed',
+        })
+      }
 
-    // console.log(res, 'paystack');
+      throw new Error(`Paystack API failed: ${paystackError.message}`)
+    }
 
     if (res.status && (res.data as any)?.status != 'ongoing') {
       const foundContribution = await req.payload.find({
         collection: 'contributions',
         where: {
-          transactionReference: reference,
+          transactionReference: { equals: reference },
         },
         limit: 1,
       })
@@ -43,37 +67,32 @@ export const verifyPayment = async (req: PayloadRequest) => {
         )
       }
 
-      const isTransfer = foundContribution.docs[0].type == 'transfer'
+      // const isTransfer = foundContribution.docs[0].type == 'transfer'
 
       await req.payload.update({
         collection: 'contributions',
         id: foundContribution.docs[0].id,
         data: {
-          paymentStatus:
-            (res.data as any)?.status === 'success'
-              ? isTransfer
-                ? 'transferred'
-                : 'completed'
-              : 'failed',
+          paymentStatus: (res.data as any)?.status === 'success' ? 'completed' : 'failed',
         },
       })
 
-      if (isTransfer) {
-        const linkedContribution = foundContribution.docs[0].linkedContribution
-        const linkedContributionId =
-          typeof linkedContribution === 'string' ? linkedContribution : linkedContribution?.id
+      // if (isTransfer) {
+      //   const linkedContribution = foundContribution.docs[0].linkedContribution
+      //   const linkedContributionId =
+      //     typeof linkedContribution === 'string' ? linkedContribution : linkedContribution?.id
 
-        if (linkedContributionId && typeof linkedContributionId === 'string') {
-          await req.payload.update({
-            collection: 'contributions',
-            id: linkedContributionId,
-            data: {
-              linkedTransfer: foundContribution.docs[0].id,
-              isTransferred: true,
-            },
-          })
-        }
-      }
+      //   if (linkedContributionId && typeof linkedContributionId === 'string') {
+      //     await req.payload.update({
+      //       collection: 'contributions',
+      //       id: linkedContributionId,
+      //       data: {
+      //         linkedTransfer: foundContribution.docs[0].id,
+      //         isTransferred: true,
+      //       },
+      //     })
+      //   }
+      // }
 
       // if (!isTransfer && (res.data as any)?.status === 'success') {
       //   //insert a transfer transaction
