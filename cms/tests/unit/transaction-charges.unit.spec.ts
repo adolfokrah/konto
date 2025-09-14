@@ -125,7 +125,7 @@ describe('TransactionCharges', () => {
     it('should satisfy the updated charge formula with conditional paystackTransferFeeMomo deduction', () => {
       const testCases = [100, 150, 200, 250, 500, 1000]
 
-      testCases.forEach(amount => {
+      testCases.forEach((amount) => {
         const result = transactionCharges.calculateAmountAndCharges(amount)
 
         // Total charges deducted = totalAmount - amountAfterCharges
@@ -142,7 +142,7 @@ describe('TransactionCharges', () => {
     it('should maintain consistency between individual method calls and integrated method', () => {
       const testAmounts = [50, 100, 150, 200, 300, 500, 1000]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         // Calculate using individual methods
         const contributorResult = transactionCharges.calculateContributorAmount(amount)
         const recipientResult = transactionCharges.calculateRecipientAmount(
@@ -180,7 +180,7 @@ describe('TransactionCharges', () => {
     it('should handle decimal amounts with expected precision', () => {
       const testAmounts = [33.33, 66.66, 99.99, 123.456, 789.123]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         const result = transactionCharges.calculateAmountAndCharges(amount)
 
         // Check that returned values are numbers (precision may vary based on calculation)
@@ -208,7 +208,7 @@ describe('TransactionCharges', () => {
     it('should deduct paystackTransferFeeMomo from platformCharge when platformCharge > 2', () => {
       const testAmounts = [150, 200, 250, 500]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         const contributorResult = transactionCharges.calculateContributorAmount(amount)
         const recipientResult = transactionCharges.calculateRecipientAmount(
           amount,
@@ -233,7 +233,7 @@ describe('TransactionCharges', () => {
     it('should deduct paystackTransferFeeMomo from amountAfterCharges when platformCharge <= 2', () => {
       const testAmounts = [50, 75, 100]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         const contributorResult = transactionCharges.calculateContributorAmount(amount)
         const recipientResult = transactionCharges.calculateRecipientAmount(
           amount,
@@ -264,7 +264,7 @@ describe('TransactionCharges', () => {
     it('should ensure total amount equals original amount plus 1.95%', () => {
       const testAmounts = [100, 200, 150]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         const result = transactionCharges.calculateAmountAndCharges(amount)
         const expectedTotal = amount + amount * 0.0195
 
@@ -275,7 +275,7 @@ describe('TransactionCharges', () => {
     it('should ensure paystack charge is 1.95% of total amount', () => {
       const testAmounts = [100, 200, 150]
 
-      testAmounts.forEach(amount => {
+      testAmounts.forEach((amount) => {
         const result = transactionCharges.calculateAmountAndCharges(amount)
         const expectedPaystackCharge = result.totalAmount * 0.0195
 

@@ -138,7 +138,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     })
 
     // Create chart data points for the last 10 days
-    const chartPoints = last10Days.map(date => {
+    const chartPoints = last10Days.map((date) => {
       const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
       return dailyContributions[dateKey] || 0
     })
@@ -178,7 +178,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
     Object.entries(paymentMethods).forEach(([key, config]) => {
       const filtered = contributions.filter(
-        contribution =>
+        (contribution) =>
           contribution.paymentMethod === config.paymentMethod &&
           contribution.paymentStatus === config.status,
       )
@@ -197,20 +197,20 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const totalContributedAmount = allContributions.docs
     .filter(
-      contribution =>
+      (contribution) =>
         contribution.paymentStatus === 'completed' && contribution.type === 'contribution',
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
   const totalTransfers = allContributions.docs
     .filter(
-      contribution => contribution.paymentStatus === 'completed' && contribution.isTransferred,
+      (contribution) => contribution.paymentStatus === 'completed' && contribution.isTransferred,
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
   const totalAmountTobeTransferred = allContributions.docs
     .filter(
-      contribution =>
+      (contribution) =>
         contribution.isTransferred === false &&
         contribution.paymentMethod === 'mobile-money' &&
         contribution.type === 'contribution' &&

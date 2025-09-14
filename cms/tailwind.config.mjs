@@ -65,9 +65,9 @@ const config = {
         'error-red': '#EF4444',
         'on-primary-white': '#FFFFFF',
         'on-surface-dark': '#1B232E',
-        'label': '#747373',
-        'black': '#000000',
-        
+        label: '#747373',
+        black: '#000000',
+
         // Existing shadcn/ui colors
         accent: {
           DEFAULT: 'hsl(var(--accent))',

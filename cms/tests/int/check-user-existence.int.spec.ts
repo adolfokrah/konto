@@ -13,7 +13,6 @@ const generateUniqueEmail = (prefix: string = 'test') =>
 const generateUniquePhone = (countryCode: string = '+233') =>
   `${countryCode}54${Math.floor(Math.random() * 90000000) + 10000000}`
 
-
 describe('Check User Existence Endpoint Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config

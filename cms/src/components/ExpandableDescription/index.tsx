@@ -9,34 +9,30 @@ interface ExpandableDescriptionProps {
   className?: string
 }
 
-export default function ExpandableDescription({ 
-  description, 
-  className = "text-gray-700 mb-4 font-supreme" 
+export default function ExpandableDescription({
+  description,
+  className = 'text-gray-700 mb-4 font-supreme',
 }: ExpandableDescriptionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  
+
   // Check if the description is long enough to need expansion
   const isLongDescription = description.length > 200 || description.split('\n').length > 3
-  
+
   const toggleExpansion = () => {
     setIsExpanded(!isExpanded)
   }
-  
+
   return (
     <div>
-      <p 
-        className={cn(
-          className,
-          "whitespace-pre-line text-md",
-          {
-            "line-clamp-3": !isExpanded && isLongDescription
-          }
-        )}
-        style={{lineHeight: 2}}
+      <p
+        className={cn(className, 'whitespace-pre-line text-md', {
+          'line-clamp-3': !isExpanded && isLongDescription,
+        })}
+        style={{ lineHeight: 2 }}
       >
         {description}
       </p>
-      
+
       {isLongDescription && (
         <Button
           variant={'link'}

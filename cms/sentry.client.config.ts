@@ -2,7 +2,7 @@
 // With Next.js, we need this to properly capture client and server errors.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -18,6 +18,5 @@ Sentry.init({
   integrations: [
     // Removed replayIntegration to fix "Multiple Sentry Session Replay instances" error
   ],
- environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
-
-});
+  environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+})

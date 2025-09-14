@@ -5,21 +5,27 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    
+
     const { phoneNumber, countryCode } = req.data || {}
 
     if (!phoneNumber) {
-      return Response.json({
-        success: false,
-        message: 'Phone number is required',
-      }, { status: 400 })
+      return Response.json(
+        {
+          success: false,
+          message: 'Phone number is required',
+        },
+        { status: 400 },
+      )
     }
 
     if (!countryCode) {
-      return Response.json({
-        success: false,
-        message: 'Country code is required',
-      }, { status: 400 })
+      return Response.json(
+        {
+          success: false,
+          message: 'Country code is required',
+        },
+        { status: 400 },
+      )
     }
 
     // Find the user with the phone number and country code
@@ -37,10 +43,13 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
     })
 
     if (existingUser.docs.length === 0) {
-      return Response.json({
-        success: false,
-        message: 'Phone number not found',
-      }, { status: 401 })
+      return Response.json(
+        {
+          success: false,
+          message: 'Phone number not found',
+        },
+        { status: 401 },
+      )
     }
 
     const user = existingUser.docs[0]
@@ -72,11 +81,13 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
       exp: loginResult.exp,
     })
   } catch (error) {
-    return Response.json({
-      success: false,
-      message: 'Error during login',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 })
+    return Response.json(
+      {
+        success: false,
+        message: 'Error during login',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    )
   }
 }
-

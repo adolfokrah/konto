@@ -43,7 +43,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     alt = altFromResource || ''
 
     const cacheTag = resource.updatedAt
-    
+
     src = getMediaUrl(url, cacheTag)
   }
 

@@ -18,9 +18,8 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
   const { reference, amount, jarName, contributorName } = await searchParams
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-primary-light rounded-2xl  p-8 text-center">
-        
+    <div className="min-h-screen bg-primary-light flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-3xl  p-8 text-center">
         {/* Success Icon */}
         <div className="mb-6">
           <CheckCircle className="w-20 h-20 text-green-500 mx-auto animate-pulse" />
@@ -30,7 +29,7 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
         <h1 className="text-2xl font-supreme font-bold text-black mb-2">
           Contribution Successful! 🎉
         </h1>
-        
+
         <p className="text-gray-600 font-supreme mb-6">
           Thank you {contributorName ? `${contributorName}` : ''} for your generous contribution!
         </p>
@@ -43,7 +42,7 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
               <span className="font-supreme font-medium text-black">{jarName}</span>
             </div>
           )}
-          
+
           {amount && (
             <div className="flex justify-between items-center">
               <span className="text-gray-600 font-supreme">Amount:</span>
@@ -52,7 +51,7 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
               </span>
             </div>
           )}
-          
+
           {reference && (
             <div className="flex justify-between items-center">
               <span className="text-gray-600 font-supreme">Reference:</span>
@@ -65,8 +64,8 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
 
         {/* Footer Message */}
         <p className="text-xs text-gray-500 font-supreme mt-6 leading-relaxed">
-          Your contribution has been recorded and the organizer will be notified. 
-          You&apos;ll receive an email confirmation shortly.
+          Your contribution has been recorded and the organizer will be notified. You&apos;ll
+          receive an email confirmation shortly.
         </p>
       </div>
     </div>

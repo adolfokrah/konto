@@ -342,7 +342,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         },
       } as any
 
-      // Login with second user  
+      // Login with second user
       const mockRequest2 = {
         payload,
         data: {

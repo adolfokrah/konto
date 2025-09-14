@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from './ui/button'
 import PaystackPop from '@paystack/inline-js'
 import { toast } from 'sonner'
+import TransactionCharges from '@/lib/utils/transaction-charges'
+import { Separator } from './ui/separator'
 
 interface ContributionInputProps {
   currency?: string
@@ -15,15 +17,14 @@ interface ContributionInputProps {
   jarName?: string
 }
 
-export default function ContributionInput({ 
+export default function ContributionInput({
   currency = 'GHS',
   isFixedAmount = false,
   fixedAmount = 0,
-  className = "",
-  jarId = "",
-  jarName = "Jar Contribution"
+  className = '',
+  jarId = '',
+  jarName = 'Jar Contribution',
 }: ContributionInputProps) {
-  
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
   const [isCustom, setIsCustom] = useState(false)
@@ -32,18 +33,17 @@ export default function ContributionInput({
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
   const router = useRouter()
-  
+
   // Preset amounts based on currency
-  const presetAmounts = currency === 'GHS' 
-    ? [500, 200, 100, 50, 10, 5] 
-    : [5000, 2000, 1000, 500, 100, 50] // NGN amounts
-  
+  const presetAmounts =
+    currency === 'GHS' ? [500, 200, 100, 50, 10, 5] : [5000, 2000, 1000, 500, 100, 50] // NGN amounts
+
   // Email validation function
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
-  
+
   const handleEmailChange = (email: string) => {
     setContributorEmail(email)
     if (email && !validateEmail(email)) {
@@ -52,23 +52,22 @@ export default function ContributionInput({
       setEmailError('')
     }
   }
-  
-  
+
   const handlePresetClick = (amount: number) => {
     if (isFixedAmount) return // Don't allow changes for fixed amounts
-    
+
     setSelectedAmount(amount)
     setIsCustom(false)
     setCustomAmount('')
   }
-  
+
   const handleCustomAmountChange = (value: string) => {
     if (isFixedAmount) return // Don't allow changes for fixed amounts
-    
+
     // Only allow numbers and decimal point
     const numericValue = value.replace(/[^0-9.]/g, '')
     setCustomAmount(numericValue)
-    
+
     if (numericValue) {
       const amount = parseFloat(numericValue)
       if (!isNaN(amount) && amount > 0) {
@@ -77,7 +76,7 @@ export default function ContributionInput({
       }
     }
   }
-  
+
   const verifyPayment = async (reference: string) => {
     try {
       const verifyResponse = await fetch('/api/contributions/verify-payment', {
@@ -89,7 +88,7 @@ export default function ContributionInput({
           reference: reference,
         }),
       })
-      
+
       const verifyData = await verifyResponse.json()
       return { success: verifyResponse.ok && verifyData.success, data: verifyData }
     } catch (error) {
@@ -97,7 +96,7 @@ export default function ContributionInput({
       return { success: false, data: null, error }
     }
   }
-  
+
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
     if (!contributorEmail || !contributorName) {
@@ -107,7 +106,7 @@ export default function ContributionInput({
       })
       return
     }
-    
+
     // Validate email format
     if (!validateEmail(contributorEmail)) {
       toast.error('Invalid Email', {
@@ -116,7 +115,7 @@ export default function ContributionInput({
       })
       return
     }
-    
+
     setIsLoading(true)
 
     //here insert the contibution logic
@@ -125,19 +124,22 @@ export default function ContributionInput({
       // Generate unique reference
 
       // Create contribution record using our custom endpoint with admin access
-      const contributionResponse = await fetch('/api/contributions/create-payment-link-contribution', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const contributionResponse = await fetch(
+        '/api/contributions/create-payment-link-contribution',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jarId,
+            contributorName,
+            contributorEmail,
+            amount: selectedAmount,
+            currency,
+          }),
         },
-        body: JSON.stringify({
-          jarId,
-          contributorName,
-          contributorEmail,
-          amount: selectedAmount,
-          currency,
-        }),
-      })
+      )
 
       const contributionData = await contributionResponse.json()
 
@@ -145,18 +147,16 @@ export default function ContributionInput({
         throw new Error(contributionData.message || 'Failed to create contribution')
       }
 
-
       // Use the calculated amount including fees from the response
-      const amountInSmallestUnit = contributionData.data?.chargesBreakdown?.amountPaidByContributor * 100
-    
+      const amountInSmallestUnit =
+        contributionData.data?.chargesBreakdown?.amountPaidByContributor * 100
 
       const popup = new PaystackPop()
 
       const reference = contributionData.data.id
 
-
       popup.resumeTransaction(reference)
-      
+
       popup.newTransaction({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_your_test_key',
         email: contributorEmail,
@@ -166,31 +166,30 @@ export default function ContributionInput({
         metadata: {
           custom_fields: [
             {
-              display_name: "Jar ID",
-              variable_name: "jar_id",
-              value: jarId
+              display_name: 'Jar ID',
+              variable_name: 'jar_id',
+              value: jarId,
             },
             {
-              display_name: "Jar Name",
-              variable_name: "jar_name", 
-              value: jarName
+              display_name: 'Jar Name',
+              variable_name: 'jar_name',
+              value: jarName,
             },
             {
-              display_name: "Contributor Name",
-              variable_name: "contributor_name",
-              value: contributorName
+              display_name: 'Contributor Name',
+              variable_name: 'contributor_name',
+              value: contributorName,
             },
             {
-              display_name: "Original Amount",
-              variable_name: "original_amount",
-              value: selectedAmount.toString()
-            }
-          ]
+              display_name: 'Original Amount',
+              variable_name: 'original_amount',
+              value: selectedAmount.toString(),
+            },
+          ],
         },
         onSuccess: async (response: any) => {
-          
           const verificationResult = await verifyPayment(response.reference)
-          
+
           if (verificationResult.success) {
             // Redirect to congratulations page with success data
             const congratsParams = new URLSearchParams({
@@ -199,7 +198,7 @@ export default function ContributionInput({
               jarName: jarName,
               contributorName: contributorName,
             })
-            
+
             router.push(`/congratulations?${congratsParams.toString()}`)
           } else {
             toast.error('Verification Failed', {
@@ -211,13 +210,13 @@ export default function ContributionInput({
         },
         onCancel: async () => {
           console.log('Payment cancelled')
-          
+
           const verificationResult = await verifyPayment(reference)
           console.log('Cancel verification result:', verificationResult.data)
-          
+
           setIsLoading(false)
           alert('Payment was cancelled')
-        }
+        },
       })
     } catch (error: any) {
       setIsLoading(false)
@@ -227,18 +226,22 @@ export default function ContributionInput({
       })
     }
   }
-  
+
   const formatAmount = (amount: number) => {
     return amount.toFixed(2)
   }
-  
+
+  const transactionCharges = new TransactionCharges()
+
+  const { totalAmount, paystackCharge } = transactionCharges.calculateAmountAndCharges(
+    isFixedAmount ? fixedAmount : selectedAmount,
+  )
+
   return (
     <div className={`bg-white ${className}`}>
       {/* Header */}
-      <h2 className="text-lg font-supreme font-medium text-black mb-6">
-        Enter your contribution
-      </h2>
-      
+      <h2 className="text-lg font-supreme font-medium text-black mb-6">Enter your contribution</h2>
+
       {/* Preset Amount Buttons */}
       {!isFixedAmount && (
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-1 mb-6">
@@ -257,7 +260,7 @@ export default function ContributionInput({
           ))}
         </div>
       )}
-      
+
       {/* Custom Amount Input */}
       <div className="mb-6">
         <div className="relative">
@@ -267,7 +270,13 @@ export default function ContributionInput({
             </span>
             <input
               type="text"
-              value={isFixedAmount ? formatAmount(fixedAmount) : (isCustom ? customAmount : formatAmount(selectedAmount))}
+              value={
+                isFixedAmount
+                  ? formatAmount(fixedAmount)
+                  : isCustom
+                    ? customAmount
+                    : formatAmount(selectedAmount)
+              }
               onChange={(e) => handleCustomAmountChange(e.target.value)}
               placeholder="0.00"
               disabled={isFixedAmount}
@@ -276,7 +285,7 @@ export default function ContributionInput({
           </div>
         </div>
       </div>
-      
+
       {/* Contributor Information */}
       <div className="space-y-4 mb-6">
         <div>
@@ -295,31 +304,63 @@ export default function ContributionInput({
             value={contributorEmail}
             onChange={(e) => handleEmailChange(e.target.value)}
             className={`w-full p-4 border-2 rounded-2xl font-supreme outline-none transition-colors ${
-              emailError 
-                ? 'border-red-500 focus:border-red-500' 
+              emailError
+                ? 'border-red-500 focus:border-red-500'
                 : 'border-gray-300 focus:border-gray-400'
             }`}
           />
           {emailError && (
-            <p className="text-red-500 text-sm font-supreme mt-2 ml-1">
-              {emailError}
-            </p>
+            <p className="text-red-500 text-sm font-supreme mt-2 ml-1">{emailError}</p>
           )}
         </div>
       </div>
-      
+
+      <Separator />
+
+      <div className="font-supreme space-y-2">
+        <h3 className="font-bold my-2 mb-2">Your contribution</h3>
+        <div className="flex justify-between text-gray-600">
+          <span>Your donation</span>
+          <span>
+            {currency}{' '}
+            {isFixedAmount
+              ? formatAmount(fixedAmount)
+              : isCustom
+                ? customAmount
+                : formatAmount(selectedAmount)}
+          </span>
+        </div>
+
+        <div className="flex justify-between text-gray-600">
+          <span>Transaction Fee (1.95%)</span>
+          <span>
+            {currency} {paystackCharge}
+          </span>
+        </div>
+      </div>
+      <Separator />
+      <div className="flex justify-between">
+        <span>Total due to pay</span>
+        <span>
+          {currency} {totalAmount}
+        </span>
+      </div>
+
       {/* Contribute Button */}
       <button
         onClick={handleContribute}
-        disabled={selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || !contributorName}
-        className="w-full bg-black text-white py-4 rounded-full font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        disabled={
+          selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || !contributorName
+        }
+        className="w-full bg-black text-white py-4 mt-8 rounded-full font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {isLoading ? 'Processing...' : 'Contribute'}
       </button>
-      
+
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
-        Transactions include a <span className="font-medium">1.95%</span> payment processing fee, which will be added to the above amount.
+        Transactions include a <span className="font-medium">1.95%</span> payment processing fee,
+        which will be added to the above amount.
       </p>
     </div>
   )
