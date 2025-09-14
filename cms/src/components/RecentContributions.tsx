@@ -34,8 +34,9 @@ function getInitials(name: string): string {
     .join('')
 }
 
-function formatAmount(amount: number): string {
-  return `₵${amount.toFixed(2)}`
+function formatAmount(amount: number, currency: string = 'GHS'): string {
+  const symbol = currency === 'GHS' ? '₵' : '₦'
+  return `${symbol}${amount.toFixed(2)}`
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -63,6 +64,19 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
   const payload = await getPayload({ config })
 
   try {
+    // First, get the jar to access its currency
+    const jarResult = await payload.findByID({
+      collection: 'jars',
+      id: jarId,
+      depth: 0,
+    })
+
+    if (!jarResult) {
+      throw new Error('Jar not found')
+    }
+
+    const jarCurrency = jarResult.currency || 'GHS'
+
     const contributions = await payload.find({
       collection: 'contributions',
       where: {
@@ -151,7 +165,7 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
                   {/* Amount */}
                   <div className="text-right">
                     <div className="text-sm font-semibold text-gray-900">
-                      {formatAmount(amount)}
+                      {formatAmount(amount, jarCurrency)}
                     </div>
                   </div>
                 </div>
