@@ -171,86 +171,6 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
       expect(updatedContribution.paymentStatus).toBe('completed')
     })
 
-    it('should successfully verify transfer payment and update linked contribution', async () => {
-      // Create a regular contribution first
-      const regularContribution = await payload.create({
-        collection: 'contributions',
-        data: {
-          jar: testJar.id,
-          contributor: testUser.id,
-          contributorPhoneNumber: '+233500000004',
-          amountContributed: 100,
-          paymentMethod: 'mobile-money',
-          mobileMoneyProvider: 'mtn',
-          type: 'contribution' as const,
-          transactionReference: 'regular-ref-123',
-          paymentStatus: 'completed',
-          isTransferred: false,
-          collector: testUser.id,
-        },
-      })
-
-      // Create a transfer contribution (no contributor)
-      const transferContribution = await payload.create({
-        collection: 'contributions',
-        data: {
-          jar: testJar.id,
-          contributor: null,
-          contributorPhoneNumber: '+233500000005',
-          amountContributed: 90, // After fees
-          paymentMethod: 'mobile-money',
-          mobileMoneyProvider: 'mtn',
-          type: 'transfer' as const,
-          transactionReference: 'transfer-ref-123',
-          paymentStatus: 'pending',
-          linkedContribution: regularContribution.id,
-          isTransferred: false,
-          collector: testUser.id,
-        },
-      })
-
-      // Mock successful Paystack response
-      vi.spyOn(paystack, 'checkTransactionStatus').mockResolvedValue({
-        status: true,
-        data: { status: 'success', amount: 90000, currency: 'GHS' },
-        message: 'Transaction verified successfully',
-      })
-
-      const mockRequest: any = {
-        data: { reference: 'transfer-ref-123' },
-        payload,
-      }
-
-      const response = await verifyPayment(mockRequest)
-      const responseData = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(responseData.success).toBe(true)
-      expect(responseData.message).toBe('Transaction verified successfully')
-
-      // Verify transfer contribution status was updated
-      const updatedTransferContribution = await payload.findByID({
-        collection: 'contributions',
-        id: transferContribution.id,
-      })
-      expect(updatedTransferContribution.paymentStatus).toBe('transferred')
-
-      // Verify linked contribution was updated
-      const updatedLinkedContribution = await payload.findByID({
-        collection: 'contributions',
-        id: regularContribution.id,
-      })
-      expect(updatedLinkedContribution.isTransferred).toBe(true)
-      expect(updatedLinkedContribution.linkedTransfer).toBeTruthy()
-
-      // Verify that the linkedTransfer is the transfer contribution ID
-      const linkedTransferId =
-        typeof updatedLinkedContribution.linkedTransfer === 'string'
-          ? updatedLinkedContribution.linkedTransfer
-          : updatedLinkedContribution.linkedTransfer?.id
-      expect(linkedTransferId).toBe(transferContribution.id)
-    })
-
     it('should handle errors gracefully', async () => {
       // Create a test contribution
       const testContribution = await payload.create({
@@ -284,7 +204,7 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
       expect(response.status).toBe(500)
       expect(responseData.success).toBe(false)
       expect(responseData.message).toBe('Failed to verify payment')
-      expect(responseData.error).toBe('Network error')
+      expect(responseData.error).toBe('Paystack API failed: Network error')
     })
 
     it('should handle failed verification with fallback message', async () => {

@@ -35,7 +35,6 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
       bank_code:
         mobile_money_bank_codes[bank.toLowerCase() as keyof typeof mobile_money_bank_codes],
     }
-    console.log(data)
 
     const response = await paystack.verifyAccountDetails(data)
 

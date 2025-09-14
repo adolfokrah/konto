@@ -169,8 +169,6 @@ export const transferMomo = async (req: PayloadRequest) => {
         reason: `Transfer for contribution ${contributionId}`,
       })
 
-      console.log(response, 'transfer response')
-
       if (response.status) {
         await req.payload.create({
           collection: 'contributions',
