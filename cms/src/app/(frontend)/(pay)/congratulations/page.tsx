@@ -1,4 +1,9 @@
 import { CheckCircle } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Congratulations',
+}
 
 interface CongratulationsPageProps {
   searchParams: Promise<{

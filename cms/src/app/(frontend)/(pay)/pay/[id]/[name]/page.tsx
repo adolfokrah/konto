@@ -8,6 +8,98 @@ import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
 import RecentContributions from '@/components/RecentContributions'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const { id: jarId } = await params;
+  
+  const payload = await getPayload({ config })
+
+  try {
+    // Get jar data for metadata
+    const res = await payload.find({
+      collection: 'jars',
+      where: {
+        id: {
+          equals: jarId,
+        },
+        status: {
+          equals: 'open',
+        }
+      },
+      depth: 2,
+    })
+
+    const jar = res?.docs?.[0];
+    
+    if (!jar) {
+      return {
+        title: 'Jar Not Found - Konto',
+        description: 'The requested jar could not be found.',
+      }
+    }
+
+    // Get the image URL for og:image
+    const imageUrl = jar.image && typeof jar.image === 'object' ? jar.image.url : null
+    
+    // Get creator name
+    const creatorName = typeof jar.creator === 'object' ? jar.creator.fullName : jar.creator
+    
+    // Calculate goal progress if available
+    const goalAmount = jar.goalAmount || 0
+    const progressText = goalAmount > 0 ? ` | Goal: ${jar.currency === 'GHS' ? '₵' : '₦'}${goalAmount}` : ''
+    
+    return {
+      title: `Contribute to ${jar.name} - Konto`,
+      description: jar.description 
+        ? `${jar.description.substring(0, 160)}...` 
+        : `Support ${jar.name} by making a contribution. Organized by ${creatorName}.`,
+      keywords: [
+        'contribution',
+        'donation',
+        'fundraising',
+        'konto',
+        jar.name,
+        creatorName || '',
+        jar.currency || 'GHS'
+      ].filter(Boolean),
+      authors: [{ name: creatorName || 'Konto User' }],
+      openGraph: {
+        title: `Contribute to ${jar.name}`,
+        description: jar.description || `Support ${jar.name} by making a contribution.`,
+        type: 'website',
+        images: imageUrl ? [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: jar.name,
+          }
+        ] : [],
+        siteName: 'Konto',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `Contribute to ${jar.name}`,
+        description: jar.description || `Support ${jar.name} by making a contribution.`,
+        images: imageUrl ? [imageUrl] : [],
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+      alternates: {
+        canonical: `/pay/${jarId}/${encodeURIComponent(jar.name || 'jar')}`,
+      },
+    }
+  } catch (error) {
+    console.error('Error generating metadata:', error)
+    return {
+      title: 'Contribution Page - Konto',
+      description: 'Make a contribution to support this cause.',
+    }
+  }
+}
 
 export default async function Page({ params }: any) {
   const { id: jarId } = await params;
