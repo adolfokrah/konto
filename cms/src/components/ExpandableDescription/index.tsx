@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { cn } from '@/lib/utils/tw-merge'
+import { Button } from '../ui/button'
 
 interface ExpandableDescriptionProps {
   description: string
@@ -23,21 +25,26 @@ export default function ExpandableDescription({
   return (
     <div>
       <p 
-        className={`${className} whitespace-pre-line text-md ${
-          !isExpanded && isLongDescription ? 'line-clamp-3' : ''
-        }`}
+        className={cn(
+          className,
+          "whitespace-pre-line text-md",
+          {
+            "line-clamp-3": !isExpanded && isLongDescription
+          }
+        )}
         style={{lineHeight: 2}}
       >
         {description}
       </p>
       
       {isLongDescription && (
-        <button
+        <Button
+          variant={'link'}
           onClick={toggleExpansion}
-          className="text-md font-medium transition-colors duration-200 text-label cursor-pointer hover:underline"
+          className="text-sm font-supreme px-0 font-medium transition-colors duration-200 text-label cursor-pointer hover:underline"
         >
           {isExpanded ? 'See less' : 'See more'}
-        </button>
+        </Button>
       )}
     </div>
   )

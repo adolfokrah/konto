@@ -30,12 +30,28 @@ export default function ContributionInput({
   const [contributorEmail, setContributorEmail] = useState('')
   const [contributorName, setContributorName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [emailError, setEmailError] = useState('')
   const router = useRouter()
   
   // Preset amounts based on currency
   const presetAmounts = currency === 'GHS' 
-    ? [500, 100, 50, 10, 5] 
-    : [5000, 1000, 500, 100, 50] // NGN amounts
+    ? [500, 200, 100, 50, 10, 5] 
+    : [5000, 2000, 1000, 500, 100, 50] // NGN amounts
+  
+  // Email validation function
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+  
+  const handleEmailChange = (email: string) => {
+    setContributorEmail(email)
+    if (email && !validateEmail(email)) {
+      setEmailError('Please enter a valid email address')
+    } else {
+      setEmailError('')
+    }
+  }
   
   
   const handlePresetClick = (amount: number) => {
@@ -87,6 +103,15 @@ export default function ContributionInput({
     if (!contributorEmail || !contributorName) {
       toast.error('Missing Information', {
         description: 'Please enter your email and name to continue',
+        duration: 4000,
+      })
+      return
+    }
+    
+    // Validate email format
+    if (!validateEmail(contributorEmail)) {
+      toast.error('Invalid Email', {
+        description: 'Please enter a valid email address',
         duration: 4000,
       })
       return
@@ -163,7 +188,6 @@ export default function ContributionInput({
           ]
         },
         onSuccess: async (response: any) => {
-          console.log('Payment successful:', response)
           
           const verificationResult = await verifyPayment(response.reference)
           
@@ -217,14 +241,14 @@ export default function ContributionInput({
       
       {/* Preset Amount Buttons */}
       {!isFixedAmount && (
-        <div className="flex flex-wrap gap-2 sm:gap-1 mb-6">
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-1 mb-6">
           {presetAmounts.map((amount) => (
             <Button
               key={amount}
               onClick={() => handlePresetClick(amount)}
-              className={`px-3 sm:px-6 py-3 rounded-full border-2 font-supreme font-medium transition-all duration-200 text-sm sm:text-base ${
+              className={`px-5 py-7 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer duration-200 text-sm sm:text-base ${
                 selectedAmount === amount && !isCustom
-                  ? 'bg-black text-white border-black'
+                  ? 'bg-black text-white border-black hover:text-black'
                   : 'bg-white text-black border-gray-300 hover:border-gray-400'
               }`}
             >
@@ -269,16 +293,25 @@ export default function ContributionInput({
             type="email"
             placeholder="Your email address"
             value={contributorEmail}
-            onChange={(e) => setContributorEmail(e.target.value)}
-            className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+            onChange={(e) => handleEmailChange(e.target.value)}
+            className={`w-full p-4 border-2 rounded-2xl font-supreme outline-none transition-colors ${
+              emailError 
+                ? 'border-red-500 focus:border-red-500' 
+                : 'border-gray-300 focus:border-gray-400'
+            }`}
           />
+          {emailError && (
+            <p className="text-red-500 text-sm font-supreme mt-2 ml-1">
+              {emailError}
+            </p>
+          )}
         </div>
       </div>
       
       {/* Contribute Button */}
       <button
         onClick={handleContribute}
-        disabled={selectedAmount <= 0 || isLoading}
+        disabled={selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || !contributorName}
         className="w-full bg-black text-white py-4 rounded-full font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {isLoading ? 'Processing...' : 'Contribute'}

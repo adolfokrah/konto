@@ -7,6 +7,7 @@ import {  ShieldCheck } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
+import RecentContributions from '@/components/RecentContributions'
 
 export default async function Page({ params }: any) {
   const { id: jarId } = await params;
@@ -62,7 +63,7 @@ export default async function Page({ params }: any) {
     
     // Get the creator photo URL if it exists
     const creatorPhotoUrl = jarWithBalance?.creator && typeof jarWithBalance.creator === 'object' && jarWithBalance.creator.photo 
-      ? (typeof jarWithBalance.creator.photo === 'object' ? jarWithBalance.creator.photo.url : jarWithBalance.creator.photo)
+      ? (typeof jarWithBalance.creator.photo === 'object' ? jarWithBalance.creator.photo.sizes?.thumbnail?.url : jarWithBalance.creator.photo)
       : null
     
     // Get creator name and initials
@@ -73,12 +74,11 @@ export default async function Page({ params }: any) {
     
     return (
       <div className="min-h-screen bg-white text-black">
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-2xl mx-auto">
          
           
           {/* Jar Details */}
           <div className="p-6">
-            <h1 className="font-bold mb-4 truncate text-2xl">{jarWithBalance.name}</h1>
 
              {/* Jar Image - Full Width */}
           {imageUrl && (
@@ -87,28 +87,16 @@ export default async function Page({ params }: any) {
                 src={imageUrl}
                 alt={jarWithBalance.name || 'Jar image'}
                 width={500}
-                height={300}
-                className="w-full h-64 object-cover rounded-lg"
+                height={500}
+                className="w-full h-80 lg:h-100 object-cover rounded-2xl"
                 priority
               />
             </div>
           )}
+           <h1 className="font-bold mb-4 truncate sm:text-2xl text-4xl">{jarWithBalance.name}</h1>
 
-         <div className='flex gap-2 mb-4 items-center'>
-            <Avatar className='w-15 h-15 bg-primary-light'>
-              <AvatarImage src={creatorPhotoUrl || undefined} />
-              <AvatarFallback>{creatorInitials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p>{typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.fullName : jarWithBalance?.creator}</p>
-              <div className='text-xs text-green-900 bg-green-100 rounded-lg w-fit px-1.5 py-0.5 flex gap-1'>
-                <ShieldCheck className='h-4 w-4' />
-                Verified Organizer
-              </div>
-            </div>
-          </div>
 
-          <Separator />
+        
             
           {jarWithBalance.description && (
             <ExpandableDescription 
@@ -116,11 +104,32 @@ export default async function Page({ params }: any) {
               className="text-gray-700 mb-4 font-supreme text-base"
             />
           )}
+                        <Separator />
+
+
+           <div className='flex gap-2 mb-4 font-supreme'>
+            <Avatar className='w-15 h-15 bg-primary-light'>
+              <AvatarImage src={creatorPhotoUrl || undefined} className='object-cover' />
+              <AvatarFallback className='bg-primary-light'>{creatorInitials}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className='leading-tight'>
+                  <p className='font-bold text-xl'>{typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.fullName : jarWithBalance?.creator}</p>
+                  <p>Organizer</p>
+                  <p>{typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.country : jarWithBalance?.creator}</p>
+              </div>
+              <div className='text-xs mt-2 text-green-900 bg-green-100 rounded-lg w-fit px-1.5 py-0.5 flex gap-1'>
+                <ShieldCheck className='h-4 w-4' />
+                Verified Organizer
+              </div>
+            </div>
+          </div>
+
 
           <Separator />
 
           {/* Goal Section - Show if jar has goal amount and showGoal is enabled */}
-          {jarWithBalance.goalAmount && jarWithBalance.paymentPage?.showGoal && (
+          {jarWithBalance.goalAmount && jarWithBalance.goalAmount > 0 && jarWithBalance.paymentPage?.showGoal && (
               <Goal
                 currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
                 targetAmount={jarWithBalance.goalAmount}
@@ -140,6 +149,12 @@ export default async function Page({ params }: any) {
             jarName={jarWithBalance.name}
           />
 
+           <Separator />
+
+          {/* Recent Contributions */}
+         { jarWithBalance.paymentPage?.showRecentContributions && (
+              <RecentContributions jarId={jarId} limit={5} />
+         )}
           </div>
         </div>
       </div>
