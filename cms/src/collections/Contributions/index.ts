@@ -314,7 +314,7 @@ export const Contributions: CollectionConfig = {
       handler: paystackWebhook,
     },
     {
-      path: '/queue-pending-transactions',
+      path: '/verify-pending-transactions',
       method: 'post',
       handler: verifyPendingTransactions,
     },

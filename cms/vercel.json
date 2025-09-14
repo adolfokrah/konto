@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/contributions/verify-pending-transactions",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
