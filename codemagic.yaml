@@ -44,10 +44,13 @@ workflows:
         script: |
           cd mobile_app
           flutter test
-      - name: Build APK
+      - name: Build APK with ABI splits
         script: |
           cd mobile_app
-          flutter build apk --profile
+          echo "Building APKs with ABI splits for staging..."
+          flutter build apk --profile --split-per-abi
+          echo "APK build completed. Generated APKs:"
+          find build/app/outputs/apk -name "*.apk" -exec ls -la {} \;
       - name: Build iOS
         script: |
           cd mobile_app
@@ -119,7 +122,15 @@ workflows:
       - name: Build app bundle (Release)
         script: |
           cd mobile_app
+          echo "Building App Bundle for Play Store..."
           flutter build appbundle --release 
+      - name: Build APK with ABI splits (Release)
+        script: |
+          cd mobile_app
+          echo "Building split APKs for release distribution..."
+          flutter build apk --release --split-per-abi
+          echo "APK build completed. Generated APKs:"
+          find build/app/outputs/apk -name "*.apk" -exec ls -la {} \; 
       - name: Build iOS (Release)
         script: |
           cd mobile_app

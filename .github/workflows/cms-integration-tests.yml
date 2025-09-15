@@ -69,7 +69,7 @@ jobs:
           # Clear any potential module resolution issues
           rm -rf node_modules/.pnpm/webidl-conversions* || true
           rm -rf node_modules/.pnpm/whatwg-url* || true
-          pnpm install --no-frozen-lockfile --force-resolution
+          pnpm install --no-frozen-lockfile
 
       - name: Clear test cache
         working-directory: ./cms
