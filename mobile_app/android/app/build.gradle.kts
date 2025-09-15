@@ -43,7 +43,7 @@ android {
             isEnable = true
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = false // Set to true if you also want a universal APK
+            isUniversalApk = true // Set to true to generate a universal APK that works on all architectures
         }
     }
 
