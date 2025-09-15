@@ -43,7 +43,7 @@ android {
             isEnable = true
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = false // Generate only split APKs, not universal
+            isUniversalApk = true // Generate only split APKs, not universal
         }
     }
 
