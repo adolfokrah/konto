@@ -48,6 +48,8 @@ workflows:
         script: |
           cd mobile_app
           echo "Building universal APK for staging..."
+          # Set memory options for staging APK build
+          export GRADLE_OPTS="-Xmx4g -XX:+UseG1GC -XX:MaxMetaspaceSize=1g"
           flutter build apk --profile
           echo "APK build completed. Generated APKs:"
           find build/app/outputs/apk -name "*.apk" -exec ls -la {} \;
@@ -123,11 +125,15 @@ workflows:
         script: |
           cd mobile_app
           echo "Building App Bundle for Play Store..."
+          # Set memory options for bundle build
+          export GRADLE_OPTS="-Xmx4g -XX:+UseG1GC -XX:MaxMetaspaceSize=1g"
           flutter build appbundle --release 
       - name: Build Universal APK (Release)
         script: |
           cd mobile_app
           echo "Building universal APK for release distribution..."
+          # Set memory options for APK build
+          export GRADLE_OPTS="-Xmx4g -XX:+UseG1GC -XX:MaxMetaspaceSize=1g"
           flutter build apk --release
           echo "APK build completed. Generated APKs:"
           find build/app/outputs/apk -name "*.apk" -exec ls -la {} \; 

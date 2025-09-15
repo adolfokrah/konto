@@ -35,15 +35,19 @@ android {
         
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Remove any NDK abiFilters to avoid conflicts with splits configuration
+        // NDK ABI filtering is handled by the splits block above
     }
 
-    // Enable APK splitting by ABI to generate separate APKs for different architectures
+    // Dynamic APK splitting configuration based on build type
     splits {
         abi {
             isEnable = true
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = true // Generate only split APKs, not universal
+            // Generate universal APK in addition to split APKs for distribution flexibility
+            isUniversalApk = true
         }
     }
 
