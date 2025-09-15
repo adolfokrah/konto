@@ -84,6 +84,15 @@ jobs:
           echo "Analysis can be run locally with: flutter analyze"
         continue-on-error: true
 
+      - name: Create .env file directory and placeholder
+        working-directory: ./mobile_app
+        run: |
+          # Ensure the directory exists and create an empty .env file
+          mkdir -p .
+          touch .env
+          echo "Created .env file at $(pwd)/.env"
+          ls -la .env
+
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.9
         with:
@@ -95,6 +104,20 @@ jobs:
           project-slug: "konto-mobile-app"
           export-type: "file"
           file-output-path: "./mobile_app/.env"
+
+      - name: Verify .env file creation
+        working-directory: ./mobile_app
+        run: |
+          echo "Checking .env file..."
+          if [ -f .env ]; then
+            echo "✅ .env file exists"
+            echo "File size: $(wc -c < .env) bytes"
+            echo "File permissions: $(ls -la .env)"
+          else
+            echo "❌ .env file not found"
+            exit 1
+          fi
+
       - name: Run Flutter Integration tests with .env file
         working-directory: ./mobile_app
         run: |

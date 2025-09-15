@@ -17,6 +17,7 @@ import 'package:konto/core/widgets/scrollable_background_image.dart';
 import 'package:konto/core/widgets/small_button.dart';
 import 'package:konto/core/widgets/snacbar_message.dart';
 import 'package:konto/core/utils/image_utils.dart';
+import 'package:konto/core/services/feedback_service.dart';
 import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:konto/features/collaborators/presentation/views/collectors_view.dart';
 import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
@@ -210,6 +211,25 @@ class _JarDetailViewState extends State<JarDetailView> {
                           snap: true,
                           pinned: true,
                           actions: [
+                            AppIconButton(
+                              key: const Key('feedback_button'),
+                              onPressed: () async {
+                                try {
+                                  await FeedbackService.openFeedbackForm();
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    AppSnackBar.show(
+                                      context,
+                                      message:
+                                          'Could not open feedback form. Please try again.',
+                                      type: SnackBarType.error,
+                                    );
+                                  }
+                                }
+                              },
+                              icon: Icons.send,
+                              size: const Size(40, 40),
+                            ),
                             if (state is JarSummaryLoaded)
                               AppIconButton(
                                 key: const Key('request_button_qr_code'),

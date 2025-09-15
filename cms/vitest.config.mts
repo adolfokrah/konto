@@ -18,5 +18,9 @@ export default defineConfig({
     },
     // OR set maxConcurrency to 1
     maxConcurrency: 1,
+    // Add deps optimization to handle problematic dependencies
+    deps: {
+      external: ['webidl-conversions', 'whatwg-url'],
+    },
   },
 })

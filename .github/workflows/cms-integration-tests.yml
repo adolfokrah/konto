@@ -41,8 +41,10 @@ jobs:
       DATABASE_URI_TEST: mongodb://localhost:27017/konto-test
       PAYLOAD_SECRET: test-secret-for-github-actions
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
-      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096'
+      NODE_OPTIONS: '--no-deprecation --max-old-space-size=4096 --experimental-vm-modules'
       PAYSTACK_SECRET: test_paystack_secret_key
+      # Force stable module resolution
+      NPM_CONFIG_LEGACY_PEER_DEPS: true
 
     steps:
       - name: Checkout code
@@ -64,7 +66,16 @@ jobs:
         working-directory: ./cms
         run: |
           pnpm store prune || true
-          pnpm install --no-frozen-lockfile
+          # Clear any potential module resolution issues
+          rm -rf node_modules/.pnpm/webidl-conversions* || true
+          rm -rf node_modules/.pnpm/whatwg-url* || true
+          pnpm install --no-frozen-lockfile --force-resolution
+
+      - name: Clear test cache
+        working-directory: ./cms
+        run: |
+          rm -rf .vitest || true
+          rm -rf node_modules/.cache || true
 
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.9

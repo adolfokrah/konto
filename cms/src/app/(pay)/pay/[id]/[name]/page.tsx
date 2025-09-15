@@ -242,7 +242,7 @@ export default async function Page({ params }: any) {
             {/* Goal Section - Show if jar has goal amount and showGoal is enabled */}
             {jarWithBalance.goalAmount &&
               jarWithBalance.goalAmount > 0 &&
-              jarWithBalance.paymentPage?.showGoal && (
+              jarWithBalance.paymentPage?.showGoal === true && (
                 <Goal
                   currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
                   targetAmount={jarWithBalance.goalAmount}
