@@ -32,18 +32,42 @@ class FeedbackService {
         },
       );
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw Exception('Could not launch feedback form');
-      }
+      // Try to launch the URL with the best approach for each platform
+      await _launchUrlWithFallback(uri);
     } catch (e) {
       // Fallback: open form without pre-filled data
-      final fallbackUri = Uri.parse(_jotFormUrl);
-      if (await canLaunchUrl(fallbackUri)) {
-        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
-      } else {
-        rethrow;
+      try {
+        final fallbackUri = Uri.parse(_jotFormUrl);
+        await _launchUrlWithFallback(fallbackUri);
+      } catch (fallbackError) {
+        // If all else fails, provide a user-friendly error
+        throw Exception(
+          'Unable to open feedback form. Please try again or contact support.',
+        );
+      }
+    }
+  }
+
+  /// Launches URL with platform-specific fallback strategies
+  static Future<void> _launchUrlWithFallback(Uri uri) async {
+    try {
+      // Use in-app browser for better user experience
+      await launchUrl(
+        uri,
+        mode: LaunchMode.inAppBrowserView,
+        browserConfiguration: const BrowserConfiguration(showTitle: true),
+      );
+    } catch (e) {
+      // Fallback to in-app web view if browser view fails
+      try {
+        await launchUrl(uri, mode: LaunchMode.inAppWebView);
+      } catch (webViewError) {
+        // Final fallback - try external as last resort
+        try {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } catch (externalError) {
+          throw Exception('Could not open feedback form. Please try again.');
+        }
       }
     }
   }
