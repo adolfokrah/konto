@@ -2204,6 +2204,12 @@ abstract class AppLocalizations {
   /// **'Profile updated successfully!'**
   String get profileUpdatedSuccessfully;
 
+  /// Personal details update success message
+  ///
+  /// In en, this message translates to:
+  /// **'Personal details updated successfully!'**
+  String get personalDetailsUpdatedSuccessfully;
+
   /// Warning message when user changes critical account information
   ///
   /// In en, this message translates to:

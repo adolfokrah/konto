@@ -1177,6 +1177,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'Profil mis à jour avec succès !';
 
   @override
+  String get personalDetailsUpdatedSuccessfully =>
+      'Détails personnels mis à jour avec succès !';
+
+  @override
   String get reVerificationWarning =>
       'Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l\'exactitude de vos informations.';
 

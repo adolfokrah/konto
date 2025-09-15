@@ -1959,6 +1959,11 @@
     "description": "Profile update success message"
   },
 
+  "personalDetailsUpdatedSuccessfully": "Personal details updated successfully!",
+  "@personalDetailsUpdatedSuccessfully": {
+    "description": "Personal details update success message"
+  },
+
   "pleaseEnterFullName": "Please enter your full name",
   "@pleaseEnterFullName": {
     "description": "Full name validation error message"
