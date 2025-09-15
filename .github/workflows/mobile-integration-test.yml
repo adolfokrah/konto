@@ -85,14 +85,14 @@ jobs:
         continue-on-error: true
 
       - name: Create .env file directory and placeholder
-        working-directory: ./mobile_app
         run: |
-          # Ensure the directory exists and create an empty .env file
-          mkdir -p .
-          touch .env
-          echo "Created .env file at $(pwd)/.env"
-          echo "Absolute path: ${{ github.workspace }}/mobile_app/.env"
-          ls -la .env
+          # Create mobile_app directory if it doesn't exist and create .env file
+          mkdir -p mobile_app
+          touch mobile_app/.env
+          echo "Created .env file at $(pwd)/mobile_app/.env"
+          echo "GitHub workspace: ${{ github.workspace }}"
+          echo "Full path: ${{ github.workspace }}/mobile_app/.env"
+          ls -la mobile_app/.env
 
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.9
@@ -104,7 +104,7 @@ jobs:
           env-slug: "dev"
           project-slug: "konto-mobile-app"
           export-type: "file"
-          file-output-path: "${{ github.workspace }}/mobile_app/.env"
+          file-output-path: "mobile_app/.env"
 
       - name: Verify .env file creation
         working-directory: ./mobile_app
