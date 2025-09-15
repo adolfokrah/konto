@@ -91,6 +91,7 @@ jobs:
           mkdir -p .
           touch .env
           echo "Created .env file at $(pwd)/.env"
+          echo "Absolute path: ${{ github.workspace }}/mobile_app/.env"
           ls -la .env
 
       - name: Fetch secrets from Infisical
@@ -103,7 +104,7 @@ jobs:
           env-slug: "dev"
           project-slug: "konto-mobile-app"
           export-type: "file"
-          file-output-path: "mobile_app/.env"
+          file-output-path: "${{ github.workspace }}/mobile_app/.env"
 
       - name: Verify .env file creation
         working-directory: ./mobile_app
