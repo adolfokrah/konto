@@ -104,7 +104,7 @@ jobs:
           env-slug: "dev"
           project-slug: "konto-mobile-app"
           export-type: "file"
-          file-output-path: "mobile_app/.env"
+          file-output-path: "/mobile_app/.env"
 
       - name: Verify .env file creation
         working-directory: ./mobile_app
