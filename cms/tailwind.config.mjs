@@ -111,6 +111,7 @@ const config = {
         sans: ['var(--font-geist-sans)'],
         supreme: ['Supreme', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
         chubbo: ['Chubbo', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        chillax: ['Chillax', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {
