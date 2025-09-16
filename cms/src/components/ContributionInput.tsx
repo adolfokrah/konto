@@ -135,6 +135,7 @@ export default function ContributionInput({
             contributorName,
             amount: selectedAmount,
             currency,
+            contributorEmail,
           }),
         },
       )
