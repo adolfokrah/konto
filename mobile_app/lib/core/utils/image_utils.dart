@@ -26,6 +26,8 @@ class ImageUtils {
     final cleanPath =
         relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
 
+    print('$baseUrl/$cleanPath ✅');
+
     // Construct the full URL
     return '$baseUrl/$cleanPath';
   }
