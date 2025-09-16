@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
 
 class SmsUtils {
   static const MethodChannel _channel = MethodChannel('com.konto.sms');

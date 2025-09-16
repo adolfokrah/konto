@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:konto/core/utils/payment_status_utils.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/utils/payment_status_utils.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 void main() {
   group('PaymentStatusUtils Tests', () {

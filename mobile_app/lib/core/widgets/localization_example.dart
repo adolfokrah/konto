@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/widgets/language_switcher.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/widgets/language_switcher.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class LocalizationExample extends StatefulWidget {
   const LocalizationExample({super.key});

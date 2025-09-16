@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
-import 'package:konto/route.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
+import 'package:Hoga/route.dart';
 
 class StartupScreen extends StatelessWidget {
   const StartupScreen({super.key});

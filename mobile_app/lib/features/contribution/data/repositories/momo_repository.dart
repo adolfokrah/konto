@@ -1,5 +1,5 @@
-import 'package:konto/features/contribution/data/api_reproviders/momo_api_provider.dart';
-import 'package:konto/features/contribution/data/models/momo_charge_model.dart';
+import 'package:Hoga/features/contribution/data/api_reproviders/momo_api_provider.dart';
+import 'package:Hoga/features/contribution/data/models/momo_charge_model.dart';
 
 /// Repository for mobile money charge operations
 /// Orchestrates business logic between UI and API calls

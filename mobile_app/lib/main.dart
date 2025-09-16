@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:konto/core/config/app_config.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/core/theme/app_theme.dart';
-import 'package:konto/core/enums/app_theme.dart' as theme_enum;
-import 'package:konto/features/contribution/logic/bloc/add_contribution_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/momo_payment_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/features/media/logic/bloc/media_bloc.dart';
-import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:konto/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
-import 'package:konto/route.dart';
-import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/config/app_config.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/theme/app_theme.dart';
+import 'package:Hoga/core/enums/app_theme.dart' as theme_enum;
+import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
+import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
+import 'package:Hoga/route.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -230,7 +230,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               };
 
               return MaterialApp(
-                title: 'Konto',
+                title: 'hoga',
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: resolvedThemeMode,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/generic_picker.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/generic_picker.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class SelectInput<T> extends StatelessWidget {
   final String? label;

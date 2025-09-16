@@ -1,17 +1,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/select_options.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/widgets/number_input.dart';
-import 'package:konto/core/widgets/select_input.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/core/widgets/text_input.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
-import 'package:konto/route.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/select_options.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/number_input.dart';
+import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/route.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});

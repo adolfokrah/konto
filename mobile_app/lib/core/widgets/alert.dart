@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/card.dart';
 
 class Alert extends StatelessWidget {
   final String message;

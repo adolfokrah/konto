@@ -1,5 +1,5 @@
 import 'package:image_picker/image_picker.dart';
-import 'package:konto/features/media/data/api_provider/media_api_provider.dart';
+import 'package:Hoga/features/media/data/api_provider/media_api_provider.dart';
 
 /// Repository for media operations
 /// Orchestrates business logic between UI and API calls

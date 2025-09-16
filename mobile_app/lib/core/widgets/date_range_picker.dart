@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/core/widgets/text_input.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 /// A reusable date range picker widget that can be used across the app
 class DateRangePicker {

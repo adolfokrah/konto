@@ -1,4 +1,4 @@
-import 'package:konto/core/config/app_config.dart';
+import 'package:Hoga/core/config/app_config.dart';
 
 /// Backend configuration constants
 class BackendConfig {

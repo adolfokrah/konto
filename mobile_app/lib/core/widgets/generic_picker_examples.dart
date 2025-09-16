@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/widgets/generic_picker.dart';
-import 'package:konto/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/generic_picker.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
 
 // Example usage of GenericPicker for different use cases
 

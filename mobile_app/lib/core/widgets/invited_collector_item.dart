@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/core/widgets/small_button.dart';
-import 'package:konto/features/jars/data/models/jar_model.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/features/jars/data/models/jar_model.dart';
 
 class InvitedCollectorItem extends StatelessWidget {
   final InvitedCollector invitedCollector;

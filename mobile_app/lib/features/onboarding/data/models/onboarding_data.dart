@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/button_variants.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
 
 class OnBoardingData {
   final String title;

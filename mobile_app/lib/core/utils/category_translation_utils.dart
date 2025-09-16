@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 /// Utility class for translating category names
 class CategoryTranslationUtils {

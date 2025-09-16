@@ -1,8 +1,8 @@
-import 'package:konto/core/enums/app_theme.dart' show AppTheme;
-import 'package:konto/core/enums/app_language.dart' show AppLanguage;
-import 'package:konto/core/services/user_storage_service.dart';
-import 'package:konto/features/authentication/data/models/user.dart';
-import 'package:konto/features/user_account/data/api_providers/user_account_api_provider.dart';
+import 'package:Hoga/core/enums/app_theme.dart' show AppTheme;
+import 'package:Hoga/core/enums/app_language.dart' show AppLanguage;
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
 
 /// Repository for user account operations
 /// Implements the repository pattern to abstract API calls

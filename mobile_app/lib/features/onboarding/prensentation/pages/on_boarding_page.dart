@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/core/constants/localized_onboarding_data.dart';
-import 'package:konto/core/utils/haptic_utils.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/features/onboarding/logic/bloc/onboarding_bloc.dart';
-import 'package:konto/features/onboarding/prensentation/widgets/onboarding_description.dart';
-import 'package:konto/features/onboarding/prensentation/widgets/onboarding_progress_indicator.dart';
-import 'package:konto/features/onboarding/prensentation/widgets/onboarding_slider.dart';
-import 'package:konto/features/onboarding/prensentation/widgets/onboarding_title.dart';
-import 'package:konto/route.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
+import 'package:Hoga/core/constants/localized_onboarding_data.dart';
+import 'package:Hoga/core/utils/haptic_utils.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
+import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_description.dart';
+import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_progress_indicator.dart';
+import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_slider.dart';
+import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_title.dart';
+import 'package:Hoga/route.dart';
 
 class OnBoardingPage extends StatelessWidget {
   const OnBoardingPage({super.key});

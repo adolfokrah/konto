@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/core/services/user_storage_service.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Base API Provider with standardized error handling and authentication

@@ -5,23 +5,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/features/authentication/presentation/views/login_view.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/authentication/presentation/views/register_view.dart';
-import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
-import 'package:konto/features/verification/presentation/pages/otp_view.dart';
-import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/media/logic/bloc/media_bloc.dart';
-import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/features/jars/presentation/views/jar_detail_view.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
+import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
+import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
-import 'package:konto/core/services/sms_otp_service.dart';
+import 'package:Hoga/core/services/sms_otp_service.dart';
 // No repository override now; we mock network.
 
 void main() {

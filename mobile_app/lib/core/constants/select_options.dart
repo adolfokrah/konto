@@ -1,5 +1,5 @@
-import 'package:konto/core/widgets/select_input.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class AppSelectOptions {
   // Private constructor to prevent instantiation

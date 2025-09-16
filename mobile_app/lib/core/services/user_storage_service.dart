@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:konto/core/constants/local_storage_tokens.dart';
-import 'package:konto/core/services/local_storage_service.dart';
-import 'package:konto/features/authentication/data/models/user.dart';
+import 'package:Hoga/core/constants/local_storage_tokens.dart';
+import 'package:Hoga/core/services/local_storage_service.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
 
 /// Service for handling user data storage and retrieval
 class UserStorageService {

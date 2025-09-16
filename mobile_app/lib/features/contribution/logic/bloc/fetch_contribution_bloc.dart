@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/contribution/data/models/contribution_model.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:meta/meta.dart';
 
 part 'fetch_contribution_event.dart';

@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/services/service_registry.dart';
+import 'package:Hoga/core/services/service_registry.dart';
 import 'package:meta/meta.dart';
 
 part 'update_jar_event.dart';

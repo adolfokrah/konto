@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/core/services/base_api_provider.dart';
-import 'package:konto/core/services/user_storage_service.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/services/base_api_provider.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
 
 /// API Provider for media-related operations (image uploads to PayloadCMS)
 class MediaApiProvider extends BaseApiProvider {

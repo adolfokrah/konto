@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/icon_button.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/core/enums/media_upload_context.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/features/media/logic/bloc/media_bloc.dart';
-import 'package:konto/features/media/presentation/views/image_uploader_bottom_sheet.dart';
-import 'package:konto/l10n/app_localizations.dart';
-import 'package:konto/route.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/enums/media_upload_context.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
+import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/route.dart';
 
 /// A reusable popup menu widget for jar actions
 class JarMoreMenu extends StatelessWidget {

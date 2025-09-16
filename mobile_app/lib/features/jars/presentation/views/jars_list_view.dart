@@ -1,20 +1,20 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/services/jar_expansion_state_service.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/category_translation_utils.dart';
-import 'package:konto/core/utils/currency_utils.dart';
-import 'package:konto/core/utils/haptic_utils.dart';
-import 'package:konto/core/widgets/icon_button.dart';
-import 'package:konto/core/widgets/small_button.dart';
-import 'package:konto/features/jars/data/models/jar_list_model.dart';
-import 'package:konto/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/services/jar_expansion_state_service.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/category_translation_utils.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/utils/haptic_utils.dart';
+import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarsListView extends StatefulWidget {
   const JarsListView({super.key});

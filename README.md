@@ -1,6 +1,6 @@
-# Konto
+# hoga
 
-A modern contribution and donation platform built with PayloadCMS and Next.js. Konto allows users to create donation "jars" and manage contributions with integrated payment processing.
+A modern contribution and donation platform built with PayloadCMS and Next.js. hoga allows users to create donation "jars" and manage contributions with integrated payment processing.
 
 ## 🚀 Features
 
@@ -29,7 +29,7 @@ A modern contribution and donation platform built with PayloadCMS and Next.js. K
 ## 📁 Project Structure
 
 ```
-konto/
+hoga/
 ├── cms/                    # PayloadCMS backend application
 │   ├── src/
 │   │   ├── collections/    # PayloadCMS collections
@@ -66,8 +66,8 @@ konto/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/adolfokrah/konto.git
-   cd konto
+   git clone https://github.com/adolfokrah/hoga.git
+   cd hoga
    ```
 
 2. **Navigate to the CMS directory**

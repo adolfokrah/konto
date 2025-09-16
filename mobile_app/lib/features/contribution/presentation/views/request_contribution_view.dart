@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/config/app_config.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/widgets/small_button.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/core/config/app_config.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:konto/core/theme/text_styles.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 class RequestContributionView extends StatefulWidget {

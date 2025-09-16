@@ -5,12 +5,12 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/features/jars/presentation/views/jar_name_edit_view.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 

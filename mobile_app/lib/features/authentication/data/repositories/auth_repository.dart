@@ -1,8 +1,8 @@
-import 'package:konto/core/services/sms_otp_service.dart';
-import 'package:konto/core/services/user_storage_service.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
-import 'package:konto/features/authentication/data/models/user.dart';
+import 'package:Hoga/core/services/sms_otp_service.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
 
 /// Repository for authentication operations
 /// Orchestrates business logic between UI and API calls

@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/enums/app_theme.dart';
-import 'package:konto/core/enums/app_language.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/core/enums/app_theme.dart';
+import 'package:Hoga/core/enums/app_language.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/authentication/data/models/user.dart';
-import 'package:konto/features/user_account/data/repositories/user_account_repository.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 
 part 'user_account_event.dart';
 part 'user_account_state.dart';

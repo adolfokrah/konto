@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
 
 /// Bottom sheet widget to display withdrawal account verification success details
 class ReviewWithdrawalAccountBottomSheet extends StatelessWidget {

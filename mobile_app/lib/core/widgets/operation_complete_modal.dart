@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/button.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/button.dart';
 
 class OperationCompleteModal extends StatelessWidget {
   /// The image to display at the center

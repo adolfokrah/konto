@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/constants/filter_options.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/contribution/data/repositories/contribution_repository.dart';
-import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:konto/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/core/constants/filter_options.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
+import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:meta/meta.dart';
 
 part 'contributions_list_event.dart';

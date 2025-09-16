@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 
 class AppIconButton extends StatelessWidget {
   /// The callback function when the button is pressed

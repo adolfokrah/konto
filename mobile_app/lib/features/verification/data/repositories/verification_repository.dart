@@ -1,5 +1,5 @@
-import 'package:konto/core/services/sms_otp_service.dart';
-import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:Hoga/core/services/sms_otp_service.dart';
+import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
 
 /// Repository for handling verification-related operations
 class VerificationRepository {

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/authentication/data/models/user.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

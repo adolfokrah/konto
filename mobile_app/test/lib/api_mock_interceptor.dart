@@ -1,6 +1,6 @@
 // integration_test/login_flow_test.dart
 import 'package:dio/dio.dart';
-import 'package:konto/core/config/backend_config.dart';
+import 'package:Hoga/core/config/backend_config.dart';
 
 typedef MockResponseBuilder = Response Function(RequestOptions options);
 

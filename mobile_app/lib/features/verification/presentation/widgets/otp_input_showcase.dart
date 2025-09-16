@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/otp_input.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/otp_input.dart';
 
 /// Widget to showcase different OTP input variations
 class OtpInputShowcase extends StatefulWidget {

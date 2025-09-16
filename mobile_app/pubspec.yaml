@@ -1,4 +1,4 @@
-name: konto
+name: Hoga
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.12.6
@@ -32,9 +32,11 @@ dependencies:
   url_launcher: ^6.3.1
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2
+  
 
 dev_dependencies:
   sentry_dart_plugin: ^3.1.1
+  flutter_launcher_icons: "^0.14.4"
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
@@ -44,6 +46,12 @@ dev_dependencies:
   http_mock_adapter: ^0.5.0
   integration_test:
     sdk: flutter
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
 
 flutter:
   generate: true

@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/core/enums/media_upload_context.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/enums/media_upload_context.dart';
 
 import '../../data/models/media_model.dart';
 

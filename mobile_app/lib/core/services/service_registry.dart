@@ -1,24 +1,24 @@
 import 'package:dio/dio.dart';
-import 'package:konto/core/services/local_storage_service.dart';
-import 'package:konto/core/services/sms_otp_service.dart';
-import 'package:konto/core/services/translation_service.dart';
-import 'package:konto/core/services/user_storage_service.dart';
-import 'package:konto/core/services/jar_storage_service.dart';
-import 'package:konto/features/authentication/data/api_providers/auth_api_provider.dart';
-import 'package:konto/features/authentication/data/repositories/auth_repository.dart';
-import 'package:konto/features/verification/data/api_providers/sms_api_provider.dart';
-import 'package:konto/features/verification/data/repositories/verification_repository.dart';
-import 'package:konto/features/onboarding/data/repositories/onboarding_repository.dart';
-import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
-import 'package:konto/features/jars/data/repositories/jar_repository.dart';
-import 'package:konto/features/media/data/api_provider/media_api_provider.dart';
-import 'package:konto/features/media/data/repository_provider/media_repository.dart';
-import 'package:konto/features/contribution/data/api_reproviders/contribution_api_provider.dart';
-import 'package:konto/features/contribution/data/repositories/contribution_repository.dart';
-import 'package:konto/features/contribution/data/api_reproviders/momo_api_provider.dart';
-import 'package:konto/features/contribution/data/repositories/momo_repository.dart';
-import 'package:konto/features/user_account/data/api_providers/user_account_api_provider.dart';
-import 'package:konto/features/user_account/data/repositories/user_account_repository.dart';
+import 'package:Hoga/core/services/local_storage_service.dart';
+import 'package:Hoga/core/services/sms_otp_service.dart';
+import 'package:Hoga/core/services/translation_service.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:Hoga/core/services/jar_storage_service.dart';
+import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
+import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
+import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
+import 'package:Hoga/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
+import 'package:Hoga/features/media/data/api_provider/media_api_provider.dart';
+import 'package:Hoga/features/media/data/repository_provider/media_repository.dart';
+import 'package:Hoga/features/contribution/data/api_reproviders/contribution_api_provider.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
+import 'package:Hoga/features/contribution/data/api_reproviders/momo_api_provider.dart';
+import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
+import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
+import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies

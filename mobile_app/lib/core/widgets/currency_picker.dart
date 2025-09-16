@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/currencies.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/currency_utils.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/generic_picker.dart';
-import 'package:konto/core/widgets/small_button.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/currencies.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/generic_picker.dart';
+import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class CurrencyPicker extends StatefulWidget {
   final Function(Currency)? onCurrencySelected;

@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/constants/filter_options.dart';
+import 'package:Hoga/core/constants/filter_options.dart';
 import 'package:meta/meta.dart';
 
 part 'filter_contributions_event.dart';

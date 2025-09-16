@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/core/widgets/text_input.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarNameEditView extends StatelessWidget {
   const JarNameEditView({super.key});

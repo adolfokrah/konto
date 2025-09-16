@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/features/jars/data/models/jar_list_model.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:meta/meta.dart';
 
 part 'jar_list_event.dart';

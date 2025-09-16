@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:konto/core/services/service_registry.dart';
-import 'package:konto/core/services/sms_otp_service.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/services/sms_otp_service.dart';
 import 'api_mock_interceptor.dart';
 
 class TestSetup {

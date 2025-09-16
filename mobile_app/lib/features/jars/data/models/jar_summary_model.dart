@@ -1,5 +1,5 @@
 // Models for the Jar Summary API response
-import 'package:konto/core/utils/currency_utils.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
 
 /// Enum representing the type of contribution
 enum ContributionType {

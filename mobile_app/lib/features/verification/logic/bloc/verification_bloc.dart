@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:konto/core/services/service_registry.dart';
+import 'package:Hoga/core/services/service_registry.dart';
 
 part 'verification_event.dart';
 part 'verification_state.dart';

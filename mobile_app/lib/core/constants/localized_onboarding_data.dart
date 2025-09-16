@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_images.dart';
-import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/features/onboarding/data/models/onboarding_data.dart'
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_images.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
+import 'package:Hoga/features/onboarding/data/models/onboarding_data.dart'
     show OnBoardingData;
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class LocalizedOnboardingData {
   static List<OnBoardingData> getOnboardingData(BuildContext context) {

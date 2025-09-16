@@ -1,4 +1,4 @@
-import 'package:konto/core/config/backend_config.dart';
+import 'package:Hoga/core/config/backend_config.dart';
 
 /// Utility class for image-related operations
 class ImageUtils {

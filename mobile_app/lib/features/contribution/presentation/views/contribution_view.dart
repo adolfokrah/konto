@@ -1,20 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/currency_utils.dart';
-import 'package:konto/core/utils/date_utils.dart';
-import 'package:konto/core/utils/payment_method_utils.dart';
-import 'package:konto/core/utils/payment_status_utils.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/contributor_avatar.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/features/contribution/data/models/contribution_model.dart';
-import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/utils/date_utils.dart';
+import 'package:Hoga/core/utils/payment_method_utils.dart';
+import 'package:Hoga/core/utils/payment_status_utils.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/contributor_avatar.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
+import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class ContributionView extends StatelessWidget {
   const ContributionView({super.key});

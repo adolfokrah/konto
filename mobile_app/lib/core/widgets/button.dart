@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/haptic_utils.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/haptic_utils.dart';
 
 class AppButton extends StatelessWidget {
   final String text;

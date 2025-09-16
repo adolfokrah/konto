@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/localized_onboarding_data.dart';
+import 'package:Hoga/core/constants/localized_onboarding_data.dart';
 
 class OnBoardingSlider extends StatefulWidget {
   final int currentPage;

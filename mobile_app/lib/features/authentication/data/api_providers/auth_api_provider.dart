@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:konto/core/config/backend_config.dart';
+import 'package:Hoga/core/config/backend_config.dart';
 
 /// API Provider for authentication-related operations
 class AuthApiProvider {

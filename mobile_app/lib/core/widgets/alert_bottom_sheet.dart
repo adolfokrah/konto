@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
 
 /// A generic alert bottom sheet that displays a title, message, and action buttons
 class AlertBottomSheet extends StatelessWidget {

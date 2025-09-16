@@ -1,5 +1,5 @@
-import 'package:konto/core/constants/local_storage_tokens.dart';
-import 'package:konto/core/services/local_storage_service.dart';
+import 'package:Hoga/core/constants/local_storage_tokens.dart';
+import 'package:Hoga/core/services/local_storage_service.dart';
 
 /// Service for managing jar-related data in local storage
 class JarStorageService {

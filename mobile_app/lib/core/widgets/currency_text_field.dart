@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/utils/currency_input_formatter.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/utils/currency_input_formatter.dart';
 
 /// A reusable text field widget specifically designed for currency input
 /// Features:

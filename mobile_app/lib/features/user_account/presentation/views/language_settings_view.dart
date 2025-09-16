@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/enums/app_language.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/enums/app_language.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class LanguageSettingsView extends StatelessWidget {
   const LanguageSettingsView({super.key});

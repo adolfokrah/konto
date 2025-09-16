@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:konto/core/config/sms_config.dart';
+import 'package:Hoga/core/config/sms_config.dart';
 
 /// HTTP client service using Dio for better error handling and interceptors
 class HttpClientService {

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_images.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/currency_utils.dart';
-import 'package:konto/core/widgets/alert_bottom_sheet.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/operation_complete_modal.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/data/models/jar_summary_model.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/features/jars/presentation/widgets/jar_group_picker.dart';
-import 'package:konto/route.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_images.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/widgets/alert_bottom_sheet.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/operation_complete_modal.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
+import 'package:Hoga/route.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarInfoView extends StatefulWidget {
   const JarInfoView({super.key});

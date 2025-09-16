@@ -15,7 +15,7 @@ The following methods are now standardized across all API providers:
 ### 1. Update Imports
 Add the base class import:
 ```dart
-import 'package:konto/core/services/base_api_provider.dart';
+import 'package:Hoga/core/services/base_api_provider.dart';
 ```
 
 ### 2. Extend BaseApiProvider

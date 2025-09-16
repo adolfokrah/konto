@@ -5,10 +5,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
-import 'package:konto/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
-import 'package:konto/features/contribution/presentation/views/contribution_view.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 

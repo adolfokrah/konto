@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/theme/text_styles.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
 
 enum SnackBarType { success, error, warning, info }
 

@@ -1,4 +1,4 @@
-import 'package:konto/features/jars/data/api_providers/jar_api_provider.dart';
+import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 
 /// Repository for jar operations
 /// Orchestrates business logic between UI and API calls

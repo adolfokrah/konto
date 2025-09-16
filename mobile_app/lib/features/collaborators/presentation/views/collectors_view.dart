@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/sms_utils.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/invited_collector_item.dart';
-import 'package:konto/core/widgets/small_button.dart';
-import 'package:konto/features/collaborators/presentation/views/invite_collaborators_view.dart';
-import 'package:konto/features/jars/data/models/jar_model.dart';
-import 'package:konto/features/jars/data/models/jar_summary_model.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/sms_utils.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/invited_collector_item.dart';
+import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/features/collaborators/presentation/views/invite_collaborators_view.dart';
+import 'package:Hoga/features/jars/data/models/jar_model.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class CollectorsView extends StatefulWidget {
   const CollectorsView({super.key});

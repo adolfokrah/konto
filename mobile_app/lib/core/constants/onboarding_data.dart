@@ -1,7 +1,7 @@
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_images.dart';
-import 'package:konto/core/constants/button_variants.dart';
-import 'package:konto/features/onboarding/data/models/onboarding_data.dart'
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_images.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
+import 'package:Hoga/features/onboarding/data/models/onboarding_data.dart'
     show OnBoardingData;
 
 final List<OnBoardingData> onBoardingData = [

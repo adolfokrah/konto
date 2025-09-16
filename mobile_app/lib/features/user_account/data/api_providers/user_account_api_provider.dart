@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:konto/core/config/backend_config.dart';
-import 'package:konto/core/enums/app_theme.dart';
-import 'package:konto/core/enums/app_language.dart';
-import 'package:konto/core/services/user_storage_service.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/enums/app_theme.dart';
+import 'package:Hoga/core/enums/app_language.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
 
 /// API Provider for updating user details
 class UserAccountApiProvider {

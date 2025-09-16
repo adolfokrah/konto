@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 /// Translation service for accessing localized strings without context
 /// This is particularly useful for BLoCs and other business logic classes

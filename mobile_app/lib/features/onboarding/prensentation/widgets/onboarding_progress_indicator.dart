@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/localized_onboarding_data.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/localized_onboarding_data.dart';
 
 class OnBoardingProgressIndicator extends StatelessWidget {
   final int currentPage; // Placeholder for current page index

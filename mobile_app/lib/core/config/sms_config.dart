@@ -1,5 +1,5 @@
-import 'package:konto/core/config/app_config.dart';
-import 'package:konto/core/services/service_registry.dart';
+import 'package:Hoga/core/config/app_config.dart';
+import 'package:Hoga/core/services/service_registry.dart';
 
 // SMS Configuration - Store your Mnotify credentials here
 class SmsConfig {

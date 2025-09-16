@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/app_images.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
-import 'package:konto/core/enums/app_theme.dart' as theme_enum;
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_images.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/enums/app_theme.dart' as theme_enum;
 
 class ThemeSettingsView extends StatelessWidget {
   const ThemeSettingsView({super.key});

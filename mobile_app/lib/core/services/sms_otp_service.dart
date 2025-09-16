@@ -1,6 +1,6 @@
 // Simple SMS OTP Service - Much cleaner than Firebase!
 import 'dart:math';
-import 'package:konto/core/config/sms_config.dart';
+import 'package:Hoga/core/config/sms_config.dart';
 
 class SmsOtpService {
   // Test mode flag (can be set by tests)

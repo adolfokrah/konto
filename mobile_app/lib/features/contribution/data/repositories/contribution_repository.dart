@@ -1,4 +1,4 @@
-import 'package:konto/features/contribution/data/api_reproviders/contribution_api_provider.dart';
+import 'package:Hoga/features/contribution/data/api_reproviders/contribution_api_provider.dart';
 
 /// Repository for contribution operations
 /// Orchestrates business logic between UI and API calls

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/currency_utils.dart';
-import 'package:konto/core/utils/date_utils.dart';
-import 'package:konto/core/utils/payment_method_utils.dart';
-import 'package:konto/core/widgets/contributor_avatar.dart';
-import 'package:konto/features/contribution/presentation/views/contribution_view.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/utils/date_utils.dart';
+import 'package:Hoga/core/utils/payment_method_utils.dart';
+import 'package:Hoga/core/widgets/contributor_avatar.dart';
+import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class ContributionListItem extends StatelessWidget {
   /// The contribution ID

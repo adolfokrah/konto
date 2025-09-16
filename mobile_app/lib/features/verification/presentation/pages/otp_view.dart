@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/widgets/otp_input.dart';
-import 'package:konto/core/widgets/snacbar_message.dart';
-import 'package:konto/features/verification/logic/bloc/verification_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/otp_input.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class OtpView extends StatelessWidget {
   const OtpView({super.key});

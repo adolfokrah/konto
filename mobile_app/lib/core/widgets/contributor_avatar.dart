@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_colors.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/config/app_config.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/config/app_config.dart';
 
 /// A reusable avatar widget for displaying contributor information
 /// with optional status overlay icon

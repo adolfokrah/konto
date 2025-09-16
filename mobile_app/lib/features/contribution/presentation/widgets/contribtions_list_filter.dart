@@ -1,21 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/constants/filter_options.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/haptic_utils.dart';
-import 'package:konto/core/widgets/button.dart';
-import 'package:konto/core/widgets/card.dart';
-import 'package:konto/core/widgets/contributor_avatar.dart';
-import 'package:konto/core/widgets/date_range_picker.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/contributions_list_bloc.dart';
-import 'package:konto/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:konto/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/filter_options.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/haptic_utils.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/contributor_avatar.dart';
+import 'package:Hoga/core/widgets/date_range_picker.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class ContributionsListFilter extends StatelessWidget {
   final String? contributor;

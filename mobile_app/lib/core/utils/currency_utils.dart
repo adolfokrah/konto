@@ -1,8 +1,8 @@
 /// Currency formatting utilities for jar currencies used throughout the app
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:konto/core/constants/currencies.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/currencies.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class CurrencyUtils {
   /// Get currency symbol based on currency code with Android fallback

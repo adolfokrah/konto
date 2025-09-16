@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:konto/core/constants/app_radius.dart';
-import 'package:konto/core/constants/app_spacing.dart';
-import 'package:konto/core/theme/text_styles.dart';
-import 'package:konto/core/utils/haptic_utils.dart';
-import 'package:konto/core/widgets/drag_handle.dart';
-import 'package:konto/core/widgets/searh_input.dart';
-import 'package:konto/l10n/app_localizations.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/haptic_utils.dart';
+import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/searh_input.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
 
 class GenericPicker<T> extends StatelessWidget {
   final String selectedValue;
