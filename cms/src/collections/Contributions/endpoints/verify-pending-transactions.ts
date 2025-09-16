@@ -66,18 +66,15 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
         errorCount++
       }
     }
-
-    return Response.json(
-      {
-        success: true,
-        message: 'Pending transactions processing completed',
-        totalTransactions: pendingTransactions.docs.length,
-        processedCount,
-        errorCount,
-        results,
-      },
-      { status: 200 },
-    )
+    const data = {
+      success: true,
+      message: 'Pending transactions processing completed',
+      totalTransactions: pendingTransactions.docs.length,
+      processedCount,
+      errorCount,
+      results,
+    }
+    return Response.json(data, { status: 200 })
   } catch (error: any) {
     return Response.json(
       {

@@ -68,12 +68,13 @@ export const verifyPayment = async (req: PayloadRequest) => {
       }
 
       // const isTransfer = foundContribution.docs[0].type == 'transfer'
-
       await req.payload.update({
         collection: 'contributions',
         id: foundContribution.docs[0].id,
         data: {
           paymentStatus: (res.data as any)?.status === 'success' ? 'completed' : 'failed',
+          contributorPhoneNumber:
+            (res.data as any)?.customer?.phone || foundContribution.docs[0].contributorPhoneNumber,
         },
       })
 

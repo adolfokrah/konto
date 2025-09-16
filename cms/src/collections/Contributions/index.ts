@@ -315,7 +315,7 @@ export const Contributions: CollectionConfig = {
     },
     {
       path: '/verify-pending-transactions',
-      method: 'post',
+      method: 'get',
       handler: verifyPendingTransactions,
     },
   ],

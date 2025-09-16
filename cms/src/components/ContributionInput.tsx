@@ -133,7 +133,6 @@ export default function ContributionInput({
           body: JSON.stringify({
             jarId,
             contributorName,
-            contributorEmail,
             amount: selectedAmount,
             currency,
           }),
