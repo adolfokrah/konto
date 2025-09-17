@@ -11,7 +11,7 @@ import { Media } from '@collections/Media'
 import { Pages } from '@collections/Pages'
 import { Posts } from '@collections/Posts'
 import { Users } from '@collections/Users'
-import Paystack from './lib/utils/paystack'
+import Paystack from './utilities/paystack'
 import { Contributions } from '@collections/Contributions'
 import { Jars } from '@collections/Jars'
 
@@ -21,6 +21,7 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+import TransactionCharges from './utilities/transaction-charges'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,14 +30,6 @@ const dbUrl =
   process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
 
 export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
-
-//test to get all settlements
-// const settlements = await paystack.getSettlementTransactions(8293501)
-// const settlements = await paystack.listSettlements()
-
-// if (settlements.status) {
-//   console.log('Settlements', settlements)
-// }
 
 // Removed test error throw that was used to verify Sentry integration.
 export default buildConfig({

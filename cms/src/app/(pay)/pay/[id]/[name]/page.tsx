@@ -125,6 +125,9 @@ export default async function Page({ params }: any) {
     })
 
     const jar = res?.docs?.[0]
+    if (!jar) {
+      throw new Error('Jar not found')
+    }
 
     // Get all contributions for this jar to calculate total
     const allContributions = await payload.find({
@@ -242,7 +245,7 @@ export default async function Page({ params }: any) {
             {/* Goal Section - Show if jar has goal amount and showGoal is enabled */}
             {jarWithBalance.goalAmount &&
               jarWithBalance.goalAmount > 0 &&
-              jarWithBalance.paymentPage?.showGoal === true && (
+              jarWithBalance.paymentPage?.showGoal === true ? (
                 <Goal
                   currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
                   targetAmount={jarWithBalance.goalAmount}
@@ -253,7 +256,7 @@ export default async function Page({ params }: any) {
                   currency={jarWithBalance.currency === 'GHS' ? '₵' : '₦'}
                   className="my-6"
                 />
-              )}
+              ) : null}
 
             {/* Contribution Input */}
             <ContributionInput
@@ -263,6 +266,7 @@ export default async function Page({ params }: any) {
               className="my-6"
               jarId={jarId}
               jarName={jarWithBalance.name}
+              isCreatorPaysPlatformFees={jarWithBalance.whoPaysPlatformFees === 'creator'}
             />
 
             <Separator />

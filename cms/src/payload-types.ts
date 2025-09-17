@@ -915,9 +915,9 @@ export interface Jar {
     showRecentContributions?: boolean | null;
   };
   /**
-   * Allow anonymous contributions to this jar
+   * Who pays the platform fees for this jar
    */
-  acceptAnonymousContributions?: boolean | null;
+  whoPaysPlatformFees?: ('creator' | 'contributors') | null;
   thankYouMessage?: string | null;
   /**
    * Current status of the jar
@@ -1586,7 +1586,7 @@ export interface JarsSelect<T extends boolean = true> {
         showGoal?: T;
         showRecentContributions?: T;
       };
-  acceptAnonymousContributions?: T;
+  whoPaysPlatformFees?: T;
   thankYouMessage?: T;
   status?: T;
   updatedAt?: T;

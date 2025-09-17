@@ -93,7 +93,6 @@ class JarRepository {
     double? goalAmount,
     DateTime? deadline,
     required String currency,
-    bool acceptAnonymousContributions = false,
     List<Map<String, dynamic>>? invitedCollectors,
   }) async {
     try {
@@ -108,7 +107,6 @@ class JarRepository {
         goalAmount: goalAmount,
         deadline: deadline,
         currency: currency,
-        acceptAnonymousContributions: acceptAnonymousContributions,
         invitedCollectors: invitedCollectors,
       );
 
@@ -152,12 +150,12 @@ class JarRepository {
     DateTime? deadline,
     String? currency,
     String? status,
-    bool? acceptAnonymousContributions,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
     String? thankYouMessage,
     bool? showGoal,
     bool? showRecentContributions,
+    String? whoPaysPlatformFees,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -173,12 +171,12 @@ class JarRepository {
         deadline: deadline,
         currency: currency,
         status: status,
-        acceptAnonymousContributions: acceptAnonymousContributions,
         acceptedPaymentMethods: acceptedPaymentMethods,
         invitedCollectors: invitedCollectors,
         thankYouMessage: thankYouMessage,
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
+        whoPaysPlatformFees: whoPaysPlatformFees,
       );
 
       if (apiResponse['doc'] != null) {

@@ -135,23 +135,6 @@ describe('Jars Collection Integration Tests', () => {
       ).toEqual([secondUser.id])
     })
 
-    it('should create a jar with anonymous contributions enabled', async () => {
-      const jarData = {
-        name: 'Anonymous Jar',
-        currency: 'GHS' as const,
-        creator: testUser.id,
-        status: 'open' as const,
-        acceptAnonymousContributions: true,
-      }
-
-      const jar = await payload.create({
-        collection: 'jars',
-        data: jarData,
-      })
-
-      expect(jar.acceptAnonymousContributions).toBe(true)
-    })
-
     it('should fail to create jar without required fields', async () => {
       const incompleteJarData = {
         name: 'Incomplete Jar',
@@ -494,20 +477,6 @@ describe('Jars Collection Integration Tests', () => {
       expect(result.docs).toHaveLength(1)
       expect(result.docs[0].name).toBe('High Goal Active Jar')
       expect(result.docs[0].goalAmount).toBe(5000)
-    })
-
-    it('should find jars that accept anonymous contributions', async () => {
-      const result = await payload.find({
-        collection: 'jars',
-        where: {
-          acceptAnonymousContributions: {
-            equals: true,
-          },
-        },
-      })
-
-      expect(result.docs).toHaveLength(1)
-      expect(result.docs[0].acceptAnonymousContributions).toBe(true)
     })
 
     it('should paginate jar results', async () => {

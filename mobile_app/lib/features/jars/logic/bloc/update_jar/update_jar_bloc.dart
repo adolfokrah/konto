@@ -49,12 +49,11 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       deadline: event.updates['deadline'],
       currency: event.updates['currency'],
       status: event.updates['status'],
-      acceptAnonymousContributions:
-          event.updates['acceptAnonymousContributions'],
       invitedCollectors: processedCollectors,
       thankYouMessage: event.updates['thankYouMessage'],
       showGoal: event.updates['showGoal'],
       showRecentContributions: event.updates['showRecentContributions'],
+      whoPaysPlatformFees: event.updates['whoPaysPlatformFees'],
     );
     if (response['success'] == true) {
       emit(UpdateJarSuccess());

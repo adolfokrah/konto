@@ -1,4 +1,4 @@
-import { sendSMS } from '@/lib/utils/sms'
+import { sendSMS } from '@/utilities/sms'
 import type { CollectionAfterChangeHook } from 'payload'
 
 export const sendContributionReceipt: CollectionAfterChangeHook = async ({

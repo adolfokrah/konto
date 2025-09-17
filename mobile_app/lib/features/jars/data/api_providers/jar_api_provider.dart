@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/services/base_api_provider.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// API Provider for jar-related operations
 class JarApiProvider extends BaseApiProvider {
@@ -65,7 +64,6 @@ class JarApiProvider extends BaseApiProvider {
     double? goalAmount,
     DateTime? deadline,
     required String currency,
-    bool acceptAnonymousContributions = false,
     List<Map<String, dynamic>>? invitedCollectors,
   }) async {
     try {
@@ -135,7 +133,6 @@ class JarApiProvider extends BaseApiProvider {
                 : null,
         'currency': currency.trim(),
         'creator': user.id,
-        'acceptAnonymousContributions': acceptAnonymousContributions,
         'invitedCollectors': processedInvitedCollectors,
       };
 
@@ -218,12 +215,12 @@ class JarApiProvider extends BaseApiProvider {
     DateTime? deadline,
     String? currency,
     String? status,
-    bool? acceptAnonymousContributions,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
     String? thankYouMessage,
     bool? showGoal,
     bool? showRecentContributions,
+    String? whoPaysPlatformFees,
   }) async {
     try {
       // Get authenticated headers
@@ -296,9 +293,6 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (currency != null) jarData['currency'] = currency;
       if (status != null) jarData['status'] = status;
-      if (acceptAnonymousContributions != null) {
-        jarData['acceptAnonymousContributions'] = acceptAnonymousContributions;
-      }
       if (processedInvitedCollectors != null) {
         jarData['invitedCollectors'] = processedInvitedCollectors;
       }
@@ -313,6 +307,9 @@ class JarApiProvider extends BaseApiProvider {
         jarData['paymentPage'] = {
           'showRecentContributions': showRecentContributions,
         };
+      }
+      if (whoPaysPlatformFees != null) {
+        jarData['whoPaysPlatformFees'] = whoPaysPlatformFees;
       }
       final response = await dio.patch(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',

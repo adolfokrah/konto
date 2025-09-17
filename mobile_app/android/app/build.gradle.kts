@@ -40,16 +40,15 @@ android {
         // NDK ABI filtering is handled by the splits block above
     }
 
-    // Dynamic APK splitting configuration based on build type
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            // Generate universal APK in addition to split APKs for distribution flexibility
-            isUniversalApk = true
-        }
-    }
+    // APK splitting disabled in Gradle - using Flutter's --split-per-abi flag instead
+    // splits {
+    //     abi {
+    //         isEnable = true
+    //         reset()
+    //         include("arm64-v8a", "armeabi-v7a", "x86_64")
+    //         isUniversalApk = true
+    //     }
+    // }
 
     buildTypes {
         release {

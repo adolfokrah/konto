@@ -1,4 +1,4 @@
-import { cn } from '@lib/utils/tw-merge'
+import { cn } from '@/utilities/tw-merge'
 
 export default function PaymentStatus({ cellData }: { cellData: string }) {
   const statusStyles: Record<string, string> = {

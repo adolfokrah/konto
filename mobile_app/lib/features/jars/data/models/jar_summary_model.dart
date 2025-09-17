@@ -155,7 +155,6 @@ class JarSummaryModel {
   final JarStatus status; // 'open' | 'broken' | 'sealed'
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
-  final bool acceptAnonymousContributions;
   final String? link;
   final bool? showGoal;
   final bool? showRecentContributions;
@@ -168,6 +167,8 @@ class JarSummaryModel {
   final List<double>? chartData; // Chart data for last 10 days
   final BalanceBreakDown balanceBreakDown; // Financial breakdown
   final bool isCreator; // Whether the current user is the creator of this jar
+  final String?
+  whoPaysPlatformFees; // Who pays platform fees: 'creator' or 'contributors'
 
   const JarSummaryModel({
     required this.id,
@@ -182,7 +183,6 @@ class JarSummaryModel {
     required this.status,
     required this.creator,
     this.invitedCollectors,
-    required this.acceptAnonymousContributions,
     this.link,
     this.showGoal,
     this.showRecentContributions,
@@ -195,6 +195,7 @@ class JarSummaryModel {
     this.chartData,
     required this.balanceBreakDown,
     required this.isCreator,
+    this.whoPaysPlatformFees,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -320,8 +321,6 @@ class JarSummaryModel {
                 ),
               )
               .toList(),
-      acceptAnonymousContributions:
-          json['acceptAnonymousContributions'] as bool,
       link:
           json['paymentPage'] != null
               ? json['paymentPage']['link'] as String?
@@ -390,6 +389,7 @@ class JarSummaryModel {
                 ),
               ),
       isCreator: json['isCreator'] as bool? ?? false,
+      whoPaysPlatformFees: json['whoPaysPlatformFees'] as String?,
     );
   }
 
@@ -410,7 +410,6 @@ class JarSummaryModel {
           invitedCollectors
               ?.map((invitedCollector) => invitedCollector.toJson())
               .toList(),
-      'acceptAnonymousContributions': acceptAnonymousContributions,
       'paymentPage': {
         'link': link,
         'showGoal': showGoal,
@@ -426,6 +425,7 @@ class JarSummaryModel {
       'chartData': chartData,
       'balanceBreakDown': balanceBreakDown.toJson(),
       'isCreator': isCreator,
+      'whoPaysPlatformFees': whoPaysPlatformFees,
     };
   }
 }

@@ -222,11 +222,15 @@ export const Jars: CollectionConfig = {
       ],
     },
     {
-      name: 'acceptAnonymousContributions',
-      type: 'checkbox',
-      defaultValue: false,
+      name: 'whoPaysPlatformFees',
+      type: 'select',
+      defaultValue: 'creator',
+      options: [
+        { label: 'Creator', value: 'creator' },
+        { label: 'Contributors', value: 'contributors' },
+      ],
       admin: {
-        description: 'Allow anonymous contributions to this jar',
+        description: 'Who pays the platform fees for this jar',
       },
     },
     {

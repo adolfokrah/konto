@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { cn } from '@/lib/utils/tw-merge'
+import { cn } from '@/utilities/tw-merge'
 import { Button } from '../ui/button'
 
 interface ExpandableDescriptionProps {

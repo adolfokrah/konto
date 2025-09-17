@@ -16,14 +16,31 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
       pagination: false,
     })
 
-    // console.log(pendingTransactions)
-
     let processedCount = 0
     let errorCount = 0
     const results = []
 
     for (const transaction of pendingTransactions.docs) {
       const { transactionReference, id } = transaction
+
+      if (!transactionReference) {
+        await req.payload.update({
+          collection: 'contributions',
+          id: id,
+          data: {
+            paymentStatus: 'failed',
+          },
+          req,
+        })
+        results.push({
+          transactionId: id,
+          reference: transactionReference,
+          status: 'failed',
+          reason: 'No transaction reference',
+        })
+        errorCount++
+        continue
+      }
 
       try {
         // Create a fresh request object for each transaction to avoid shared state issues

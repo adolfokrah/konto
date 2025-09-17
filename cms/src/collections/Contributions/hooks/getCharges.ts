@@ -1,15 +1,25 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
-import TransactionCharges from '@/lib/utils/transaction-charges'
+import TransactionCharges from '@/utilities/transaction-charges'
 
-export const getCharges: CollectionBeforeChangeHook = async ({ data, operation }) => {
+export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
   // Set payment status based on payment method for new contributions
   if (operation === 'create') {
     if (data.paymentMethod === 'mobile-money' && data.type == 'contribution') {
       // if(data.amountContributed < 2){
       //   throw new Error('Minimum contribution amount is 2 cedis')
       // }
-      const transactionCharges = new TransactionCharges()
+
+      const jar = await req.payload.findByID({
+        collection: 'jars',
+        id: data?.jar,
+        depth: 0,
+      })
+
+      const transactionCharges = new TransactionCharges({
+        isCreatorPaysPlatformFees: jar?.whoPaysPlatformFees === 'creator',
+      })
+
       const {
         totalAmount,
         paystackCharge,

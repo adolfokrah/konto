@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import TransactionCharges from '@/lib/utils/transaction-charges'
+import TransactionCharges from '@/utilities/transaction-charges'
 import { Separator } from './ui/separator'
 
 interface ContributionInputProps {
@@ -13,7 +13,8 @@ interface ContributionInputProps {
   fixedAmount?: number
   className?: string
   jarId?: string
-  jarName?: string
+  jarName?: string,
+  isCreatorPaysPlatformFees?: boolean
 }
 
 export default function ContributionInput({
@@ -23,6 +24,7 @@ export default function ContributionInput({
   className = '',
   jarId = '',
   jarName = 'Jar Contribution',
+  isCreatorPaysPlatformFees = true,
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -232,11 +234,13 @@ export default function ContributionInput({
     return amount.toFixed(2)
   }
 
-  const transactionCharges = new TransactionCharges()
+  const transactionCharges = new TransactionCharges({ isCreatorPaysPlatformFees })
 
-  const { totalAmount, paystackCharge } = transactionCharges.calculateAmountAndCharges(
+  const { totalAmount, paystackCharge, platformCharge } = transactionCharges.calculateAmountAndCharges(
     isFixedAmount ? fixedAmount : selectedAmount,
   )
+
+  const charges = isCreatorPaysPlatformFees ? paystackCharge : paystackCharge + platformCharge
 
   return (
     <div className={`bg-white ${className}`}>
@@ -333,9 +337,9 @@ export default function ContributionInput({
         </div>
 
         <div className="flex justify-between text-gray-600">
-          <span>Transaction Fee (1.95%)</span>
+          <span>Transaction Fee</span>
           <span>
-            {currency} {paystackCharge}
+            {currency} {charges.toFixed(2)}
           </span>
         </div>
       </div>
@@ -360,8 +364,7 @@ export default function ContributionInput({
 
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
-        Transactions include a <span className="font-medium">1.95%</span> payment processing fee,
-        which will be added to the above amount.
+        Upon completing this contribution, you agree to hoga's <a href="/terms" className="text-blue-500">Terms of Service</a> and <a href="/privacy" className="text-blue-500">Privacy Policy</a>.
       </p>
     </div>
   )

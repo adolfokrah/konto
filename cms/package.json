@@ -18,9 +18,10 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "test": "pnpm run test:int && pnpm run test:e2e",
+    "test": "pnpm run test:unit && pnpm run test:int && pnpm run test:e2e",
+    "test:unit": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/unit/",
     "test:e2e": "infisical run --env=dev -- cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test --config=playwright.config.ts",
-    "test:int": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
+    "test:int": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/",
     "test:int:ci": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
