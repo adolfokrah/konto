@@ -47,7 +47,6 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
         isActive: true,
         isFixedContribution: false,
         creator: testUser.id,
-        acceptAnonymousContributions: false,
       },
     })
 
@@ -305,7 +304,6 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
           isActive: true,
           isFixedContribution: false,
           creator: testUser.id,
-          acceptAnonymousContributions: false,
         },
       })
 

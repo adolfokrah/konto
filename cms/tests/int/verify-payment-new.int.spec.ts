@@ -44,8 +44,6 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
         currency: 'GHS',
         status: 'open',
         isActive: true,
-
-        acceptAnonymousContributions: false,
         isFixedContribution: false,
         goalAmount: 0,
       },
