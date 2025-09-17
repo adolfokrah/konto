@@ -111,7 +111,7 @@ describe('Contributions Collection Integration Tests', () => {
       expect(contribution.contributor).toBe('John Doe')
       expect(contribution.contributorPhoneNumber).toBe('+233541234569')
       expect(contribution.paymentMethod).toBe('mobile-money')
-      expect(contribution.amountContributed).toBe(100) // With creator pays platform fees, recipient gets original amount
+      expect(contribution.amountContributed).toBe(98) // With creator pays platform fees, recipient gets 98 from 100 (platform fees deducted)
       expect(
         typeof contribution.collector === 'object'
           ? contribution.collector.id
@@ -594,7 +594,7 @@ describe('Contributions Collection Integration Tests', () => {
         0,
       )
 
-      expect(totalAmount).toBe(1044) // 500 (mobile-money, creator pays fees) + 200 (bank-transfer) + 50 (cash) + 294 (bank-transfer)
+      expect(totalAmount).toBe(1034) // 490 (mobile-money, creator pays fees) + 200 (bank-transfer) + 50 (cash) + 294 (bank-transfer)
       expect(jarContributions.docs).toHaveLength(4)
     })
 
@@ -625,7 +625,7 @@ describe('Contributions Collection Integration Tests', () => {
 
       expect(page1.docs).toHaveLength(1)
       expect(page2.docs).toHaveLength(1)
-      expect(page1.docs[0].amountContributed).toBe(500) // 500 GHS with creator pays fees (highest amount first)
+      expect(page1.docs[0].amountContributed).toBe(490) // 490 GHS with creator pays fees (highest amount first)
       expect(page2.docs[0].amountContributed).toBe(50) // Lowest amount second
       expect(page1.page).toBe(1)
       expect(page2.page).toBe(2)
