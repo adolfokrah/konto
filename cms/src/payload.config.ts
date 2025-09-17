@@ -21,7 +21,6 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
-import TransactionCharges from './utilities/transaction-charges'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)

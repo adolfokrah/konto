@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
 import TransactionCharges from '@/utilities/transaction-charges'
@@ -364,7 +365,7 @@ export default function ContributionInput({
 
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
-        Upon completing this contribution, you agree to hoga's <a href="/terms" className="text-blue-500">Terms of Service</a> and <a href="/privacy" className="text-blue-500">Privacy Policy</a>.
+        Upon completing this contribution, you agree to hoga&apos;s <Link href="/terms" className="text-blue-500">Terms of Service</Link> and <Link href="/privacy" className="text-blue-500">Privacy Policy</Link>.
       </p>
     </div>
   )
