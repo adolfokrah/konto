@@ -6,7 +6,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
   operation,
   req,
 }) => {
-  if (operation === 'create' || operation === 'update') {
+  if (operation === 'create') {
     if (data.paymentStatus === 'completed') {
       const jar = await req.payload.findByID({
         collection: 'jars',
@@ -14,7 +14,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
       })
 
       if (jar) {
-        const receipt = `Your contribution of ${data.amountContributed} ${jar.currency} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
+        const receipt = `Your contribution of ${jar.currency} ${data.amountContributed} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
 
         if (data.contributorPhoneNumber) {
           sendSMS([data.contributorPhoneNumber], receipt)
