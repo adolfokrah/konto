@@ -10,6 +10,12 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class RequestContributionView extends StatefulWidget {
   const RequestContributionView({super.key});
@@ -21,6 +27,7 @@ class RequestContributionView extends StatefulWidget {
 
 class _RequestContributionViewState extends State<RequestContributionView> {
   late ScreenBrightness _screenBrightness;
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
 
   @override
   void initState() {
@@ -72,6 +79,87 @@ class _RequestContributionViewState extends State<RequestContributionView> {
     );
   }
 
+  Future<void> _downloadQRImage(String jarName) async {
+    try {
+      // Load the template image from assets
+      final ByteData templateData = await rootBundle.load(
+        'assets/images/scan_to_pay_template.jpeg',
+      ); // Add your template image here
+      final Uint8List templateBytes = templateData.buffer.asUint8List();
+      final ui.Codec templateCodec = await ui.instantiateImageCodec(
+        templateBytes,
+      );
+      final ui.FrameInfo templateFrame = await templateCodec.getNextFrame();
+      final ui.Image templateImage = templateFrame.image;
+
+      // Get QR code from the widget
+      final RenderRepaintBoundary boundary =
+          _repaintBoundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+      final ui.Image qrImage = await boundary.toImage(pixelRatio: 3.0);
+
+      // Create canvas to combine template and QR code
+      final ui.PictureRecorder recorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(recorder);
+
+      // Draw the template image as background
+      canvas.drawImage(templateImage, Offset.zero, Paint());
+
+      // Calculate QR code position (adjust these values based on your template)
+      // These coordinates should match where the QR code area is in your template
+      const double qrX =
+          -20; // X position where QR should be placed (left edge of white area)
+      const double qrY =
+          520; // Y position where QR should be placed (top of white area)
+      const double qrSize =
+          800; // Size of the QR code (width of white area)      // Draw QR code on top of template
+      canvas.drawImageRect(
+        qrImage,
+        Rect.fromLTWH(
+          0,
+          0,
+          qrImage.width.toDouble(),
+          qrImage.height.toDouble(),
+        ),
+        Rect.fromLTWH(qrX, qrY, qrSize, qrSize),
+        Paint(),
+      );
+
+      // Convert to final image
+      final ui.Picture picture = recorder.endRecording();
+      final ui.Image finalImage = await picture.toImage(
+        templateImage.width,
+        templateImage.height,
+      );
+      final ByteData? byteData = await finalImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      final Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      // Save and share
+      final directory = await getApplicationDocumentsDirectory();
+      final String fileName =
+          '${jarName}_payment_qr_${DateTime.now().millisecondsSinceEpoch}.png';
+      final String filePath = '${directory.path}/$fileName';
+      final File file = File(filePath);
+      await file.writeAsBytes(pngBytes);
+
+      // Share the saved image
+      await Share.shareXFiles([
+        XFile(filePath),
+      ], text: 'Payment QR Code for $jarName');
+    } catch (e) {
+      // Handle error - maybe show a snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download QR code: ${e.toString()}'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -96,26 +184,24 @@ class _RequestContributionViewState extends State<RequestContributionView> {
         builder: (context, state) {
           if (state is JarSummaryLoaded) {
             final paymentLink =
-                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name}";
+                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}";
             return SizedBox(
               width: double.infinity,
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(50),
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.spacingM),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.spacingM,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.spacingM,
+                    RepaintBoundary(
+                      key: _repaintBoundaryKey,
+                      child: Padding(
+                        padding: const EdgeInsets.all(50),
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.spacingM),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.spacingM,
+                            ),
                           ),
                           child: PrettyQrView.data(
                             data: paymentLink,
@@ -138,24 +224,42 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                       style: TextStyles.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.spacingS),
-                    AppSmallButton(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.share, size: 16),
-                          const SizedBox(width: AppSpacing.spacingS),
-                          Text(
-                            localizations.share,
-                            style: TextStyles.titleMedium,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppSmallButton(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.share, size: 16),
+                              const SizedBox(width: AppSpacing.spacingS),
+                              Text(
+                                localizations.share,
+                                style: TextStyles.titleMedium,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      onPressed:
-                          () => _sharePaymentLink(
-                            paymentLink,
-                            jarName,
-                            localizations,
+                          onPressed:
+                              () => _sharePaymentLink(
+                                paymentLink,
+                                jarName,
+                                localizations,
+                              ),
+                        ),
+                        const SizedBox(width: AppSpacing.spacingS),
+                        AppSmallButton(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.download, size: 16),
+                              const SizedBox(width: AppSpacing.spacingS),
+                              Text('Download', style: TextStyles.titleMedium),
+                            ],
                           ),
+                          onPressed:
+                              () => _downloadQRImage(jarName ?? 'QR_Code'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

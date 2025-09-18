@@ -58,6 +58,8 @@ export class SMSClient {
     let apiKey = opts.apiKey || process.env.MNOTIFY_API_KEY || ''
     let senderId = opts.senderId || process.env.MNOTIFY_SENDER_ID || ''
 
+    console.log(apiKey, senderId, 'testing')
+
     if (isTest) {
       if (!apiKey) apiKey = 'test_api_key'
       if (!senderId) senderId = 'TESTSENDER'

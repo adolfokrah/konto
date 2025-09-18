@@ -32,6 +32,7 @@ dependencies:
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2
   pretty_qr_code: ^3.5.0
+  path_provider: ^2.1.4
   
 
 dev_dependencies:
