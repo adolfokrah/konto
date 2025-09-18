@@ -18,6 +18,8 @@ class AppImages {
   static const String darkMode = '$_imagesPath/dark-theme.png';
   static const String systemMode = '$_imagesPath/system-theme.png';
 
+  static const String logo = '$_imagesPath/logo.png';
+
   // TODO: Add more image categories as needed:
   // static const String logoPath = '$_imagesPath/logo.png';
   // static const String placeholderImage = '$_imagesPath/placeholder.png';

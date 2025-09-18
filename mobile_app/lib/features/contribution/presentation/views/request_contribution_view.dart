@@ -1,11 +1,11 @@
+import 'package:Hoga/core/constants/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/config/app_config.dart';
-import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -103,34 +103,30 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.spacingL),
-                      margin: const EdgeInsets.only(top: 80),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceWhite,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.spacingM,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.spacingM,
-                        ),
-                        child: QrImageView(
-                          data: paymentLink,
-                          version: QrVersions.auto,
-                          size: 200.0,
-                          backgroundColor: Colors.white,
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black,
+                    Padding(
+                      padding: const EdgeInsets.all(50),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.spacingM),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.spacingM,
                           ),
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: Colors.black,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.spacingM,
                           ),
-                          errorCorrectionLevel: QrErrorCorrectLevel.M,
-                          gapless: true,
+                          child: PrettyQrView.data(
+                            data: paymentLink,
+                            decoration: const PrettyQrDecoration(
+                              shape: PrettyQrDotsSymbol(color: Colors.black),
+                              background: Colors.transparent,
+                              image: PrettyQrDecorationImage(
+                                image: AssetImage(AppImages.logo),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

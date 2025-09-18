@@ -211,25 +211,25 @@ class _JarDetailViewState extends State<JarDetailView> {
                           snap: true,
                           pinned: true,
                           actions: [
-                            AppIconButton(
-                              key: const Key('feedback_button'),
-                              onPressed: () async {
-                                try {
-                                  await FeedbackService.openFeedbackForm();
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    AppSnackBar.show(
-                                      context,
-                                      message:
-                                          'Could not open feedback form. Please try again.',
-                                      type: SnackBarType.error,
-                                    );
-                                  }
-                                }
-                              },
-                              icon: Icons.send,
-                              size: const Size(40, 40),
-                            ),
+                            // AppIconButton(
+                            //   key: const Key('feedback_button'),
+                            //   onPressed: () async {
+                            //     try {
+                            //       await FeedbackService.openFeedbackForm();
+                            //     } catch (e) {
+                            //       if (context.mounted) {
+                            //         AppSnackBar.show(
+                            //           context,
+                            //           message:
+                            //               'Could not open feedback form. Please try again.',
+                            //           type: SnackBarType.error,
+                            //         );
+                            //       }
+                            //     }
+                            //   },
+                            //   icon: Icons.send,
+                            //   size: const Size(40, 40),
+                            // ),
                             if (state is JarSummaryLoaded)
                               AppIconButton(
                                 key: const Key('request_button_qr_code'),
