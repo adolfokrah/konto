@@ -62,3 +62,66 @@ android {
 flutter {
     source = "../.."
 }
+
+// Task to generate app signature hash for SMS Retriever API
+tasks.register("generateAppSignature") {
+    doLast {
+        val packageName = android.defaultConfig.applicationId
+        println("🔍 Generating App Signature Hash for: $packageName")
+        
+        try {
+            // Get debug keystore SHA256 fingerprint
+            val keystorePath = "${System.getProperty("user.home")}/.android/debug.keystore"
+            val keytoolCmd = listOf(
+                "keytool", "-list", "-v",
+                "-keystore", keystorePath,
+                "-alias", "androiddebugkey",
+                "-storepass", "android",
+                "-keypass", "android"
+            )
+            
+            val process = ProcessBuilder(keytoolCmd)
+                .redirectErrorStream(true)
+                .start()
+            
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+            
+            val sha256Regex = Regex("SHA256:\\s*([A-F0-9:]+)")
+            val sha256Match = sha256Regex.find(output)
+            
+            if (sha256Match != null) {
+                val sha256Fingerprint = sha256Match.groupValues[1]
+                val appSignature = generateAppSignatureHash(packageName!!, sha256Fingerprint)
+                
+                println("🔐 SHA256 Fingerprint: $sha256Fingerprint")
+                println("✅ App Signature Hash: $appSignature")
+                println("")
+                println("📋 For SMS Retriever API, append this to your SMS:")
+                println("   Your verification code is: 123456 $appSignature")
+                println("")
+                println("🔗 For Firebase App Check, use: $appSignature")
+            } else {
+                println("❌ Could not extract SHA256 fingerprint from keystore")
+            }
+        } catch (e: Exception) {
+            println("❌ Error generating app signature: ${e.message}")
+            println("Run manually: keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android")
+        }
+    }
+}
+
+fun generateAppSignatureHash(packageName: String, sha256Fingerprint: String): String {
+    val sha256Clean = sha256Fingerprint.replace(":", "").uppercase()
+    val appInfo = "$packageName $sha256Clean"
+    
+    val messageDigest = java.security.MessageDigest.getInstance("SHA-256")
+    val hashBytes = messageDigest.digest(appInfo.toByteArray())
+    
+    // Take first 9 bytes and encode to base64
+    val truncated = hashBytes.take(9).toByteArray()
+    val base64Encoded = java.util.Base64.getEncoder().encodeToString(truncated)
+    
+    // Remove padding and take first 11 characters
+    return base64Encoded.replace("=", "").take(11)
+}
