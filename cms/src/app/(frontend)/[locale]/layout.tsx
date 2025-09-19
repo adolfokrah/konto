@@ -6,13 +6,13 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 
 export interface LocaleLayoutProps {
   children: React.ReactNode
-  params: {
+  params: Promise<{
     locale: string
-  }
+  }>
 }
 
 // Generate metadata based on locale
-export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
   
   const titles = {
