@@ -5,6 +5,7 @@ import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
 import { manageUserRole } from './endpoints/manage-user-role'
+import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
 import { createSubAccount } from './hooks/create-sub-account'
 
 export const Users: CollectionConfig = {
@@ -70,6 +71,11 @@ export const Users: CollectionConfig = {
       path: '/manage-role',
       method: 'post',
       handler: manageUserRole,
+    },
+    {
+      path: '/send-whatsapp-otp',
+      method: 'post',
+      handler: sendWhatsAppOtp,
     },
   ],
   fields: [

@@ -48,6 +48,11 @@ class VerificationRepository {
         message: message,
       );
 
+      await _smsApiProvider.sendWhatsAppOtp(
+        phoneNumber: phoneNumber,
+        otpCode: otp,
+      );
+
       if (apiResponse['success'] == true) {
         // Check Mnotify specific response
         final mnotifyData = apiResponse['data'];

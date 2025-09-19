@@ -20,6 +20,7 @@ class BackendConfig {
   static const String checkUserExistence = '/users/check-user-existence';
   static const String loginWithPhoneEndpoint = '/users/login-with-phone';
   static const String registerUserEndpoint = '/users/register-user';
+  static const String sendWhatsAppOtpEndpoint = '/users/send-whatsapp-otp';
 
   // Jar endpoints
   static const String jarsEndpoint = '/jars';
