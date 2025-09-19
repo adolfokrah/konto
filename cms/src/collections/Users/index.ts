@@ -4,6 +4,7 @@ import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
+import { manageUserRole } from './endpoints/manage-user-role'
 import { createSubAccount } from './hooks/create-sub-account'
 
 export const Users: CollectionConfig = {
@@ -13,29 +14,35 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   access: {
+    // Only allow admin users to access the CMS
+    admin: ({ req: { user } }) => {
+      return user?.role === 'admin'
+    },
     // Allow public registration
     create: () => true,
     // Logged in users can read themselves, admins can read all
     read: ({ req: { user } }) => {
+      if (user?.role === 'admin') {
+        return true // Admins can read all users
+      }
       if (user) {
-        return true
+        return { id: { equals: user.id } } // Users can only read themselves
       }
       return false
     },
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {
+      if (user?.role === 'admin') {
+        return true // Admins can update all users
+      }
       if (user) {
-        return true
+        return { id: { equals: user.id } } // Users can only update themselves
       }
       return false
     },
     // Only admins can delete
     delete: ({ req: { user } }) => {
-      if (user) {
-        // Only allow delete if user is admin (we can check roles later)
-        return true
-      }
-      return false
+      return user?.role === 'admin'
     },
   },
   endpoints: [
@@ -58,6 +65,11 @@ export const Users: CollectionConfig = {
       path: '/verify-account-details',
       method: 'post',
       handler: verifyAccountDetails,
+    },
+    {
+      path: '/manage-role',
+      method: 'post',
+      handler: manageUserRole,
     },
   ],
   fields: [
@@ -96,6 +108,19 @@ export const Users: CollectionConfig = {
       name: 'isKYCVerified',
       type: 'checkbox',
       defaultValue: true, //only for testing
+    },
+    {
+      name: 'role',
+      type: 'select',
+      options: [
+        { label: 'User', value: 'user' },
+        { label: 'Admin', value: 'admin' },
+      ],
+      defaultValue: 'user',
+      required: true,
+      admin: {
+        description: 'User role - only admin users can access the CMS',
+      },
     },
     {
       label: 'Withdrawal Account',

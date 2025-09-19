@@ -66,6 +66,7 @@ describe('Register User Endpoint Integration Tests', () => {
           country: 'ghana',
           fullName: 'John Doe',
           isKYCVerified: false,
+          role: 'user',
           appSettings: {
             language: 'en',
             theme: 'system',
@@ -243,6 +244,7 @@ describe('Register User Endpoint Integration Tests', () => {
           country: 'ghana',
           fullName: 'Existing User',
           isKYCVerified: false,
+          role: 'user',
         },
       })
     })

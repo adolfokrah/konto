@@ -85,6 +85,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         email: 'john.doe@example.com',
         password: 'testPassword123',
         isKYCVerified: true,
+        role: 'user',
       },
     })
 
@@ -140,6 +141,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         email: 'completed.user@example.com',
         password: 'testPassword123',
         isKYCVerified: true,
+        role: 'user',
       },
     })
 
@@ -205,6 +207,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         email: 'collector.test@example.com',
         password: 'testPassword123',
         isKYCVerified: true,
+        role: 'user',
       },
     })
 
@@ -263,6 +266,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         password: 'testPassword123',
         isKYCVerified: true,
         paystackSubAccountCode: 'ACCT_TEST_123',
+        role: 'user',
       },
     })
 

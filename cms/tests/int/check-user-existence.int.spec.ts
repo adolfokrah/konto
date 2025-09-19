@@ -54,6 +54,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: false,
+          role: 'user',
         },
       })
     })
@@ -303,6 +304,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: false,
+          role: 'user',
         },
       })
 

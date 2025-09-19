@@ -54,6 +54,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user',
         },
       })
     })
@@ -230,6 +231,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+234',
           country: 'ng' as const,
           isKYCVerified: true,
+          role: 'user',
         },
       })
 
@@ -263,6 +265,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: false, // Not verified
+          role: 'user',
         },
       })
 
@@ -330,6 +333,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233', // Same country code
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user',
         },
       })
 
@@ -380,6 +384,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user',
         },
       })
     })
@@ -503,6 +508,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: false,
+          role: 'user',
         },
       })
 
@@ -536,6 +542,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user',
         },
       })
 

@@ -23,6 +23,7 @@ const createMockUser = (id: string = 'user123') => ({
   phoneNumber: '+1234567890',
   country: 'US',
   email: 'test@example.com',
+  role: 'user' as const,
   updatedAt: new Date().toISOString(),
   createdAt: new Date().toISOString(),
   collection: 'users' as const,

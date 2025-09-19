@@ -164,6 +164,7 @@ export const seed = async ({
         password: 'password',
         phoneNumber: '+1234567890',
         country: 'us',
+        role: 'admin', // Set as admin for seed data
       },
     }),
     createMediaWithRetry(payload, 'media', image1, image1Buffer, 'image-post1.webp'),

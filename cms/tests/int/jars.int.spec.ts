@@ -45,6 +45,7 @@ describe('Jars Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         isKYCVerified: true,
+        role: 'user',
       },
     })
 
@@ -57,6 +58,7 @@ describe('Jars Collection Integration Tests', () => {
         phoneNumber: '+233541234568',
         country: 'gh' as const,
         isKYCVerified: true,
+        role: 'user',
       },
     })
   })

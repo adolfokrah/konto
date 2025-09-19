@@ -44,6 +44,7 @@ describe('Users Collection Integration Tests', () => {
         fullName: 'John Doe',
         phoneNumber: '+233541234567',
         country: 'gh' as const,
+        role: 'user' as const,
       }
 
       const user = await payload.create({
@@ -67,6 +68,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+234801234567',
 
         country: 'ng' as const,
+        role: 'user' as const,
         isKYCVerified: true,
         appSettings: {
           language: 'fr' as const,
@@ -117,6 +119,7 @@ describe('Users Collection Integration Tests', () => {
         fullName: 'First User',
         phoneNumber: '+233541234567',
         country: 'gh' as const,
+        role: 'user' as const,
       }
 
       // Create first user
@@ -151,6 +154,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+233541111111',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user' as const,
         },
         {
           email: 'user2@example.com',
@@ -158,6 +162,7 @@ describe('Users Collection Integration Tests', () => {
           fullName: 'Bob Wilson',
           phoneNumber: '+234802222222',
           country: 'ng' as const,
+          role: 'user' as const,
           isKYCVerified: false,
         },
         {
@@ -167,6 +172,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+233543333333',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user' as const,
         },
       ]
 
@@ -293,6 +299,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+233541234567',
           country: 'gh' as const,
           isKYCVerified: false,
+          role: 'user' as const,
         },
       })
     })
@@ -303,6 +310,7 @@ describe('Users Collection Integration Tests', () => {
         id: testUser.id,
         data: {
           isKYCVerified: true,
+          role: 'user' as const,
         },
       })
 
@@ -340,6 +348,7 @@ describe('Users Collection Integration Tests', () => {
         data: {
           phoneNumber: '+234801234567',
           country: 'ng' as const,
+          role: 'user' as const,
         },
       })
 
@@ -360,6 +369,7 @@ describe('Users Collection Integration Tests', () => {
           fullName: 'Delete Test User',
           phoneNumber: '+233541234567',
           country: 'gh' as const,
+          role: 'user' as const,
         },
       })
     })
@@ -405,6 +415,7 @@ describe('Users Collection Integration Tests', () => {
           fullName: 'Auth Test User',
           phoneNumber: '+233541234567',
           country: 'gh' as const,
+          role: 'user' as const,
         },
       })
     })
@@ -450,6 +461,7 @@ describe('Users Collection Integration Tests', () => {
         fullName: 'Default User',
         phoneNumber: '+233541234567',
         country: 'gh' as const,
+        role: 'user' as const,
         appSettings: {
           language: 'en' as const,
           theme: 'dark' as const,
@@ -489,6 +501,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+233541111111',
           country: 'gh' as const,
           isKYCVerified: true,
+          role: 'user' as const,
         },
         {
           email: 'ghana.unverified@example.com',
@@ -497,6 +510,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+233542222222',
           country: 'gh' as const,
           isKYCVerified: false,
+          role: 'user' as const,
         },
         {
           email: 'nigeria.verified@example.com',
@@ -504,6 +518,7 @@ describe('Users Collection Integration Tests', () => {
           fullName: 'Nigeria Verified User',
           phoneNumber: '+234803333333',
           country: 'ng' as const,
+          role: 'user' as const,
           isKYCVerified: true,
         },
         {
@@ -512,6 +527,7 @@ describe('Users Collection Integration Tests', () => {
           fullName: 'Nigeria Unverified User',
           phoneNumber: '+234804444444',
           country: 'ng' as const,
+          role: 'user' as const,
           isKYCVerified: false,
         },
       ]

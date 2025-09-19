@@ -33,6 +33,7 @@ describe('TransferMomo Endpoint Integration Tests', () => {
         accountNumber: '0244123456',
         accountHolder: 'Creator User',
         isKYCVerified: true,
+        role: 'user',
       },
     })
 

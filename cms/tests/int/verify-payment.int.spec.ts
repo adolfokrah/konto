@@ -32,6 +32,7 @@ describe('VerifyPayment Endpoint Integration Tests', () => {
         bank: 'mtn',
         accountHolder: 'Creator User',
         isKYCVerified: true,
+        role: 'user',
       },
     })
 

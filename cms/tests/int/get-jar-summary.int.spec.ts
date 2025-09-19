@@ -29,6 +29,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
         countryCode: '+1',
         country: 'us',
         isKYCVerified: true,
+        role: 'user',
       },
     })
   })
