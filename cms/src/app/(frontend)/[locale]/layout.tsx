@@ -44,22 +44,6 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const { locale } = await params
-  
-  // Validate locale
-  const supportedLocales = ['en', 'fr']
-  if (!supportedLocales.includes(locale)) {
-    // Handle unsupported locale
-    return (
-      <html lang="en">
-        <body>
-          <div>
-            <h1>Unsupported locale: {locale}</h1>
-            <p>Supported locales: {supportedLocales.join(', ')}</p>
-          </div>
-        </body>
-      </html>
-    )
-  }
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang={locale} suppressHydrationWarning>
