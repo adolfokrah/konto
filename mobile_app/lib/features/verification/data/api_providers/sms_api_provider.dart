@@ -1,10 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:Hoga/core/config/sms_config.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 
 /// API Provider for SMS operations using Mnotify service with Dio
 class SmsApiProvider {
   late final Dio _dio;
+
+  // Test mode flag - can be set during testing
+  static bool isTestMode = false;
 
   SmsApiProvider({Dio? dio}) {
     _dio =
@@ -39,6 +43,24 @@ class SmsApiProvider {
     required String phoneNumber,
     required String message,
   }) async {
+    // Mock SMS sending in test mode
+    if (isTestMode) {
+      print('🧪 TEST MODE: Mocking SMS send to $phoneNumber');
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ); // Simulate network delay
+      return {
+        'success': true,
+        'data': {
+          'status': 'success',
+          'code': '2000',
+          'message': 'SMS sent successfully (mocked)',
+          'messageId': 'mock_message_${DateTime.now().millisecondsSinceEpoch}',
+        },
+        'statusCode': 200,
+      };
+    }
+
     try {
       // Prepare request data
       final requestData = {
@@ -137,6 +159,27 @@ class SmsApiProvider {
     required String phoneNumber,
     required String otpCode,
   }) async {
+    // Mock WhatsApp OTP sending in test mode
+    if (isTestMode) {
+      print(
+        '🧪 TEST MODE: Mocking WhatsApp OTP send to $phoneNumber with code: $otpCode',
+      );
+      await Future.delayed(
+        const Duration(milliseconds: 800),
+      ); // Simulate network delay
+      return {
+        'success': true,
+        'message': 'WhatsApp OTP sent successfully (mocked)',
+        'data': {
+          'messageId': 'wamid.mock_${DateTime.now().millisecondsSinceEpoch}',
+          'phoneNumber': phoneNumber,
+          'status': 'sent',
+        },
+        'messageId': 'wamid.mock_${DateTime.now().millisecondsSinceEpoch}',
+        'phoneNumber': phoneNumber,
+      };
+    }
+
     try {
       // Create a new Dio instance with JSON content type for API calls
       final apiDio = Dio(
