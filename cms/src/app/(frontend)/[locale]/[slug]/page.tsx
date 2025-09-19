@@ -28,6 +28,7 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
+    locale: 'all'
   })
 
   const params = pages.docs
