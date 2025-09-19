@@ -114,4 +114,8 @@ export default buildConfig({
     },
     tasks: [],
   },
+  localization: {
+    locales: ['en', 'fr'], // required
+    defaultLocale: 'en', // required
+  },
 })
