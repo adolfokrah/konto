@@ -1,6 +1,8 @@
 name: Automated Dependency Updates In CMS
 
 on:
+  push:
+    branches: [ main, master ]
   schedule:
     # Run dependency checks daily at 3 AM UTC
     - cron: '0 3 * * *'

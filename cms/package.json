@@ -22,7 +22,7 @@
     "test:unit": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/unit/",
     "test:e2e": "infisical run --env=dev -- cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test --config=playwright.config.ts",
     "test:int": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/",
-    "test:int:ci": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
+    "test:int:ci": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.ci.mts"
   },
   "dependencies": {
     "@payloadcms/admin-bar": "3.55.1",
@@ -83,7 +83,7 @@
     "copyfiles": "^2.4.1",
     "eslint": "^9.35.0",
     "eslint-config-next": "15.5.3",
-    "jsdom": "26.1.0",
+    "jsdom": "25.0.1",
     "playwright": "1.55.0",
     "playwright-core": "1.55.0",
     "postcss": "^8.5.6",
