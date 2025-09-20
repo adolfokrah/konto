@@ -2,7 +2,7 @@ import KYCComponent from "@/components/KYCComponent";
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
 
    try {
       const { id } = await params
