@@ -7,12 +7,12 @@ const Dojah = dynamic(() => import('react-dojah'), {
   loading: () => <div className="flex items-center justify-center p-8">Loading KYC widget...</div>
 })
 
-const appID = "68cd860504f467fe4502ece7";
-const publicKey = "test_pk_gaJQsDZfjzmG1VXs3YTF92ukl";
-const type = "custom";
+const appID = process.env.NEXT_PUBLIC_DOJAH_APP_ID!;
+const publicKey = process.env.NEXT_PUBLIC_DOJAH_PUBLIC_KEY!;
 const config = {
-    widget_id: "68cd8e79f42ef83ae2caf5e0" //this is generated from easyonboard here https://app.dojah.io/easy-onboard
+    widget_id: process.env.NEXT_PUBLIC_DOJAH_WIDGET_ID! //this is generated from easyonboard here https://app.dojah.io/easy-onboard
 };
+const type = "custom";
 
 export default function KYCComponent({ userId, userData }: { userId: string, userData: {
     first_name?: string;
@@ -36,15 +36,14 @@ export default function KYCComponent({ userId, userData }: { userId: string, use
             .then((res) => res.json())
             .then((data) => {
                 if(data.success){
-                    alert('KYC verification successful!');
+                    alert('KYC verification successful!, restart the app to access your account');
                     window.location.href = '/'; //redirect to dashboard or any other page
                 }else{
                     alert('KYC verification failed: ' + data.message);
                 }
             })
             .catch((err) => {
-                console.error('Error updating KYC status:', err);
-                alert('An error occurred while updating KYC status. Please try again.');
+                throw new Error(err);
             });
         }else if(type === 'error'){
             console.log(data, 'verification failed');

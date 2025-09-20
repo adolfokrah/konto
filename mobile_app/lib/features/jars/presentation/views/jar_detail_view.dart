@@ -1,4 +1,3 @@
-import 'package:Hoga/features/jars/presentation/widgets/kyc_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -11,14 +10,14 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/contribution_chart.dart';
 import 'package:Hoga/core/widgets/contribution_list_item.dart';
-import 'package:Hoga/core/widgets/contributor_avatar.dart';
+import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/core/widgets/goal_progress_card.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
 import 'package:Hoga/core/widgets/scrollable_background_image.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
-import 'package:Hoga/core/services/feedback_service.dart';
+import 'package:Hoga/core/widgets/feedback_action_button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/collaborators/presentation/views/collectors_view.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
@@ -33,6 +32,7 @@ import 'package:Hoga/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -112,7 +112,6 @@ class _JarDetailViewState extends State<JarDetailView> {
         BlocListener<JarSummaryBloc, JarSummaryState>(
           listener: (context, state) {
             if (state is JarSummaryLoaded) {
-              // Show error message
               context.read<JarListBloc>().add(LoadJarList());
             }
           },
@@ -151,178 +150,132 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
       ],
-      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            body: Stack(
-              children: [
-                // Background image positioned to cover upper section only
-                if (state is JarSummaryLoaded &&
-                    state.jarData.image?.url != null)
-                  ScrollableBackgroundImage(
-                    imageUrl: ImageUtils.constructImageUrl(
-                      state.jarData.image!.url!,
-                    ),
-                    scrollOffset: _scrollOffset,
-                    height: 450.0,
-                    maxScrollForOpacity: 200.0,
-                    baseOpacity: 0.30,
-                  ),
-                // Main content with custom scroll view
-                NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification notification) {
-                    if (notification is ScrollUpdateNotification) {
-                      setState(() {
-                        _scrollOffset = notification.metrics.pixels;
-                      });
-                    }
-                    return false;
-                  },
-                  child: RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    child: CustomScrollView(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverAppBar(
-                          centerTitle: false,
-                          title: BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, state) {
-                              String firstName = localizations.user;
-                              if (state is AuthAuthenticated) {
-                                // Extract first name from full name
-                                final fullName = state.user.fullName;
-                                firstName = fullName.split(' ').first;
-                              }
-                              return Text(
-                                localizations.hiUser(firstName),
-                                style: TextStyles.titleMediumLg,
-                              );
-                            },
-                          ),
-                          backgroundColor: Color.lerp(
-                            Colors.transparent,
-                            Theme.of(context).colorScheme.surface,
-                            (_scrollOffset / 200).clamp(0.0, 1.0),
-                          ),
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 0,
-                          floating: true,
-                          snap: true,
-                          pinned: true,
-                          actions: [
-                            AppIconButton(
-                              key: const Key('feedback_button'),
-                              onPressed: () async {
-                                try {
-                                  await FeedbackService.openFeedbackForm();
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    AppSnackBar.show(
-                                      context,
-                                      message:
-                                          'Could not open feedback form. Please try again.',
-                                      type: SnackBarType.error,
-                                    );
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          // Check if user is authenticated and KYC is not verified
+          if (authState is AuthAuthenticated && !authState.user.isKYCVerified) {
+            return const KycView();
+          }
+
+          return BlocBuilder<JarSummaryBloc, JarSummaryState>(
+            builder: (context, state) {
+              return Scaffold(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                body: Stack(
+                  children: [
+                    // Background image positioned to cover upper section only
+                    if (state is JarSummaryLoaded &&
+                        state.jarData.image?.url != null)
+                      ScrollableBackgroundImage(
+                        imageUrl: ImageUtils.constructImageUrl(
+                          state.jarData.image!.url!,
+                        ),
+                        scrollOffset: _scrollOffset,
+                        height: 450.0,
+                        maxScrollForOpacity: 200.0,
+                        baseOpacity: 0.30,
+                      ),
+                    // Main content with custom scroll view
+                    NotificationListener<ScrollNotification>(
+                      onNotification: (ScrollNotification notification) {
+                        if (notification is ScrollUpdateNotification) {
+                          setState(() {
+                            _scrollOffset = notification.metrics.pixels;
+                          });
+                        }
+                        return false;
+                      },
+                      child: RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            SliverAppBar(
+                              centerTitle: false,
+                              title: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, state) {
+                                  String firstName = localizations.user;
+                                  if (state is AuthAuthenticated) {
+                                    // Extract first name from full name
+                                    final fullName = state.user.fullName;
+                                    firstName = fullName.split(' ').first;
                                   }
-                                }
-                              },
-                              icon: Icons.send,
-                              size: const Size(40, 40),
-                            ),
-                            if (state is JarSummaryLoaded)
-                              AppIconButton(
-                                key: const Key('request_button_qr_code'),
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.contributionRequest,
-                                    arguments: {
-                                      'paymentLink': state.jarData.link,
-                                      'jarName': state.jarData.name,
-                                    },
+                                  return Text(
+                                    localizations.hiUser(firstName),
+                                    style: TextStyles.titleMediumLg,
                                   );
                                 },
-                                icon: Icons.qr_code,
-                                enabled:
-                                    state.jarData.status != JarStatus.sealed,
-                                size: const Size(40, 40),
                               ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: AppSpacing.spacingXs,
-                                right: AppSpacing.spacingM,
+                              backgroundColor: Color.lerp(
+                                Colors.transparent,
+                                Theme.of(context).colorScheme.surface,
+                                (_scrollOffset / 200).clamp(0.0, 1.0),
                               ),
-                              child: BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, authState) {
-                                  String contributorName = '';
-                                  String? avatarUrl;
-                                  if (authState is AuthAuthenticated) {
-                                    contributorName = authState.user.fullName;
-                                    avatarUrl =
-                                        authState.user.photo?.thumbnailURL;
-                                  }
-                                  return BlocBuilder<
-                                    UserAccountBloc,
-                                    UserAccountState
-                                  >(
-                                    builder: (context, uaState) {
-                                      if (uaState is UserAccountSuccess) {
-                                        contributorName =
-                                            uaState.updatedUser.fullName;
-                                        avatarUrl =
-                                            uaState
-                                                .updatedUser
-                                                .photo
-                                                ?.thumbnailURL;
-                                      }
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.userAccountView,
-                                          );
+                              surfaceTintColor: Colors.transparent,
+                              elevation: 0,
+                              floating: true,
+                              snap: true,
+                              pinned: true,
+                              actions: [
+                                const FeedbackActionButton(),
+                                if (state is JarSummaryLoaded)
+                                  AppIconButton(
+                                    key: const Key('request_button_qr_code'),
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.contributionRequest,
+                                        arguments: {
+                                          'paymentLink': state.jarData.link,
+                                          'jarName': state.jarData.name,
                                         },
-                                        child: ContributorAvatar(
-                                          contributorName: contributorName,
-                                          backgroundColor:
-                                              isDark
-                                                  ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary
-                                                  : Colors.white,
-                                          radius: 20,
-                                          avatarUrl: avatarUrl,
-                                        ),
                                       );
                                     },
-                                  );
-                                },
-                              ),
+                                    icon: Icons.qr_code,
+                                    enabled:
+                                        state.jarData.status !=
+                                        JarStatus.sealed,
+                                    size: const Size(40, 40),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: AppSpacing.spacingXs,
+                                    right: AppSpacing.spacingM,
+                                  ),
+                                  child: BlocBuilder<AuthBloc, AuthState>(
+                                    builder: (context, authState) {
+                                      return BlocBuilder<
+                                        UserAccountBloc,
+                                        UserAccountState
+                                      >(
+                                        builder: (context, uaState) {
+                                          return UserAvatarSmall(
+                                            backgroundColor:
+                                                isDark
+                                                    ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary
+                                                    : Colors.white,
+                                            radius: 20,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
+
+                            _buildSliverBody(context, state),
                           ],
                         ),
-
-                        BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, authSate) {
-                            if (authSate is AuthAuthenticated) {
-                              if (!authSate.user.isKYCVerified) {
-                                return SliverFillRemaining(
-                                  child: KycVerificationPrompt(
-                                    user: authSate.user,
-                                  ),
-                                );
-                              }
-                            }
-                            return _buildSliverBody(context, state);
-                          },
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),

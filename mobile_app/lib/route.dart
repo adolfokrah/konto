@@ -1,3 +1,4 @@
+import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
@@ -52,6 +53,7 @@ class AppRoutes {
     '/contributions_list': (context) => const ContributionsListView(),
     '/theme_settings': (context) => const ThemeSettingsView(),
     '/language_settings': (context) => const LanguageSettingsView(),
+    '/kycView': (context) => const KycView(),
   };
 
   // Route names constants for easy access
@@ -80,4 +82,5 @@ class AppRoutes {
   static const String contributionsList = '/contributions_list';
   static const String themeSettings = '/theme_settings';
   static const String languageSettings = '/language_settings';
+  static const String kycView = '/kycView';
 }
