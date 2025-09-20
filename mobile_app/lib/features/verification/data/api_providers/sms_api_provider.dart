@@ -10,6 +10,11 @@ class SmsApiProvider {
   // Test mode flag - can be set during testing
   static bool isTestMode = false;
 
+  /// Helper method to detect if we're running in Flutter test environment
+  bool _isFlutterTest() {
+    return const bool.fromEnvironment('flutter.testing', defaultValue: false);
+  }
+
   SmsApiProvider({Dio? dio}) {
     _dio =
         dio ??
@@ -43,8 +48,11 @@ class SmsApiProvider {
     required String phoneNumber,
     required String message,
   }) async {
+    // Automatically detect test environment or use manual test mode
+    final isInTestMode = isTestMode || kDebugMode && _isFlutterTest();
+
     // Mock SMS sending in test mode
-    if (isTestMode) {
+    if (isInTestMode) {
       print('🧪 TEST MODE: Mocking SMS send to $phoneNumber');
       await Future.delayed(
         const Duration(milliseconds: 500),
@@ -159,8 +167,11 @@ class SmsApiProvider {
     required String phoneNumber,
     required String otpCode,
   }) async {
+    // Automatically detect test environment or use manual test mode
+    final isInTestMode = isTestMode || kDebugMode && _isFlutterTest();
+
     // Mock WhatsApp OTP sending in test mode
-    if (isTestMode) {
+    if (isInTestMode) {
       print(
         '🧪 TEST MODE: Mocking WhatsApp OTP send to $phoneNumber with code: $otpCode',
       );
