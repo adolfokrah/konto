@@ -110,7 +110,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       const double qrX =
           -20; // X position where QR should be placed (left edge of white area)
       const double qrY =
-          520; // Y position where QR should be placed (top of white area)
+          550; // Y position where QR should be placed (top of white area)
       const double qrSize =
           800; // Size of the QR code (width of white area)      // Draw QR code on top of template
       canvas.drawImageRect(
