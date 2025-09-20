@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build:dev": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation next build",
     "build:vercel": "pnpm install --no-frozen-lockfile && cross-env NODE_OPTIONS=--no-deprecation next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "dev": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation next dev",
