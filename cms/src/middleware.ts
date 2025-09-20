@@ -20,6 +20,7 @@ export function middleware(request: NextRequest) {
     '/monitoring',
     '/pay/', // Skip pay routes
     '/payload/', // Skip payload admin routes
+    '/verify', // Skip KYC verify route
   ].some((path) => pathname.startsWith(path))
 
   if (shouldSkip) {
@@ -80,6 +81,6 @@ export const config = {
   // Matcher for frontend routes only, excluding API and admin routes
   matcher: [
     // Skip all internal paths (_next) and API routes
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api|admin|media|monitoring|pay|payload).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api|admin|media|monitoring|pay|payload|verify).*)',
   ],
 }

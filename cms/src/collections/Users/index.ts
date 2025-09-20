@@ -7,6 +7,7 @@ import { verifyAccountDetails } from './endpoints/verify-account-details'
 import { manageUserRole } from './endpoints/manage-user-role'
 import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
 import { createSubAccount } from './hooks/create-sub-account'
+import { updateKYC } from './endpoints/update-kyc'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -76,6 +77,11 @@ export const Users: CollectionConfig = {
       path: '/send-whatsapp-otp',
       method: 'post',
       handler: sendWhatsAppOtp,
+    },
+    {
+      path: '/update-kyc',
+      method: 'post',
+      handler: updateKYC,
     },
   ],
   fields: [

@@ -96,7 +96,7 @@ class AuthApiProvider {
           'phoneNumber': phoneNumber,
           'countryCode': countryCode,
           'country': country,
-          'isKYCVerified': true,
+          'isKYCVerified': false,
           'appSettings': {
             'language': 'en',
             'darkMode': false,

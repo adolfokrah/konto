@@ -1,3 +1,4 @@
+import 'package:Hoga/features/jars/presentation/widgets/kyc_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -211,25 +212,25 @@ class _JarDetailViewState extends State<JarDetailView> {
                           snap: true,
                           pinned: true,
                           actions: [
-                            // AppIconButton(
-                            //   key: const Key('feedback_button'),
-                            //   onPressed: () async {
-                            //     try {
-                            //       await FeedbackService.openFeedbackForm();
-                            //     } catch (e) {
-                            //       if (context.mounted) {
-                            //         AppSnackBar.show(
-                            //           context,
-                            //           message:
-                            //               'Could not open feedback form. Please try again.',
-                            //           type: SnackBarType.error,
-                            //         );
-                            //       }
-                            //     }
-                            //   },
-                            //   icon: Icons.send,
-                            //   size: const Size(40, 40),
-                            // ),
+                            AppIconButton(
+                              key: const Key('feedback_button'),
+                              onPressed: () async {
+                                try {
+                                  await FeedbackService.openFeedbackForm();
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    AppSnackBar.show(
+                                      context,
+                                      message:
+                                          'Could not open feedback form. Please try again.',
+                                      type: SnackBarType.error,
+                                    );
+                                  }
+                                }
+                              },
+                              icon: Icons.send,
+                              size: const Size(40, 40),
+                            ),
                             if (state is JarSummaryLoaded)
                               AppIconButton(
                                 key: const Key('request_button_qr_code'),
@@ -301,7 +302,21 @@ class _JarDetailViewState extends State<JarDetailView> {
                             ),
                           ],
                         ),
-                        _buildSliverBody(context, state),
+
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authSate) {
+                            if (authSate is AuthAuthenticated) {
+                              if (!authSate.user.isKYCVerified) {
+                                return SliverFillRemaining(
+                                  child: KycVerificationPrompt(
+                                    user: authSate.user,
+                                  ),
+                                );
+                              }
+                            }
+                            return _buildSliverBody(context, state);
+                          },
+                        ),
                       ],
                     ),
                   ),

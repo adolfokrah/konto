@@ -114,6 +114,9 @@ importers:
       react:
         specifier: 19.1.1
         version: 19.1.1
+      react-dojah:
+        specifier: ^1.1.0
+        version: 1.1.0(react@19.1.1)
       react-dom:
         specifier: 19.1.1
         version: 19.1.1(react@19.1.1)
@@ -4965,6 +4968,12 @@ packages:
     peerDependencies:
       react: ^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.9.0 || ^17 || ^18 || ^19 || ^19.0.0-rc
+
+  react-dojah@1.1.0:
+    resolution: {integrity: sha512-+O+NjhUR98Ti4QOvoTURVlN6mB4Df/+ebLWintElJX7y8eD4oVByJHhvXA6Qwr9oEXq6u9qDTY9OH5/UbEKm9w==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16.0.0
 
   react-dom@19.1.1:
     resolution: {integrity: sha512-Dlq/5LAZgF0Gaz6yiqZCf6VCcZs1ghAJyrsu84Q/GT0gV+mCxbfmKNoGRKBYMJ8IEdGPqu49YWXD02GCknEDkw==}
@@ -11683,6 +11692,10 @@ snapshots:
       date-fns: 3.6.0
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
+
+  react-dojah@1.1.0(react@19.1.1):
+    dependencies:
+      react: 19.1.1
 
   react-dom@19.1.1(react@19.1.1):
     dependencies:
