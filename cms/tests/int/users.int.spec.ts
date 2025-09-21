@@ -45,6 +45,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
+        isKYCVerified: true, // Explicitly set for testing
       }
 
       const user = await payload.create({
@@ -462,6 +463,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
+        isKYCVerified: true, // Explicitly set for testing
         appSettings: {
           language: 'en' as const,
           theme: 'dark' as const,

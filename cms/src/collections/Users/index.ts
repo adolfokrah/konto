@@ -122,9 +122,9 @@ export const Users: CollectionConfig = {
       defaultValue: true, //only for testing
       hooks: {
         beforeChange: [
-          ({ data, originalDoc }) => {
-            // Prevent manual setting to true and reset to false if critical fields changed
-            if (data && originalDoc) {
+          ({ data, originalDoc, operation }) => {
+            // Only apply this logic for updates, not creation
+            if (operation === 'update' && data && originalDoc) {
               // Check if fullName or country has changed
               const fullNameChanged = data.fullName && data.fullName !== originalDoc.fullName
               const countryChanged = data.country && data.country !== originalDoc.country
