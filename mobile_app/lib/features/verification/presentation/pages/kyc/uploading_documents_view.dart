@@ -1,4 +1,5 @@
 import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +11,6 @@ class UploadingDocumentsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('')),
       body: BlocBuilder<KycBloc, KycState>(
         builder: (context, state) {
           return Center(
@@ -24,67 +24,14 @@ class UploadingDocumentsView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: const [
                       SizedBox(height: AppSpacing.spacingL),
-                      CircularProgressIndicator(color: Colors.white),
+                      Icon(Icons.check_circle, size: 64, color: Colors.green),
                       SizedBox(height: AppSpacing.spacingL),
-                      Text('Verifying your documents, please wait...'),
-                      SizedBox(height: AppSpacing.spacingL),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Document State:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Text(
+                        'Documents uploaded successfully!, we will notify you once verification is complete.',
+                        style: TextStyles.titleMedium,
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 10),
-                      Text('State Type: ${state.runtimeType}'),
-                      if (state is KycDocument) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Document Type: ${state.documentType ?? 'Not set'}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Front File: ${state.frontFilePath != null ? '✅ Captured' : '❌ Not captured'}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Back File: ${state.backFilePath != null ? '✅ Captured' : '❌ Not captured'}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Photo File: ${state.photoFilePath != null ? '✅ Captured' : '❌ Not captured'}',
-                        ),
-                        if (state.frontFilePath != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Front Path: ${state.frontFilePath}',
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ],
-                        if (state.backFilePath != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Back Path: ${state.backFilePath}',
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ],
-                        if (state.photoFilePath != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Photo Path: ${state.photoFilePath}',
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ],
-                      ],
+                      SizedBox(height: AppSpacing.spacingL),
                     ],
                   ),
                 ),
