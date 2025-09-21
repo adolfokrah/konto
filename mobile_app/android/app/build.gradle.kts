@@ -1,3 +1,6 @@
+import java.security.MessageDigest
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -115,12 +118,12 @@ fun generateAppSignatureHash(packageName: String, sha256Fingerprint: String): St
     val sha256Clean = sha256Fingerprint.replace(":", "").uppercase()
     val appInfo = "$packageName $sha256Clean"
     
-    val messageDigest = java.security.MessageDigest.getInstance("SHA-256")
+    val messageDigest = MessageDigest.getInstance("SHA-256")
     val hashBytes = messageDigest.digest(appInfo.toByteArray())
     
     // Take first 9 bytes and encode to base64
     val truncated = hashBytes.take(9).toByteArray()
-    val base64Encoded = java.util.Base64.getEncoder().encodeToString(truncated)
+    val base64Encoded = Base64.getEncoder().encodeToString(truncated)
     
     // Remove padding and take first 11 characters
     return base64Encoded.replace("=", "").take(11)

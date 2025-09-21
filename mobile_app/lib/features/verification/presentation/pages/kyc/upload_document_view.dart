@@ -1,5 +1,6 @@
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:Hoga/features/verification/presentation/widgets/capture_document.dart';
 import 'package:Hoga/route.dart';
@@ -69,6 +70,14 @@ class _UploadDocumentViewState extends State<UploadDocumentView> {
                           currentImageType =
                               isUpload ? ImageType.capture : ImageType.upload;
                         });
+
+                        if (!isUpload) {
+                          AppSnackBar.show(
+                            context,
+                            message:
+                                'Upload functionality is not implemented yet.',
+                          );
+                        }
                       }
                     },
                   ),

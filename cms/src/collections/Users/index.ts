@@ -278,6 +278,52 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [createSubAccount],
+    beforeChange: [
+      async ({ data, originalDoc, operation, req }) => {
+        // Check for unique countryCode + phoneNumber combination only during updates
+        if (operation === 'update' && data.countryCode && data.phoneNumber) {
+          // Only check if phoneNumber or countryCode has changed
+          const phoneChanged = data.phoneNumber !== originalDoc.phoneNumber
+          const countryCodeChanged = data.countryCode !== originalDoc.countryCode
+
+          if (phoneChanged || countryCodeChanged) {
+            const { payload } = req
+
+            // Search for existing users with the same countryCode + phoneNumber
+            const existingUsers = await payload.find({
+              collection: 'users',
+              where: {
+                and: [
+                  {
+                    countryCode: {
+                      equals: data.countryCode,
+                    },
+                  },
+                  {
+                    phoneNumber: {
+                      equals: data.phoneNumber,
+                    },
+                  },
+                  // Exclude current user
+                  {
+                    id: {
+                      not_equals: originalDoc.id,
+                    },
+                  },
+                ],
+              },
+              limit: 1,
+            })
+
+            if (existingUsers.docs.length > 0) {
+              throw new Error(
+                `A user with country code ${data.countryCode} and phone number ${data.phoneNumber} already exists.`,
+              )
+            }
+          }
+        }
+      },
+      createSubAccount,
+    ],
   },
 }
