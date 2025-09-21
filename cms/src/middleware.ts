@@ -21,6 +21,10 @@ export function middleware(request: NextRequest) {
     '/pay/', // Skip pay routes
     '/payload/', // Skip payload admin routes
     '/verify', // Skip KYC verify route
+    '/congratulations', // Skip congratulations page
+    '/reset-password', // Skip reset password page
+    '/forgot-password', // Skip forgot password page
+    '/email-confirmation', // Skip email confirmation page
   ].some((path) => pathname.startsWith(path))
 
   if (shouldSkip) {

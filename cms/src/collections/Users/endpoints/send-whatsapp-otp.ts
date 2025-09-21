@@ -47,7 +47,8 @@ export const sendWhatsAppOtp = async (req: PayloadRequest) => {
     // Direct API call to Facebook WhatsApp API (bypassing utility class restrictions)
     // Get credentials from environment variables
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+    // const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+    const phoneNumberId = '717750781432783'
 
     // Validate that environment variables are set
     if (!accessToken) {

@@ -13,6 +13,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/route.dart';
 
 class PersonalDetailsView extends StatefulWidget {
   const PersonalDetailsView({super.key});
@@ -84,13 +85,16 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
       listener: (context, userAccountState) {
         if (userAccountState is UserAccountSuccess) {
           // Show success message - using fallback for now until translations are regenerated
-
           context.read<AuthBloc>().add(
             UpdateUserData(
               updatedUser: userAccountState.updatedUser,
               token: userAccountState.token,
             ),
           );
+
+          // Check if critical fields were changed
+          final criticalFieldsChanged = _hasChangedCriticalFields();
+
           AppSnackBar.showSuccess(
             context,
             message:
@@ -98,7 +102,17 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                   context,
                 )!.personalDetailsUpdatedSuccessfully,
           );
-          Navigator.of(context).pop();
+
+          if (criticalFieldsChanged) {
+            // Navigate to KYC view to re-verify identity and clear entire navigation stack
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.kycView,
+              (route) => false, // Remove all previous routes
+            );
+          } else {
+            // Just go back to previous screen if no critical fields changed
+            Navigator.of(context).pop();
+          }
         } else if (userAccountState is UserAccountError) {
           // Show error message
           ScaffoldMessenger.of(

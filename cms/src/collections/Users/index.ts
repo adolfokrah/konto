@@ -120,6 +120,27 @@ export const Users: CollectionConfig = {
       name: 'isKYCVerified',
       type: 'checkbox',
       defaultValue: true, //only for testing
+      hooks: {
+        beforeChange: [
+          ({ data, originalDoc }) => {
+            // Prevent manual setting to true and reset to false if critical fields changed
+            if (data && originalDoc) {
+              // Check if fullName or country has changed
+              const fullNameChanged = data.fullName && data.fullName !== originalDoc.fullName
+              const countryChanged = data.country && data.country !== originalDoc.country
+
+              if (fullNameChanged || countryChanged) {
+                console.log('Critical user information changed - resetting KYC verification status')
+                data.isKYCVerified = false
+                // Also reset KYC status if it exists
+                if (data.kycStatus) {
+                  data.kycStatus = 'pending'
+                }
+              }
+            }
+          },
+        ],
+      },
     },
     {
       name: 'frontFile',
@@ -152,6 +173,19 @@ export const Users: CollectionConfig = {
         { label: 'Verified', value: 'verified' },
       ],
       required: false,
+      hooks: {
+        beforeChange: [
+          ({ data, originalDoc }) => {
+            // Prevent manual setting to 'verified'
+            if (data && originalDoc) {
+              if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
+                console.log('Manual setting of KYC status to verified is not allowed')
+                data.kycStatus = originalDoc.kycStatus || 'pending'
+              }
+            }
+          },
+        ],
+      },
     },
     {
       name: 'role',

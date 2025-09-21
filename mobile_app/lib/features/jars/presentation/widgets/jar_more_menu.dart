@@ -78,16 +78,18 @@ class JarMoreMenu extends StatelessWidget {
                       },
                       itemBuilder:
                           (BuildContext context) => <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                              value: 'name',
-                              child: ListTile(
-                                leading: Icon(Icons.edit),
-                                title: Text(
-                                  AppLocalizations.of(context)!.changeName,
+                            // Only show change name option if jar has no contributions
+                            if (jarData.contributions.isEmpty)
+                              PopupMenuItem<String>(
+                                value: 'name',
+                                child: ListTile(
+                                  leading: Icon(Icons.edit),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.changeName,
+                                  ),
+                                  contentPadding: EdgeInsets.zero,
                                 ),
-                                contentPadding: EdgeInsets.zero,
                               ),
-                            ),
                             PopupMenuItem<String>(
                               value: 'image',
                               child: ListTile(
