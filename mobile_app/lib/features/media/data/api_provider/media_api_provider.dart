@@ -249,7 +249,7 @@ class MediaApiProvider extends BaseApiProvider {
         'backFileId': backFileId,
         'photoFileId': photoFileId,
         'documentType': documentType,
-        'kycStatus': 'pending',
+        'kycStatus': 'verified',
       };
       final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/users/update-kyc',
