@@ -1,4 +1,9 @@
+import 'package:Hoga/features/verification/presentation/pages/kyc/document_type_selection_view.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc/intro_view.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc/upload_document_view.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc/uploading_documents_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc/live_view.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
@@ -54,6 +59,12 @@ class AppRoutes {
     '/theme_settings': (context) => const ThemeSettingsView(),
     '/language_settings': (context) => const LanguageSettingsView(),
     '/kycView': (context) => const KycView(),
+    '/kycIntroView': (context) => const KYCIntroView(),
+    '/documentTypeSelectionView':
+        (context) => const DocumentTypeSelectionView(),
+    '/upload_document': (context) => const UploadDocumentView(),
+    '/take_photo': (context) => const LivenessCamera(),
+    '/uploading_documents': (context) => const UploadingDocumentsView(),
   };
 
   // Route names constants for easy access
@@ -83,4 +94,9 @@ class AppRoutes {
   static const String themeSettings = '/theme_settings';
   static const String languageSettings = '/language_settings';
   static const String kycView = '/kycView';
+  static const String kycIntroView = '/kycIntroView';
+  static const String documentTypeSelectionView = '/documentTypeSelectionView';
+  static const String uploadDocument = '/upload_document';
+  static const String takePhoto = '/take_photo';
+  static const String uploadingDocuments = '/uploading_documents';
 }

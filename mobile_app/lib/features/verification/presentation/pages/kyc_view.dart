@@ -1,6 +1,7 @@
 import 'package:Hoga/core/widgets/feedback_action_button.dart';
 import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,9 +80,13 @@ class KycView extends StatelessWidget {
                         try {
                           final uri = Uri.parse(verifyUrl);
                           if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.inAppBrowserView,
+                            // await launchUrl(
+                            //   uri,
+                            //   mode: LaunchMode.inAppBrowserView,
+                            // );
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.kycIntroView,
                             );
                           } else {
                             if (context.mounted) {
