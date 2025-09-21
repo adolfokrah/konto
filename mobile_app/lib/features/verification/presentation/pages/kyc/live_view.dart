@@ -1,4 +1,5 @@
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/route.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -303,7 +304,27 @@ class _LivenessCameraState extends State<LivenessCamera> {
       // For example, save it or send it to your backend
 
       if (mounted) {
+        // Update KYC state with photo file path
         context.read<KycBloc>().add(SetDocument(photoFilePath: image.path));
+
+        // Get current KYC state to access document info
+        final currentState = context.read<KycBloc>().state;
+
+        if (currentState is KycDocument &&
+            currentState.frontFilePath != null &&
+            currentState.backFilePath != null &&
+            currentState.documentType != null) {
+          // Upload KYC documents using MediaBloc
+          context.read<MediaBloc>().add(
+            RequestUploadKycDocuments(
+              frontFilePath: currentState.frontFilePath!,
+              backFilePath: currentState.backFilePath!,
+              photoFilePath: image.path,
+              documentType: currentState.documentType!,
+            ),
+          );
+        }
+
         Navigator.pushNamedAndRemoveUntil(
           context,
           AppRoutes.uploadingDocuments,

@@ -12,6 +12,7 @@ part 'media_state.dart';
 class MediaBloc extends Bloc<MediaEvent, MediaState> {
   MediaBloc() : super(MediaInitial()) {
     on<RequestUploadMedia>(_requestUploadMedia);
+    on<RequestUploadKycDocuments>(_requestUploadKycDocuments);
   }
 
   Future<void> _requestUploadMedia(
@@ -48,6 +49,45 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
     } catch (e) {
       // Handle unexpected errors
       emit(MediaError(errorMessage: 'An unexpected error occurred: $e'));
+    }
+  }
+
+  Future<void> _requestUploadKycDocuments(
+    RequestUploadKycDocuments event,
+    Emitter<MediaState> emit,
+  ) async {
+    emit(KycDocumentsUploading());
+
+    try {
+      // Use MediaRepository from ServiceRegistry
+      final mediaRepository = ServiceRegistry().mediaRepository;
+
+      // Upload KYC documents using MediaRepository
+      final response = await mediaRepository.uploadKycDocuments(
+        frontFilePath: event.frontFilePath,
+        backFilePath: event.backFilePath,
+        photoFilePath: event.photoFilePath,
+        documentType: event.documentType,
+      );
+
+      print('DEBUG: KYC upload response: $response');
+
+      // Check if response indicates success
+      if (response['success'] == true) {
+        emit(KycDocumentsUploaded(uploadResult: response));
+      } else {
+        // Handle upload failure
+        final errorMessage =
+            response['message'] ?? 'Failed to upload KYC documents';
+        emit(KycDocumentsUploadError(errorMessage: errorMessage));
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      emit(
+        KycDocumentsUploadError(
+          errorMessage: 'An unexpected error occurred: $e',
+        ),
+      );
     }
   }
 }

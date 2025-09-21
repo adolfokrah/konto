@@ -14,3 +14,17 @@ final class RequestUploadMedia extends MediaEvent {
     this.context = MediaUploadContext.general,
   });
 }
+
+final class RequestUploadKycDocuments extends MediaEvent {
+  final String frontFilePath;
+  final String backFilePath;
+  final String photoFilePath;
+  final String documentType;
+
+  RequestUploadKycDocuments({
+    required this.frontFilePath,
+    required this.backFilePath,
+    required this.photoFilePath,
+    required this.documentType,
+  });
+}

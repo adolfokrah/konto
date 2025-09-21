@@ -5,7 +5,8 @@ import { sendSMS } from '@/utilities/sms'
 export const updateKYC = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { userId } = req.data || {}
+    const { userId, frontFileId, backFileId, photoFileId, documentType, kycStatus } = req.data || {}
+
     if (!userId) {
       return Response.json(
         {
@@ -17,10 +18,29 @@ export const updateKYC = async (req: PayloadRequest) => {
       )
     }
 
+    // Prepare the update data
+    const updateData: any = {}
+
+    // Add KYC file IDs if provided
+    if (frontFileId) updateData.frontFile = frontFileId
+    if (backFileId) updateData.backFile = backFileId
+    if (photoFileId) updateData.photoFile = photoFileId
+    if (documentType) updateData.documentType = documentType
+    if (kycStatus) updateData.kycStatus = kycStatus
+
+    console.log(updateData)
+
+    // Set isKYCVerified based on kycStatus
+    if (kycStatus === 'verified') {
+      updateData.isKYCVerified = true
+    } else if (kycStatus === 'pending') {
+      updateData.isKYCVerified = false
+    }
+
     const user = await req.payload.update({
       collection: 'users',
       id: userId,
-      data: { isKYCVerified: true },
+      data: updateData,
       overrideAccess: true,
     })
 
@@ -39,13 +59,17 @@ export const updateKYC = async (req: PayloadRequest) => {
         { status: 404 },
       )
     }
-    const message = `Hello ${user.fullName || ''}, your KYC verification was successful. Thank you!`
-    sendSMS([user.phoneNumber], message)
+
+    // Send SMS notification if KYC is verified
+    if (kycStatus === 'verified') {
+      const message = `Hello ${user.fullName || ''}, your KYC verification was successful. Thank you!`
+      sendSMS([user.phoneNumber], message)
+    }
 
     return Response.json(
       {
         success: true,
-        message: 'KYC status updated successfully',
+        message: 'KYC data updated successfully',
         user,
       },
       { status: 200 },

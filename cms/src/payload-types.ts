@@ -389,6 +389,11 @@ export interface User {
   phoneNumber: string;
   country: string;
   isKYCVerified?: boolean | null;
+  frontFile?: (string | null) | Media;
+  backFile?: (string | null) | Media;
+  photoFile?: (string | null) | Media;
+  documentType?: string | null;
+  kycStatus?: ('pending' | 'verified') | null;
   /**
    * User role - only admin users can access the CMS
    */
@@ -1475,6 +1480,11 @@ export interface UsersSelect<T extends boolean = true> {
   phoneNumber?: T;
   country?: T;
   isKYCVerified?: T;
+  frontFile?: T;
+  backFile?: T;
+  photoFile?: T;
+  documentType?: T;
+  kycStatus?: T;
   role?: T;
   bank?: T;
   accountNumber?: T;

@@ -19,3 +19,17 @@ final class MediaError extends MediaState {
 
   MediaError({required this.errorMessage});
 }
+
+final class KycDocumentsUploading extends MediaState {}
+
+final class KycDocumentsUploaded extends MediaState {
+  final Map<String, dynamic> uploadResult;
+
+  KycDocumentsUploaded({required this.uploadResult});
+}
+
+final class KycDocumentsUploadError extends MediaState {
+  final String errorMessage;
+
+  KycDocumentsUploadError({required this.errorMessage});
+}

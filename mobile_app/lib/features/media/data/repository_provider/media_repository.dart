@@ -113,4 +113,77 @@ class MediaRepository {
 
     return null;
   }
+
+  /// Upload a file from file path (for KYC documents)
+  Future<Map<String, dynamic>> uploadFileFromPath({
+    required String filePath,
+    String? alt,
+  }) async {
+    try {
+      final apiResponse = await _mediaApiProvider.uploadFileFromPath(
+        filePath: filePath,
+        alt: alt,
+      );
+
+      if (apiResponse['success'] == true) {
+        return {
+          'success': true,
+          'data': apiResponse['data'],
+          'message': apiResponse['message'] ?? 'File uploaded successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': apiResponse['message'] ?? 'Failed to upload file',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while uploading file',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Upload KYC documents (front, back, photo) and update user
+  Future<Map<String, dynamic>> uploadKycDocuments({
+    required String frontFilePath,
+    required String backFilePath,
+    required String photoFilePath,
+    required String documentType,
+  }) async {
+    try {
+      final apiResponse = await _mediaApiProvider.uploadKycDocuments(
+        frontFilePath: frontFilePath,
+        backFilePath: backFilePath,
+        photoFilePath: photoFilePath,
+        documentType: documentType,
+      );
+
+      if (apiResponse['success'] == true) {
+        return {
+          'success': true,
+          'data': apiResponse['data'],
+          'message':
+              apiResponse['message'] ?? 'KYC documents uploaded successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': apiResponse['message'] ?? 'Failed to upload KYC documents',
+          'error': apiResponse['error'],
+          'statusCode': apiResponse['statusCode'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while uploading KYC documents',
+        'error': e.toString(),
+      };
+    }
+  }
 }

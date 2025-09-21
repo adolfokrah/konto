@@ -1,6 +1,7 @@
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
@@ -11,8 +12,9 @@ class UploadingDocumentsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<KycBloc, KycState>(
+      body: BlocBuilder<MediaBloc, MediaState>(
         builder: (context, state) {
+          final isUploading = state is KycDocumentsUploading;
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -21,13 +23,20 @@ class UploadingDocumentsView extends StatelessWidget {
                   margin: const EdgeInsets.all(AppSpacing.spacingM),
                   padding: const EdgeInsets.all(AppSpacing.spacingL),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       SizedBox(height: AppSpacing.spacingL),
-                      Icon(Icons.check_circle, size: 64, color: Colors.green),
+                      isUploading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Icon(
+                            Icons.check_circle,
+                            size: 64,
+                            color: Colors.green,
+                          ),
                       SizedBox(height: AppSpacing.spacingL),
                       Text(
-                        'Documents uploaded successfully!, we will notify you once verification is complete.',
+                        isUploading
+                            ? 'Uploading documents...'
+                            : 'Documents uploaded successfully!, we will notify you once verification is complete.',
                         style: TextStyles.titleMedium,
                         textAlign: TextAlign.center,
                       ),

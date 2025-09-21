@@ -122,6 +122,38 @@ export const Users: CollectionConfig = {
       defaultValue: true, //only for testing
     },
     {
+      name: 'frontFile',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'backFile',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'photoFile',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'documentType',
+      type: 'text',
+      required: false,
+    },
+    {
+      name: 'kycStatus',
+      type: 'select',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Verified', value: 'verified' },
+      ],
+      required: false,
+    },
+    {
       name: 'role',
       type: 'select',
       options: [
