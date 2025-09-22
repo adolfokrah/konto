@@ -3,9 +3,29 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-class KYCIntroView extends StatelessWidget {
+class KYCIntroView extends StatefulWidget {
   const KYCIntroView({super.key});
+
+  @override
+  State<KYCIntroView> createState() => _KYCIntroViewState();
+}
+
+class _KYCIntroViewState extends State<KYCIntroView> {
+  Future<void> _requestPermissions(BuildContext context) async {
+    // Request camera permission
+    await Permission.camera.request();
+
+    // Request storage/photos permission for gallery access
+    await Permission.storage.request();
+    await Permission.photos.request();
+
+    // Proceed to next view regardless of permission status
+    if (context.mounted) {
+      Navigator.pushNamed(context, AppRoutes.documentTypeSelectionView);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +71,8 @@ class KYCIntroView extends StatelessWidget {
               SizedBox(height: AppSpacing.spacingL),
               AppButton(
                 text: 'Get Started',
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.documentTypeSelectionView,
-                  );
+                onPressed: () async {
+                  await _requestPermissions(context);
                 },
               ),
             ],

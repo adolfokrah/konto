@@ -4,11 +4,8 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 
 class KycView extends StatelessWidget {
@@ -73,39 +70,7 @@ class KycView extends StatelessWidget {
                     const SizedBox(height: 24),
                     AppButton.filled(
                       onPressed: () async {
-                        final userId = user.id;
-                        final baseUrl = AppConfig.nextProjectBaseUrl;
-                        final verifyUrl = '$baseUrl/verify/$userId';
-
-                        try {
-                          final uri = Uri.parse(verifyUrl);
-                          if (await canLaunchUrl(uri)) {
-                            // await launchUrl(
-                            //   uri,
-                            //   mode: LaunchMode.inAppBrowserView,
-                            // );
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.kycIntroView,
-                            );
-                          } else {
-                            if (context.mounted) {
-                              AppSnackBar.show(
-                                context,
-                                message: 'Could not open verification page',
-                                type: SnackBarType.error,
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            AppSnackBar.show(
-                              context,
-                              message: 'Error opening verification page',
-                              type: SnackBarType.error,
-                            );
-                          }
-                        }
+                        Navigator.pushNamed(context, AppRoutes.kycIntroView);
                       },
                       text: 'Verify my Identity',
                     ),

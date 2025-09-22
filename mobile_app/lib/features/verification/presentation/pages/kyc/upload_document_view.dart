@@ -3,6 +3,7 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:Hoga/features/verification/presentation/widgets/capture_document.dart';
+import 'package:Hoga/features/verification/presentation/widgets/select_document.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,11 +39,19 @@ class _UploadDocumentViewState extends State<UploadDocumentView> {
               padding: const EdgeInsets.all(AppSpacing.spacingXs),
               child: Column(
                 children: [
-                  CaptureDocumentWidget(
-                    title:
-                        'Capture the $side side of your ${state.documentType?.replaceAll("_", " ")}',
-                    side: side,
-                  ),
+                  if (!isUpload)
+                    CaptureDocumentWidget(
+                      title:
+                          'Capture the $side side of your ${state.documentType?.replaceAll("_", " ")}',
+                      side: side,
+                    ),
+
+                  if (isUpload)
+                    SelectDocument(
+                      title:
+                          'Select the $side side of your ${state.documentType?.replaceAll("_", " ")} from your device',
+                      side: side,
+                    ),
 
                   AppButton.outlined(
                     text:
@@ -70,14 +79,6 @@ class _UploadDocumentViewState extends State<UploadDocumentView> {
                           currentImageType =
                               isUpload ? ImageType.capture : ImageType.upload;
                         });
-
-                        if (!isUpload) {
-                          AppSnackBar.show(
-                            context,
-                            message:
-                                'Upload functionality is not implemented yet.',
-                          );
-                        }
                       }
                     },
                   ),

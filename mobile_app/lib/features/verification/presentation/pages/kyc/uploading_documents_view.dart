@@ -4,7 +4,6 @@ import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 
 class UploadingDocumentsView extends StatelessWidget {
   const UploadingDocumentsView({super.key});

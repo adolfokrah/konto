@@ -177,7 +177,7 @@ class _CaptureDocumentWidgetState extends State<CaptureDocumentWidget> {
               const SizedBox(width: AppSpacing.spacingS),
               Expanded(
                 child: Text(
-                  'Make sure your Government Approved ID is properly placed, and hold it still for a few seconds',
+                  'Make sure your document is properly placed, and hold it still for a few seconds',
                 ),
               ),
             ],
