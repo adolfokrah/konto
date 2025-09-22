@@ -17,12 +17,12 @@ export const Logo = (props: Props) => {
     /* eslint-disable @next/next/no-img-element */
     <img
       alt="hoga Logo"
-      width={153}
+      width={70}
       height={34}
       loading={loading}
       fetchPriority={priority}
       decoding="async"
-      className={clsx('max-w-30.5 w-full h-[24px]', className)}
+      className={clsx('h-[24px]', className)}
       src="/Logo.svg"
     />
   )

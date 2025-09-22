@@ -52,7 +52,7 @@ export const MobileNav: React.FC<{ data: HeaderType; className?: string }> = ({
 
   return (
     <motion.div
-      className={cn('flex flex-col gap-5 pb-7', className)}
+      className={cn('flex flex-col gap-5 pb-2', className)}
       variants={containerVariants}
       initial="hidden"
       animate="visible"

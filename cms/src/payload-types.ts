@@ -1901,6 +1901,39 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Add social media links that will appear in the footer
+   */
+  socialLinks?:
+    | {
+        platform: 'twitter' | 'facebook' | 'linkedin' | 'instagram' | 'github' | 'youtube' | 'tiktok';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Bottom menu items that appear in the footer (e.g., Terms, Privacy, Cookies)
+   */
+  bottomMenuItems?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1933,6 +1966,27 @@ export interface HeaderSelect<T extends boolean = true> {
  */
 export interface FooterSelect<T extends boolean = true> {
   navItems?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  bottomMenuItems?:
     | T
     | {
         link?:

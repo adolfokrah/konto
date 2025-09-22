@@ -23,6 +23,7 @@ const allowedImageDomains = [
   'https://konto-ruddy.vercel.app',
   // Localhost for development
   'http://localhost:3000',
+  'http://192.168.0.160:3000'
 ].filter(Boolean)
 
 /** @type {import('next').NextConfig} */
