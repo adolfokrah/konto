@@ -237,7 +237,7 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         id: deploy-staging
         run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          url=$(vercel deploy --prebuilt --staging --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "Staging deployed to: $url"
 
