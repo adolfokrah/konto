@@ -228,7 +228,7 @@ jobs:
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: ./cms
+        # working-directory: ./cms
         env:
           MNOTIFY_API_KEY: ${{ secrets.MNOTIFY_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -280,7 +280,7 @@ jobs:
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: ./cms
+        # working-directory: ./cms
         env:
           MNOTIFY_API_KEY: ${{ secrets.MNOTIFY_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
