@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { sendSMS } from '@/utilities/sms'
+import { resend } from '@payload-config'
+import kycVerified from '@/components/emailTemplates/kycVerified'
 
 export const updateKYC = async (req: PayloadRequest) => {
   try {
@@ -27,9 +29,6 @@ export const updateKYC = async (req: PayloadRequest) => {
     if (photoFileId) updateData.photoFile = photoFileId
     if (documentType) updateData.documentType = documentType
     if (kycStatus) updateData.kycStatus = kycStatus
-
-    console.log(updateData)
-
     // Set isKYCVerified based on kycStatus
     if (kycStatus === 'verified') {
       updateData.isKYCVerified = true
@@ -64,6 +63,13 @@ export const updateKYC = async (req: PayloadRequest) => {
     if (kycStatus === 'verified') {
       const message = `Hello ${user.fullName || ''}, your KYC verification was successful. Thank you!`
       sendSMS([user.phoneNumber], message)
+
+      resend.emails.send({
+        from: 'Hoga <onboarding@usehoga.com>',
+        to: [user.email],
+        subject: 'KYC Verification Successful',
+        react: kycVerified({ fullname: user.fullName || '' }),
+      })
     }
 
     return Response.json(

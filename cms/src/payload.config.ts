@@ -5,6 +5,7 @@ import sharp from 'sharp' // sharp-import
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import { Categories } from './collections/Categories'
 import { Media } from '@collections/Media'
@@ -21,6 +22,7 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+import { Resend } from 'resend'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,6 +31,8 @@ const dbUrl =
   process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
 
 export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
+
+export const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Removed test error throw that was used to verify Sentry integration.
 export default buildConfig({
@@ -118,4 +122,9 @@ export default buildConfig({
     locales: ['en', 'fr'], // required
     defaultLocale: 'en', // required
   },
+  email: resendAdapter({
+    defaultFromAddress: 'dev@payloadcms.com',
+    defaultFromName: 'Payload CMS',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
 })
