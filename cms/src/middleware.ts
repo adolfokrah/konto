@@ -27,6 +27,7 @@ export function middleware(request: NextRequest) {
     '/email-confirmation', // Skip email confirmation page
     '/Logo.svg',
     '/fonts/',
+    '/next/',
   ].some((path) => pathname.startsWith(path))
 
   if (shouldSkip) {

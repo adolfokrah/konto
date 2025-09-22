@@ -74,6 +74,38 @@ export const seed = async ({
 }): Promise<void> => {
   payload.logger.info('Seeding database...')
 
+  // Ensure database connection is established with retry logic
+  let connectionAttempts = 0
+  const maxAttempts = 5
+
+  while (connectionAttempts < maxAttempts) {
+    try {
+      // Test the connection with a simple operation
+      await payload.find({
+        collection: 'users',
+        limit: 1,
+        depth: 0,
+      })
+      payload.logger.info('Database connection verified')
+      break
+    } catch (connectionError) {
+      connectionAttempts++
+      payload.logger.warn(
+        `Database connection attempt ${connectionAttempts}/${maxAttempts} failed:`,
+        connectionError,
+      )
+
+      if (connectionAttempts >= maxAttempts) {
+        throw new Error(
+          `Database connection failed after ${maxAttempts} attempts: ${connectionError instanceof Error ? connectionError.message : 'Unknown error'}`,
+        )
+      }
+
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, 2000 * connectionAttempts))
+    }
+  }
+
   // we need to clear the media directory before seeding
   // as well as the collections and globals
   // this is because while `yarn seed` drops the database
@@ -281,28 +313,46 @@ export const seed = async ({
     data: post3({ heroImage: image3Doc, blockImage: image1Doc, author: demoAuthor }),
   })
 
-  // update each post with related posts
-  await payload.update({
-    id: post1Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post2Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post2Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post3Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post2Doc.id],
-    },
-  })
+  // update each post with related posts with retry logic and delays
+  const updateWithRetry = async (id: string, relatedPosts: string[], retries = 3) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await payload.update({
+          id,
+          collection: 'posts',
+          data: { relatedPosts },
+          context: {
+            disableRevalidate: true,
+            // Try to bypass versioning during seed
+            skipVersions: true,
+          },
+        })
+        payload.logger.info(
+          `Successfully updated post ${id} with related posts (attempt ${attempt})`,
+        )
+        return
+      } catch (error) {
+        payload.logger.warn(`Update attempt ${attempt} failed for post ${id}:`, error)
+        if (attempt === retries) {
+          payload.logger.error(
+            `Failed to update post ${id} after ${retries} attempts, skipping related posts update`,
+          )
+        } else {
+          // Wait before retry
+          await new Promise((resolve) => setTimeout(resolve, 2000 * attempt))
+        }
+      }
+    }
+  }
+
+  // Update posts sequentially with delays to avoid overwhelming the connection
+  await updateWithRetry(post1Doc.id, [post2Doc.id, post3Doc.id])
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  await updateWithRetry(post2Doc.id, [post1Doc.id, post3Doc.id])
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  await updateWithRetry(post3Doc.id, [post1Doc.id, post2Doc.id])
 
   payload.logger.info(`— Seeding contact form...`)
 
