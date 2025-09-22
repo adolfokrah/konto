@@ -223,12 +223,17 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=staging --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./cms
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./cms
+        env:
+          MNOTIFY_API_KEY: ${{ secrets.MNOTIFY_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
       - name: Deploy Project Artifacts to Vercel
         id: deploy-staging
         run: |
@@ -276,6 +281,11 @@ jobs:
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./cms
+        env:
+          MNOTIFY_API_KEY: ${{ secrets.MNOTIFY_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy-production
