@@ -126,16 +126,17 @@ export async function Footer() {
           </div>
       </div>
 
-      <div className='w-full bg-secondary-surface hidden md:block relative overflow-hidden  md:h-47 xl:h-90'>
+      <div className='w-full bg-secondary-surface hidden md:block relative overflow-hidden md:h-47 xl:h-90'>
         <div className='container py-4 relative'>
-          <svg 
-            width="1382" 
-            height="470" 
-            viewBox="0 0 1382 470" 
-            className="w-full h-auto object-contain absolute top-6"
-            style={{ fill: 'var(--logo-color, #1D232F)' }}
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <div className="relative top-6">
+            <svg 
+              viewBox="0 0 1382 470" 
+              className="w-full h-auto"
+              style={{ 
+                fill: 'var(--logo-color, #1D232F)'
+              }}
+              xmlns="http://www.w3.org/2000/svg"
+            >
             <path d="M242.995 150.797C243.118 154.273 241.069 157.46 237.856 158.789L205.572 172.142C202.343 173.477 198.624 172.652 196.262 170.075L99.9959 65.0493C96.0878 60.7855 97.607 53.9303 102.95 51.7205L226.455 0.639035C231.818 -1.57882 237.745 2.23866 237.95 8.04248L242.995 150.797Z"/>
             <path d="M177.415 183.913C179.846 186.4 180.476 190.137 178.996 193.284L164.122 224.92C162.634 228.084 159.33 229.982 155.85 229.67L14.0191 216.953C8.26108 216.436 4.77041 210.345 7.23205 205.11L64.135 84.0853C66.6057 78.8307 73.5553 77.656 77.6129 81.8072L177.415 183.913Z"/>
             <path d="M151.284 258.713C154.754 258.912 157.735 261.249 158.759 264.573L169.057 297.983C170.087 301.325 168.921 304.955 166.139 307.071L52.756 393.298C48.1529 396.799 41.4739 394.651 39.7698 389.122L0.376436 261.309C-1.33395 255.759 3.01188 250.205 8.80451 250.538L151.284 258.713Z"/>
@@ -146,6 +147,7 @@ export async function Footer() {
           </svg>
         </div>
       </div>
+    </div>
     </footer>
   )
 }
