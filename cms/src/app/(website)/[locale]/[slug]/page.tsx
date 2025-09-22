@@ -28,7 +28,7 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
-    locale: 'all'
+    locale: 'all',
   })
 
   const params = pages.docs
@@ -53,7 +53,6 @@ export default async function Page({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
   const { slug = 'home', locale } = await paramsPromise
   const url = '/' + slug
-
 
   let page: RequiredDataFromCollectionSlug<'pages'> | null
 
@@ -113,7 +112,7 @@ const queryPageBySlug = cache(async ({ slug, locale }: { slug: string; locale: L
         equals: slug,
       },
     },
-    locale: locale
+    locale: locale,
   })
 
   return result.docs?.[0] || null

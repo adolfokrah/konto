@@ -17,10 +17,10 @@ interface LocaleLinkProps extends Omit<ComponentProps<typeof Link>, 'href'> {
  */
 export function LocaleLink({ href, locale, ...props }: LocaleLinkProps) {
   const { getLocalizedPath } = useLocale()
-  
+
   // Get the localized version of the href
   const localizedHref = getLocalizedPath(href, locale)
-  
+
   return <Link href={localizedHref} {...props} />
 }
 

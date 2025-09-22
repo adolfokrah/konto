@@ -354,12 +354,3 @@
     @apply bg-background text-foreground min-h-screen flex flex-col;
   }
 }
-
-html {
-  opacity: 0;
-}
-
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
-}

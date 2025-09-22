@@ -122,7 +122,6 @@ export const registerUser = async (req: PayloadRequest) => {
   } catch (error: any) {
     // Log error in development only
     if (process.env.NODE_ENV !== 'production') {
-       
       console.error('💥 Registration error:', error)
     }
 

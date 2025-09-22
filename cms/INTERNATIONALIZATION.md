@@ -5,8 +5,9 @@ This setup provides locale-based routing for your Next.js App Router application
 ## How it works
 
 ### URL Structure
+
 - `usehoga.com` → serves English content (no redirect)
-- `usehoga.com/about` → serves English about page (no redirect)  
+- `usehoga.com/about` → serves English about page (no redirect)
 - `usehoga.com/fr` → French home page
 - `usehoga.com/fr/about` → French about page
 - `usehoga.com/en` → English home page (optional explicit locale)
@@ -18,7 +19,7 @@ This setup provides locale-based routing for your Next.js App Router application
 
 1. **Root paths** (no locale prefix) serve English content directly
 2. **Middleware** internally rewrites root paths to `/en/*` for the App Router
-3. **Locale-specific paths** like `/fr/*` are served directly  
+3. **Locale-specific paths** like `/fr/*` are served directly
 4. **Unsupported locales** like `/es/*` redirect to root English paths (remove locale)
 5. **Automatic locale preservation**: When navigating from `/fr/*` pages, middleware detects the referer and automatically redirects new links to `/fr/*` versions
 6. **No component changes needed**: All existing Link components work as-is - the middleware handles locale preservation automatically
@@ -31,11 +32,12 @@ This setup provides locale-based routing for your Next.js App Router application
 ✅ **Unsupported locale fallback**: `/es/*` redirects to English root paths  
 ✅ **Zero component changes**: All existing Link components work automatically  
 ✅ **SEO friendly**: Root domain serves content directly  
-✅ **Backward compatible**: `/en/*` paths still work if needed  
+✅ **Backward compatible**: `/en/*` paths still work if needed
 
 ### Language Switching
 
 The language switcher components still work intelligently:
+
 - From root paths: adds locale prefix for non-English
 - From locale paths: removes prefix for English, replaces for others
 
@@ -49,7 +51,7 @@ import { useTranslations } from '@/lib/translations'
 function MyComponent() {
   const { currentLocale } = useLocale()
   const { t } = useTranslations(currentLocale as SupportedLocale)
-  
+
   return (
     <div>
       <h1>{t('welcome')}</h1>
@@ -66,7 +68,7 @@ function MyComponent() {
 export default function MyPage({ params }: { params: { locale: string } }) {
   // You can use the locale directly here for server-side logic
   const isEnglish = params.locale === 'en'
-  
+
   return (
     <div>
       <h1>{isEnglish ? 'Welcome' : 'Bienvenue'}</h1>
@@ -85,20 +87,20 @@ Add this to any of your existing pages to test the i18n setup:
 import { LocaleExample } from '@/components/LocaleExample'
 
 // In your page component
-<LocaleExample className="mb-6" />
+;<LocaleExample className="mb-6" />
 ```
 
 ### Language Switcher
 
 Two components are available:
+
 - `LanguageSwitcher` - Dropdown select (needs 'use client')
 - `LanguageSwitcherButtons` - Button-based switcher (needs 'use client')
 
 ```tsx
 'use client'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-
-<LanguageSwitcher />
+;<LanguageSwitcher />
 ```
 
 ### Adding More Locales

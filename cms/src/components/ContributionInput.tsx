@@ -14,7 +14,7 @@ interface ContributionInputProps {
   fixedAmount?: number
   className?: string
   jarId?: string
-  jarName?: string,
+  jarName?: string
   isCreatorPaysPlatformFees?: boolean
 }
 
@@ -237,9 +237,8 @@ export default function ContributionInput({
 
   const transactionCharges = new TransactionCharges({ isCreatorPaysPlatformFees })
 
-  const { totalAmount, paystackCharge, platformCharge } = transactionCharges.calculateAmountAndCharges(
-    isFixedAmount ? fixedAmount : selectedAmount,
-  )
+  const { totalAmount, paystackCharge, platformCharge } =
+    transactionCharges.calculateAmountAndCharges(isFixedAmount ? fixedAmount : selectedAmount)
 
   const charges = isCreatorPaysPlatformFees ? paystackCharge : paystackCharge + platformCharge
 
@@ -365,7 +364,15 @@ export default function ContributionInput({
 
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
-        Upon completing this contribution, you agree to hoga&apos;s <Link href="/terms" className="text-blue-500">Terms of Service</Link> and <Link href="/privacy" className="text-blue-500">Privacy Policy</Link>.
+        Upon completing this contribution, you agree to hoga&apos;s{' '}
+        <Link href="/terms" className="text-blue-500">
+          Terms of Service
+        </Link>{' '}
+        and{' '}
+        <Link href="/privacy" className="text-blue-500">
+          Privacy Policy
+        </Link>
+        .
       </p>
     </div>
   )

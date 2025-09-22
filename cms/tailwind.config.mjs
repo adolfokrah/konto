@@ -56,15 +56,24 @@ const config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
-        // Mobile app colors
+        // Brand colors
         'primary-light': '#FDF7EC',
         'primary-dark': '#2D3849',
         'secondary-green': '#F4FDDF',
+        'secondary-background': '#FEE6D2',
+        'secondary-dark': '#E1C9B6',
         'background-light': '#EBE2D7',
         'surface-white': '#FFFFFF',
         'error-red': '#EF4444',
         'on-primary-white': '#FFFFFF',
         'on-surface-dark': '#1B232E',
+        'dark-background': '#141821',
+        'dark-surface': '#1C222F',
+        dark: '#1E1E1E',
+        pink: '#FF5697',
+        blue: '#4E50FB',
+        purple: '#921EFE',
+        orange: '#FE6D0B',
         label: '#747373',
         black: '#000000',
 
@@ -107,11 +116,11 @@ const config = {
         warning: 'hsl(var(--warning))',
       },
       fontFamily: {
-        mono: ['var(--font-geist-mono)'],
-        sans: ['var(--font-geist-sans)'],
-        supreme: ['Supreme', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        chubbo: ['Chubbo', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        chillax: ['Chillax', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        mono: ['Supreme', 'monospace'],
+        sans: ['Supreme', 'system-ui', 'sans-serif'],
+        supreme: ['Supreme', 'system-ui', 'sans-serif'],
+        chubbo: ['Chubbo', 'system-ui', 'sans-serif'],
+        chillax: ['Chillax', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

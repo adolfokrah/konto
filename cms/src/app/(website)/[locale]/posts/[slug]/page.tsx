@@ -29,7 +29,7 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
-    locale: 'all'
+    locale: 'all',
   })
 
   const params = posts.docs.map(({ slug }) => {
@@ -103,7 +103,7 @@ const queryPostBySlug = cache(async ({ slug, locale }: { slug: string; locale: L
         equals: slug,
       },
     },
-    locale: locale
+    locale: locale,
   })
 
   return result.docs?.[0] || null

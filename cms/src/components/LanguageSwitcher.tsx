@@ -16,8 +16,8 @@ export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
 
   return (
     <div className={`language-switcher ${className}`}>
-      <select 
-        value={currentLocale} 
+      <select
+        value={currentLocale}
         onChange={(e) => switchLocale(e.target.value)}
         className="border rounded px-2 py-1"
       >
@@ -42,8 +42,8 @@ export function LanguageSwitcherButtons({ className = '' }: LanguageSwitcherProp
           key={locale}
           onClick={() => switchLocale(locale)}
           className={`px-3 py-1 rounded ${
-            currentLocale === locale 
-              ? 'bg-blue-500 text-white' 
+            currentLocale === locale
+              ? 'bg-blue-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >

@@ -41,12 +41,12 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 
     // Get the image URL for og:image
     const imageUrl = jar.image && typeof jar.image === 'object' ? jar.image.url : null
-    const jarImageThumbnail = jar.image && typeof jar.image === 'object' ? jar.image.sizes?.thumbnail : null
+    const jarImageThumbnail =
+      jar.image && typeof jar.image === 'object' ? jar.image.sizes?.thumbnail : null
     const imageForMeta = jarImageThumbnail?.url || imageUrl || null
 
     // Get creator name
     const creatorName = typeof jar.creator === 'object' ? jar.creator.fullName : jar.creator
-
 
     return {
       title: `Contribute to ${jar.name}`,
@@ -242,19 +242,19 @@ export default async function Page({ params }: any) {
 
             {/* Goal Section - Show if jar has goal amount and showGoal is enabled */}
             {jarWithBalance.goalAmount &&
-              jarWithBalance.goalAmount > 0 &&
-              jarWithBalance.paymentPage?.showGoal === true ? (
-                <Goal
-                  currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
-                  targetAmount={jarWithBalance.goalAmount}
-                  deadline={
-                    jarWithBalance.deadline ||
-                    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-                  }
-                  currency={jarWithBalance.currency === 'GHS' ? '₵' : '₦'}
-                  className="my-6"
-                />
-              ) : null}
+            jarWithBalance.goalAmount > 0 &&
+            jarWithBalance.paymentPage?.showGoal === true ? (
+              <Goal
+                currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
+                targetAmount={jarWithBalance.goalAmount}
+                deadline={
+                  jarWithBalance.deadline ||
+                  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                }
+                currency={jarWithBalance.currency === 'GHS' ? '₵' : '₦'}
+                className="my-6"
+              />
+            ) : null}
 
             {/* Contribution Input */}
             <ContributionInput
