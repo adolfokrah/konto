@@ -26,6 +26,7 @@ export function middleware(request: NextRequest) {
     '/forgot-password', // Skip forgot password page
     '/email-confirmation', // Skip email confirmation page
     '/Logo.svg',
+    '/fonts/',
   ].some((path) => pathname.startsWith(path))
 
   if (shouldSkip) {

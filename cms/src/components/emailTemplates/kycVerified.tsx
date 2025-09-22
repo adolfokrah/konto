@@ -13,12 +13,26 @@ export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProp
           fontFamily="Supreme"
           fallbackFontFamily="Arial"
           webFont={{
-            url: "/fonts/supreme/Supreme-Regular.otf",
+            url: "https://staging.usehoga.com/fonts/supreme/Supreme-Regular.otf",
             format: "opentype",
           }}
           fontWeight={400}
           fontStyle="normal"
         />
+        <Font
+          fontFamily="Chillax"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://staging.usehoga.com/fonts/chillax/Chillax-Regular.otf",
+            format: "opentype",
+          }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+
+        
+        <meta name="color-scheme" content="light"></meta>
+        <meta name="supported-color-schemes" content="light"></meta>
       </Head>
       <Tailwind
         config={{
@@ -26,6 +40,7 @@ export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProp
             extend: {
               fontFamily: {
                 'supreme': ['Supreme', 'Arial', 'sans-serif'],
+                'chillax': ['Chillax', 'Arial', 'sans-serif'],
               },
               colors: {
                 primary: '#000000',
@@ -36,16 +51,16 @@ export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProp
         }}
       >
         <Container className="mx-auto py-8 px-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="p-8">
             <Img
-              src={`${process.env.NEXT_PUBLIC_APP_URL}/Logo.svg`}
+              src="https://exbwvryiow.ufs.sh/f/LTX7NhlmcU3wYDN7xEFINo7JQn06T32zrjbsyhdemXfYilFE"
               alt="KYC Verified"
               width="70"
-              height="50"
+              height="23"
               className="mb-6"
-              style={{ filter: 'brightness(0)' }}
+              
             />
-            <h1 className="font-supreme text-2xl font-bold text-primary mb-4">
+            <h1 className="font-chillax text-2xl font-bold text-primary mb-4">
               Congratulations {fullname}! 🎉
             </h1>
             <p className="font-supreme text-secondary text-base leading-relaxed">
