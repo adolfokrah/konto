@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// SMS message template for OTP verification code
   ///
   /// In en, this message translates to:
-  /// **'Your Konto verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.'**
+  /// **'Your Hoga verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.'**
   String otpSmsMessage(String otp, int minutes);
 
   /// Greeting text in app bar

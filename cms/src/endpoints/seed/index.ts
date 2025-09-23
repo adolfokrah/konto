@@ -455,28 +455,12 @@ export const seed = async ({
         ],
         socialLinks: [
           {
-            platform: 'twitter',
-            url: 'https://twitter.com/konto',
-          },
-          {
-            platform: 'facebook',
-            url: 'https://facebook.com/konto',
-          },
-          {
             platform: 'linkedin',
             url: 'https://linkedin.com/company/konto',
           },
           {
-            platform: 'instagram',
-            url: 'https://instagram.com/konto',
-          },
-          {
             platform: 'tiktok',
             url: 'https://tiktok.com/@konto',
-          },
-          {
-            platform: 'github',
-            url: 'https://github.com/konto',
           },
         ],
         bottomMenuItems: [

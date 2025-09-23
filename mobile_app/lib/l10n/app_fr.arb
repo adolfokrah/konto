@@ -63,7 +63,7 @@
   "otpDoesNotMatch": "Le code OTP ne correspond pas au code envoyé. Veuillez réessayer.",
   "failedToSendVerificationCode": "Échec de l'envoi du code de vérification",
   "failedToSendVerificationCodeTryAgain": "Échec de l'envoi du code de vérification. Veuillez réessayer.",
-  "otpSmsMessage": "Votre code de vérification Konto est : {otp}. Valable pendant {minutes} minutes. Ne partagez pas ce code.",
+  "otpSmsMessage": "Votre code de vérification Hoga est : {otp}. Valable pendant {minutes} minutes. Ne partagez pas ce code.",
   "hiUser": "Salut {firstName} !",
   "retry": "Réessayer",
   "jars": "Pots",

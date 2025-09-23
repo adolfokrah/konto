@@ -331,7 +331,7 @@
     "description": "Error message when verification code sending fails with retry instruction"
   },
 
-  "otpSmsMessage": "Your Konto verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.",
+  "otpSmsMessage": "Your Hoga verification code is: {otp}. Valid for {minutes} minutes. Do not share this code.",
   "@otpSmsMessage": {
     "description": "SMS message template for OTP verification code",
     "placeholders": {

@@ -106,7 +106,7 @@ export async function Footer() {
       </div>
       
       {/* Bottom section with menu and copyright */}
-        <div className="container py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div className="container py-4 mt-7 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           {/* Bottom menu items */}
           {bottomMenuItems.length > 0 && (
             <nav className="flex flex-wrap gap-6">

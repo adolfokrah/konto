@@ -215,7 +215,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String otpSmsMessage(String otp, int minutes) {
-    return 'Your Konto verification code is: $otp. Valid for $minutes minutes. Do not share this code.';
+    return 'Your Hoga verification code is: $otp. Valid for $minutes minutes. Do not share this code.';
   }
 
   @override
