@@ -224,6 +224,7 @@ export interface Page {
     | WhyChooseUsBlock
     | FeaturesBlock
     | UseCasesSummaryBlock
+    | PricingBlock
   )[];
   meta?: {
     title?: string | null;
@@ -988,6 +989,100 @@ export interface UseCasesSummaryBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PricingBlock".
+ */
+export interface PricingBlock {
+  /**
+   * Main heading for the pricing section
+   */
+  title: string;
+  /**
+   * Description text explaining the pricing model
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  calculatorSection?: {
+    /**
+     * Label for the amount input section
+     */
+    requestLabel?: string | null;
+    /**
+     * Label for fee payer selection
+     */
+    feePayerLabel?: string | null;
+    feePayerOptions?:
+      | {
+          label: string;
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+    chargesBreakdownLabel?: string | null;
+    /**
+     * Label for the telco/paystack transaction fee
+     */
+    telcoFeeLabel?: string | null;
+    /**
+     * Label for the platform fee
+     */
+    platformFeeLabel?: string | null;
+    /**
+     * Label for the total amount contributor pays
+     */
+    contributorPaysLabel?: string | null;
+    youReceiveLabel?: string | null;
+  };
+  feeStructure?: {
+    /**
+     * Telco transaction fee percentage
+     */
+    telcoTransactionFee?: number | null;
+    /**
+     * Maximum platform fee percentage
+     */
+    platformFeeMax?: number | null;
+  };
+  features?:
+    | {
+        /**
+         * Feature or benefit description
+         */
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  ctaButton?: {
+    /**
+     * Button text that will focus on the calculator when clicked
+     */
+    text?: string | null;
+  };
+  poweredBy?: {
+    text?: string | null;
+    /**
+     * Payment provider logo (e.g., Paystack)
+     */
+    logo?: (string | null) | Media;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'pricing';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1467,6 +1562,7 @@ export interface PagesSelect<T extends boolean = true> {
         whyChooseUs?: T | WhyChooseUsBlockSelect<T>;
         features?: T | FeaturesBlockSelect<T>;
         useCasesSummary?: T | UseCasesSummaryBlockSelect<T>;
+        pricing?: T | PricingBlockSelect<T>;
       };
   meta?:
     | T
@@ -1640,6 +1736,57 @@ export interface UseCasesSummaryBlockSelect<T extends boolean = true> {
               appearance?: T;
             };
         id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PricingBlock_select".
+ */
+export interface PricingBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  calculatorSection?:
+    | T
+    | {
+        requestLabel?: T;
+        feePayerLabel?: T;
+        feePayerOptions?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
+        chargesBreakdownLabel?: T;
+        telcoFeeLabel?: T;
+        platformFeeLabel?: T;
+        contributorPaysLabel?: T;
+        youReceiveLabel?: T;
+      };
+  feeStructure?:
+    | T
+    | {
+        telcoTransactionFee?: T;
+        platformFeeMax?: T;
+      };
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  ctaButton?:
+    | T
+    | {
+        text?: T;
+      };
+  poweredBy?:
+    | T
+    | {
+        text?: T;
+        logo?: T;
       };
   id?: T;
   blockName?: T;
