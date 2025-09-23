@@ -8,6 +8,7 @@ import { Content } from '../../blocks/Content/config'
 import { Features } from '../../blocks/Features/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { UseCasesSummary } from '../../blocks/UseCasesSummary/config'
 import { WhyChooseUs } from '../../blocks/WhyChooseUs/config'
 import { hero } from '@/heros/config'
 import { slugField } from '@/fields/slug'
@@ -85,6 +86,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 FormBlock,
                 WhyChooseUs,
                 Features,
+                UseCasesSummary,
               ],
               required: true,
               admin: {

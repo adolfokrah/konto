@@ -223,6 +223,7 @@ export interface Page {
     | FormBlock
     | WhyChooseUsBlock
     | FeaturesBlock
+    | UseCasesSummaryBlock
   )[];
   meta?: {
     title?: string | null;
@@ -902,6 +903,91 @@ export interface FeaturesBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UseCasesSummaryBlock".
+ */
+export interface UseCasesSummaryBlock {
+  /**
+   * Main heading for the use cases section
+   */
+  title?: string | null;
+  /**
+   * Optional subtitle or description
+   */
+  subtitle?: string | null;
+  /**
+   * List of use cases to display
+   */
+  useCases?:
+    | {
+        /**
+         * Use case image or mockup
+         */
+        image: string | Media;
+        /**
+         * Use case category (e.g., "FUNERALS & MEMORIALS")
+         */
+        useCase: string;
+        /**
+         * Main title for this use case
+         */
+        title: string;
+        /**
+         * Detailed description of the use case
+         */
+        description: {
+          root: {
+            type: string;
+            children: {
+              type: string;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        /**
+         * Position of the image relative to the text content
+         */
+        imagePosition?: ('left' | 'right') | null;
+        /**
+         * Enable link/button for this use case
+         */
+        showLink?: boolean | null;
+        /**
+         * Call-to-action link for this use case
+         */
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline-solid') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'useCasesSummary';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1380,6 +1466,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         whyChooseUs?: T | WhyChooseUsBlockSelect<T>;
         features?: T | FeaturesBlockSelect<T>;
+        useCasesSummary?: T | UseCasesSummaryBlockSelect<T>;
       };
   meta?:
     | T
@@ -1510,6 +1597,37 @@ export interface FeaturesBlockSelect<T extends boolean = true> {
         title?: T;
         subtitle?: T;
         image?: T;
+        showLink?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UseCasesSummaryBlock_select".
+ */
+export interface UseCasesSummaryBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  useCases?:
+    | T
+    | {
+        image?: T;
+        useCase?: T;
+        title?: T;
+        description?: T;
+        imagePosition?: T;
         showLink?: T;
         link?:
           | T
