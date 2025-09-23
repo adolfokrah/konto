@@ -154,6 +154,9 @@ export interface Page {
   title: string;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    title?: string | null;
+    subTitle?: string | null;
+    buttonTitle?: string | null;
     richText?: {
       root: {
         type: string;
@@ -194,6 +197,23 @@ export interface Page {
         }[]
       | null;
     media?: (string | null) | Media;
+    avatarsSection?: {
+      enabled?: boolean | null;
+      title?: string | null;
+      subtitle?: string | null;
+      avatars?:
+        | {
+            image: string | Media;
+            name: string;
+            id?: string | null;
+          }[]
+        | null;
+      appStoreLinks?: {
+        title?: string | null;
+        appleAppStoreUrl?: string | null;
+        googlePlayStoreUrl?: string | null;
+      };
+    };
   };
   layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
   meta?: {
@@ -1200,6 +1220,9 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
+        title?: T;
+        subTitle?: T;
+        buttonTitle?: T;
         richText?: T;
         links?:
           | T
@@ -1217,6 +1240,27 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        avatarsSection?:
+          | T
+          | {
+              enabled?: T;
+              title?: T;
+              subtitle?: T;
+              avatars?:
+                | T
+                | {
+                    image?: T;
+                    name?: T;
+                    id?: T;
+                  };
+              appStoreLinks?:
+                | T
+                | {
+                    title?: T;
+                    appleAppStoreUrl?: T;
+                    googlePlayStoreUrl?: T;
+                  };
+            };
       };
   layout?:
     | T

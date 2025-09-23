@@ -144,8 +144,11 @@ class _LivenessCameraState extends State<LivenessCamera> {
         final screenSize = MediaQuery.of(context).size;
 
         // Calculate oval bounds (same as in FaceOvalPainter)
-        final ovalWidth = screenSize.width * 0.7;
-        final ovalHeight = screenSize.height * 0.4;
+        // Use fixed size for consistent oval shape across all devices
+        const ovalWidth = 280.0; // Fixed width
+        const ovalHeight =
+            360.0; // Fixed height (maintains good face proportion)
+
         final ovalLeft = (screenSize.width - ovalWidth) / 2;
         final ovalTop = (screenSize.height - ovalHeight) / 2;
         final ovalRight = ovalLeft + ovalWidth;
@@ -364,8 +367,10 @@ class FaceOvalPainter extends CustomPainter {
 
     // Create oval cutout in the center
     final center = Offset(size.width / 2, size.height / 2);
-    final ovalWidth = size.width * 0.7;
-    final ovalHeight = size.height * 0.4;
+
+    // Use fixed size for consistent oval shape across all devices
+    const ovalWidth = 300.0; // Fixed width
+    const ovalHeight = 360.0; // Fixed height (maintains good face proportion)
 
     final ovalRect = Rect.fromCenter(
       center: center,
