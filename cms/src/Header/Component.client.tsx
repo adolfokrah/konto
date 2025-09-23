@@ -45,34 +45,34 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
               <Logo loading="eager" priority="high" className="invert dark:invert-0" />
             </Link>
             <HeaderNav data={data} className="hidden md:flex" />
-            <div className='flex items-center gap-4'>
+            <div className="flex items-center gap-4">
               <DownloadButton />
-            <button
-              onClick={toggleMobileNav}
-              className="md:hidden p-2 rounded-lg transition-colors relative w-10 h-10 flex items-center justify-center"
-              aria-label="Toggle mobile menu"
-            >
-              <div className="w-6 h-5 relative">
-                {/* Top bar */}
-                <span
-                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out origin-center ${
-                    isMobileNavOpen ? 'rotate-45 top-2' : 'rotate-0 top-0'
-                  }`}
-                />
-                {/* Middle bar */}
-                <span
-                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out top-2 ${
-                    isMobileNavOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
-                  }`}
-                />
-                {/* Bottom bar */}
-                <span
-                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out origin-center ${
-                    isMobileNavOpen ? '-rotate-45 top-2' : 'rotate-0 top-4'
-                  }`}
-                />
-              </div>
-            </button>
+              <button
+                onClick={toggleMobileNav}
+                className="md:hidden p-2 rounded-lg transition-colors relative w-10 h-10 flex items-center justify-center"
+                aria-label="Toggle mobile menu"
+              >
+                <div className="w-6 h-5 relative">
+                  {/* Top bar */}
+                  <span
+                    className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out origin-center ${
+                      isMobileNavOpen ? 'rotate-45 top-2' : 'rotate-0 top-0'
+                    }`}
+                  />
+                  {/* Middle bar */}
+                  <span
+                    className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out top-2 ${
+                      isMobileNavOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
+                    }`}
+                  />
+                  {/* Bottom bar */}
+                  <span
+                    className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ease-in-out origin-center ${
+                      isMobileNavOpen ? '-rotate-45 top-2' : 'rotate-0 top-4'
+                    }`}
+                  />
+                </div>
+              </button>
             </div>
           </div>
           {isMobileNavOpen && <MobileNav data={data} className="md:hidden" />}

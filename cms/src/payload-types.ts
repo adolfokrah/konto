@@ -225,6 +225,7 @@ export interface Page {
     | FeaturesBlock
     | UseCasesSummaryBlock
     | PricingBlock
+    | MetricsBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1083,6 +1084,54 @@ export interface PricingBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MetricsBlock".
+ */
+export interface MetricsBlock {
+  /**
+   * Main heading for the metrics section
+   */
+  title: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Subtitle or tagline below the main title
+   */
+  subtitle?: string | null;
+  statistics?:
+    | {
+        /**
+         * Main statistic number or text (e.g., "5M +", "200")
+         */
+        title: string;
+        /**
+         * Description or label for the statistic
+         */
+        subtitle: string;
+        /**
+         * Optional image/icon for this statistic
+         */
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'metrics';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1563,6 +1612,7 @@ export interface PagesSelect<T extends boolean = true> {
         features?: T | FeaturesBlockSelect<T>;
         useCasesSummary?: T | UseCasesSummaryBlockSelect<T>;
         pricing?: T | PricingBlockSelect<T>;
+        metrics?: T | MetricsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1787,6 +1837,24 @@ export interface PricingBlockSelect<T extends boolean = true> {
     | {
         text?: T;
         logo?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MetricsBlock_select".
+ */
+export interface MetricsBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  statistics?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        image?: T;
+        id?: T;
       };
   id?: T;
   blockName?: T;

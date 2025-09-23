@@ -74,9 +74,10 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
     // Remove locale prefix from pathname (/en, /fr, etc.)
     const localeRegex = /^\/[a-z]{2}(\/|$)/
     const pathWithoutLocale = pathname.replace(localeRegex, '/')
-    
+
     // Normalize pathname - treat both '/' and '/home' as home
-    const normalizedPathname = pathWithoutLocale === '/' || pathWithoutLocale === '/home' ? 'home' : pathWithoutLocale
+    const normalizedPathname =
+      pathWithoutLocale === '/' || pathWithoutLocale === '/home' ? 'home' : pathWithoutLocale
 
     // Handle reference links
     if (link.type === 'reference' && link.reference?.value) {

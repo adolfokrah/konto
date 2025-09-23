@@ -33,26 +33,12 @@ export const WhyChooseUsBlock: React.FC<Props> = ({
   }
 
   return (
-    <section
-      className={cn('my-16',
-        backgroundClasses[backgroundColor || 'white'],
-        className,
-      )}
-    >
-      <div
-        className={cn(
-          'container mx-auto',
-          !disableInnerContainer && 'max-w-7xl',
-        )}
-      >
+    <section className={cn('my-16', backgroundClasses[backgroundColor || 'white'], className)}>
+      <div className={cn('container mx-auto', !disableInnerContainer && 'max-w-7xl')}>
         {/* Header */}
         {(title || subtitle) && (
           <div className="text-center mb-12 md:mb-16">
-            {title && (
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-                {title}
-              </h2>
-            )}
+            {title && <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{title}</h2>}
             {subtitle && (
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                 {subtitle}
@@ -67,7 +53,7 @@ export const WhyChooseUsBlock: React.FC<Props> = ({
             {features.map((feature: Feature, index: number) => {
               // Add borders to middle feature when there are 3 features
               const isMiddleFeature = features.length === 3 && index === 1
-              
+
               return (
                 <div
                   key={index}
@@ -75,28 +61,24 @@ export const WhyChooseUsBlock: React.FC<Props> = ({
                     'lg:border-l lg:border-r lg:border-e-neutral-200 lg:px-8': isMiddleFeature,
                   })}
                 >
-                {/* Icon */}
-                {feature.icon && typeof feature.icon === 'object' && (
-                  <div className="mb-6 flex justify-center">
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                      <Media
-                        resource={feature.icon}
-                        className="w-8 h-8 md:w-10 md:h-10 mx-auto"
-                      />
+                  {/* Icon */}
+                  {feature.icon && typeof feature.icon === 'object' && (
+                    <div className="mb-6 flex justify-center">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                        <Media
+                          resource={feature.icon}
+                          className="w-8 h-8 md:w-10 md:h-10 mx-auto"
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Title */}
-                <h3 className="text-xl md:text-2xl font-semibold mb-3">
-                  {feature.title}
-                </h3>
+                  {/* Title */}
+                  <h3 className="text-xl md:text-2xl font-semibold mb-3">{feature.title}</h3>
 
-                {/* Description */}
-                <p className="leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
+                  {/* Description */}
+                  <p className="leading-relaxed">{feature.description}</p>
+                </div>
               )
             })}
           </div>

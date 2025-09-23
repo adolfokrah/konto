@@ -76,7 +76,7 @@ export const PricingBlock: React.FC<Props> = ({
     const isCreatorPaysPlatformFees = feePayer === 'organizer'
     const chargesCalculator = new TransactionCharges({ isCreatorPaysPlatformFees })
     const result = chargesCalculator.calculateAmountAndCharges(requestAmount)
-    
+
     setCalculations({
       totalAmount: result.totalAmount,
       paystackCharge: result.paystackCharge,
@@ -90,13 +90,13 @@ export const PricingBlock: React.FC<Props> = ({
   const paystackFeeRate = chargesCalculator.paystackFeeRate
 
   return (
-    <section className={cn('bg-dark-surface text-white py-16 md:py-70 relative overflow-hidden', className)}>
-      <div
-        className={cn(
-          'container mx-auto relative z-10',
-          !disableInnerContainer && 'max-w-7xl',
-        )}
-      >
+    <section
+      className={cn(
+        'bg-dark-surface text-white py-16 md:py-70 relative',
+        className,
+      )}
+    >
+      <div className={cn('container mx-auto relative z-10', !disableInnerContainer && 'max-w-7xl')}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Column - Content */}
           <div className="space-y-8">
@@ -117,7 +117,7 @@ export const PricingBlock: React.FC<Props> = ({
             {/* CTA Button */}
             {ctaButton && ctaButton.text && (
               <div className="pt-4">
-                <button 
+                <button
                   onClick={handleDoTheMathClick}
                   className="inline-flex items-center px-8 py-4 bg-secondary-background text-black rounded-full font-medium text-lg hover:bg-secondary-dark transition-colors"
                 >
@@ -129,15 +129,8 @@ export const PricingBlock: React.FC<Props> = ({
             {/* Powered By */}
             {poweredBy && poweredBy.text && (
               <div className="pt-8">
-                <p className="text-gray-400 text-sm">
-                  {poweredBy.text}
-                </p>
-                {poweredBy.logo && (
-                  <Media
-                    resource={poweredBy.logo}
-                    className="h-4 w-auto"
-                  />
-                )}
+                <p className="text-gray-400 text-sm">{poweredBy.text}</p>
+                {poweredBy.logo && <Media resource={poweredBy.logo} className="h-4 w-auto" />}
               </div>
             )}
           </div>
@@ -187,29 +180,21 @@ export const PricingBlock: React.FC<Props> = ({
 
             {/* Charges Breakdown */}
             <div>
-              <h4 className="text-lg my-7">
-                {calculatorSection?.chargesBreakdownLabel}
-              </h4>
+              <h4 className="text-lg my-7">{calculatorSection?.chargesBreakdownLabel}</h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm">
                     {calculatorSection?.telcoFeeLabel} {(paystackFeeRate * 100).toFixed(2)}%
                   </span>
-                  <span className="font-medium">
-                    GHS {calculations.paystackCharge.toFixed(2)}
-                  </span>
+                  <span className="font-medium">GHS {calculations.paystackCharge.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">{calculatorSection?.platformFeeLabel}</span>
-                  <span className="font-medium">
-                    GHS {calculations.platformCharge.toFixed(2)}
-                  </span>
+                  <span className="font-medium">GHS {calculations.platformCharge.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">{calculatorSection?.contributorPaysLabel}</span>
-                  <span className="font-medium">
-                    GHS {calculations.totalAmount.toFixed(2)}
-                  </span>
+                  <span className="font-medium">GHS {calculations.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -217,9 +202,7 @@ export const PricingBlock: React.FC<Props> = ({
             {/* You Receive */}
             <div className="  pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-medium">
-                  {calculatorSection?.youReceiveLabel}
-                </span>
+                <span className="text-2xl font-medium">{calculatorSection?.youReceiveLabel}</span>
                 <span className="text-2xl font-bold">
                   GHS {calculations.amountAfterCharges.toFixed(2)}
                 </span>
@@ -257,10 +240,13 @@ export const PricingBlock: React.FC<Props> = ({
           </div>
         </div>
       </div>
-
-       <Ring className='absolute top-50 -right-160 lg:top-50 lg:-right-70 border-[#1A1F2A] border-70 w-[900px] h-[900px]'/>
-       <Ring className='absolute -left-100  -top-200 lg:-top-190 xl:-top-150 lg:left-20 border-[#1A1F2A] border-70 w-[900px] h-[900px]'/>
-       <Ring className='absolute -bottom-200 -left-50  lg:-bottom-170 xl:-bottom-150 lg:left-0 xl:left-30 border-[#1A1F2A] border-70 w-[900px] h-[900px]'/>
+      <div className='overflow-hidden absolute top-0 left-0 w-full h-full '>
+       <div className='mx-auto  max-w-[2000px]'>
+         <Ring className="absolute top-50 -right-160 lg:top-50 lg:-right-70 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+          <Ring className="absolute -left-100  -top-200 lg:-top-190 xl:-top-150 lg:left-20 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+          <Ring className="absolute -bottom-200 -left-50  lg:-bottom-170 xl:-bottom-150 lg:left-0 xl:left-30 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+       </div>
+      </div>
     </section>
   )
 }

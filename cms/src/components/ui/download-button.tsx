@@ -8,7 +8,7 @@ export default function DownloadButton({
   title = 'Download App',
 }: {
   variant?: 'default' | 'invert'
-  className?: string,
+  className?: string
   title?: string
 }) {
   return (
@@ -19,7 +19,7 @@ export default function DownloadButton({
         'bg-secondary-background hover:bg-secondary-dark': variant == 'invert',
       })}
     >
-     {title}
+      {title}
       <div
         className={cn(' p-1 rounded-full items-center flex justify-between', {
           'bg-secondary-background': variant == 'default',

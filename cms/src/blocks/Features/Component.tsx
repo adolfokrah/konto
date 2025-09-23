@@ -23,35 +23,24 @@ const StandardFeatureCard: React.FC<{
   feature: Feature
   colorClass: string
   isLargeCard?: boolean
-    className?: string
+  className?: string
 }> = ({ feature, colorClass, className }) => {
   return (
-    <div className={cn(
-      'rounded-3xl p-6 text-white min-h-[244px]',
-      colorClass,
-      className
-    )}>
+    <div className={cn('rounded-3xl p-6 text-white min-h-[244px]', colorClass, className)}>
       <div className="flex flex-col justify-center items-center h-full gap-4">
         <div className="flex flex-col gap-2.5 text-center">
-          <h3 className="font-supreme font-medium text-xl leading-[27px]">
-            {feature.title}
-          </h3>
+          <h3 className="font-supreme font-medium text-xl leading-[27px]">{feature.title}</h3>
           {feature.subtitle && (
             <p className="font-supreme font-normal text-xs leading-4 opacity-90">
               {feature.subtitle}
             </p>
           )}
         </div>
-        
+
         {/* Image */}
         {feature.image && (
           <div className="flex-1 flex items-center justify-center">
-            <Media
-              resource={feature.image}
-              className={cn(
-                "h-auto"
-              )}
-            />
+            <Media resource={feature.image} className={cn('h-auto')} />
           </div>
         )}
       </div>
@@ -59,10 +48,7 @@ const StandardFeatureCard: React.FC<{
   )
 }
 
-export const FeaturesBlock: React.FC<Props> = ({
-  title,
-  features,
-}) => {
+export const FeaturesBlock: React.FC<Props> = ({ title, features }) => {
   // Predefined background colors for the cards
   const cardColors = [
     'bg-[#1C222E]', // Dark blue-gray
@@ -73,12 +59,8 @@ export const FeaturesBlock: React.FC<Props> = ({
   ]
 
   return (
-    <section >
-      <div
-        className={cn(
-          'container mx-auto',
-        )}
-      >
+    <section>
+      <div className={cn('container mx-auto')}>
         {/* Title */}
         {title && (
           <h2 className="font-chillax text-center font-bold w-full lg:max-w-[80%] mx-auto text-2xl md:text-4xl lg:text-5xl mb-12 md:mb-16">
@@ -93,12 +75,14 @@ export const FeaturesBlock: React.FC<Props> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Feature 1 - Special layout */}
               {features[0] && (
-                <div className={cn(
-                  'col-span-1 sm:col-span-2 lg:col-span-2 p-5 rounded-3xl sm:px-10 text-white',
-                  cardColors[0]
-                )}>
+                <div
+                  className={cn(
+                    'col-span-1 sm:col-span-2 lg:col-span-2 p-5 rounded-3xl sm:px-10 text-white',
+                    cardColors[0],
+                  )}
+                >
                   <div className="flex flex-col mt-2 sm:mt-0 sm:flex-row items-center justify-between h-full">
-                     <div>
+                    <div>
                       <div>
                         <h3 className="font-supreme font-medium text-xl leading-[27px] text-center sm:text-left">
                           {features[0].title}
@@ -109,30 +93,26 @@ export const FeaturesBlock: React.FC<Props> = ({
                           </p>
                         )}
                       </div>
-                      
+
                       {/* Link/Button */}
-                      <div className='w-fit mx-auto mt-4 sm:ml-0'>
+                      <div className="w-fit mx-auto mt-4 sm:ml-0">
                         {features[0].showLink && features[0].link && (
-                        <CMSLink
-                          {...features[0].link}
-                          label={''}
-                          className='px-0 w-fit'
-                          appearance="ghost hover:bg-transparent"
-                        >
-                         
-                          <DownloadButton title= {features[0].link.label || 'Create a jar'}/>
-                        </CMSLink>
-                      )}
-                        </div>
+                          <CMSLink
+                            {...features[0].link}
+                            label={''}
+                            className="px-0 w-fit"
+                            appearance="ghost hover:bg-transparent"
+                          >
+                            <DownloadButton title={features[0].link.label || 'Create a jar'} />
+                          </CMSLink>
+                        )}
+                      </div>
                     </div>
-                    
+
                     {/* Image/Illustration */}
                     {features[0].image && (
                       <div className="flex-shrink-0 mb-4 sm:ml-4 sm:mb-0">
-                        <Media
-                          resource={features[0].image}
-                          className="w-48 h-auto mx-auto"
-                        />
+                        <Media resource={features[0].image} className="w-48 h-auto mx-auto" />
                       </div>
                     )}
                   </div>
@@ -141,7 +121,7 @@ export const FeaturesBlock: React.FC<Props> = ({
 
               {/* Feature 2 - Standard card */}
               {features[1] && (
-                <StandardFeatureCard 
+                <StandardFeatureCard
                   feature={features[1]}
                   colorClass={cardColors[1]}
                   className="col-span-1"
@@ -149,7 +129,7 @@ export const FeaturesBlock: React.FC<Props> = ({
               )}
 
               {features[2] && (
-                <StandardFeatureCard 
+                <StandardFeatureCard
                   feature={features[2]}
                   colorClass={cardColors[2]}
                   className="col-span-1"
@@ -157,7 +137,7 @@ export const FeaturesBlock: React.FC<Props> = ({
               )}
 
               {features[3] && (
-                <StandardFeatureCard 
+                <StandardFeatureCard
                   feature={features[3]}
                   colorClass={cardColors[3]}
                   className="col-span-1"
@@ -165,15 +145,13 @@ export const FeaturesBlock: React.FC<Props> = ({
               )}
 
               {features[4] && (
-                <StandardFeatureCard 
+                <StandardFeatureCard
                   feature={features[4]}
                   colorClass={cardColors[4]}
                   className="col-span-1"
                 />
               )}
             </div>
-
-           
           </div>
         )}
       </div>
