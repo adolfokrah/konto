@@ -4,6 +4,7 @@ import { Media } from '@/components/Media'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
 import DownloadButton from '@/components/ui/download-button'
+import Marquee from '@/components/ui/marquee'
 
 type UseCase = {
   image: any
@@ -34,7 +35,7 @@ export const UseCasesSummaryBlock: React.FC<Props> = ({
     <section className={cn(className)}>
       <div
         className={cn(
-          'container mx-auto px-4',
+          'container mx-auto mt-16',
           !disableInnerContainer && 'max-w-7xl',
         )}
       >
@@ -127,6 +128,44 @@ export const UseCasesSummaryBlock: React.FC<Props> = ({
           </div>
         )}
       </div>
+
+        {/* Scrolling Use Cases Marquee */}
+        <div className="border-y border-y-black mt-14">
+          <Marquee
+            pauseOnHover
+            className="py-4"
+            speed={30}
+          >
+            <div className="flex items-center gap-8 whitespace-nowrap">
+              <span className="text-lg md:text-xl">School Fundraisers</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Church Building Projects</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Alumni and Old Students Associations</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Church Offering</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Community Development Initiatives</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Sports Teams</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Charity Organizations</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Medical Fundraising</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Wedding Contributions</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Funeral Support</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Business Startups</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Emergency Relief</span>
+              <span className="text-2xl">•</span>
+              <span className="text-lg md:text-xl">Educational Scholarships</span>
+              <span className="text-2xl">•</span>
+            </div>
+          </Marquee>
+        </div>
     </section>
   )
 }

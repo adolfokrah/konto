@@ -34,7 +34,7 @@ export const WhyChooseUsBlock: React.FC<Props> = ({
 
   return (
     <section
-      className={cn(
+      className={cn('my-16',
         backgroundClasses[backgroundColor || 'white'],
         className,
       )}
