@@ -215,7 +215,15 @@ export interface Page {
       };
     };
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | WhyChooseUsBlock
+    | FeaturesBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -794,6 +802,106 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WhyChooseUsBlock".
+ */
+export interface WhyChooseUsBlock {
+  /**
+   * Main heading for the why choose us section
+   */
+  title?: string | null;
+  /**
+   * Optional subtitle or description
+   */
+  subtitle?: string | null;
+  /**
+   * List of features/benefits to display
+   */
+  features?:
+    | {
+        /**
+         * Feature title (e.g., "Trusted by millions")
+         */
+        title: string;
+        /**
+         * Brief description of the feature
+         */
+        description: string;
+        /**
+         * Icon or image for this feature
+         */
+        icon?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Background color for the section
+   */
+  backgroundColor?: ('white' | 'gray' | 'dark' | 'transparent') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'whyChooseUs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturesBlock".
+ */
+export interface FeaturesBlock {
+  /**
+   * Main heading for the features section
+   */
+  title?: string | null;
+  /**
+   * List of features to display
+   */
+  features?:
+    | {
+        /**
+         * Feature title
+         */
+        title: string;
+        /**
+         * Feature subtitle or description
+         */
+        subtitle?: string | null;
+        /**
+         * Feature image
+         */
+        image?: (string | null) | Media;
+        /**
+         * Enable link/button for this feature
+         */
+        showLink?: boolean | null;
+        /**
+         * Button link for this feature
+         */
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline-solid') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'features';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1270,6 +1378,8 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        whyChooseUs?: T | WhyChooseUsBlockSelect<T>;
+        features?: T | FeaturesBlockSelect<T>;
       };
   meta?:
     | T
@@ -1366,6 +1476,53 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WhyChooseUsBlock_select".
+ */
+export interface WhyChooseUsBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  features?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        id?: T;
+      };
+  backgroundColor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturesBlock_select".
+ */
+export interface FeaturesBlockSelect<T extends boolean = true> {
+  title?: T;
+  features?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        image?: T;
+        showLink?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
