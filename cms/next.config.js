@@ -56,6 +56,10 @@ const nextConfig = {
         pathname: '/api/media/file/**',
         search: '',
       },
+      {
+        pathname: '/**',
+        search: '',
+      },
     ],
   },
   webpack: (webpackConfig, { dev, isServer }) => {

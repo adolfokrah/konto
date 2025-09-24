@@ -10,6 +10,7 @@ import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { Metrics } from '../../blocks/Metrics/config'
 import { Pricing } from '../../blocks/Pricing/config'
+import { Testimonials } from '../../blocks/Testimonials/config'
 import { UseCasesSummary } from '../../blocks/UseCasesSummary/config'
 import { WhyChooseUs } from '../../blocks/WhyChooseUs/config'
 import { hero } from '@/heros/config'
@@ -91,6 +92,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 UseCasesSummary,
                 Pricing,
                 Metrics,
+                Testimonials,
               ],
               required: true,
               admin: {

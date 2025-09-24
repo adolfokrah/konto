@@ -10,6 +10,7 @@ import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MetricsBlock } from '@/blocks/Metrics/Component'
 import { PricingBlock } from '@/blocks/Pricing/Component'
+import { TestimonialsBlock } from '@/blocks/Testimonials/Component'
 import { UseCasesSummaryBlock } from '@/blocks/UseCasesSummary/Component'
 import { WhyChooseUsBlock } from '@/blocks/WhyChooseUs/Component'
 
@@ -22,6 +23,7 @@ const blockComponents = {
   mediaBlock: MediaBlock,
   metrics: MetricsBlock,
   pricing: PricingBlock,
+  testimonials: TestimonialsBlock,
   useCasesSummary: UseCasesSummaryBlock,
   whyChooseUs: WhyChooseUsBlock,
 }

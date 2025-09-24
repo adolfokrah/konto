@@ -9,26 +9,29 @@ export function middleware(request: NextRequest) {
   const defaultLocale = 'en'
 
   // Skip middleware for certain paths
-  const shouldSkip = [
-    '/api/',
-    '/admin/',
-    '/_next/',
-    '/favicon.ico',
-    '/robots.txt',
-    '/sitemap.xml',
-    '/media/',
-    '/monitoring',
-    '/pay/', // Skip pay routes
-    '/payload/', // Skip payload admin routes
-    '/verify', // Skip KYC verify route
-    '/congratulations', // Skip congratulations page
-    '/reset-password', // Skip reset password page
-    '/forgot-password', // Skip forgot password page
-    '/email-confirmation', // Skip email confirmation page
-    '/Logo.svg',
-    '/fonts/',
-    '/next/',
-  ].some((path) => pathname.startsWith(path))
+  const shouldSkip =
+    [
+      '/api/',
+      '/admin/',
+      '/_next/',
+      '/favicon.ico',
+      '/robots.txt',
+      '/sitemap.xml',
+      '/media/',
+      '/monitoring',
+      '/pay/', // Skip pay routes
+      '/payload/', // Skip payload admin routes
+      '/verify', // Skip KYC verify route
+      '/congratulations', // Skip congratulations page
+      '/reset-password', // Skip reset password page
+      '/forgot-password', // Skip forgot password page
+      '/email-confirmation', // Skip email confirmation page
+      '/Logo.svg',
+      '/fonts/',
+      '/next/',
+    ].some((path) => pathname.startsWith(path)) ||
+    // Skip static image files
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/i)
 
   if (shouldSkip) {
     return NextResponse.next()

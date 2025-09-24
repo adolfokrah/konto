@@ -226,6 +226,7 @@ export interface Page {
     | UseCasesSummaryBlock
     | PricingBlock
     | MetricsBlock
+    | TestimonialsBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1132,6 +1133,55 @@ export interface MetricsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  /**
+   * Main heading for the testimonials section
+   */
+  heading?: string | null;
+  /**
+   * Subtitle or description below the main heading
+   */
+  subheading?: string | null;
+  /**
+   * List of testimonials to display
+   */
+  testimonials?:
+    | {
+        /**
+         * The testimonial quote/text
+         */
+        quote: string;
+        /**
+         * Name of the person giving the testimonial
+         */
+        authorName: string;
+        /**
+         * Job title or description of the person (e.g., Event Organizer, Collector)
+         */
+        authorTitle?: string | null;
+        /**
+         * Profile photo of the testimonial author
+         */
+        authorImage?: (string | null) | Media;
+        /**
+         * Company or organization (optional)
+         */
+        company?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Show navigation arrows for the testimonials section
+   */
+  showNavigation?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1613,6 +1663,7 @@ export interface PagesSelect<T extends boolean = true> {
         useCasesSummary?: T | UseCasesSummaryBlockSelect<T>;
         pricing?: T | PricingBlockSelect<T>;
         metrics?: T | MetricsBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1856,6 +1907,27 @@ export interface MetricsBlockSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  subheading?: T;
+  testimonials?:
+    | T
+    | {
+        quote?: T;
+        authorName?: T;
+        authorTitle?: T;
+        authorImage?: T;
+        company?: T;
+        id?: T;
+      };
+  showNavigation?: T;
   id?: T;
   blockName?: T;
 }

@@ -44,43 +44,35 @@ class KycView extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          if (state is AuthAuthenticated) {
-            final user = state.user;
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.verified_user, size: 64),
-                    const SizedBox(height: 24),
-                    Text(
-                      'In order to create a jar, please complete the KYC verification process.',
-                      style: TextStyles.titleRegularSm,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Please tap the button below to start your KYC verification.',
-                      style: TextStyles.titleRegularSm,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    AppButton.filled(
-                      onPressed: () async {
-                        Navigator.pushNamed(context, AppRoutes.kycIntroView);
-                      },
-                      text: 'Verify my Identity',
-                    ),
-                  ],
-                ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.verified_user, size: 64),
+              const SizedBox(height: 24),
+              Text(
+                'In order to create a jar, please complete the KYC verification process.',
+                style: TextStyles.titleRegularSm,
+                textAlign: TextAlign.center,
               ),
-            );
-          }
-          return Center(child: CircularProgressIndicator());
-        },
+              const SizedBox(height: 16),
+              Text(
+                'Please tap the button below to start your KYC verification.',
+                style: TextStyles.titleRegularSm,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              AppButton.filled(
+                onPressed: () async {
+                  Navigator.pushNamed(context, AppRoutes.kycIntroView);
+                },
+                text: 'Verify my Identity',
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
