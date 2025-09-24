@@ -5,6 +5,7 @@ import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
+import { FAQ } from '../../blocks/FAQ/config'
 import { Features } from '../../blocks/Features/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
@@ -93,6 +94,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 Pricing,
                 Metrics,
                 Testimonials,
+                FAQ,
               ],
               required: true,
               admin: {

@@ -227,6 +227,7 @@ export interface Page {
     | PricingBlock
     | MetricsBlock
     | TestimonialsBlock
+    | FAQBlock
   )[];
   meta?: {
     title?: string | null;
@@ -467,7 +468,22 @@ export interface User {
  * via the `definition` "CallToActionBlock".
  */
 export interface CallToActionBlock {
-  richText?: {
+  title: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  description?: {
     root: {
       type: string;
       children: {
@@ -482,30 +498,15 @@ export interface CallToActionBlock {
     };
     [k: string]: unknown;
   } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline-solid') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
+  image?: (string | null) | Media;
+  appStoreButton?: {
+    show?: boolean | null;
+    url?: string | null;
+  };
+  googlePlayButton?: {
+    show?: boolean | null;
+    url?: string | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
@@ -1182,6 +1183,24 @@ export interface TestimonialsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock".
+ */
+export interface FAQBlock {
+  heading?: string | null;
+  subheading?: string | null;
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contributions".
  */
 export interface Contribution {
@@ -1664,6 +1683,7 @@ export interface PagesSelect<T extends boolean = true> {
         pricing?: T | PricingBlockSelect<T>;
         metrics?: T | MetricsBlockSelect<T>;
         testimonials?: T | TestimonialsBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
       };
   meta?:
     | T
@@ -1684,21 +1704,20 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "CallToActionBlock_select".
  */
 export interface CallToActionBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
+  title?: T;
+  description?: T;
+  image?: T;
+  appStoreButton?:
     | T
     | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
+        show?: T;
+        url?: T;
+      };
+  googlePlayButton?:
+    | T
+    | {
+        show?: T;
+        url?: T;
       };
   id?: T;
   blockName?: T;
@@ -1928,6 +1947,23 @@ export interface TestimonialsBlockSelect<T extends boolean = true> {
         id?: T;
       };
   showNavigation?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock_select".
+ */
+export interface FAQBlockSelect<T extends boolean = true> {
+  heading?: T;
+  subheading?: T;
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }

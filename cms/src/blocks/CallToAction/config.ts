@@ -14,7 +14,7 @@ export const CallToAction: Block = {
   interfaceName: 'CallToActionBlock',
   fields: [
     {
-      name: 'richText',
+      name: 'title',
       type: 'richText',
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
@@ -26,14 +26,55 @@ export const CallToAction: Block = {
           ]
         },
       }),
-      label: false,
+      required: true,
     },
-    linkGroup({
-      appearances: ['default', 'outline-solid'],
-      overrides: {
-        maxRows: 2,
-      },
-    }),
+    {
+      name: 'description',
+      type: 'richText',
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => {
+          return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
+        },
+      }),
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'appStoreButton',
+      type: 'group',
+      fields: [
+        {
+          name: 'show',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'url',
+          type: 'text',
+          defaultValue: '#',
+        },
+      ],
+    },
+    {
+      name: 'googlePlayButton',
+      type: 'group',
+      fields: [
+        {
+          name: 'show',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'url',
+          type: 'text',
+          defaultValue: '#',
+        },
+      ],
+    },
   ],
   labels: {
     plural: 'Calls to Action',
