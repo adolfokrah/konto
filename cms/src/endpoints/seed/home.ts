@@ -572,88 +572,19 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
       {
         blockName: 'CTA',
         blockType: 'cta',
-        links: [
-          {
-            link: {
-              type: 'custom',
-              appearance: 'default',
-              label: 'All posts',
-              url: '/posts',
-            },
-          },
-        ],
-        richText: {
+        title: {
           root: {
             type: 'root',
             children: [
-              {
-                type: 'heading',
-                children: [
-                  {
-                    type: 'text',
-                    detail: 0,
-                    format: 0,
-                    mode: 'normal',
-                    style: '',
-                    text: 'This is a call to action',
-                    version: 1,
-                  },
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                tag: 'h3',
-                version: 1,
-              },
               {
                 type: 'paragraph',
                 children: [
                   {
                     type: 'text',
-                    detail: 0,
-                    format: 0,
-                    mode: 'normal',
-                    style: '',
-                    text: 'This is a custom layout building block ',
-                    version: 1,
-                  },
-                  {
-                    type: 'link',
-                    children: [
-                      {
-                        type: 'text',
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'configured in the admin dashboard',
-                        version: 1,
-                      },
-                    ],
-                    direction: 'ltr',
-                    fields: {
-                      linkType: 'custom',
-                      newTab: false,
-                      url: '/admin',
-                    },
-                    format: '',
-                    indent: 0,
-                    version: 2,
-                  },
-                  {
-                    type: 'text',
-                    detail: 0,
-                    format: 0,
-                    mode: 'normal',
-                    style: '',
-                    text: '.',
+                    text: 'Turn Giving Into a Seamless Experience',
                     version: 1,
                   },
                 ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                textFormat: 0,
                 version: 1,
               },
             ],
@@ -662,6 +593,36 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
             indent: 0,
             version: 1,
           },
+        },
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Join Hoga and give your community the transparency and trust it deserves',
+                    version: 1,
+                  },
+                ],
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
+        appStoreButton: {
+          show: true,
+          url: '#',
+        },
+        googlePlayButton: {
+          show: true,
+          url: '#',
         },
       },
     ],
