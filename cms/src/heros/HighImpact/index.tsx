@@ -14,7 +14,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({
   avatarsSection,
 }) => {
   return (
-    <div className="w-full px-2 max-w-[2080px] mx-auto grid grid-cols-1 gap-1 lg:grid-cols-2 mt-10 md:mt-15">
+    <div className="w-full px-2 max-w-[2080px] mx-auto grid grid-cols-1 gap-1 lg:grid-cols-2 mt-25 md:mt-30">
       <div className="bg-dark rounded-xl p-10 lg:p-26 text-white">
         <div className="w-full xl:max-w-[80%]">
           <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-7xl font-bold font-chillax ">
