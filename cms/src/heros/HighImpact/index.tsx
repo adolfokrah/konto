@@ -85,6 +85,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({
             imgClassName="z-10 object-contain object-bottom lg:pt-20 pl-20"
             priority
             resource={media}
+            key={`hero-media-${media.id || media.url}`}
           />
         )}
       </div>
