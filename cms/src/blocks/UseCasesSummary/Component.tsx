@@ -22,6 +22,7 @@ type Props = {
   title?: string
   subtitle?: string
   useCases?: UseCase[]
+ anchor?: string
 }
 
 export const UseCasesSummaryBlock: React.FC<Props> = ({
@@ -30,9 +31,10 @@ export const UseCasesSummaryBlock: React.FC<Props> = ({
   title,
   subtitle,
   useCases,
+  anchor,
 }) => {
   return (
-    <section className={cn(className)}>
+    <section className={cn(className)} id={anchor || undefined}>
       <div className={cn('container mx-auto mt-16', !disableInnerContainer && 'max-w-7xl')}>
         {/* Header */}
         {(title || subtitle) && (
@@ -67,7 +69,7 @@ export const UseCasesSummaryBlock: React.FC<Props> = ({
                   {/* Image */}
                   <div className={cn('relative', isImageLeft ? 'lg:order-1' : 'lg:order-2')}>
                     {useCase.image && (
-                      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
                         <Media resource={useCase.image} className="w-full h-auto object-cover" />
                       </div>
                     )}

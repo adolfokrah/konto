@@ -1,10 +1,12 @@
 import type { Block, Field } from 'payload'
 
 import {
+  BlocksFeature,
   FixedToolbarFeature,
   HeadingFeature,
   InlineToolbarFeature,
   lexicalEditor,
+  UploadFeature,
 } from '@payloadcms/richtext-lexical'
 
 import { anchorField } from '@/fields/anchor'
@@ -44,6 +46,67 @@ const columnFields: Field[] = [
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
+          UploadFeature({
+            collections: {
+              media: {
+                fields: [
+                  {
+                    name: 'caption',
+                    type: 'text',
+                    label: 'Caption',
+                  },
+                ],
+              },
+            },
+          }),
+          BlocksFeature({
+            blocks: [
+              {
+                slug: 'mediaBlock',
+                fields: [
+                  {
+                    name: 'media',
+                    type: 'upload',
+                    relationTo: 'media',
+                    required: true,
+                  },
+                  {
+                    name: 'caption',
+                    type: 'text',
+                    label: 'Caption',
+                  },
+                ],
+              },
+              {
+                slug: 'banner',
+                fields: [
+                  {
+                    name: 'style',
+                    type: 'select',
+                    defaultValue: 'info',
+                    options: [
+                      { label: 'Info', value: 'info' },
+                      { label: 'Warning', value: 'warning' },
+                      { label: 'Error', value: 'error' },
+                      { label: 'Success', value: 'success' },
+                    ],
+                    required: true,
+                  },
+                  {
+                    name: 'content',
+                    type: 'richText',
+                    editor: lexicalEditor({
+                      features: ({ rootFeatures }) => [
+                        ...rootFeatures,
+                        FixedToolbarFeature(),
+                        InlineToolbarFeature(),
+                      ],
+                    }),
+                  },
+                ],
+              },
+            ],
+          }),
         ]
       },
     }),

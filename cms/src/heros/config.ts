@@ -82,7 +82,7 @@ export const hero: Field = {
       name: 'media',
       type: 'upload',
       admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        condition: (_, { type } = {}) => ['highImpact'].includes(type),
       },
       relationTo: 'media',
       required: true,
@@ -175,6 +175,41 @@ export const hero: Field = {
               },
             },
           ],
+        },
+      ],
+    },
+    {
+      name: 'appStoreLinks',
+      type: 'group',
+      label: 'App Store Links',
+      admin: {
+        condition: (_, { type } = {}) => ['mediumImpact'].includes(type),
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          label: 'App Store Section Title',
+          localized: true,
+          admin: {
+            placeholder: 'Available on',
+          },
+        },
+        {
+          name: 'appleAppStoreUrl',
+          type: 'text',
+          label: 'Apple App Store URL',
+          admin: {
+            placeholder: 'https://apps.apple.com/app/...',
+          },
+        },
+        {
+          name: 'googlePlayStoreUrl',
+          type: 'text',
+          label: 'Google Play Store URL',
+          admin: {
+            placeholder: 'https://play.google.com/store/apps/details?id=...',
+          },
         },
       ],
     },

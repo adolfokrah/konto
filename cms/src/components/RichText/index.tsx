@@ -38,6 +38,20 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
+  heading: ({ node, nodesToJSX }) => {
+    const tag = node.tag;
+    const className = "!font-chillax font-semibold";
+    const style = { fontFamily: 'Chillax, system-ui, sans-serif' };
+    
+    if (tag === 'h1') return <h1 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h1>;
+    if (tag === 'h2') return <h2 className={cn('text-3xl lg:text-[36px] lg:leading-[50px] font-semibold text-black',className)} style={style}>{nodesToJSX({ nodes: node.children })}</h2>;
+    if (tag === 'h3') return <h3 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h3>;
+    if (tag === 'h4') return <h4 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h4>;
+    if (tag === 'h5') return <h5 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h5>;
+    if (tag === 'h6') return <h6 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h6>;
+    
+    return <h2 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h2>;
+  },
   blocks: {
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
     mediaBlock: ({ node }) => (

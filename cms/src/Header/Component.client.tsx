@@ -42,7 +42,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         <div className="bg-primary-light rounded-[40px] p-4 px-6">
           <div className="flex justify-between items-center">
             <Link href="/">
-              <Logo loading="eager" priority="high" className="invert dark:invert-0" />
+              <Logo loading="eager" priority="high" className="invert" />
             </Link>
             <HeaderNav data={data} className="hidden md:flex" />
             <div className="flex items-center gap-4">

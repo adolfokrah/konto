@@ -10,6 +10,7 @@ import { Features } from '../../blocks/Features/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { Metrics } from '../../blocks/Metrics/config'
+import { MissionVisionValues } from '../../blocks/MissionVisionValues/config'
 import { Pricing } from '../../blocks/Pricing/config'
 import { Testimonials } from '../../blocks/Testimonials/config'
 import { UseCasesSummary } from '../../blocks/UseCasesSummary/config'
@@ -93,6 +94,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 UseCasesSummary,
                 Pricing,
                 Metrics,
+                MissionVisionValues,
                 Testimonials,
                 FAQ,
               ],

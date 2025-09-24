@@ -31,7 +31,6 @@ export const MetricsBlock: React.FC<Props> = ({
         <div className="mb-16">
           {title && (
             <RichText
-              className="font-chillax font-bold text-4xl md:text-5xl lg:text-6xl mb-4"
               data={title}
               enableGutter={false}
               enableProse={false}

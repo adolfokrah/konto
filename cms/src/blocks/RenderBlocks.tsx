@@ -10,6 +10,7 @@ import { FeaturesBlock } from '@/blocks/Features/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MetricsBlock } from '@/blocks/Metrics/Component'
+import { MissionVisionValuesComponent } from '@/blocks/MissionVisionValues/Component'
 import { PricingBlock } from '@/blocks/Pricing/Component'
 import { TestimonialsBlock } from '@/blocks/Testimonials/Component'
 import { UseCasesSummaryBlock } from '@/blocks/UseCasesSummary/Component'
@@ -24,6 +25,7 @@ const blockComponents = {
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
   metrics: MetricsBlock,
+  missionVisionValues: MissionVisionValuesComponent,
   pricing: PricingBlock,
   testimonials: TestimonialsBlock,
   useCasesSummary: UseCasesSummaryBlock,

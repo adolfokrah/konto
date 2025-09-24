@@ -1,4 +1,15 @@
 import type { Block } from 'payload'
+import {
+  AlignFeature,
+  BoldFeature,
+  FixedToolbarFeature,
+  HeadingFeature,
+  InlineToolbarFeature,
+  ItalicFeature,
+  lexicalEditor,
+  ParagraphFeature,
+  UnderlineFeature,
+} from '@payloadcms/richtext-lexical'
 
 import { anchorField } from '@/fields/anchor'
 import { link } from '@/fields/link'
@@ -16,6 +27,21 @@ export const Metrics: Block = {
       admin: {
         description: 'Main heading for the metrics section',
       },
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures,
+          FixedToolbarFeature(),
+          InlineToolbarFeature(),
+          HeadingFeature({
+            enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+          }),
+          BoldFeature(),
+          ItalicFeature(),
+          UnderlineFeature(),
+          ParagraphFeature(),
+          AlignFeature(),
+        ],
+      }),
     },
     {
       name: 'subtitle',

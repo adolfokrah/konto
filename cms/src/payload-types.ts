@@ -218,6 +218,11 @@ export interface Page {
         googlePlayStoreUrl?: string | null;
       };
     };
+    appStoreLinks?: {
+      title?: string | null;
+      appleAppStoreUrl?: string | null;
+      googlePlayStoreUrl?: string | null;
+    };
   };
   layout: (
     | CallToActionBlock
@@ -230,6 +235,7 @@ export interface Page {
     | UseCasesSummaryBlock
     | PricingBlock
     | MetricsBlock
+    | MissionVisionValuesBlock
     | TestimonialsBlock
     | FAQBlock
   )[];
@@ -1190,6 +1196,58 @@ export interface MetricsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MissionVisionValuesBlock".
+ */
+export interface MissionVisionValuesBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
+  /**
+   * Main heading for the mission, vision & values section (e.g., "Hoga's Mission, Vision & Values")
+   */
+  title: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Subtitle or tagline below the main title
+   */
+  subtitle?: string | null;
+  items?:
+    | {
+        /**
+         * Title for this item (e.g., "Our Vision", "Our Mission")
+         */
+        title: string;
+        /**
+         * Description text for this item
+         */
+        description: string;
+        /**
+         * Icon to display for this item
+         */
+        icon: 'lightbulb' | 'bullseye' | 'gem' | 'heart' | 'target' | 'star';
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'missionVisionValues';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TestimonialsBlock".
  */
 export interface TestimonialsBlock {
@@ -1733,6 +1791,13 @@ export interface PagesSelect<T extends boolean = true> {
                     googlePlayStoreUrl?: T;
                   };
             };
+        appStoreLinks?:
+          | T
+          | {
+              title?: T;
+              appleAppStoreUrl?: T;
+              googlePlayStoreUrl?: T;
+            };
       };
   layout?:
     | T
@@ -1747,6 +1812,7 @@ export interface PagesSelect<T extends boolean = true> {
         useCasesSummary?: T | UseCasesSummaryBlockSelect<T>;
         pricing?: T | PricingBlockSelect<T>;
         metrics?: T | MetricsBlockSelect<T>;
+        missionVisionValues?: T | MissionVisionValuesBlockSelect<T>;
         testimonials?: T | TestimonialsBlockSelect<T>;
         faq?: T | FAQBlockSelect<T>;
       };
@@ -2002,6 +2068,25 @@ export interface MetricsBlockSelect<T extends boolean = true> {
         title?: T;
         subtitle?: T;
         image?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MissionVisionValuesBlock_select".
+ */
+export interface MissionVisionValuesBlockSelect<T extends boolean = true> {
+  anchor?: T;
+  title?: T;
+  subtitle?: T;
+  items?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
         id?: T;
       };
   id?: T;
