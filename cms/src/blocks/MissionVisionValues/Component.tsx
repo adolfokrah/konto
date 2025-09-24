@@ -94,7 +94,7 @@ export const MissionVisionValuesComponent: React.FC<
                   </div>
                 ))}
 
-                <Logo className='absolute top-0 left-10 invert' />
+                <Logo className='absolute top-0 left-10 invert hidden lg:block' />
               </div>
             )}
       </div>
