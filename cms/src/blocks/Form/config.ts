@@ -7,10 +7,13 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { anchorField } from '@/fields/anchor'
+
 export const FormBlock: Block = {
   slug: 'formBlock',
   interfaceName: 'FormBlock',
   fields: [
+    anchorField,
     {
       name: 'form',
       type: 'relationship',

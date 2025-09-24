@@ -1,11 +1,13 @@
 import type { Block } from 'payload'
 
+import { anchorField } from '@/fields/anchor'
 import { link } from '@/fields/link'
 
 export const UseCasesSummary: Block = {
   slug: 'useCasesSummary',
   interfaceName: 'UseCasesSummaryBlock',
   fields: [
+    anchorField,
     {
       name: 'title',
       type: 'text',

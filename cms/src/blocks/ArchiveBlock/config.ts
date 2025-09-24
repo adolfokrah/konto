@@ -7,10 +7,13 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { anchorField } from '@/fields/anchor'
+
 export const Archive: Block = {
   slug: 'archive',
   interfaceName: 'ArchiveBlock',
   fields: [
+    anchorField,
     {
       name: 'introContent',
       type: 'richText',

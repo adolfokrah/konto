@@ -43,6 +43,7 @@ type Props = {
     text?: string
     logo?: any
   }
+  anchor?: string
 }
 
 export const PricingBlock: React.FC<Props> = ({
@@ -55,6 +56,7 @@ export const PricingBlock: React.FC<Props> = ({
   features,
   ctaButton,
   poweredBy,
+  anchor,
 }) => {
   const [requestAmount, setRequestAmount] = useState<number>(50)
   const [feePayer, setFeePayer] = useState<string>('organizer')
@@ -91,6 +93,7 @@ export const PricingBlock: React.FC<Props> = ({
 
   return (
     <section
+      id={anchor || undefined}
       className={cn(
         'bg-dark-surface text-white py-16 md:py-70 relative',
         className,

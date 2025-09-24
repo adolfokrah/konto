@@ -92,6 +92,27 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
       label: 'Custom URL',
       required: true,
     },
+    {
+      name: 'anchor',
+      type: 'text',
+      admin: {
+        description:
+          'Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL',
+        placeholder: 'e.g., faq, features, contact',
+      },
+      label: 'Anchor (optional)',
+      validate: (value: string | null | undefined) => {
+        if (value && typeof value === 'string') {
+          // Remove leading # if present
+          const cleanValue = value.startsWith('#') ? value.slice(1) : value
+          // Check if it's a valid HTML id (alphanumeric, hyphens, underscores, no spaces)
+          if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(cleanValue)) {
+            return 'Anchor must start with a letter and contain only letters, numbers, hyphens, and underscores'
+          }
+        }
+        return true
+      },
+    },
   ]
 
   if (!disableLabel) {

@@ -1,9 +1,12 @@
 import type { Block } from 'payload'
 
+import { anchorField } from '@/fields/anchor'
+
 export const WhyChooseUs: Block = {
   slug: 'whyChooseUs',
   interfaceName: 'WhyChooseUsBlock',
   fields: [
+    anchorField,
     {
       name: 'title',
       type: 'text',

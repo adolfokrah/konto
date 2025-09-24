@@ -1,9 +1,12 @@
 import type { Block } from 'payload'
 
+import { anchorField } from '@/fields/anchor'
+
 export const FAQ: Block = {
   slug: 'faq',
   interfaceName: 'FAQBlock',
   fields: [
+    anchorField,
     {
       name: 'heading',
       type: 'text',

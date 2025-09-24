@@ -9,15 +9,16 @@ import { Media } from '@/components/Media'
 import Ring from '@/components/ui/ring'
 import Link from 'next/link'
 
-export const CallToActionBlock: React.FC<CTABlockProps> = ({
+export const CallToActionBlock: React.FC<CTABlockProps & { anchor?: string }> = ({
   title,
   description,
   image,
   appStoreButton,
   googlePlayButton,
+  anchor,
 }) => {
   return (
-    <section className={cn('bg-dark-surface text-white pt-10 md:pt-34 relative overflow-hidden')}>
+    <section id={anchor || undefined} className={cn('bg-dark-surface text-white pt-10 md:pt-34 relative overflow-hidden')}>
       <div className={cn('container mx-auto relative z-10')}>
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Title */}

@@ -19,6 +19,7 @@ type Props = {
   subheading?: string
   testimonials?: Testimonial[]
   showNavigation?: boolean
+  anchor?: string
 }
 
 export const TestimonialsBlock: React.FC<Props> = ({
@@ -27,6 +28,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
   subheading = "Discover how Hoga is transforming the way people give and receive support",
   testimonials = [],
   showNavigation = true,
+  anchor,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -142,7 +144,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
   )
 
   return (
-    <section className={cn('bg-white', containerClasses)}>
+    <section id={anchor || undefined} className={cn('bg-white', containerClasses)}>
       <div className="flex flex-col items-start gap-8">
         {/* Header Section */}
         <div className="container flex flex-col items-start ">

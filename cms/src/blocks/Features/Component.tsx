@@ -16,6 +16,7 @@ type Props = {
   disableInnerContainer?: boolean
   title?: string
   features?: Feature[]
+  anchor?: string
 }
 
 // Reusable component for features 2-5 (standard card layout)
@@ -48,7 +49,7 @@ const StandardFeatureCard: React.FC<{
   )
 }
 
-export const FeaturesBlock: React.FC<Props> = ({ title, features }) => {
+export const FeaturesBlock: React.FC<Props> = ({ title, features, anchor }) => {
   // Predefined background colors for the cards
   const cardColors = [
     'bg-[#1C222E]', // Dark blue-gray
@@ -59,7 +60,7 @@ export const FeaturesBlock: React.FC<Props> = ({ title, features }) => {
   ]
 
   return (
-    <section>
+    <section id={anchor || undefined}>
       <div className={cn('container mx-auto')}>
         {/* Title */}
         {title && (

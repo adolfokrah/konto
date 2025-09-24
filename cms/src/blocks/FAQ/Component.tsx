@@ -20,6 +20,7 @@ type Props = {
   heading?: string
   subheading?: string
   faqs?: FAQ[]
+  anchor?: string
 }
 
 export const FAQBlock: React.FC<Props> = ({
@@ -27,6 +28,7 @@ export const FAQBlock: React.FC<Props> = ({
   heading = "Your Questions Answered",
   subheading = "Simple explanations to help you get started with Hoga with confidence",
   faqs = [],
+  anchor,
 }) => {
   if (!faqs || faqs.length === 0) {
     return null
@@ -34,7 +36,7 @@ export const FAQBlock: React.FC<Props> = ({
 
 
   return (
-    <section className={cn(' py-20 px-3')}>
+    <section id={anchor || undefined} className={cn(' py-20 px-3')}>
       <div className="flex flex-col items-center gap-14">
         {/* Header Section */}
         <div className="flex flex-col items-center gap-[14px] w-full max-w-[612px]">

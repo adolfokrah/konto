@@ -1,11 +1,13 @@
 import type { Block } from 'payload'
 
+import { anchorField } from '@/fields/anchor'
 import { link } from '@/fields/link'
 
 export const Pricing: Block = {
   slug: 'pricing',
   interfaceName: 'PricingBlock',
   fields: [
+    anchorField,
     {
       name: 'title',
       type: 'text',

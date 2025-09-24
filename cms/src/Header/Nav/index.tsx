@@ -67,6 +67,57 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
 }) => {
   const navItems = data?.navItems || []
   const pathname = usePathname()
+  const [activeSection, setActiveSection] = useState('')
+
+  // Scroll-based section detection
+  useEffect(() => {
+    const handleScroll = () => {
+      // Get all anchor IDs from navigation links
+      const anchorIds: string[] = []
+      navItems.forEach(({ link }) => {
+        if (link?.anchor) {
+          const cleanAnchor = link.anchor.startsWith('#') ? link.anchor.slice(1) : link.anchor
+          anchorIds.push(cleanAnchor)
+        }
+      })
+
+      if (anchorIds.length === 0) return
+
+      // Find which section is currently in view
+      let currentSection = ''
+      const scrollPosition = window.scrollY + window.innerHeight / 3 // Trigger when section is 1/3 into view
+
+      for (const anchorId of anchorIds) {
+        const element = document.getElementById(anchorId)
+        if (element) {
+          const elementTop = element.offsetTop
+          const elementBottom = elementTop + element.offsetHeight
+
+          if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
+            currentSection = anchorId
+            break
+          }
+        }
+      }
+
+      // If we're at the top of the page and no section is active, clear active section
+      if (window.scrollY < 100 && !currentSection) {
+        setActiveSection('')
+      } else if (currentSection) {
+        setActiveSection(currentSection)
+      }
+    }
+
+    // Set up scroll listener
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    // Initial check
+    handleScroll()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [navItems])
 
   const isLinkActive = (link: any) => {
     if (!link || !pathname) return false
@@ -85,13 +136,39 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
         typeof link.reference.value === 'string' ? link.reference.value : link.reference.value.slug
 
       const normalizedPage = page === '/' || page === 'home' ? 'home' : page
-      return normalizedPathname === normalizedPage || normalizedPathname === `/${normalizedPage}`
+      const pathMatches = normalizedPathname === normalizedPage || normalizedPathname === `/${normalizedPage}`
+      
+      // If link has an anchor, check if it matches currently active section
+      if (link.anchor) {
+        const cleanAnchor = link.anchor.startsWith('#') ? link.anchor.slice(1) : link.anchor
+        return pathMatches && activeSection === cleanAnchor
+      }
+      
+      // If link has no anchor but there's an active section, this link should not be active
+      if (activeSection && !link.anchor) {
+        return false
+      }
+      
+      return pathMatches
     }
 
     // Handle custom URL links
     if (link.type === 'custom' && link.url) {
       const normalizedUrl = link.url === '/' || link.url === '/home' ? 'home' : link.url
-      return normalizedPathname === normalizedUrl || normalizedPathname === `/${normalizedUrl}`
+      const pathMatches = normalizedPathname === normalizedUrl || normalizedPathname === `/${normalizedUrl}`
+      
+      // If link has an anchor, check if it matches currently active section
+      if (link.anchor) {
+        const cleanAnchor = link.anchor.startsWith('#') ? link.anchor.slice(1) : link.anchor
+        return pathMatches && activeSection === cleanAnchor
+      }
+      
+      // If link has no anchor but there's an active section, this link should not be active
+      if (activeSection && !link.anchor) {
+        return false
+      }
+      
+      return pathMatches
     }
 
     return false

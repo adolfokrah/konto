@@ -187,6 +187,10 @@ export interface Page {
                   value: string | Post;
                 } | null);
             url?: string | null;
+            /**
+             * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+             */
+            anchor?: string | null;
             label: string;
             /**
              * Choose how the link should be rendered.
@@ -468,6 +472,10 @@ export interface User {
  * via the `definition` "CallToActionBlock".
  */
 export interface CallToActionBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   title: {
     root: {
       type: string;
@@ -516,6 +524,10 @@ export interface CallToActionBlock {
  * via the `definition` "ContentBlock".
  */
 export interface ContentBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "about-us", "services"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   columns?:
     | {
         size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
@@ -548,6 +560,10 @@ export interface ContentBlock {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
           /**
            * Choose how the link should be rendered.
@@ -566,6 +582,10 @@ export interface ContentBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   media: string | Media;
   id?: string | null;
   blockName?: string | null;
@@ -576,6 +596,10 @@ export interface MediaBlock {
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   introContent?: {
     root: {
       type: string;
@@ -610,6 +634,10 @@ export interface ArchiveBlock {
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   form: string | Form;
   enableIntro?: boolean | null;
   introContent?: {
@@ -811,6 +839,10 @@ export interface Form {
  */
 export interface WhyChooseUsBlock {
   /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
+  /**
    * Main heading for the why choose us section
    */
   title?: string | null;
@@ -852,6 +884,10 @@ export interface WhyChooseUsBlock {
  */
 export interface FeaturesBlock {
   /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
+  /**
    * Main heading for the features section
    */
   title?: string | null;
@@ -892,6 +928,10 @@ export interface FeaturesBlock {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
           /**
            * Choose how the link should be rendered.
@@ -910,6 +950,10 @@ export interface FeaturesBlock {
  * via the `definition` "UseCasesSummaryBlock".
  */
 export interface UseCasesSummaryBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   /**
    * Main heading for the use cases section
    */
@@ -977,6 +1021,10 @@ export interface UseCasesSummaryBlock {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
           /**
            * Choose how the link should be rendered.
@@ -995,6 +1043,10 @@ export interface UseCasesSummaryBlock {
  * via the `definition` "PricingBlock".
  */
 export interface PricingBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   /**
    * Main heading for the pricing section
    */
@@ -1090,6 +1142,10 @@ export interface PricingBlock {
  */
 export interface MetricsBlock {
   /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
+  /**
    * Main heading for the metrics section
    */
   title: {
@@ -1137,6 +1193,10 @@ export interface MetricsBlock {
  * via the `definition` "TestimonialsBlock".
  */
 export interface TestimonialsBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   /**
    * Main heading for the testimonials section
    */
@@ -1186,6 +1246,10 @@ export interface TestimonialsBlock {
  * via the `definition` "FAQBlock".
  */
 export interface FAQBlock {
+  /**
+   * Optional anchor ID for linking to this block (e.g., "features", "testimonials"). Will be used as the HTML id attribute.
+   */
+  anchor?: string | null;
   heading?: string | null;
   subheading?: string | null;
   faqs?:
@@ -1641,6 +1705,7 @@ export interface PagesSelect<T extends boolean = true> {
                     newTab?: T;
                     reference?: T;
                     url?: T;
+                    anchor?: T;
                     label?: T;
                     appearance?: T;
                   };
@@ -1704,6 +1769,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "CallToActionBlock_select".
  */
 export interface CallToActionBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   description?: T;
   image?: T;
@@ -1727,6 +1793,7 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
  * via the `definition` "ContentBlock_select".
  */
 export interface ContentBlockSelect<T extends boolean = true> {
+  anchor?: T;
   columns?:
     | T
     | {
@@ -1740,6 +1807,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
               appearance?: T;
             };
@@ -1753,6 +1821,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
  * via the `definition` "MediaBlock_select".
  */
 export interface MediaBlockSelect<T extends boolean = true> {
+  anchor?: T;
   media?: T;
   id?: T;
   blockName?: T;
@@ -1762,6 +1831,7 @@ export interface MediaBlockSelect<T extends boolean = true> {
  * via the `definition` "ArchiveBlock_select".
  */
 export interface ArchiveBlockSelect<T extends boolean = true> {
+  anchor?: T;
   introContent?: T;
   populateBy?: T;
   relationTo?: T;
@@ -1776,6 +1846,7 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
  * via the `definition` "FormBlock_select".
  */
 export interface FormBlockSelect<T extends boolean = true> {
+  anchor?: T;
   form?: T;
   enableIntro?: T;
   introContent?: T;
@@ -1787,6 +1858,7 @@ export interface FormBlockSelect<T extends boolean = true> {
  * via the `definition` "WhyChooseUsBlock_select".
  */
 export interface WhyChooseUsBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   subtitle?: T;
   features?:
@@ -1806,6 +1878,7 @@ export interface WhyChooseUsBlockSelect<T extends boolean = true> {
  * via the `definition` "FeaturesBlock_select".
  */
 export interface FeaturesBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   features?:
     | T
@@ -1821,6 +1894,7 @@ export interface FeaturesBlockSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
               appearance?: T;
             };
@@ -1834,6 +1908,7 @@ export interface FeaturesBlockSelect<T extends boolean = true> {
  * via the `definition` "UseCasesSummaryBlock_select".
  */
 export interface UseCasesSummaryBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   subtitle?: T;
   useCases?:
@@ -1852,6 +1927,7 @@ export interface UseCasesSummaryBlockSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
               appearance?: T;
             };
@@ -1865,6 +1941,7 @@ export interface UseCasesSummaryBlockSelect<T extends boolean = true> {
  * via the `definition` "PricingBlock_select".
  */
 export interface PricingBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   description?: T;
   calculatorSection?:
@@ -1916,6 +1993,7 @@ export interface PricingBlockSelect<T extends boolean = true> {
  * via the `definition` "MetricsBlock_select".
  */
 export interface MetricsBlockSelect<T extends boolean = true> {
+  anchor?: T;
   title?: T;
   subtitle?: T;
   statistics?:
@@ -1934,6 +2012,7 @@ export interface MetricsBlockSelect<T extends boolean = true> {
  * via the `definition` "TestimonialsBlock_select".
  */
 export interface TestimonialsBlockSelect<T extends boolean = true> {
+  anchor?: T;
   heading?: T;
   subheading?: T;
   testimonials?:
@@ -1955,6 +2034,7 @@ export interface TestimonialsBlockSelect<T extends boolean = true> {
  * via the `definition` "FAQBlock_select".
  */
 export interface FAQBlockSelect<T extends boolean = true> {
+  anchor?: T;
   heading?: T;
   subheading?: T;
   faqs?:
@@ -2509,6 +2589,10 @@ export interface Header {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
         };
         id?: string | null;
@@ -2538,6 +2622,10 @@ export interface Footer {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
         };
         id?: string | null;
@@ -2571,6 +2659,10 @@ export interface Footer {
                 value: string | Post;
               } | null);
           url?: string | null;
+          /**
+           * Optional anchor/hash fragment (e.g., "faq", "features") - will be appended as #anchor to the URL
+           */
+          anchor?: string | null;
           label: string;
         };
         id?: string | null;
@@ -2594,6 +2686,7 @@ export interface HeaderSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
             };
         id?: T;
@@ -2617,6 +2710,7 @@ export interface FooterSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
             };
         id?: T;
@@ -2638,6 +2732,7 @@ export interface FooterSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              anchor?: T;
               label?: T;
             };
         id?: T;

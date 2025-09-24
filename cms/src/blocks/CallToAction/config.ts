@@ -7,12 +7,14 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { anchorField } from '@/fields/anchor'
 import { linkGroup } from '../../fields/linkGroup'
 
 export const CallToAction: Block = {
   slug: 'cta',
   interfaceName: 'CallToActionBlock',
   fields: [
+    anchorField,
     {
       name: 'title',
       type: 'richText',
