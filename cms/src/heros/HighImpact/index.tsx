@@ -24,7 +24,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({
           <DownloadButton variant="invert" title={buttonTitle || 'Download App'} />
         </div>
 
-        <div className="flex  flex-col md:flex-row w-full mt-30 lg:mt-50 xl:mt-90 md:items-center gap-4 justify-between">
+        <div className="flex  flex-col md:flex-row w-full mt-30 lg:mt-40 xl:mt-90 md:items-center gap-4 justify-between">
           {/* Downloads Section with Avatars */}
           {avatarsSection?.enabled && (
             <div className="flex items-center gap-2">
