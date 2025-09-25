@@ -155,7 +155,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="font-['Chillax'] font-bold text-3xl lg:text-5xl leading-[67px] text-black max-w-[567px]"
+              className="font-Chillax font-bold text-3xl lg:text-5xl lg:leading-[67px] text-black max-w-[567px]"
             >
               {heading}
             </motion.h2>
