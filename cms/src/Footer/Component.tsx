@@ -122,7 +122,7 @@ export async function Footer() {
 
         {/* Copyright */}
         <div className="text-sm text-gray-400">
-          © {new Date().getFullYear()} konto inc, All rights reserved.
+          © {new Date().getFullYear()} hoga inc, All rights reserved.
         </div>
       </div>
 
