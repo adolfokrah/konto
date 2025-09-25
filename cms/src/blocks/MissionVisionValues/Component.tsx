@@ -94,7 +94,7 @@ export const MissionVisionValuesComponent: React.FC<
                   </div>
                 ))}
 
-                <Logo className='absolute top-0 left-10 brightness-0 hidden lg:block' />
+                <Logo className='absolute top-0 left-10 brightness-0 hidden lg:block' color="black" />
               </div>
             )}
       </div>

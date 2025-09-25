@@ -265,20 +265,12 @@ class UserAccountView extends StatelessWidget {
               onTap: () => _launchUrl(AppLinks.about),
             ),
             _buildExternalMenuItem(
-              title: localizations.socialMedia,
-              onTap: () => _launchUrl(AppLinks.twitter),
-            ),
-            _buildExternalMenuItem(
               title: localizations.privacyPolicy,
               onTap: () => _launchUrl(AppLinks.privacy),
             ),
             _buildExternalMenuItem(
               title: localizations.termsOfServices,
               onTap: () => _launchUrl(AppLinks.terms),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.help,
-              onTap: () => _launchUrl(AppLinks.help),
             ),
             _buildExternalMenuItem(
               title: localizations.contactUs,
@@ -435,11 +427,36 @@ class UserAccountView extends StatelessWidget {
   void _launchUrl(String url) async {
     try {
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
+
+      // Try external application first (most reliable on Android)
+      try {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppBrowserView,
+          browserConfiguration: const BrowserConfiguration(showTitle: true),
+        );
+        return;
+      } catch (e) {
+        debugPrint('External app launch failed: $e');
+      }
+
+      // Try platform default as fallback
+      try {
+        await launchUrl(uri, mode: LaunchMode.inAppWebView);
+        return;
+      } catch (e) {
+        debugPrint('Platform default launch failed: $e');
+      }
+
+      // Last resort: try external non-browser application
+      try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      } catch (e) {
+        debugPrint('External non-browser launch failed: $e');
       }
     } catch (e) {
-      // Handle error silently
+      debugPrint('Failed to launch URL: $url, Error: $e');
     }
   }
 
