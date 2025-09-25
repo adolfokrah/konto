@@ -19,7 +19,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, li
           )}
         </div>
 
-        <div className='flex flex-col lg:flex-row lg:justify-between mt-7 items-end  gap-6 lg:gap-8'>
+        <div className='flex flex-col lg:flex-row lg:justify-between mt-7 lg:items-end  gap-6 lg:gap-8'>
           {subTitle && (
             <div>
               <h2 className="text-lg lg:text-xl  max-w-2xl">

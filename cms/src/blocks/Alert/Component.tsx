@@ -42,7 +42,7 @@ export const AlertBlock: React.FC<AlertBlockProps> = ({
       )}
     >
       {title && (
-        <div className={cn('flex-1 font-bold leading-4', styles.text)}>
+        <div className={cn('flex-1 font-bold', styles.text)}>
           {title}
         </div>
       )}
