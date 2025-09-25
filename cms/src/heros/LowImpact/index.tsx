@@ -9,7 +9,7 @@ type LowImpactHeroType = Page['hero'] & {
 
 export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, links, dateLabel, date }) => {
   return (
-    <section className='bg-secondary-background pt-16 pb-8 lg:pt-45 lg:pb-12 '>
+    <section className='bg-secondary-background pt-25 pb-8 lg:pt-45 lg:pb-12 '>
       <div className="container">
         <div className="max-w-4xl">
           {title && (
