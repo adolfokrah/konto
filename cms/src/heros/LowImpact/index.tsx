@@ -5,10 +5,10 @@ import { CMSLink } from '@/components/Link'
 
 type LowImpactHeroType = {
   children?: React.ReactNode
-  title?: string,
-  subTitle?: string,
-  dateLabel?: string,
-  date?: string | Date,
+  title?: string | null,
+  subTitle?: string | null,
+  dateLabel?: string | null,
+  date?: string | Date | null,
   links?: Array<{
     link: {
       type?: 'reference' | 'custom' | null
@@ -21,7 +21,7 @@ type LowImpactHeroType = {
       label?: string | null
       anchor?: string | null
     }
-  }>
+  }> | null
 }
 
 export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, links, dateLabel, date }) => {
