@@ -78,9 +78,9 @@ export const FAQBlock: React.FC<Props> = ({
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="border-none group"
+                className=" group border border-black rounded-[25px]"
               >
-                <AccordionTrigger className="flex justify-between items-center px-[18px] py-2.5 w-full h-[50px] border border-black rounded-full hover:no-underline transition-colors duration-200 data-[state=open]:rounded-2xl data-[state=open]:rounded-b-none data-[state=open]:border-b-0 [&>svg]:hidden cursor-pointer">
+                <AccordionTrigger className="flex justify-between items-center px-[18px] py-2.5 w-full h-[50px]  hover:no-underline transition-colors duration-200  data-[state=open]:rounded-b-none data-[state=open]:border-b-0 [&>svg]:hidden cursor-pointer pr-2">
                   <span className="font-medium text-md md:text-lg leading-6 text-black text-left flex-1">
                     {faq.question}
                   </span>
@@ -102,7 +102,7 @@ export const FAQBlock: React.FC<Props> = ({
                     </svg>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-5 py-2.5 border border-black border-t-0 rounded-2xl rounded-t-none">
+                <AccordionContent className="px-5 py-2.5">
                   <p className=" text-black text-md md:text-lg">
                     {faq.answer}
                   </p>
