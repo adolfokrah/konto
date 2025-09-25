@@ -49,6 +49,24 @@ export const hero: Field = {
       localized: true,
     },
     {
+      name: 'dateLabel',
+      type: 'text',
+      label: 'Date Label',
+      defaultValue: 'Last updated',
+      localized: true,
+      admin: {
+        condition: (_, { type } = {}) => ['lowImpact'].includes(type),
+      },
+    },
+    {
+      name: 'date',
+      type: 'date',
+      label: 'Date',
+      admin: {
+        condition: (_, { type } = {}) => ['lowImpact'].includes(type),
+      },
+    },
+    {
       name: 'buttonTitle',
       type: 'text',
       label: 'Button Title',

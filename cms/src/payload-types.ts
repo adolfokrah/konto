@@ -156,6 +156,8 @@ export interface Page {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
     title?: string | null;
     subTitle?: string | null;
+    dateLabel?: string | null;
+    date?: string | null;
     buttonTitle?: string | null;
     richText?: {
       root: {
@@ -1751,6 +1753,8 @@ export interface PagesSelect<T extends boolean = true> {
         type?: T;
         title?: T;
         subTitle?: T;
+        dateLabel?: T;
+        date?: T;
         buttonTitle?: T;
         richText?: T;
         links?:
