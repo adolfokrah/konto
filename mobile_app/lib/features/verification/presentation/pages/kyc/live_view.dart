@@ -27,6 +27,10 @@ class _LivenessCameraState extends State<LivenessCamera> {
   // Debug variables
   int _faceCount = 0;
   bool _faceInOval = false;
+  bool _isFacingCamera = false;
+  double _headYaw = 0.0;
+  double _headPitch = 0.0;
+  double _headRoll = 0.0;
 
   @override
   void initState() {
@@ -37,27 +41,15 @@ class _LivenessCameraState extends State<LivenessCamera> {
 
   Future<void> _initializeCamera() async {
     try {
-      print('Initializing camera...');
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         _showErrorDialog('No camera available');
         return;
       }
 
-      print('Available cameras: ${cameras.length}');
-      for (int i = 0; i < cameras.length; i++) {
-        print(
-          'Camera $i: ${cameras[i].name}, ${cameras[i].lensDirection}, orientation: ${cameras[i].sensorOrientation}',
-        );
-      }
-
       final frontCamera = cameras.firstWhere(
         (camera) => camera.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
-      );
-
-      print(
-        'Using camera: ${frontCamera.name}, orientation: ${frontCamera.sensorOrientation}',
       );
 
       _controller = CameraController(
@@ -70,17 +62,13 @@ class _LivenessCameraState extends State<LivenessCamera> {
                 : ImageFormatGroup.bgra8888,
       );
 
-      print('Initializing camera controller...');
       await _controller!.initialize();
-      print('Camera controller initialized successfully');
-      print('Preview size: ${_controller!.value.previewSize}');
 
       // Add a small delay for Android stability
       if (Platform.isAndroid) {
         await Future.delayed(const Duration(milliseconds: 1000));
       }
 
-      print('Starting image stream...');
       _controller!.startImageStream((CameraImage image) {
         if (_isDetecting) return;
         _processCameraImage(image);
@@ -90,10 +78,8 @@ class _LivenessCameraState extends State<LivenessCamera> {
         setState(() {
           _isInitialized = true;
         });
-        print('Camera initialization complete');
       }
     } catch (e) {
-      print('Camera initialization error: $e');
       _showErrorDialog('Failed to initialize camera: ${e.toString()}');
     }
   }
@@ -102,11 +88,13 @@ class _LivenessCameraState extends State<LivenessCamera> {
     _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
         enableClassification: false,
-        enableLandmarks: false,
+        enableLandmarks: true, // Enable to detect face landmarks
         enableContours: false,
-        enableTracking: false,
+        enableTracking: true, // Enable for better face tracking
         minFaceSize: 0.1,
-        performanceMode: FaceDetectorMode.fast,
+        performanceMode:
+            FaceDetectorMode
+                .accurate, // Use accurate mode for better head pose detection
       ),
     );
   }
@@ -119,22 +107,26 @@ class _LivenessCameraState extends State<LivenessCamera> {
     try {
       final inputImage = _inputImageFromCameraImage(image);
       if (inputImage == null) {
-        print('Failed to create InputImage');
         return;
       }
 
       final faces = await _faceDetector!.processImage(inputImage);
-      print('Detected ${faces.length} faces');
 
       setState(() {
         _faceCount = faces.length;
         _faceInOval = faces.isNotEmpty ? _isFaceInOval(faces, image) : false;
-        _faceDetected = faces.isNotEmpty && _faceInOval;
-      });
+        _isFacingCamera =
+            faces.isNotEmpty ? _isFaceOrientedCorrectly(faces.first) : false;
 
-      if (faces.isNotEmpty) {
-        print('Face detected, in oval: $_faceInOval');
-      }
+        if (faces.isNotEmpty) {
+          final face = faces.first;
+          _headYaw = face.headEulerAngleY ?? 0.0;
+          _headPitch = face.headEulerAngleX ?? 0.0;
+          _headRoll = face.headEulerAngleZ ?? 0.0;
+        }
+
+        _faceDetected = faces.isNotEmpty && _faceInOval && _isFacingCamera;
+      });
     } catch (e) {
       print('Error processing image: $e');
     } finally {
@@ -180,10 +172,6 @@ class _LivenessCameraState extends State<LivenessCamera> {
 
       InputImageFormat? format;
       if (Platform.isAndroid) {
-        // Android: Be more specific about format handling
-        print('Android image format group: ${image.format.group}');
-        print('Android image format raw: ${image.format.raw}');
-
         if (image.format.group == ImageFormatGroup.nv21) {
           format = InputImageFormat.nv21;
         } else if (image.format.group == ImageFormatGroup.yuv420) {
@@ -191,17 +179,13 @@ class _LivenessCameraState extends State<LivenessCamera> {
         } else {
           // Try to map the raw format
           format = InputImageFormatValue.fromRawValue(image.format.raw);
-          if (format == null) {
-            print('Unsupported Android format, trying NV21 as fallback');
-            format = InputImageFormat.nv21;
-          }
+          format ??= InputImageFormat.nv21;
         }
       } else {
         format = InputImageFormatValue.fromRawValue(image.format.raw);
       }
 
       if (format == null) {
-        print('Failed to determine image format');
         return null;
       }
 
@@ -209,7 +193,6 @@ class _LivenessCameraState extends State<LivenessCamera> {
       if (Platform.isAndroid && image.planes.isNotEmpty) {
         // Android: Use only the first plane for better compatibility
         bytes = image.planes[0].bytes;
-        print('Android: Using single plane with ${bytes.length} bytes');
       } else {
         // iOS: Concatenate all planes
         final allBytes = <int>[];
@@ -217,14 +200,12 @@ class _LivenessCameraState extends State<LivenessCamera> {
           allBytes.addAll(plane.bytes);
         }
         bytes = Uint8List.fromList(allBytes);
-        print('iOS: Using concatenated planes with ${bytes.length} bytes');
       }
 
       // Android: Validate bytes per row
       int bytesPerRow = image.planes[0].bytesPerRow;
       if (Platform.isAndroid && bytesPerRow <= 0) {
         bytesPerRow = image.width;
-        print('Android: Fixed bytesPerRow to $bytesPerRow');
       }
 
       final inputImage = InputImage.fromBytes(
@@ -237,10 +218,8 @@ class _LivenessCameraState extends State<LivenessCamera> {
         ),
       );
 
-      print('InputImage created successfully');
       return inputImage;
     } catch (e) {
-      print('Error creating InputImage: $e');
       return null;
     }
   }
@@ -302,23 +281,6 @@ class _LivenessCameraState extends State<LivenessCamera> {
       faceBottom = face.boundingBox.bottom * scaleY;
     }
 
-    // Debug logging
-    print('Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
-    print('Screen: ${screenSize.width}x${screenSize.height}');
-    print('Image: ${image.width}x${image.height}');
-    if (Platform.isAndroid) {
-      final camera = _controller!.description;
-      print('Sensor orientation: ${camera.sensorOrientation}');
-      print('Preview size: ${_controller!.value.previewSize}');
-    }
-    print('Scale: ${scaleX}x${scaleY}');
-    print(
-      'Oval bounds: left=$ovalLeft, top=$ovalTop, right=$ovalRight, bottom=$ovalBottom',
-    );
-    print(
-      'Face bounds: left=$faceLeft, top=$faceTop, right=$faceRight, bottom=$faceBottom',
-    );
-
     // Check if face center is within oval bounds (more lenient)
     final faceCenterX = (faceLeft + faceRight) / 2;
     final faceCenterY = (faceTop + faceBottom) / 2;
@@ -328,8 +290,6 @@ class _LivenessCameraState extends State<LivenessCamera> {
         faceCenterX <= ovalRight &&
         faceCenterY >= ovalTop &&
         faceCenterY <= ovalBottom;
-
-    print('Face center: ($faceCenterX, $faceCenterY), in frame: $faceInFrame');
 
     // Check face size for proper distance (more lenient)
     final faceWidth = face.boundingBox.width * scaleX;
@@ -341,11 +301,62 @@ class _LivenessCameraState extends State<LivenessCamera> {
         (faceWidth >= idealWidth * 0.5 && faceWidth <= idealWidth * 2.0) &&
         (faceHeight >= idealHeight * 0.5 && faceHeight <= idealHeight * 2.0);
 
-    print(
-      'Face size: ${faceWidth}x$faceHeight, proper distance: $properDistance',
-    );
-
     return faceInFrame && properDistance;
+  }
+
+  bool _isFaceOrientedCorrectly(Face face) {
+    // Check if head pose angles are within acceptable thresholds
+    const double yawThreshold = 15.0; // ±15 degrees
+    const double pitchThreshold = 15.0; // ±15 degrees
+    const double rollThreshold = 20.0; // ±20 degrees
+
+    final double yaw = face.headEulerAngleY ?? 0.0;
+    final double pitch = face.headEulerAngleX ?? 0.0;
+    final double roll = face.headEulerAngleZ ?? 0.0;
+
+    // Update head pose state variables
+    _headYaw = yaw;
+    _headPitch = pitch;
+    _headRoll = roll;
+
+    // Check if angles are within thresholds
+    if (yaw.abs() > yawThreshold) return false;
+    if (pitch.abs() > pitchThreshold) return false;
+    if (roll.abs() > rollThreshold) return false;
+
+    // Additional check: ensure both eyes are visible (face is forward-facing)
+    final leftEye = face.landmarks[FaceLandmarkType.leftEye];
+    final rightEye = face.landmarks[FaceLandmarkType.rightEye];
+
+    // Both eyes should be detected for proper frontal face
+    return leftEye != null && rightEye != null;
+  }
+
+  String _getFeedbackMessage() {
+    if (_faceDetected) {
+      return 'Face detected! Tap to capture';
+    }
+
+    // Check if we have face detection but head pose is incorrect
+    if (!_isFacingCamera) {
+      // Give specific guidance based on head pose angles
+      if (_headYaw.abs() > 15) {
+        return _headYaw > 0
+            ? 'Please turn your head slightly to the left'
+            : 'Please turn your head slightly to the right';
+      }
+      if (_headPitch.abs() > 15) {
+        return _headPitch > 0
+            ? 'Please lower your chin slightly'
+            : 'Please raise your chin slightly';
+      }
+      if (_headRoll.abs() > 20) {
+        return 'Please keep your head straight';
+      }
+      return 'Please face the camera directly';
+    }
+
+    return 'Position your face within the oval';
   }
 
   void _showErrorDialog(String message) {
@@ -443,70 +454,23 @@ class _LivenessCameraState extends State<LivenessCamera> {
           const Positioned.fill(child: FaceOvalOverlay()),
 
           Positioned(
-            top: 100,
+            top: 50,
             left: 20,
             right: 20,
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                _faceDetected
-                    ? 'Face detected! Tap to capture'
-                    : 'Position your face within the oval',
+                _getFeedbackMessage(),
                 style: TextStyle(
                   color: _faceDetected ? Colors.green : Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-
-          // Debug Panel (temporary for testing)
-          Positioned(
-            bottom: 120,
-            left: 10,
-            right: 10,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Face Detector: ${_faceDetector != null ? "Initialized" : "Not initialized"}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  Text(
-                    'Is Detecting: $_isDetecting',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  Text(
-                    'Faces Found: $_faceCount',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  Text(
-                    'Face In Oval: $_faceInOval',
-                    style: TextStyle(
-                      color: _faceInOval ? Colors.green : Colors.red,
-                      fontSize: 12,
-                    ),
-                  ),
-                  Text(
-                    'Final Result: $_faceDetected',
-                    style: TextStyle(
-                      color: _faceDetected ? Colors.green : Colors.red,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
