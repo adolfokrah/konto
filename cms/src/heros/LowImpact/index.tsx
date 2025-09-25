@@ -28,7 +28,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, li
             <p className='text-sm text-label mt-2'>
               {dateLabel} {(() => {
                 if (!date) return '';
-                const dateObj = date instanceof Date ? date : new Date(String(date));
+                const dateObj = new Date(date);
                 return `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}-${dateObj.getDate()}`;
               })()}
             </p>
