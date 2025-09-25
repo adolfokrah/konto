@@ -1,27 +1,10 @@
 import React from 'react'
 
-import type { Page } from '@/payload-types'
+import type { Page, Post } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
 
-type LowImpactHeroType = {
+type LowImpactHeroType = Page['hero'] & {
   children?: React.ReactNode
-  title?: string | null,
-  subTitle?: string | null,
-  dateLabel?: string | null,
-  date?: string | Date | null,
-  links?: Array<{
-    link: {
-      type?: 'reference' | 'custom' | null
-      newTab?: boolean | null
-      reference?: {
-        relationTo: 'pages' | 'posts'
-        value: string | Page
-      } | null
-      url?: string | null
-      label?: string | null
-      anchor?: string | null
-    }
-  }> | null
 }
 
 export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, links, dateLabel, date }) => {
@@ -45,7 +28,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, li
             <p className='text-sm text-label mt-2'>
               {dateLabel} {(() => {
                 if (!date) return '';
-                const dateObj = date instanceof Date ? date : new Date(date);
+                const dateObj = date instanceof Date ? date : new Date(String(date));
                 return `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}-${dateObj.getDate()}`;
               })()}
             </p>
