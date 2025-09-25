@@ -36,7 +36,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, li
           )}
 
           {links && links.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-1 lg:flex-shrink-0">
+            <div className="flex flex-row gap-1 lg:flex-shrink-0">
               {links.map((linkItem, index) => (
                 <CMSLink
                   key={index}
