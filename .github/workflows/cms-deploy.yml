@@ -233,7 +233,13 @@ jobs:
             source .vercel/.env.staging.local
             set +a
           fi
-          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+          # Print environment variables for debugging
+          echo "=== Environment Variables ==="
+          env | sort
+          echo "=== End Environment Variables ==="
+
+          
       - name: Deploy Project Artifacts to Vercel
         id: deploy-staging
         run: |
@@ -284,6 +290,12 @@ jobs:
             source .vercel/.env.production.local
             set +a
           fi
+
+          # Print environment variables for debugging
+          echo "=== Environment Variables ==="
+          env | sort
+          echo "=== End Environment Variables ==="
+          
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
