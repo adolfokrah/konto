@@ -47,8 +47,8 @@ export const requestKYC = async (req: PayloadRequest) => {
 
     // Create a new KYC session for a user
     const session = await kycService.createSession(user.id, {
-      // callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
-      callbackUrl: `http://192.168.0.160:3000/api/users/verify-kyc`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
+      // callbackUrl: `http://192.168.0.160:3000/api/users/verify-kyc`,
       language: 'en',
       expectedDetails: {
         first_name: firstName,
