@@ -24,6 +24,19 @@ export const getJarSummary = async (req: PayloadRequest) => {
         id: jarId,
         depth: 2,
       })
+
+      // Check if user has access to this jar (either as creator or invited collector)
+      if (jar) {
+        const isCreator = jar.creator?.id === req.user!.id
+        const isInvitedCollector = jar.invitedCollectors?.some(
+          (collector: any) => collector.collector?.id === req.user!.id,
+        )
+
+        // If user doesn't have access, fall back to getting their first jar
+        if (!isCreator && !isInvitedCollector) {
+          jar = await getUserJar()
+        }
+      }
     } else {
       //get user first jar
       jar = await getUserJar()
@@ -52,7 +65,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         or: [
           {
             creator: {
-              equals: req.user,
+              equals: req.user!,
             },
             status: {
               not_equals: 'broken',
@@ -60,7 +73,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
           },
           {
             'invitedCollectors.collector': {
-              equals: req.user,
+              equals: req.user!,
             },
             status: {
               not_equals: 'broken',
@@ -79,7 +92,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   }
 
   // Check if user is the jar creator
-  const isJarCreator = jar.creator?.id === req.user.id
+  const isJarCreator = jar.creator?.id === req.user!.id
 
   const recentJarContributions = await req.payload.find({
     collection: 'contributions',
@@ -91,7 +104,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         ? {}
         : {
             collector: {
-              equals: req.user,
+              equals: req.user!,
             },
           }),
     },
@@ -109,7 +122,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         ? {}
         : {
             collector: {
-              equals: req.user,
+              equals: req.user!,
             },
           }),
     },
@@ -167,7 +180,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         ? {}
         : {
             collector: {
-              equals: req.user,
+              equals: req.user!,
             },
           }),
     },
@@ -239,7 +252,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     ...jar,
     contributions: recentJarContributions,
     chartData: totalContributionsChart(),
-    isCreator: jar.creator?.id === req.user.id,
+    isCreator: jar.creator?.id === req.user!.id,
     balanceBreakDown: {
       totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
       totalTransfers: Number(totalTransfers.toFixed(2)),
