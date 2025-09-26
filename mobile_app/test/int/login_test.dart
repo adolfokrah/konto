@@ -10,6 +10,7 @@ import 'package:Hoga/features/authentication/presentation/views/login_view.dart'
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -80,6 +81,7 @@ void main() {
               'email': 'test@example.com',
               'country': 'Ghana',
               'isKYCVerified': false,
+              'kycStatus': null,
               'createdAt': DateTime.now().toIso8601String(),
               'updatedAt': DateTime.now().toIso8601String(),
               'sessions': [],
@@ -105,6 +107,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
             BlocProvider(create: (context) => MediaBloc()),
@@ -280,6 +283,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
           ],
@@ -340,6 +344,7 @@ void main() {
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
+            BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
           ],

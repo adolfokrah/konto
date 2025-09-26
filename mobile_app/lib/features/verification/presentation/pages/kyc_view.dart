@@ -47,6 +47,9 @@ class KycView extends StatelessWidget {
       body: BlocConsumer<KycBloc, KycState>(
         listener: (context, state) {
           if (state is KycSuccess) {
+            // Reload user data to get updated KYC status
+            context.read<AuthBloc>().add(AutoLoginRequested());
+
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -71,11 +74,41 @@ class KycView extends StatelessWidget {
             builder: (context, authState) {
               // Check user's KYC status
               String? kycStatus;
+              bool isKYCVerified = false;
               if (authState is AuthAuthenticated) {
                 kycStatus = authState.user.kycStatus;
+                isKYCVerified = authState.user.isKYCVerified;
               }
 
-              // Show pending screen if KYC status is pending
+              // If user is already KYC verified, don't show any KYC screens
+              // They should be navigated elsewhere in the app
+              if (isKYCVerified) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, size: 64, color: Colors.green),
+                        const SizedBox(height: 24),
+                        Text(
+                          'KYC Verification Complete',
+                          style: TextStyles.titleBoldLg,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Your identity has been successfully verified. You can now create jars and use all app features.',
+                          style: TextStyles.titleRegularSm,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show pending screen if KYC status is pending (for unverified users)
               if (kycStatus == 'pending') {
                 return Center(
                   child: Padding(
@@ -114,7 +147,7 @@ class KycView extends StatelessWidget {
                 );
               }
 
-              // Show verification form if not pending
+              // Show verification form for unverified users (null, 'failed', or other statuses)
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
