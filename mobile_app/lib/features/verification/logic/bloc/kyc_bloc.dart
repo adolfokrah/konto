@@ -2,6 +2,7 @@ import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:Hoga/core/services/service_registry.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'kyc_event.dart';
 part 'kyc_state.dart';

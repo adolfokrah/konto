@@ -106,6 +106,8 @@ class ContributionRepository {
     int? limit,
     int? page,
     String? contributor,
+    bool? isCurrentUserJarCreator,
+    bool? hasAnyFilters,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider.getContributions(
@@ -118,6 +120,8 @@ class ContributionRepository {
         limit: limit,
         page: page,
         contributor: contributor,
+        isCurrentUserJarCreator: isCurrentUserJarCreator,
+        hasAnyFilters: hasAnyFilters,
       );
 
       if (apiResponse['docs'] != null) {

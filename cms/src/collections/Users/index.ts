@@ -23,9 +23,7 @@ export const Users: CollectionConfig = {
     // Allow public registration
     create: () => true,
     // Logged in users can read themselves, admins can read all
-    read: ({ req: { user } }) => {
-      return true
-    },
+    read: () => true,
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {
       if (user?.role === 'admin') {

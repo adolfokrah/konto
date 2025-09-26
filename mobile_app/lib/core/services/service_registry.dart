@@ -131,7 +131,7 @@ class ServiceRegistry {
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
       smsApiProvider: _smsApiProvider,
-      apiProvider: _verificationProvider,
+      verificationProvider: _verificationProvider,
     );
 
     _onboardingRepository = OnboardingRepository(
@@ -245,7 +245,7 @@ class ServiceRegistry {
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
       smsApiProvider: _smsApiProvider,
-      apiProvider: _verificationProvider,
+      verificationProvider: _verificationProvider,
     );
 
     _onboardingRepository = OnboardingRepository(

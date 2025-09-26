@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:Hoga/core/constants/filter_options.dart';
 import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:meta/meta.dart';
 
 part 'contributions_list_event.dart';
@@ -57,18 +57,12 @@ class ContributionsListBloc
           // Statuses are already strings
           statusStrings = filterState.selectedStatuses;
 
-          // Collectors are already strings (user IDs)
+          // Use the collectors filter from FilterContributionsBloc
           collectors = filterState.selectedCollectors;
 
-          // If current user is not the jar creator, add their ID to collectors
-          if (event.currentUserId != null &&
-              event.jarCreatorId != null &&
-              event.currentUserId != event.jarCreatorId) {
-            collectors =
-                collectors != null
-                    ? [...collectors, event.currentUserId!]
-                    : [event.currentUserId!];
-          }
+          print('🔍 DEBUG: Filter state loaded - collectors: $collectors');
+          print('🔍 DEBUG: Payment methods: $paymentMethodStrings');
+          print('🔍 DEBUG: Statuses: $statusStrings');
 
           // Convert date string to DateTime range if applicable
           if (filterState.selectedDate != null &&
@@ -128,6 +122,20 @@ class ContributionsListBloc
         }
       }
 
+      // Determine if current user is jar creator
+      final isCurrentUserJarCreator =
+          event.currentUserId != null &&
+          event.jarCreatorId != null &&
+          event.currentUserId == event.jarCreatorId;
+
+      // Check if ANY filters are applied (excluding contributor search)
+      final hasAnyFilters =
+          (paymentMethodStrings?.isNotEmpty == true) ||
+          (statusStrings?.isNotEmpty == true) ||
+          (collectors?.isNotEmpty == true) ||
+          (startDate != null) ||
+          (endDate != null);
+
       final result = await _contributionRepository.getContributions(
         jarId: event.jarId,
         paymentMethods: paymentMethodStrings,
@@ -138,19 +146,28 @@ class ContributionsListBloc
         limit: event.limit,
         page: event.page,
         contributor: event.contributor,
+        isCurrentUserJarCreator: isCurrentUserJarCreator,
+        hasAnyFilters: hasAnyFilters,
       );
 
       if (result['success']) {
         final responseData = result['data'];
         final contributionsJson = responseData['docs'] ?? [];
 
-        // Convert JSON to ContributionModel objects
-        final newContributions =
-            contributionsJson
-                .map<ContributionModel>(
-                  (json) => ContributionModel.fromJson(json),
-                )
-                .toList();
+        // Convert JSON to ContributionModel objects with error handling
+        final List<ContributionModel> newContributions = [];
+
+        for (int i = 0; i < contributionsJson.length; i++) {
+          try {
+            final json = contributionsJson[i];
+            final contribution = ContributionModel.fromJson(json);
+            newContributions.add(contribution);
+          } catch (e) {
+            // Continue processing other contributions instead of failing completely
+            print('❌ Error parsing contribution at index $i: $e');
+            continue;
+          }
+        }
 
         // If page > 1, append to existing contributions, otherwise replace
         List<ContributionModel> allContributions;
@@ -196,6 +213,7 @@ class ContributionsListBloc
         );
       }
     } catch (e) {
+      print(e);
       emit(
         ContributionsListError('An unexpected error occurred: ${e.toString()}'),
       );

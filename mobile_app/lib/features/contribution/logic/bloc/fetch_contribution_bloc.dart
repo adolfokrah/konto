@@ -24,8 +24,6 @@ class FetchContributionBloc
       final response = await serviceRegistry.contributionRepository
           .getContributionById(contributionId: event.contributionId);
 
-      print('🔍 Contribution API Response: $response'); // Debug logging
-
       if (response['success']) {
         emit(
           FetchContributionLoaded(ContributionModel.fromJson(response['data'])),

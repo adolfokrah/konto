@@ -113,13 +113,27 @@ class ContributorAvatar extends StatelessWidget {
   String _getInitials(String name) {
     if (isAnonymous) return '?';
 
-    final words = name.trim().split(' ');
+    final words =
+        name.trim().split(' ').where((word) => word.isNotEmpty).toList();
     if (words.isEmpty) return '?';
 
     if (words.length == 1) {
       return words[0].isNotEmpty ? words[0][0].toUpperCase() : '?';
     } else {
-      return '${words[0][0].toUpperCase()}${words[1][0].toUpperCase()}';
+      // Ensure both words have at least one character before accessing
+      final firstInitial = words[0].isNotEmpty ? words[0][0].toUpperCase() : '';
+      final secondInitial =
+          words.length > 1 && words[1].isNotEmpty
+              ? words[1][0].toUpperCase()
+              : '';
+
+      if (firstInitial.isEmpty && secondInitial.isEmpty) {
+        return '?';
+      } else if (secondInitial.isEmpty) {
+        return firstInitial;
+      } else {
+        return '$firstInitial$secondInitial';
+      }
     }
   }
 

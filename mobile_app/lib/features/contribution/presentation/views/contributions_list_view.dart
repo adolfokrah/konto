@@ -11,10 +11,12 @@ import 'package:Hoga/core/widgets/icon_button.dart';
 import 'package:Hoga/core/widgets/searh_input.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/contribtions_list_filter.dart';
-import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart'
+    hide ContributionModel;
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -38,6 +40,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
   Timer? _debounceTimer;
   String _currentSearchQuery = '';
   static const Duration _debounceDuration = Duration(milliseconds: 500);
+  bool _isInitialLoad = true;
 
   @override
   void initState() {
@@ -77,8 +80,15 @@ class _ContributionsListViewState extends State<ContributionsListView> {
     final authState = context.read<AuthBloc>().state;
 
     if (jarSummaryState is JarSummaryLoaded) {
-      if (page == 1) {
-        context.read<FilterContributionsBloc>().add(ClearAllFilters());
+      // Only clear filters on the very first load if no filters are already active
+      if (_isInitialLoad && page == 1) {
+        final currentFilterState =
+            context.read<FilterContributionsBloc>().state;
+        if (currentFilterState is FilterContributionsLoaded &&
+            !currentFilterState.hasFilters) {
+          context.read<FilterContributionsBloc>().add(ClearAllFilters());
+        }
+        _isInitialLoad = false;
       }
 
       String? currentUserId;
@@ -133,32 +143,40 @@ class _ContributionsListViewState extends State<ContributionsListView> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Transactions'),
-        centerTitle: false,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Search Bar that slides away on scroll
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              elevation: 0,
-              floating: true,
-              snap: false,
-              pinned: false,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              flexibleSpace: _buildSearchBar(localizations),
-              expandedHeight: 90,
-              toolbarHeight: 90,
-            ),
+    return BlocListener<FilterContributionsBloc, FilterContributionsState>(
+      listener: (context, state) {
+        // When filters change, refetch contributions
+        if (state is FilterContributionsLoaded) {
+          _fetchContributions(page: 1, contributor: _currentSearchQuery);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Transactions'),
+          centerTitle: false,
+          elevation: 0,
+        ),
+        body: SafeArea(
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // Search Bar that slides away on scroll
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                elevation: 0,
+                floating: true,
+                snap: false,
+                pinned: false,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                flexibleSpace: _buildSearchBar(localizations),
+                expandedHeight: 90,
+                toolbarHeight: 90,
+              ),
 
-            // Contributions List
-            _buildSliverContributionsList(localizations),
-          ],
+              // Contributions List
+              _buildSliverContributionsList(localizations),
+            ],
+          ),
         ),
       ),
     );
@@ -322,21 +340,15 @@ class _ContributionsListViewState extends State<ContributionsListView> {
     ContributionModel contribution,
     AppLocalizations localizations,
   ) {
-    // Get currency from jar - handle both String and object types
-    String currency = 'GHS'; // Default fallback
-    if (contribution.jar is Map) {
-      currency = contribution.jar['currency'] ?? 'GHS';
-    } else if (contribution.jar is String) {
-      // If jar is just a String ID, we can't get the currency, use default
-      currency = 'GHS';
-    }
+    // Get currency from jar object
+    final currency = contribution.jar.currency;
 
     return ContributionListItem(
       contributionId: contribution.id,
       contributorName: contribution.contributor ?? 'Konto',
       amount: contribution.amountContributed,
       currency: currency,
-      timestamp: contribution.createdAt ?? DateTime.now(),
+      timestamp: contribution.createdAt,
       paymentMethod: contribution.paymentMethod,
       isAnonymous:
           contribution.contributor == null &&
@@ -353,7 +365,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
     final Map<String, List<ContributionModel>> grouped = {};
 
     for (final contribution in contributions) {
-      final date = contribution.createdAt ?? DateTime.now();
+      final date = contribution.createdAt;
       String dateKey;
 
       if (AppDateUtils.isToday(date)) {

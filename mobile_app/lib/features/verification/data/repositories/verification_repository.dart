@@ -11,10 +11,10 @@ class VerificationRepository {
   VerificationRepository({
     required SmsOtpService smsOtpService,
     required SmsApiProvider smsApiProvider,
-    required VerificationProvider apiProvider,
+    required VerificationProvider verificationProvider,
   }) : _smsOtpService = smsOtpService,
        _smsApiProvider = smsApiProvider,
-       _verificationProvider = apiProvider;
+       _verificationProvider = verificationProvider;
 
   /// Verify OTP code
   Future<Map<String, dynamic>> verifyOtp({
