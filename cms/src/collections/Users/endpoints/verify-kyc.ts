@@ -85,6 +85,11 @@ export const verifyKYC = async (req: PayloadRequest) => {
           isKYCVerified: false,
         },
       })
+
+      await sendSMS(
+        user.phoneNumber,
+        `${user.fullName}, Unfortunately, your KYC verification was not successful. Please try again or contact support for assistance.`,
+      )
     }
 
     // Send notifications if KYC is verified
@@ -93,7 +98,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
       if (user.phoneNumber) {
         await sendSMS(
           user.phoneNumber,
-          'Great news! Your KYC verification has been approved. You can now access all features of your account.',
+          `${user.fullName}, Congratulations! Your KYC verification has been approved. You can now access all features of your account.`,
         )
       }
 
