@@ -23,15 +23,7 @@ export const Users: CollectionConfig = {
     // Allow public registration
     create: () => true,
     // Logged in users can read themselves, admins can read all
-    read: ({ req: { user } }) => {
-      if (user?.role === 'admin') {
-        return true // Admins can read all users
-      }
-      if (user) {
-        return { id: { equals: user.id } } // Users can only read themselves
-      }
-      return false
-    },
+    read: () => true,
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {
       if (user?.role === 'admin') {
@@ -134,7 +126,7 @@ export const Users: CollectionConfig = {
                 data.isKYCVerified = false
                 // Also reset KYC status if it exists
                 if (data.kycStatus) {
-                  data.kycStatus = 'pending'
+                  data.kycStatus = 'none'
                 }
               }
             }
@@ -166,12 +158,23 @@ export const Users: CollectionConfig = {
       required: false,
     },
     {
+      name: 'kycSessionId',
+      type: 'text',
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'KYC session ID from the KYC provider',
+      },
+    },
+    {
       name: 'kycStatus',
       type: 'select',
       options: [
         { label: 'Pending', value: 'pending' },
         { label: 'Verified', value: 'verified' },
+        { label: 'None', value: 'none' },
       ],
+      defaultValue: 'none',
       required: false,
       hooks: {
         beforeChange: [
@@ -180,7 +183,7 @@ export const Users: CollectionConfig = {
             if (data && originalDoc) {
               if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
                 console.log('Manual setting of KYC status to verified is not allowed')
-                data.kycStatus = originalDoc.kycStatus || 'pending'
+                data.kycStatus = originalDoc.kycStatus || 'none'
               }
             }
           },

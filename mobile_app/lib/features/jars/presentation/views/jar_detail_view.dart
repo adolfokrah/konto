@@ -20,7 +20,6 @@ import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/core/widgets/feedback_action_button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/collaborators/presentation/views/collectors_view.dart';
-import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -710,12 +709,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       .expand((list) => list),
                                   InkWell(
                                     onTap: () {
-                                      context.read<ContributionsListBloc>().add(
-                                        FetchContributions(
-                                          jarId: jarData.id,
-                                          page: 1,
-                                        ),
-                                      );
                                       Navigator.pushNamed(
                                         context,
                                         AppRoutes.contributionsList,

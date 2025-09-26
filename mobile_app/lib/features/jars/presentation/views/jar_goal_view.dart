@@ -206,51 +206,62 @@ class _JarGoalViewState extends State<JarGoalView>
                       ),
 
                       // Continue button at bottom
-                      Row(
-                        children: [
-                          AppIconButton(
-                            icon: Icons.calendar_month,
-                            onPressed: () {
-                              if (state is UpdateJarInProgress) return;
-                              _selectDeadline(context);
-                            },
-                          ),
-                          const SizedBox(width: AppSpacing.spacingS),
-                          Expanded(
-                            child: AppButton.filled(
-                              isLoading: state is UpdateJarInProgress,
-                              text: localizations.continueText,
-                              onPressed: () {
-                                // Get the numeric value directly from the currency text field
-                                final currencyTextField = CurrencyTextField(
-                                  controller: _amountController,
-                                  currencySymbol:
-                                      CurrencyUtils.getCurrencySymbol(
-                                        state.jarData.currency,
+                      BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                        builder: (context, jarUpdateState) {
+                          return Row(
+                            children: [
+                              AppIconButton(
+                                icon: Icons.calendar_month,
+                                onPressed: () {
+                                  if (jarUpdateState is UpdateJarInProgress) {
+                                    return;
+                                  }
+
+                                  _selectDeadline(context);
+                                },
+                              ),
+                              const SizedBox(width: AppSpacing.spacingS),
+                              Expanded(
+                                child: AppButton.filled(
+                                  isLoading:
+                                      jarUpdateState is UpdateJarInProgress,
+                                  text: localizations.continueText,
+                                  onPressed: () {
+                                    if (jarUpdateState is UpdateJarInProgress) {
+                                      return;
+                                    }
+                                    // Get the numeric value directly from the currency text field
+                                    final currencyTextField = CurrencyTextField(
+                                      controller: _amountController,
+                                      currencySymbol:
+                                          CurrencyUtils.getCurrencySymbol(
+                                            state.jarData.currency,
+                                          ),
+                                    );
+                                    final amount =
+                                        currencyTextField.getNumericValue();
+
+                                    if (amount <= 0) {
+                                      // Handle empty or invalid amount
+                                      return;
+                                    }
+
+                                    context.read<UpdateJarBloc>().add(
+                                      UpdateJarRequested(
+                                        jarId: state.jarData.id,
+                                        updates: {
+                                          'goalAmount': amount,
+                                          if (_selectedDeadline != null)
+                                            'deadline': _selectedDeadline,
+                                        },
                                       ),
-                                );
-                                final amount =
-                                    currencyTextField.getNumericValue();
-
-                                if (amount <= 0) {
-                                  // Handle empty or invalid amount
-                                  return;
-                                }
-
-                                context.read<UpdateJarBloc>().add(
-                                  UpdateJarRequested(
-                                    jarId: state.jarData.id,
-                                    updates: {
-                                      'goalAmount': amount,
-                                      if (_selectedDeadline != null)
-                                        'deadline': _selectedDeadline,
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),

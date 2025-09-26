@@ -1,3 +1,4 @@
+import 'package:Hoga/route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -441,12 +443,81 @@ class ContributionView extends StatelessWidget {
                                         children: [
                                           ListTile(
                                             contentPadding: EdgeInsets.zero,
-                                            onTap: () {
-                                              AppSnackBar.show(
-                                                context,
-                                                message:
-                                                    localizations.comingSoon,
-                                              );
+                                            onTap: () async {
+                                              // Check if collector has valid data (not "Unknown User")
+                                              if (contribution
+                                                          .collector
+                                                          .fullName !=
+                                                      'Unknown User' &&
+                                                  contribution
+                                                      .collector
+                                                      .id
+                                                      .isNotEmpty) {
+                                                print(
+                                                  '🔍 Setting collector filter for: ${contribution.collector.fullName} (ID: ${contribution.collector.id})',
+                                                );
+
+                                                // Close current modal first
+                                                Navigator.pop(context);
+
+                                                // Clear existing filters and set collector filter
+                                                context
+                                                    .read<
+                                                      FilterContributionsBloc
+                                                    >()
+                                                    .add(ClearAllFilters());
+
+                                                // Wait a frame for the clear to process
+                                                await Future.delayed(
+                                                  const Duration(
+                                                    milliseconds: 100,
+                                                  ),
+                                                );
+
+                                                context
+                                                    .read<
+                                                      FilterContributionsBloc
+                                                    >()
+                                                    .add(
+                                                      ToggleCollector(
+                                                        contribution
+                                                            .collector
+                                                            .id,
+                                                      ),
+                                                    );
+
+                                                // Wait for the filter to be set
+                                                await Future.delayed(
+                                                  const Duration(
+                                                    milliseconds: 100,
+                                                  ),
+                                                );
+
+                                                // Debug: Check the filter state
+                                                final filterState = context
+                                                    .read<
+                                                      FilterContributionsBloc
+                                                    >()
+                                                    .state;
+                                                if (filterState
+                                                    is FilterContributionsLoaded) {
+                                                  print(
+                                                    '🔍 Filter state after setting: collectors=${filterState.selectedCollectors}, hasFilters=${filterState.hasFilters}',
+                                                  );
+                                                }
+
+                                                // Navigate to contributions list
+                                                Navigator.pushNamed(
+                                                  context,
+                                                  AppRoutes.contributionsList,
+                                                );
+                                              } else {
+                                                AppSnackBar.show(
+                                                  context,
+                                                  message:
+                                                      localizations.unknown,
+                                                );
+                                              }
                                             },
                                             dense: true,
                                             title: Text(
@@ -465,12 +536,31 @@ class ContributionView extends StatelessWidget {
                                             trailing: Text(
                                               contribution
                                                       .collector
-                                                      ?.fullName ??
-                                                  localizations.unknown,
-                                              style: AppTextStyles.titleMediumS
-                                                  .copyWith(
-                                                    color: Colors.blueAccent,
-                                                  ),
+                                                      .fullName
+                                                      .isNotEmpty
+                                                  ? contribution
+                                                      .collector
+                                                      .fullName
+                                                  : localizations.unknown,
+                                              style: AppTextStyles.titleMediumS.copyWith(
+                                                color:
+                                                    contribution
+                                                                    .collector
+                                                                    .fullName !=
+                                                                'Unknown User' &&
+                                                            contribution
+                                                                .collector
+                                                                .id
+                                                                .isNotEmpty
+                                                        ? Colors.blueAccent
+                                                        : Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall!
+                                                            .color
+                                                            ?.withValues(
+                                                              alpha: 0.5,
+                                                            ),
+                                              ),
                                               textAlign: TextAlign.end,
                                             ),
                                           ),
