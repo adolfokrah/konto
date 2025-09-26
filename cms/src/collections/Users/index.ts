@@ -89,7 +89,7 @@ export const Users: CollectionConfig = {
       handler: verifyKYC,
     },
     {
-      path: '/diditWebhook',
+      path: '/didit-webhook',
       method: 'post',
       handler: diditWebhook,
     },
