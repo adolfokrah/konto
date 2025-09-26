@@ -8,6 +8,9 @@ import { manageUserRole } from './endpoints/manage-user-role'
 import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
 import { createSubAccount } from './hooks/create-sub-account'
 import { updateKYC } from './endpoints/update-kyc'
+import { requestKYC } from './endpoints/request-kyc'
+import { verifyKYC } from './endpoints/verify-kyc'
+import { diditWebhook } from './endpoints/didit-webhook'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -74,6 +77,21 @@ export const Users: CollectionConfig = {
       path: '/update-kyc',
       method: 'post',
       handler: updateKYC,
+    },
+    {
+      path: '/request-kyc',
+      method: 'post',
+      handler: requestKYC,
+    },
+    {
+      path: '/verify-kyc',
+      method: 'get',
+      handler: verifyKYC,
+    },
+    {
+      path: '/diditWebhook',
+      method: 'post',
+      handler: diditWebhook,
     },
   ],
   fields: [
