@@ -19,7 +19,7 @@ import 'package:Hoga/features/user_account/presentation/widgets/confirmation_bot
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:Hoga/core/utils/url_launcher_utils.dart';
 
 /// User account view - profile screen with settings and account management
 class UserAccountView extends StatelessWidget {
@@ -262,23 +262,23 @@ class UserAccountView extends StatelessWidget {
           _buildSectionCard([
             _buildExternalMenuItem(
               title: localizations.aboutKonto,
-              onTap: () => _launchUrl(AppLinks.about),
+              onTap: () => UrlLauncherUtils.launch(AppLinks.about),
             ),
             _buildExternalMenuItem(
               title: localizations.privacyPolicy,
-              onTap: () => _launchUrl(AppLinks.privacy),
+              onTap: () => UrlLauncherUtils.launch(AppLinks.privacy),
             ),
             _buildExternalMenuItem(
               title: localizations.termsOfServices,
-              onTap: () => _launchUrl(AppLinks.terms),
+              onTap: () => UrlLauncherUtils.launch(AppLinks.terms),
             ),
             _buildExternalMenuItem(
               title: localizations.contactUs,
-              onTap: () => _launchUrl(AppLinks.contact),
+              onTap: () => UrlLauncherUtils.launch(AppLinks.contact),
             ),
             _buildExternalMenuItem(
               title: localizations.appRating,
-              onTap: () => _launchUrl(AppLinks.appStore),
+              onTap: () => UrlLauncherUtils.launch(AppLinks.appStore),
             ),
           ]),
 
@@ -421,43 +421,6 @@ class UserAccountView extends StatelessWidget {
   /// Build toggle switch using Cupertino style
   Widget _buildToggleSwitch(bool value, ValueChanged<bool> onChanged) {
     return CupertinoSwitch(value: value, onChanged: onChanged);
-  }
-
-  /// Launch external URL
-  void _launchUrl(String url) async {
-    try {
-      final uri = Uri.parse(url);
-
-      // Try external application first (most reliable on Android)
-      try {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      } catch (e) {
-        debugPrint('External app launch failed: $e');
-      }
-
-      // Try in-app browser as fallback
-      try {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.inAppBrowserView,
-          browserConfiguration: const BrowserConfiguration(showTitle: true),
-        );
-        return;
-      } catch (e) {
-        debugPrint('In-app browser launch failed: $e');
-      }
-
-      // Last resort: try platform default
-      try {
-        await launchUrl(uri, mode: LaunchMode.platformDefault);
-        return;
-      } catch (e) {
-        debugPrint('Platform default launch failed: $e');
-      }
-    } catch (e) {
-      debugPrint('Failed to launch URL: $url, Error: $e');
-    }
   }
 
   /// Show coming soon dialog

@@ -486,6 +486,26 @@ class ContributionView extends StatelessWidget {
                                                       ),
                                                     );
 
+                                                // Wait for the filter to be set
+                                                await Future.delayed(
+                                                  const Duration(
+                                                    milliseconds: 100,
+                                                  ),
+                                                );
+
+                                                // Debug: Check the filter state
+                                                final filterState = context
+                                                    .read<
+                                                      FilterContributionsBloc
+                                                    >()
+                                                    .state;
+                                                if (filterState
+                                                    is FilterContributionsLoaded) {
+                                                  print(
+                                                    '🔍 Filter state after setting: collectors=${filterState.selectedCollectors}, hasFilters=${filterState.hasFilters}',
+                                                  );
+                                                }
+
                                                 // Navigate to contributions list
                                                 Navigator.pushNamed(
                                                   context,

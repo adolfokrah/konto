@@ -7,6 +7,7 @@ import 'package:Hoga/core/services/jar_storage_service.dart';
 import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
 import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
 import 'package:Hoga/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
@@ -41,6 +42,7 @@ class ServiceRegistry {
   // API providers
   late final SmsApiProvider _smsApiProvider;
   late final AuthApiProvider _authApiProvider;
+  late final VerificationProvider _verificationProvider;
   late final JarApiProvider _jarApiProvider;
   late final MediaApiProvider _mediaApiProvider;
   late final ContributionApiProvider _contributionApiProvider;
@@ -94,6 +96,10 @@ class ServiceRegistry {
     // Initialize API providers with Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
+    _verificationProvider = VerificationProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
     _jarApiProvider = JarApiProvider(
       dio: _dio,
       userStorageService: _userStorageService,
@@ -125,6 +131,7 @@ class ServiceRegistry {
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
       smsApiProvider: _smsApiProvider,
+      verificationProvider: _verificationProvider,
     );
 
     _onboardingRepository = OnboardingRepository(
@@ -203,6 +210,10 @@ class ServiceRegistry {
     // Initialize API providers with custom Dio
     _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
+    _verificationProvider = VerificationProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
     _jarApiProvider = JarApiProvider(
       dio: _dio,
       userStorageService: _userStorageService,
@@ -234,6 +245,7 @@ class ServiceRegistry {
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
       smsApiProvider: _smsApiProvider,
+      verificationProvider: _verificationProvider,
     );
 
     _onboardingRepository = OnboardingRepository(

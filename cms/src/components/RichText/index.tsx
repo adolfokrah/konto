@@ -71,8 +71,25 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
   },
 })
 
+// PayloadCMS RichText field type
+type PayloadRichText = {
+  root: {
+    type: string;
+    children: {
+      type: string;
+      version: number;
+      [k: string]: unknown;
+    }[];
+    direction: ('ltr' | 'rtl') | null;
+    format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+    indent: number;
+    version: number;
+  };
+  [k: string]: unknown;
+}
+
 type Props = {
-  data: DefaultTypedEditorState
+  data: DefaultTypedEditorState | PayloadRichText
   enableGutter?: boolean
   enableProse?: boolean
 } & React.HTMLAttributes<HTMLDivElement>

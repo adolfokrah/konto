@@ -8,6 +8,9 @@ import { manageUserRole } from './endpoints/manage-user-role'
 import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
 import { createSubAccount } from './hooks/create-sub-account'
 import { updateKYC } from './endpoints/update-kyc'
+import { requestKYC } from './endpoints/request-kyc'
+import { verifyKYC } from './endpoints/verify-kyc'
+import { diditWebhook } from './endpoints/didit-webhook'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -128,6 +131,21 @@ export const Users: CollectionConfig = {
       method: 'post',
       handler: updateKYC,
     },
+    {
+      path: '/request-kyc',
+      method: 'post',
+      handler: requestKYC,
+    },
+    {
+      path: '/verify-kyc',
+      method: 'get',
+      handler: verifyKYC,
+    },
+    {
+      path: '/didit-webhook',
+      method: 'post',
+      handler: diditWebhook,
+    },
   ],
   fields: [
     {
@@ -179,7 +197,7 @@ export const Users: CollectionConfig = {
                 data.isKYCVerified = false
                 // Also reset KYC status if it exists
                 if (data.kycStatus) {
-                  data.kycStatus = 'pending'
+                  data.kycStatus = 'none'
                 }
               }
             }
@@ -214,22 +232,32 @@ export const Users: CollectionConfig = {
       name: 'kycStatus',
       type: 'select',
       options: [
+        { label: 'None', value: 'none' },
         { label: 'Pending', value: 'pending' },
         { label: 'Verified', value: 'verified' },
       ],
       required: false,
+      defaultValue: 'none',
       hooks: {
         beforeChange: [
           ({ data, originalDoc }) => {
             // Prevent manual setting to 'verified'
             if (data && originalDoc) {
               if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
-                console.log('Manual setting of KYC status to verified is not allowed')
-                data.kycStatus = originalDoc.kycStatus || 'pending'
+                data.kycStatus = originalDoc.kycStatus || 'none'
               }
             }
           },
         ],
+      },
+    },
+    {
+      name: 'kycSessionId',
+      type: 'text',
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'Didit KYC session ID for tracking verification status',
       },
     },
     {
