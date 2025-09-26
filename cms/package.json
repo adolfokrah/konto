@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "infisical run --env=prod -- cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build": "infisical run --env=prod -- cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap:ci && cross-env NODE_OPTIONS=--no-deprecation next build",
     "build:dev": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation next build",
     "build:vercel": "pnpm install --no-frozen-lockfile && cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap:ci && cross-env NODE_OPTIONS=--no-deprecation next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
