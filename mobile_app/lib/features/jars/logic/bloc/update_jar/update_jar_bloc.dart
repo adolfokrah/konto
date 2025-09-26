@@ -58,7 +58,6 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
     if (response['success'] == true) {
       emit(UpdateJarSuccess());
     } else {
-      print('UpdateJarBloc: Update failed - ${response['error']}');
       emit(UpdateJarFailure(response['error'] ?? 'Unknown error'));
     }
   }
