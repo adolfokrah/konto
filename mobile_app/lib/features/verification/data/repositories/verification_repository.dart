@@ -1,16 +1,20 @@
 import 'package:Hoga/core/services/sms_otp_service.dart';
 import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
+import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 
 /// Repository for handling verification-related operations
 class VerificationRepository {
   final SmsOtpService _smsOtpService;
   final SmsApiProvider _smsApiProvider;
+  final VerificationProvider _verificationProvider;
 
   VerificationRepository({
     required SmsOtpService smsOtpService,
     required SmsApiProvider smsApiProvider,
+    required VerificationProvider apiProvider,
   }) : _smsOtpService = smsOtpService,
-       _smsApiProvider = smsApiProvider;
+       _smsApiProvider = smsApiProvider,
+       _verificationProvider = apiProvider;
 
   /// Verify OTP code
   Future<Map<String, dynamic>> verifyOtp({
@@ -95,5 +99,55 @@ class VerificationRepository {
   /// Format phone number
   String formatPhoneNumber(String phoneNumber, String countryCode) {
     return _smsOtpService.formatPhoneNumber(phoneNumber, countryCode);
+  }
+
+  /// Request KYC verification session
+  ///
+  /// Initiates a KYC verification process by creating a new session
+  /// through the Didit KYC service
+  ///
+  /// Returns a Map containing:
+  /// - success: Whether the request was successful
+  /// - sessionId: The KYC session ID
+  /// - sessionUrl: URL for the user to complete verification
+  /// - status: Current session status
+  /// - message: Success or error message
+  Future<Map<String, dynamic>> requestKycVerification() async {
+    try {
+      final result = await _verificationProvider.requestKyc();
+      return result;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to request KYC verification: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Update KYC status
+  ///
+  /// Updates the user's KYC verification status
+  /// Usually called after receiving webhook notifications or admin updates
+  ///
+  /// [status] - The new KYC status ('pending', 'verified', 'failed')
+  /// [sessionId] - Optional session ID to associate with the status
+  ///
+  /// Returns a Map containing the update result
+  Future<Map<String, dynamic>> updateKycStatus({
+    required String status,
+    String? sessionId,
+  }) async {
+    try {
+      final result = await _verificationProvider.updateKycStatus(
+        status: status,
+        sessionId: sessionId,
+      );
+      return result;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to update KYC status: ${e.toString()}',
+      };
+    }
   }
 }
