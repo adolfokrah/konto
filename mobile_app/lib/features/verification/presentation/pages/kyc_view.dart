@@ -1,12 +1,12 @@
 import 'package:Hoga/core/widgets/feedback_action_button.dart';
 import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
-import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 
 class KycView extends StatelessWidget {
   const KycView({super.key});
@@ -44,35 +44,153 @@ class KycView extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.verified_user, size: 64),
-              const SizedBox(height: 24),
-              Text(
-                'In order to create a jar, please complete the KYC verification process.',
-                style: TextStyles.titleRegularSm,
-                textAlign: TextAlign.center,
+      body: BlocConsumer<KycBloc, KycState>(
+        listener: (context, state) {
+          if (state is KycSuccess) {
+            // Reload user data to get updated KYC status
+            context.read<AuthBloc>().add(AutoLoginRequested());
+
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'KYC session created successfully! Opening verification page...',
+                ),
+                backgroundColor: Colors.green,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Please tap the button below to start your KYC verification.',
-                style: TextStyles.titleRegularSm,
-                textAlign: TextAlign.center,
+            );
+          } else if (state is KycFailure) {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage),
+                backgroundColor: Colors.red,
               ),
-              const SizedBox(height: 24),
-              AppButton.filled(
-                onPressed: () async {
-                  Navigator.pushNamed(context, AppRoutes.kycIntroView);
-                },
-                text: 'Verify my Identity',
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+        },
+        builder: (context, state) {
+          return BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              // Check user's KYC status
+              String? kycStatus;
+              bool isKYCVerified = false;
+              if (authState is AuthAuthenticated) {
+                kycStatus = authState.user.kycStatus;
+                isKYCVerified = authState.user.isKYCVerified;
+              }
+
+              // If user is already KYC verified, don't show any KYC screens
+              // They should be navigated elsewhere in the app
+              if (isKYCVerified) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, size: 64, color: Colors.green),
+                        const SizedBox(height: 24),
+                        Text(
+                          'KYC Verification Complete',
+                          style: TextStyles.titleBoldLg,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Your identity has been successfully verified. You can now create jars and use all app features.',
+                          style: TextStyles.titleRegularSm,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show pending screen if KYC status is pending (for unverified users)
+              if (kycStatus == 'pending') {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.hourglass_empty,
+                          size: 64,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'KYC Verification Pending',
+                          style: TextStyles.titleBoldLg,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Your KYC verification is currently being processed. We will notify you once it\'s complete.',
+                          style: TextStyles.titleRegularSm,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'This usually takes 1-3 business days.',
+                          style: TextStyles.titleRegularSm.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show verification form for unverified users (null, 'failed', or other statuses)
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.verified_user, size: 64),
+                      const SizedBox(height: 24),
+                      Text(
+                        'In order to create a jar, please complete the KYC verification process.',
+                        style: TextStyles.titleRegularSm,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Please tap the button below to start your KYC verification.',
+                        style: TextStyles.titleRegularSm,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      AppButton.filled(
+                        onPressed:
+                            state is KycInProgress
+                                ? null
+                                : () {
+                                  // Trigger the RequestKycSession event
+                                  context.read<KycBloc>().add(
+                                    RequestKycSession(),
+                                  );
+                                },
+                        text:
+                            state is KycInProgress
+                                ? 'Processing...'
+                                : 'Verify my Identity',
+                        isLoading: state is KycInProgress,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

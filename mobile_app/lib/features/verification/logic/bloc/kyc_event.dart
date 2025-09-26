@@ -22,3 +22,5 @@ final class ClearDocumentSide extends KycEvent {
 
   ClearDocumentSide(this.side);
 }
+
+final class RequestKycSession extends KycEvent {}

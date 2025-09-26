@@ -151,10 +151,18 @@ class ContributionUser {
   });
 
   factory ContributionUser.fromJson(Map<String, dynamic> json) {
+    final fullName = json['fullName'] as String? ?? '';
+    print(
+      '🔍 DEBUG: ContributionUser.fromJson - fullName from JSON: "$fullName"',
+    );
+    print(
+      '🔍 DEBUG: ContributionUser.fromJson - raw fullName value: ${json['fullName']}',
+    );
+
     return ContributionUser(
       id: json['id'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      fullName: json['fullName'] as String? ?? '',
+      fullName: fullName,
       phoneNumber: json['phoneNumber'] as String? ?? '',
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String? ?? '',
@@ -231,15 +239,50 @@ class JarInvitedCollector {
     return JarInvitedCollector(
       collector:
           json['collector'] != null
-              ? ContributionUser.fromJson(
-                json['collector'] as Map<String, dynamic>,
-              )
+              ? _parseCollectorForInvited(json['collector'])
               : null,
       phoneNumber: json['phoneNumber'] as String?,
       name: json['name'] as String?,
       status: json['status'] as String? ?? 'pending',
       id: json['id'] as String?,
     );
+  }
+
+  /// Helper method to parse collector field for invited collectors
+  static ContributionUser _parseCollectorForInvited(dynamic collectorData) {
+    if (collectorData is String) {
+      // If collector is just an ID string, create a minimal ContributionUser
+      return ContributionUser(
+        id: collectorData,
+        email: '',
+        fullName: 'Unknown User',
+        phoneNumber: '',
+        countryCode: '',
+        country: '',
+        isKYCVerified: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        sessions: [],
+        appSettings: const UserAppSettings(
+          language: 'en',
+          darkMode: false,
+          biometricAuthEnabled: false,
+          notificationsSettings: UserNotificationSettings(
+            pushNotificationsEnabled: true,
+            emailNotificationsEnabled: true,
+            smsNotificationsEnabled: false,
+          ),
+        ),
+      );
+    } else if (collectorData is Map<String, dynamic>) {
+      // If collector is a full object, parse it normally
+      return ContributionUser.fromJson(collectorData);
+    } else {
+      // Fallback for any other case
+      throw ArgumentError(
+        'Invalid collector data type: ${collectorData.runtimeType}',
+      );
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -292,39 +335,84 @@ class ContributionJar {
     required this.updatedAt,
   });
 
+  /// Helper method to parse creator field which can be either a string ID or a full object
+  static ContributionUser _parseCreator(dynamic creatorData) {
+    if (creatorData is String) {
+      // If creator is just an ID string, create a minimal ContributionUser
+      return ContributionUser(
+        id: creatorData,
+        email: '',
+        fullName: 'Unknown User',
+        phoneNumber: '',
+        countryCode: '',
+        country: '',
+        isKYCVerified: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        sessions: [],
+        appSettings: const UserAppSettings(
+          language: 'en',
+          darkMode: false,
+          biometricAuthEnabled: false,
+          notificationsSettings: UserNotificationSettings(
+            pushNotificationsEnabled: true,
+            emailNotificationsEnabled: true,
+            smsNotificationsEnabled: false,
+          ),
+        ),
+      );
+    } else if (creatorData is Map<String, dynamic>) {
+      // If creator is a full object, parse it normally
+      return ContributionUser.fromJson(creatorData);
+    } else {
+      // Fallback for any other case
+      throw ArgumentError(
+        'Invalid creator data type: ${creatorData.runtimeType}',
+      );
+    }
+  }
+
   factory ContributionJar.fromJson(Map<String, dynamic> json) {
-    return ContributionJar(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      jarGroup: json['jarGroup'] as String? ?? '',
-      image: json['image'], // Keep as dynamic for now
-      isActive: json['isActive'] as bool? ?? true,
-      isFixedContribution: json['isFixedContribution'] as bool? ?? false,
-      goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
-      currency: json['currency'] as String? ?? 'GHS',
-      creator: ContributionUser.fromJson(
-        json['creator'] as Map<String, dynamic>,
-      ),
-      invitedCollectors:
-          (json['invitedCollectors'] as List<dynamic>?)
-              ?.map(
-                (collector) => JarInvitedCollector.fromJson(
-                  collector as Map<String, dynamic>,
-                ),
-              )
-              .toList() ??
-          [],
-      acceptAnonymousContributions:
-          json['acceptAnonymousContributions'] as bool? ?? false,
-      status: json['status'] as String? ?? 'open',
-      paymentLink: json['paymentLink'] as String? ?? '',
-      createdAt: DateTime.parse(
-        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-      updatedAt: DateTime.parse(
-        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-    );
+    try {
+      print('🔍 Parsing ContributionJar with ID: ${json['id']}');
+
+      return ContributionJar(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        jarGroup: json['jarGroup'] as String? ?? '',
+        image: json['image'], // Keep as dynamic for now
+        isActive: json['isActive'] as bool? ?? true,
+        isFixedContribution: json['isFixedContribution'] as bool? ?? false,
+        goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
+        currency: json['currency'] as String? ?? 'GHS',
+        creator: _parseCreator(json['creator']),
+        invitedCollectors:
+            (json['invitedCollectors'] as List<dynamic>?)
+                ?.map(
+                  (collector) => JarInvitedCollector.fromJson(
+                    collector as Map<String, dynamic>,
+                  ),
+                )
+                .toList() ??
+            [],
+        acceptAnonymousContributions:
+            json['acceptAnonymousContributions'] as bool? ?? false,
+        status: json['status'] as String? ?? 'open',
+        paymentLink: json['paymentLink'] as String? ?? '',
+        createdAt: DateTime.parse(
+          json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+        updatedAt: DateTime.parse(
+          json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error parsing ContributionJar for ID ${json['id']}: $e');
+      print('📊 Creator type: ${json['creator'].runtimeType}');
+      print('📊 Creator value: ${json['creator']}');
+      print('🔍 Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -453,38 +541,96 @@ class ContributionModel {
     required this.updatedAt,
   });
 
+  /// Helper method to parse collector field which can be either a string ID or a full object
+  static ContributionUser _parseCollector(dynamic collectorData) {
+    print('🔍 DEBUG: _parseCollector called with data: $collectorData');
+    print('🔍 DEBUG: collectorData type: ${collectorData.runtimeType}');
+
+    if (collectorData is String) {
+      print('🔍 DEBUG: Collector is String: "$collectorData"');
+      // If collector is just an ID string, create a minimal ContributionUser
+      return ContributionUser(
+        id: collectorData,
+        email: '',
+        fullName: 'Unknown User',
+        phoneNumber: '',
+        countryCode: '',
+        country: '',
+        isKYCVerified: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        sessions: [],
+        appSettings: const UserAppSettings(
+          language: 'en',
+          darkMode: false,
+          biometricAuthEnabled: false,
+          notificationsSettings: UserNotificationSettings(
+            pushNotificationsEnabled: true,
+            emailNotificationsEnabled: true,
+            smsNotificationsEnabled: false,
+          ),
+        ),
+      );
+    } else if (collectorData is Map<String, dynamic>) {
+      print('🔍 DEBUG: Collector is Map: $collectorData');
+      // If collector is a full object, parse it normally
+      final user = ContributionUser.fromJson(collectorData);
+      print('🔍 DEBUG: Parsed user fullName: "${user.fullName}"');
+      return user;
+    } else {
+      // Fallback for any other case
+      print(
+        '🔍 DEBUG: Collector is unexpected type: ${collectorData.runtimeType}',
+      );
+      throw ArgumentError(
+        'Invalid collector data type: ${collectorData.runtimeType}',
+      );
+    }
+  }
+
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
-    return ContributionModel(
-      id: json['id'] as String? ?? '',
-      jar: ContributionJar.fromJson(json['jar'] as Map<String, dynamic>),
-      contributor: json['contributor'] as String?,
-      contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
-      paymentMethod: json['paymentMethod'] as String?,
-      accountNumber: json['accountNumber'] as String?,
-      amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
-      charges:
-          json['charges'] != null ? (json['charges'] as num).toDouble() : null,
-      chargesBreakdown:
-          json['chargesBreakdown'] != null
-              ? ChargesBreakdown.fromJson(
-                json['chargesBreakdown'] as Map<String, dynamic>,
-              )
-              : null,
-      paymentStatus: json['paymentStatus'] as String? ?? 'pending',
-      collector: ContributionUser.fromJson(
-        json['collector'] as Map<String, dynamic>,
-      ),
-      viaPaymentLink: json['viaPaymentLink'] as bool? ?? false,
-      type: ContributionType.fromString(
-        json['type'] as String? ?? 'contribution',
-      ),
-      createdAt: DateTime.parse(
-        json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-      updatedAt: DateTime.parse(
-        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-    );
+    try {
+      print('🔍 Parsing ContributionModel with ID: ${json['id']}');
+
+      return ContributionModel(
+        id: json['id'] as String? ?? '',
+        jar: ContributionJar.fromJson(json['jar'] as Map<String, dynamic>),
+        contributor: json['contributor'] as String?,
+        contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
+        paymentMethod: json['paymentMethod'] as String?,
+        accountNumber: json['accountNumber'] as String?,
+        amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
+        charges:
+            json['charges'] != null
+                ? (json['charges'] as num).toDouble()
+                : null,
+        chargesBreakdown:
+            json['chargesBreakdown'] != null
+                ? ChargesBreakdown.fromJson(
+                  json['chargesBreakdown'] as Map<String, dynamic>,
+                )
+                : null,
+        paymentStatus: json['paymentStatus'] as String? ?? 'pending',
+        collector: _parseCollector(json['collector']),
+        viaPaymentLink: json['viaPaymentLink'] as bool? ?? false,
+        type: ContributionType.fromString(
+          json['type'] as String? ?? 'contribution',
+        ),
+        createdAt: DateTime.parse(
+          json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+        updatedAt: DateTime.parse(
+          json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error parsing ContributionModel for ID ${json['id']}: $e');
+      print('📊 Collector type: ${json['collector'].runtimeType}');
+      print('📊 Collector value: ${json['collector']}');
+      print('📊 Jar type: ${json['jar'].runtimeType}');
+      print('🔍 Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
