@@ -430,6 +430,14 @@ class UserAccountView extends StatelessWidget {
 
       // Try external application first (most reliable on Android)
       try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      } catch (e) {
+        debugPrint('External app launch failed: $e');
+      }
+
+      // Try in-app browser as fallback
+      try {
         await launchUrl(
           uri,
           mode: LaunchMode.inAppBrowserView,
@@ -437,23 +445,15 @@ class UserAccountView extends StatelessWidget {
         );
         return;
       } catch (e) {
-        debugPrint('External app launch failed: $e');
+        debugPrint('In-app browser launch failed: $e');
       }
 
-      // Try platform default as fallback
+      // Last resort: try platform default
       try {
-        await launchUrl(uri, mode: LaunchMode.inAppWebView);
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
         return;
       } catch (e) {
         debugPrint('Platform default launch failed: $e');
-      }
-
-      // Last resort: try external non-browser application
-      try {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      } catch (e) {
-        debugPrint('External non-browser launch failed: $e');
       }
     } catch (e) {
       debugPrint('Failed to launch URL: $url, Error: $e');

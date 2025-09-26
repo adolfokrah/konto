@@ -50,7 +50,7 @@ download-secrets:
 		echo "❌ Infisical CLI not found. Please install it first."; \
 		exit 1; \
 	fi
-	@infisical export --env=staging --format=dotenv > .env
+	@infisical export --env=dev --format=dotenv > .env
 	@echo "✅ Secrets downloaded to .env file"
 	@echo "📄 Contents preview:"
 	@head -n 3 .env || true

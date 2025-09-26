@@ -12,7 +12,6 @@ import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/core/widgets/date_range_picker.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -35,16 +34,8 @@ class ContributionsListFilter extends StatelessWidget {
   }
 
   void _applyFilters(BuildContext context) {
-    final jarSummaryState = context.read<JarSummaryBloc>().state;
-    if (jarSummaryState is JarSummaryLoaded) {
-      context.read<ContributionsListBloc>().add(
-        FetchContributions(
-          jarId: jarSummaryState.jarData.id,
-          page: 1,
-          contributor: contributor?.isNotEmpty == true ? contributor : null,
-        ),
-      );
-    }
+    // Just close the bottom sheet
+    // The ContributionsListView will automatically react to filter state changes
     Navigator.pop(context);
   }
 

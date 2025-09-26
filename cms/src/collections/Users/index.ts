@@ -23,14 +23,59 @@ export const Users: CollectionConfig = {
     // Allow public registration
     create: () => true,
     // Logged in users can read themselves, admins can read all
-    read: ({ req: { user } }) => {
+    read: async ({ req }) => {
+      const { user } = req
       if (user?.role === 'admin') {
         return true // Admins can read all users
       }
-      if (user) {
-        return { id: { equals: user.id } } // Users can only read themselves
+
+      if (!user) {
+        return false
       }
-      return false
+
+      // Users can always read themselves
+      const allowedUserIds = [user.id]
+
+      try {
+        // Find jars where current user is the creator
+        const jarsCreatedByUser = await req.payload.find({
+          collection: 'jars',
+          where: {
+            creator: {
+              equals: user.id,
+            },
+          },
+          depth: 0, // Don't populate relationships to avoid recursion
+        })
+
+        // For each jar created by this user, add all invited collectors to allowed list
+        for (const jar of jarsCreatedByUser.docs) {
+          if (jar.invitedCollectors && Array.isArray(jar.invitedCollectors)) {
+            jar.invitedCollectors.forEach((invitedCollector: any) => {
+              if (invitedCollector.collector && invitedCollector.status === 'accepted') {
+                const collectorId =
+                  typeof invitedCollector.collector === 'string'
+                    ? invitedCollector.collector
+                    : invitedCollector.collector.id
+                if (collectorId && !allowedUserIds.includes(collectorId)) {
+                  allowedUserIds.push(collectorId)
+                }
+              }
+            })
+          }
+        }
+
+        // Return filter that allows reading these specific users
+        return {
+          id: {
+            in: allowedUserIds,
+          },
+        }
+      } catch (error) {
+        console.error('Error in Users read access control:', error)
+        // Fallback to only allowing user to read themselves
+        return { id: { equals: user.id } }
+      }
     },
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {

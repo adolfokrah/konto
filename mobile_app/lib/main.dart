@@ -89,6 +89,10 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Configure edge-to-edge display
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     _updateSystemOverlay();
   }
 
@@ -120,6 +124,10 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 ? Brightness
                     .dark // Dark status bar on iOS dark mode
                 : Brightness.light, // Light status bar on iOS light mode
+        // Android navigation bar configuration
+        systemNavigationBarColor: Colors.black.withOpacity(0.3),
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: true,
       ),
     );
   }
@@ -272,6 +280,22 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                     supportedLocales.first,
                   );
                   return supportedLocales.first;
+                },
+
+                // Add builder to handle Android navigation bar overlay
+                builder: (context, child) {
+                  // Get the bottom padding from MediaQuery (system navigation bar height)
+                  final mediaQuery = MediaQuery.of(context);
+                  final bottomPadding = mediaQuery.viewPadding.bottom;
+
+                  // Only add bottom padding if we have system navigation bar
+                  if (bottomPadding > 0) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: bottomPadding),
+                      child: child ?? Container(),
+                    );
+                  }
+                  return child ?? Container();
                 },
                 routes: AppRoutes.routes,
                 initialRoute: AppRoutes.initial,

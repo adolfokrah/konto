@@ -116,8 +116,75 @@ class ContributionApiProvider extends BaseApiProvider {
 
       final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/contributions/$contributionId',
+        queryParameters: {
+          'depth': '2', // Include related data (collector, jar, etc.)
+        },
         options: Options(headers: headers),
       );
+
+      if (response.data != null && response.data is Map) {
+        final collector = response.data['collector'];
+        print('🔍 DEBUG API: Collector field in response: $collector');
+        print('🔍 DEBUG API: Collector type: ${collector.runtimeType}');
+
+        // If collector is just an ID string, try to populate from jar's invitedCollectors
+        if (collector is String) {
+          print(
+            '🔍 DEBUG API: Collector is string ID, looking in invitedCollectors...',
+          );
+          final jar = response.data['jar'];
+          if (jar != null && jar is Map && jar['invitedCollectors'] != null) {
+            final invitedCollectors = jar['invitedCollectors'] as List;
+
+            // Find the matching collector in invitedCollectors
+            for (final invitedCollector in invitedCollectors) {
+              if (invitedCollector is Map &&
+                  invitedCollector['collector'] == collector) {
+                print(
+                  '🔍 DEBUG API: Found collector in invitedCollectors: $invitedCollector',
+                );
+
+                // Create a user object from the invited collector data
+                final collectorName =
+                    invitedCollector['name'] as String? ?? 'Unknown User';
+                final collectorPhone =
+                    invitedCollector['phoneNumber'] as String? ?? '';
+
+                // Create a minimal user object with the available data
+                final userObject = {
+                  'id': collector,
+                  'fullName': collectorName,
+                  'phoneNumber': collectorPhone,
+                  'email': '',
+                  'countryCode': '',
+                  'country': '',
+                  'isKYCVerified': false,
+                  'role': 'user',
+                  'createdAt': DateTime.now().toIso8601String(),
+                  'updatedAt': DateTime.now().toIso8601String(),
+                  'sessions': [],
+                  'appSettings': {
+                    'language': 'en',
+                    'theme': 'light',
+                    'biometricAuthEnabled': false,
+                    'notificationsSettings': {
+                      'pushNotificationsEnabled': true,
+                      'emailNotificationsEnabled': true,
+                      'smsNotificationsEnabled': false,
+                    },
+                  },
+                };
+
+                print(
+                  '🔍 DEBUG API: Created user object with name: $collectorName',
+                );
+                response.data['collector'] = userObject;
+                break;
+              }
+            }
+          }
+        }
+      }
 
       return response.data;
     } catch (e) {
@@ -127,6 +194,9 @@ class ContributionApiProvider extends BaseApiProvider {
 
   /// Fetch list of contributions with optional filtering
   /// Returns paginated contributions based on query parameters
+  /// Automatically filters contributions based on user role:
+  /// - Jar creators see all contributions for their jars
+  /// - Regular users only see their own contributions
   Future<Map<String, dynamic>> getContributions({
     String? jarId, // Filter contributions by jar ID
     List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank-transfer']
@@ -137,6 +207,8 @@ class ContributionApiProvider extends BaseApiProvider {
     int? limit, // Number of results per page (default: 10)
     int? page, // Page number (default: 1)
     String? contributor,
+    bool? isCurrentUserJarCreator, // Whether current user created the jar
+    bool? hasAnyFilters, // Whether any filters are applied
   }) async {
     try {
       // Get authenticated headers
@@ -191,9 +263,27 @@ class ContributionApiProvider extends BaseApiProvider {
         }
       }
 
-      // Add collectors filter
-      if (collectors != null && collectors.isNotEmpty) {
-        queryParams['where[collector][in]'] = collectors.join(',');
+      // Get current user
+      final user = await userStorageService.getUserData();
+      if (user == null) {
+        return {
+          'success': false,
+          'message': 'User not authenticated',
+          'statusCode': 401,
+        };
+      }
+
+      // Apply collector filtering logic
+      if (isCurrentUserJarCreator == true) {
+        // User IS the jar creator
+        if (collectors != null && collectors.isNotEmpty) {
+          // Collector filter is explicitly applied - use it
+          queryParams['where[collector][in]'] = collectors.join(',');
+        }
+        // If no collector filter, show all contributions for this jar (no collector filter applied)
+      } else {
+        // User is NOT the jar creator - always filter to their own contributions
+        queryParams['where[collector][equals]'] = user.id;
       }
 
       // Add date range filter
@@ -229,7 +319,18 @@ class ContributionApiProvider extends BaseApiProvider {
         options: Options(headers: headers),
       );
 
-      return response.data;
+      // Ensure response.data is a Map<String, dynamic>
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        // Handle unexpected response format
+        return {
+          'success': false,
+          'message': 'Unexpected response format: ${response.data.runtimeType}',
+          'statusCode': response.statusCode ?? 500,
+          'data': response.data,
+        };
+      }
     } catch (e) {
       return handleApiError(e, 'fetching contributions list');
     }
