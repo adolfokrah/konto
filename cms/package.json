@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=--no-deprecation pnpm generate:importmap:ci && cross-env NODE_OPTIONS=--no-deprecation next build",
-    "vercel:build": "cross-env NODE_OPTIONS=--no-deprecation pnpm generate:importmap:ci && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "vercel:build": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
     "build:dev": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "dev": "infisical run --env=dev -- cross-env NODE_OPTIONS=--no-deprecation next dev",
