@@ -24,13 +24,7 @@ export const Users: CollectionConfig = {
     create: () => true,
     // Logged in users can read themselves, admins can read all
     read: ({ req: { user } }) => {
-      if (user?.role === 'admin') {
-        return true // Admins can read all users
-      }
-      if (user) {
-        return { id: { equals: user.id } } // Users can only read themselves
-      }
-      return false
+      return true
     },
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {
