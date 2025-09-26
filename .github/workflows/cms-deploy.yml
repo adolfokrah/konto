@@ -227,13 +227,24 @@ jobs:
 
       - name: Load Environment Variables and Build
         run: |
+          # Change to cms directory
+          cd cms
+          
+          # Install dependencies
+          pnpm install
+          
           # Source the environment variables from Vercel
-          if [ -f .vercel/.env.staging.local ]; then
+          if [ -f ../.vercel/.env.staging.local ]; then
             set -a
-            source .vercel/.env.staging.local
+            source ../.vercel/.env.staging.local
             set +a
           fi
 
+          # Build using npm script that includes payload generate:importmap
+          pnpm run vercel:build
+          
+          # Go back to root for vercel deploy
+          cd ..
           vercel build --target=staging --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         id: deploy-staging
@@ -279,13 +290,24 @@ jobs:
 
       - name: Load Environment Variables and Build
         run: |
+          # Change to cms directory
+          cd cms
+          
+          # Install dependencies
+          pnpm install
+          
           # Source the environment variables from Vercel
-          if [ -f .vercel/.env.production.local ]; then
+          if [ -f ../.vercel/.env.production.local ]; then
             set -a
-            source .vercel/.env.production.local
+            source ../.vercel/.env.production.local
             set +a
           fi
           
+          # Build using npm script that includes payload generate:importmap
+          pnpm run vercel:build
+          
+          # Go back to root for vercel deploy
+          cd ..
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
