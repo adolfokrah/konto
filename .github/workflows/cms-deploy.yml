@@ -227,10 +227,8 @@ jobs:
 
       - name: Load Environment Variables and Build
         run: |
-          # Change to cms directory for build
-          cd ./cms
           # Load environment variables from Vercel (handle special characters)
-          if [ -f ../.vercel/.env.staging.local ]; then
+          if [ -f .vercel/.env.staging.local ]; then
             set -a
             # Use export with proper parsing to handle Vercel's env format
             while IFS= read -r line || [ -n "$line" ]; do
@@ -240,9 +238,10 @@ jobs:
               fi
               # Export the variable
               export "$line"
-            done < ../.vercel/.env.staging.local
+            done < .vercel/.env.staging.local
             set +a
           fi
+          # Run Vercel build from root directory (where .vercel config is located)
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         id: deploy-staging
@@ -288,10 +287,8 @@ jobs:
 
       - name: Load Environment Variables and Build
         run: |
-          # Change to cms directory for build
-          cd ./cms
           # Load environment variables from Vercel (handle special characters)
-          if [ -f ../.vercel/.env.production.local ]; then
+          if [ -f .vercel/.env.production.local ]; then
             set -a
             # Use export with proper parsing to handle Vercel's env format
             while IFS= read -r line || [ -n "$line" ]; do
@@ -301,9 +298,10 @@ jobs:
               fi
               # Export the variable
               export "$line"
-            done < ../.vercel/.env.production.local
+            done < .vercel/.env.production.local
             set +a
           fi
+          # Run Vercel build from root directory (where .vercel config is located)
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
