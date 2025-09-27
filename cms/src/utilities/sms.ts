@@ -130,9 +130,9 @@ export class SMSClient {
       }
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
-    }
+    // if (process.env.NODE_ENV !== 'production') {
+    //   return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
+    // }
 
     try {
       const url = this.composeUrl()

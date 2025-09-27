@@ -381,10 +381,8 @@ class ContributionView extends StatelessWidget {
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           title: Text(
-                                            contribution.viaPaymentLink
-                                                ? 'Contributor Email'
-                                                : localizations
-                                                    .contributorPhoneNumber,
+                                            localizations
+                                                .contributorPhoneNumber,
                                             style: AppTextStyles.titleMediumS
                                                 .copyWith(
                                                   color: Theme.of(context)
@@ -494,11 +492,12 @@ class ContributionView extends StatelessWidget {
                                                 );
 
                                                 // Debug: Check the filter state
-                                                final filterState = context
-                                                    .read<
-                                                      FilterContributionsBloc
-                                                    >()
-                                                    .state;
+                                                final filterState =
+                                                    context
+                                                        .read<
+                                                          FilterContributionsBloc
+                                                        >()
+                                                        .state;
                                                 if (filterState
                                                     is FilterContributionsLoaded) {
                                                   print(

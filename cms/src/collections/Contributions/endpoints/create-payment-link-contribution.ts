@@ -3,14 +3,15 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 export const createPaymentLinkContribution = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { jarId, contributorName, contributorEmail, amount } = req.data || {}
+    const { jarId, contributorName, contributorPhoneNumber, amount } = req.data || {}
 
     // Validate required fields
-    if (!jarId || !contributorName || !contributorEmail || !amount) {
+    if (!jarId || !contributorName || !contributorPhoneNumber || !amount) {
       return Response.json(
         {
           success: false,
-          message: 'All fields are required: jarId, contributorName, contributorEmail, amount',
+          message:
+            'All fields are required: jarId, contributorName, contributorPhoneNumber, amount',
         },
         { status: 400 },
       )
@@ -49,7 +50,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       data: {
         jar: jarId,
         contributor: contributorName,
-        contributorPhoneNumber: contributorEmail, // Using email field as identifier for anonymous contributions
+        contributorPhoneNumber, // Using phone number field as identifier for anonymous contributions
         paymentMethod: 'mobile-money', // Paystack payment
         mobileMoneyProvider: 'paystack',
         amountContributed: amount,

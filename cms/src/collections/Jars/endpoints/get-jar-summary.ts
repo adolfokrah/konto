@@ -261,8 +261,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
     },
   }
 
-  console.log(data)
-
   return Response.json({
     success: true,
     data,

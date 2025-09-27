@@ -34,6 +34,7 @@ export default function ContributionInput({
   const [contributorName, setContributorName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
   const router = useRouter()
 
   // Preset amounts based on currency
@@ -118,6 +119,14 @@ export default function ContributionInput({
       return
     }
 
+    if (!contributorPhoneNumber) {
+      toast.error('Missing Information', {
+        description: 'Please enter your phone number to continue',
+        duration: 4000,
+      })
+      return
+    }
+
     setIsLoading(true)
 
     //here insert the contibution logic
@@ -138,7 +147,7 @@ export default function ContributionInput({
             contributorName,
             amount: selectedAmount,
             currency,
-            contributorEmail,
+            contributorPhoneNumber,
           }),
         },
       )
@@ -165,6 +174,7 @@ export default function ContributionInput({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_your_test_key',
         email: contributorEmail,
         amount: amountInSmallestUnit,
+        phone: contributorPhoneNumber,
         currency: currency === 'GHS' ? 'GHS' : 'NGN',
         reference: reference,
         metadata: {
@@ -300,8 +310,21 @@ export default function ContributionInput({
             value={contributorName}
             onChange={(e) => setContributorName(e.target.value)}
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+            required
           />
         </div>
+
+        <div>
+          <input
+            type="text"
+            placeholder="Phone number"
+            value={contributorPhoneNumber}
+            onChange={(e) => setContributorPhoneNumber(e.target.value)}
+            className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+            required
+          />
+        </div>
+        
         <div>
           <input
             type="email"
