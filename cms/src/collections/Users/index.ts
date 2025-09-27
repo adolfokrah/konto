@@ -185,6 +185,15 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'fcmToken',
+      type: 'text',
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'Firebase Cloud Messaging token for push notifications',
+      },
+    },
+    {
       name: 'kycStatus',
       type: 'select',
       options: [

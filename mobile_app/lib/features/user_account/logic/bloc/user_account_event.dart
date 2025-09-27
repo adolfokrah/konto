@@ -15,6 +15,7 @@ final class UpdatePersonalDetails extends UserAccountEvent {
   final AppTheme? appTheme;
   final AppLanguage? appLanguage;
   final String? photoId; // newly uploaded media document id
+  final String? fcmToken; // new FCM token
 
   UpdatePersonalDetails({
     this.fullName,
@@ -28,5 +29,6 @@ final class UpdatePersonalDetails extends UserAccountEvent {
     this.appTheme,
     this.appLanguage,
     this.photoId,
+    this.fcmToken,
   });
 }

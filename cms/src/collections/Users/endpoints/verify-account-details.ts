@@ -2,7 +2,7 @@ import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
 import { mobile_money_bank_codes } from '@/lib/constants/bank_codes'
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request

@@ -50,19 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBaJKRhi6BggzxqO3EUtgzaC0Ra-dwDhYg',
-    appId: '1:465253791485:android:0ef11af36e6a424fedf094',
-    messagingSenderId: '465253791485',
-    projectId: 'konto-57286',
-    storageBucket: 'konto-57286.firebasestorage.app',
+    apiKey: 'AIzaSyCGu9wPfE3A-azaebNkKCXySLdSaR0ce-A',
+    appId: '1:191226486961:android:55f9c782e5b743f537c290',
+    messagingSenderId: '191226486961',
+    projectId: 'hoga-2e89a',
+    storageBucket: 'hoga-2e89a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDT7pAAIB9UUAJ6VkUUMWCPhJQV73HKOqE',
-    appId: '1:465253791485:ios:951bc96ea590b9c5edf094',
-    messagingSenderId: '465253791485',
-    projectId: 'konto-57286',
-    storageBucket: 'konto-57286.firebasestorage.app',
-    iosBundleId: 'com.thecompany.konto',
+    apiKey: 'AIzaSyAyTvLvJOBncflUZ2lxjxwUmsl_xoc1wpo',
+    appId: '1:191226486961:ios:5264f212fc8bfd6c37c290',
+    messagingSenderId: '191226486961',
+    projectId: 'hoga-2e89a',
+    storageBucket: 'hoga-2e89a.firebasestorage.app',
+    iosBundleId: 'com.hoga.app',
   );
+
 }

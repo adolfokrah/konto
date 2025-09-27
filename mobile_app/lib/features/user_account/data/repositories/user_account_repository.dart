@@ -30,6 +30,7 @@ class UserAccountRepository {
     AppTheme? appTheme,
     AppLanguage? appLanguage,
     String? photoId,
+    String? fcmToken,
   }) async {
     try {
       final result = await _apiProvider.updateUserDetails(
@@ -44,6 +45,7 @@ class UserAccountRepository {
         appTheme: appTheme,
         appLanguage: appLanguage,
         photoId: photoId,
+        fcmToken: fcmToken,
       );
 
       if (result['success'] == true) {

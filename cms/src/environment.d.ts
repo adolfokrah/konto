@@ -11,16 +11,16 @@ declare global {
 }
 
 // CSS Module declarations
-declare module '*.css' {
-  const content: { [className: string]: string }
-  export default content
-}
+// declare module '*.css' {
+//   const content: { [className: string]: string }
+//   export default content
+// }
 
-declare module '*.module.css' {
-  const content: { [className: string]: string }
-  export default content
-}
+// declare module '*.module.css' {
+//   const content: { [className: string]: string }
+//   export default content
+// }
 
-// If this file has no import/export statements (i.e. is a script)
-// convert it into a module by adding an empty export statement.
-export {}
+// // If this file has no import/export statements (i.e. is a script)
+// // convert it into a module by adding an empty export statement.
+// export {}

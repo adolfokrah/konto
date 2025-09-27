@@ -1,7 +1,7 @@
 import { PayloadRequest } from 'node_modules/payload/dist/types'
 import { addDataAndFileToRequest } from 'payload'
 
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 export const sendOtp = async (req: PayloadRequest) => {
   try {

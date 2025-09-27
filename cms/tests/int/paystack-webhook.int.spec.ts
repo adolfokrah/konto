@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { getPayload, Payload } from 'payload'
 import { describe, it, beforeAll, expect, beforeEach, vi } from 'vitest'
 
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 import { paystackWebhook } from '../../src/collections/Contributions/endpoints/paystack-webhook'
 import config from '../../src/payload.config'

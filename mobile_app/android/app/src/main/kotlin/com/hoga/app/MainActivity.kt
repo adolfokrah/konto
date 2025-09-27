@@ -1,4 +1,4 @@
-package com.example.konto
+package com.hoga.app
 
 import android.Manifest
 import android.content.Intent

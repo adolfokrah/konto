@@ -1,7 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 // Paystack mobile money response data structure based on documentation
 interface PaystackChargeResponseData {
@@ -212,12 +212,6 @@ export const chargeMomo = async (req: PayloadRequest) => {
       data: { ...chargeResponseData, reference },
     })
   } catch (error: any) {
-    // Log error in development only
-    // if (process.env.NODE_ENV !== 'production') {
-
-    // throw new Error(error)
-    // }
-
     // Handle specific errors
     if (error?.status === 404 || error?.name === 'NotFound') {
       return Response.json(

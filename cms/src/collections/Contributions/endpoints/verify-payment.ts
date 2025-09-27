@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 export const verifyPayment = async (req: PayloadRequest) => {
   try {

@@ -40,6 +40,7 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         appTheme: event.appTheme,
         appLanguage: event.appLanguage,
         photoId: event.photoId,
+        fcmToken: event.fcmToken,
       );
 
       if (result.success && result.user != null) {

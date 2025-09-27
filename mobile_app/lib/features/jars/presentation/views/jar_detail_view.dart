@@ -32,6 +32,7 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:Hoga/core/services/fcm_service.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -102,6 +103,27 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
+  /// Request FCM permissions and update user token
+  Future<void> _requestFCMPermissionAndUpdateToken() async {
+    try {
+      // Request FCM permissions first
+      FCMService.requestPermission();
+
+      // Get the FCM token
+      final String? token = await FCMService.getToken();
+
+      // Update user with the token if available and widget is still mounted
+      if (token != null && mounted) {
+        context.read<UserAccountBloc>().add(
+          UpdatePersonalDetails(fcmToken: token),
+        );
+      }
+    } catch (e) {
+      // Handle any errors silently or log them
+      print('Error requesting FCM permission or updating token: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -112,6 +134,8 @@ class _JarDetailViewState extends State<JarDetailView> {
           listener: (context, state) {
             if (state is JarSummaryLoaded) {
               context.read<JarListBloc>().add(LoadJarList());
+              // Request FCM permissions and update token
+              _requestFCMPermissionAndUpdateToken();
             }
           },
         ),

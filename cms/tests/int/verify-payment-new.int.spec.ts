@@ -2,7 +2,7 @@ import { getPayload, Payload } from 'payload'
 import { describe, it, beforeAll, expect, beforeEach, vi } from 'vitest'
 
 import { verifyPayment } from '../../src/collections/Contributions/endpoints/verify-payment'
-import { paystack } from '../../src/payload.config'
+import { paystack } from '../../src/utilities/initalise'
 import config from '../../src/payload.config'
 import { clearAllCollections } from '../utils/testCleanup'
 

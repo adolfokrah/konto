@@ -35,7 +35,8 @@ class OnBoardingPage extends StatelessWidget {
           return Scaffold(
             backgroundColor:
                 localizedOnBoardingData[currentPage].backgroundColor,
-            body: SafeArea(
+            body: Padding(
+              padding: const EdgeInsets.only(top: 45),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

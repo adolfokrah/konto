@@ -28,6 +28,7 @@ class UserAccountApiProvider {
     AppTheme? appTheme,
     AppLanguage? appLanguage,
     String? photoId,
+    String? fcmToken,
   }) async {
     try {
       final user = await _userStorageService.getUserData();
@@ -57,8 +58,9 @@ class UserAccountApiProvider {
         if (appLanguage != null) settings['language'] = appLanguage.value;
         updateData['appSettings'] = settings;
       }
-
-      print('Update Data: $updateData');
+      if (fcmToken != null) {
+        updateData['fcmToken'] = fcmToken;
+      }
 
       if (updateData.isEmpty) {
         return {'success': false, 'message': 'No data provided for update'};

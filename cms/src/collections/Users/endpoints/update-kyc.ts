@@ -1,7 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { sendSMS } from '@/utilities/sms'
-import { resend } from '@payload-config'
+import { resend } from '@/utilities/initalise'
 import kycVerified from '@/components/emailTemplates/kycVerified'
 
 export const updateKYC = async (req: PayloadRequest) => {

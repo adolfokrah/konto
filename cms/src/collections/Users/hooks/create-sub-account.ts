@@ -1,7 +1,7 @@
 import { CollectionBeforeChangeHook } from 'payload'
 
 import { mobile_money_bank_codes } from '@/lib/constants/bank_codes'
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 export const createSubAccount: CollectionBeforeChangeHook = async ({
   data,

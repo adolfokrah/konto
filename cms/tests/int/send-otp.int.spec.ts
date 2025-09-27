@@ -1,7 +1,7 @@
 import { getPayload, Payload } from 'payload'
 import { describe, it, beforeAll, expect, beforeEach, vi } from 'vitest'
 
-import { paystack } from '@/payload.config'
+import { paystack } from '@/utilities/initalise'
 
 import { sendOtp } from '../../src/collections/Contributions/endpoints/send-otp'
 import config from '../../src/payload.config'

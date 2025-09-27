@@ -1,3 +1,4 @@
+import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,8 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +43,12 @@ void main() async {
 
   // Initialize service registry for dependency injection
   ServiceRegistry().initialize();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize FCM listeners
+  FCMService.initialize();
 
   // Initialize Sentry only for production and staging environments
   if (!AppConfig.isDevelopment) {
