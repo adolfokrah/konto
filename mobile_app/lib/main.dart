@@ -30,6 +30,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// Global navigator key for deep navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -250,6 +253,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               };
 
               return MaterialApp(
+                navigatorKey: navigatorKey,
                 title: 'hoga',
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,

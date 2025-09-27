@@ -1,4 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:Hoga/core/services/navigation_service.dart';
+import 'package:Hoga/main.dart' show navigatorKey;
 
 /// Simple Firebase Cloud Messaging service
 class FCMService {
@@ -38,12 +41,75 @@ class FCMService {
         print("Message received: ${message.notification?.title}");
       });
 
-      // Listen for messages when user taps notification
+      // Listen for messages when user taps notification (app in background)
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        print("User tapped notification: ${message.data}");
+        _handleNotificationTap(message);
       });
+
+      // Handle notification that launched the app from terminated state
+      _handleAppLaunchedFromNotification();
     } catch (e) {
       print('FCM initialization error (likely in test environment): $e');
+    }
+  }
+
+  /// Handle app launched from notification when app was terminated
+  static Future<void> _handleAppLaunchedFromNotification() async {
+    try {
+      final RemoteMessage? initialMessage =
+          await FirebaseMessaging.instance.getInitialMessage();
+
+      if (initialMessage != null) {
+        print("🚀 App launched from notification");
+        _handleNotificationTap(initialMessage);
+      }
+    } catch (e) {
+      print("❌ Error checking initial message: $e");
+    }
+  }
+
+  /// Handle notification tap with step-by-step flow
+  static void _handleNotificationTap(RemoteMessage message) {
+    print("🔔 User tapped notification: ${message.data}");
+
+    try {
+      // Step 1: User tapped notification (already happened)
+      // Step 2: Check type
+      final messageData = message.data;
+      final type = messageData['type'];
+
+      print("📋 Notification type: $type");
+
+      if (type == 'contribution') {
+        // Extract jarId and contributionId from message data
+        final jarId = messageData['jarId'];
+        final contributionId = messageData['contributionId'];
+
+        print("🏺 Jar ID: $jarId");
+        print("🎯 Contribution ID: $contributionId");
+
+        if (jarId != null && contributionId != null) {
+          // Get current context from global navigator key
+          final BuildContext? context = navigatorKey.currentContext;
+
+          if (context != null) {
+            // Steps 3 & 4: Set selected jar and open contribution view
+            NavigationService.navigateToContribution(
+              context: context,
+              jarId: jarId,
+              contributionId: contributionId,
+            );
+          } else {
+            print("❌ No navigation context available");
+          }
+        } else {
+          print("❌ Missing jarId or contributionId in notification data");
+        }
+      } else {
+        print("ℹ️ Notification type '$type' not handled by contribution flow");
+      }
+    } catch (e) {
+      print("❌ Error handling notification tap: $e");
     }
   }
 }

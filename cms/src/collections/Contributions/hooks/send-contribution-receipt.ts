@@ -6,6 +6,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
   data,
   operation,
   req,
+  doc,
 }) => {
   if (operation === 'create' || operation === 'update') {
     if (data.paymentStatus === 'completed') {
@@ -46,12 +47,13 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
             )
 
             if (validTokens.length > 0) {
-              await fcmNotifications.sendNotification(
+              const res = await fcmNotifications.sendNotification(
                 validTokens,
                 `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`,
                 'New Contribution Received 🤑',
-                { type: 'contribution', jarId: jar.id, contributionId: data.id },
+                { type: 'contribution', jarId: jar.id, contributionId: doc?.id },
               )
+              console.log('FCM notification response:', res)
             }
           } catch (error) {
             // Silently handle FCM notification errors
