@@ -9,7 +9,7 @@ import { clearAllCollections } from '../utils/testCleanup'
 const mockChargeMomo = vi.hoisted(() => vi.fn())
 
 // Mock the Paystack service with hoisted mock
-vi.mock('@/payload.config', async (importOriginal) => {
+vi.mock('@/utilities/initalise', async (importOriginal) => {
   const actual = (await importOriginal()) as any
   return {
     ...actual,

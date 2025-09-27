@@ -50,7 +50,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
                 validTokens,
                 `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`,
                 'New Contribution Received 🤑',
-                { type: 'contribution', jarId: jar.id },
+                { type: 'contribution', jarId: jar.id, contributionId: data.id },
               )
             }
           } catch (error) {
