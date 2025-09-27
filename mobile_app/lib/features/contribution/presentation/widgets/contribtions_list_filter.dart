@@ -216,318 +216,307 @@ class ContributionsListFilter extends StatelessWidget {
                     topRight: Radius.circular(AppRadius.radiusM),
                   ),
                 ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingM,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Drag handle
-                        const DragHandle(),
-                        const SizedBox(height: AppSpacing.spacingM),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.spacingM,
+                    vertical: AppSpacing.spacingM,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Drag handle
+                      const DragHandle(),
+                      const SizedBox(height: AppSpacing.spacingM),
 
-                        // Header with title and select all
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              localizations.jarFilter,
-                              style: TextStyles.titleBoldLg,
+                      // Header with title and select all
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            localizations.jarFilter,
+                            style: TextStyles.titleBoldLg,
+                          ),
+                          GestureDetector(
+                            onTap:
+                                () =>
+                                    context.read<FilterContributionsBloc>().add(
+                                      state.hasFilters
+                                          ? ClearAllFilters()
+                                          : SelectAllFilters(allCollectorIds),
+                                    ),
+                            child: Text(
+                              state.hasFilters
+                                  ? localizations.clearAll
+                                  : localizations.selectAll,
+                              style: TextStyles.titleMediumM,
                             ),
-                            GestureDetector(
-                              onTap:
-                                  () => context
-                                      .read<FilterContributionsBloc>()
-                                      .add(
-                                        state.hasFilters
-                                            ? ClearAllFilters()
-                                            : SelectAllFilters(allCollectorIds),
-                                      ),
-                              child: Text(
-                                state.hasFilters
-                                    ? localizations.clearAll
-                                    : localizations.selectAll,
-                                style: TextStyles.titleMediumM,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.spacingM),
+
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Payment Method Section
+                              Text(
+                                localizations.paymentMethod,
+                                style: TextStyles.titleMedium,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.spacingM),
+                              const SizedBox(height: AppSpacing.spacingS),
 
-                        Flexible(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Payment Method Section
-                                Text(
-                                  localizations.paymentMethod,
-                                  style: TextStyles.titleMedium,
-                                ),
-                                const SizedBox(height: AppSpacing.spacingS),
+                              // Payment Methods List
+                              ...List.generate(
+                                FilterOptions.paymentMethods.length,
+                                (index) {
+                                  final method =
+                                      FilterOptions.paymentMethods[index];
+                                  final isSelected =
+                                      state.selectedPaymentMethods?.contains(
+                                        method.value,
+                                      ) ??
+                                      false;
+                                  final isLast =
+                                      index ==
+                                      FilterOptions.paymentMethods.length - 1;
 
-                                // Payment Methods List
-                                ...List.generate(
-                                  FilterOptions.paymentMethods.length,
-                                  (index) {
-                                    final method =
-                                        FilterOptions.paymentMethods[index];
-                                    final isSelected =
-                                        state.selectedPaymentMethods?.contains(
-                                          method.value,
-                                        ) ??
-                                        false;
-                                    final isLast =
-                                        index ==
-                                        FilterOptions.paymentMethods.length - 1;
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: isLast ? 0 : AppSpacing.spacingS,
+                                    ),
+                                    child: _buildPaymentMethodCard(
+                                      context,
+                                      method,
+                                      isSelected,
+                                    ),
+                                  );
+                                },
+                              ),
 
-                                    return Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom:
-                                            isLast ? 0 : AppSpacing.spacingS,
-                                      ),
-                                      child: _buildPaymentMethodCard(
-                                        context,
-                                        method,
-                                        isSelected,
-                                      ),
-                                    );
-                                  },
-                                ),
+                              const SizedBox(height: AppSpacing.spacingM),
 
-                                const SizedBox(height: AppSpacing.spacingM),
+                              // Status Section
+                              Text(
+                                localizations.status,
+                                style: TextStyles.titleMedium,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingS),
 
-                                // Status Section
-                                Text(
-                                  localizations.status,
-                                  style: TextStyles.titleMedium,
-                                ),
-                                const SizedBox(height: AppSpacing.spacingS),
+                              // Status List
+                              ...List.generate(FilterOptions.statuses.length, (
+                                index,
+                              ) {
+                                final status = FilterOptions.statuses[index];
+                                final isSelected =
+                                    state.selectedStatuses?.contains(
+                                      status.value,
+                                    ) ??
+                                    false;
+                                final isLast =
+                                    index == FilterOptions.statuses.length - 1;
 
-                                // Status List
-                                ...List.generate(
-                                  FilterOptions.statuses.length,
-                                  (index) {
-                                    final status =
-                                        FilterOptions.statuses[index];
-                                    final isSelected =
-                                        state.selectedStatuses?.contains(
-                                          status.value,
-                                        ) ??
-                                        false;
-                                    final isLast =
-                                        index ==
-                                        FilterOptions.statuses.length - 1;
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: isLast ? 0 : AppSpacing.spacingS,
+                                  ),
+                                  child: _buildStatusCard(
+                                    context,
+                                    status,
+                                    isSelected,
+                                  ),
+                                );
+                              }),
 
-                                    return Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom:
-                                            isLast ? 0 : AppSpacing.spacingS,
-                                      ),
-                                      child: _buildStatusCard(
-                                        context,
-                                        status,
-                                        isSelected,
-                                      ),
-                                    );
-                                  },
-                                ),
+                              // Collectors Section (only for jar creators)
+                              BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, authState) {
+                                  return BlocBuilder<
+                                    JarSummaryBloc,
+                                    JarSummaryState
+                                  >(
+                                    builder: (context, jarState) {
+                                      if (jarState is JarSummaryLoaded) {
+                                        // Check if current user is the creator of the jar
+                                        final isCreator =
+                                            authState is AuthAuthenticated &&
+                                            jarState.jarData.creator.id ==
+                                                authState.user.id;
 
-                                // Collectors Section (only for jar creators)
-                                BlocBuilder<AuthBloc, AuthState>(
-                                  builder: (context, authState) {
-                                    return BlocBuilder<
-                                      JarSummaryBloc,
-                                      JarSummaryState
-                                    >(
-                                      builder: (context, jarState) {
-                                        if (jarState is JarSummaryLoaded) {
-                                          // Check if current user is the creator of the jar
-                                          final isCreator =
-                                              authState is AuthAuthenticated &&
-                                              jarState.jarData.creator.id ==
-                                                  authState.user.id;
+                                        // Only show collectors section if user is the creator
+                                        if (!isCreator) {
+                                          return Container();
+                                        }
 
-                                          // Only show collectors section if user is the creator
-                                          if (!isCreator) {
-                                            return Container();
-                                          }
+                                        final invitedCollectors =
+                                            jarState.jarData.invitedCollectors
+                                                ?.where(
+                                                  (collector) =>
+                                                      collector.status ==
+                                                          'accepted' &&
+                                                      collector.collector !=
+                                                          null,
+                                                )
+                                                .toList() ??
+                                            [];
 
-                                          final invitedCollectors =
-                                              jarState.jarData.invitedCollectors
-                                                  ?.where(
-                                                    (collector) =>
-                                                        collector.status ==
-                                                            'accepted' &&
-                                                        collector.collector !=
-                                                            null,
-                                                  )
-                                                  .toList() ??
-                                              [];
+                                        if (invitedCollectors.isEmpty) {
+                                          return Container();
+                                        }
 
-                                          if (invitedCollectors.isEmpty) {
-                                            return Container();
-                                          }
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(
+                                              height: AppSpacing.spacingM,
+                                            ),
 
-                                          return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(
-                                                height: AppSpacing.spacingM,
-                                              ),
+                                            // Collector Section
+                                            Text(
+                                              localizations.collector,
+                                              style: TextStyles.titleMedium,
+                                            ),
+                                            const SizedBox(
+                                              height: AppSpacing.spacingS,
+                                            ),
 
-                                              // Collector Section
-                                              Text(
-                                                localizations.collector,
-                                                style: TextStyles.titleMedium,
-                                              ),
-                                              const SizedBox(
-                                                height: AppSpacing.spacingS,
-                                              ),
-
-                                              // Collectors List
-                                              AppCard(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical:
-                                                          AppSpacing.spacingXs,
-                                                    ),
-                                                child: Column(
-                                                  children: List.generate(
-                                                    invitedCollectors.length,
-                                                    (index) {
-                                                      final collectorModel =
-                                                          invitedCollectors[index];
-                                                      final collector =
-                                                          collectorModel
-                                                              .collector!;
-                                                      final isSelected =
-                                                          state
-                                                              .selectedCollectors
-                                                              ?.contains(
-                                                                collector.id,
-                                                              ) ??
-                                                          false;
-
-                                                      return ListTile(
-                                                        leading:
-                                                            ContributorAvatar(
-                                                              contributorName:
-                                                                  collector
-                                                                      .fullName,
-                                                              showStatusOverlay:
-                                                                  false,
-                                                            ),
-                                                        title: Text(
-                                                          collector.fullName,
-                                                          style:
-                                                              TextStyles
-                                                                  .titleMediumM,
-                                                        ),
-                                                        subtitle: Text(
-                                                          collector.phoneNumber,
-                                                          style: TextStyles
-                                                              .titleRegularXs
-                                                              .copyWith(
-                                                                color: Theme.of(
-                                                                      context,
-                                                                    )
-                                                                    .colorScheme
-                                                                    .onSurface
-                                                                    .withValues(
-                                                                      alpha:
-                                                                          0.6,
-                                                                    ),
-                                                              ),
-                                                        ),
-                                                        trailing: Icon(
-                                                          isSelected
-                                                              ? Icons.check_box
-                                                              : Icons
-                                                                  .check_box_outline_blank,
-                                                          size: 15,
-                                                        ),
-                                                        onTap:
-                                                            () => context
-                                                                .read<
-                                                                  FilterContributionsBloc
-                                                                >()
-                                                                .add(
-                                                                  ToggleCollector(
-                                                                    collector
-                                                                        .id,
-                                                                  ),
-                                                                ),
-                                                      );
-                                                    },
+                                            // Collectors List
+                                            AppCard(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical:
+                                                        AppSpacing.spacingXs,
                                                   ),
+                                              child: Column(
+                                                children: List.generate(
+                                                  invitedCollectors.length,
+                                                  (index) {
+                                                    final collectorModel =
+                                                        invitedCollectors[index];
+                                                    final collector =
+                                                        collectorModel
+                                                            .collector!;
+                                                    final isSelected =
+                                                        state.selectedCollectors
+                                                            ?.contains(
+                                                              collector.id,
+                                                            ) ??
+                                                        false;
+
+                                                    return ListTile(
+                                                      leading:
+                                                          ContributorAvatar(
+                                                            contributorName:
+                                                                collector
+                                                                    .fullName,
+                                                            showStatusOverlay:
+                                                                false,
+                                                          ),
+                                                      title: Text(
+                                                        collector.fullName,
+                                                        style:
+                                                            TextStyles
+                                                                .titleMediumM,
+                                                      ),
+                                                      subtitle: Text(
+                                                        collector.phoneNumber,
+                                                        style: TextStyles
+                                                            .titleRegularXs
+                                                            .copyWith(
+                                                              color: Theme.of(
+                                                                    context,
+                                                                  )
+                                                                  .colorScheme
+                                                                  .onSurface
+                                                                  .withValues(
+                                                                    alpha: 0.6,
+                                                                  ),
+                                                            ),
+                                                      ),
+                                                      trailing: Icon(
+                                                        isSelected
+                                                            ? Icons.check_box
+                                                            : Icons
+                                                                .check_box_outline_blank,
+                                                        size: 15,
+                                                      ),
+                                                      onTap:
+                                                          () => context
+                                                              .read<
+                                                                FilterContributionsBloc
+                                                              >()
+                                                              .add(
+                                                                ToggleCollector(
+                                                                  collector.id,
+                                                                ),
+                                                              ),
+                                                    );
+                                                  },
                                                 ),
                                               ),
-                                            ],
-                                          );
-                                        }
-                                        return Container();
-                                      },
-                                    );
-                                  },
-                                ),
-
-                                const SizedBox(height: AppSpacing.spacingM),
-
-                                // Date Section
-                                Text(
-                                  localizations.date,
-                                  style: TextStyles.titleMedium,
-                                ),
-                                const SizedBox(height: AppSpacing.spacingS),
-
-                                GestureDetector(
-                                  onTap: () => _showDateOptions(context),
-                                  child: AppCard(
-                                    padding: EdgeInsets.zero,
-                                    child: ListTile(
-                                      title: Text(
-                                        localizations.selectDate,
-                                        style: TextStyles.titleMediumXs
-                                            .copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(alpha: 0.6),
                                             ),
+                                          ],
+                                        );
+                                      }
+                                      return Container();
+                                    },
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingM),
+
+                              // Date Section
+                              Text(
+                                localizations.date,
+                                style: TextStyles.titleMedium,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingS),
+
+                              GestureDetector(
+                                onTap: () => _showDateOptions(context),
+                                child: AppCard(
+                                  padding: EdgeInsets.zero,
+                                  child: ListTile(
+                                    title: Text(
+                                      localizations.selectDate,
+                                      style: TextStyles.titleMediumXs.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.6),
                                       ),
-                                      subtitle: Text(
-                                        _getTranslatedDateOption(
-                                          context,
-                                          state.selectedDate ??
-                                              FilterOptions.defaultDateOption,
-                                        ),
-                                        style: TextStyles.titleMediumS,
+                                    ),
+                                    subtitle: Text(
+                                      _getTranslatedDateOption(
+                                        context,
+                                        state.selectedDate ??
+                                            FilterOptions.defaultDateOption,
                                       ),
-                                      trailing: const Icon(
-                                        Icons.keyboard_arrow_down,
-                                        size: 15,
-                                      ),
+                                      style: TextStyles.titleMediumS,
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.keyboard_arrow_down,
+                                      size: 15,
                                     ),
                                   ),
                                 ),
+                              ),
 
-                                const SizedBox(height: AppSpacing.spacingM),
-                              ],
-                            ),
+                              const SizedBox(height: AppSpacing.spacingM),
+                            ],
                           ),
                         ),
+                      ),
 
-                        // Filter Button
-                        AppButton.filled(
-                          text: localizations.filter,
-                          onPressed: () => _applyFilters(context),
-                        ),
-                      ],
-                    ),
+                      // Filter Button
+                      AppButton.filled(
+                        text: localizations.filter,
+                        onPressed: () => _applyFilters(context),
+                      ),
+                    ],
                   ),
                 ),
               );

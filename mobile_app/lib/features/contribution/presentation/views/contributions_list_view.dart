@@ -156,27 +156,25 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           centerTitle: false,
           elevation: 0,
         ),
-        body: SafeArea(
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // Search Bar that slides away on scroll
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                elevation: 0,
-                floating: true,
-                snap: false,
-                pinned: false,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                flexibleSpace: _buildSearchBar(localizations),
-                expandedHeight: 90,
-                toolbarHeight: 90,
-              ),
+        body: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            // Search Bar that slides away on scroll
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              elevation: 0,
+              floating: true,
+              snap: false,
+              pinned: false,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              flexibleSpace: _buildSearchBar(localizations),
+              expandedHeight: 90,
+              toolbarHeight: 90,
+            ),
 
-              // Contributions List
-              _buildSliverContributionsList(localizations),
-            ],
-          ),
+            // Contributions List
+            _buildSliverContributionsList(localizations),
+          ],
         ),
       ),
     );
@@ -290,7 +288,10 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
         final group = groupedContributions[index];
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingM),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.spacingM,
+            vertical: AppSpacing.spacingXs,
+          ),
           child: _buildDateGroup(group, localizations),
         );
       }, childCount: groupedContributions.length + (_isLoadingMore ? 1 : 0)),
@@ -306,11 +307,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       children: [
         // Date Header
         Padding(
-          padding: const EdgeInsets.only(
-            left: 4,
-            bottom: AppSpacing.spacingXs,
-            top: AppSpacing.spacingM,
-          ),
+          padding: const EdgeInsets.only(left: 4, bottom: AppSpacing.spacingXs),
           child: Text(group.dateLabel, style: AppTextStyles.titleMedium),
         ),
 
