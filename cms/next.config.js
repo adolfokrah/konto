@@ -3,13 +3,19 @@ import { withPayload } from '@payloadcms/next/withPayload'
 import { withSentryConfig } from '@sentry/nextjs'
 import redirects from './redirects.js'
 
+// Helper function to clean environment variables (remove extra quotes)
+const cleanEnvVar = (envVar) => {
+  if (!envVar) return envVar
+  return envVar.replace(/^["']|["']$/g, '').trim()
+}
+
 const NEXT_PUBLIC_SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+  cleanEnvVar(process.env.NEXT_PUBLIC_SERVER_URL) ||
+  (process.env.VERCEL_URL ? `https://${cleanEnvVar(process.env.VERCEL_URL)}` : null) ||
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    ? `https://${cleanEnvVar(process.env.VERCEL_PROJECT_PRODUCTION_URL)}`
     : null) ||
-  process.env.__NEXT_PRIVATE_ORIGIN ||
+  cleanEnvVar(process.env.__NEXT_PRIVATE_ORIGIN) ||
   'http://localhost:3000'
 
 // Allow images from multiple domains to handle staging/production
@@ -24,7 +30,7 @@ const allowedImageDomains = [
   // Localhost for development
   'http://localhost:3000',
   'http://192.168.0.160:3000',
-].filter(Boolean)
+].filter(Boolean).map(cleanEnvVar)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -37,10 +43,19 @@ const nextConfig = {
       },
       // Allow specific domains
       ...allowedImageDomains.map((item) => {
-        const url = new URL(item)
-        return {
-          hostname: url.hostname,
-          protocol: url.protocol.replace(':', ''),
+        try {
+          const url = new URL(item)
+          return {
+            hostname: url.hostname,
+            protocol: url.protocol.replace(':', ''),
+          }
+        } catch (error) {
+          console.error(`Failed to parse URL: "${item}"`, error)
+          // Return a fallback that won't break the build
+          return {
+            hostname: 'localhost',
+            protocol: 'http',
+          }
         }
       }),
     ],
