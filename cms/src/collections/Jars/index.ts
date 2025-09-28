@@ -3,6 +3,9 @@ import type { CollectionConfig } from 'payload'
 import { getJarSummary } from './endpoints/get-jar-summary'
 import { getUserJars } from './endpoints/get-user-jars'
 import { generatePaymentLink } from './hooks'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
+import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -144,13 +147,18 @@ export const Jars: CollectionConfig = {
           admin: {
             description:
               'Phone number of the invited collector (auto-populated from selected collector)',
-            readOnly: true,
+            // readOnly: true,
           },
           hooks: {
             beforeChange: [
-              async ({ data, siblingData, req }) => {
+              async ({ data, siblingData, req, operation }) => {
                 // Auto-populate phone number from selected collector
-                if (siblingData?.collector && siblingData.collector !== null && data) {
+                if (
+                  siblingData?.collector &&
+                  siblingData.collector !== null &&
+                  data &&
+                  operation === 'update'
+                ) {
                   try {
                     // Get the collector ID
                     const collectorId =
@@ -165,12 +173,23 @@ export const Jars: CollectionConfig = {
                     })
 
                     if (user?.phoneNumber) {
-                      siblingData.phoneNumber = user.phoneNumber
+                      siblingData.phoneNumber = `${user.phoneNumber}`
                       siblingData.name = user.fullName
                     }
                     // return data;
                   } catch (error) {
                     req.payload.logger.error('Error fetching collector phone number:', error)
+                  }
+                }
+
+                if (operation === 'create') {
+                  if (data && data.phoneNumber) {
+                    const parsedNumber = parsePhoneNumberFromString(data.phoneNumber)
+                    if (parsedNumber) {
+                      siblingData.phoneNumber = parsedNumber.nationalNumber
+                    } else {
+                      throw new Error('Invalid phone number format')
+                    }
                   }
                 }
               },
@@ -183,7 +202,7 @@ export const Jars: CollectionConfig = {
           required: false,
           admin: {
             description: 'Name of the invited collector (auto-populated from selected collector)',
-            readOnly: true,
+            // readOnly: true,
           },
         },
         {
@@ -253,7 +272,7 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [generatePaymentLink],
+    afterChange: [generatePaymentLink, sendInviteNotificationToUser],
   },
   endpoints: [
     {
@@ -265,6 +284,11 @@ export const Jars: CollectionConfig = {
       method: 'get',
       path: '/user-jars',
       handler: getUserJars,
+    },
+    {
+      method: 'post',
+      path: '/accept-decline-invite',
+      handler: acceptDeclineInvite,
     },
   ],
 }

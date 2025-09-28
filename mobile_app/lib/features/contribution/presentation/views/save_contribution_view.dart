@@ -141,141 +141,138 @@ class _SaveContributionViewState extends State<SaveContributionView> {
               ),
               centerTitle: true,
             ),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
-                ),
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight:
-                          MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).padding.top -
-                          MediaQuery.of(context).padding.bottom -
-                          kToolbarHeight -
-                          (AppSpacing.spacingM * 2), // Account for padding
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Amount section
+            body: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingM,
+              ),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight:
+                        MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        MediaQuery.of(context).padding.bottom -
+                        kToolbarHeight -
+                        (AppSpacing.spacingM * 2), // Account for padding
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Amount section
+                        Text(
+                          localizations.amount,
+                          style: TextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.spacingS),
+
+                        // Large amount display
+                        if (amount != null && currency != null) ...[
                           Text(
-                            localizations.amount,
-                            style: TextStyles.titleMedium.copyWith(
-                              fontWeight: FontWeight.w500,
+                            CurrencyUtils.formatAmount(
+                              double.tryParse(amount!) ?? 0.0,
+                              currency!,
+                            ),
+                            style: TextStyles.titleBoldXl.copyWith(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.spacingS),
+                          const SizedBox(height: AppSpacing.spacingL),
+                        ],
 
-                          // Large amount display
-                          if (amount != null && currency != null) ...[
-                            Text(
-                              CurrencyUtils.formatAmount(
-                                double.tryParse(amount!) ?? 0.0,
-                                currency!,
-                              ),
-                              style: TextStyles.titleBoldXl.copyWith(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.spacingL),
-                          ],
+                        // Payment method selection
+                        SelectInput<String>(
+                          label: localizations.paymentMethod,
+                          value: _selectedPaymentMethod,
+                          options:
+                              paymentMethodMap.entries
+                                  .map(
+                                    (entry) => SelectOption(
+                                      value: entry.key, // API value
+                                      label:
+                                          entry.value, // Localized display name
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedPaymentMethod = value;
+                            });
+                          },
+                        ),
 
-                          // Payment method selection
+                        const SizedBox(height: AppSpacing.spacingM),
+
+                        // Operator selection (only show if Mobile Money is selected)
+                        if (_selectedPaymentMethod == 'mobile-money') ...[
                           SelectInput<String>(
-                            label: localizations.paymentMethod,
-                            value: _selectedPaymentMethod,
+                            label: localizations.operator,
+                            value: _selectedOperator,
                             options:
-                                paymentMethodMap.entries
+                                _operators
                                     .map(
-                                      (entry) => SelectOption(
-                                        value: entry.key, // API value
-                                        label:
-                                            entry
-                                                .value, // Localized display name
+                                      (operator) => SelectOption(
+                                        value: operator,
+                                        label: operator,
                                       ),
                                     )
                                     .toList(),
                             onChanged: (value) {
                               setState(() {
-                                _selectedPaymentMethod = value;
+                                _selectedOperator = value;
                               });
                             },
                           ),
-
                           const SizedBox(height: AppSpacing.spacingM),
+                        ],
 
-                          // Operator selection (only show if Mobile Money is selected)
-                          if (_selectedPaymentMethod == 'mobile-money') ...[
-                            SelectInput<String>(
-                              label: localizations.operator,
-                              value: _selectedOperator,
-                              options:
-                                  _operators
-                                      .map(
-                                        (operator) => SelectOption(
-                                          value: operator,
-                                          label: operator,
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedOperator = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
-                          ],
+                        // Phone number input (only show for Mobile Money)
+                        AppTextInput(
+                          controller: _phoneController,
+                          label: localizations.phoneNumber,
+                          hintText: localizations.enterMobileMoneyNumber,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: AppSpacing.spacingM),
 
-                          // Phone number input (only show for Mobile Money)
-                          AppTextInput(
-                            controller: _phoneController,
-                            label: localizations.phoneNumber,
-                            hintText: localizations.enterMobileMoneyNumber,
-                            keyboardType: TextInputType.phone,
-                          ),
+                        AppTextInput(
+                          controller: _nameController,
+                          label: localizations.contributorName,
+                          hintText: localizations.enterContributorName,
+                          keyboardType: TextInputType.name,
+                        ),
+
+                        // Account Name input (only show if Bank Transfer is selected)
+                        if (_selectedPaymentMethod == 'bank-transfer') ...[
                           const SizedBox(height: AppSpacing.spacingM),
-
                           AppTextInput(
-                            controller: _nameController,
-                            label: localizations.contributorName,
-                            hintText: localizations.enterContributorName,
+                            controller: _accountNumberController,
+                            label: localizations.accountNumber,
+                            hintText: localizations.enterAccountName,
                             keyboardType: TextInputType.name,
                           ),
-
-                          // Account Name input (only show if Bank Transfer is selected)
-                          if (_selectedPaymentMethod == 'bank-transfer') ...[
-                            const SizedBox(height: AppSpacing.spacingM),
-                            AppTextInput(
-                              controller: _accountNumberController,
-                              label: localizations.accountNumber,
-                              hintText: localizations.enterAccountName,
-                              keyboardType: TextInputType.name,
-                            ),
-                          ],
-
-                          // Add spacing to push button to bottom, but allow scrolling if needed
-                          Spacer(),
-
-                          // Request button
-                          AppButton.filled(
-                            isLoading: state is AddContributionLoading,
-                            text:
-                                state is AddContributionLoading
-                                    ? localizations.processing
-                                    : _selectedPaymentMethod == 'mobile-money'
-                                    ? localizations.requestPayment
-                                    : localizations.saveContribution,
-                            onPressed: () {
-                              _handlePaymentRequest(context);
-                            },
-                          ),
                         ],
-                      ),
+
+                        // Add spacing to push button to bottom, but allow scrolling if needed
+                        Spacer(),
+
+                        // Request button
+                        AppButton.filled(
+                          isLoading: state is AddContributionLoading,
+                          text:
+                              state is AddContributionLoading
+                                  ? localizations.processing
+                                  : _selectedPaymentMethod == 'mobile-money'
+                                  ? localizations.requestPayment
+                                  : localizations.saveContribution,
+                          onPressed: () {
+                            _handlePaymentRequest(context);
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -20,6 +20,8 @@ import 'package:Hoga/features/contribution/data/api_reproviders/momo_api_provide
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
 import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
+import 'package:Hoga/features/notifications/data/api_proivders/notifications_provider.dart';
+import 'package:Hoga/features/notifications/data/repositories/notifications_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies
@@ -48,6 +50,8 @@ class ServiceRegistry {
   late final ContributionApiProvider _contributionApiProvider;
   late final MomoApiProvider _momoApiProvider;
   late final UserAccountApiProvider _userAccountApiProvider;
+  late final NotificationsApiProvider _notificationsApiProvider;
+  late final NotificationsRepository _notificationsRepository;
 
   // Repositories
   late final AuthRepository _authRepository;
@@ -120,6 +124,13 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
+    _notificationsApiProvider = NotificationsApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
+    _notificationsRepository = NotificationsRepository(
+      apiProvider: _notificationsApiProvider,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -150,6 +161,7 @@ class ServiceRegistry {
       apiProvider: _userAccountApiProvider,
       userStorageService: _userStorageService,
     );
+    // Notifications repository already initialized above with provider
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
@@ -169,6 +181,8 @@ class ServiceRegistry {
   ContributionApiProvider get contributionApiProvider =>
       _contributionApiProvider;
   UserAccountApiProvider get userAccountApiProvider => _userAccountApiProvider;
+  NotificationsApiProvider get notificationsApiProvider =>
+      _notificationsApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
   OnboardingRepository get onboardingRepository => _onboardingRepository;
@@ -178,6 +192,8 @@ class ServiceRegistry {
   UserAccountRepository get userAccountRepository => _userAccountRepository;
   MomoApiProvider get momoApiProvider => _momoApiProvider;
   MomoRepository get momoRepository => _momoRepository;
+  NotificationsRepository get notificationsRepository =>
+      _notificationsRepository;
 
   /// Reset the registry (useful for testing)
   void reset() {
@@ -234,6 +250,13 @@ class ServiceRegistry {
       dio: _dio,
       userStorageService: _userStorageService,
     );
+    _notificationsApiProvider = NotificationsApiProvider(
+      dio: _dio,
+      userStorageService: _userStorageService,
+    );
+    _notificationsRepository = NotificationsRepository(
+      apiProvider: _notificationsApiProvider,
+    );
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
@@ -264,6 +287,7 @@ class ServiceRegistry {
       apiProvider: _userAccountApiProvider,
       userStorageService: _userStorageService,
     );
+    // Notifications repository already initialized above with provider
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with custom Dio for testing');

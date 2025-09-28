@@ -1,4 +1,6 @@
 import 'package:Hoga/core/services/fcm_service.dart';
+import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.dart';
+import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +31,7 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 
 // Global navigator key for deep navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -146,6 +149,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    FlutterLoadingOverlay().init(navigatorKey: navigatorKey);
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -181,7 +186,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               ),
         ),
         BlocProvider(create: (context) => KycBloc()),
-
+        BlocProvider(create: (context) => NotificationsBloc()),
+        BlocProvider(create: (context) => JarInviteActionBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

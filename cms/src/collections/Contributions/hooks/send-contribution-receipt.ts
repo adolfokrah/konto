@@ -13,7 +13,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
     if (
       data.paymentStatus === 'completed' &&
       data.type === 'contribution' &&
-      previousDoc?.paymentStatus !== 'completed'
+      previousDoc?.paymentStatus == 'pending'
     ) {
       const jar = await req.payload.findByID({
         collection: 'jars',

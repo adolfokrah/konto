@@ -14,13 +14,13 @@ import { Jars } from './collections/Jars'
 import { Posts } from './collections/Posts'
 import { Pages } from './collections/Pages'
 import Paystack from './utilities/paystack'
-import { Resend } from 'resend'
 import { plugins } from './plugins'
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
 import { getServerSideURL } from './utilities/getURL'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { resendAdapter } from '@payloadcms/email-resend'
+import { Notifications } from './collections/Notifications'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -57,7 +57,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Posts, Media, Categories, Users, Contributions, Jars],
+  collections: [Pages, Posts, Media, Categories, Users, Contributions, Jars, Notifications],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   db: mongooseAdapter({

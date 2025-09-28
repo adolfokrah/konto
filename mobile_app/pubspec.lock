@@ -451,6 +451,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_loading_overlay:
+    dependency: "direct main"
+    description:
+      name: flutter_loading_overlay
+      sha256: "54a6bb944c9bd519c258566b759a0dce8c7c918d73af3aa083c3b9e3b962d9f4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   flutter_localizations:
     dependency: "direct main"
     description: flutter

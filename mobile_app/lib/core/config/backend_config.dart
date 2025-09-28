@@ -24,6 +24,8 @@ class BackendConfig {
 
   // Jar endpoints
   static const String jarsEndpoint = '/jars';
+  // Notifications endpoint
+  static const String notificationsEndpoint = '/notifications';
 
   // Timeout configurations
   static const Duration connectTimeout = Duration(seconds: 30);

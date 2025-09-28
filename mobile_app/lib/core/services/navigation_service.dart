@@ -1,3 +1,4 @@
+import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
@@ -106,7 +107,24 @@ class NavigationService {
     final jarSummaryBloc = context.read<JarSummaryBloc>();
     jarSummaryBloc.add(SetCurrentJarRequested(jarId: jarId));
 
-    Navigator.of(context).pushReplacementNamed('/jar_detail');
+    Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
+  }
+
+  /// Navigate to notifications list view and optionally trigger a refresh callback
+  static void navigateToNotifications(
+    BuildContext context, {
+    VoidCallback? onBeforeNavigate,
+  }) {
+    try {
+      onBeforeNavigate?.call();
+      if (context.mounted) {
+        Navigator.of(context).pushNamed(AppRoutes.notifications);
+      } else {
+        print('❌ Context unmounted before navigating to notifications');
+      }
+    } catch (e) {
+      print('❌ Error navigating to notifications: $e');
+    }
   }
 }
 

@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     contributions: Contribution;
     jars: Jar;
+    notifications: Notification;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -92,6 +93,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     contributions: ContributionsSelect<false> | ContributionsSelect<true>;
     jars: JarsSelect<false> | JarsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1496,6 +1498,28 @@ export interface Jar {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  type: 'jarInvite' | 'info';
+  message: string;
+  data?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status: 'read' | 'unread';
+  user: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1694,6 +1718,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'jars';
         value: string | Jar;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2425,6 +2453,19 @@ export interface JarsSelect<T extends boolean = true> {
   whoPaysPlatformFees?: T;
   thankYouMessage?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  type?: T;
+  message?: T;
+  data?: T;
+  status?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }

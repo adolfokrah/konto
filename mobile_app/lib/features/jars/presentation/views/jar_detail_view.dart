@@ -1,3 +1,4 @@
+import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -13,6 +14,7 @@ import 'package:Hoga/core/widgets/contribution_list_item.dart';
 import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/core/widgets/goal_progress_card.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/notification_icon_button.dart';
 import 'package:Hoga/core/widgets/scrollable_background_image.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
@@ -124,6 +126,20 @@ class _JarDetailViewState extends State<JarDetailView> {
     }
   }
 
+  /// Fetch User Notificatiosn
+  Future<void> _fetchUserNotifications() async {
+    try {
+      // Use NotificationsBloc from context
+      final notificationsBloc = context.read<NotificationsBloc>();
+
+      // Fetch notifications with default pagination
+      notificationsBloc.add(FetchNotifications(limit: 20, page: 1));
+    } catch (e) {
+      // Handle any errors silently or log them
+      print('Error fetching user notifications: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -136,6 +152,7 @@ class _JarDetailViewState extends State<JarDetailView> {
               context.read<JarListBloc>().add(LoadJarList());
               // Request FCM permissions and update token
               _requestFCMPermissionAndUpdateToken();
+              _fetchUserNotifications();
             }
           },
         ),
@@ -242,6 +259,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                               pinned: true,
                               actions: [
                                 const FeedbackActionButton(),
+                                const NotificationIconButton(),
                                 if (state is JarSummaryLoaded)
                                   AppIconButton(
                                     key: const Key('request_button_qr_code'),

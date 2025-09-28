@@ -1,3 +1,4 @@
+import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/document_type_selection_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/intro_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/upload_document_view.dart';
@@ -65,6 +66,7 @@ class AppRoutes {
     '/upload_document': (context) => const UploadDocumentView(),
     '/take_photo': (context) => const LivenessCamera(),
     '/uploading_documents': (context) => const UploadingDocumentsView(),
+    '/notifications': (context) => const NotficiationsListView(),
   };
 
   // Route names constants for easy access
@@ -99,4 +101,5 @@ class AppRoutes {
   static const String uploadDocument = '/upload_document';
   static const String takePhoto = '/take_photo';
   static const String uploadingDocuments = '/uploading_documents';
+  static const String notifications = '/notifications';
 }

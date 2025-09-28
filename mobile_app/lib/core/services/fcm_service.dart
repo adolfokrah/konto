@@ -1,7 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/services/navigation_service.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:Hoga/main.dart' show navigatorKey;
+import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 
 /// Simple Firebase Cloud Messaging service
 class FCMService {
@@ -104,6 +107,33 @@ class FCMService {
           }
         } else {
           print("❌ Missing jarId or contributionId in notification data");
+        }
+      } else if (type == 'jarInvite') {
+        final BuildContext? context = navigatorKey.currentContext;
+        if (context != null) {
+          // Navigate first so the NotificationsBloc in that route tree is mounted
+          NavigationService.navigateToNotifications(context);
+
+          // After the next frame (route pushed), try to fetch notifications
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            final postNavContext = navigatorKey.currentContext;
+            if (postNavContext != null) {
+              try {
+                final bloc = postNavContext.read<NotificationsBloc>();
+                bloc.add(FetchNotifications(limit: 20, page: 1));
+              } catch (e) {
+                print(
+                  '⚠️ Could not dispatch FetchNotifications after navigation: $e',
+                );
+              }
+            } else {
+              print(
+                '⚠️ No context after navigation to dispatch notifications fetch',
+              );
+            }
+          });
+        } else {
+          print("❌ No navigation context available for jarInvite tap");
         }
       } else {
         print("ℹ️ Notification type '$type' not handled by contribution flow");
