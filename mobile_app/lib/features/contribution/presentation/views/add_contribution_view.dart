@@ -49,115 +49,113 @@ class _AddContributionViewState extends State<AddContributionView> {
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-          builder: (context, state) {
-            if (state is JarSummaryLoaded) {
-              final jarData = state.jarData;
-              // Initialize the controller with the formatted amount if not already done
-              if (_isInitialized == false) {
-                final currencySymbol = CurrencyUtils.getCurrencySymbol(
-                  jarData.currency,
-                );
-                // Only auto-focus if the field is editable (isFixedContribution is false)
-                if (!jarData.isFixedContribution) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _focusNode.requestFocus();
-                  });
-                } else {
-                  // Format the amount with currency symbol for initial display
-                  _amountController.text =
-                      '$currencySymbol${jarData.acceptedContributionAmount}';
-                  _isInitialized = true;
-                }
-              }
-
-              return Padding(
-                padding: const EdgeInsets.all(AppSpacing.spacingL),
-                child: Column(
-                  children: [
-                    // Main content area
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Large amount display
-                          Opacity(
-                            opacity: jarData.isFixedContribution ? 0.6 : 1.0,
-                            child: IgnorePointer(
-                              ignoring: jarData.isFixedContribution,
-                              child: CurrencyTextField(
-                                controller: _amountController,
-                                focusNode:
-                                    jarData.isFixedContribution
-                                        ? null
-                                        : _focusNode,
-                                currencySymbol: CurrencyUtils.getCurrencySymbol(
-                                  jarData.currency,
-                                ),
-                                onChanged:
-                                    jarData.isFixedContribution ? null : null,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.spacingM),
-
-                          // Jar name
-                          Text(
-                            jarData.name,
-                            style: TextStyles.titleMediumLg.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Continue button at bottom
-                    AppButton.filled(
-                      text: localizations.continueText,
-                      onPressed: () {
-                        // Get the numeric value directly from the currency text field
-                        final currencyTextField = CurrencyTextField(
-                          controller: _amountController,
-                          currencySymbol: CurrencyUtils.getCurrencySymbol(
-                            state.jarData.currency,
-                          ),
-                        );
-                        final amount = currencyTextField.getNumericValue();
-
-                        // Validate amount
-                        if (amount <= 0) {
-                          AppSnackBar.show(
-                            context,
-                            message: localizations.pleaseEnterValidAmount,
-                            type: SnackBarType.error,
-                          );
-                          return;
-                        }
-
-                        // Navigate to request momo screen with jar and amount data
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.saveContribution,
-                          arguments: {
-                            'jar': state.jarData,
-                            'amount': amount.toString(),
-                            'currency': state.jarData.currency,
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
+      body: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          if (state is JarSummaryLoaded) {
+            final jarData = state.jarData;
+            // Initialize the controller with the formatted amount if not already done
+            if (_isInitialized == false) {
+              final currencySymbol = CurrencyUtils.getCurrencySymbol(
+                jarData.currency,
               );
+              // Only auto-focus if the field is editable (isFixedContribution is false)
+              if (!jarData.isFixedContribution) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _focusNode.requestFocus();
+                });
+              } else {
+                // Format the amount with currency symbol for initial display
+                _amountController.text =
+                    '$currencySymbol${jarData.acceptedContributionAmount}';
+                _isInitialized = true;
+              }
             }
-            return Container();
-          },
-        ),
+
+            return Padding(
+              padding: const EdgeInsets.all(AppSpacing.spacingL),
+              child: Column(
+                children: [
+                  // Main content area
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Large amount display
+                        Opacity(
+                          opacity: jarData.isFixedContribution ? 0.6 : 1.0,
+                          child: IgnorePointer(
+                            ignoring: jarData.isFixedContribution,
+                            child: CurrencyTextField(
+                              controller: _amountController,
+                              focusNode:
+                                  jarData.isFixedContribution
+                                      ? null
+                                      : _focusNode,
+                              currencySymbol: CurrencyUtils.getCurrencySymbol(
+                                jarData.currency,
+                              ),
+                              onChanged:
+                                  jarData.isFixedContribution ? null : null,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.spacingM),
+
+                        // Jar name
+                        Text(
+                          jarData.name,
+                          style: TextStyles.titleMediumLg.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Continue button at bottom
+                  AppButton.filled(
+                    text: localizations.continueText,
+                    onPressed: () {
+                      // Get the numeric value directly from the currency text field
+                      final currencyTextField = CurrencyTextField(
+                        controller: _amountController,
+                        currencySymbol: CurrencyUtils.getCurrencySymbol(
+                          state.jarData.currency,
+                        ),
+                      );
+                      final amount = currencyTextField.getNumericValue();
+
+                      // Validate amount
+                      if (amount <= 0) {
+                        AppSnackBar.show(
+                          context,
+                          message: localizations.pleaseEnterValidAmount,
+                          type: SnackBarType.error,
+                        );
+                        return;
+                      }
+
+                      // Navigate to request momo screen with jar and amount data
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.saveContribution,
+                        arguments: {
+                          'jar': state.jarData,
+                          'amount': amount.toString(),
+                          'currency': state.jarData.currency,
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+          return Container();
+        },
       ),
     );
   }

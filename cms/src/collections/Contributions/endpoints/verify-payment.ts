@@ -1,6 +1,7 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
 import { paystack } from '@/utilities/initalise'
+import { verifyTransfer } from './verify-transfer'
 
 export const verifyPayment = async (req: PayloadRequest) => {
   try {
@@ -67,7 +68,6 @@ export const verifyPayment = async (req: PayloadRequest) => {
         )
       }
 
-      // const isTransfer = foundContribution.docs[0].type == 'transfer'
       await req.payload.update({
         collection: 'contributions',
         id: foundContribution.docs[0].id,
@@ -78,38 +78,12 @@ export const verifyPayment = async (req: PayloadRequest) => {
         },
       })
 
-      // if (isTransfer) {
-      //   const linkedContribution = foundContribution.docs[0].linkedContribution
-      //   const linkedContributionId =
-      //     typeof linkedContribution === 'string' ? linkedContribution : linkedContribution?.id
-
-      //   if (linkedContributionId && typeof linkedContributionId === 'string') {
-      //     await req.payload.update({
-      //       collection: 'contributions',
-      //       id: linkedContributionId,
-      //       data: {
-      //         linkedTransfer: foundContribution.docs[0].id,
-      //         isTransferred: true,
-      //       },
-      //     })
-      //   }
-      // }
-
-      // if (!isTransfer && (res.data as any)?.status === 'success') {
-      //   //insert a transfer transaction
-      //   try {
-      //     transferMomo({
-      //       ...req,
-      //       data: { contributionId: foundContribution.docs[0].id, testing: false },
-      //     } as PayloadRequest)
-      //   } catch (transferError: any) {
-      //     return Response.json({
-      //       success: false,
-      //       message: transferError.message || 'Unknown error',
-      //     })
-      //     // Continue with verification success even if transfer fails
-      //   }
-      // }
+      // create a transfer record if in using paystack test environment (simulation)
+      if (process.env.PAYSTACK_SECRET?.includes('test')) {
+        console.log('⚠️ Detected Paystack Test Environment, proceeding to create transfer record')
+        // Await to ensure it completes (and surfaces any errors) before returning
+        await verifyTransfer(req)
+      }
 
       return Response.json({
         success: true,

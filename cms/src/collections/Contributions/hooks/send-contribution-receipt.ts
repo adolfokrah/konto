@@ -7,9 +7,14 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
   operation,
   req,
   doc,
+  previousDoc,
 }) => {
   if (operation === 'create' || operation === 'update') {
-    if (data.paymentStatus === 'completed' && data.type === 'contribution') {
+    if (
+      data.paymentStatus === 'completed' &&
+      data.type === 'contribution' &&
+      previousDoc?.paymentStatus !== 'completed'
+    ) {
       const jar = await req.payload.findByID({
         collection: 'jars',
         id: data.jar,
@@ -38,26 +43,23 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
           }
         }
 
-        // Send notification to jar creator
-        if (creatorToken) {
-          try {
-            const validTokens = tokens.filter(
-              (token): token is string =>
-                token !== null && token !== undefined && typeof token === 'string',
-            )
+        // Send notification to jar creator and collector
+        try {
+          const validTokens = tokens.filter(
+            (token): token is string =>
+              token !== null && token !== undefined && typeof token === 'string',
+          )
 
-            if (validTokens.length > 0) {
-              const res = await fcmNotifications.sendNotification(
-                validTokens,
-                `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`,
-                'New Contribution Received 🤑',
-                { type: 'contribution', jarId: jar.id, contributionId: doc?.id },
-              )
-              console.log('FCM notification response:', res)
-            }
-          } catch (error) {
-            // Silently handle FCM notification errors
+          if (validTokens.length > 0) {
+            fcmNotifications.sendNotification(
+              validTokens,
+              `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`,
+              'New Contribution Received 🤑',
+              { type: 'contribution', jarId: jar.id, contributionId: doc?.id },
+            )
           }
+        } catch (error) {
+          // Silently handle FCM notification errors
         }
       }
     }

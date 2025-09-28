@@ -1,8 +1,14 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
+// Verifies (or simulates) a transfer for a contribution. Can be called
+// as an API endpoint handler OR internally from verifyPayment. We need
+// to be careful not to re-consume the body stream if it was already parsed.
 export const verifyTransfer = async (req: PayloadRequest) => {
   try {
-    await addDataAndFileToRequest(req)
+    // Only parse the body if it hasn't already been parsed upstream
+    if (!req.data) {
+      await addDataAndFileToRequest(req)
+    }
     const { reference } = req.data || {}
 
     // Validate required fields
