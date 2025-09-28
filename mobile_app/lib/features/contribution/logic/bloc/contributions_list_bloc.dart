@@ -47,15 +47,8 @@ class ContributionsListBloc
       DateTime? startDate;
       DateTime? endDate;
 
-      print(
-        '🔍 DEBUG: ContributionsListBloc - _filterBloc is ${_filterBloc != null ? 'not null' : 'null'}',
-      );
-
       if (_filterBloc != null) {
         final filterState = _filterBloc!.state;
-        print(
-          '🔍 DEBUG: ContributionsListBloc - filterState type: ${filterState.runtimeType}',
-        );
 
         if (filterState is FilterContributionsLoaded) {
           // Payment methods are already strings
@@ -66,10 +59,6 @@ class ContributionsListBloc
 
           // Use the collectors filter from FilterContributionsBloc
           collectors = filterState.selectedCollectors;
-
-          print('🔍 DEBUG: Filter state loaded - collectors: $collectors');
-          print('🔍 DEBUG: Payment methods: $paymentMethodStrings');
-          print('🔍 DEBUG: Statuses: $statusStrings');
 
           // Convert date string to DateTime range if applicable
           if (filterState.selectedDate != null &&

@@ -13,12 +13,7 @@ class FCMService {
     // Skip Firebase operations during tests
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
-      NotificationSettings settings = await messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      print('Permission granted: ${settings.authorizationStatus}');
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
     } catch (e) {
       print('FCM permission error (likely in test environment): $e');
     }
@@ -28,7 +23,6 @@ class FCMService {
   static Future<String?> getToken() async {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
-      print("FCM Token: $token");
       return token;
     } catch (e) {
       print('FCM token error (likely in test environment): $e');

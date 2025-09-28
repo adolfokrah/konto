@@ -96,10 +96,6 @@ class _ContributionsListViewState extends State<ContributionsListView> {
         currentUserId = authState.user.id;
       }
 
-      print(
-        '🔍 DEBUG ContributionsListView: Fetching contributions with page=$page, contributor=$contributor',
-      );
-
       context.read<ContributionsListBloc>().add(
         FetchContributions(
           jarId: jarSummaryState.jarData.id,
@@ -151,13 +147,6 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       listener: (context, state) {
         // When filters change, refetch contributions
         if (state is FilterContributionsLoaded) {
-          print('🔍 DEBUG ContributionsListView: Filter state changed');
-          print(
-            '🔍 DEBUG ContributionsListView: Selected collectors: ${state.selectedCollectors}',
-          );
-          print(
-            '🔍 DEBUG ContributionsListView: Has filters: ${state.hasFilters}',
-          );
           _fetchContributions(page: 1, contributor: _currentSearchQuery);
         }
       },

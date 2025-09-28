@@ -152,12 +152,6 @@ class ContributionUser {
 
   factory ContributionUser.fromJson(Map<String, dynamic> json) {
     final fullName = json['fullName'] as String? ?? '';
-    print(
-      '🔍 DEBUG: ContributionUser.fromJson - fullName from JSON: "$fullName"',
-    );
-    print(
-      '🔍 DEBUG: ContributionUser.fromJson - raw fullName value: ${json['fullName']}',
-    );
 
     return ContributionUser(
       id: json['id'] as String? ?? '',
@@ -374,8 +368,6 @@ class ContributionJar {
 
   factory ContributionJar.fromJson(Map<String, dynamic> json) {
     try {
-      print('🔍 Parsing ContributionJar with ID: ${json['id']}');
-
       return ContributionJar(
         id: json['id'] as String? ?? '',
         name: json['name'] as String? ?? '',
@@ -407,10 +399,6 @@ class ContributionJar {
         ),
       );
     } catch (e, stackTrace) {
-      print('❌ Error parsing ContributionJar for ID ${json['id']}: $e');
-      print('📊 Creator type: ${json['creator'].runtimeType}');
-      print('📊 Creator value: ${json['creator']}');
-      print('🔍 Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -543,11 +531,7 @@ class ContributionModel {
 
   /// Helper method to parse collector field which can be either a string ID or a full object
   static ContributionUser _parseCollector(dynamic collectorData) {
-    print('🔍 DEBUG: _parseCollector called with data: $collectorData');
-    print('🔍 DEBUG: collectorData type: ${collectorData.runtimeType}');
-
     if (collectorData is String) {
-      print('🔍 DEBUG: Collector is String: "$collectorData"');
       // If collector is just an ID string, create a minimal ContributionUser
       return ContributionUser(
         id: collectorData,
@@ -572,16 +556,10 @@ class ContributionModel {
         ),
       );
     } else if (collectorData is Map<String, dynamic>) {
-      print('🔍 DEBUG: Collector is Map: $collectorData');
       // If collector is a full object, parse it normally
       final user = ContributionUser.fromJson(collectorData);
-      print('🔍 DEBUG: Parsed user fullName: "${user.fullName}"');
       return user;
     } else {
-      // Fallback for any other case
-      print(
-        '🔍 DEBUG: Collector is unexpected type: ${collectorData.runtimeType}',
-      );
       throw ArgumentError(
         'Invalid collector data type: ${collectorData.runtimeType}',
       );
@@ -590,8 +568,6 @@ class ContributionModel {
 
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
     try {
-      print('🔍 Parsing ContributionModel with ID: ${json['id']}');
-
       return ContributionModel(
         id: json['id'] as String? ?? '',
         jar: ContributionJar.fromJson(json['jar'] as Map<String, dynamic>),
@@ -624,11 +600,6 @@ class ContributionModel {
         ),
       );
     } catch (e, stackTrace) {
-      print('❌ Error parsing ContributionModel for ID ${json['id']}: $e');
-      print('📊 Collector type: ${json['collector'].runtimeType}');
-      print('📊 Collector value: ${json['collector']}');
-      print('📊 Jar type: ${json['jar'].runtimeType}');
-      print('🔍 Stack trace: $stackTrace');
       rethrow;
     }
   }
