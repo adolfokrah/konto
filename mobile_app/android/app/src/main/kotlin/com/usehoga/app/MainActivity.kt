@@ -1,4 +1,4 @@
-package com.hoga.app
+package com.usehoga.app
 
 import android.Manifest
 import android.content.Intent

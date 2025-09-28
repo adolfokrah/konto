@@ -9,7 +9,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
   doc,
 }) => {
   if (operation === 'create' || operation === 'update') {
-    if (data.paymentStatus === 'completed') {
+    if (data.paymentStatus === 'completed' && data.type === 'contribution') {
       const jar = await req.payload.findByID({
         collection: 'jars',
         id: data.jar,

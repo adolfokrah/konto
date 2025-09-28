@@ -47,8 +47,15 @@ class ContributionsListBloc
       DateTime? startDate;
       DateTime? endDate;
 
+      print(
+        '🔍 DEBUG: ContributionsListBloc - _filterBloc is ${_filterBloc != null ? 'not null' : 'null'}',
+      );
+
       if (_filterBloc != null) {
         final filterState = _filterBloc!.state;
+        print(
+          '🔍 DEBUG: ContributionsListBloc - filterState type: ${filterState.runtimeType}',
+        );
 
         if (filterState is FilterContributionsLoaded) {
           // Payment methods are already strings

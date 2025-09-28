@@ -361,20 +361,6 @@ class ContributionView extends StatelessWidget {
                                             trailing: Text(
                                               contribution.contributor ??
                                                   localizations.unknown,
-                                              style: AppTextStyles.titleMediumS
-                                                  .copyWith(
-                                                    decoration:
-                                                        contribution.paymentStatus ==
-                                                                'failed'
-                                                            ? TextDecoration
-                                                                .lineThrough
-                                                            : null,
-                                                    decorationThickness:
-                                                        contribution.paymentStatus ==
-                                                                'failed'
-                                                            ? 2.0
-                                                            : null,
-                                                  ),
                                               textAlign: TextAlign.end,
                                             ),
                                           ),
@@ -451,19 +437,22 @@ class ContributionView extends StatelessWidget {
                                                       .collector
                                                       .id
                                                       .isNotEmpty) {
-                                                print(
-                                                  '🔍 Setting collector filter for: ${contribution.collector.fullName} (ID: ${contribution.collector.id})',
+                                                // Store references before popping context
+                                                final filterBloc =
+                                                    context
+                                                        .read<
+                                                          FilterContributionsBloc
+                                                        >();
+                                                final collectorId =
+                                                    contribution.collector.id;
+                                                final navigator = Navigator.of(
+                                                  context,
                                                 );
 
-                                                // Close current modal first
-                                                Navigator.pop(context);
-
                                                 // Clear existing filters and set collector filter
-                                                context
-                                                    .read<
-                                                      FilterContributionsBloc
-                                                    >()
-                                                    .add(ClearAllFilters());
+                                                filterBloc.add(
+                                                  ClearAllFilters(),
+                                                );
 
                                                 // Wait a frame for the clear to process
                                                 await Future.delayed(
@@ -472,17 +461,9 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                                 );
 
-                                                context
-                                                    .read<
-                                                      FilterContributionsBloc
-                                                    >()
-                                                    .add(
-                                                      ToggleCollector(
-                                                        contribution
-                                                            .collector
-                                                            .id,
-                                                      ),
-                                                    );
+                                                filterBloc.add(
+                                                  ToggleCollector(collectorId),
+                                                );
 
                                                 // Wait for the filter to be set
                                                 await Future.delayed(
@@ -493,11 +474,7 @@ class ContributionView extends StatelessWidget {
 
                                                 // Debug: Check the filter state
                                                 final filterState =
-                                                    context
-                                                        .read<
-                                                          FilterContributionsBloc
-                                                        >()
-                                                        .state;
+                                                    filterBloc.state;
                                                 if (filterState
                                                     is FilterContributionsLoaded) {
                                                   print(
@@ -505,9 +482,11 @@ class ContributionView extends StatelessWidget {
                                                   );
                                                 }
 
+                                                // Close current modal
+                                                navigator.pop();
+
                                                 // Navigate to contributions list
-                                                Navigator.pushNamed(
-                                                  context,
+                                                navigator.pushNamed(
                                                   AppRoutes.contributionsList,
                                                 );
                                               } else {

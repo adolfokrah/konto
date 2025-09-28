@@ -16,7 +16,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
       )
     }
 
-    const foundContribution = await req.payload.find({
+    const foundContributionResult = await req.payload.find({
       collection: 'contributions',
       where: {
         transactionReference: reference,
@@ -24,22 +24,57 @@ export const verifyTransfer = async (req: PayloadRequest) => {
       limit: 1,
     })
 
-    if (foundContribution.docs.length === 0) {
-      await req.payload.update({
-        collection: 'contributions',
-        id: foundContribution.docs[0].id,
-        data: {
-          isTransferred: true,
+    if (foundContributionResult.docs.length === 0) {
+      return Response.json(
+        {
+          success: false,
+          message: 'No contribution found with provided reference',
         },
+        { status: 404 },
+      )
+    }
+
+    const contribution = foundContributionResult.docs[0]
+
+    // If already transferred just return early
+    if (contribution.isTransferred) {
+      return Response.json({
+        success: true,
+        data: contribution,
+        message: 'Contribution already marked as transferred',
       })
     }
 
+    // Insert a transfer record linked to this contribution
+    const transfer = await req.payload.create({
+      collection: 'contributions',
+      data: {
+        ...foundContributionResult.docs[0],
+        type: 'transfer',
+        linkedContribution: contribution.id,
+        paymentStatus: 'transferred',
+        transactionReference: `transfer-${reference}`,
+        viaPaymentLink: false,
+      },
+    })
+
+    // Update original contribution
+    const updated = await req.payload.update({
+      collection: 'contributions',
+      id: contribution.id,
+      data: {
+        isTransferred: true,
+        linkedTransfer: transfer.id,
+      },
+    })
+
     return Response.json({
       success: true,
-      data: foundContribution.docs[0],
+      data: { ...updated, transfer },
       message: 'Transfer verified successfully',
     })
   } catch (error: any) {
+    console.log('Error in verifyTransfer:', error)
     return Response.json(
       {
         success: false,
