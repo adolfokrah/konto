@@ -32,7 +32,8 @@ class NotificationIconButton extends StatelessWidget {
         key: const Key('notifications_button'),
         icon: _icon,
         size: const Size(_buttonSize, _buttonSize),
-        onPressed: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
+        onPressed:
+            () => Navigator.of(context).pushNamed(AppRoutes.notifications),
       );
     }
 
@@ -41,9 +42,10 @@ class NotificationIconButton extends StatelessWidget {
       builder: (context, state) {
         int unreadCount = 0;
         if (state is NotificationsLoaded) {
-          unreadCount = state.notifications
-              .where((n) => n.status == NotificationStatus.unread)
-              .length;
+          unreadCount =
+              state.notifications
+                  .where((n) => n.status == NotificationStatus.unread)
+                  .length;
         }
         final showBadge = unreadCount > 0;
         return Stack(
@@ -53,7 +55,9 @@ class NotificationIconButton extends StatelessWidget {
               key: const Key('notifications_button'),
               icon: _icon,
               size: const Size(_buttonSize, _buttonSize),
-              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
+              onPressed:
+                  () =>
+                      Navigator.of(context).pushNamed(AppRoutes.notifications),
             ),
             if (showBadge)
               Positioned(
