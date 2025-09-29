@@ -42,9 +42,11 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
       )
     }
 
-    if (
-      jar?.invitedCollectors?.some((collector) => collector.phoneNumber != req.user?.phoneNumber)
-    ) {
+    const phoneNumbers = jar?.invitedCollectors
+      ?.map((collector) => collector.phoneNumber)
+      .filter((num): num is string => typeof num === 'string' && num.trim().length > 0)
+
+    if (!phoneNumbers?.includes(req.user?.phoneNumber as string)) {
       return Response.json(
         {
           success: false,

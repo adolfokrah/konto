@@ -173,7 +173,9 @@ export const Jars: CollectionConfig = {
                     })
 
                     if (user?.phoneNumber) {
-                      siblingData.phoneNumber = `${user.phoneNumber}`
+                      // Normalize: remove leading 0 if present
+                      const normalized = `${user.phoneNumber}`.replace(/^0+/, '')
+                      siblingData.phoneNumber = normalized
                       siblingData.name = user.fullName
                     }
                     // return data;
@@ -184,9 +186,14 @@ export const Jars: CollectionConfig = {
 
                 if (operation === 'create') {
                   if (data && data.phoneNumber) {
-                    const parsedNumber = parsePhoneNumberFromString(data.phoneNumber)
+                    // Trim and remove a single leading 0 prior to parsing (common local format)
+                    let raw = `${data.phoneNumber}`.trim()
+                    raw = raw.replace(/^0+/, '')
+                    const parsedNumber = parsePhoneNumberFromString(raw)
                     if (parsedNumber) {
-                      siblingData.phoneNumber = parsedNumber.nationalNumber
+                      // Ensure stored national number has no leading zeros
+                      const national = `${parsedNumber.nationalNumber}`.replace(/^0+/, '')
+                      siblingData.phoneNumber = national
                     } else {
                       throw new Error('Invalid phone number format')
                     }
