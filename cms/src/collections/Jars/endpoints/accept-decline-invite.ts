@@ -46,6 +46,8 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
       ?.map((collector) => collector.phoneNumber)
       .filter((num): num is string => typeof num === 'string' && num.trim().length > 0)
 
+    console.log(phoneNumbers, req.user?.phoneNumber)
+
     if (!phoneNumbers?.includes(req.user?.phoneNumber as string)) {
       return Response.json(
         {

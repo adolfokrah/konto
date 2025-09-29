@@ -125,6 +125,7 @@ class BuildNotificationType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final content = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
