@@ -91,7 +91,7 @@
     "@types/escape-html": "1.0.4",
     "@types/node": "24.5.2",
     "@types/paystack__inline-js": "1.0.2",
-    "@types/react": "19.1.14",
+    "@types/react": "19.1.15",
     "@types/react-dom": "19.1.9",
     "@vitejs/plugin-react": "5.0.4",
     "autoprefixer": "10.4.21",
