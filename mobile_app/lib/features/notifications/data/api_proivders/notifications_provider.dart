@@ -106,4 +106,41 @@ class NotificationsApiProvider extends BaseApiProvider {
       );
     }
   }
+
+  /// Mark a notification as read
+  Future<Map<String, dynamic>> markNotificationAsRead({
+    required String notificationId,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      // Directly update the notification document in Payload CMS via collection update
+      // PATCH /api/notifications/:id { status: 'read' }
+      final response = await dio.patch(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.notificationsEndpoint}/$notificationId',
+        data: {'status': 'read'},
+        options: Options(headers: headers),
+      );
+
+      final data = response.data;
+      return {
+        'success': true,
+        'message':
+            data['message'] ?? 'Notification marked as read successfully',
+        'data': data['data'],
+      };
+    } catch (e) {
+      return handleApiError(
+        e,
+        'marking notification as read',
+        additionalData: {
+          'endpoint': '${BackendConfig.notificationsEndpoint}/$notificationId',
+          'operation': 'markNotificationAsRead',
+        },
+      );
+    }
+  }
 }

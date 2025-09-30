@@ -4,7 +4,8 @@
 
 enum NotificationType {
   jarInvite('jarInvite'),
-  info('info');
+  info('info'),
+  kycFailed('kycFailed');
 
   const NotificationType(this.value);
   final String value;
@@ -15,6 +16,8 @@ enum NotificationType {
         return NotificationType.jarInvite;
       case 'info':
         return NotificationType.info;
+      case 'kycFailed':
+        return NotificationType.kycFailed;
       default:
         return NotificationType.info; // fallback
     }

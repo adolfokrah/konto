@@ -135,7 +135,7 @@ class KycView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'This usually takes 1-3 business days.',
+                          'This usually takes 24 hours.',
                           style: TextStyles.titleRegularSm.copyWith(
                             color: Colors.grey[600],
                           ),

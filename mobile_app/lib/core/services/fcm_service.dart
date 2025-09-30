@@ -35,10 +35,6 @@ class FCMService {
     try {
       // Listen for messages while app is in foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print(
-          " 🚀🚀🚀🚀🚀🚀🚀🚀 Message received: ${message.notification?.title}",
-        );
-
         // if notification is type contribution, please reload the current jar
 
         _handlePush(message);
@@ -128,6 +124,27 @@ class FCMService {
           });
         } else {
           print("❌ No navigation context available for jarInvite tap");
+        }
+      } else if (type == 'kycFailed') {
+        final BuildContext? context = navigatorKey.currentContext;
+        if (context != null) {
+          NavigationService.navigateToNotifications(context);
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            final postNavContext = navigatorKey.currentContext;
+            if (postNavContext != null) {
+              try {
+                postNavContext.read<NotificationsBloc>().add(
+                  FetchNotifications(limit: 20, page: 1),
+                );
+              } catch (e) {
+                print(
+                  '⚠️ Could not dispatch FetchNotifications after kycFailed navigation: $e',
+                );
+              }
+            }
+          });
+        } else {
+          print("❌ No navigation context available for kycFailed tap");
         }
       } else {
         print("ℹ️ Notification type '$type' not handled by contribution flow");

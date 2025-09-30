@@ -4,9 +4,11 @@ import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.da
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
+import 'package:Hoga/features/notifications/presentation/widgets/notification_action_button.dart';
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
 // Consider renaming to `NotificationsListView` across the project when convenient.
@@ -126,7 +128,6 @@ class BuildNotificationType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final content = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -148,7 +149,8 @@ class BuildNotificationType extends StatelessWidget {
             if (notification.status == NotificationStatus.unread) ...[
               Row(
                 children: [
-                  InkWell(
+                  NotificationActionButton(
+                    label: 'Accept',
                     onTap: () {
                       context.read<JarInviteActionBloc>().add(
                         AcceptDeclineJarInvite(
@@ -157,18 +159,10 @@ class BuildNotificationType extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Container(
-                      color: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.only(
-                        top: AppSpacing.spacingXs,
-                        bottom: AppSpacing.spacingXs,
-                        right: AppSpacing.spacingM,
-                      ),
-                      child: Text('Accept'),
-                    ),
                   ),
                   const SizedBox(width: AppSpacing.spacingM),
-                  InkWell(
+                  NotificationActionButton(
+                    label: 'Decline',
                     onTap: () {
                       context.read<JarInviteActionBloc>().add(
                         AcceptDeclineJarInvite(
@@ -177,20 +171,29 @@ class BuildNotificationType extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Container(
-                      color: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.only(
-                        top: AppSpacing.spacingXs,
-                        bottom: AppSpacing.spacingXs,
-                        right: AppSpacing.spacingM,
-                      ),
-                      child: Text(
-                        'Decline',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
+                    textColor: Colors.red,
                   ),
                 ],
+              ),
+            ],
+          ],
+        );
+      case NotificationType.kycFailed:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            content,
+            if (notification.status == NotificationStatus.unread) ...[
+              const SizedBox(height: AppSpacing.spacingS),
+              NotificationActionButton(
+                label: 'Re submit KYC',
+                onTap: () {
+                  context.read<KycBloc>().add(RequestKycSession());
+                  final notificationsBloc = context.read<NotificationsBloc>();
+                  notificationsBloc.add(
+                    MarkjarInviteAsRead(notificationId: notification.id),
+                  );
+                },
               ),
             ],
           ],

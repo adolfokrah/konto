@@ -101,4 +101,37 @@ class NotificationsRepository {
       };
     }
   }
+
+  /// Mark a notification as read
+  Future<Map<String, dynamic>> markNotificationAsRead({
+    required String notificationId,
+  }) async {
+    try {
+      final response = await _apiProvider.markNotificationAsRead(
+        notificationId: notificationId,
+      );
+      if (response['success'] != true) {
+        return {
+          'success': false,
+          'message':
+              response['message'] ?? 'Failed to mark notification as read',
+          'error': response['error'],
+          'statusCode': response['statusCode'],
+        };
+      }
+      return {
+        'success': true,
+        'data': response['data'],
+        'message': response['message'] ?? 'Notification marked as read',
+      };
+    } catch (e) {
+      // Log error but do not throw
+      print('Error marking notification as read: ${e.toString()}');
+      return {
+        'success': false,
+        'message': 'Unexpected error while marking notification as read',
+        'error': e.toString(),
+      };
+    }
+  }
 }

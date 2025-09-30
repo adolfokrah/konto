@@ -9,3 +9,8 @@ final class FetchNotifications extends NotificationsEvent {
 
   FetchNotifications({this.limit, this.page});
 }
+
+final class MarkjarInviteAsRead extends NotificationsEvent {
+  final String notificationId;
+  MarkjarInviteAsRead({required this.notificationId});
+}

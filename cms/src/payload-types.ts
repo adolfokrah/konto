@@ -1502,7 +1502,8 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info';
+  type: 'jarInvite' | 'info' | 'kycFailed';
+  title: string;
   message: string;
   data?:
     | {
@@ -2462,6 +2463,7 @@ export interface JarsSelect<T extends boolean = true> {
  */
 export interface NotificationsSelect<T extends boolean = true> {
   type?: T;
+  title?: T;
   message?: T;
   data?: T;
   status?: T;

@@ -33,9 +33,8 @@ export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req
     if (!fcmToken) return doc
 
     // Derive title based on notification type (fallback generic)
-    const title = doc.type === 'jarInvite' ? 'Invitation to contribute' : 'Notification'
 
-    const res = await fcmNotifications.sendNotification([fcmToken], doc.message, title, {
+    const res = await fcmNotifications.sendNotification([fcmToken], doc.message, doc.title, {
       type: doc.type,
     })
   } catch (e) {

@@ -72,6 +72,7 @@ export const sendInviteNotificationToUser: CollectionAfterChangeHook = async ({
       req.payload.create({
         collection: 'notifications',
         data: {
+          title: 'Jar Invitation',
           user: user.id,
           // Consistent message referencing inviter & jar
           message: `${inviterName} invited you to contribute to: ${jarName}`,

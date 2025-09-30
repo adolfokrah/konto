@@ -86,10 +86,20 @@ export const verifyKYC = async (req: PayloadRequest) => {
         },
       })
 
-      await sendSMS(
-        user.phoneNumber,
-        `${user.fullName}, Unfortunately, your KYC verification was not successful. Please try again or contact support for assistance.`,
-      )
+      const message = `${user.fullName}, Unfortunately, your KYC verification was not successful. Please try again or contact support for assistance.`
+
+      await sendSMS(user.phoneNumber, message)
+
+      req.payload.create({
+        collection: 'notifications',
+        data: {
+          title: 'KYC Verification Failed',
+          user: user.id,
+          message,
+          type: 'kycFailed',
+          status: 'unread',
+        },
+      })
     }
 
     // Send notifications if KYC is verified

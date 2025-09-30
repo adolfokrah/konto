@@ -22,7 +22,13 @@ export const Notifications: CollectionConfig = {
       options: [
         { label: 'Jar Invitation', value: 'jarInvite' },
         { label: 'Info', value: 'info' },
+        { label: 'KYC Failed', value: 'kycFailed' },
       ],
+      required: true,
+    },
+    {
+      name: 'title',
+      type: 'text',
       required: true,
     },
     {
