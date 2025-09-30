@@ -31,16 +31,13 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
 
         const tokens = [creatorToken]
 
-        if (req?.user && jar.invitedCollectors) {
-          // Check if current user is part of invited collectors
-          const isInvitedCollector = jar.invitedCollectors.some((collector: any) => {
-            const collectorId = typeof collector === 'object' ? collector.id : collector
-            return collectorId === req.user?.id
-          })
+        const collectorObject = await req.payload.findByID({
+          collection: 'users',
+          id: data?.collector,
+        })
 
-          if (isInvitedCollector && req.user.fcmToken) {
-            tokens.push(req.user.fcmToken)
-          }
+        if (collectorObject?.fcmToken) {
+          tokens.push(collectorObject.fcmToken)
         }
 
         // Send notification to jar creator and collector

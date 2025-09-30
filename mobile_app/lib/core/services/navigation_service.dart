@@ -1,3 +1,4 @@
+import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,10 +25,6 @@ class NavigationService {
     required String jarId,
     required String contributionId,
   }) async {
-    print(
-      '🚀 Starting navigation to contribution: $contributionId in jar: $jarId',
-    );
-
     // Step 3: Set selected jar to jarId
     final jarSummaryBloc = context.read<JarSummaryBloc>();
 
@@ -40,8 +37,6 @@ class NavigationService {
       return;
     }
 
-    print('✅ Jar ID saved to storage: $jarId');
-
     // Listen for jar summary loading completion
     late StreamSubscription<JarSummaryState> jarStateSubscription;
 
@@ -50,8 +45,6 @@ class NavigationService {
 
     // Subscribe to jar summary state changes
     jarStateSubscription = jarSummaryBloc.stream.listen((state) {
-      print('🔍 Jar summary state changed: ${state.runtimeType}');
-
       if (state is JarSummaryLoaded) {
         print('✅ Jar summary loaded successfully');
         if (!jarLoadedCompleter.isCompleted) {
@@ -124,6 +117,22 @@ class NavigationService {
       }
     } catch (e) {
       print('❌ Error navigating to notifications: $e');
+    }
+  }
+
+  static void reloadCurrentJar(BuildContext context, String jarId) {
+    try {
+      final jarSummaryBloc = context.read<JarSummaryBloc>();
+      final reloadJarBloc = context.read<JarSummaryReloadBloc>();
+      final currentState = jarSummaryBloc.state;
+      if (currentState is JarSummaryLoaded &&
+          currentState.jarData.id == jarId) {
+        reloadJarBloc.add(ReloadJarSummaryRequested());
+      } else {
+        print('⚠️ Cannot reload jar, current state is not loaded');
+      }
+    } catch (e) {
+      print('❌ Error reloading current jar: $e');
     }
   }
 }

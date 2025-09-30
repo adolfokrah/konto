@@ -35,7 +35,13 @@ class FCMService {
     try {
       // Listen for messages while app is in foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print("Message received: ${message.notification?.title}");
+        print(
+          " 🚀🚀🚀🚀🚀🚀🚀🚀 Message received: ${message.notification?.title}",
+        );
+
+        // if notification is type contribution, please reload the current jar
+
+        _handlePush(message);
       });
 
       // Listen for messages when user taps notification (app in background)
@@ -75,16 +81,10 @@ class FCMService {
       final messageData = message.data;
       final type = messageData['type'];
 
-      print("📋 Notification type: $type");
-
       if (type == 'contribution') {
         // Extract jarId and contributionId from message data
         final jarId = messageData['jarId'];
         final contributionId = messageData['contributionId'];
-
-        print("🏺 Jar ID: $jarId");
-        print("🎯 Contribution ID: $contributionId");
-
         if (jarId != null && contributionId != null) {
           // Get current context from global navigator key
           final BuildContext? context = navigatorKey.currentContext;
@@ -134,6 +134,20 @@ class FCMService {
       }
     } catch (e) {
       print("❌ Error handling notification tap: $e");
+    }
+  }
+
+  /// Handle push notification received while app is in foreground
+  static void _handlePush(RemoteMessage message) {
+    final messageData = message.data;
+
+    if (messageData['type'] == 'contribution') {
+      final jarId = messageData['jarId'];
+      final BuildContext? context = navigatorKey.currentContext;
+      if (jarId != null && context != null) {
+        // Reload current jar summary to reflect new contribution
+        NavigationService.reloadCurrentJar(context, jarId);
+      }
     }
   }
 }
