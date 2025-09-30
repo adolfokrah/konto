@@ -18,6 +18,7 @@ final class ContributionsListLoaded extends ContributionsListState {
   final bool hasNextPage;
   final int? prevPage;
   final int? nextPage;
+  final String? contributorSearch; // current contributor name/phone search term
 
   ContributionsListLoaded(
     this.contributions, {
@@ -30,6 +31,7 @@ final class ContributionsListLoaded extends ContributionsListState {
     required this.hasNextPage,
     this.prevPage,
     this.nextPage,
+    this.contributorSearch,
   });
 }
 

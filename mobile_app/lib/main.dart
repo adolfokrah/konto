@@ -3,6 +3,7 @@ import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.da
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -185,6 +186,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 filterBloc: context.read<FilterContributionsBloc>(),
               ),
         ),
+        BlocProvider(create: (context) => ExportContributionsBloc()),
         BlocProvider(create: (context) => KycBloc()),
         BlocProvider(create: (context) => NotificationsBloc()),
         BlocProvider(create: (context) => JarInviteActionBloc()),

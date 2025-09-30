@@ -150,4 +150,48 @@ class ContributionRepository {
       };
     }
   }
+
+  /// Request backend to generate and email a PDF export of contributions
+  Future<Map<String, dynamic>> exportContributionsToEmail({
+    required String jarId,
+    List<String>? paymentMethods,
+    List<String>? statuses,
+    List<String>? collectors,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? contributor,
+    String? email,
+  }) async {
+    try {
+      final apiResponse = await _contributionApiProvider
+          .exportContributionsToEmail(
+            jarId: jarId,
+            paymentMethods: paymentMethods,
+            statuses: statuses,
+            collectors: collectors,
+            startDate: startDate,
+            endDate: endDate,
+            contributor: contributor,
+            email: email,
+          );
+      if (apiResponse['success'] == true) {
+        return {
+          'success': true,
+          'data': apiResponse,
+          'message': apiResponse['message'] ?? 'Export initiated',
+        };
+      }
+      return {
+        'success': false,
+        'message': apiResponse['message'] ?? 'Failed to export contributions',
+        'error': apiResponse['error'],
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while exporting contributions',
+        'error': e.toString(),
+      };
+    }
+  }
 }

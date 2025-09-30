@@ -11,6 +11,7 @@ import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
+import { exportContributions } from './endpoints/export-contributions'
 
 export const Contributions: CollectionConfig = {
   slug: 'contributions',
@@ -323,6 +324,11 @@ export const Contributions: CollectionConfig = {
       path: '/verify-pending-transactions',
       method: 'get',
       handler: verifyPendingTransactions,
+    },
+    {
+      path: '/export-contributions',
+      method: 'get',
+      handler: exportContributions,
     },
   ],
   hooks: {

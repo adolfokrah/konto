@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:Hoga/features/contribution/presentation/widgets/export_to_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
@@ -192,6 +193,8 @@ class _ContributionsListViewState extends State<ContributionsListView> {
               onChanged: _onSearchChanged,
             ),
           ),
+          const SizedBox(width: 13),
+          const ExportToPdf(),
           const SizedBox(width: 13),
           // Filter Button
           AppIconButton(

@@ -335,4 +335,62 @@ class ContributionApiProvider extends BaseApiProvider {
       return handleApiError(e, 'fetching contributions list');
     }
   }
+
+  /// Trigger backend export-to-email for contributions PDF
+  /// Accepts same filter signature as list plus optional email override
+  Future<Map<String, dynamic>> exportContributionsToEmail({
+    required String jarId,
+    List<String>? paymentMethods,
+    List<String>? statuses,
+    List<String>? collectors,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? contributor,
+    String? email,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) return getUnauthenticatedError();
+
+      final queryParams = <String, dynamic>{'jarId': jarId};
+
+      if (paymentMethods != null && paymentMethods.isNotEmpty) {
+        queryParams['paymentMethods'] = paymentMethods.join(',');
+      }
+      if (statuses != null && statuses.isNotEmpty) {
+        queryParams['statuses'] = statuses.join(',');
+      }
+      if (collectors != null && collectors.isNotEmpty) {
+        queryParams['collectors'] = collectors.join(',');
+      }
+      if (startDate != null) {
+        queryParams['startDate'] = startDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
+      if (contributor != null && contributor.isNotEmpty) {
+        queryParams['contributor'] = contributor;
+      }
+      if (email != null && email.isNotEmpty) {
+        queryParams['email'] = email;
+      }
+
+      final response = await dio.get(
+        '${BackendConfig.apiBaseUrl}/contributions/export-contributions',
+        queryParameters: queryParams,
+        options: Options(headers: headers),
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {
+        'success': false,
+        'message': 'Unexpected response format',
+        'data': response.data,
+      };
+    } catch (e) {
+      return handleApiError(e, 'exporting contributions');
+    }
+  }
 }

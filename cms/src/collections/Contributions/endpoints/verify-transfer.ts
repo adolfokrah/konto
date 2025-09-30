@@ -61,6 +61,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
         paymentStatus: 'transferred',
         transactionReference: `transfer-${reference}`,
         viaPaymentLink: false,
+        amountContributed: -contribution.amountContributed,
       },
     })
 

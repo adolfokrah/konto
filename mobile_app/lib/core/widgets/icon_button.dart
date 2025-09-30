@@ -14,12 +14,16 @@ class AppIconButton extends StatelessWidget {
   /// Whether the button is enabled or disabled
   final bool enabled;
 
+  /// Whether to show a loading indicator instead of the icon
+  final bool loading;
+
   const AppIconButton({
     super.key,
     required this.onPressed,
     required this.icon,
     this.size,
     this.enabled = true,
+    this.loading = false,
   });
 
   @override
@@ -27,7 +31,16 @@ class AppIconButton extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return IconButton(
       onPressed: enabled ? onPressed : null,
-      icon: Icon(icon),
+      icon:
+          loading
+              ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              )
+              : Icon(icon),
       style: IconButton.styleFrom(
         backgroundColor:
             isDark

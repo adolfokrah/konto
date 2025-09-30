@@ -199,6 +199,7 @@ class ContributionsListBloc
             hasNextPage: hasNextPage,
             prevPage: prevPage,
             nextPage: nextPage,
+            contributorSearch: event.contributor,
           ),
         );
       } else {
