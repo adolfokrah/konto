@@ -189,71 +189,69 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
                       title: Text(localizations.withdrawalAccount),
                       centerTitle: true,
                     ),
-                    body: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 20),
+                    body: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20),
 
-                            // Form section
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(0),
-                              child: Column(
-                                children: [
-                                  // Bank selector
-                                  SelectInput<String>(
-                                    label: localizations.bank,
-                                    value: _selectedOperator,
-                                    options:
-                                        PaymentMethodUtils.getMobileMoneyOperatorOptions(
-                                          localizations,
-                                        ),
-                                    enabled: !isLoading,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedOperator = value;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(height: 19),
+                          // Form section
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(0),
+                            child: Column(
+                              children: [
+                                // Bank selector
+                                SelectInput<String>(
+                                  label: localizations.bank,
+                                  value: _selectedOperator,
+                                  options:
+                                      PaymentMethodUtils.getMobileMoneyOperatorOptions(
+                                        localizations,
+                                      ),
+                                  enabled: !isLoading,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedOperator = value;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 19),
 
-                                  // Account number input
-                                  AppTextInput(
-                                    label: localizations.accountNumber,
-                                    controller: _accountNumberController,
-                                    keyboardType: TextInputType.phone,
-                                    enabled: !isLoading,
-                                  ),
-                                  const SizedBox(height: 19),
+                                // Account number input
+                                AppTextInput(
+                                  label: localizations.accountNumber,
+                                  controller: _accountNumberController,
+                                  keyboardType: TextInputType.phone,
+                                  enabled: !isLoading,
+                                ),
+                                const SizedBox(height: 19),
 
-                                  // Info text
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: Text(
-                                      localizations
-                                          .contributionsTransferredAutomatically,
-                                      style: AppTextStyles.titleRegularM,
-                                    ),
+                                // Info text
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    localizations
+                                        .contributionsTransferredAutomatically,
+                                    style: AppTextStyles.titleRegularM,
                                   ),
-                                  const SizedBox(height: 30),
+                                ),
+                                const SizedBox(height: 30),
 
-                                  // Update button
-                                  AppButton.filled(
-                                    text: localizations.updateAccount,
-                                    isLoading: isLoading,
-                                    onPressed:
-                                        isLoading || !_hasChanges()
-                                            ? null
-                                            : _handleUpdateAccount,
-                                  ),
-                                ],
-                              ),
+                                // Update button
+                                AppButton.filled(
+                                  text: localizations.updateAccount,
+                                  isLoading: isLoading,
+                                  onPressed:
+                                      isLoading || !_hasChanges()
+                                          ? null
+                                          : _handleUpdateAccount,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   );

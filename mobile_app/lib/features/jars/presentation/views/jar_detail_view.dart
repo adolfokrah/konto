@@ -35,6 +35,7 @@ import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
+import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -650,9 +651,34 @@ class _JarDetailViewState extends State<JarDetailView> {
                       horizontal: AppSpacing.spacingM,
                       vertical: AppSpacing.spacingXs,
                     ),
-                    child: Text(
-                      localizations.recentContributions,
-                      style: TextStyles.titleMediumLg,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          localizations.recentContributions,
+                          style: TextStyles.titleMediumLg,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            // Clear all contribution filters before navigating
+                            try {
+                              context.read<FilterContributionsBloc>().add(
+                                ClearAllFilters(),
+                              );
+                            } catch (_) {
+                              // Bloc not found in context; ignore.
+                            }
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.contributionsList,
+                            );
+                          },
+                          child: Text(
+                            localizations.seeAll,
+                            style: TextStyles.titleMedium,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(
@@ -749,18 +775,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         ],
                                       )
                                       .expand((list) => list),
-                                  InkWell(
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.contributionsList,
-                                      );
-                                    },
-                                    child: Text(
-                                      localizations.seeAll,
-                                      style: TextStyles.titleMedium,
-                                    ),
-                                  ),
                                 ],
                               ),
                     ),

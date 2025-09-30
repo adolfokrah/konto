@@ -95,6 +95,7 @@ class NotficiationsListView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final n = notifications[index];
                       return AppCard(
+                        variant: CardVariant.secondary,
                         margin: EdgeInsets.only(
                           top: index == 0 ? AppSpacing.spacingM : 0,
                           bottom: AppSpacing.spacingM,

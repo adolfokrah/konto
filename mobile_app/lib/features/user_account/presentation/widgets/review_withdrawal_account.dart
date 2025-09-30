@@ -52,70 +52,68 @@ class ReviewWithdrawalAccountBottomSheet extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingM),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle bar
-            const Center(child: DragHandle()),
-            const SizedBox(height: AppSpacing.spacingM),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          const Center(child: DragHandle()),
+          const SizedBox(height: AppSpacing.spacingM),
 
-            // Title
-            Text('Review Account Details', style: TextStyles.titleBoldLg),
-            const SizedBox(height: AppSpacing.spacingXs),
+          // Title
+          Text('Review Account Details', style: TextStyles.titleBoldLg),
+          const SizedBox(height: AppSpacing.spacingXs),
 
-            // Account details card
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Account Name
-                _buildDetailRow(
-                  label: 'Account Name',
-                  value: verificationData.name,
+          // Account details card
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Account Name
+              _buildDetailRow(
+                label: 'Account Name',
+                value: verificationData.name,
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+
+              // Phone Number
+              _buildDetailRow(
+                label: 'Phone Number',
+                value: verificationData.phoneNumber,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.spacingL),
+
+          // Action buttons
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: AppButton(
+                  text: 'Cancel',
+                  variant: ButtonVariant.outline,
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                    onCancel?.call();
+                  },
                 ),
-                const SizedBox(height: AppSpacing.spacingM),
+              ),
+              const SizedBox(width: AppSpacing.spacingM),
 
-                // Phone Number
-                _buildDetailRow(
-                  label: 'Phone Number',
-                  value: verificationData.phoneNumber,
+              // Confirm button
+              Expanded(
+                child: AppButton(
+                  text: 'Confirm Account',
+                  variant: ButtonVariant.fill,
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                    onConfirm?.call();
+                  },
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.spacingL),
-
-            // Action buttons
-            Row(
-              children: [
-                // Cancel button
-                Expanded(
-                  child: AppButton(
-                    text: 'Cancel',
-                    variant: ButtonVariant.outline,
-                    onPressed: () {
-                      Navigator.pop(context, false);
-                      onCancel?.call();
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.spacingM),
-
-                // Confirm button
-                Expanded(
-                  child: AppButton(
-                    text: 'Confirm Account',
-                    variant: ButtonVariant.fill,
-                    onPressed: () {
-                      Navigator.pop(context, true);
-                      onConfirm?.call();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

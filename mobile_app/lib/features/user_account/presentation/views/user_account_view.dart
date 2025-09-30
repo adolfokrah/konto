@@ -31,51 +31,49 @@ class UserAccountView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.account), centerTitle: true),
-      body: SafeArea(
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener<AuthBloc, AuthState>(
-              listener: (context, state) {
-                if (state is AuthInitial) {
-                  // Navigate to login screen when user is logged out
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.login,
-                    (route) => false,
-                  );
-                }
-              },
-            ),
-            BlocListener<MediaBloc, MediaState>(
-              listener: (context, state) {
-                if (state is MediaLoaded &&
-                    state.context == MediaUploadContext.userPhoto) {
-                  final media = state.media;
-                  // Dispatch update to attach new photo to user
-                  context.read<UserAccountBloc>().add(
-                    UpdatePersonalDetails(photoId: media.id),
-                  );
-                }
-              },
-            ),
-          ],
-          child: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              User? currentUser;
-
-              // Show loading indicator during logout
-              if (state is AuthLoading) {
-                return const Center(child: CircularProgressIndicator());
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthInitial) {
+                // Navigate to login screen when user is logged out
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (route) => false,
+                );
               }
-
-              // Get current user from auth state or service registry
-              if (state is AuthAuthenticated) {
-                currentUser = state.user;
-                return _buildAccountView(context, currentUser);
-              }
-              return Container(); // Placeholder for unauthenticated users
             },
           ),
+          BlocListener<MediaBloc, MediaState>(
+            listener: (context, state) {
+              if (state is MediaLoaded &&
+                  state.context == MediaUploadContext.userPhoto) {
+                final media = state.media;
+                // Dispatch update to attach new photo to user
+                context.read<UserAccountBloc>().add(
+                  UpdatePersonalDetails(photoId: media.id),
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            User? currentUser;
+
+            // Show loading indicator during logout
+            if (state is AuthLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // Get current user from auth state or service registry
+            if (state is AuthAuthenticated) {
+              currentUser = state.user;
+              return _buildAccountView(context, currentUser);
+            }
+            return Container(); // Placeholder for unauthenticated users
+          },
         ),
       ),
     );

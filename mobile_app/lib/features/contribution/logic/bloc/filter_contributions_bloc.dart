@@ -14,6 +14,7 @@ class FilterContributionsBloc
     on<UpdateDateRange>(_onUpdateDateRange);
     on<ClearAllFilters>(_onClearAllFilters);
     on<SelectAllFilters>(_onSelectAllFilters);
+    on<ApplyFilters>(_onApplyFilters);
   }
 
   void _onTogglePaymentMethod(
@@ -149,5 +150,21 @@ class FilterContributionsBloc
         ),
       );
     }
+  }
+
+  void _onApplyFilters(
+    ApplyFilters event,
+    Emitter<FilterContributionsState> emit,
+  ) {
+    emit(
+      FilterContributionsLoaded(
+        selectedPaymentMethods: event.paymentMethods,
+        selectedStatuses: event.statuses,
+        selectedCollectors: event.collectors,
+        selectedDate: event.selectedDate,
+        startDate: event.startDate,
+        endDate: event.endDate,
+      ),
+    );
   }
 }

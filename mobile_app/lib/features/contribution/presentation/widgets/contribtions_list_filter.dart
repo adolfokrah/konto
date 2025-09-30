@@ -16,7 +16,7 @@ import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
-class ContributionsListFilter extends StatelessWidget {
+class ContributionsListFilter extends StatefulWidget {
   final String? contributor;
   const ContributionsListFilter({super.key, this.contributor});
 
@@ -33,102 +33,177 @@ class ContributionsListFilter extends StatelessWidget {
     );
   }
 
-  void _applyFilters(BuildContext context) {
-    // Just close the bottom sheet
-    // The ContributionsListView will automatically react to filter state changes
+  @override
+  State<ContributionsListFilter> createState() =>
+      _ContributionsListFilterState();
+}
+
+class _ContributionsListFilterState extends State<ContributionsListFilter> {
+  List<String> _pendingPaymentMethods = [];
+  List<String> _pendingStatuses = [];
+  List<String> _pendingCollectors = [];
+  String? _pendingDate;
+  DateTime? _pendingStartDate;
+  DateTime? _pendingEndDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final st = context.read<FilterContributionsBloc>().state;
+    if (st is FilterContributionsLoaded) {
+      _pendingPaymentMethods = List.from(st.selectedPaymentMethods ?? []);
+      _pendingStatuses = List.from(st.selectedStatuses ?? []);
+      _pendingCollectors = List.from(st.selectedCollectors ?? []);
+      _pendingDate = st.selectedDate;
+      _pendingStartDate = st.startDate;
+      _pendingEndDate = st.endDate;
+    }
+  }
+
+  void _togglePaymentMethod(String method) {
+    setState(() {
+      if (_pendingPaymentMethods.contains(method)) {
+        _pendingPaymentMethods.remove(method);
+      } else {
+        _pendingPaymentMethods.add(method);
+      }
+    });
+  }
+
+  void _toggleStatus(String status) {
+    setState(() {
+      if (_pendingStatuses.contains(status)) {
+        _pendingStatuses.remove(status);
+      } else {
+        _pendingStatuses.add(status);
+      }
+    });
+  }
+
+  void _toggleCollector(String id) {
+    setState(() {
+      if (_pendingCollectors.contains(id)) {
+        _pendingCollectors.remove(id);
+      } else {
+        _pendingCollectors.add(id);
+      }
+    });
+  }
+
+  void _updateDate({required String dateKey, DateTime? start, DateTime? end}) {
+    setState(() {
+      _pendingDate = dateKey;
+      _pendingStartDate = start;
+      _pendingEndDate = end;
+    });
+  }
+
+  void _applyFilters() {
+    context.read<FilterContributionsBloc>().add(
+      ApplyFilters(
+        paymentMethods: _pendingPaymentMethods,
+        statuses: _pendingStatuses,
+        collectors: _pendingCollectors,
+        selectedDate: _pendingDate,
+        startDate: _pendingStartDate,
+        endDate: _pendingEndDate,
+      ),
+    );
     Navigator.pop(context);
+  }
+
+  void _clearAll(List<String> allCollectorIds) {
+    setState(() {
+      _pendingPaymentMethods.clear();
+      _pendingStatuses.clear();
+      _pendingCollectors.clear();
+      _pendingDate = null;
+      _pendingStartDate = null;
+      _pendingEndDate = null;
+    });
+  }
+
+  void _selectAll(List<String> allCollectorIds) {
+    setState(() {
+      _pendingPaymentMethods = ['mobile-money', 'cash', 'bank-transfer'];
+      _pendingStatuses = ['pending', 'completed', 'failed', 'transferred'];
+      _pendingCollectors = List.from(allCollectorIds);
+      _pendingDate = _pendingDate ?? FilterOptions.defaultDateOption;
+    });
   }
 
   void _showDateOptions(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
+    final currentSelected = _pendingDate ?? FilterOptions.defaultDateOption;
+
+    // Translated date options
+    final translatedDateOptions = [
+      localizations.dateAll,
+      localizations.dateToday,
+      localizations.dateYesterday,
+      localizations.dateLast7Days,
+      localizations.dateLast30Days,
+      localizations.dateCustomRange,
+    ];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder:
-          (
-            modalContext,
-          ) => BlocBuilder<FilterContributionsBloc, FilterContributionsState>(
-            bloc: context.read<FilterContributionsBloc>(),
-            builder: (builderContext, state) {
-              final selectedDate =
-                  state is FilterContributionsLoaded
-                      ? state.selectedDate ?? FilterOptions.defaultDateOption
-                      : FilterOptions.defaultDateOption;
-
-              // Get translated date options
-              final translatedDateOptions = [
-                localizations.dateAll,
-                localizations.dateToday,
-                localizations.dateYesterday,
-                localizations.dateLast7Days,
-                localizations.dateLast30Days,
-                localizations.dateCustomRange,
-              ];
-
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingM,
+          (modalContext) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingM,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const DragHandle(),
+                  const SizedBox(height: AppSpacing.spacingM),
+                  Text(
+                    localizations.selectDateRange,
+                    style: TextStyles.titleBoldLg,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const DragHandle(),
-                      const SizedBox(height: AppSpacing.spacingM),
-                      Text(
-                        localizations.selectDateRange,
-                        style: TextStyles.titleBoldLg,
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
-                      AppCard(
-                        child: Column(
-                          children:
-                              translatedDateOptions.asMap().entries.map((
-                                entry,
-                              ) {
-                                final index = entry.key;
-                                final translatedOption = entry.value;
-                                final originalOption =
-                                    FilterOptions.dateOptions[index];
+                  const SizedBox(height: AppSpacing.spacingM),
+                  AppCard(
+                    child: Column(
+                      children:
+                          translatedDateOptions.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final translatedOption = entry.value;
+                            final originalOption =
+                                FilterOptions.dateOptions[index];
 
-                                return ListTile(
-                                  title: Text(
-                                    translatedOption,
-                                    style: TextStyles.titleMediumM,
-                                  ),
-                                  onTap: () {
-                                    if (originalOption == 'dateCustomRange') {
-                                      Navigator.pop(modalContext);
-                                      _showCustomDateRangePicker(context);
-                                    } else {
-                                      context
-                                          .read<FilterContributionsBloc>()
-                                          .add(
-                                            UpdateDateRange(
-                                              selectedDate: originalOption,
-                                            ),
-                                          );
-                                      Navigator.pop(modalContext);
-                                    }
-                                  },
-                                  trailing:
-                                      selectedDate == originalOption
-                                          ? const Icon(Icons.check, size: 18)
-                                          : null,
-                                );
-                              }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.spacingL),
-                    ],
+                            return ListTile(
+                              title: Text(
+                                translatedOption,
+                                style: TextStyles.titleMediumM,
+                              ),
+                              onTap: () {
+                                if (originalOption == 'dateCustomRange') {
+                                  Navigator.pop(modalContext);
+                                  _showCustomDateRangePicker(context);
+                                } else {
+                                  _updateDate(dateKey: originalOption);
+                                  Navigator.pop(modalContext);
+                                }
+                              },
+                              trailing:
+                                  currentSelected == originalOption
+                                      ? const Icon(Icons.check, size: 18)
+                                      : null,
+                            );
+                          }).toList(),
+                    ),
                   ),
-                ),
-              );
-            },
+                  const SizedBox(height: AppSpacing.spacingL),
+                ],
+              ),
+            ),
           ),
     );
   }
@@ -141,12 +216,10 @@ class ContributionsListFilter extends StatelessWidget {
     if (dateRange != null) {
       final customRange =
           '${_formatDate(dateRange.startDate)} - ${_formatDate(dateRange.endDate)}';
-      context.read<FilterContributionsBloc>().add(
-        UpdateDateRange(
-          selectedDate: customRange,
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-        ),
+      _updateDate(
+        dateKey: customRange,
+        start: dateRange.startDate,
+        end: dateRange.endDate,
       );
     }
   }
@@ -237,15 +310,27 @@ class ContributionsListFilter extends StatelessWidget {
                             style: TextStyles.titleBoldLg,
                           ),
                           GestureDetector(
-                            onTap:
-                                () =>
-                                    context.read<FilterContributionsBloc>().add(
-                                      state.hasFilters
-                                          ? ClearAllFilters()
-                                          : SelectAllFilters(allCollectorIds),
-                                    ),
+                            onTap: () {
+                              final hasPending =
+                                  _pendingPaymentMethods.isNotEmpty ||
+                                  _pendingStatuses.isNotEmpty ||
+                                  _pendingCollectors.isNotEmpty ||
+                                  _pendingDate != null ||
+                                  _pendingStartDate != null ||
+                                  _pendingEndDate != null;
+                              if (hasPending) {
+                                _clearAll(allCollectorIds);
+                              } else {
+                                _selectAll(allCollectorIds);
+                              }
+                            },
                             child: Text(
-                              state.hasFilters
+                              (_pendingPaymentMethods.isNotEmpty ||
+                                      _pendingStatuses.isNotEmpty ||
+                                      _pendingCollectors.isNotEmpty ||
+                                      _pendingDate != null ||
+                                      _pendingStartDate != null ||
+                                      _pendingEndDate != null)
                                   ? localizations.clearAll
                                   : localizations.selectAll,
                               style: TextStyles.titleMediumM,
@@ -273,11 +358,8 @@ class ContributionsListFilter extends StatelessWidget {
                                 (index) {
                                   final method =
                                       FilterOptions.paymentMethods[index];
-                                  final isSelected =
-                                      state.selectedPaymentMethods?.contains(
-                                        method.value,
-                                      ) ??
-                                      false;
+                                  final isSelected = _pendingPaymentMethods
+                                      .contains(method.value);
                                   final isLast =
                                       index ==
                                       FilterOptions.paymentMethods.length - 1;
@@ -309,11 +391,9 @@ class ContributionsListFilter extends StatelessWidget {
                                 index,
                               ) {
                                 final status = FilterOptions.statuses[index];
-                                final isSelected =
-                                    state.selectedStatuses?.contains(
-                                      status.value,
-                                    ) ??
-                                    false;
+                                final isSelected = _pendingStatuses.contains(
+                                  status.value,
+                                );
                                 final isLast =
                                     index == FilterOptions.statuses.length - 1;
 
@@ -399,11 +479,10 @@ class ContributionsListFilter extends StatelessWidget {
                                                         collectorModel
                                                             .collector!;
                                                     final isSelected =
-                                                        state.selectedCollectors
-                                                            ?.contains(
+                                                        _pendingCollectors
+                                                            .contains(
                                                               collector.id,
-                                                            ) ??
-                                                        false;
+                                                            );
 
                                                     return ListTile(
                                                       leading:
@@ -443,14 +522,9 @@ class ContributionsListFilter extends StatelessWidget {
                                                         size: 15,
                                                       ),
                                                       onTap:
-                                                          () => context
-                                                              .read<
-                                                                FilterContributionsBloc
-                                                              >()
-                                                              .add(
-                                                                ToggleCollector(
-                                                                  collector.id,
-                                                                ),
+                                                          () =>
+                                                              _toggleCollector(
+                                                                collector.id,
                                                               ),
                                                     );
                                                   },
@@ -492,7 +566,7 @@ class ContributionsListFilter extends StatelessWidget {
                                     subtitle: Text(
                                       _getTranslatedDateOption(
                                         context,
-                                        state.selectedDate ??
+                                        _pendingDate ??
                                             FilterOptions.defaultDateOption,
                                       ),
                                       style: TextStyles.titleMediumS,
@@ -514,7 +588,7 @@ class ContributionsListFilter extends StatelessWidget {
                       // Filter Button
                       AppButton.filled(
                         text: localizations.filter,
-                        onPressed: () => _applyFilters(context),
+                        onPressed: _applyFilters,
                       ),
                     ],
                   ),
@@ -549,10 +623,7 @@ class ContributionsListFilter extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap:
-          () => context.read<FilterContributionsBloc>().add(
-            TogglePaymentMethod(method.value),
-          ),
+      onTap: () => _togglePaymentMethod(method.value),
       child: AppCard(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
         child: ListTile(
@@ -601,10 +672,7 @@ class ContributionsListFilter extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap:
-          () => context.read<FilterContributionsBloc>().add(
-            ToggleStatus(status.value),
-          ),
+      onTap: () => _toggleStatus(status.value),
       child: AppCard(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
         child: ListTile(

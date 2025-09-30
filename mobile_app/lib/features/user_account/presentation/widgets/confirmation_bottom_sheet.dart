@@ -72,71 +72,69 @@ class ConfirmationBottomSheet extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingM),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            DragHandle(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          DragHandle(),
 
-            // Title
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                title,
-                style: TextStyles.titleMediumLg,
-                textAlign: TextAlign.center,
-              ),
+          // Title
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              style: TextStyles.titleMediumLg,
+              textAlign: TextAlign.center,
             ),
+          ),
 
-            const SizedBox(height: AppSpacing.spacingM),
+          const SizedBox(height: AppSpacing.spacingM),
 
-            // Description
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                description,
-                style: TextStyles.titleRegularM,
-                textAlign: TextAlign.center,
-              ),
+          // Description
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              description,
+              style: TextStyles.titleRegularM,
+              textAlign: TextAlign.center,
             ),
+          ),
 
-            const SizedBox(height: AppSpacing.spacingM),
+          const SizedBox(height: AppSpacing.spacingM),
 
-            // Action buttons
-            Row(
-              children: [
-                // Cancel button
-                Expanded(
-                  child: AppButton(
-                    text: cancelButtonText,
-                    variant: ButtonVariant.outline,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      if (onCancel != null) {
-                        onCancel!();
-                      }
-                    },
-                  ),
+          // Action buttons
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: AppButton(
+                  text: cancelButtonText,
+                  variant: ButtonVariant.outline,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    if (onCancel != null) {
+                      onCancel!();
+                    }
+                  },
                 ),
+              ),
 
-                const SizedBox(width: AppSpacing.spacingM),
+              const SizedBox(width: AppSpacing.spacingM),
 
-                // Confirm button
-                Expanded(
-                  child: AppButton(
-                    text: confirmButtonText,
-                    variant: ButtonVariant.fill,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      onConfirm();
-                    },
-                  ),
+              // Confirm button
+              Expanded(
+                child: AppButton(
+                  text: confirmButtonText,
+                  variant: ButtonVariant.fill,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onConfirm();
+                  },
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -38,3 +38,21 @@ final class SelectAllFilters extends FilterContributionsEvent {
 
   SelectAllFilters(this.allCollectorIds);
 }
+
+final class ApplyFilters extends FilterContributionsEvent {
+  final List<String> paymentMethods;
+  final List<String> statuses;
+  final List<String> collectors;
+  final String? selectedDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  ApplyFilters({
+    required this.paymentMethods,
+    required this.statuses,
+    required this.collectors,
+    this.selectedDate,
+    this.startDate,
+    this.endDate,
+  });
+}

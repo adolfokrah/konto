@@ -134,42 +134,40 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
 
                 return Scaffold(
                   appBar: AppBar(elevation: 0),
-                  body: SafeArea(
-                    child: SingleChildScrollView(
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Show warning only when critical fields are changed
-                            if (_hasChangedCriticalFields()) ...[
-                              AppCard(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Icon(Icons.info),
-                                    const SizedBox(width: AppSpacing.spacingXs),
-                                    Expanded(
-                                      child: Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.reVerificationWarning,
-                                      ),
+                  body: SingleChildScrollView(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Show warning only when critical fields are changed
+                          if (_hasChangedCriticalFields()) ...[
+                            AppCard(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.info),
+                                  const SizedBox(width: AppSpacing.spacingXs),
+                                  Expanded(
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.reVerificationWarning,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 20),
-                            ],
-                            // Header with back button and profile
-                            _buildHeader(state.user),
-                            const SizedBox(height: 38),
-                            // Personal information section
-                            _buildPersonalInformationSection(isLoading),
-                            const SizedBox(height: 40), // Add bottom padding
+                            ),
+                            const SizedBox(height: 20),
                           ],
-                        ),
+                          // Header with back button and profile
+                          _buildHeader(state.user),
+                          const SizedBox(height: 38),
+                          // Personal information section
+                          _buildPersonalInformationSection(isLoading),
+                          const SizedBox(height: 40), // Add bottom padding
+                        ],
                       ),
                     ),
                   ),
