@@ -154,15 +154,29 @@ export const exportContributions = async (req: PayloadRequest) => {
 
     // Generate PDF with improved table styling (outlined cells & spacing)
     const pdfDoc = await PDFDocument.create()
+
+    // Set PDF metadata for better viewer compatibility
+    pdfDoc.setTitle('Contributions Report')
+    pdfDoc.setAuthor('Hoga')
+    pdfDoc.setSubject('Contributions Export')
+    pdfDoc.setCreator('Hoga Platform')
+    pdfDoc.setProducer('Hoga PDF Generator')
+    pdfDoc.setCreationDate(new Date())
+    pdfDoc.setModificationDate(new Date())
+
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const pageMargin = 36
-    // Define column widths as percentages of available width
-    let page = pdfDoc.addPage()
+    const pageMargin = 40 // Reduced from 50 to 40
+    const topSafeArea = 20 // Reduced from 40 to 20 for viewer app bars
+    // Use A4 landscape dimensions for more horizontal space
+    const A4_PORTRAIT = { width: 595.28, height: 841.89 }
+    let page = pdfDoc.addPage([A4_PORTRAIT.height, A4_PORTRAIT.width]) // landscape (width > height)
     let { width: pageWidth, height: pageHeight } = page.getSize()
+    const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
     // Columns (reordered): ID, Contributor, Collector, Payment, Status, Type, Amount, Date
     // Amount moved to be immediately before Date per request; Date widened for full visibility.
-    const columnPercents = [0.07, 0.17, 0.17, 0.11, 0.1, 0.07, 0.11, 0.2] // sums to 1.00
+    // Fixed widths: generous ID column (15%) to prevent overflow
+    const columnPercents = [0.15, 0.14, 0.14, 0.11, 0.1, 0.09, 0.11, 0.16] // sums to 1.00
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
       'ID',
@@ -178,6 +192,7 @@ export const exportContributions = async (req: PayloadRequest) => {
     const titleSize = 18
     const headerFontSize = 10
     const bodyFontSize = 9
+    const idFontSize = bodyFontSize - 1
     const metaFontSize = 9
     const rowHeight = 20
     const headerRowHeight = 24
@@ -203,7 +218,7 @@ export const exportContributions = async (req: PayloadRequest) => {
     } catch (_) {}
 
     const applyPageBranding = (withLogo: boolean) => {
-      cursorY = pageHeight - pageMargin
+      cursorY = pageHeight - pageMargin - topSafeArea // Add safe area for viewer UI
       if (withLogo && logoImage) {
         const maxLogoWidth = 90
         const aspect = logoImage.height / logoImage.width
@@ -215,20 +230,23 @@ export const exportContributions = async (req: PayloadRequest) => {
           width: logoWidth,
           height: logoHeight,
         })
-        // Increased spacing beneath logo for clearer separation from title
-        cursorY = pageHeight - pageMargin - logoHeight - 36
+        // Reduced spacing beneath logo for more compact layout
+        cursorY = pageHeight - pageMargin - topSafeArea - logoHeight - 18
       }
     }
 
+    const pageRefs: any[] = []
     const addNewPage = () => {
-      page = pdfDoc.addPage()
+      page = pdfDoc.addPage([A4_PORTRAIT.height, A4_PORTRAIT.width]) // maintain landscape orientation
+      pageRefs.push(page)
       ;({ width: pageWidth, height: pageHeight } = page.getSize())
       // subsequent pages: no logo
       applyPageBranding(false)
       return page
     }
 
-    // Apply branding to first page WITH logo
+    // Apply branding to first page WITH logo and register page
+    pageRefs.push(page)
     applyPageBranding(true)
 
     const drawText = (text: string, x: number, y: number, size = bodyFontSize) => {
@@ -242,12 +260,22 @@ export const exportContributions = async (req: PayloadRequest) => {
       drawText(`Jar: ${jarName}`, pageMargin, cursorY, metaFontSize)
       cursorY -= metaFontSize + 2
     }
-    drawText(`Generated: ${new Date().toISOString()}`, pageMargin, cursorY, metaFontSize)
+    // Add note about multi-page document
+    drawText(
+      '(Multi-page document - scroll or swipe to view all pages)',
+      pageMargin,
+      cursorY,
+      metaFontSize - 1,
+    )
+    cursorY -= metaFontSize
+    const generatedAt = new Date()
+    const generatedDisplay = `${generatedAt.toLocaleDateString()} ${generatedAt.toLocaleTimeString()}`
+    drawText(`Generated: ${generatedDisplay}`, pageMargin, cursorY, metaFontSize)
     cursorY -= metaFontSize + 10
 
     // Table Header
     const drawHeader = () => {
-      if (cursorY - headerRowHeight < pageMargin) addNewPage()
+      if (cursorY - headerRowHeight < pageMargin + topSafeArea) addNewPage()
       let x = pageMargin
       headers.forEach((h, idx) => {
         const w = columnWidths[idx]
@@ -262,19 +290,27 @@ export const exportContributions = async (req: PayloadRequest) => {
         })
         const textX = x + 4
         const textY = cursorY - headerFontSize - 4 + 2
-        page.drawText(h, { x: textX, y: textY, size: headerFontSize, font, color: colors.bold })
+        page.drawText(h, {
+          x: textX,
+          y: textY,
+          size: headerFontSize,
+          font: idx === 0 ? monoFont : font,
+          color: colors.bold,
+        })
         x += w
       })
       cursorY -= headerRowHeight
     }
 
+    let headerDrawn = false
     drawHeader()
+    headerDrawn = true
 
     let total = 0
     // Determine if we should display totals: only when user explicitly filtered status to exactly 'completed'
     const statusFilterList = parseList((req.query as any).statuses)
     const showTotals = statusFilterList?.length === 1 && statusFilterList[0] === 'completed'
-    // Text wrapping utility: wraps by words; splits long words if needed
+    // Simple text wrapping utility
     const wrapText = (text: string, maxWidth: number, size: number): string[] => {
       if (!text) return ['']
       const words = text.split(/\s+/)
@@ -290,7 +326,6 @@ export const exportContributions = async (req: PayloadRequest) => {
             // Split long word
             let tmp = ''
             for (const ch of w) {
-              const chWidth = font.widthOfTextAtSize(ch, size)
               if (font.widthOfTextAtSize(tmp + ch, size) > maxWidth && tmp) {
                 lines.push(tmp)
                 tmp = ch
@@ -328,18 +363,34 @@ export const exportContributions = async (req: PayloadRequest) => {
       return lines
     }
 
+    // Simple character-based line breaking for IDs
+    const wrapIdText = (text: string, maxChars: number): string[] => {
+      if (!text) return ['']
+      const lines: string[] = []
+      for (let i = 0; i < text.length; i += maxChars) {
+        lines.push(text.slice(i, i + maxChars))
+      }
+      return lines
+    }
+    // ID formatting: constrain to a single line with middle ellipsis if too long
+    // Removed single-line truncation: ID will wrap like other columns now
+
     const drawRow = (cells: string[], rowIndex: number) => {
       // Determine wrapped lines for each cell
       const cellLines = cells.map((c, idx) => {
         const w = columnWidths[idx]
-        return wrapText(c, w - 8, bodyFontSize) // padding left/right 4 each
+        if (idx === 0) {
+          // ID column: simple character-based wrapping (approx 16 chars per line for mono font)
+          return wrapIdText(c, 16)
+        }
+        return wrapText(c, w - 8, bodyFontSize)
       })
       const lineHeight = bodyFontSize + 2
       const contentHeight = Math.max(...cellLines.map((l) => l.length)) * lineHeight
       const thisRowHeight = Math.max(rowHeight, contentHeight + 6) // baseline min + padding
-      if (cursorY - thisRowHeight < pageMargin) {
+      if (cursorY - thisRowHeight < pageMargin + topSafeArea) {
         addNewPage()
-        drawHeader()
+        // Do NOT draw header on subsequent pages per updated requirement
       }
       let x = pageMargin
       cells.forEach((_, idx) => {
@@ -359,10 +410,17 @@ export const exportContributions = async (req: PayloadRequest) => {
       x = pageMargin
       cellLines.forEach((lines, idx) => {
         const w = columnWidths[idx]
-        let textY = cursorY - 4 - bodyFontSize // start near top with padding
-        lines.forEach((ln) => {
-          page.drawText(ln, { x: x + 4, y: textY, size: bodyFontSize, font, color: colors.text })
-          textY -= lineHeight
+        const effectiveFontSize = idx === 0 ? idFontSize : bodyFontSize
+        let textY = cursorY - 4 - effectiveFontSize // start near top with padding
+        lines.forEach((ln: string) => {
+          page.drawText(ln, {
+            x: x + 4,
+            y: textY,
+            size: effectiveFontSize,
+            font: idx === 0 ? monoFont : font,
+            color: colors.text,
+          })
+          textY -= effectiveFontSize + 2
         })
         x += w
       })
@@ -370,7 +428,8 @@ export const exportContributions = async (req: PayloadRequest) => {
     }
 
     docs.forEach((c, idx) => {
-      const idShort = String(c.id).slice(-8)
+      // Use full ID (no truncation) as requested
+      const idShort = String(c.id)
       const contributor = String(c.contributor || c.contributorPhoneNumber || 'Anonymous')
       let collectorName = ''
       if (c.collector && typeof c.collector === 'object') {
@@ -392,7 +451,7 @@ export const exportContributions = async (req: PayloadRequest) => {
 
     if (showTotals) {
       // Totals footer
-      if (cursorY - rowHeight * 3 < pageMargin) {
+      if (cursorY - rowHeight * 3 < pageMargin + topSafeArea) {
         addNewPage()
       }
       // Add extra breathing space before totals block (increase margin)
@@ -412,6 +471,18 @@ export const exportContributions = async (req: PayloadRequest) => {
     }
 
     // (Logo already placed at top-left per page during page creation)
+    // Add page numbers (footer) after content creation
+    const totalPages = pageRefs.length
+    pageRefs.forEach((p, idx) => {
+      const footerText = `Page ${idx + 1} of ${totalPages}`
+      p.drawText(footerText, {
+        x: pageMargin,
+        y: 18,
+        size: 9,
+        font,
+        color: colors.text,
+      })
+    })
     const pdfBytes = await pdfDoc.save()
     const pdfBuffer = Buffer.from(pdfBytes)
 
@@ -421,7 +492,8 @@ export const exportContributions = async (req: PayloadRequest) => {
       from: 'Hoga <reports@usehoga.com>',
       to: [targetEmail],
       subject: 'Your Contributions Report',
-      html: `<p>Attached is your requested contributions report for <strong>${jarName || 'your jar'}</strong>. Total records: ${docs.length}.</p>`,
+      html: `<p>Attached is your requested contributions report for <strong>${jarName || 'your jar'}</strong>. Total records: ${docs.length}.</p>
+             <p><strong>Note:</strong> This is a multi-page PDF document. If you can't scroll in your email viewer, please download the PDF and open it in a dedicated PDF reader (like Adobe Reader, Preview, or your browser) for full navigation.</p>`,
       attachments: [
         {
           filename: fileName,
