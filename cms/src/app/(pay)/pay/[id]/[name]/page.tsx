@@ -102,7 +102,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   }
 }
 
-export default async function Page({ params }: any) {
+export default async function Page({ params, searchParams }: any) {
   const { id: jarId } = await params
 
   const payload = await getPayload({ config })
@@ -183,6 +183,17 @@ export default async function Page({ params }: any) {
           .substring(0, 2)
           .toUpperCase()
       : 'UN' // Unknown if no name
+
+    // Resolve collector id from query param or fallback to jar creator
+    const collectorIdFromQuery =
+      (searchParams?.collectorId as string) ||
+      (searchParams?.collectionId as string) ||
+      null
+    const creatorId =
+      typeof jarWithBalance?.creator === 'object'
+        ? jarWithBalance?.creator?.id
+        : jarWithBalance?.creator
+    const effectiveCollectorId = collectorIdFromQuery || creatorId
 
     return (
       <div className="min-h-screen bg-primary-light text-black">
@@ -265,6 +276,7 @@ export default async function Page({ params }: any) {
               jarId={jarId}
               jarName={jarWithBalance.name}
               isCreatorPaysPlatformFees={jarWithBalance.whoPaysPlatformFees === 'creator'}
+              collectorId={effectiveCollectorId}
             />
 
             <Separator />

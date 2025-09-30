@@ -16,6 +16,7 @@ interface ContributionInputProps {
   jarId?: string
   jarName?: string
   isCreatorPaysPlatformFees?: boolean
+  collectorId?: string | { id: string } | undefined
 }
 
 export default function ContributionInput({
@@ -26,6 +27,7 @@ export default function ContributionInput({
   jarId = '',
   jarName = 'Jar Contribution',
   isCreatorPaysPlatformFees = true,
+  collectorId = undefined,
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -148,6 +150,7 @@ export default function ContributionInput({
             amount: selectedAmount,
             currency,
             contributorPhoneNumber,
+          collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
           }),
         },
       )

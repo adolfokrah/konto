@@ -3,7 +3,7 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 export const createPaymentLinkContribution = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { jarId, contributorName, contributorPhoneNumber, amount } = req.data || {}
+    const { jarId, contributorName, contributorPhoneNumber, amount, collector } = req.data || {}
 
     // Validate required fields
     if (!jarId || !contributorName || !contributorPhoneNumber || !amount) {
@@ -56,7 +56,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         amountContributed: amount,
         paymentStatus: 'pending',
         type: 'contribution',
-        collector: jar.creator, // The jar creator is the collector for payment link contributions
+        collector: collector || jar.creator, // The jar creator is the collector for payment link contributions
         viaPaymentLink: true,
       },
       // Use admin context to bypass authentication requirements

@@ -18,7 +18,8 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     GetJarSummaryRequested event,
     Emitter<JarSummaryState> emit,
   ) async {
-    emit(JarSummaryLoading());
+    //only show loading if currnent jar is not the same as requested jar
+
     try {
       final serviceRegistry = ServiceRegistry();
       final jarStorageService = serviceRegistry.jarStorageService;
@@ -27,6 +28,15 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
 
       // Get jarId from storage
       final jarId = await jarStorageService.getCurrentJarId();
+
+      final currentState = state;
+      if (currentState is JarSummaryLoaded) {
+        if (currentState.jarData.id != jarId) {
+          emit(JarSummaryLoading());
+        }
+      } else {
+        emit(JarSummaryLoading());
+      }
 
       final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
 

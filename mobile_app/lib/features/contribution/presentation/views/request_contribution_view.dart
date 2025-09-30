@@ -5,6 +5,7 @@ import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
@@ -183,8 +184,14 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       body: BlocBuilder<JarSummaryBloc, JarSummaryState>(
         builder: (context, state) {
           if (state is JarSummaryLoaded) {
+            // Use current authenticated user ID instead of collectionId in the query param
+            String? currentUserId;
+            final authState = context.read<AuthBloc>().state;
+            if (authState is AuthAuthenticated) {
+              currentUserId = authState.user.id;
+            }
             final paymentLink =
-                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}";
+                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectionId=${currentUserId ?? ''}";
             return SizedBox(
               width: double.infinity,
               child: SingleChildScrollView(
