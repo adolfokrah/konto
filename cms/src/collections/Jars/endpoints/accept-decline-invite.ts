@@ -42,13 +42,9 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
       )
     }
 
-    const phoneNumbers = jar?.invitedCollectors
-      ?.map((collector) => collector.phoneNumber)
-      .filter((num): num is string => typeof num === 'string' && num.trim().length > 0)
+    const collectIds = jar?.invitedCollectors?.map((collector) => collector.id)
 
-    console.log(phoneNumbers, req.user?.phoneNumber)
-
-    if (!phoneNumbers?.includes(req.user?.phoneNumber as string)) {
+    if (!collectIds?.includes(req.user?.id as string)) {
       return Response.json(
         {
           success: false,
@@ -58,19 +54,18 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
       )
     }
 
-    const userPhoneNumber = req?.user?.phoneNumber
+    const userId = req?.user?.id
 
     let invitedCollectors =
       jar?.invitedCollectors?.map((collector) => {
-        if (collector?.phoneNumber === userPhoneNumber) {
+        if (collector?.id === userId) {
           return { ...collector, status: 'accepted' as const, collector: req?.user?.id }
         }
         return collector
       }) || []
 
     if (action === 'decline') {
-      invitedCollectors =
-        invitedCollectors?.filter((collector) => collector.phoneNumber !== userPhoneNumber) || []
+      invitedCollectors = invitedCollectors?.filter((collector) => collector.id !== userId) || []
 
       await req.payload.delete({
         collection: 'notifications',
