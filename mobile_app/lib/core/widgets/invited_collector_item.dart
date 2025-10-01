@@ -5,6 +5,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/features/jars/data/models/jar_model.dart';
 
 class InvitedCollectorItem extends StatelessWidget {
@@ -22,21 +23,6 @@ class InvitedCollectorItem extends StatelessWidget {
     this.onCancel,
     this.backgroundColor,
   });
-
-  /// Generate initials from the invited collector's name
-  String _getInitials(String? name) {
-    if (name == null || name.isEmpty) {
-      return '?';
-    }
-
-    final words = name.trim().split(' ');
-    if (words.length == 1) {
-      return words[0].substring(0, 1).toUpperCase();
-    } else {
-      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'
-          .toUpperCase();
-    }
-  }
 
   /// Show bottom sheet with collector options
   void _showCollectorOptionsBottomSheet(BuildContext context) {
@@ -147,15 +133,13 @@ class InvitedCollectorItem extends StatelessWidget {
       onTap: () {
         _showCollectorOptionsBottomSheet(context);
       },
-      leading: CircleAvatar(
+      leading: ContributorAvatar(
+        contributorName: invitedCollector.name ?? 'Unknown',
+        avatarUrl: invitedCollector.photo,
+        radius: 20,
+        showStatusOverlay: false,
         backgroundColor:
             backgroundColor ?? Theme.of(context).colorScheme.primary,
-        child: Text(
-          _getInitials(invitedCollector.name),
-          style: TextStyles.titleBoldM.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
       ),
       title: Text(
         invitedCollector.name ?? 'Unknown',

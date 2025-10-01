@@ -22,6 +22,8 @@ import 'package:Hoga/features/user_account/data/api_providers/user_account_api_p
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 import 'package:Hoga/features/notifications/data/api_proivders/notifications_provider.dart';
 import 'package:Hoga/features/notifications/data/repositories/notifications_repository.dart';
+import 'package:Hoga/features/collaborators/data/api_providers/collaborators_providers.dart';
+import 'package:Hoga/features/collaborators/data/repositories/collaborators_repository.dart';
 
 /// Service registry for dependency injection
 /// Ensures all services are properly initialized with their dependencies
@@ -52,6 +54,8 @@ class ServiceRegistry {
   late final UserAccountApiProvider _userAccountApiProvider;
   late final NotificationsApiProvider _notificationsApiProvider;
   late final NotificationsRepository _notificationsRepository;
+  late final CollaboratorsProvider _collaboratorsProvider;
+  late final CollaboratorsRepository _collaboratorsRepository;
 
   // Repositories
   late final AuthRepository _authRepository;
@@ -163,6 +167,11 @@ class ServiceRegistry {
     );
     // Notifications repository already initialized above with provider
 
+    _collaboratorsProvider = CollaboratorsProvider();
+    _collaboratorsRepository = CollaboratorsRepository(
+      collaboratorsProvider: _collaboratorsProvider,
+    );
+
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with Dio successfully');
   }
@@ -194,6 +203,9 @@ class ServiceRegistry {
   MomoRepository get momoRepository => _momoRepository;
   NotificationsRepository get notificationsRepository =>
       _notificationsRepository;
+  CollaboratorsProvider get collaboratorsProvider => _collaboratorsProvider;
+  CollaboratorsRepository get collaboratorsRepository =>
+      _collaboratorsRepository;
 
   /// Reset the registry (useful for testing)
   void reset() {
@@ -288,6 +300,11 @@ class ServiceRegistry {
       userStorageService: _userStorageService,
     );
     // Notifications repository already initialized above with provider
+
+    _collaboratorsProvider = CollaboratorsProvider();
+    _collaboratorsRepository = CollaboratorsRepository(
+      collaboratorsProvider: _collaboratorsProvider,
+    );
 
     _isInitialized = true;
     print('✅ ServiceRegistry initialized with custom Dio for testing');

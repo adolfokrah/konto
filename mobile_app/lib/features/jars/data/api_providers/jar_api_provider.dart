@@ -85,40 +85,6 @@ class JarApiProvider extends BaseApiProvider {
         };
       }
 
-      // Process and validate invitedCollectors data
-      List<Map<String, dynamic>> processedInvitedCollectors = [];
-      if (invitedCollectors != null) {
-        for (int i = 0; i < invitedCollectors.length; i++) {
-          final collector = invitedCollectors[i];
-
-          // Validate and clean collector data
-          final processedCollector = <String, dynamic>{};
-
-          // Extract name safely
-          final name = collector['name'];
-          if (name is String && name.isNotEmpty) {
-            processedCollector['name'] = name.trim();
-          }
-
-          // Extract phoneNumber safely
-          final phoneNumber = collector['phoneNumber'];
-          if (phoneNumber is String && phoneNumber.isNotEmpty) {
-            processedCollector['phoneNumber'] = phoneNumber.trim();
-          }
-
-          // Extract status safely
-          final status = collector['status'] ?? 'pending';
-          if (status is String) {
-            processedCollector['status'] = status;
-          }
-
-          // Explicitly set collector to null to avoid hook confusion
-          processedCollector['collector'] = null;
-
-          processedInvitedCollectors.add(processedCollector);
-        }
-      }
-
       // Prepare jar data based on the collection schema
       final jarData = <String, dynamic>{
         'name': name.trim(),
@@ -133,7 +99,7 @@ class JarApiProvider extends BaseApiProvider {
                 : null,
         'currency': currency.trim(),
         'creator': user.id,
-        'invitedCollectors': processedInvitedCollectors,
+        'invitedCollectors': invitedCollectors,
       };
 
       // Only add optional fields if they have valid values
@@ -240,16 +206,14 @@ class JarApiProvider extends BaseApiProvider {
           // Validate and clean collector data
           final processedCollector = <String, dynamic>{};
 
-          // Extract name safely
-          final name = collector['name'];
-          if (name is String && name.isNotEmpty) {
-            processedCollector['name'] = name;
-          }
+          // Extract collector ID - handle both String ID and Contact object
+          // Extract collector ID - should always be a string now
+          final collectorField = collector['collector'];
 
-          // Extract phoneNumber safely
-          final phoneNumber = collector['phoneNumber'];
-          if (phoneNumber is String && phoneNumber.isNotEmpty) {
-            processedCollector['phoneNumber'] = phoneNumber;
+          if (collectorField is String && collectorField.isNotEmpty) {
+            processedCollector['collector'] = collectorField;
+          } else {
+            continue; // Skip invalid collectors
           }
 
           // Extract status safely
@@ -257,15 +221,6 @@ class JarApiProvider extends BaseApiProvider {
           if (status is String) {
             processedCollector['status'] = status;
           }
-
-          // Extract thankYouMessage safely
-          final thankYouMessage = collector['thankYouMessage'];
-          if (thankYouMessage is String && thankYouMessage.isNotEmpty) {
-            processedCollector['thankYouMessage'] = thankYouMessage;
-          }
-
-          // Explicitly set collector to null to avoid hook confusion
-          processedCollector['collector'] = null;
 
           processedInvitedCollectors.add(processedCollector);
         }

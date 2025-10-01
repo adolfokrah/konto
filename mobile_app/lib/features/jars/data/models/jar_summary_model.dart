@@ -438,6 +438,7 @@ class UserModel {
   final String countryCode;
   final String country;
   final bool isKYCVerified;
+  final MediaModel? photo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -449,9 +450,37 @@ class UserModel {
     required this.countryCode,
     required this.country,
     required this.isKYCVerified,
+    this.photo,
     this.createdAt,
     this.updatedAt,
   });
+
+  /// Helper method to parse photo field which can be:
+  /// - null (no photo)
+  /// - String (photo ID only)
+  /// - Map<String, dynamic> (populated photo object)
+  static MediaModel? _parsePhotoField(dynamic photoField) {
+    if (photoField == null) {
+      return null;
+    }
+
+    if (photoField is String) {
+      // Photo is just an ID, create a minimal MediaModel
+      return MediaModel(
+        id: photoField,
+        alt: '',
+        filename: '',
+        url: null, // URL not available when only ID is provided
+      );
+    }
+
+    if (photoField is Map<String, dynamic>) {
+      // Photo is a populated object
+      return MediaModel.fromJson(photoField);
+    }
+
+    return null;
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -462,6 +491,7 @@ class UserModel {
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String,
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
+      photo: _parsePhotoField(json['photo']),
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)
@@ -473,6 +503,12 @@ class UserModel {
     );
   }
 
+  /// Whether this user has a profile picture with a valid URL
+  bool get hasProfilePicture => photo?.bestImageUrl != null;
+
+  /// Get the best available profile picture URL
+  String? get profilePictureUrl => photo?.bestImageUrl;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -482,6 +518,7 @@ class UserModel {
       'countryCode': countryCode,
       'country': country,
       'isKYCVerified': isKYCVerified,
+      'photo': photo?.toJson(),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -489,36 +526,59 @@ class UserModel {
 }
 
 class InvitedCollectorModel {
-  final UserModel? collector;
-  final String? phoneNumber;
-  final String? name;
+  final UserModel collector;
   final String status; // 'accepted' | 'pending'
 
-  const InvitedCollectorModel({
-    this.collector,
-    this.phoneNumber,
-    this.name,
-    required this.status,
-  });
+  const InvitedCollectorModel({required this.collector, required this.status});
 
   factory InvitedCollectorModel.fromJson(Map<String, dynamic> json) {
     return InvitedCollectorModel(
-      collector:
-          json['collector'] != null
-              ? UserModel.fromJson(json['collector'] as Map<String, dynamic>)
-              : null,
-      phoneNumber: json['phoneNumber'] as String?,
-      name: json['name'] as String?,
+      collector: UserModel.fromJson(json['collector'] as Map<String, dynamic>),
       status: json['status'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
+    return {'collector': collector.toJson(), 'status': status};
+  }
+}
+
+class MediaSize {
+  final int? width;
+  final int? height;
+  final String? url;
+  final String? filename;
+  final int? filesize;
+  final String? mimeType;
+
+  const MediaSize({
+    this.width,
+    this.height,
+    this.url,
+    this.filename,
+    this.filesize,
+    this.mimeType,
+  });
+
+  factory MediaSize.fromJson(Map<String, dynamic> json) {
+    return MediaSize(
+      width: json['width'] as int?,
+      height: json['height'] as int?,
+      url: json['url'] as String?,
+      filename: json['filename'] as String?,
+      filesize: json['filesize'] as int?,
+      mimeType: json['mimeType'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
     return {
-      'collector': collector?.toJson(),
-      'phoneNumber': phoneNumber,
-      'name': name,
-      'status': status,
+      'width': width,
+      'height': height,
+      'url': url,
+      'filename': filename,
+      'filesize': filesize,
+      'mimeType': mimeType,
     };
   }
 }
@@ -532,6 +592,7 @@ class MediaModel {
   final int? width;
   final int? height;
   final String? url;
+  final Map<String, MediaSize>? sizes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -544,6 +605,7 @@ class MediaModel {
     this.width,
     this.height,
     this.url,
+    this.sizes,
     this.createdAt,
     this.updatedAt,
   });
@@ -560,6 +622,15 @@ class MediaModel {
       width: json['width'] as int?,
       height: json['height'] as int?,
       url: json['url'] as String?,
+      sizes:
+          json['sizes'] != null
+              ? (json['sizes'] as Map<String, dynamic>).map(
+                (key, value) => MapEntry(
+                  key,
+                  MediaSize.fromJson(value as Map<String, dynamic>),
+                ),
+              )
+              : null,
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)
@@ -571,6 +642,28 @@ class MediaModel {
     );
   }
 
+  /// Returns the best available image URL, prioritizing thumbnail over original
+  String? get bestImageUrl {
+    // Try to get thumbnail from sizes first
+    if (sizes != null) {
+      // Priority order: thumbnail, small, medium, large, original
+      final preferredSizes = ['thumbnail', 'small', 'medium', 'large'];
+
+      for (final sizeKey in preferredSizes) {
+        final size = sizes![sizeKey];
+        if (size?.url != null) {
+          return size!.url;
+        }
+      }
+    }
+
+    // Fallback to original URL
+    return url;
+  }
+
+  /// Whether this media has a valid image URL
+  bool get hasValidImage => bestImageUrl != null;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -581,6 +674,8 @@ class MediaModel {
       'width': width,
       'height': height,
       'url': url,
+      if (sizes != null)
+        'sizes': sizes!.map((key, value) => MapEntry(key, value.toJson())),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

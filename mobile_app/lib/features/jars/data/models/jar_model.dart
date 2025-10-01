@@ -7,12 +7,14 @@ class InvitedCollector {
   final String? phoneNumber;
   final String? name;
   final String status; // 'accepted' | 'pending'
+  final String? photo;
 
   const InvitedCollector({
     this.collector,
     this.phoneNumber,
     this.name,
     required this.status,
+    this.photo,
   });
 
   factory InvitedCollector.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class InvitedCollector {
       phoneNumber: json['phoneNumber'] as String?,
       name: json['name'] as String?,
       status: json['status'] as String? ?? 'pending',
+      photo: json['photo'] as String?,
     );
   }
 
@@ -31,6 +34,7 @@ class InvitedCollector {
     return {
       if (collector != null) 'collector': collector!.toJson(),
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      if (photo != null) 'photo': photo,
       if (name != null) 'name': name,
       'status': status,
     };

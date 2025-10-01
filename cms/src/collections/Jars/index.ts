@@ -6,6 +6,7 @@ import { generatePaymentLink } from './hooks'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
+import { deleteInviteNotification } from './hooks/deleteInviteNotification'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -122,7 +123,7 @@ export const Jars: CollectionConfig = {
           name: 'collector',
           type: 'relationship',
           relationTo: 'users',
-          required: false,
+          required: true,
           hasMany: false,
           filterOptions: ({ data }) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,78 +139,6 @@ export const Jars: CollectionConfig = {
           },
           admin: {
             description: 'Users who can contribute to this jar (excluding the creator)',
-          },
-        },
-        {
-          name: 'phoneNumber',
-          type: 'text',
-          required: false,
-          admin: {
-            description:
-              'Phone number of the invited collector (auto-populated from selected collector)',
-            // readOnly: true,
-          },
-          hooks: {
-            beforeChange: [
-              async ({ data, siblingData, req, operation }) => {
-                // Auto-populate phone number from selected collector
-                if (
-                  siblingData?.collector &&
-                  siblingData.collector !== null &&
-                  data &&
-                  operation === 'update'
-                ) {
-                  try {
-                    // Get the collector ID
-                    const collectorId =
-                      typeof siblingData.collector === 'object'
-                        ? siblingData.collector.id
-                        : siblingData.collector
-
-                    // Fetch the user to get their phone number
-                    const user = await req.payload.findByID({
-                      collection: 'users',
-                      id: collectorId,
-                    })
-
-                    if (user?.phoneNumber) {
-                      // Normalize: remove leading 0 if present
-                      const normalized = `${user.phoneNumber}`.replace(/^0+/, '')
-                      siblingData.phoneNumber = normalized
-                      siblingData.name = user.fullName
-                    }
-                    // return data;
-                  } catch (error) {
-                    req.payload.logger.error('Error fetching collector phone number:', error)
-                  }
-                }
-
-                if (operation === 'create') {
-                  if (data && data.phoneNumber) {
-                    // Trim and remove a single leading 0 prior to parsing (common local format)
-                    let raw = `${data.phoneNumber}`.trim()
-                    raw = raw.replace(/^0+/, '')
-                    const parsedNumber = parsePhoneNumberFromString(raw)
-                    if (parsedNumber) {
-                      // Ensure stored national number has no leading zeros
-                      const national = `${parsedNumber.nationalNumber}`.replace(/^0+/, '')
-                      siblingData.phoneNumber = national
-                    } else {
-                      throw new Error('Invalid phone number format')
-                    }
-                  }
-                }
-              },
-            ],
-          },
-        },
-        {
-          name: 'name',
-          type: 'text',
-          required: false,
-          admin: {
-            description: 'Name of the invited collector (auto-populated from selected collector)',
-            // readOnly: true,
           },
         },
         {
@@ -279,7 +208,7 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [generatePaymentLink, sendInviteNotificationToUser],
+    afterChange: [generatePaymentLink, sendInviteNotificationToUser, deleteInviteNotification],
   },
   endpoints: [
     {

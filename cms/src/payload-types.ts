@@ -1466,15 +1466,7 @@ export interface Jar {
         /**
          * Users who can contribute to this jar (excluding the creator)
          */
-        collector?: (string | null) | User;
-        /**
-         * Phone number of the invited collector (auto-populated from selected collector)
-         */
-        phoneNumber?: string | null;
-        /**
-         * Name of the invited collector (auto-populated from selected collector)
-         */
-        name?: string | null;
+        collector: string | User;
         status: 'accepted' | 'pending';
         id?: string | null;
       }[]
@@ -2439,8 +2431,6 @@ export interface JarsSelect<T extends boolean = true> {
     | T
     | {
         collector?: T;
-        phoneNumber?: T;
-        name?: T;
         status?: T;
         id?: T;
       };

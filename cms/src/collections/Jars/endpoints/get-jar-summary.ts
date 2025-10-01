@@ -82,7 +82,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         ],
       },
       limit: 1,
-      depth: 2,
+      depth: 3,
     })
 
     if (jarResult.docs.length > 0) {

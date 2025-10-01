@@ -11,7 +11,6 @@ import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
 import { diditWebhook } from './endpoints/didit-webhook'
-import { sendInviteNotificationToUser } from './hooks/create-notification-for-invited-jars'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -359,6 +358,5 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [createSubAccount],
-    afterChange: [sendInviteNotificationToUser],
   },
 }

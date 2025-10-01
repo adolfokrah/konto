@@ -4,10 +4,8 @@ import type { CollectionAfterChangeHook, PayloadRequest } from 'payload'
 // Shape of an invited collector entry (array row) in the jar document
 interface InvitedCollectorRow {
   id?: string // Payload array row id
-  collector?: string | { id?: string } | null
-  phoneNumber?: string | null
+  collector: string // User ID (required)
   status?: string
-  name?: string | null
 }
 
 // Utility to coerce an unknown value into an array of InvitedCollectorRow
@@ -28,37 +26,45 @@ export const sendInviteNotificationToUser: CollectionAfterChangeHook = async ({
     const currentCollectors = asInvitedCollectors((doc as any).invitedCollectors)
     const prevCollectors = asInvitedCollectors((previousDoc as any)?.invitedCollectors)
 
-    // Determine new collectors (by phoneNumber; fallback to row id if phone missing)
-    const prevKeySet = new Set(
-      prevCollectors.map((c) => (c.phoneNumber ? c.phoneNumber : c.id)).filter(Boolean) as string[],
+    // Helper function to extract collector ID from either string or object
+    const getCollectorId = (collector: any): string | null => {
+      if (typeof collector === 'string') return collector
+      if (collector && typeof collector === 'object' && collector.id) return collector.id
+      return null
+    }
+
+    // Determine new collectors by collector ID
+    const prevCollectorIds = new Set(
+      prevCollectors.map((c) => getCollectorId(c.collector)).filter(Boolean) as string[],
     )
 
     const newCollectors = currentCollectors.filter((c) => {
-      const key = c.phoneNumber ? c.phoneNumber : c.id
-      if (!key) return false
-      return !prevKeySet.has(key)
+      const collectorId = getCollectorId(c.collector)
+      if (!collectorId) return false
+      const isNew = !prevCollectorIds.has(collectorId)
+      return isNew
     })
 
     if (newCollectors.length === 0) return doc
 
-    // Collect phone numbers for users lookup; filter out null/undefined and duplicates
-    const phoneNumbers = Array.from(
+    // Collect collector IDs for users lookup; filter out duplicates
+    const collectorIds = Array.from(
       new Set(
         newCollectors
-          .map((c) => c.phoneNumber)
-          .filter((p): p is string => typeof p === 'string' && p.trim().length > 0),
+          .map((c) => getCollectorId(c.collector))
+          .filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
       ),
     )
 
-    if (phoneNumbers.length === 0) return doc // nothing resolvable
+    if (collectorIds.length === 0) return doc // nothing resolvable
 
-    // Query users by phoneNumber using 'in' operator (Payload supports logical conditions)
+    // Query users by ID using 'in' operator
     const usersRes = await req.payload.find({
       collection: 'users',
       where: {
-        phoneNumber: { in: phoneNumbers },
+        id: { in: collectorIds },
       },
-      limit: phoneNumbers.length,
+      limit: collectorIds.length,
     })
 
     if (!usersRes?.docs?.length) return doc

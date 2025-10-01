@@ -5,7 +5,6 @@ import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/currencies.dart';
 import 'package:Hoga/core/constants/jar_groups.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/utils/sms_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/category_selector.dart';
 import 'package:Hoga/core/widgets/currency_picker.dart';
@@ -38,7 +37,7 @@ class _JarCreateViewState extends State<JarCreateView> {
   TextEditingController nameController = TextEditingController();
   String selectedJarGroup = '';
   Currency? selectedCurrency = Currencies.defaultCurrency;
-  List<InvitedCollector> invitedContributors = [];
+  List<InvitedCollector> newInvitedCollectors = [];
   String jarImageUrl = '';
   String jarImageId = '';
   double _scrollOffset = 0.0;
@@ -52,12 +51,16 @@ class _JarCreateViewState extends State<JarCreateView> {
   void _showInviteCollaboratorsSheet() {
     // Convert InvitedCollector to Contact for the sheet
     List<Contact> selectedContacts =
-        invitedContributors
+        newInvitedCollectors
             .map(
               (contributor) => Contact(
-                name: contributor.name ?? AppLocalizations.of(context)!.unknown,
-                phoneNumber: contributor.phoneNumber ?? '',
-                initials: _generateInitials(contributor.name ?? ''),
+                id:
+                    contributor.collector?.id ??
+                    AppLocalizations.of(context)!.unknown,
+                fullName: contributor.collector!.fullName,
+                email: contributor.collector!.email,
+                phoneNumber: contributor.collector!.phoneNumber,
+                photo: contributor.collector!.photo?.url,
               ),
             )
             .toList();
@@ -68,13 +71,32 @@ class _JarCreateViewState extends State<JarCreateView> {
       onContactsSelected: (contacts) {
         // Convert Contact back to InvitedCollector and update the list
         setState(() {
-          invitedContributors =
+          newInvitedCollectors =
               contacts
                   .map(
                     (contact) => InvitedCollector(
-                      name: contact.name,
+                      collector: UserModel(
+                        id: contact.id,
+                        fullName: contact.fullName,
+                        email: contact.email,
+                        phoneNumber: contact.phoneNumber,
+                        countryCode: '', // We don't have this from Contact
+                        country: '', // We don't have this from Contact
+                        isKYCVerified: false, // Default value
+                        photo:
+                            contact.photo != null
+                                ? MediaModel(
+                                  id: '',
+                                  alt: '',
+                                  filename: '',
+                                  url: contact.photo,
+                                )
+                                : null,
+                      ),
+                      name: contact.fullName,
                       phoneNumber: contact.phoneNumber,
                       status: 'pending', // New invites are always pending
+                      photo: contact.photo,
                     ),
                   )
                   .toList();
@@ -88,51 +110,6 @@ class _JarCreateViewState extends State<JarCreateView> {
       context,
       uploadContext: MediaUploadContext.jarImage,
     );
-  }
-
-  String _generateInitials(String name) {
-    if (name.isEmpty) return '?';
-
-    final words = name.trim().split(' ');
-    if (words.length == 1) {
-      return words[0].substring(0, 1).toUpperCase();
-    } else {
-      return '${words[0].substring(0, 1)}${words[words.length - 1].substring(0, 1)}'
-          .toUpperCase();
-    }
-  }
-
-  /// Send SMS invitations for newly created jar
-  void _sendSmsInvitations(JarModel jar) async {
-    // Check if there are invited contributors with phone numbers
-    final phoneNumbers =
-        invitedContributors
-            .where(
-              (contributor) =>
-                  contributor.phoneNumber != null &&
-                  contributor.phoneNumber!.isNotEmpty,
-            )
-            .map((contributor) => contributor.phoneNumber!)
-            .toList();
-
-    if (phoneNumbers.isEmpty) {
-      return; // No phone numbers to send SMS to
-    }
-
-    try {
-      // Use the SMS utility to open SMS app with the invitation message
-      if (mounted) {
-        await SmsUtils.openSmsAppForInvitation(
-          context,
-          jar.id,
-          jar.name,
-          phoneNumbers,
-        );
-      }
-    } catch (e) {
-      // Silently handle errors - don't disrupt the jar creation flow
-      print('Could not send SMS invitations: $e');
-    }
   }
 
   void _scrollListener() {
@@ -175,13 +152,11 @@ class _JarCreateViewState extends State<JarCreateView> {
     }
 
     final invitedCollectorsData =
-        invitedContributors
+        newInvitedCollectors
             .map(
               (contributor) => {
-                'name': contributor.name,
-                'phoneNumber':
-                    contributor.phoneNumber, // Remove toString() call
-                'status': contributor.status,
+                'collector': contributor.collector?.id,
+                'status': 'pending',
               },
             )
             .toList();
@@ -244,9 +219,6 @@ class _JarCreateViewState extends State<JarCreateView> {
 
               // 2. Refresh the jar list to include the new jar
               context.read<JarListBloc>().add(LoadJarList());
-
-              // 3. Send SMS invitations if there are invited contributors
-              _sendSmsInvitations(state.jar);
 
               // 4. Replace the entire navigation stack with the jar detail view
               Navigator.of(
@@ -447,21 +419,16 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     ],
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
-                                  ...invitedContributors.map(
-                                    (contributor) => Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: AppSpacing.spacingS,
-                                      ),
-                                      child: InvitedCollectorItem(
-                                        invitedCollector: contributor,
-                                        onCancel: () {
-                                          setState(() {
-                                            invitedContributors.remove(
-                                              contributor,
-                                            );
-                                          });
-                                        },
-                                      ),
+                                  ...newInvitedCollectors.map(
+                                    (contributor) => InvitedCollectorItem(
+                                      invitedCollector: contributor,
+                                      onCancel: () {
+                                        setState(() {
+                                          newInvitedCollectors.remove(
+                                            contributor,
+                                          );
+                                        });
+                                      },
                                     ),
                                   ),
                                   // Add minimum height to ensure scrolling

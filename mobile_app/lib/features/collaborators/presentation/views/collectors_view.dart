@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/utils/sms_utils.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/invited_collector_item.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
@@ -66,26 +68,6 @@ class _CollectorsViewState extends State<CollectorsView> {
           child: BlocListener<UpdateJarBloc, UpdateJarState>(
             listener: (context, state) {
               if (state is UpdateJarSuccess && _pendingNewCollectors != null) {
-                // After successfully updating the jar with new collectors,
-                // now send SMS invitations to the new collectors
-                final phoneNumbers =
-                    _pendingNewCollectors!
-                        .map((collector) => collector['phoneNumber'] as String)
-                        .toList();
-
-                // Get jar data from the jar summary bloc
-                final jarSummaryState = context.read<JarSummaryBloc>().state;
-                if (jarSummaryState is JarSummaryLoaded) {
-                  // Also open SMS app with the new collectors
-                  SmsUtils.openSmsAppForInvitation(
-                    context,
-                    jarSummaryState.jarData.id,
-                    jarSummaryState.jarData.name,
-                    phoneNumbers,
-                    showErrorMessages: false,
-                  );
-                }
-
                 // Clear pending collectors
                 _pendingNewCollectors = null;
               }
@@ -137,23 +119,13 @@ class _CollectorsViewState extends State<CollectorsView> {
     final updatedCollectors =
         jarData.invitedCollectors
             ?.where((collector) {
-              // Remove by matching phone number and name
-              final isSamePhoneNumber =
-                  collector.phoneNumber == collectorToRemove.phoneNumber;
-              final isSameName =
-                  (collector.name ?? collector.collector?.fullName) ==
-                  (collectorToRemove.name ??
-                      collectorToRemove.collector?.fullName);
-
-              return !(isSamePhoneNumber && isSameName);
+              // Remove by matching collector ID
+              return collector.collector.id != collectorToRemove.collector.id;
             })
             .map(
               (collector) => {
-                'name': collector.name ?? collector.collector?.fullName,
-                'phoneNumber': collector.phoneNumber,
+                'collector': collector.collector.id,
                 'status': collector.status,
-                if (collector.collector != null)
-                  'collector': collector.collector!.id,
               },
             )
             .toList() ??
@@ -196,14 +168,13 @@ class _CollectorsViewState extends State<CollectorsView> {
           onPressed: () {
             InviteCollaboratorsSheet.show(
               context,
-              onContactsSelected: (contacts) {
+              onContactsSelected: (collectors) {
                 // Convert contacts to invited collectors format
                 final newInvitedCollectors =
-                    contacts
+                    collectors
                         .map(
-                          (contact) => {
-                            'name': contact.name,
-                            'phoneNumber': contact.phoneNumber,
+                          (collector) => {
+                            'collector': collector.id,
                             'status': 'pending',
                           },
                         )
@@ -214,12 +185,8 @@ class _CollectorsViewState extends State<CollectorsView> {
                     jarData.invitedCollectors
                         ?.map(
                           (collector) => {
-                            'name':
-                                collector.name ?? collector.collector?.fullName,
-                            'phoneNumber': collector.phoneNumber,
+                            'collector': collector.collector.id,
                             'status': collector.status,
-                            if (collector.collector != null)
-                              'collector': collector.collector!.id,
                           },
                         )
                         .toList() ??
@@ -228,18 +195,18 @@ class _CollectorsViewState extends State<CollectorsView> {
                 // Get existing phone numbers to check for duplicates
                 final existingPhoneNumbers =
                     existingCollectors
-                        .map((collector) => collector['phoneNumber'])
-                        .where((phoneNumber) => phoneNumber != null)
+                        .map((collector) => collector['collector'])
+                        .where((collectorId) => collectorId != null)
                         .cast<String>()
                         .toSet();
 
-                // Filter out new invites with duplicate phone numbers
+                // Filter out new invites with duplicate collector IDs
                 final filteredNewCollectors =
                     newInvitedCollectors
                         .where(
                           (newCollector) =>
                               !existingPhoneNumbers.contains(
-                                newCollector['phoneNumber'],
+                                newCollector['collector'],
                               ),
                         )
                         .toList();
@@ -320,9 +287,11 @@ class _CollectorsViewState extends State<CollectorsView> {
                                 ? Theme.of(context).colorScheme.surface
                                 : Theme.of(context).colorScheme.primary,
                         invitedCollector: InvitedCollector(
+                          photo: collector.collector.photo?.url,
                           status: collector.status,
-                          name: collector.name ?? collector.collector?.fullName,
-                          phoneNumber: collector.phoneNumber,
+                          name: collector.collector.fullName,
+                          phoneNumber:
+                              "${collector.collector.countryCode}${collector.collector.phoneNumber}",
                         ),
                       ),
                     ],
@@ -369,18 +338,7 @@ class _CollectorsViewState extends State<CollectorsView> {
                         onCancel: () {
                           _removeInvitedCollector(context, jarData, collector);
                         },
-                        onRemind:
-                            collector.status == 'pending' &&
-                                    collector.phoneNumber != null
-                                ? () {
-                                  SmsUtils.openSmsAppForInvitation(
-                                    context,
-                                    jarData.id,
-                                    jarData.name,
-                                    [collector.phoneNumber!],
-                                  );
-                                }
-                                : null,
+                        onRemind: collector.status == 'pending' ? () {} : null,
                         backgroundColor:
                             isDark
                                 ? Theme.of(context).colorScheme.surface
@@ -388,8 +346,10 @@ class _CollectorsViewState extends State<CollectorsView> {
                         isNew: false,
                         invitedCollector: InvitedCollector(
                           status: collector.status,
-                          name: collector.name ?? collector.collector?.fullName,
-                          phoneNumber: collector.phoneNumber,
+                          name: collector.collector.fullName,
+                          photo: collector.collector.photo?.url,
+                          phoneNumber:
+                              "${collector.collector.countryCode}${collector.collector.phoneNumber}",
                         ),
                       ),
                     ],
