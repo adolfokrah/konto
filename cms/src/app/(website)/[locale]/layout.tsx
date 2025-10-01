@@ -4,6 +4,7 @@ import { AdminBar } from '@/components/AdminBar'
 import { draftMode } from 'next/headers'
 import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 import '../globals.css'
 export interface LocaleLayoutProps {
@@ -54,6 +55,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       <head>
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        <GoogleAnalytics gaId="G-V14P9R71JY" />
+
       </head>
       <body className="bg-primary-light text-black font-supreme" data-theme="light">
         <div className="fixed top-0 left-0 w-full z-40">
