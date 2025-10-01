@@ -309,8 +309,11 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [
+    beforeValidate: [
       async ({ data, originalDoc, operation, req }) => {
+        if (!data) {
+          return
+        }
         // Check for unique countryCode + phoneNumber combination only during updates
         if (operation === 'update' && data.countryCode && data.phoneNumber) {
           // Only check if phoneNumber or countryCode has changed
@@ -354,8 +357,8 @@ export const Users: CollectionConfig = {
           }
         }
       },
-      createSubAccount,
     ],
+    beforeChange: [createSubAccount],
     afterChange: [sendInviteNotificationToUser],
   },
 }
