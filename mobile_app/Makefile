@@ -2,6 +2,12 @@
 # Using konto-mobile-app Infisical project (dev environment only)
 
 # Development commands
+clean:
+	@echo "🧹 Cleaning Flutter project and regenerating files..."
+	@flutter clean
+	@flutter pub get
+	@cd ios && pod install && cd .. || true
+
 run:
 	@echo "🚀 Running Flutter app with Infisical secrets from .env file..."
 	@$(MAKE) download-secrets

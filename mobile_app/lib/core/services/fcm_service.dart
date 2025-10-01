@@ -165,6 +165,21 @@ class FCMService {
         // Reload current jar summary to reflect new contribution
         NavigationService.reloadCurrentJar(context, jarId);
       }
+    } else if (messageData['type'] == 'jarInvite' ||
+        messageData['type'] == 'kycFailed') {
+      final BuildContext? context = navigatorKey.currentContext;
+      if (context != null) {
+        try {
+          // Dispatch fetch notifications to update list
+          context.read<NotificationsBloc>().add(
+            FetchNotifications(limit: 20, page: 1),
+          );
+        } catch (e) {
+          print('⚠️ Could not dispatch FetchNotifications on push: $e');
+        }
+      }
+    } else {
+      print("ℹ️ Push notification type '${messageData['type']}' not handled");
     }
   }
 }
