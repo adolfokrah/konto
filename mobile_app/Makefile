@@ -55,6 +55,7 @@ download-secrets:
 	@echo "📄 Contents preview:"
 	@head -n 3 .env || true
 
+
 # Generate .env file for IDE (same as download-secrets for consistency)
 env: download-secrets
 

@@ -8,3 +8,10 @@ final class SearchCollectors extends CollectorsEvent {
 
   SearchCollectors(this.query);
 }
+
+final class SendReminderToCollector extends CollectorsEvent {
+  final String jarId;
+  final String collectorId;
+
+  SendReminderToCollector({required this.jarId, required this.collectorId});
+}

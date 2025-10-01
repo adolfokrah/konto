@@ -1,4 +1,5 @@
 import 'package:Hoga/core/services/fcm_service.dart';
+import 'package:Hoga/features/collaborators/logic/bloc/reminder_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
@@ -190,6 +191,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider(create: (context) => KycBloc()),
         BlocProvider(create: (context) => NotificationsBloc()),
         BlocProvider(create: (context) => JarInviteActionBloc()),
+        BlocProvider(create: (context) => ReminderBloc()),
         // Add more BLoCs here as you create them
         // BlocProvider(
         //   create: (context) => HomeBloc(),

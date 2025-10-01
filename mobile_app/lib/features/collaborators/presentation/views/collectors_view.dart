@@ -1,10 +1,9 @@
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/collaborators/logic/bloc/reminder_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/config/backend_config.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/invited_collector_item.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
@@ -327,34 +326,58 @@ class _CollectorsViewState extends State<CollectorsView> {
         Text(localizations.pending, style: TextStyles.titleBoldLg),
         const SizedBox(height: 16),
         AppCard(
-          child: Column(
-            children:
-                pendingCollectors.asMap().entries.map((entry) {
-                  final collector = entry.value;
+          child: BlocListener<ReminderBloc, ReminderState>(
+            listener: (context, state) {
+              if (state is ReminderSuccess) {
+                AppSnackBar.showSuccess(context, message: state.message);
+              } else if (state is ReminderFailure) {
+                AppSnackBar.showError(context, message: state.error);
+              }
+            },
+            child: Column(
+              children:
+                  pendingCollectors.asMap().entries.map((entry) {
+                    final collector = entry.value;
 
-                  return Column(
-                    children: [
-                      InvitedCollectorItem(
-                        onCancel: () {
-                          _removeInvitedCollector(context, jarData, collector);
-                        },
-                        onRemind: collector.status == 'pending' ? () {} : null,
-                        backgroundColor:
-                            isDark
-                                ? Theme.of(context).colorScheme.surface
-                                : Theme.of(context).colorScheme.primary,
-                        isNew: false,
-                        invitedCollector: InvitedCollector(
-                          status: collector.status,
-                          name: collector.collector.fullName,
-                          photo: collector.collector.photo?.url,
-                          phoneNumber:
-                              "${collector.collector.countryCode}${collector.collector.phoneNumber}",
+                    return Column(
+                      children: [
+                        InvitedCollectorItem(
+                          onCancel: () {
+                            _removeInvitedCollector(
+                              context,
+                              jarData,
+                              collector,
+                            );
+                          },
+                          onRemind:
+                              collector.status == 'pending'
+                                  ? () {
+                                    // Send reminder to collector
+                                    context.read<ReminderBloc>().add(
+                                      SendReminderToCollector(
+                                        jarId: jarData.id,
+                                        collectorId: collector.collector.id,
+                                      ),
+                                    );
+                                  }
+                                  : null,
+                          backgroundColor:
+                              isDark
+                                  ? Theme.of(context).colorScheme.surface
+                                  : Theme.of(context).colorScheme.primary,
+                          isNew: false,
+                          invitedCollector: InvitedCollector(
+                            status: collector.status,
+                            name: collector.collector.fullName,
+                            photo: collector.collector.photo?.url,
+                            phoneNumber:
+                                "${collector.collector.countryCode}${collector.collector.phoneNumber}",
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      ],
+                    );
+                  }).toList(),
+            ),
           ),
         ),
       ],

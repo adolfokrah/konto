@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AppTextStyles {
   // Heading Styles
   static const TextStyle headingOne = TextStyle(
-    fontFamily: 'Chubbo',
+    fontFamily: 'Chillax',
     fontSize: 58,
     fontWeight: FontWeight.bold, // Bold
     height: 1.2,
@@ -12,7 +12,7 @@ class AppTextStyles {
   );
 
   static const TextStyle headingTwo = TextStyle(
-    fontFamily: 'Chubbo',
+    fontFamily: 'Chillax',
     fontSize: 20,
     fontWeight: FontWeight.normal, // Auto weight
     height: 1.3,

@@ -41,4 +41,26 @@ class CollaboratorsRepository {
       };
     }
   }
+
+  /// Send reminder to a collector for a jar
+  /// Returns a Map with success status and response message
+  Future<Map<String, dynamic>> sendReminderToCollector({
+    required String jarId,
+    required String collectorId,
+  }) async {
+    try {
+      final apiResponse = await _collaboratorsProvider.sendReminderToCollector(
+        jarId: jarId,
+        collectorId: collectorId,
+      );
+
+      return apiResponse;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to send reminder: ${e.toString()}',
+        'error': e.toString(),
+      };
+    }
+  }
 }

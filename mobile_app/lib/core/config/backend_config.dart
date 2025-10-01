@@ -26,6 +26,7 @@ class BackendConfig {
   static const String jarsEndpoint = '/jars';
   // Notifications endpoint
   static const String notificationsEndpoint = '/notifications';
+  static const String sendReminderEndpoint = '/notifications/send-jar-reminder';
 
   // Timeout configurations
   static const Duration connectTimeout = Duration(seconds: 30);

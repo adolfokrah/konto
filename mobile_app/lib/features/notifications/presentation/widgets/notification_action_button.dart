@@ -31,9 +31,9 @@ class NotificationActionButton extends StatelessWidget {
         backgroundColor ?? Theme.of(context).colorScheme.primary;
     final effectivePadding =
         padding ??
-        EdgeInsets.symmetric(
-          vertical: AppSpacing.spacingXs,
-          horizontal: dense ? AppSpacing.spacingM : AppSpacing.spacingL,
+        EdgeInsets.only(
+          top: AppSpacing.spacingXs,
+          right: dense ? AppSpacing.spacingM : AppSpacing.spacingL,
         );
 
     return Opacity(
@@ -50,7 +50,7 @@ class NotificationActionButton extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: textColor ?? Theme.of(context).colorScheme.onPrimary,
+              color: textColor ?? Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
