@@ -42,7 +42,11 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
       )
     }
 
-    const collectIds = jar?.invitedCollectors?.map((collector) => collector.id)
+    const collectIds = jar?.invitedCollectors?.map((invitedCollector) =>
+      typeof invitedCollector.collector === 'string'
+        ? invitedCollector.collector
+        : invitedCollector.collector?.id,
+    )
 
     if (!collectIds?.includes(req.user?.id as string)) {
       return Response.json(
