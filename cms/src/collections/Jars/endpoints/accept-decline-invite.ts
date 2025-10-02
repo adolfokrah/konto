@@ -62,7 +62,10 @@ export const acceptDeclineInvite = async (req: PayloadRequest) => {
 
     let invitedCollectors =
       jar?.invitedCollectors?.map((collector) => {
-        if (collector?.id === userId) {
+        const collectorId =
+          typeof collector.collector === 'string' ? collector.collector : collector.collector?.id
+
+        if (collectorId === userId) {
           return { ...collector, status: 'accepted' as const, collector: req?.user?.id }
         }
         return collector
