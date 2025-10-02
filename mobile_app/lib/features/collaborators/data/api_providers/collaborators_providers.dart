@@ -22,8 +22,18 @@ class CollaboratorsProvider extends BaseApiProvider {
       final currentUserId = currentUser?.id;
 
       final queryParams = {
-        'limit': '5', // Get more users to filter on client side
+        'limit': '5',
         'depth': '1', // Populate photo object to get thumbnailURL
+        'where': {
+          'or': [
+            {
+              'email': {'contains': query},
+            },
+            {
+              'fullName': {'contains': query},
+            },
+          ],
+        },
       };
 
       final response = await dio.get(
@@ -36,33 +46,11 @@ class CollaboratorsProvider extends BaseApiProvider {
         final users =
             (data['docs'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
 
-        // Filter results to also match combined phone number format and exclude current user
+        // Only filter to exclude current user (server handles search filtering via queryParams)
         final filteredUsers =
             users.where((user) {
-              // Exclude current user
               final userId = user['id']?.toString();
-              if (userId != null && userId == currentUserId) {
-                return false;
-              }
-
-              final email = user['email']?.toString().toLowerCase() ?? '';
-              final fullName = user['fullName']?.toString().toLowerCase() ?? '';
-              final phoneNumber = user['phoneNumber']?.toString() ?? '';
-              final countryCode = user['countryCode']?.toString() ?? '';
-              final combinedPhone = '$countryCode$phoneNumber'.replaceAll(
-                '+',
-                '',
-              );
-
-              final searchQuery = query
-                  .toLowerCase()
-                  .replaceAll('+', '')
-                  .replaceAll(' ', '');
-
-              return email.contains(searchQuery) ||
-                  fullName.contains(searchQuery) ||
-                  phoneNumber.contains(searchQuery) ||
-                  combinedPhone.contains(searchQuery);
+              return userId != currentUserId;
             }).toList();
 
         print('✅ Filtered users: ${filteredUsers.length} found');

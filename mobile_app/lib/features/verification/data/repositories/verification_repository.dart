@@ -46,15 +46,12 @@ class VerificationRepository {
       // Generate message using service
       final message = _smsOtpService.generateOtpMessage(otp);
 
+      _smsApiProvider.sendWhatsAppOtp(phoneNumber: phoneNumber, otpCode: otp);
+
       // Send SMS using API provider
       final apiResponse = await _smsApiProvider.sendSms(
         phoneNumber: phoneNumber,
         message: message,
-      );
-
-      await _smsApiProvider.sendWhatsAppOtp(
-        phoneNumber: phoneNumber,
-        otpCode: otp,
       );
 
       if (apiResponse['success'] == true) {

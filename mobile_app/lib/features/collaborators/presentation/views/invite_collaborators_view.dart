@@ -171,9 +171,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                         children: [
                           ContributorAvatar(
                             backgroundColor:
-                                isDark
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).primaryColor,
+                                Theme.of(context).colorScheme.primary,
                             contributorName: collector.displayName,
                             avatarUrl:
                                 collector.hasProfilePicture
@@ -253,6 +251,8 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                         return ListTile(
                           contentPadding: EdgeInsets.all(0),
                           leading: ContributorAvatar(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                             contributorName: collector.displayName,
                             avatarUrl:
                                 collector.hasProfilePicture

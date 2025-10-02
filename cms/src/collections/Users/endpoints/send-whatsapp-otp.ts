@@ -127,6 +127,8 @@ export const sendWhatsAppOtp = async (req: PayloadRequest) => {
 
     const result = await response.json()
 
+    console.log(result)
+
     if (response.ok && result?.messages?.[0]?.id) {
       return Response.json(
         {

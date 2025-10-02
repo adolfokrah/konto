@@ -13,6 +13,7 @@ import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 
 class CollectorsView extends StatefulWidget {
   const CollectorsView({super.key});
@@ -69,6 +70,12 @@ class _CollectorsViewState extends State<CollectorsView> {
               if (state is UpdateJarSuccess && _pendingNewCollectors != null) {
                 // Clear pending collectors
                 _pendingNewCollectors = null;
+              }
+
+              if (state is UpdateJarInProgress) {
+                startLoading();
+              } else {
+                stopLoading();
               }
             },
             child: Column(
