@@ -2,6 +2,7 @@ import { authenticated } from '@/access/authenticated'
 import type { CollectionConfig } from 'payload'
 import { sendPushNotification } from './hooks/send-push-notification'
 import { sendJarInviteReminder } from './endpoints/send-jar-invite-reminder'
+import { cleanupOldNotifications } from './endpoints/cleanup-old-notifications'
 
 export const Notifications: CollectionConfig = {
   slug: 'notifications',
@@ -64,6 +65,11 @@ export const Notifications: CollectionConfig = {
       path: '/send-jar-reminder',
       method: 'post',
       handler: sendJarInviteReminder,
+    },
+    {
+      path: '/cleanup-old-notifications',
+      method: 'post',
+      handler: cleanupOldNotifications,
     },
   ],
   hooks: {

@@ -103,25 +103,6 @@ class FCMService {
         if (context != null) {
           // Navigate first so the NotificationsBloc in that route tree is mounted
           NavigationService.navigateToNotifications(context);
-
-          // After the next frame (route pushed), try to fetch notifications
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            final postNavContext = navigatorKey.currentContext;
-            if (postNavContext != null) {
-              try {
-                final bloc = postNavContext.read<NotificationsBloc>();
-                bloc.add(FetchNotifications(limit: 20, page: 1));
-              } catch (e) {
-                print(
-                  '⚠️ Could not dispatch FetchNotifications after navigation: $e',
-                );
-              }
-            } else {
-              print(
-                '⚠️ No context after navigation to dispatch notifications fetch',
-              );
-            }
-          });
         } else {
           print("❌ No navigation context available for jarInvite tap");
         }

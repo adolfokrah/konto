@@ -12,8 +12,24 @@ import 'package:Hoga/features/notifications/presentation/widgets/notification_ac
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
 // Consider renaming to `NotificationsListView` across the project when convenient.
-class NotficiationsListView extends StatelessWidget {
+class NotficiationsListView extends StatefulWidget {
   const NotficiationsListView({super.key});
+
+  @override
+  State<NotficiationsListView> createState() => _NotficiationsListViewState();
+}
+
+class _NotficiationsListViewState extends State<NotficiationsListView> {
+  @override
+  void initState() {
+    super.initState();
+    // Load notifications when the page opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationsBloc>().add(
+        FetchNotifications(limit: 20, page: 1),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,10 +123,7 @@ class NotficiationsListView extends StatelessWidget {
                     },
                   );
                 }
-                // Fallback (e.g., initial state) -> trigger fetch & show loader
-                context.read<NotificationsBloc>().add(
-                  FetchNotifications(limit: 20, page: 1),
-                );
+                // Initial state - show loading indicator
                 return const Center(child: CircularProgressIndicator());
               },
             );
