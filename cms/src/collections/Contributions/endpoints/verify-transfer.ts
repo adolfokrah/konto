@@ -99,7 +99,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
     fcmNotifications.sendNotification([creatorToken], message, title, {
       type: 'contribution',
       jarId: jar.id,
-      contributionId: contribution.id,
+      contributionId: transfer.id,
     })
 
     return Response.json({
