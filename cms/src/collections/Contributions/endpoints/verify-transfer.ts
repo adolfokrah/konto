@@ -90,8 +90,8 @@ export const verifyTransfer = async (req: PayloadRequest) => {
       jar = contribution.jar
     }
 
-    const message = `You have received a transfer of ${jar.currency} ${Number(contribution.amountContributed).toFixed(2)} for "${jar.name}"`
-    const title = 'New Transfer Received 🤑'
+    const message = `We sent you a transfer of ${jar.currency} ${Number(contribution.amountContributed).toFixed(2)} for "${jar.name}"`
+    const title = 'New Transfer Sent 💸'
     const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
 
     // Note: Need to define validTokens and contribution object for FCM notification
