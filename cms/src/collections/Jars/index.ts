@@ -7,6 +7,7 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
+import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -208,7 +209,12 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [generatePaymentLink, sendInviteNotificationToUser, deleteInviteNotification],
+    afterChange: [
+      generatePaymentLink,
+      sendInviteNotificationToUser,
+      deleteInviteNotification,
+      deleteInviteNotifications,
+    ],
   },
   endpoints: [
     {

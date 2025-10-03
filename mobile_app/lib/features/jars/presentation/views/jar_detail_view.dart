@@ -56,6 +56,9 @@ class _JarDetailViewState extends State<JarDetailView> {
 
     // Listen to scroll changes
     _scrollController.addListener(_scrollListener);
+
+    _requestFCMPermissionAndUpdateToken();
+    _fetchUserNotifications();
   }
 
   void _scrollListener() {
@@ -152,8 +155,6 @@ class _JarDetailViewState extends State<JarDetailView> {
             if (state is JarSummaryLoaded) {
               context.read<JarListBloc>().add(LoadJarList());
               // Request FCM permissions and update token
-              _requestFCMPermissionAndUpdateToken();
-              _fetchUserNotifications();
             }
           },
         ),
