@@ -10,9 +10,9 @@ export const MediumImpactHero: React.FC<Page['hero']> = ({
   appStoreLinks 
 }) => {
   return (
-    <div className="bg-secondary-background py-40  lg:py-50 xl:py-70 relative overflow-hidden">
+    <div className="bg-secondary-background py-40  lg:py-50 2xl:py-70 relative overflow-hidden">
       <div className="container relative z-10">
-          {title && <h1 className="text-3xl lg:text-4xl xl:text-5xl 2xl:text-7xl font-semibold font-chillax max-w-5xl  lg:leading-16  xl:leading-25 mx-auto text-center">{title}</h1>}
+          {title && <h1 className="text-3xl lg:text-4xl xl:text-5xl 2xl:text-7xl font-semibold font-chillax max-w-5xl  lg:leading-16  2xl:leading-25 mx-auto text-center">{title}</h1>}
           {subTitle && (
             <div className="mb-8 text-lg text-center mx-auto max-w-2xl mt-2">
              {subTitle}

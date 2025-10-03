@@ -61,6 +61,17 @@ download-secrets:
 	@echo "📄 Contents preview:"
 	@head -n 3 .env || true
 
+download-secrets-staging:
+	@echo "🔑 Downloading secrets from Infisical to .env file..."
+	@if ! command -v infisical >/dev/null 2>&1; then \
+		echo "❌ Infisical CLI not found. Please install it first."; \
+		exit 1; \
+	fi
+	@infisical export --env=staging --format=dotenv > .env
+	@echo "✅ Secrets downloaded to .env file"
+	@echo "📄 Contents preview:"
+	@head -n 3 .env || true
+
 
 # Generate .env file for IDE (same as download-secrets for consistency)
 env: download-secrets
