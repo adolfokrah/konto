@@ -238,6 +238,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
           style={{
             scrollbarWidth: 'none', // Firefox
             msOverflowStyle: 'none', // IE/Edge
+            scrollSnapType: 'x mandatory', // Enable horizontal snap scrolling
           }}
         >
           {testimonials.map((testimonial, index) => (
@@ -251,6 +252,9 @@ export const TestimonialsBlock: React.FC<Props> = ({
               onHoverStart={() => setHoveredIndex(index)}
               onHoverEnd={() => setHoveredIndex(null)}
               className="flex flex-col items-start p-6 lg:p-12 gap-2.5 w-full md:w-[611px]  md:h-[320px] bg-primary-light rounded-2xl flex-shrink-0"
+              style={{
+                scrollSnapAlign: 'start', // Snap to the start of each testimonial
+              }}
             >
               <div className="flex flex-col items-start gap-8 w-full h-full">
                 {/* Quote Icon */}

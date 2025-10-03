@@ -43,5 +43,7 @@ export const generateMeta = async (args: {
       url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
     }),
     title,
+    keywords:
+      'hoga, finance, budgeting, savings, jars, money management, contributions, fundraising, donations, collective savings, crowdfunding',
   }
 }

@@ -180,7 +180,7 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
         const isActive = isLinkActive(link)
         return (
           <HoverHighlighter key={i} link={link} isActive={isActive}>
-            <CMSLink {...link} className="!no-underline" appearance="link" />
+            <CMSLink {...link} className="!no-underline text-black" appearance="link" />
           </HoverHighlighter>
         )
       })}
