@@ -344,23 +344,7 @@ export const Users: CollectionConfig = {
                   phoneChanged || countryCodeChanged
                     ? 'USER_ALREADY_EXISTS'
                     : 'EMAIL_ALREADY_EXISTS',
-                details: {
-                  field: phoneChanged || countryCodeChanged ? 'phoneNumber' : 'email',
-                  ...(phoneChanged || countryCodeChanged
-                    ? {
-                        countryCode: data.countryCode,
-                        phoneNumber: data.phoneNumber,
-                      }
-                    : {}),
-                  ...(emailChanged ? { email: data.email } : {}),
-                },
               }),
-              {
-                status: 409,
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              },
             )
           }
         }
