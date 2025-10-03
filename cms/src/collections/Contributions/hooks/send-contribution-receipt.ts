@@ -10,11 +10,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
   previousDoc,
 }) => {
   if (operation === 'create' || operation === 'update') {
-    if (
-      data.paymentStatus === 'completed' &&
-      data.type === 'contribution' &&
-      previousDoc?.paymentStatus == 'pending'
-    ) {
+    if (data.paymentStatus === 'completed' && previousDoc?.paymentStatus == 'pending') {
       const jar = await req.payload.findByID({
         collection: 'jars',
         id: data.jar,
@@ -24,7 +20,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
       if (jar) {
         const receipt = `Your contribution of ${jar.currency} ${Number(data.chargesBreakdown.amountPaidByContributor).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
 
-        if (data.contributorPhoneNumber) {
+        if (data.contributorPhoneNumber && data.type == 'contribution') {
           sendSMS([data.contributorPhoneNumber], receipt)
         }
         const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
@@ -36,7 +32,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
           id: data?.collector,
         })
 
-        if (collectorObject?.fcmToken) {
+        if (collectorObject?.fcmToken && data.type == 'contribution') {
           tokens.push(collectorObject.fcmToken)
         }
 
@@ -47,13 +43,20 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
               token !== null && token !== undefined && typeof token === 'string',
           )
 
+          let message = `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`
+          let title = 'New Contribution Received 🤑'
+
+          if (data.type === 'transfer') {
+            message = `We sent you a transfer of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`
+            title = 'New Transfer Sent 💸'
+          }
+
           if (validTokens.length > 0) {
-            fcmNotifications.sendNotification(
-              validTokens,
-              `You have received a contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} for "${jar.name}"`,
-              'New Contribution Received 🤑',
-              { type: 'contribution', jarId: jar.id, contributionId: doc?.id },
-            )
+            fcmNotifications.sendNotification(validTokens, message, title, {
+              type: 'contribution',
+              jarId: jar.id,
+              contributionId: doc?.id,
+            })
           }
         } catch (error) {
           // Silently handle FCM notification errors
