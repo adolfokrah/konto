@@ -15,16 +15,16 @@ export const HighImpactHero: React.FC<Page['hero']> = ({
 }) => {
   return (
     <div className="w-full px-2 max-w-[2080px] mx-auto grid grid-cols-1 gap-1 lg:grid-cols-2 mt-25 md:mt-30">
-      <div className="bg-dark rounded-xl p-10 lg:p-26 text-white">
-        <div className="w-full xl:max-w-[80%]">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-7xl font-bold font-chillax ">
+      <div className="bg-dark  rounded-xl p-10 lg:p-26 text-white">
+        <div className="w-full 2xl:max-w-[90%]">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-6xl 2xl:text-8xl font-bold font-chillax ">
             {title}
           </h1>
-          <p className="my-4 xl:max-w-[60%]">{subTitle}</p>
+          <p className="my-4 xl:max-w-[80%] 2xl:max-w-[60%]">{subTitle}</p>
           <DownloadButton variant="invert" title={buttonTitle || 'Download App'} />
         </div>
 
-        <div className="flex  flex-col md:flex-row w-full mt-30 lg:mt-40 xl:mt-90 md:items-center gap-4 justify-between">
+        <div className="flex  flex-col md:flex-row w-full mt-30 lg:mt-40 xl:mt-40 2xl:mt-80 md:items-center gap-4 justify-between">
           {/* Downloads Section with Avatars */}
           {avatarsSection?.enabled && (
             <div className="flex items-center gap-2">
