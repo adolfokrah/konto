@@ -2,18 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/core/enums/app_language.dart';
-import 'package:Hoga/core/services/user_storage_service.dart';
+
+import 'package:Hoga/core/services/base_api_provider.dart';
 
 /// API Provider for updating user details
-class UserAccountApiProvider {
-  final Dio _dio;
-  final UserStorageService _userStorageService;
-
+class UserAccountApiProvider extends BaseApiProvider {
   UserAccountApiProvider({
-    required Dio dio,
-    required UserStorageService userStorageService,
-  }) : _dio = dio,
-       _userStorageService = userStorageService;
+    required super.dio,
+    required super.userStorageService,
+  });
 
   /// Update user details (personal information)
   Future<Map<String, dynamic>> updateUserDetails({
@@ -31,14 +28,14 @@ class UserAccountApiProvider {
     String? fcmToken,
   }) async {
     try {
-      final user = await _userStorageService.getUserData();
+      final user = await userStorageService.getUserData();
       if (user == null) {
         return {'success': false, 'message': 'User not authenticated'};
       }
 
-      final token = await _userStorageService.getAuthToken();
-      if (token == null) {
-        return {'success': false, 'message': 'Authentication token not found'};
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) {
+        return getUnauthenticatedError();
       }
 
       final updateData = <String, dynamic>{};
@@ -66,18 +63,11 @@ class UserAccountApiProvider {
         return {'success': false, 'message': 'No data provided for update'};
       }
 
-      final response = await _dio.patch(
+      final response = await dio.patch(
         '${BackendConfig.apiBaseUrl}${BackendConfig.usersEndpoint}/${user.id}',
         data: updateData,
-        options: Options(
-          headers: {
-            ...BackendConfig.defaultHeaders,
-            'Authorization': 'Bearer $token',
-          },
-        ),
+        options: Options(headers: headers),
       );
-
-      print('Response Data: ${response.data} (✅)');
 
       if (response.statusCode == 200) {
         return {
@@ -97,19 +87,71 @@ class UserAccountApiProvider {
       }
     } catch (e) {
       if (e is DioException) {
-        return {
-          'success': false,
-          'message':
-              'Network error: ${e.response?.data?['message'] ?? e.message}',
-          'error': e.toString(),
-          'statusCode': e.response?.statusCode,
-        };
+        final responseData = e.response?.data;
+        final statusCode = e.response?.statusCode;
+
+        // Handle validation errors (400, 409, 422) and server errors (500) with validation info
+        if (statusCode == 400 ||
+            statusCode == 409 ||
+            statusCode == 422 ||
+            statusCode == 500) {
+          if (responseData is Map<String, dynamic>) {
+            // Check for Payload validation error format
+            if (responseData.containsKey('errors') &&
+                responseData['errors'] is List) {
+              final errors = responseData['errors'] as List;
+              if (errors.isNotEmpty && errors.first is Map) {
+                final firstError = errors.first as Map<String, dynamic>;
+                final errorMessage =
+                    firstError['message'] ?? 'Validation error occurred';
+
+                print('🔍 Error Debug - Full Response Data: $responseData');
+                print('🔍 Error Debug - Error Message: $errorMessage');
+                print('🔍 Error Debug - Status Code: $statusCode');
+
+                // Check if it's the generic error and look for more specific info
+                if (errorMessage == 'Something went wrong.' &&
+                    errors.length > 1) {
+                  // Try to find a more specific error message
+                  for (final error in errors) {
+                    if (error is Map<String, dynamic> &&
+                        error['message'] != null &&
+                        error['message'] != 'Something went wrong.') {
+                      return {
+                        'success': false,
+                        'message': error['message'],
+                        'statusCode': statusCode,
+                      };
+                    }
+                  }
+                }
+
+                return {
+                  'success': false,
+                  'message': errorMessage,
+                  'statusCode': statusCode,
+                };
+              }
+            }
+
+            // Check for custom validation format
+            if (responseData.containsKey('status') ||
+                responseData.containsKey('message')) {
+              return {
+                'success': false,
+                'status': responseData['status'] ?? false,
+                'message':
+                    responseData['message'] ?? 'Validation error occurred',
+                'exists': responseData['exists'] ?? false,
+                'statusCode': statusCode,
+              };
+            }
+          }
+        }
       }
-      return {
-        'success': false,
-        'message': 'Error updating user details: ${e.toString()}',
-        'error': e.toString(),
-      };
+
+      // Use the base provider's error handling for all other cases
+      return handleApiError(e, 'updating user details');
     }
   }
 
@@ -119,7 +161,7 @@ class UserAccountApiProvider {
     required String bank,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/users/verify-account-details',
         data: {'phoneNumber': phoneNumber, 'bank': bank},
         options: Options(headers: BackendConfig.defaultHeaders),

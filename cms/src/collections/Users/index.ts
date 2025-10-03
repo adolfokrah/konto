@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig } from 'payload'
 
 import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
@@ -320,32 +320,54 @@ export const Users: CollectionConfig = {
         const emailChanged = data.email !== originalDoc.email
 
         if (phoneChanged || countryCodeChanged || emailChanged) {
-          const mockReq = {
-            ...req,
-            data: {
-              email: data.email,
-              phoneNumber: data.phoneNumber,
-              countryCode: data.countryCode,
-            },
+          const { payload } = req
+
+          // Check phone number if changed
+          if ((phoneChanged || countryCodeChanged) && data.phoneNumber && data.countryCode) {
+            const formattedPhoneNumber =
+              data.phoneNumber?.startsWith('0') && data.phoneNumber.length > 1
+                ? data.phoneNumber.substring(1)
+                : data.phoneNumber
+
+            const existingUserByPhone = await payload.find({
+              collection: 'users',
+              where: {
+                and: [
+                  { phoneNumber: { equals: formattedPhoneNumber } },
+                  { countryCode: { equals: data.countryCode } },
+                  { id: { not_equals: originalDoc.id } }, // Exclude current user
+                ],
+              },
+              limit: 1,
+            })
+
+            if (existingUserByPhone.docs.length > 0) {
+              throw new APIError(
+                'This phone number is already registered with another account.',
+                409,
+              )
+            }
           }
 
-          const response = await checkUserExistence(mockReq)
-          const result = await response.json()
+          // Check email if changed
+          if (emailChanged && data.email) {
+            const existingUserByEmail = await payload.find({
+              collection: 'users',
+              where: {
+                and: [
+                  { email: { equals: data.email } },
+                  { id: { not_equals: originalDoc.id } }, // Exclude current user
+                ],
+              },
+              limit: 1,
+            })
 
-          if (result.exists) {
-            throw new Response(
-              JSON.stringify({
-                success: false,
-                message:
-                  phoneChanged || countryCodeChanged
-                    ? 'This phone number is already registered with another account.'
-                    : 'This email address is already registered with another account.',
-                error:
-                  phoneChanged || countryCodeChanged
-                    ? 'USER_ALREADY_EXISTS'
-                    : 'EMAIL_ALREADY_EXISTS',
-              }),
-            )
+            if (existingUserByEmail.docs.length > 0) {
+              throw new APIError(
+                'This email address is already registered with another account.',
+                409,
+              )
+            }
           }
         }
       },

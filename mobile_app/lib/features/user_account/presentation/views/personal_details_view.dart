@@ -114,10 +114,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
             Navigator.of(context).pop();
           }
         } else if (userAccountState is UserAccountError) {
-          // Show error message
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(userAccountState.message)));
+          AppSnackBar.showError(context, message: userAccountState.message);
         }
       },
       child: BlocBuilder<AuthBloc, AuthState>(
