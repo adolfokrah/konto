@@ -119,75 +119,74 @@ class _JarsListViewState extends State<JarsListView> {
         backgroundColor: Theme.of(
           context,
         ).colorScheme.surface.withValues(alpha: 0.6),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.spacingS),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Close button positioned at top right
-                Row(
-                  children: [
-                    AppIconButton(
-                      onPressed: () {
-                        HapticUtils.heavy();
-                        Navigator.of(context).pop();
-                      },
-                      icon: Icons.close,
-                      size: const Size(40, 40),
-                    ),
-                  ],
-                ),
-
-                // Content area - jar list
-                Expanded(
-                  child: BlocBuilder<JarListBloc, JarListState>(
-                    builder: (context, state) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildJarListContent(state, localizations),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-                Center(
-                  child: AppSmallButton(
-                    backgroundColor:
-                        isDark
-                            ? Theme.of(context).colorScheme.onSurface
-                            : AppColors.black,
-                    padding: EdgeInsets.only(
-                      left: AppSpacing.spacingS,
-                      right: AppSpacing.spacingL,
-                      top: AppSpacing.spacingS,
-                      bottom: AppSpacing.spacingS,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add, size: 20, color: textColor),
-                        const SizedBox(width: AppSpacing.spacingXs),
-                        Text(
-                          localizations.createJar,
-                          style: TextStyles.titleMedium.copyWith(
-                            color: textColor,
-                          ),
-                        ),
-                      ],
-                    ),
+        body: Padding(
+          padding: const EdgeInsets.all(AppSpacing.spacingS),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Close button positioned at top right
+              const SizedBox(height: AppSpacing.spacingS),
+              Row(
+                children: [
+                  AppIconButton(
                     onPressed: () {
                       HapticUtils.heavy();
-                      Navigator.of(context).pushNamed('/jar_create');
+                      Navigator.of(context).pop();
                     },
+                    icon: Icons.close,
+                    size: const Size(40, 40),
                   ),
+                ],
+              ),
+
+              // Content area - jar list
+              Expanded(
+                child: BlocBuilder<JarListBloc, JarListState>(
+                  builder: (context, state) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildJarListContent(state, localizations),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+              Center(
+                child: AppSmallButton(
+                  backgroundColor:
+                      isDark
+                          ? Theme.of(context).colorScheme.onSurface
+                          : AppColors.black,
+                  padding: EdgeInsets.only(
+                    left: AppSpacing.spacingS,
+                    right: AppSpacing.spacingL,
+                    top: AppSpacing.spacingS,
+                    bottom: AppSpacing.spacingS,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 20, color: textColor),
+                      const SizedBox(width: AppSpacing.spacingXs),
+                      Text(
+                        localizations.createJar,
+                        style: TextStyles.titleMedium.copyWith(
+                          color: textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  onPressed: () {
+                    HapticUtils.heavy();
+                    Navigator.of(context).pushNamed('/jar_create');
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

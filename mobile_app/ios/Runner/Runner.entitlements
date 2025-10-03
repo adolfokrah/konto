@@ -10,8 +10,8 @@
 	
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:konto-57286.firebaseapp.com</string>
-		<string>applinks:konto-57286.page.link</string>
+		<string>applinks:hoga-2e89a.firebaseapp.com</string>
+		<string>applinks:hoga-2e89a.page.link</string>
 	</array>
 	
 	Both push notifications and associated domains require paid Apple Developer Program

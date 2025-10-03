@@ -310,49 +310,58 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, originalDoc, operation, req }) => {
-        if (!data) {
+        if (!data || operation !== 'update') {
           return
         }
-        // Check for unique countryCode + phoneNumber combination only during updates
-        if (operation === 'update' && data.countryCode && data.phoneNumber) {
-          // Only check if phoneNumber or countryCode has changed
-          const phoneChanged = data.phoneNumber !== originalDoc.phoneNumber
-          const countryCodeChanged = data.countryCode !== originalDoc.countryCode
 
-          if (phoneChanged || countryCodeChanged) {
-            const { payload } = req
+        // Check if phone number or email changed
+        const phoneChanged = data.phoneNumber !== originalDoc.phoneNumber
+        const countryCodeChanged = data.countryCode !== originalDoc.countryCode
+        const emailChanged = data.email !== originalDoc.email
 
-            // Search for existing users with the same countryCode + phoneNumber
-            const existingUsers = await payload.find({
-              collection: 'users',
-              where: {
-                and: [
-                  {
-                    countryCode: {
-                      equals: data.countryCode,
-                    },
-                  },
-                  {
-                    phoneNumber: {
-                      equals: data.phoneNumber,
-                    },
-                  },
-                  // Exclude current user
-                  {
-                    id: {
-                      not_equals: originalDoc.id,
-                    },
-                  },
-                ],
+        if (phoneChanged || countryCodeChanged || emailChanged) {
+          const mockReq = {
+            ...req,
+            data: {
+              email: data.email,
+              phoneNumber: data.phoneNumber,
+              countryCode: data.countryCode,
+            },
+          }
+
+          const response = await checkUserExistence(mockReq)
+          const result = await response.json()
+
+          if (result.exists) {
+            throw new Response(
+              JSON.stringify({
+                success: false,
+                message:
+                  phoneChanged || countryCodeChanged
+                    ? 'This phone number is already registered with another account.'
+                    : 'This email address is already registered with another account.',
+                error:
+                  phoneChanged || countryCodeChanged
+                    ? 'USER_ALREADY_EXISTS'
+                    : 'EMAIL_ALREADY_EXISTS',
+                details: {
+                  field: phoneChanged || countryCodeChanged ? 'phoneNumber' : 'email',
+                  ...(phoneChanged || countryCodeChanged
+                    ? {
+                        countryCode: data.countryCode,
+                        phoneNumber: data.phoneNumber,
+                      }
+                    : {}),
+                  ...(emailChanged ? { email: data.email } : {}),
+                },
+              }),
+              {
+                status: 409,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               },
-              limit: 1,
-            })
-
-            if (existingUsers.docs.length > 0) {
-              throw new Error(
-                `A user with country code ${data.countryCode} and phone number ${data.phoneNumber} already exists.`,
-              )
-            }
+            )
           }
         }
       },

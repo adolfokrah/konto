@@ -45,9 +45,9 @@
 			<string>FIREBASE_DEEP_LINK</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>konto-57286</string>
+				<string>hoga-2e89a</string>
 				<string>https</string>
-				<string>konto-57286.firebaseapp.com</string>
+				<string>hoga-2e89a.firebaseapp.com</string>
 			</array>
 		</dict>
 	</array>
