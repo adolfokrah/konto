@@ -215,9 +215,6 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                             decoration: const PrettyQrDecoration(
                               shape: PrettyQrDotsSymbol(color: Colors.black),
                               background: Colors.transparent,
-                              image: PrettyQrDecorationImage(
-                                image: AssetImage(AppImages.logo),
-                              ),
                             ),
                           ),
                         ),

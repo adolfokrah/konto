@@ -1,4 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 
 // Verifies (or simulates) a transfer for a contribution. Can be called
 // as an API endpoint handler OR internally from verifyPayment. We need
@@ -73,6 +74,32 @@ export const verifyTransfer = async (req: PayloadRequest) => {
         isTransferred: true,
         linkedTransfer: transfer.id,
       },
+    })
+
+    // Fetch the jar details if not already populated
+    let jar: any
+    if (typeof contribution.jar === 'string') {
+      // If jar is just an ID, fetch the full jar object
+      const jarResult = await req.payload.findByID({
+        collection: 'jars',
+        id: contribution.jar,
+      })
+      jar = jarResult
+    } else {
+      // If jar is already populated, use it directly
+      jar = contribution.jar
+    }
+
+    const message = `You have received a transfer of ${jar.currency} ${Number(contribution.amountContributed).toFixed(2)} for "${jar.name}"`
+    const title = 'New Transfer Received 🤑'
+    const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
+
+    // Note: Need to define validTokens and contribution object for FCM notification
+    // This appears to be missing from the current implementation
+    fcmNotifications.sendNotification([creatorToken], message, title, {
+      type: 'contribution',
+      jarId: jar.id,
+      contributionId: contribution.id,
     })
 
     return Response.json({
