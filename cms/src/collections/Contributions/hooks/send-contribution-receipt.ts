@@ -11,9 +11,12 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
 }) => {
   if (operation === 'create' || operation === 'update') {
     if (
-      data.paymentStatus === 'completed' &&
-      data.type === 'contribution' &&
-      previousDoc?.paymentStatus == 'pending'
+      (data.paymentStatus === 'completed' &&
+        data.type === 'contribution' &&
+        data.paymentMethod != 'mobile-money') ||
+      (previousDoc?.paymentStatus == 'pending' &&
+        data.paymentStatus === 'completed' &&
+        data.type == 'contribution')
     ) {
       const jar = await req.payload.findByID({
         collection: 'jars',

@@ -35,6 +35,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   String? currency;
   String? jarName;
   String? jarId;
+  String? jarCreatorId;
 
   final List<String> _operators = [
     'MTN Mobile Money',
@@ -61,10 +62,22 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         if (jar is Map<String, dynamic>) {
           jarId = jar['id'] as String?;
           jarName = jar['name'] as String?;
+          // Extract creator ID - could be nested in creator object or direct field
+          if (jar['creator'] != null) {
+            if (jar['creator'] is Map<String, dynamic>) {
+              jarCreatorId = jar['creator']['id'] as String?;
+            } else if (jar['creator'] is String) {
+              jarCreatorId = jar['creator'] as String?;
+            }
+          }
         } else {
           // Assume it's a jar model object
           jarId = jar.id as String?;
           jarName = jar.name as String?;
+          // Extract creator ID from jar model object
+          if (jar.creator != null) {
+            jarCreatorId = jar.creator.id as String?;
+          }
         }
       }
     }
@@ -311,10 +324,13 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       // Check if user has set up withdrawal account using AuthBloc
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        if (authState.user.accountHolder == null ||
-            authState.user.accountHolder!.isEmpty) {
-          Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
-          return;
+        // Only check account holder if the current user is the creator of the jar
+        if (authState.user.id == jarCreatorId) {
+          if (authState.user.accountHolder == null ||
+              authState.user.accountHolder!.isEmpty) {
+            Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+            return;
+          }
         }
       }
     }
@@ -326,8 +342,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         return;
       }
     }
-
-    // Since we're now storing the API format directly, no conversion needed
 
     context.read<AddContributionBloc>().add(
       AddContributionSubmitted(

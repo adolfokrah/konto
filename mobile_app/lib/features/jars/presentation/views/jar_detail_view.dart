@@ -384,15 +384,30 @@ class _JarDetailViewState extends State<JarDetailView> {
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                localizations.amountToBeTransferred(
-                  CurrencyUtils.getCurrencySymbol(jarData.currency),
-                  jarData.balanceBreakDown.totalAmountTobeTransferred
-                      .toString(),
-                ),
-                style: TextStyles.titleRegularXs,
+              // Only show amount to be transferred if user is the creator
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  final isCreator =
+                      authState is AuthAuthenticated &&
+                      jarData.creator.id == authState.user.id;
+                  if (!isCreator) {
+                    return const SizedBox(height: AppSpacing.spacingXs);
+                  }
+                  return Column(
+                    children: [
+                      Text(
+                        localizations.amountToBeTransferred(
+                          CurrencyUtils.getCurrencySymbol(jarData.currency),
+                          jarData.balanceBreakDown.totalAmountTobeTransferred
+                              .toString(),
+                        ),
+                        style: TextStyles.titleRegularXs,
+                      ),
+                      const SizedBox(height: AppSpacing.spacingXs),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: AppSpacing.spacingXs),
               AppSmallButton(
                 child: Text(localizations.jars, style: TextStyles.titleMedium),
                 onPressed: () {
