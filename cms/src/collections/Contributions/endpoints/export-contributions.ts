@@ -1,9 +1,9 @@
 import type { PayloadRequest } from 'payload'
-import { resend } from '@/utilities/initalise'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import fs from 'fs'
 import path from 'path'
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
+import { emailService } from '@/utilities/emailService'
 
 // Helper to parse list-type query params that may be comma-separated
 const parseList = (value: any): string[] | undefined => {
@@ -486,21 +486,9 @@ export const exportContributions = async (req: PayloadRequest) => {
     const pdfBytes = await pdfDoc.save()
     const pdfBuffer = Buffer.from(pdfBytes)
 
-    // Email PDF via Resend
+    // Email PDF via Resend (skip in test mode)
     const fileName = `contributions_${Date.now()}.pdf`
-    await resend.emails.send({
-      from: 'Hoga <reports@usehoga.com>',
-      to: [targetEmail],
-      subject: `Your Contributions Report for ${jarName || 'the jar'}`,
-      html: `<p>Attached is your requested contributions report for <strong>${jarName || 'your jar'}</strong>. Total records: ${docs.length}.</p>
-             <p><strong>Note:</strong> This is a multi-page PDF document. If you can't scroll in your email viewer, please download the PDF and open it in a dedicated PDF reader (like Adobe Reader, Preview, or your browser) for full navigation.</p>`,
-      attachments: [
-        {
-          filename: fileName,
-          content: pdfBuffer.toString('base64'),
-        },
-      ],
-    })
+    await emailService.sendExportReportEmail(targetEmail, jarName, docs.length, fileName, pdfBuffer)
 
     // Attempt push notification to the requesting user (if token available)
     try {

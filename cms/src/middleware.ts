@@ -29,6 +29,7 @@ export function middleware(request: NextRequest) {
       '/Logo.svg',
       '/fonts/',
       '/next/',
+      '/email',
     ].some((path) => pathname.startsWith(path)) ||
     // Skip static image files
     pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/i)

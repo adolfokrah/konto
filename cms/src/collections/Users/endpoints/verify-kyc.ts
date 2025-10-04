@@ -1,7 +1,6 @@
 import type { PayloadRequest } from 'payload'
 import { sendSMS } from '@/utilities/sms'
-import { resend } from '@/utilities/initalise'
-import kycVerified from '@/components/emailTemplates/kycVerified'
+import { emailService } from '@/utilities/emailService'
 import {
   DiditKYC,
   isSessionCompleted,
@@ -88,7 +87,9 @@ export const verifyKYC = async (req: PayloadRequest) => {
 
       const message = `${user.fullName}, Unfortunately, your KYC verification was not successful. Please try again or contact support for assistance.`
 
-      await sendSMS(user.phoneNumber, message)
+      if (process.env.NODE_ENV !== 'test') {
+        await sendSMS(user.phoneNumber, message)
+      }
 
       req.payload.create({
         collection: 'notifications',
@@ -104,8 +105,8 @@ export const verifyKYC = async (req: PayloadRequest) => {
 
     // Send notifications if KYC is verified
     if (newKycStatus === 'verified') {
-      // Send SMS notification
-      if (user.phoneNumber) {
+      // Send SMS notification (skip in test mode)
+      if (user.phoneNumber && process.env.NODE_ENV !== 'test') {
         await sendSMS(
           user.phoneNumber,
           `${user.fullName}, Congratulations! Your KYC verification has been approved. You can now access all features of your account.`,
@@ -124,14 +125,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
 
       // Send email notification
       if (user.email) {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'noreply@konto.com',
-          to: user.email,
-          subject: 'KYC Verification Approved',
-          react: kycVerified({
-            fullname: user.fullName || 'User',
-          }),
-        })
+        await emailService.sendKycVerificationEmail(user.email, user.fullName || 'User')
       }
     }
 

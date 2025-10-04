@@ -29,7 +29,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       if (jar) {
         const isCreator = jar.creator?.id === req.user!.id
         const isInvitedCollector = jar.invitedCollectors?.some(
-          (collector: any) => collector.collector?.id === req.user!.id,
+          (collector: { collector?: { id: string } }) => collector.collector?.id === req.user!.id,
         )
 
         // If user doesn't have access, fall back to getting their first jar
@@ -250,6 +250,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const data = {
     ...jar,
+    invitedCollectors: jar.invitedCollectors.filter(
+      (invitedCollector: { collector?: any }) => typeof invitedCollector.collector === 'object',
+    ), // Hide invited collectors for privacy
     contributions: recentJarContributions,
     chartData: totalContributionsChart(),
     isCreator: jar.creator?.id === req.user!.id,

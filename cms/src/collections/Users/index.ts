@@ -12,6 +12,7 @@ import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
 import { diditWebhook } from './endpoints/didit-webhook'
 import { accountDeletion } from './hooks/account-deletion'
+import { sendWelcomeEmail } from './hooks/send-welcome-email'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -380,6 +381,7 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [createSubAccount],
+    afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
   },
 }

@@ -1,5 +1,5 @@
 import { CollectionBeforeDeleteHook } from 'payload'
-import { resend } from '@/utilities/initalise'
+import { emailService } from '@/utilities/emailService'
 
 export const accountDeletion: CollectionBeforeDeleteHook = async ({ id, req }) => {
   const userId = id
@@ -36,10 +36,7 @@ export const accountDeletion: CollectionBeforeDeleteHook = async ({ id, req }) =
   }
 
   // send email to users about account deletion
-  await resend.emails.send({
-    from: 'Hoga <noreply@usehoga.com>',
-    to: user?.email || '',
-    subject: 'Account Deletion',
-    html: '<p>Your account has been deleted.</p>',
-  })
+  if (user?.email) {
+    await emailService.sendAccountDeletionEmail(user.email, user.fullName || 'User')
+  }
 }
