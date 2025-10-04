@@ -10,11 +10,11 @@ export default function Welcome({ fullname = 'John Doe' }: EmailTemplateProps) {
     <Layout title={` You’re in! Let’s make contributions transparent ✨`}>
       <div>
         <p>Hi {fullname},</p>
-        <p>My name is kelvin - I’m the founder and CEO of hoga.</p>
+        <p>My name is Kelvin - I’m the founder and CEO of Hoga.</p>
 
         <p>
-          We started hoga because we wanted to make traditional contributions simple, transparent,
-          and traceable.Whether you’re organizing an event or supporting one, Hoga makes every cedi
+          We started Hoga because we wanted to make traditional contributions simple, transparent,
+          and traceable. Whether you’re organizing an event or supporting one, Hoga makes every cedi
           count (and every contribution comes with a digital receipt).
         </p>
         <p>What you get with Hoga</p>
