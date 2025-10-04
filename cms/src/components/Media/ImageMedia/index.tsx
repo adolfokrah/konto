@@ -45,7 +45,6 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     const cacheTag = resource.updatedAt
 
     src = getMediaUrl(url, cacheTag)
-  
   }
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)
@@ -63,9 +62,12 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   }
 
   // Production-specific image key to force re-render on navigation
-  const imageKey = process.env.NODE_ENV === 'production' 
-    ? `${typeof src === 'string' ? src : ''}-${resource && typeof resource === 'object' ? resource.id || '' : ''}-${resource && typeof resource === 'object' ? resource.updatedAt || '' : ''}`
-    : typeof src === 'string' ? src : undefined
+  const imageKey =
+    process.env.NODE_ENV === 'production'
+      ? `${typeof src === 'string' ? src : ''}-${resource && typeof resource === 'object' ? resource.id || '' : ''}-${resource && typeof resource === 'object' ? resource.updatedAt || '' : ''}`
+      : typeof src === 'string'
+        ? src
+        : undefined
 
   return (
     <picture className={cn(pictureClassName)}>
@@ -84,7 +86,6 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         width={!fill ? width : undefined}
         key={imageKey}
         unoptimized={process.env.NODE_ENV === 'production' ? false : false}
-      
       />
     </picture>
   )

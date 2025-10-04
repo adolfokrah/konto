@@ -25,7 +25,9 @@ import { cn } from '@/utilities/ui'
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps | AlertBlockProps>
+  | SerializedBlockNode<
+      CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps | AlertBlockProps
+    >
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!
@@ -40,22 +42,64 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
   heading: ({ node, nodesToJSX }) => {
-    const tag = node.tag;
-    const className = "!font-chillax font-semibold";
-    const style = { fontFamily: 'Chillax, system-ui, sans-serif' };
-    
-    if (tag === 'h1') return <h1 className={cn('text-3xl md:text-3xl xl:text-5xl 2xl:text-7xl',className)} style={style}>{nodesToJSX({ nodes: node.children })}</h1>;
-    if (tag === 'h2') return <h2 className={cn('text-2xl lg:text-5xl font-semibold text-black mb-2',className)} style={style}>{nodesToJSX({ nodes: node.children })}</h2>;
-    if (tag === 'h3') return <h3 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h3>;
-    if (tag === 'h4') return <h4 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h4>;
-    if (tag === 'h5') return <h5 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h5>;
-    if (tag === 'h6') return <h6 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h6>;
-    
-    return <h2 className={className} style={style}>{nodesToJSX({ nodes: node.children })}</h2>;
+    const tag = node.tag
+    const className = '!font-chillax font-semibold'
+    const style = { fontFamily: 'Chillax, system-ui, sans-serif' }
+
+    if (tag === 'h1')
+      return (
+        <h1
+          className={cn('text-3xl md:text-3xl xl:text-5xl 2xl:text-7xl', className)}
+          style={style}
+        >
+          {nodesToJSX({ nodes: node.children })}
+        </h1>
+      )
+    if (tag === 'h2')
+      return (
+        <h2
+          className={cn('text-2xl lg:text-5xl font-semibold text-black mb-2', className)}
+          style={style}
+        >
+          {nodesToJSX({ nodes: node.children })}
+        </h2>
+      )
+    if (tag === 'h3')
+      return (
+        <h3 className={className} style={style}>
+          {nodesToJSX({ nodes: node.children })}
+        </h3>
+      )
+    if (tag === 'h4')
+      return (
+        <h4 className={className} style={style}>
+          {nodesToJSX({ nodes: node.children })}
+        </h4>
+      )
+    if (tag === 'h5')
+      return (
+        <h5 className={className} style={style}>
+          {nodesToJSX({ nodes: node.children })}
+        </h5>
+      )
+    if (tag === 'h6')
+      return (
+        <h6 className={className} style={style}>
+          {nodesToJSX({ nodes: node.children })}
+        </h6>
+      )
+
+    return (
+      <h2 className={className} style={style}>
+        {nodesToJSX({ nodes: node.children })}
+      </h2>
+    )
   },
   blocks: {
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
-    alert: ({ node }: { node: SerializedBlockNode<AlertBlockProps> }) => <AlertBlock className="col-start-2 mb-4" {...node.fields} />,
+    alert: ({ node }: { node: SerializedBlockNode<AlertBlockProps> }) => (
+      <AlertBlock className="col-start-2 mb-4" {...node.fields} />
+    ),
     mediaBlock: ({ node }) => (
       <MediaBlock
         className="col-start-1 col-span-3 "
@@ -67,7 +111,9 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
       />
     ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
-    cta: ({ node }) => <CallToActionBlock {...node.fields} anchor={node.fields.anchor || undefined} />,
+    cta: ({ node }) => (
+      <CallToActionBlock {...node.fields} anchor={node.fields.anchor || undefined} />
+    ),
   },
 })
 

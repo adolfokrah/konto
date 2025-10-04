@@ -18,7 +18,10 @@ export const CallToActionBlock: React.FC<CTABlockProps & { anchor?: string }> = 
   anchor,
 }) => {
   return (
-    <section id={anchor || undefined} className={cn('bg-dark-surface text-white pt-10 md:pt-34 relative overflow-hidden')}>
+    <section
+      id={anchor || undefined}
+      className={cn('bg-dark-surface text-white pt-10 md:pt-34 relative overflow-hidden')}
+    >
       <div className={cn('container mx-auto relative z-10')}>
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Title */}
@@ -51,13 +54,13 @@ export const CallToActionBlock: React.FC<CTABlockProps & { anchor?: string }> = 
         </div>
       </div>
 
-      <div className='overflow-hidden absolute top-0 left-0 w-full h-full '>
-             <div className='mx-auto  max-w-[2000px]'>
-               <Ring className="absolute top-50 -right-160 lg:top-50 lg:-right-70 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
-                <Ring className="absolute -left-100  -top-200 lg:-top-190 xl:-top-150 lg:left-120 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
-                <Ring className="absolute -bottom-200 -left-190  lg:-bottom-170 xl:-bottom-150 lg:left-0 xl:left-30 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
-             </div>
-            </div>
+      <div className="overflow-hidden absolute top-0 left-0 w-full h-full ">
+        <div className="mx-auto  max-w-[2000px]">
+          <Ring className="absolute top-50 -right-160 lg:top-50 lg:-right-70 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+          <Ring className="absolute -left-100  -top-200 lg:-top-190 xl:-top-150 lg:left-120 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+          <Ring className="absolute -bottom-200 -left-190  lg:-bottom-170 xl:-bottom-150 lg:left-0 xl:left-30 border-[#1A1F2A] border-70 w-[900px] h-[900px]" />
+        </div>
+      </div>
     </section>
   )
 }

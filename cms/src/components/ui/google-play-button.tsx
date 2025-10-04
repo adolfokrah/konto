@@ -8,22 +8,22 @@ interface GooglePlayButtonProps {
   variant?: 'default' | 'light'
 }
 
-export const GooglePlayButton: React.FC<GooglePlayButtonProps> = ({ 
-  href, 
+export const GooglePlayButton: React.FC<GooglePlayButtonProps> = ({
+  href,
   className,
-  variant = 'default' 
+  variant = 'default',
 }) => {
   return (
     <Link
       target="_blank"
       href={href}
       className={cn(
-        "inline-flex items-center px-4 py-2 rounded-xl transition-colors duration-200",
+        'inline-flex items-center px-4 py-2 rounded-xl transition-colors duration-200',
         {
-          "bg-white text-black hover:bg-gray-100": variant === 'default',
-          "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm": variant === 'light'
+          'bg-white text-black hover:bg-gray-100': variant === 'default',
+          'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm': variant === 'light',
         },
-        className
+        className,
       )}
     >
       <svg width="35" height="35" viewBox="0 0 24 24" fill="none" className="mr-3">

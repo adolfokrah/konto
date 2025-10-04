@@ -5,16 +5,12 @@ interface EmailTemplateProps {
   fullname: string
 }
 
-
 export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProps) {
   return (
-          <Layout
-             title={` Congratulations ${fullname}! 🎉`}
-          >
-              <p>
-                Your KYC has been successfully verified. You can now access all features of your
-                account.
-              </p>
-          </Layout>
+    <Layout title={` Congratulations ${fullname}! 🎉`}>
+      <p>
+        Your KYC has been successfully verified. You can now access all features of your account.
+      </p>
+    </Layout>
   )
 }

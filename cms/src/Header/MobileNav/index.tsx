@@ -60,7 +60,7 @@ export const MobileNav: React.FC<{ data: HeaderType; className?: string }> = ({
     >
       {navItems.map((item, index) => (
         <motion.div key={index} variants={itemVariants}>
-          <CMSLink {...item.link} className='!text-black' appearance="link" />
+          <CMSLink {...item.link} className="!text-black" appearance="link" />
         </motion.div>
       ))}
     </motion.div>

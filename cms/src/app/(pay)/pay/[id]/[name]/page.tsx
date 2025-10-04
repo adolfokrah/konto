@@ -186,9 +186,7 @@ export default async function Page({ params, searchParams }: any) {
 
     // Resolve collector id from query param or fallback to jar creator
     const collectorIdFromQuery =
-      (searchParams?.collectorId as string) ||
-      (searchParams?.collectionId as string) ||
-      null
+      (searchParams?.collectorId as string) || (searchParams?.collectionId as string) || null
     const creatorId =
       typeof jarWithBalance?.creator === 'object'
         ? jarWithBalance?.creator?.id

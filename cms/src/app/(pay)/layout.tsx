@@ -11,7 +11,7 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 
-import '../(website)/globals.css';
+import '../(website)/globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 import { Header } from '@/Header/Component'
 
@@ -26,7 +26,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
       <body className="bg-primary-light !text-black">
         <Providers>
           <Header />
-          <div className='mt-20'>{children}</div>
+          <div className="mt-20">{children}</div>
           <Footer />
         </Providers>
       </body>

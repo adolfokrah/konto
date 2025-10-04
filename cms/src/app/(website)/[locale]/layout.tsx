@@ -4,8 +4,8 @@ import { AdminBar } from '@/components/AdminBar'
 import { draftMode } from 'next/headers'
 import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
-import { GoogleAnalytics } from '@next/third-parties/google';
-import { Analytics } from "@vercel/analytics/next"
+import { GoogleAnalytics } from '@next/third-parties/google'
+import { Analytics } from '@vercel/analytics/next'
 
 import '../globals.css'
 export interface LocaleLayoutProps {
@@ -69,7 +69,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         </div>
         {children}
         <Footer />
-       <Analytics />
+        <Analytics />
       </body>
     </html>
   )

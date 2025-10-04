@@ -30,7 +30,9 @@ const allowedImageDomains = [
   // Localhost for development
   'http://localhost:3000',
   'http://192.168.0.160:3000',
-].filter(Boolean).map(cleanEnvVar)
+]
+  .filter(Boolean)
+  .map(cleanEnvVar)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

@@ -25,15 +25,14 @@ type Props = {
 
 export const FAQBlock: React.FC<Props> = ({
   disableInnerContainer = false,
-  heading = "Your Questions Answered",
-  subheading = "Simple explanations to help you get started with Hoga with confidence",
+  heading = 'Your Questions Answered',
+  subheading = 'Simple explanations to help you get started with Hoga with confidence',
   faqs = [],
   anchor,
 }) => {
   if (!faqs || faqs.length === 0) {
     return null
   }
-
 
   return (
     <section id={anchor || undefined} className={cn(' py-20 px-3')}>
@@ -50,7 +49,7 @@ export const FAQBlock: React.FC<Props> = ({
           >
             {heading}
           </motion.h2>
-          
+
           {/* Subheading */}
           {subheading && (
             <motion.p
@@ -75,8 +74,8 @@ export const FAQBlock: React.FC<Props> = ({
         >
           <Accordion type="single" collapsible className="flex flex-col gap-2">
             {faqs.map((faq, index) => (
-              <AccordionItem 
-                key={index} 
+              <AccordionItem
+                key={index}
                 value={`item-${index}`}
                 className=" group border border-black rounded-[25px]"
               >
@@ -85,27 +84,25 @@ export const FAQBlock: React.FC<Props> = ({
                     {faq.question}
                   </span>
                   <div className="flex justify-center items-center w-[30px] h-[30px] border border-black rounded-full ml-2.5">
-                    <svg 
-                      width="18" 
-                      height="18" 
-                      viewBox="0 0 18 18" 
-                      fill="none" 
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
                       className="transition-transform duration-200 group-data-[state=open]:rotate-180"
                     >
-                      <path 
-                        d="M4.5 6.75L9 11.25L13.5 6.75" 
-                        stroke="currentColor" 
-                        strokeWidth="1.5" 
-                        strokeLinecap="round" 
+                      <path
+                        d="M4.5 6.75L9 11.25L13.5 6.75"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
                         strokeLinejoin="round"
                       />
                     </svg>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-5 py-2.5">
-                  <p className=" text-black text-md md:text-lg">
-                    {faq.answer}
-                  </p>
+                  <p className=" text-black text-md md:text-lg">{faq.answer}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}

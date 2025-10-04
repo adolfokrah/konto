@@ -50,20 +50,9 @@ export const GemIcon: React.FC<IconProps> = ({ className, size = 20 }) => (
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <path
-      d="M5 9L10 17L15 9H5Z"
-      fill="currentColor"
-    />
-    <path
-      d="M3.5 9L6.5 3H13.5L16.5 9H3.5Z"
-      fill="currentColor"
-      opacity="0.7"
-    />
-    <path
-      d="M6.5 3H13.5L15 9H5L6.5 3Z"
-      fill="currentColor"
-      opacity="0.5"
-    />
+    <path d="M5 9L10 17L15 9H5Z" fill="currentColor" />
+    <path d="M3.5 9L6.5 3H13.5L16.5 9H3.5Z" fill="currentColor" opacity="0.7" />
+    <path d="M6.5 3H13.5L15 9H5L6.5 3Z" fill="currentColor" opacity="0.5" />
   </svg>
 )
 

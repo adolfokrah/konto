@@ -22,7 +22,7 @@ type Props = {
   title?: string
   subtitle?: string
   useCases?: UseCase[]
- anchor?: string
+  anchor?: string
 }
 
 export const UseCasesSummaryBlock: React.FC<Props> = ({

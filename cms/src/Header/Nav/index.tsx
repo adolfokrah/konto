@@ -110,7 +110,7 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
 
     // Set up scroll listener
     window.addEventListener('scroll', handleScroll, { passive: true })
-    
+
     // Initial check
     handleScroll()
 
@@ -136,38 +136,40 @@ export const HeaderNav: React.FC<{ data: HeaderType; className?: string }> = ({
         typeof link.reference.value === 'string' ? link.reference.value : link.reference.value.slug
 
       const normalizedPage = page === '/' || page === 'home' ? 'home' : page
-      const pathMatches = normalizedPathname === normalizedPage || normalizedPathname === `/${normalizedPage}`
-      
+      const pathMatches =
+        normalizedPathname === normalizedPage || normalizedPathname === `/${normalizedPage}`
+
       // If link has an anchor, check if it matches currently active section
       if (link.anchor) {
         const cleanAnchor = link.anchor.startsWith('#') ? link.anchor.slice(1) : link.anchor
         return pathMatches && activeSection === cleanAnchor
       }
-      
+
       // If link has no anchor but there's an active section, this link should not be active
       if (activeSection && !link.anchor) {
         return false
       }
-      
+
       return pathMatches
     }
 
     // Handle custom URL links
     if (link.type === 'custom' && link.url) {
       const normalizedUrl = link.url === '/' || link.url === '/home' ? 'home' : link.url
-      const pathMatches = normalizedPathname === normalizedUrl || normalizedPathname === `/${normalizedUrl}`
-      
+      const pathMatches =
+        normalizedPathname === normalizedUrl || normalizedPathname === `/${normalizedUrl}`
+
       // If link has an anchor, check if it matches currently active section
       if (link.anchor) {
         const cleanAnchor = link.anchor.startsWith('#') ? link.anchor.slice(1) : link.anchor
         return pathMatches && activeSection === cleanAnchor
       }
-      
+
       // If link has no anchor but there's an active section, this link should not be active
       if (activeSection && !link.anchor) {
         return false
       }
-      
+
       return pathMatches
     }
 

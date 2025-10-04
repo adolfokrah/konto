@@ -150,7 +150,7 @@ export default function ContributionInput({
             amount: selectedAmount,
             currency,
             contributorPhoneNumber,
-          collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
+            collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
           }),
         },
       )
@@ -327,7 +327,7 @@ export default function ContributionInput({
             required
           />
         </div>
-        
+
         <div>
           <input
             type="email"

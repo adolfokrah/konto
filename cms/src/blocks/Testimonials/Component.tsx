@@ -24,8 +24,8 @@ type Props = {
 
 export const TestimonialsBlock: React.FC<Props> = ({
   disableInnerContainer = false,
-  heading = "Building Trust One Contribution at a Time",
-  subheading = "Discover how Hoga is transforming the way people give and receive support",
+  heading = 'Building Trust One Contribution at a Time',
+  subheading = 'Discover how Hoga is transforming the way people give and receive support',
   testimonials = [],
   showNavigation = true,
   anchor,
@@ -41,11 +41,11 @@ export const TestimonialsBlock: React.FC<Props> = ({
 
     const container = scrollContainerRef.current
     const currentScroll = container.scrollLeft
-    
+
     // Calculate scroll amount based on screen size
     const isMobile = window.innerWidth < 768 // md breakpoint
     let scrollAmount: number
-    
+
     if (isMobile) {
       // On mobile, scroll by container width to show one testimonial at a time
       scrollAmount = container.clientWidth
@@ -53,16 +53,16 @@ export const TestimonialsBlock: React.FC<Props> = ({
       // On desktop, scroll by card width + gap
       scrollAmount = 628 // Card width (611px) + gap (17px)
     }
-    
+
     if (direction === 'left') {
       container.scrollTo({
         left: currentScroll - scrollAmount,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     } else {
       container.scrollTo({
         left: currentScroll + scrollAmount,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }
   }
@@ -73,7 +73,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
 
     const container = scrollContainerRef.current
     const { scrollLeft, scrollWidth, clientWidth } = container
-    
+
     setCanScrollLeft(scrollLeft > 0)
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10) // 10px buffer
   }
@@ -100,7 +100,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
     // Add event listeners
     window.addEventListener('resize', handleResize)
     window.addEventListener('load', handleLoad)
-    
+
     // Initial checks
     initialCheck()
 
@@ -138,10 +138,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
     return null
   }
 
-  const containerClasses = cn(
-    'py-[75px] px-3',
-    !disableInnerContainer && 'max-w-7xl mx-auto',
-  )
+  const containerClasses = cn('py-[75px] px-3', !disableInnerContainer && 'max-w-7xl mx-auto')
 
   return (
     <section id={anchor || undefined} className={cn('bg-white', containerClasses)}>
@@ -159,7 +156,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
             >
               {heading}
             </motion.h2>
-            
+
             {/* Subheading */}
             {subheading && (
               <motion.p
@@ -176,44 +173,44 @@ export const TestimonialsBlock: React.FC<Props> = ({
             {/* Navigation Arrows */}
             {showNavigation && testimonials.length > 1 && (
               <div className="relative my-5 h-10">
-                <button 
+                <button
                   onClick={() => handleScroll('left')}
                   disabled={!canScrollLeft}
                   className={cn(
-                    "absolute left-0 top-0 flex flex-col justify-center items-center p-2.5 w-10 h-10 rounded-full transition-all duration-200",
-                    canScrollLeft 
-                          ? "bg-background-light hover:bg-primary-light cursor-pointer" 
-                      : "bg-gray-100 cursor-not-allowed opacity-50"
+                    'absolute left-0 top-0 flex flex-col justify-center items-center p-2.5 w-10 h-10 rounded-full transition-all duration-200',
+                    canScrollLeft
+                      ? 'bg-background-light hover:bg-primary-light cursor-pointer'
+                      : 'bg-gray-100 cursor-not-allowed opacity-50',
                   )}
                   aria-label="Previous testimonials"
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path 
-                      d="M12.5 15L7.5 10L12.5 5" 
-                      stroke={canScrollLeft ? "black" : "#9CA3AF"} 
-                      strokeWidth="1.5" 
-                      strokeLinecap="round" 
+                    <path
+                      d="M12.5 15L7.5 10L12.5 5"
+                      stroke={canScrollLeft ? 'black' : '#9CA3AF'}
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
                 </button>
-                <button 
+                <button
                   onClick={() => handleScroll('right')}
                   disabled={!canScrollRight}
                   className={cn(
-                    "absolute left-[52px] top-0 flex flex-col justify-center items-center p-2.5 w-10 h-10 rounded-full transition-all duration-200",
-                    canScrollRight 
-                      ? "bg-background-light hover:bg-primary-light cursor-pointer" 
-                      : "bg-gray-100 cursor-not-allowed opacity-50"
+                    'absolute left-[52px] top-0 flex flex-col justify-center items-center p-2.5 w-10 h-10 rounded-full transition-all duration-200',
+                    canScrollRight
+                      ? 'bg-background-light hover:bg-primary-light cursor-pointer'
+                      : 'bg-gray-100 cursor-not-allowed opacity-50',
                   )}
                   aria-label="Next testimonials"
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path 
-                      d="M7.5 15L12.5 10L7.5 5" 
-                      stroke={canScrollRight ? "black" : "#9CA3AF"} 
-                      strokeWidth="1.5" 
-                      strokeLinecap="round" 
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke={canScrollRight ? 'black' : '#9CA3AF'}
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -224,7 +221,7 @@ export const TestimonialsBlock: React.FC<Props> = ({
         </div>
 
         {/* Testimonials Scroll Container */}
-        <div 
+        <div
           ref={(el) => {
             scrollContainerRef.current = el
             if (el) {
@@ -259,21 +256,19 @@ export const TestimonialsBlock: React.FC<Props> = ({
               <div className="flex flex-col items-start gap-8 w-full h-full">
                 {/* Quote Icon */}
                 <div className="w-9 h-9 flex items-start justify-start">
-                  <Image 
-                    src="/quote.png" 
-                    alt="Quote" 
+                  <Image
+                    src="/quote.png"
+                    alt="Quote"
                     width={36}
                     height={36}
                     className="object-contain"
-                  />    
+                  />
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-col items-start gap-8 w-full flex-1">
                   {/* Quote Text */}
-                  <p className=" font-medium text-xl  w-full">
-                    {testimonial.quote}
-                  </p>
+                  <p className=" font-medium text-xl  w-full">{testimonial.quote}</p>
 
                   {/* Author */}
                   <p className="font-chillax font-medium text-xl leading-7 text-label w-full">

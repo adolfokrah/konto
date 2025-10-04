@@ -7,9 +7,15 @@ type LowImpactHeroType = Page['hero'] & {
   children?: React.ReactNode
 }
 
-export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, links, dateLabel, date }) => {
+export const LowImpactHero: React.FC<LowImpactHeroType> = ({
+  title,
+  subTitle,
+  links,
+  dateLabel,
+  date,
+}) => {
   return (
-    <section className='bg-secondary-background pt-25 pb-8 lg:pt-45 lg:pb-12 '>
+    <section className="bg-secondary-background pt-25 pb-8 lg:pt-45 lg:pb-12 ">
       <div className="container">
         <div className="max-w-4xl">
           {title && (
@@ -19,19 +25,18 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ title, subTitle, li
           )}
         </div>
 
-        <div className='flex flex-col lg:flex-row lg:justify-between mt-7 lg:items-end  gap-6 lg:gap-8'>
+        <div className="flex flex-col lg:flex-row lg:justify-between mt-7 lg:items-end  gap-6 lg:gap-8">
           {subTitle && (
             <div>
-              <h2 className="text-lg lg:text-xl  max-w-2xl">
-                {subTitle}
-              </h2>
-            <p className='text-sm text-label mt-2'>
-              {dateLabel} {(() => {
-                if (!date) return '';
-                const dateObj = new Date(date);
-                return `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}-${dateObj.getDate()}`;
-              })()}
-            </p>
+              <h2 className="text-lg lg:text-xl  max-w-2xl">{subTitle}</h2>
+              <p className="text-sm text-label mt-2">
+                {dateLabel}{' '}
+                {(() => {
+                  if (!date) return ''
+                  const dateObj = new Date(date)
+                  return `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}-${dateObj.getDate()}`
+                })()}
+              </p>
             </div>
           )}
 

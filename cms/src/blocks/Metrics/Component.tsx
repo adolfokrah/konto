@@ -29,13 +29,7 @@ export const MetricsBlock: React.FC<Props> = ({
       <div className={cn('container mx-auto', !disableInnerContainer && 'max-w-7xl')}>
         {/* Header */}
         <div className="mb-16">
-          {title && (
-            <RichText
-              data={title}
-              enableGutter={false}
-              enableProse={false}
-            />
-          )}
+          {title && <RichText data={title} enableGutter={false} enableProse={false} />}
           {subtitle && (
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">{subtitle}</p>
           )}
@@ -49,7 +43,7 @@ export const MetricsBlock: React.FC<Props> = ({
             statistics.map((stat, index) => (
               <div key={index} className="space-y-6 bg-white rounded-3xl relative h-full">
                 {index == 0 && (
-                  <div className='flex flex-col items-center justify-center'>
+                  <div className="flex flex-col items-center justify-center">
                     <div className="absolute w-fit top-8 left-10">
                       {/* Statistic Number/Title */}
                       <div className="text-6xl font-chillax font-bold">{stat.title}</div>
@@ -93,10 +87,7 @@ export const MetricsBlock: React.FC<Props> = ({
                     {/* Statistic Image */}
                     {stat.image && (
                       <div className="flex justify-center items-center px-10 flex-1 my-5 xl:mt-0">
-                        <Media
-                          resource={stat.image}
-                          className="w-full object-contain mx-auto"
-                        />
+                        <Media resource={stat.image} className="w-full object-contain mx-auto" />
                       </div>
                     )}
                     <div className=" w-full top-8 left-10 text-center">
