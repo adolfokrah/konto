@@ -5,6 +5,7 @@ interface EmailTemplateProps {
   fullname: string
 }
 
+
 export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProps) {
   return (
     <Html>

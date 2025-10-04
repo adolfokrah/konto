@@ -2102,10 +2102,10 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
-  /// About Konto menu item
+  /// About Hoga menu item
   ///
   /// In en, this message translates to:
-  /// **'About Konto'**
+  /// **'About Hoga'**
   String get aboutKonto;
 
   /// Social media menu item

@@ -34,6 +34,8 @@ const allowedImageDomains = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Explicitly set the output file tracing root to silence workspace warning
+  outputFileTracingRoot: process.cwd(),
   images: {
     remotePatterns: [
       // Allow all vercel.app subdomains (catches any preview deployments)

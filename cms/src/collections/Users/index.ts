@@ -11,6 +11,7 @@ import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
 import { diditWebhook } from './endpoints/didit-webhook'
+import { accountDeletion } from './hooks/account-deletion'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -37,9 +38,15 @@ export const Users: CollectionConfig = {
       }
       return false
     },
-    // Only admins can delete
+    // Admins can delete any user, users can delete themselves
     delete: ({ req: { user } }) => {
-      return user?.role === 'admin'
+      if (user?.role === 'admin') {
+        return true // Admins can delete any user
+      }
+      if (user) {
+        return { id: { equals: user.id } } // Users can only delete themselves
+      }
+      return false
     },
   },
   endpoints: [
@@ -373,5 +380,6 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [createSubAccount],
+    beforeDelete: [accountDeletion],
   },
 }

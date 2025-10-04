@@ -1874,9 +1874,9 @@
     "description": "About section title"
   },
 
-  "aboutKonto": "About Konto",
+  "aboutKonto": "About Hoga",
   "@aboutKonto": {
-    "description": "About Konto menu item"
+    "description": "About Hoga menu item"
   },
 
   "socialMedia": "Social Media",
