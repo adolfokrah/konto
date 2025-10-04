@@ -18,7 +18,7 @@ export default function ContributionsReport({
           <strong>{jarName || 'your jar'}</strong>. Total records: {totalRecords}.
         </p>
         <p>
-          <strong>Note:</strong> This is a multi-page PDF document. If you can't scroll in your
+          <strong>Note:</strong> This is a multi-page PDF document. If you can&apos;t scroll in your
           email viewer, please download the PDF and open it in a dedicated PDF reader (like Adobe
           Reader, Preview, or your browser) for full navigation.
         </p>

@@ -33,7 +33,7 @@ export const Footer = () => {
       <div className="text-xs text-gray-400" style={{ lineHeight: 2.4 }}>
         <p>
           Hoga Ltd. is a private company limited by shares incorporated in Ghana under the Companies
-          Act, 2019 (Act 992) and registered with the Registrar-General's Department.
+          Act, 2019 (Act 992) and registered with the Registrar-General&apos;s Department.
           <br /> Registered office: [Insert registered address]. Company No.: [Insert registration
           number].
           <br />
@@ -51,9 +51,9 @@ export const Footer = () => {
           <br />
           KYC. Organizer identity verification is performed via approved third-party providers
           (e.g., Didit) before a jar can be created. Funds flow & refunds. Contributions are
-          collected on behalf of the organizer and are transferred to the organizer's designated
-          account per the organizer's settings and applicable settlement timelines. Refunds and
-          chargebacks are handled according to the organizer's policy, card network rules,
+          collected on behalf of the organizer and are transferred to the organizer&apos;s designated
+          account per the organizer&apos;s settings and applicable settlement timelines. Refunds and
+          chargebacks are handled according to the organizer&apos;s policy, card network rules,
           mobile-money rules, and our Terms.
           <br />
           No investment advice. Contributions made via Hoga are not investments and may not be
@@ -88,7 +88,7 @@ export const Signature = () => {
 
 export const Layout = ({ children, title }: LayoutProps) => {
   return (
-    // <Html>
+    <Html>
     <Tailwind
       config={{
         theme: {
@@ -105,7 +105,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
         },
       }}
     >
-      <Container className="mx-auto py-8 px-6 font-chillax" style={{ maxWidth: '60em' }}>
+      <Container className="mx-auto py-8 px-6 font-chillax" style={{ maxWidth: '55em' }}>
         <Img
           src="https://exbwvryiow.ufs.sh/f/LTX7NhlmcU3wYDN7xEFINo7JQn06T32zrjbsyhdemXfYilFE"
           alt="KYC Verified"
@@ -123,6 +123,6 @@ export const Layout = ({ children, title }: LayoutProps) => {
         <Footer />
       </Container>
     </Tailwind>
-    //   </Html>
+      </Html>
   )
 }
