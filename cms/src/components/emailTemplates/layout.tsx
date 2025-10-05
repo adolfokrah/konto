@@ -107,7 +107,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
     >
       <Container className="mx-auto py-8 px-6 font-chillax" style={{ maxWidth: '55em' }}>
         <Img
-          src="https://exbwvryiow.ufs.sh/f/LTX7NhlmcU3wYDN7xEFINo7JQn06T32zrjbsyhdemXfYilFE"
+          src="https://www.usehoga.com/logo.png"
           alt="KYC Verified"
           width="70"
           height="23"
