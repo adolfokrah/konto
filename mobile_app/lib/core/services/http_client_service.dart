@@ -47,33 +47,36 @@ class HttpClientService {
   /// Get Dio instance
   Dio get dio => _dio;
 
-  /// Send SMS via Mnotify API using Dio
-  Future<Map<String, dynamic>> sendSmsViaMnotify({
+  /// Send SMS via Deywuro API using Dio
+  Future<Map<String, dynamic>> sendSmsViaDeywuro({
     required String phoneNumber,
     required String message,
   }) async {
     try {
-      // Prepare request body
+      // Prepare request body for Deywuro API
       final requestData = {
-        'recipient[]': [phoneNumber],
-        'sender': SmsConfig.senderId,
+        'username': SmsConfig.username,
+        'password': SmsConfig.password,
+        'source': SmsConfig.source,
+        'destination': phoneNumber,
         'message': message,
-        'is_schedule': 'false',
-        'schedule_date': '',
       };
 
-      print('📱 Sending SMS to $phoneNumber via Mnotify...');
+      print('📱 Sending SMS to $phoneNumber via Deywuro...');
 
-      // Make API request to Mnotify
+      // Make API request to Deywuro
       final response = await _dio.post(
         SmsConfig.apiBaseUrl,
         data: requestData,
         options: Options(
-          headers: {'Authorization': 'Bearer ${SmsConfig.mnotifyApiKey}'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
         ),
       );
 
-      print('✅ Mnotify Response: ${response.statusCode} - ${response.data}');
+      print('✅ Deywuro Response: ${response.statusCode} - ${response.data}');
 
       return {
         'success': true,
@@ -130,5 +133,14 @@ class HttpClientService {
         'statusCode': 0,
       };
     }
+  }
+
+  /// Legacy method for backward compatibility - redirects to Deywuro
+  @deprecated
+  Future<Map<String, dynamic>> sendSmsViaMnotify({
+    required String phoneNumber,
+    required String message,
+  }) async {
+    return sendSmsViaDeywuro(phoneNumber: phoneNumber, message: message);
   }
 }

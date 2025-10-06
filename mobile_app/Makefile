@@ -56,7 +56,7 @@ download-secrets:
 		echo "❌ Infisical CLI not found. Please install it first."; \
 		exit 1; \
 	fi
-	@infisical export --env=dev --format=dotenv > .env
+	@infisical export --env=staging --format=dotenv > .env
 	@echo "✅ Secrets downloaded to .env file"
 	@echo "📄 Contents preview:"
 	@head -n 3 .env || true
@@ -157,3 +157,4 @@ help:
 	@echo "  make run-ios-no-secrets  - Run iOS without Infisical"
 
 .PHONY: help run run-android run-ios run-release build-android build-android-release build-ios build-ios-release download-secrets env test run-no-secrets run-android-no-secrets run-ios-no-secrets clean upgrade analyze format secrets
+

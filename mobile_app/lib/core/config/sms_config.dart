@@ -1,21 +1,34 @@
 import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/services/service_registry.dart';
 
-// SMS Configuration - Store your Mnotify credentials here
+// SMS Configuration - Deywuro API credentials
 class SmsConfig {
-  // Mnotify API key
+  // Deywuro API credentials
+  static String get username {
+    return AppConfig.smsUsername;
+  }
+
+  static String get password {
+    return AppConfig.smsPassword;
+  }
+
+  // Deywuro API endpoint
+  static String get apiBaseUrl {
+    return AppConfig.smsApiBaseUrl;
+  }
+
+  // Source/Sender ID
+  static String get source {
+    return AppConfig.smsSource;
+  }
+
+  // Legacy Mnotify support (deprecated)
   static String get mnotifyApiKey {
     return AppConfig.mnotifyApiKey;
   }
 
-  // Sender ID from Mnotify
   static String get senderId {
     return AppConfig.mnotifySenderId;
-  }
-
-  // Mnotify API endpoints
-  static String get apiBaseUrl {
-    return AppConfig.mnotifyApiBaseUrl;
   }
 
   // OTP settings

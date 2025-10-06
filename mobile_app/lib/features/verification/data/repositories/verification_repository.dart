@@ -58,34 +58,23 @@ class VerificationRepository {
       );
 
       if (apiResponse['success'] == true) {
-        // Check Mnotify specific response
-        final mnotifyData = apiResponse['data'];
-        final isSuccess =
-            mnotifyData['status'] == 'success' || mnotifyData['code'] == '2000';
-
-        if (isSuccess) {
-          print('✅ SMS sent successfully to $phoneNumber');
-          return {
-            'success': true,
-            'otp': otp, // In production, this should not be returned
-            'phoneNumber': phoneNumber,
-            'message': 'OTP sent successfully',
-          };
-        } else {
-          print(
-            '❌ Mnotify error: ${mnotifyData['message'] ?? 'Unknown error'}',
-          );
-          return {
-            'success': false,
-            'message':
-                'Failed to send OTP: ${mnotifyData['message'] ?? 'Unknown error'}',
-          };
-        }
+        // Check Deywuro API response
+        final deywuroData = apiResponse['data'];
+        print('✅ SMS sent successfully to $phoneNumber via Deywuro');
+        return {
+          'success': true,
+          'otp': otp, // In production, this should not be returned
+          'phoneNumber': phoneNumber,
+          'message': 'OTP sent successfully',
+          'data': deywuroData,
+        };
       } else {
-        print('❌ API error: ${apiResponse['error']}');
+        // Handle Deywuro API errors
+        final errorMessage = apiResponse['error'] ?? 'Unknown error';
+        print('❌ Deywuro error: $errorMessage');
         return {
           'success': false,
-          'message': 'Failed to send OTP: ${apiResponse['error']}',
+          'message': 'Failed to send OTP: $errorMessage',
         };
       }
     } catch (e) {

@@ -8,7 +8,16 @@ class AppConfig {
   static String get imageBaseUrl =>
       dotenv.env['IMAGE_BASE_URL'] ?? 'http://localhost:3000';
 
-  // External Services
+  // External Services - Deywuro SMS API
+  static String get smsApiBaseUrl => dotenv.env['SMS_API_BASE_URL'] ?? '';
+
+  static String get smsUsername => dotenv.env['SMS_USERNAME'] ?? '';
+
+  static String get smsPassword => dotenv.env['SMS_PASS'] ?? '';
+
+  static String get smsSource => dotenv.env['SMS_SOURCE'] ?? 'Hoga';
+
+  // Legacy Mnotify (deprecated - kept for backward compatibility)
   static String get mnotifyApiKey => dotenv.env['MNOTIFY_API_KEY'] ?? '';
 
   static String get mnotifyApiBaseUrl =>

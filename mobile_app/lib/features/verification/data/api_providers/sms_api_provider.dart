@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:Hoga/core/config/sms_config.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 
-/// API Provider for SMS operations using Mnotify service with Dio
+/// API Provider for SMS operations using Deywuro API service with Dio
 class SmsApiProvider {
   late final Dio _dio;
 
@@ -24,7 +24,7 @@ class SmsApiProvider {
             receiveTimeout: const Duration(seconds: 30),
             sendTimeout: const Duration(seconds: 30),
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
           ),
@@ -37,13 +37,13 @@ class SmsApiProvider {
         responseBody: true,
         error: true,
         logPrint: (object) {
-          print('🌐 Dio SMS: $object');
+          print('🌐 Deywuro SMS: $object');
         },
       ),
     );
   }
 
-  /// Send SMS via Mnotify API using Dio directly
+  /// Send SMS via Deywuro API using Dio directly
   Future<Map<String, dynamic>> sendSms({
     required String phoneNumber,
     required String message,
@@ -61,7 +61,7 @@ class SmsApiProvider {
         'success': true,
         'data': {
           'status': 'success',
-          'code': '2000',
+          'code': '200',
           'message': 'SMS sent successfully (mocked)',
           'messageId': 'mock_message_${DateTime.now().millisecondsSinceEpoch}',
         },
@@ -70,32 +70,85 @@ class SmsApiProvider {
     }
 
     try {
-      // Prepare request data
+      // Prepare request data for Deywuro API
       final requestData = {
-        'recipient[]': [phoneNumber],
-        'sender': SmsConfig.senderId,
+        'username': SmsConfig.username,
+        'password': SmsConfig.password,
+        'source': SmsConfig.source,
+        'destination': phoneNumber,
         'message': message,
-        'is_schedule': 'false',
-        'schedule_date': '',
       };
 
-      print('📱 Sending SMS to $phoneNumber via Mnotify with Dio...');
-
-      // Make Dio POST request to Mnotify
-      final response = await _dio.post(
-        "${SmsConfig.apiBaseUrl}?key=${SmsConfig.mnotifyApiKey}",
-        data: requestData,
+      print('📱 Sending SMS to $phoneNumber via Deywuro API...');
+      print(
+        '🔧 Request data: ${requestData.toString().replaceAll(SmsConfig.password, '***')}',
       );
 
-      print('✅ Dio Response: ${response.statusCode} - ${response.data}');
+      // Make Dio POST request to Deywuro
+      final response = await _dio.post(SmsConfig.apiBaseUrl, data: requestData);
+
+      print('✅ Deywuro Response: ${response.statusCode} - ${response.data}');
+
+      // Check if the response indicates success
+      bool isSuccess = false;
+      String? errorMessage;
+      final responseData = response.data;
+
+      if (response.statusCode == 200) {
+        // Deywuro API response format: {"code":0,"message":"2 sms sent!"}
+        if (responseData is Map) {
+          // For Deywuro API, code 0 means successful
+          final code = responseData['code'];
+          isSuccess = code == 0;
+
+          // Log the response for debugging
+          print(
+            '📊 Deywuro API Response - Code: $code, Message: ${responseData['message']}',
+          );
+
+          // Handle Deywuro-specific error codes when not successful
+          if (!isSuccess) {
+            final message = responseData['message'];
+
+            switch (code) {
+              case 401:
+                errorMessage = 'Invalid Credentials';
+                break;
+              case 403:
+                errorMessage = 'Insufficient balance';
+                break;
+              case 404:
+                errorMessage = 'Not routable';
+                break;
+              case 402:
+                errorMessage = 'Missing required fields';
+                break;
+              case 500:
+                errorMessage = 'Server error';
+                break;
+              default:
+                errorMessage = message?.toString() ?? 'SMS sending failed';
+            }
+          }
+        } else if (responseData is String) {
+          // If response is a string, check for success indicators
+          isSuccess =
+              responseData.toLowerCase().contains('success') ||
+              responseData.toLowerCase().contains('sent');
+        } else {
+          // Default to success if we got a 200 response
+          isSuccess = true;
+        }
+      }
 
       return {
-        'success': true,
+        'success': isSuccess,
         'data': response.data,
         'statusCode': response.statusCode,
+        'error': errorMessage,
       };
     } on DioException catch (e) {
-      print('❌ Dio SMS Error: ${e.type} - ${e.message}');
+      print('❌ Deywuro SMS Error: ${e.type} - ${e.message}');
 
       String errorMessage;
       int statusCode = 0;
