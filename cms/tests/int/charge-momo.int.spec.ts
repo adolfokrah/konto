@@ -86,6 +86,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         password: 'testPassword123',
         isKYCVerified: true,
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
 
@@ -142,6 +143,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         password: 'testPassword123',
         isKYCVerified: true,
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
 
@@ -208,6 +210,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         password: 'testPassword123',
         isKYCVerified: true,
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
 
@@ -267,6 +270,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         isKYCVerified: true,
         paystackSubAccountCode: 'ACCT_TEST_123',
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
 

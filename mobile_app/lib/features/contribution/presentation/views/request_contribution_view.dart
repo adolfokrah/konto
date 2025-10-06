@@ -97,7 +97,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       final RenderRepaintBoundary boundary =
           _repaintBoundaryKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
-      final ui.Image qrImage = await boundary.toImage(pixelRatio: 3.0);
+      final ui.Image qrImage = await boundary.toImage(pixelRatio: 6.0);
 
       // Create canvas to combine template and QR code
       final ui.PictureRecorder recorder = ui.PictureRecorder();
@@ -109,11 +109,11 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       // Calculate QR code position (adjust these values based on your template)
       // These coordinates should match where the QR code area is in your template
       const double qrX =
-          -40; // X position where QR should be placed (left edge of white area)
+          -45; // X position where QR should be placed (left edge of white area)
       const double qrY =
-          550; // Y position where QR should be placed (top of white area)
+          480; // Y position where QR should be placed (top of white area)
       const double qrSize =
-          800; // Size of the QR code (width of white area)      // Draw QR code on top of template
+          900; // Size of the QR code (width of white area)      // Draw QR code on top of template
       canvas.drawImageRect(
         qrImage,
         Rect.fromLTWH(
@@ -132,7 +132,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           text: jarName,
           style: AppTextStyles.headingOne.copyWith(
             color: Colors.white,
-            fontSize: 50,
+            fontSize: 40,
             fontWeight: FontWeight.bold,
           ),
         ),

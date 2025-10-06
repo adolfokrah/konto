@@ -22,14 +22,14 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
     testUser = await payload.create({
       collection: 'users',
       data: {
-        email: 'jar-summary-test@example.com',
-        password: 'testpassword123',
-        fullName: 'Jar Summary Test User',
-        phoneNumber: '+1234567890',
-        countryCode: '+1',
-        country: 'us',
+        email: `creator-${Date.now()}-${Math.random()}@example.com`,
+        password: 'password123',
+        fullName: 'Creator User',
+        phoneNumber: '+233541234567',
+        country: 'gh' as const,
         isKYCVerified: true,
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
   })

@@ -52,6 +52,7 @@ describe('Contributions Collection Integration Tests', () => {
         country: 'gh' as const,
         isKYCVerified: true,
         role: 'user',
+        accountNumber: '1234567890', // Required for mobile money contributions
       },
     })
 
