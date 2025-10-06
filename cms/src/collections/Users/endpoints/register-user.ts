@@ -1,5 +1,6 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
+import * as Sentry from '@sentry/nextjs'
 
 export const registerUser = async (req: PayloadRequest) => {
   try {
@@ -120,6 +121,20 @@ export const registerUser = async (req: PayloadRequest) => {
       { status: 201 },
     )
   } catch (error: any) {
+    // Log error to Sentry for monitoring
+    Sentry.captureException(error, {
+      tags: {
+        operation: 'user_registration',
+        endpoint: 'register-user',
+      },
+      extra: {
+        phoneNumber: req.data?.phoneNumber,
+        countryCode: req.data?.countryCode,
+        country: req.data?.country,
+        hasEmail: !!req.data?.email,
+      },
+    })
+
     // Log error in development only
     if (process.env.NODE_ENV !== 'production') {
       console.error('💥 Registration error:', error)
