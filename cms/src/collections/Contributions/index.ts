@@ -10,6 +10,7 @@ import { verifyPayment } from './endpoints/verify-payment'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
+import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 
@@ -334,5 +335,6 @@ export const Contributions: CollectionConfig = {
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
     afterChange: [sendContributionReceipt],
+    beforeValidate: [validateJarCreatorAccount],
   },
 }

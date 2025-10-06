@@ -88,6 +88,12 @@ class ContributionApiProvider extends BaseApiProvider {
 
       return response.data;
     } catch (e) {
+      if (e is DioException && e.response?.statusCode == 400) {
+        // Handle validation errors (like missing withdrawal account)
+        final errorMessage =
+            e.response?.data?['message'] ?? 'Validation error occurred';
+        return {'success': false, 'message': errorMessage, 'data': null};
+      }
       return handleApiError(e, 'adding contribution');
     }
   }

@@ -10,6 +10,7 @@ export default function kycVerified({ fullname = 'John Doe' }: EmailTemplateProp
     <Layout title={` Congratulations ${fullname}! 🎉`}>
       <p>
         Your KYC has been successfully verified. You can now access all features of your account.
+        Simply restart the app to continue using it.
       </p>
     </Layout>
   )

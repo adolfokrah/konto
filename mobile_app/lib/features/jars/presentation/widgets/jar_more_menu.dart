@@ -40,7 +40,7 @@ class JarMoreMenu extends StatelessWidget {
         BlocListener<MediaBloc, MediaState>(
           listener: (context, state) {
             if (state is MediaLoaded &&
-                state.context == MediaUploadContext.jarImage) {
+                state.context == MediaUploadContext.jarImageHome) {
               final jarImageId = state.media.id;
               context.read<UpdateJarBloc>().add(
                 UpdateJarRequested(
@@ -149,7 +149,7 @@ class JarMoreMenu extends StatelessWidget {
         // Navigate to jar info/edit
         ImageUploaderBottomSheet.show(
           context,
-          uploadContext: MediaUploadContext.jarImage,
+          uploadContext: MediaUploadContext.jarImageHome,
         );
         break;
     }

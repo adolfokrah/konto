@@ -8,4 +8,7 @@ enum MediaUploadContext {
 
   /// Upload for general media (default)
   general,
+
+  // Upload from jar details home screen
+  jarImageHome,
 }

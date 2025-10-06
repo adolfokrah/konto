@@ -16,9 +16,9 @@ const extractNames = (fullName: string) => {
   } else if (nameParts.length === 1) {
     return { firstName: nameParts[0], lastName: '' }
   } else {
-    // First part is first name, everything else is last name
-    const firstName = nameParts[0]
-    const lastName = nameParts.slice(1).join(' ')
+    // Last word is last name, everything else is first name
+    const lastName = nameParts[nameParts.length - 1]
+    const firstName = nameParts.slice(0, -1).join(' ')
     return { firstName, lastName }
   }
 }

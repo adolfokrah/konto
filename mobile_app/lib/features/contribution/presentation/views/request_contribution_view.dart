@@ -109,7 +109,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       // Calculate QR code position (adjust these values based on your template)
       // These coordinates should match where the QR code area is in your template
       const double qrX =
-          -20; // X position where QR should be placed (left edge of white area)
+          -40; // X position where QR should be placed (left edge of white area)
       const double qrY =
           550; // Y position where QR should be placed (top of white area)
       const double qrSize =
@@ -125,6 +125,32 @@ class _RequestContributionViewState extends State<RequestContributionView> {
         Rect.fromLTWH(qrX, qrY, qrSize, qrSize),
         Paint(),
       );
+
+      // Add jar name text to the image with text wrapping
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: jarName,
+          style: AppTextStyles.headingOne.copyWith(
+            color: Colors.white,
+            fontSize: 50,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.left, // Center align the text
+      );
+
+      // Set maximum width for text wrapping (leave some padding from edges)
+      const double maxTextWidth =
+          900.0; // Maximum width for text before wrapping
+      textPainter.layout(maxWidth: maxTextWidth);
+
+      // Calculate text position (centered horizontally, positioned where "Streaming Funding" appears in template)
+      final textX = 70.0; // Center the text block
+      const double textY =
+          480.0; // Position where the jar name should appear in the template
+
+      textPainter.paint(canvas, Offset(textX, textY));
 
       // Convert to final image
       final ui.Picture picture = recorder.endRecording();

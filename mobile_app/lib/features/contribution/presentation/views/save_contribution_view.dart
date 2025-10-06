@@ -271,7 +271,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
                         // Add spacing to push button to bottom, but allow scrolling if needed
                         Spacer(),
-
                         // Request button
                         AppButton.filled(
                           isLoading: state is AddContributionLoading,

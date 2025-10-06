@@ -1,8 +1,11 @@
+import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/constants/app_links.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/select_options.dart';
+import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
@@ -59,6 +62,18 @@ class _RegisterViewState extends State<RegisterView> {
       AppSnackBar.showError(
         context,
         message: localizations.pleaseEnterEmailAddress,
+      );
+      return;
+    }
+
+    // Validate email format
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    if (!emailRegex.hasMatch(_emailController.text.trim())) {
+      AppSnackBar.showError(
+        context,
+        message: 'Please enter a valid email address',
       );
       return;
     }
@@ -158,6 +173,12 @@ class _RegisterViewState extends State<RegisterView> {
                 controller: _nameController,
                 key: const Key('fullName'),
               ),
+              const SizedBox(height: 3),
+              const Text(
+                'Your full name should match the name on your ID.',
+                style: AppTextStyles.titleRegularXs,
+              ),
+
               const SizedBox(height: AppSpacing.spacingS),
               AppTextInput(
                 key: const Key('email'),
@@ -214,9 +235,7 @@ class _RegisterViewState extends State<RegisterView> {
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              // Handle Terms & Conditions tap
-                              print('Terms & Conditions tapped');
-                              // TODO: Navigate to Terms & Conditions page
+                              UrlLauncherUtils.launch(AppLinks.terms);
                             },
                     ),
                     TextSpan(text: localizations.and),
@@ -226,9 +245,7 @@ class _RegisterViewState extends State<RegisterView> {
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              // Handle Privacy Policy tap
-                              print('Privacy Policy tapped');
-                              // TODO: Navigate to Privacy Policy page
+                              UrlLauncherUtils.launch(AppLinks.privacy);
                             },
                     ),
                   ],
