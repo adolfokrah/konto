@@ -19,16 +19,27 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   try {
     if (jarId != 'null' && jarId != null) {
-      jar = await req.payload.findByID({
+      const jarResult = await req.payload.find({
         collection: 'jars',
-        id: jarId,
+        where: {
+          and: [
+            {
+              id: {
+                equals: jarId,
+              },
+            },
+            {
+              'creator.id': {
+                exists: true,
+              },
+            },
+          ],
+        },
         depth: 2,
+        limit: 1,
       })
 
-      // Check if jar creator is valid (not deleted)
-      if (jar && (typeof jar.creator !== 'object' || jar.creator === null)) {
-        throw new Error('Jar creator not found')
-      }
+      jar = jarResult.docs.length > 0 ? jarResult.docs[0] : null
 
       // Check if user has access to this jar (either as creator or invited collector)
       if (jar) {
@@ -67,21 +78,30 @@ export const getJarSummary = async (req: PayloadRequest) => {
       collection: 'jars',
       pagination: false,
       where: {
-        or: [
+        and: [
           {
-            creator: {
-              equals: req.user!,
-            },
-            status: {
-              not_equals: 'broken',
-            },
+            or: [
+              {
+                creator: {
+                  equals: req.user!,
+                },
+                status: {
+                  not_equals: 'broken',
+                },
+              },
+              {
+                'invitedCollectors.collector': {
+                  equals: req.user!,
+                },
+                status: {
+                  not_equals: 'broken',
+                },
+              },
+            ],
           },
           {
-            'invitedCollectors.collector': {
-              equals: req.user!,
-            },
-            status: {
-              not_equals: 'broken',
+            'creator.id': {
+              exists: true,
             },
           },
         ],
@@ -90,14 +110,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       depth: 3,
     })
 
-    // Filter out jars where creator is not an object (deleted users)
     if (jarResult.docs.length > 0) {
-      const validJars = jarResult.docs.filter(
-        (jar: any) => typeof jar.creator === 'object' && jar.creator !== null,
-      )
-      if (validJars.length > 0) {
-        jar = validJars[0]
-      }
+      jar = jarResult.docs[0]
     }
     return jar
   }
