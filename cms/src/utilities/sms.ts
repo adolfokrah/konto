@@ -1,11 +1,6 @@
 /**
  * Simple SMS client for MNotify bulk / quick SMS endpoint.
  *
- * Environment variables used:
- *  - MNOTIFY_API_KEY (required)
- *  - MNOTIFY_SENDER_ID (required)
- *  - MNOTIFY_API_BASE_URL (optional, defaults to https://api.mnotify.com/api/sms/quick)
- *
  * MNotify "quick" endpoint typically expects:
  *  POST <baseUrl>?key=API_KEY
  *  Body JSON: { message: string, sender: string, recipients: string[] }
@@ -17,13 +12,15 @@
  */
 
 export interface SMSClientOptions {
-  /** Override API key (otherwise taken from env) */
-  apiKey?: string
-  /** Override sender ID (otherwise taken from env) */
-  senderId?: string
+  /** Override SMS username (otherwise taken from env) */
+  username?: string
+  /** Override SMS password (otherwise taken from env) */
+  password?: string
+  /** Override SMS source/sender ID (otherwise taken from env) */
+  source?: string
   /** Override base URL (otherwise taken from env or default) */
   baseUrl?: string
-  /** Maximum recipients per request (MNotify may impose limits). Default 100. */
+  /** Maximum recipients per request (Deywuro may impose limits). Default 100. */
   maxPerRequest?: number
   /** Abort signal for cancellation */
   signal?: AbortSignal
@@ -48,31 +45,36 @@ export interface SendSMSResult {
 }
 
 export class SMSClient {
-  private readonly apiKey: string
-  private readonly senderId: string
+  private readonly username: string
+  private readonly password: string
+  private readonly source: string
   private readonly baseUrl: string
   private readonly signal?: AbortSignal
 
   constructor(opts: SMSClientOptions = {}) {
     const isTest = process.env.NODE_ENV === 'test'
-    let apiKey = opts.apiKey || process.env.MNOTIFY_API_KEY || ''
-    let senderId = opts.senderId || process.env.MNOTIFY_SENDER_ID || ''
+    let username = opts.username || process.env.SMS_USERNAME || ''
+    let password = opts.password || process.env.SMS_PASS || ''
+    let source = opts.source || process.env.SMS_SOURCE || ''
 
     if (isTest) {
-      if (!apiKey) apiKey = 'test_api_key'
-      if (!senderId) senderId = 'TESTSENDER'
+      if (!username) username = 'test_username'
+      if (!password) password = 'test_password'
+      if (!source) source = 'TEST'
     }
 
-    this.apiKey = apiKey
-    this.senderId = senderId
+    this.username = username
+    this.password = password
+    this.source = source
     this.baseUrl = (
       opts.baseUrl ||
-      process.env.MNOTIFY_API_BASE_URL ||
-      'https://api.mnotify.com/api/sms/quick'
+      process.env.SMS_API_BASE_URL ||
+      'https://www.deywuro.com/api/sms'
     ).replace(/\/$/, '')
     this.signal = opts.signal
-    if (!this.apiKey) throw new Error('MNotify API key (MNOTIFY_API_KEY) is required')
-    if (!this.senderId) throw new Error('MNotify Sender ID (MNOTIFY_SENDER_ID) is required')
+    if (!this.username) throw new Error('SMS username (SMS_USERNAME) is required')
+    if (!this.password) throw new Error('SMS password (SMS_PASS) is required')
+    if (!this.source) throw new Error('SMS source (SMS_SOURCE) is required')
   }
 
   /** Public helper to format a single phone number */
@@ -98,7 +100,7 @@ export class SMSClient {
     return Array.from(new Set(formatted))
   }
 
-  /** Sends SMS mirroring the Dart SmsApiProvider: form-urlencoded with recipient[] keys. */
+  /** Sends SMS using Deywuro API with JSON POST format. */
   async send({
     to,
     message,
@@ -111,14 +113,14 @@ export class SMSClient {
       return { success: false, message: 'No valid recipients', recipients: [], sent: 0, failed: 0 }
     }
 
-    // Build form-urlencoded body similar to Dart implementation
-    const form = new URLSearchParams()
-    recipients.forEach((r) => form.append('recipient[]', r))
-    form.append('sender', this.senderId)
-    form.append('message', message.trim())
-    const isSchedule = !!scheduleDate
-    form.append('is_schedule', isSchedule ? 'true' : 'false')
-    form.append('schedule_date', scheduleDate || '')
+    // Build JSON payload for Deywuro API
+    const payload = {
+      username: this.username,
+      password: this.password,
+      source: this.source,
+      message: message.trim(),
+      destination: recipients.join(','), // Comma-separated recipients
+    }
 
     if (process.env.NODE_ENV === 'test') {
       return {
@@ -130,35 +132,43 @@ export class SMSClient {
       }
     }
 
-    // if (process.env.NODE_ENV !== 'production') {
-    //   return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
-    // }
-
     try {
-      const url = this.composeUrl()
-      const res = await fetch(url, {
+      const res = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: form.toString(),
+        body: JSON.stringify(payload),
         signal: this.signal,
       })
+
       const raw = await this.safeJson(res)
-      const ok = res.ok && (raw as any)?.status !== false
-      if (!ok) {
-        const errMsg = (raw as any)?.message || `HTTP ${res.status}`
+
+      // Deywuro API uses code 0 for success (not standard HTTP codes)
+      const responseCode = (raw as any)?.code
+      const isSuccess = responseCode === 0
+
+      if (!isSuccess) {
+        const errorMessage = this.getErrorMessage(responseCode, (raw as any)?.message)
         return {
           success: false,
-          message: errMsg,
+          message: errorMessage,
           recipients,
           sent: 0,
           failed: recipients.length,
-          errors: [errMsg],
+          errors: [errorMessage],
         }
       }
-      return { success: true, message: 'SMS sent', recipients, sent: recipients.length, failed: 0 }
+
+      const successMessage = (raw as any)?.message || 'SMS sent successfully'
+      return {
+        success: true,
+        message: successMessage,
+        recipients,
+        sent: recipients.length,
+        failed: 0,
+      }
     } catch (err: any) {
       const msg = err?.message || 'Unknown error'
       return {
@@ -172,11 +182,22 @@ export class SMSClient {
     }
   }
 
-  private composeUrl(): string {
-    // Most MNotify examples add ?key=API_KEY; support both styles.
-    const hasQuery = this.baseUrl.includes('?')
-    if (/([?&])key=/.test(this.baseUrl)) return this.baseUrl
-    return `${this.baseUrl}${hasQuery ? '&' : '?'}key=${encodeURIComponent(this.apiKey)}`
+  private getErrorMessage(code: number, defaultMessage?: string): string {
+    // Map Deywuro API error codes to user-friendly messages
+    switch (code) {
+      case 401:
+        return 'Invalid SMS credentials'
+      case 402:
+        return 'Insufficient SMS balance'
+      case 403:
+        return 'SMS service access denied'
+      case 404:
+        return 'SMS service not found'
+      case 500:
+        return 'SMS service temporarily unavailable'
+      default:
+        return defaultMessage || `SMS service error (code: ${code})`
+    }
   }
 
   private async safeJson(res: Response): Promise<unknown> {
@@ -188,12 +209,19 @@ export class SMSClient {
   }
 }
 
-// Convenience default instance using ENV vars
-export const smsClient = new SMSClient()
+// Lazy-loaded default instance using ENV vars
+let _smsClient: SMSClient | null = null
+
+export const getSmsClient = (): SMSClient => {
+  if (!_smsClient) {
+    _smsClient = new SMSClient()
+  }
+  return _smsClient
+}
 
 /**
  * Shorthand helper.
  * await sendSMS(["233xxxxxxxxx"], "Hello!")
  */
 export const sendSMS = (to: string | string[], message: string, skipInvalid = false) =>
-  smsClient.send({ to, message, skipInvalid })
+  getSmsClient().send({ to, message, skipInvalid })
