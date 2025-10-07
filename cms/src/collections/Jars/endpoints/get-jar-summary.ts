@@ -25,6 +25,11 @@ export const getJarSummary = async (req: PayloadRequest) => {
         depth: 2,
       })
 
+      // Check if jar creator is valid (not deleted)
+      if (jar && (typeof jar.creator !== 'object' || jar.creator === null)) {
+        throw new Error('Jar creator not found')
+      }
+
       // Check if user has access to this jar (either as creator or invited collector)
       if (jar) {
         const isCreator = jar.creator?.id === req.user!.id

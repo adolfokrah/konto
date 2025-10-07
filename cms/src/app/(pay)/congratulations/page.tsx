@@ -18,7 +18,7 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
   const { reference, amount, jarName, contributorName } = await searchParams
 
   return (
-    <div className="min-h-screen bg-primary-light flex items-center justify-center p-4">
+    <div className="pt-30 pb-40 bg-primary-light flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-3xl  p-8 text-center">
         {/* Success Icon */}
         <div className="mb-6">
