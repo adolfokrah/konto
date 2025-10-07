@@ -22,24 +22,21 @@ export const getJarSummary = async (req: PayloadRequest) => {
       const jarResult = await req.payload.find({
         collection: 'jars',
         where: {
-          and: [
-            {
-              id: {
-                equals: jarId,
-              },
-            },
-            {
-              'creator.id': {
-                exists: true,
-              },
-            },
-          ],
+          id: {
+            equals: jarId,
+          },
         },
         depth: 2,
         limit: 1,
       })
 
       jar = jarResult.docs.length > 0 ? jarResult.docs[0] : null
+
+      // Additional validation: ensure creator is actually a populated object, not just a string ID
+      if (jar && typeof jar.creator === 'string') {
+        // Creator is deleted (only string ID remains), fall back to getting user's first jar
+        jar = await getUserJar()
+      }
 
       // Check if user has access to this jar (either as creator or invited collector)
       if (jar) {
@@ -78,41 +75,37 @@ export const getJarSummary = async (req: PayloadRequest) => {
       collection: 'jars',
       pagination: false,
       where: {
-        and: [
+        or: [
           {
-            or: [
-              {
-                creator: {
-                  equals: req.user!,
-                },
-                status: {
-                  not_equals: 'broken',
-                },
-              },
-              {
-                'invitedCollectors.collector': {
-                  equals: req.user!,
-                },
-                status: {
-                  not_equals: 'broken',
-                },
-              },
-            ],
+            creator: {
+              equals: req.user!,
+            },
+            status: {
+              not_equals: 'broken',
+            },
           },
           {
-            'creator.id': {
-              exists: true,
+            'invitedCollectors.collector': {
+              equals: req.user!,
+            },
+            status: {
+              not_equals: 'broken',
             },
           },
         ],
       },
-      limit: 1,
+      limit: 10, // Get more jars to find one with valid creator
       depth: 3,
     })
 
-    if (jarResult.docs.length > 0) {
-      jar = jarResult.docs[0]
+    // Find the first jar with a valid (populated) creator
+    for (const foundJar of jarResult.docs) {
+      if (typeof foundJar.creator === 'object' && foundJar.creator !== null) {
+        jar = foundJar
+        break
+      }
     }
+
     return jar
   }
 
@@ -288,6 +281,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       ...paymentBreakdown,
     },
   }
+
+  console.log(jar)
 
   return Response.json({
     success: true,
