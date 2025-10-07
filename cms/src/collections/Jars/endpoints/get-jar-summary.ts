@@ -85,8 +85,14 @@ export const getJarSummary = async (req: PayloadRequest) => {
       depth: 3,
     })
 
+    // Filter out jars where creator is not an object (deleted users)
     if (jarResult.docs.length > 0) {
-      jar = jarResult.docs[0]
+      const validJars = jarResult.docs.filter(
+        (jar: any) => typeof jar.creator === 'object' && jar.creator !== null,
+      )
+      if (validJars.length > 0) {
+        jar = validJars[0]
+      }
     }
     return jar
   }

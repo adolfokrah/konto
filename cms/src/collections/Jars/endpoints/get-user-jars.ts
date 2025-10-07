@@ -37,8 +37,14 @@ export const getUserJars = async (req: PayloadRequest) => {
       limit: 1000,
     })
 
+    // Filter out jars where creator is not an object (deleted users)
+    const validJars = {
+      ...jars,
+      docs: jars.docs.filter((jar: any) => typeof jar.creator === 'object' && jar.creator !== null),
+    }
+
     // Group jars by jarGroup with enhanced data structure
-    const groupedJars = jars.docs.reduce(async (groupsPromise: any, jar: any) => {
+    const groupedJars = validJars.docs.reduce(async (groupsPromise: any, jar: any) => {
       const groups = await groupsPromise
 
       // Handle jarGroup being either a string ID or a populated object

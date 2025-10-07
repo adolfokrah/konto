@@ -7,6 +7,18 @@
     {
       "path": "/api/notifications/cleanup-old-notifications",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/users/send-kyc-reminder",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/users/send-jar-creation-reminder",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/users/send-empty-jar-reminder",
+      "schedule": "0 10 * * *"
     }
   ]
 }

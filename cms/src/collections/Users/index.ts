@@ -11,6 +11,10 @@ import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
 import { diditWebhook } from './endpoints/didit-webhook'
+import { sendKYCReminder } from './endpoints/send-kyc-reminder'
+import { sendJarCreationReminder } from './endpoints/send-jar-creation-reminder'
+import { sendEmptyJarReminder } from './endpoints/send-empty-jar-reminder'
+import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
 
@@ -100,6 +104,26 @@ export const Users: CollectionConfig = {
       path: '/didit-webhook',
       method: 'post',
       handler: diditWebhook,
+    },
+    {
+      path: '/send-kyc-reminder',
+      method: 'post',
+      handler: sendKYCReminder,
+    },
+    {
+      path: '/send-jar-creation-reminder',
+      method: 'post',
+      handler: sendJarCreationReminder,
+    },
+    {
+      path: '/send-empty-jar-reminder',
+      method: 'post',
+      handler: sendEmptyJarReminder,
+    },
+    {
+      path: '/job-status',
+      method: 'get',
+      handler: getJobStatus,
     },
   ],
   fields: [
@@ -211,19 +235,19 @@ export const Users: CollectionConfig = {
       ],
       defaultValue: 'none',
       required: false,
-      hooks: {
-        beforeChange: [
-          ({ data, originalDoc }) => {
-            // Prevent manual setting to 'verified'
-            if (data && originalDoc) {
-              if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
-                console.log('Manual setting of KYC status to verified is not allowed')
-                data.kycStatus = originalDoc.kycStatus || 'none'
-              }
-            }
-          },
-        ],
-      },
+      // hooks: {
+      //   beforeChange: [
+      //     ({ data, originalDoc }) => {
+      //       // Prevent manual setting to 'verified'
+      //       if (data && originalDoc) {
+      //         if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
+      //           console.log('Manual setting of KYC status to verified is not allowed')
+      //           data.kycStatus = originalDoc.kycStatus || 'none'
+      //         }
+      //       }
+      //     },
+      //   ],
+      // },
     },
     {
       name: 'role',

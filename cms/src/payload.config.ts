@@ -21,6 +21,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { Notifications } from './collections/Notifications'
+import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -97,6 +98,21 @@ export default buildConfig({
     defaultFromName: 'Payload CMS',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
+  jobs: {
+    access: {
+      run: ({ req }) => {
+        // Allow logged in users to execute this endpoint (default)
+        if (req.user) return true
+
+        // If there is no logged in user, then check
+        // for the Vercel Cron secret to be present as an
+        // Authorization header:
+        const authHeader = req.headers.get('authorization')
+        return authHeader === `Bearer ${process.env.CRON_SECRET}`
+      },
+    },
+    tasks: [sendEmptyJarReminderTask as any],
+  },
 })
 
 // import { buildConfig } from 'payload'
