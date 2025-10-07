@@ -105,34 +105,13 @@ const nextConfig = {
   redirects,
 }
 
-export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+// Temporarily disable Sentry wrapper due to Next.js 15 conflicts  
+// export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
+//   org: 'kontoapp', 
+//   project: 'konto-cms',
+//   silent: !process.env.CI,
+//   hideSourceMaps: true,
+//   disableLogger: true,
+// })
 
-  org: 'kontoapp',
-  project: 'konto-cms',
-
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
-
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: '/monitoring',
-
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  // Enable automatic instrumentation for server functions
-  autoInstrumentServerFunctions: true,
-
-  // Disable Vercel Cron monitoring to reduce dependencies
-  automaticVercelMonitors: false,
-})
+export default withPayload(nextConfig, { devBundleServerPackages: false })
