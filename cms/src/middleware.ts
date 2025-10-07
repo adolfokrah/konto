@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
+function middleware(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname
     const referer = request.headers.get('referer')
@@ -94,6 +94,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 }
+
+export default middleware
 
 export const config = {
   matcher: [
