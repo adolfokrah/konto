@@ -88,16 +88,16 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Memory optimizations for large builds
-    if (!dev) {
-      webpackConfig.optimization = {
-        ...webpackConfig.optimization,
-        splitChunks: {
-          ...webpackConfig.optimization.splitChunks,
-          maxSize: 240000, // Smaller chunks to reduce memory usage
-        },
-      }
-    }
+    // // Memory optimizations for large builds
+    // if (!dev) {
+    //   webpackConfig.optimization = {
+    //     ...webpackConfig.optimization,
+    //     splitChunks: {
+    //       ...webpackConfig.optimization.splitChunks,
+    //       maxSize: 240000, // Smaller chunks to reduce memory usage
+    //     },
+    //   }
+    // }
 
     return webpackConfig
   },
