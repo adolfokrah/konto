@@ -17,6 +17,11 @@ export const sendEmptyJarReminder = async (req: PayloadRequest) => {
               equals: true,
             },
           },
+          //   {
+          //     role: {
+          //         equals: 'admin',
+          //     }
+          //   },
           {
             fcmToken: {
               exists: true,

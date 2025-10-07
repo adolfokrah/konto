@@ -53,38 +53,6 @@ export const sendEmptyJarReminderTask = {
     try {
       console.log(`🔄 Processing empty jar reminder for user ${userId}...`)
 
-      // Check if user was recently processed (duplicate prevention)
-      const now = Date.now()
-      const lastProcessed = recentlyProcessedUsers.get(userId)
-
-      if (lastProcessed && now - lastProcessed < DUPLICATE_PREVENTION_WINDOW) {
-        console.log(
-          `⚠️ User ${userId} was recently processed ${Math.round((now - lastProcessed) / 1000)}s ago, skipping duplicate`,
-        )
-        return {
-          success: true,
-          message: 'User recently processed, skipping duplicate',
-          userId,
-          results: {
-            userProcessed: false,
-            jarsChecked: 0,
-            emptyJarsFound: 0,
-            notificationSent: false,
-            notificationError: 'Duplicate prevention - recently processed',
-          },
-        }
-      }
-
-      // Mark user as being processed
-      recentlyProcessedUsers.set(userId, now)
-
-      // Clean up old entries from cache
-      for (const [cachedUserId, timestamp] of recentlyProcessedUsers.entries()) {
-        if (now - timestamp > DUPLICATE_PREVENTION_WINDOW) {
-          recentlyProcessedUsers.delete(cachedUserId)
-        }
-      }
-
       // Find all jars created by this specific user
       const userJars = await payload.find({
         collection: 'jars',
@@ -114,8 +82,6 @@ export const sendEmptyJarReminderTask = {
         }
       }
 
-      console.log(`🏺 User ${userId} has ${userJars.docs.length} jars to check`)
-
       // Check each jar for contributions
       const emptyJars: any[] = []
 
@@ -136,6 +102,7 @@ export const sendEmptyJarReminderTask = {
           })
 
           if (contributions.docs.length === 0) {
+            console.log(`🏺 Jar ${jar.name} is empty (no contributions)`)
             emptyJars.push(jar)
           }
         } catch (error) {
