@@ -94,7 +94,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
 
     // Note: Need to define validTokens and contribution object for FCM notification
     // This appears to be missing from the current implementation
-    fcmNotifications.sendNotification([creatorToken], message, title, {
+    await fcmNotifications.sendNotification([creatorToken], message, title, {
       type: 'contribution',
       jarId: jar.id,
       contributionId: transfer.id,
