@@ -6,7 +6,7 @@ export const updateJarTotalContributions: CollectionAfterChangeHook = async ({
   operation,
 }) => {
   try {
-    if (operation == 'create' || operation == 'update') {
+    if ((operation == 'create' || operation == 'update') && doc.paymentStatus === 'completed') {
       // Get the jar ID
       const jarId = typeof doc.jar === 'string' ? doc.jar : doc.jar?.id
       if (!jarId) {
@@ -37,7 +37,7 @@ export const updateJarTotalContributions: CollectionAfterChangeHook = async ({
         collection: 'jars',
         id: jarId,
         data: {
-          totalContributions: newTotal,
+          totalContributions: newTotal + 1,
         },
         overrideAccess: true,
       })
