@@ -353,7 +353,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         email: 'success.test@example.com',
         amount: 5098, // 50.98 * 100 (contributor total amount including charges)
         currency: 'GHS', // Currency from jar (lowercase)
-        phone: '+233541234567',
+        // phone: '+233541234567',
         provider: 'MTN',
         reference: pendingContribution.id,
         metadata: expect.objectContaining({

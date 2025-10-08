@@ -152,7 +152,8 @@ export const chargeMomo = async (req: PayloadRequest) => {
         Number(contribution.chargesBreakdown.amountPaidByContributor * 100).toFixed(2),
       ), // Convert to subunits (pesewas/cents)
       currency: jar.currency as 'GHS' | 'KES',
-      phone: contribution.contributorPhoneNumber,
+      phone: '0551234987', //only for testing
+      // phone: contribution.contributorPhoneNumber,
       provider: contribution.mobileMoneyProvider,
       reference: contribution.id,
       metadata: {
