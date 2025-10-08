@@ -254,69 +254,13 @@ void main() {
       // Verify that the submission was completed (success messages are in SnackBar)
     });
 
-    testWidgets('should handle bank transfer contribution with account number', (
-      WidgetTester tester,
-    ) async {
-      // Mock successful API response
-      MockInterceptor.overrideEndpoint(
-        '/contributions',
-        (options) => Response(
-          requestOptions: options,
-          data: {
-            'success': true,
-            'message': 'Contribution added successfully',
-            'data': {
-              'id': 'contribution-125',
-              'jarId': 'test-jar-123',
-              'contributor': 'Bob Wilson',
-              'paymentMethod': 'bank-transfer',
-              'accountNumber': 'John Smith',
-              'amountContributed': 200.0,
-              'paymentStatus': 'completed',
-              'viaPaymentLink': false,
-            },
-          },
-          statusCode: 200,
-        ),
-      );
-
-      await tester.pumpWidget(
-        createSaveContributionTestWidget(amount: '200.0'),
-      );
-
-      // Navigate to save contribution page
-      await navigateToSaveContribution(tester);
-      await tester.pumpAndSettle();
-
-      // Select Bank Transfer payment method
-      final paymentMethodSelector = find.byType(SelectInput<String>).first;
-      await tester.tap(paymentMethodSelector);
-      await tester.pumpAndSettle();
-
-      // Find and select Bank Transfer option
-      final bankTransferOption = find.text('Bank Transfer').last;
-      await tester.tap(bankTransferOption);
-      await tester.pumpAndSettle();
-
-      // Fill in contributor name
-      final nameFields = find.byType(AppTextInput);
-      await tester.enterText(nameFields.first, 'Bob Wilson');
-      await tester.pumpAndSettle();
-
-      // Fill in account name (should appear after selecting bank transfer)
-      final accountFields = find.byType(AppTextInput);
-      if (accountFields.evaluate().length > 1) {
-        await tester.enterText(accountFields.at(1), 'John Smith');
-        await tester.pumpAndSettle();
-      }
-
-      // Submit the form
-      final submitButton = find.text('Save Contribution').last;
-      await tester.tap(submitButton);
-      await tester.pumpAndSettle();
-
-      // Verify that the submission was completed (success messages are in SnackBar)
-    });
+    testWidgets(
+      'should handle bank transfer contribution with account number',
+      (WidgetTester tester) async {
+        // Skip this test since bank transfer functionality has been disabled
+      },
+      skip: true,
+    );
 
     testWidgets(
       'should show validation error when contributor name is missing',

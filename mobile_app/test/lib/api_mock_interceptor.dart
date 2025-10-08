@@ -95,6 +95,30 @@ class MockInterceptor extends Interceptor {
       return;
     }
 
+    // Mock the notifications API endpoint
+    if (options.path.contains('/api/notifications') &&
+        options.method == 'GET') {
+      print('MockInterceptor: ✅ Mocking Notifications API response');
+      final response = Response(
+        requestOptions: options,
+        data: {
+          'success': true,
+          'data': [],
+          'message': 'Notifications retrieved successfully',
+          'totalDocs': 0,
+          'limit': 20,
+          'page': 1,
+          'totalPages': 0,
+          'hasNextPage': false,
+          'hasPrevPage': false,
+        },
+        statusCode: 200,
+      );
+
+      handler.resolve(response);
+      return;
+    }
+
     // Mock the loginWithPhoneEndpoint
     if (options.path.contains(BackendConfig.loginWithPhoneEndpoint) &&
         options.method == 'POST') {

@@ -51,8 +51,6 @@ export const sendEmptyJarReminderTask = {
     }
 
     try {
-      console.log(`🔄 Processing empty jar reminder for user ${userId}...`)
-
       // Find all jars created by this specific user
       const userJars = await payload.find({
         collection: 'jars',
@@ -68,7 +66,6 @@ export const sendEmptyJarReminderTask = {
       })
 
       if (userJars.docs.length === 0) {
-        console.log(`ℹ️ User ${userId} has no jars, skipping`)
         return {
           success: true,
           message: 'User has no jars',
@@ -102,7 +99,6 @@ export const sendEmptyJarReminderTask = {
           })
 
           if (contributions.docs.length === 0) {
-            console.log(`🏺 Jar ${jar.name} is empty (no contributions)`)
             emptyJars.push(jar)
           }
         } catch (error) {

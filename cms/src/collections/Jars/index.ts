@@ -207,6 +207,12 @@ export const Jars: CollectionConfig = {
         description: 'Current status of the jar',
       },
     },
+    {
+      name: 'totalContributions',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+    },
   ],
   hooks: {
     afterChange: [

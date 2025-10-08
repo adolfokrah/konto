@@ -18,6 +18,7 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
+import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -193,6 +194,9 @@ void main() {
             ),
             BlocProvider<MomoPaymentBloc>(
               create: (context) => MomoPaymentBloc(),
+            ),
+            BlocProvider<NotificationsBloc>(
+              create: (context) => NotificationsBloc(),
             ),
           ],
           child: MaterialApp(
@@ -454,6 +458,9 @@ void main() {
             BlocProvider<MomoPaymentBloc>(
               create: (context) => MomoPaymentBloc(),
             ),
+            BlocProvider<NotificationsBloc>(
+              create: (context) => NotificationsBloc(),
+            ),
           ],
           child: MaterialApp(
             localizationsDelegates: const [
@@ -549,6 +556,9 @@ void main() {
                   ),
                   BlocProvider<MomoPaymentBloc>(
                     create: (context) => MomoPaymentBloc(),
+                  ),
+                  BlocProvider<NotificationsBloc>(
+                    create: (context) => NotificationsBloc(),
                   ),
                 ],
                 child: MaterialApp(
@@ -730,6 +740,9 @@ void main() {
             BlocProvider<VerificationBloc>(
               create: (context) => VerificationBloc(),
             ),
+            BlocProvider<NotificationsBloc>(
+              create: (context) => NotificationsBloc(),
+            ),
             BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
             BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
             BlocProvider<JarSummaryReloadBloc>(
@@ -753,6 +766,9 @@ void main() {
             ),
             BlocProvider<MomoPaymentBloc>(
               create: (context) => MomoPaymentBloc(),
+            ),
+            BlocProvider<NotificationsBloc>(
+              create: (context) => NotificationsBloc(),
             ),
           ],
           child: MaterialApp(

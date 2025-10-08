@@ -46,8 +46,6 @@ export const sendEmptyJarReminder = async (req: PayloadRequest) => {
       )
     }
 
-    console.log(`👥 Found ${verifiedUsers.docs.length} KYC verified users with FCM tokens`)
-
     // Filter users who actually have jars (quick check)
     const usersWithJars: any[] = []
 

@@ -1486,6 +1486,7 @@ export interface Jar {
    * Current status of the jar
    */
   status: 'open' | 'broken' | 'sealed';
+  totalContributions?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2445,6 +2446,7 @@ export interface JarsSelect<T extends boolean = true> {
   whoPaysPlatformFees?: T;
   thankYouMessage?: T;
   status?: T;
+  totalContributions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
