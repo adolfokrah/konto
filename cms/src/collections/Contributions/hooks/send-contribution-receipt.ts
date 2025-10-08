@@ -26,7 +26,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
       })
 
       if (jar) {
-        const receipt = `Your contribution of ${jar.currency} ${Number(data.chargesBreakdown.amountPaidByContributor).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
+        const receipt = `Your contribution of ${jar.currency} ${Number(data.amountContributed).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
 
         if (data.contributorPhoneNumber) {
           sendSMS([data.contributorPhoneNumber], receipt)
