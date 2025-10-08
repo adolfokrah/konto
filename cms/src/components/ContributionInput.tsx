@@ -7,7 +7,7 @@ import { Button } from './ui/button'
 import { toast } from 'sonner'
 import TransactionCharges from '@/utilities/transaction-charges'
 import { Separator } from './ui/separator'
-
+import { Spinner } from "@/components/ui/spinner"
 interface ContributionInputProps {
   currency?: string
   isFixedAmount?: boolean
@@ -384,19 +384,19 @@ export default function ContributionInput({
         disabled={
           selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || !contributorName
         }
-        className="w-full bg-black text-white py-4 mt-8 rounded-full font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
-        {isLoading ? 'Processing...' : 'Contribute'}
+        {isLoading ? <Spinner className='w-5 h-5'/> : 'Contribute'}
       </button>
 
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
         Upon completing this contribution, you agree to hoga&apos;s{' '}
-        <Link href="/terms" className="text-blue-500">
+        <Link href="https://usehoga.com/terms" className="text-blue-500">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link href="/privacy" className="text-blue-500">
+        <Link href="https://usehoga.com/privacy-policy" className="text-blue-500">
           Privacy Policy
         </Link>
         .
