@@ -116,7 +116,7 @@ describe('Contributions Collection Integration Tests', () => {
       expect(contribution.paymentMethod).toBe('mobile-money')
       expect(contribution.amountContributed).toBe(98) // With creator pays platform fees, recipient gets 98 from 100 (platform fees deducted)
       expect(
-        typeof contribution.collector === 'object'
+        typeof contribution.collector === 'object' && contribution.collector !== null
           ? contribution.collector.id
           : contribution.collector,
       ).toBe(collectorUser.id)
@@ -301,7 +301,7 @@ describe('Contributions Collection Integration Tests', () => {
       expect(collectorContributions.docs).toHaveLength(2)
       collectorContributions.docs.forEach((contribution) => {
         expect(
-          typeof contribution.collector === 'object'
+          typeof contribution.collector === 'object' && contribution.collector !== null
             ? contribution.collector.id
             : contribution.collector,
         ).toBe(collectorUser.id)
