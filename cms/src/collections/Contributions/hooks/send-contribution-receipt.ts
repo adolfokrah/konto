@@ -27,7 +27,7 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
 
       if (jar) {
         const amount =
-          data.type == 'contribution'
+          data.paymentMethod == 'cash' || data.paymentMethod == 'bank-transfer'
             ? data.amountContributed
             : data.chargesBreakdown.amountPaidByContributor
         const receipt = `Your contribution of ${jar.currency} ${Number(amount).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
