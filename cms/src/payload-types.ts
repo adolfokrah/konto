@@ -1407,7 +1407,7 @@ export interface Contribution {
   /**
    * User who collected the contribution
    */
-  collector: string | User;
+  collector?: (string | null) | User;
   /**
    * Check if this contribution was made via a payment link
    */

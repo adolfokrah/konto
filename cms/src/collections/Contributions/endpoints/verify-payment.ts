@@ -27,8 +27,8 @@ export const verifyPayment = async (req: PayloadRequest) => {
       res = await paystack.checkTransactionStatus(reference)
     } catch (paystackError: any) {
       // If transaction not found, update database status to failed
-      if (paystackError.message && paystackError.message.includes('not found')) {
-        await req.payload.update({
+      if (paystackError.message && paystackError.message.toLowerCase().includes('not found')) {
+        const data = await req.payload.update({
           collection: 'contributions',
           where: {
             transactionReference: { equals: reference },

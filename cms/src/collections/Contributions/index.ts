@@ -219,14 +219,14 @@ export const Contributions: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: false,
-      required: true,
+      required: false,
       admin: {
         description: 'User who collected the contribution',
       },
       filterOptions: async ({ data, req }) => {
         // Filter to show only the jar's collectors and creator
         if (!data?.jar) {
-          return false
+          return true // Allow all users if no jar specified
         }
 
         try {
@@ -237,7 +237,7 @@ export const Contributions: CollectionConfig = {
           })
 
           if (!jar) {
-            return false
+            return true // Allow all users if jar doesn't exist
           }
 
           const allowedUserIds = []
@@ -264,7 +264,7 @@ export const Contributions: CollectionConfig = {
           }
 
           if (allowedUserIds.length === 0) {
-            return false
+            return true // Allow all users if no valid collectors found
           }
 
           return {
@@ -274,8 +274,30 @@ export const Contributions: CollectionConfig = {
           }
         } catch (error) {
           console.error('Error filtering collector options:', error)
-          return false
+          return true // Allow all users on any error
         }
+      },
+      hooks: {
+        beforeValidate: [
+          async ({ data, req }) => {
+            // Check if collector exists, if not set to null to prevent validation errors
+            if (data && data.collector) {
+              try {
+                const collectorId =
+                  typeof data.collector === 'string' ? data.collector : data.collector.id
+                await req.payload.findByID({
+                  collection: 'users',
+                  id: collectorId,
+                })
+                // If no error, collector exists - keep it as is
+              } catch (error: any) {
+                // If collector doesn't exist (404 or any other error), set to null
+                console.log(`Collector ${data.collector} not found, setting to null`)
+                data.collector = null
+              }
+            }
+          },
+        ],
       },
     },
     {
