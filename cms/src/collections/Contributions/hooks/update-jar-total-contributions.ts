@@ -31,13 +31,18 @@ export const updateJarTotalContributions: CollectionAfterChangeHook = async ({
       })
 
       // Increment the jar's totalContributions
-      const newTotal = totalContributions.totalDocs || 0
+      const newTotal =
+        operation == 'create'
+          ? 1 + (totalContributions.totalDocs || 0)
+          : totalContributions.totalDocs || 0
+
+      console.log('Updating jar total contributions to:', newTotal)
 
       await req.payload.update({
         collection: 'jars',
         id: jarId,
         data: {
-          totalContributions: newTotal + 1,
+          totalContributions: newTotal,
         },
         overrideAccess: true,
       })

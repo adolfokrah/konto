@@ -1,4 +1,5 @@
 import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
@@ -14,13 +15,9 @@ class ExportToPdf extends StatelessWidget {
     return BlocConsumer<ExportContributionsBloc, ExportContributionsState>(
       listener: (context, state) {
         if (state is ExportContributionsSuccess) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppSnackBar.showSuccess(context, message: state.message);
         } else if (state is ExportContributionsFailure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppSnackBar.showError(context, message: state.message);
         }
       },
       builder: (context, exportState) {
