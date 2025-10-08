@@ -1,4 +1,4 @@
-import { Payload } from 'payload'
+import { Payload, getPayload } from 'payload'
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 
 // Simple in-memory cache to prevent duplicate notifications within a short time window
@@ -7,8 +7,8 @@ const DUPLICATE_PREVENTION_WINDOW = 5 * 60 * 1000 // 5 minutes
 
 interface TaskInput {
   userId: string
-  userFcmToken: string
-  userName?: string
+  emptyJarCounts: number
+  message?: string
 }
 
 interface TaskOutput {
@@ -27,163 +27,79 @@ interface TaskOutput {
 export const sendEmptyJarReminderTask = {
   slug: 'send-empty-jar-reminder',
   handler: async (args: any) => {
-    // Try different ways to access payload and input
-    console.log('🔍 Args received:', Object.keys(args))
-
-    const payload = args.payload || args.req?.payload
     const input = args.input || args.job?.input || args
-    const { userId, userFcmToken, userName } = input as TaskInput
-
-    if (!payload) {
-      console.error('❌ Payload is undefined. Available args:', Object.keys(args))
-      return {
-        success: false,
-        message: 'Payload instance not available',
-        userId: userId || 'unknown',
-        results: {
-          userProcessed: false,
-          jarsChecked: 0,
-          emptyJarsFound: 0,
-          notificationSent: false,
-          notificationError: 'Payload instance not available',
-        },
-      }
-    }
+    const { userId, emptyJarCounts, message } = input as TaskInput
 
     try {
-      // Find all jars created by this specific user
-      const userJars = await payload.find({
-        collection: 'jars',
-        where: {
-          creator: {
-            equals: userId,
-          },
-          status: {
-            equals: 'open', // Only consider active jars
-          },
-        },
-        pagination: false,
+      // Get payload instance using getPayload - we'll pass the args payload
+      const payload = args.payload || args.req?.payload
+
+      // Find the user
+      const user = await payload.findByID({
+        collection: 'users',
+        id: userId,
+        overrideAccess: true,
       })
 
-      if (userJars.docs.length === 0) {
+      if (!user) {
         return {
-          success: true,
-          message: 'User has no jars',
+          success: false,
+          message: 'User not found',
+          userId,
+          results: {
+            userProcessed: false,
+            jarsChecked: 0,
+            emptyJarsFound: emptyJarCounts,
+            notificationSent: false,
+          },
+        }
+      }
+
+      // Check if user has FCM token for notifications
+      if (!user.fcmToken) {
+        return {
+          success: false,
+          message: 'User has no FCM token',
           userId,
           results: {
             userProcessed: true,
             jarsChecked: 0,
-            emptyJarsFound: 0,
+            emptyJarsFound: emptyJarCounts,
             notificationSent: false,
+            notificationError: 'No FCM token',
           },
         }
       }
 
-      // Check each jar for contributions
-      const emptyJars: any[] = []
+      // Send notification
+      const notificationResult = await fcmNotifications.sendNotification(
+        [user.fcmToken],
+        message ||
+          `You have ${emptyJarCounts} jar${emptyJarCounts > 1 ? 's' : ''} with no contributions yet!`,
+        "Don't forget your empty jars! 🫙",
+      )
 
-      for (const jar of userJars.docs) {
-        try {
-          // Find contributions for this jar
-          const contributions = await payload.find({
-            collection: 'contributions',
-            where: {
-              jar: {
-                equals: jar.id,
-              },
-              status: {
-                notEqualls: 'failed',
-              },
-            },
-            limit: 1, // We only need to know if any exist
-          })
-
-          if (contributions.docs.length === 0) {
-            emptyJars.push(jar)
-          }
-        } catch (error) {
-          console.error(`❌ Error checking contributions for jar ${jar.id}:`, error)
-          // Continue with other jars even if one fails
-        }
-      }
-
-      if (emptyJars.length === 0) {
-        console.log(`✅ User ${userId} has no empty jars, no notification needed`)
-        return {
-          success: true,
-          message: 'User has no empty jars',
-          userId,
-          results: {
-            userProcessed: true,
-            jarsChecked: userJars.docs.length,
-            emptyJarsFound: 0,
-            notificationSent: false,
-          },
-        }
-      }
-
-      console.log(`📭 User ${userId} has ${emptyJars.length} empty jars, sending notification...`)
-
-      // Send push notification to this user
-      try {
-        const jarCount = emptyJars.length
-        const jarWord = jarCount === 1 ? 'jar' : 'jars'
-
-        const data = await fcmNotifications.sendNotification(
-          [userFcmToken], // tokens array
-          `You have ${jarCount} empty ${jarWord} waiting for contributions. Start receiving today!`, // message
-          `Don't forget about your ${jarWord}! 🏺`, // title
-          {
-            type: 'empty_jar_reminder',
-            userId: userId,
-            jarCount: jarCount.toString(),
-            action: 'view_jars',
-          }, // data
-        )
-
-        console.log('FCM response data:', data)
-
-        console.log(
-          `✅ Successfully sent empty jar reminder to user ${userId} (${jarCount} empty ${jarWord})`,
-        )
-
-        return {
-          success: true,
-          message: `Empty jar reminder sent successfully`,
-          userId,
-          results: {
-            userProcessed: true,
-            jarsChecked: userJars.docs.length,
-            emptyJarsFound: emptyJars.length,
-            notificationSent: true,
-          },
-        }
-      } catch (notificationError: any) {
-        console.error(`❌ Failed to send push notification to user ${userId}:`, notificationError)
-
-        return {
-          success: false,
-          message: `Failed to send notification`,
-          userId,
-          results: {
-            userProcessed: true,
-            jarsChecked: userJars.docs.length,
-            emptyJarsFound: emptyJars.length,
-            notificationSent: false,
-            notificationError: notificationError.message,
-          },
-        }
+      return {
+        success: true,
+        message: 'Empty jar reminder sent successfully',
+        userId,
+        results: {
+          userProcessed: true,
+          jarsChecked: 0,
+          emptyJarsFound: emptyJarCounts,
+          notificationSent: true,
+        },
       }
     } catch (error: any) {
-      console.error(`❌ Error processing empty jar reminder for user ${userId}:`, error)
+      console.error('Error in empty jar reminder task:', error)
       return {
         success: false,
-        message: `Failed to process user: ${error.message}`,
+        message: 'Failed to send empty jar reminder',
         userId,
         results: {
           userProcessed: false,
           jarsChecked: 0,
-          emptyJarsFound: 0,
+          emptyJarsFound: emptyJarCounts || 0,
           notificationSent: false,
           notificationError: error.message,
         },

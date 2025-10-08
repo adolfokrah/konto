@@ -5,121 +5,65 @@ export const sendEmptyJarReminder = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
 
-    console.log('🔄 Finding KYC verified users with FCM tokens for empty jar reminders...')
-
-    // Find all KYC verified users with FCM tokens who have created jars
-    const verifiedUsers = await req.payload.find({
-      collection: 'users',
+    const emptyJars = await req.payload.find({
+      collection: 'jars',
       where: {
-        and: [
-          {
-            isKYCVerified: {
-              equals: true,
-            },
-          },
-          //   {
-          //     role: {
-          //         equals: 'admin',
-          //     }
-          //   },
-          {
-            fcmToken: {
-              exists: true,
-            },
-          },
-        ],
+        totalContributions: {
+          equals: 0,
+        },
+        status: {
+          equals: 'open', // Only consider active jars
+        },
       },
-      limit: 1000, // Reasonable limit to prevent memory issues
+      pagination: false,
+      overrideAccess: true,
     })
 
-    if (verifiedUsers.docs.length === 0) {
-      return Response.json(
-        {
-          success: true,
-          message: 'No KYC verified users with FCM tokens found',
-          stats: {
-            usersFound: 0,
-            jobsQueued: 0,
-          },
-        },
-        { status: 200 },
-      )
-    }
-
-    // Filter users who actually have jars (quick check)
-    const usersWithJars: any[] = []
-
-    for (const user of verifiedUsers.docs) {
-      try {
-        // Quick check if user has any jars
-        const userJars = await req.payload.find({
-          collection: 'jars',
-          where: {
-            creator: {
-              equals: user.id,
-            },
-            status: {
-              equals: 'open', // Only consider active jars
-            },
-          },
-          limit: 1, // Just need to know if any exist
-        })
-
-        if (userJars.docs.length > 0) {
-          usersWithJars.push(user)
+    // Group jars by user and count empty jars per user
+    const userEmptyJarCounts = emptyJars.docs.reduce((acc: any, jar: any) => {
+      const user = typeof jar.creator === 'string' ? jar.creator : jar.creator
+      if (user) {
+        if (!acc[user.id]) {
+          acc[user.id] = { user: user.id, emptyJarCounts: 0, name: user.fullName }
         }
-      } catch (error) {
-        console.error(`❌ Error checking jars for user ${user.id}:`, error)
-        // Continue with other users even if one fails
+        acc[user.id].emptyJarCounts++
       }
-    }
+      return acc
+    }, {})
 
-    if (usersWithJars.length === 0) {
-      return Response.json(
-        {
-          success: true,
-          message: 'No users with jars found',
-          stats: {
-            usersFound: verifiedUsers.docs.length,
-            usersWithJars: 0,
-            jobsQueued: 0,
-          },
-        },
-        { status: 200 },
-      )
-    }
-
-    console.log(
-      `🏺 Found ${usersWithJars.length} users with jars, creating individual queue jobs...`,
-    )
+    const usersWithEmptyJars = Object.values(userEmptyJarCounts) as Array<{
+      user: string
+      emptyJarCounts: number
+    }>
 
     // Create individual queue jobs for each user
     const queuedJobs: any[] = []
     let successCount = 0
     let failureCount = 0
 
-    for (const user of usersWithJars) {
+    for (const userWithEmptyJars of usersWithEmptyJars) {
       try {
         const job = await req.payload.jobs.queue({
           task: 'send-empty-jar-reminder' as any, // Type assertion for custom task
           input: {
-            userId: user.id,
-            userFcmToken: user.fcmToken,
-            userName: user.fullName || user.email,
+            userId: userWithEmptyJars.user,
+            emptyJarCounts: userWithEmptyJars.emptyJarCounts,
           },
         })
 
         queuedJobs.push({
           jobId: job.id,
-          userId: user.id,
-          userName: user.fullName || user.email,
+          userId: userWithEmptyJars.user,
+          emptyJarCounts: userWithEmptyJars.emptyJarCounts,
           queuedAt: job.createdAt,
         })
 
         successCount++
-        console.log(`✅ Queued job for user ${user.id}`)
+        console.log(
+          `✅ Queued job for user ${userWithEmptyJars.user} with ${userWithEmptyJars.emptyJarCounts} empty jars`,
+        )
       } catch (error) {
-        console.error(`❌ Failed to queue job for user ${user.id}:`, error)
+        console.error(`❌ Failed to queue job for user ${userWithEmptyJars.user}:`, error)
         failureCount++
       }
     }
@@ -144,8 +88,8 @@ export const sendEmptyJarReminder = async (req: PayloadRequest) => {
         success: true,
         message: `Successfully queued and processed ${successCount} empty jar reminder jobs`,
         stats: {
-          usersFound: verifiedUsers.docs.length,
-          usersWithJars: usersWithJars.length,
+          totalEmptyJars: emptyJars.docs.length,
+          usersWithEmptyJars: usersWithEmptyJars.length,
           jobsQueued: successCount,
           jobsFailed: failureCount,
         },

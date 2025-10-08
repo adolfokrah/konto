@@ -7,7 +7,7 @@ import { verifyTransfer } from './endpoints/verify-transfer'
 import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
 import { verifyPayment } from './endpoints/verify-payment'
-import { setPaymentStatus } from './hooks'
+import { setPaymentStatus, updateJarTotalContributions } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
@@ -336,7 +336,7 @@ export const Contributions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
-    afterChange: [sendContributionReceipt],
+    afterChange: [sendContributionReceipt, updateJarTotalContributions],
     beforeValidate: [validateJarCreatorAccount],
   },
 }
