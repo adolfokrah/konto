@@ -73,6 +73,8 @@ export const verifyPayment = async (req: PayloadRequest) => {
         id: foundContribution.docs[0].id,
         data: {
           paymentStatus: (res.data as any)?.status === 'success' ? 'completed' : 'failed',
+          paymentMethod:
+            (res.data as any)?.channel.replace('_', '-') || foundContribution.docs[0].paymentMethod,
         },
       })
 

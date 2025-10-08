@@ -34,6 +34,8 @@ class FilterOptions {
       'bankTransferPayment',
       Icons.account_balance,
     ),
+    PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
+    PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
   ];
 
   /// Status options for contributions filter

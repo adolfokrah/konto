@@ -368,6 +368,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bankTransferPayment => 'Bank transfer';
 
   @override
+  String get cardPayment => 'Card';
+
+  @override
+  String get applePayPayment => 'Apple Pay';
+
+  @override
   String get statusPending => 'Pending';
 
   @override

@@ -134,7 +134,13 @@ class FilterContributionsBloc
     SelectAllFilters event,
     Emitter<FilterContributionsState> emit,
   ) {
-    const allPaymentMethods = ['mobile-money', 'cash', 'bank-transfer'];
+    const allPaymentMethods = [
+      'mobile-money',
+      'cash',
+      'bank-transfer',
+      'card',
+      'apple-pay',
+    ];
     const allStatuses = ['pending', 'completed', 'failed', 'transferred'];
 
     final currentState = state;

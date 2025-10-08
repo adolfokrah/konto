@@ -205,6 +205,7 @@ export default function ContributionInput({
           ],
         },
         onSuccess: async (response: any) => {
+
           const verificationResult = await verifyPayment(response.reference)
 
           if (verificationResult.success) {

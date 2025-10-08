@@ -39,7 +39,7 @@ class PaymentMethodUtils {
     return {
       'mobile-money': localizations.paymentMethodMobileMoney,
       'cash': localizations.paymentMethodCash,
-      'bank-transfer': localizations.paymentMethodBankTransfer,
+      // 'bank-transfer': localizations.paymentMethodBankTransfer,
     };
   }
 

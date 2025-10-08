@@ -258,16 +258,16 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           keyboardType: TextInputType.name,
                         ),
 
-                        // Account Name input (only show if Bank Transfer is selected)
-                        if (_selectedPaymentMethod == 'bank-transfer') ...[
-                          const SizedBox(height: AppSpacing.spacingM),
-                          AppTextInput(
-                            controller: _accountNumberController,
-                            label: localizations.accountNumber,
-                            hintText: localizations.enterAccountName,
-                            keyboardType: TextInputType.name,
-                          ),
-                        ],
+                        // // Account Name input (only show if Bank Transfer is selected)
+                        // if (_selectedPaymentMethod == 'bank-transfer') ...[
+                        //   const SizedBox(height: AppSpacing.spacingM),
+                        //   AppTextInput(
+                        //     controller: _accountNumberController,
+                        //     label: localizations.accountNumber,
+                        //     hintText: localizations.enterAccountName,
+                        //     keyboardType: TextInputType.name,
+                        //   ),
+                        // ],
 
                         // Add spacing to push button to bottom, but allow scrolling if needed
                         Spacer(),

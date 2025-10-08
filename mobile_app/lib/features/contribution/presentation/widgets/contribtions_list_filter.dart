@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
@@ -125,7 +124,13 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
 
   void _selectAll(List<String> allCollectorIds) {
     setState(() {
-      _pendingPaymentMethods = ['mobile-money', 'cash', 'bank-transfer'];
+      _pendingPaymentMethods = [
+        'mobile-money',
+        'cash',
+        'bank-transfer',
+        'card',
+        'apple-pay',
+      ];
       _pendingStatuses = ['pending', 'completed', 'failed', 'transferred'];
       _pendingCollectors = List.from(allCollectorIds);
       _pendingDate = _pendingDate ?? FilterOptions.defaultDateOption;
@@ -617,6 +622,10 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
           return localizations.cashPayment;
         case 'bankTransferPayment':
           return localizations.bankTransferPayment;
+        case 'cardPayment':
+          return localizations.cardPayment;
+        case 'applePayPayment':
+          return localizations.applePayPayment;
         default:
           return labelKey;
       }

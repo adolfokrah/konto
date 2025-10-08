@@ -111,6 +111,8 @@
   "mobileMoneyPayment": "Mobile money",
   "cashPayment": "Espèces",
   "bankTransferPayment": "Virement bancaire",
+  "cardPayment": "Carte",
+  "applePayPayment": "Apple Pay",
   "statusPending": "En attente",
   "statusCompleted": "Terminé",
   "statusFailed": "Échoué",

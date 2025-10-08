@@ -571,6 +571,16 @@
     "description": "Bank transfer payment method option"
   },
 
+  "cardPayment": "Card",
+  "@cardPayment": {
+    "description": "Card payment method option"
+  },
+
+  "applePayPayment": "Apple Pay",
+  "@applePayPayment": {
+    "description": "Apple Pay payment method option"
+  },
+
   "statusPending": "Pending",
   "@statusPending": {
     "description": "Pending status option"

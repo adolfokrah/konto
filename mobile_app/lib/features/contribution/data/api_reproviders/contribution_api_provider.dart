@@ -241,6 +241,8 @@ class ContributionApiProvider extends BaseApiProvider {
                     'mobile-money',
                     'cash',
                     'bank-transfer',
+                    'card',
+                    'apple-pay',
                   ].contains(method),
                 )
                 .toList();

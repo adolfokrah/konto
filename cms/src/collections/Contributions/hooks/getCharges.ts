@@ -5,7 +5,10 @@ import TransactionCharges from '@/utilities/transaction-charges'
 export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
   // Set payment status based on payment method for new contributions
   if (operation === 'create') {
-    if (data.paymentMethod === 'mobile-money' && data.type == 'contribution') {
+    if (
+      ['mobile-money', 'card', 'apple-pay'].includes(data.paymentMethod) &&
+      data.type == 'contribution'
+    ) {
       // if(data.amountContributed < 2){
       //   throw new Error('Minimum contribution amount is 2 cedis')
       // }

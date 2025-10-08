@@ -120,156 +120,151 @@ class _JarGoalViewState extends State<JarGoalView>
           ),
         ],
       ),
-      body: SafeArea(
-        child: BlocListener<UpdateJarBloc, UpdateJarState>(
-          listener: (context, state) {
-            if (state is UpdateJarSuccess) {
-              Navigator.of(context).pop();
-              context.read<JarSummaryReloadBloc>().add(
-                ReloadJarSummaryRequested(),
-              );
-            } else if (state is UpdateJarFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(localizations.failedToUpdateJarGoal)),
-              );
-            }
-          },
-          child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-            builder: (context, state) {
-              if (state is JarSummaryLoaded) {
-                // Initialize controllers with jar data if not already done
-                if (!_isInitialized) {
-                  final currencySymbol = CurrencyUtils.getCurrencySymbol(
-                    state.jarData.currency,
-                  );
-                  final initialAmount =
-                      state.jarData.goalAmount > 0
-                          ? '$currencySymbol${state.jarData.goalAmount.toStringAsFixed(2)}'
-                          : currencySymbol;
-                  _amountController = TextEditingController(
-                    text: initialAmount,
-                  );
+      body: BlocListener<UpdateJarBloc, UpdateJarState>(
+        listener: (context, state) {
+          if (state is UpdateJarSuccess) {
+            Navigator.of(context).pop();
+            context.read<JarSummaryReloadBloc>().add(
+              ReloadJarSummaryRequested(),
+            );
+          } else if (state is UpdateJarFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(localizations.failedToUpdateJarGoal)),
+            );
+          }
+        },
+        child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+          builder: (context, state) {
+            if (state is JarSummaryLoaded) {
+              // Initialize controllers with jar data if not already done
+              if (!_isInitialized) {
+                final currencySymbol = CurrencyUtils.getCurrencySymbol(
+                  state.jarData.currency,
+                );
+                final initialAmount =
+                    state.jarData.goalAmount > 0
+                        ? '$currencySymbol${state.jarData.goalAmount.toStringAsFixed(2)}'
+                        : currencySymbol;
+                _amountController = TextEditingController(text: initialAmount);
 
-                  // Initialize selected deadline from jar data
-                  if (state.jarData.deadline != null) {
-                    _selectedDeadline = state.jarData.deadline;
-                  }
-
-                  _isInitialized = true;
+                // Initialize selected deadline from jar data
+                if (state.jarData.deadline != null) {
+                  _selectedDeadline = state.jarData.deadline;
                 }
 
-                return Padding(
-                  padding: const EdgeInsets.all(AppSpacing.spacingL),
-                  child: Column(
-                    children: [
-                      // Main content area
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large amount display
-                            CurrencyTextField(
-                              controller: _amountController,
-                              focusNode: _focusNode,
-                              currencySymbol: CurrencyUtils.getCurrencySymbol(
-                                state.jarData.currency,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
+                _isInitialized = true;
+              }
 
-                            // Jar name
-                            Text(
-                              state.jarData.name,
-                              style: TextStyles.titleMediumLg.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
+              return Padding(
+                padding: const EdgeInsets.all(AppSpacing.spacingL),
+                child: Column(
+                  children: [
+                    // Main content area
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Large amount display
+                          CurrencyTextField(
+                            controller: _amountController,
+                            focusNode: _focusNode,
+                            currencySymbol: CurrencyUtils.getCurrencySymbol(
+                              state.jarData.currency,
                             ),
-                            const SizedBox(height: AppSpacing.spacingM),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
 
-                            Text(
-                              _selectedDeadline != null
-                                  ? '${localizations.deadline}, ${DateFormat('MMM dd, yyyy').format(_selectedDeadline!)}'
-                                  : localizations
-                                      .tapCalendarButtonToSetDeadline,
-                              style: TextStyles.titleRegularSm.copyWith(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color
-                                    ?.withValues(alpha: 0.6),
-                              ),
+                          // Jar name
+                          Text(
+                            state.jarData.name,
+                            style: TextStyles.titleMediumLg.copyWith(
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
+
+                          Text(
+                            _selectedDeadline != null
+                                ? '${localizations.deadline}, ${DateFormat('MMM dd, yyyy').format(_selectedDeadline!)}'
+                                : localizations.tapCalendarButtonToSetDeadline,
+                            style: TextStyles.titleRegularSm.copyWith(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      // Continue button at bottom
-                      BlocBuilder<UpdateJarBloc, UpdateJarState>(
-                        builder: (context, jarUpdateState) {
-                          return Row(
-                            children: [
-                              AppIconButton(
-                                icon: Icons.calendar_month,
+                    // Continue button at bottom
+                    BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                      builder: (context, jarUpdateState) {
+                        return Row(
+                          children: [
+                            AppIconButton(
+                              icon: Icons.calendar_month,
+                              onPressed: () {
+                                if (jarUpdateState is UpdateJarInProgress) {
+                                  return;
+                                }
+
+                                _selectDeadline(context);
+                              },
+                            ),
+                            const SizedBox(width: AppSpacing.spacingS),
+                            Expanded(
+                              child: AppButton.filled(
+                                isLoading:
+                                    jarUpdateState is UpdateJarInProgress,
+                                text: localizations.continueText,
                                 onPressed: () {
                                   if (jarUpdateState is UpdateJarInProgress) {
                                     return;
                                   }
+                                  // Get the numeric value directly from the currency text field
+                                  final currencyTextField = CurrencyTextField(
+                                    controller: _amountController,
+                                    currencySymbol:
+                                        CurrencyUtils.getCurrencySymbol(
+                                          state.jarData.currency,
+                                        ),
+                                  );
+                                  final amount =
+                                      currencyTextField.getNumericValue();
 
-                                  _selectDeadline(context);
+                                  if (amount <= 0) {
+                                    // Handle empty or invalid amount
+                                    return;
+                                  }
+
+                                  context.read<UpdateJarBloc>().add(
+                                    UpdateJarRequested(
+                                      jarId: state.jarData.id,
+                                      updates: {
+                                        'goalAmount': amount,
+                                        if (_selectedDeadline != null)
+                                          'deadline': _selectedDeadline,
+                                      },
+                                    ),
+                                  );
                                 },
                               ),
-                              const SizedBox(width: AppSpacing.spacingS),
-                              Expanded(
-                                child: AppButton.filled(
-                                  isLoading:
-                                      jarUpdateState is UpdateJarInProgress,
-                                  text: localizations.continueText,
-                                  onPressed: () {
-                                    if (jarUpdateState is UpdateJarInProgress) {
-                                      return;
-                                    }
-                                    // Get the numeric value directly from the currency text field
-                                    final currencyTextField = CurrencyTextField(
-                                      controller: _amountController,
-                                      currencySymbol:
-                                          CurrencyUtils.getCurrencySymbol(
-                                            state.jarData.currency,
-                                          ),
-                                    );
-                                    final amount =
-                                        currencyTextField.getNumericValue();
-
-                                    if (amount <= 0) {
-                                      // Handle empty or invalid amount
-                                      return;
-                                    }
-
-                                    context.read<UpdateJarBloc>().add(
-                                      UpdateJarRequested(
-                                        jarId: state.jarData.id,
-                                        updates: {
-                                          'goalAmount': amount,
-                                          if (_selectedDeadline != null)
-                                            'deadline': _selectedDeadline,
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return Container();
-            },
-          ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+            return Container();
+          },
         ),
       ),
     );

@@ -60,6 +60,8 @@ export const Contributions: CollectionConfig = {
         { label: 'Mobile Money', value: 'mobile-money' },
         { label: 'Bank Transfer', value: 'bank-transfer' },
         { label: 'Cash', value: 'cash' },
+        { label: 'Card', value: 'card' },
+        { label: 'Apple pay', value: 'apple-pay' },
       ],
     },
     {

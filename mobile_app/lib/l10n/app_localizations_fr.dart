@@ -372,6 +372,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get bankTransferPayment => 'Virement bancaire';
 
   @override
+  String get cardPayment => 'Carte';
+
+  @override
+  String get applePayPayment => 'Apple Pay';
+
+  @override
   String get statusPending => 'En attente';
 
   @override

@@ -102,8 +102,15 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   }
 }
 
-export default async function Page({ params, searchParams }: any) {
+export default async function Page({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ id: string; name: string }>
+  searchParams: Promise<{ collectorId?: string; collectionId?: string }>
+}) {
   const { id: jarId } = await params
+  const resolvedSearchParams = await searchParams
 
   const payload = await getPayload({ config })
 
@@ -186,7 +193,7 @@ export default async function Page({ params, searchParams }: any) {
 
     // Resolve collector id from query param or fallback to jar creator
     const collectorIdFromQuery =
-      (searchParams?.collectorId as string) || (searchParams?.collectionId as string) || null
+      (resolvedSearchParams?.collectorId as string) || (resolvedSearchParams?.collectionId as string) || null
     const creatorId =
       typeof jarWithBalance?.creator === 'object'
         ? jarWithBalance?.creator?.id

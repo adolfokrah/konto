@@ -770,6 +770,18 @@ abstract class AppLocalizations {
   /// **'Bank transfer'**
   String get bankTransferPayment;
 
+  /// Card payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get cardPayment;
+
+  /// Apple Pay payment method option
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Pay'**
+  String get applePayPayment;
+
   /// Pending status option
   ///
   /// In en, this message translates to:
