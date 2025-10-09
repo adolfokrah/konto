@@ -5,7 +5,7 @@ class AppTextStyles {
   // Heading Styles
   static const TextStyle headingOne = TextStyle(
     fontFamily: 'Chillax',
-    fontSize: 58,
+    fontSize: 38,
     fontWeight: FontWeight.bold, // Bold
     height: 1.2,
     letterSpacing: -0.5,

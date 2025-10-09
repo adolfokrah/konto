@@ -32,6 +32,7 @@ export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! }
 
 export default buildConfig({
   admin: {
+    autoRefresh: true,
     importMap: {
       baseDir: path.resolve(dirname),
     },

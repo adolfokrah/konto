@@ -1,16 +1,11 @@
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/button_variants.dart';
-import 'package:Hoga/core/constants/localized_onboarding_data.dart';
-import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
-import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_description.dart';
-import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_progress_indicator.dart';
-import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_slider.dart';
-import 'package:Hoga/features/onboarding/prensentation/widgets/onboarding_title.dart';
+import 'package:marqueer/marqueer.dart';
 import 'package:Hoga/route.dart';
 
 class OnBoardingPage extends StatelessWidget {
@@ -18,78 +13,158 @@ class OnBoardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OnboardingBloc, OnboardingState>(
-      listener: (context, state) {
-        if (state is OnboardingCompleted) {
-          // Navigate to the next screen after onboarding is completed
-          Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-        }
-      },
-      child: BlocBuilder<OnboardingBloc, OnboardingState>(
-        builder: (context, state) {
-          final currentPage =
-              state is OnboardingPageState ? state.currentPage : 0;
-          final localizedOnBoardingData =
-              LocalizedOnboardingData.getOnboardingData(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-          return Scaffold(
-            backgroundColor:
-                localizedOnBoardingData[currentPage].backgroundColor,
-            body: Padding(
-              padding: const EdgeInsets.only(top: 45),
+    return Scaffold(
+      backgroundColor:
+          isDark
+              ? Theme.of(context).colorScheme.surface
+              : AppColors.primaryLight,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
+        child: Column(
+          children: [
+            const SizedBox(height: AppSpacing.spacingL),
+            // Test: Simple row to see if images load first
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Progress indicator
-                  OnBoardingProgressIndicator(currentPage: currentPage),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  OnboardingTitle(currentPage: currentPage),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  OnBoardingSlider(
-                    currentPage: currentPage,
-                    onPageChanged: (index) {
-                      context.read<OnboardingBloc>().add(PageChanged(index));
-                      HapticUtils.heavy();
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  OnboardingDescription(currentPage: currentPage),
-                  const SizedBox(height: AppSpacing.spacingL),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingXs,
-                    ),
-                    child: AppButton(
-                      borderColor: AppColors.black,
-                      backgroundColor: AppColors.black,
-                      textColor:
-                          localizedOnBoardingData[currentPage].buttonVariant ==
-                                  ButtonVariant.fill
-                              ? AppColors.primaryLight
-                              : AppColors.black,
-                      text: localizedOnBoardingData[currentPage].buttonText,
-                      variant:
-                          localizedOnBoardingData[currentPage].buttonVariant,
-                      onPressed: () {
-                        // Handle button press - go to next page or complete onboarding
-                        if (currentPage < localizedOnBoardingData.length - 1) {
-                          context.read<OnboardingBloc>().add(
-                            PageChanged(currentPage + 1),
+                  // Auto-scrolling marquee - First row (faster, right to left)
+                  SizedBox(
+                    height: 200,
+                    child: Marqueer(
+                      pps: 50, // Pixels per second (faster)
+                      direction: MarqueerDirection.rtl,
+                      interaction: false,
+                      child: Row(
+                        children: List.generate(10, (index) {
+                          final imageIndex = (index % 5) + 1;
+                          return Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/onboarding/image$imageIndex.png',
+                                width: 150,
+                                height: 200,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 150,
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                           );
-                        } else {
-                          context.read<OnboardingBloc>().add(
-                            OnboardingFinished(),
-                          );
-                        }
-                      },
+                        }),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.spacingM),
+                  const SizedBox(height: 12),
+                  // Auto-scrolling marquee - Second row (slower, left to right)
+                  SizedBox(
+                    height: 200,
+                    child: Marqueer(
+                      pps: 30, // Pixels per second (slower)
+                      direction: MarqueerDirection.ltr,
+                      interaction: false,
+                      child: Row(
+                        children: List.generate(10, (index) {
+                          final imageIndex = (index % 5) + 6;
+                          return Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/onboarding/image$imageIndex.png',
+                                width: 150,
+                                height: 200,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 150,
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          );
-        },
+            const SizedBox(height: AppSpacing.spacingXs),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingL,
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "Create with purpose",
+                    style: AppTextStyles.headingOne,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  Text(
+                    "Set up a jar in seconds to collect contributions for weddings, funerals, offerings, etc.",
+                    style: AppTextStyles.titleMediumS,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+                  AppButton(
+                    text: "Login",
+                    variant: ButtonVariant.fill,
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.login);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  AppButton(
+                    text: "Register",
+                    variant: ButtonVariant.outline,
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.register);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  InkWell(
+                    onTap: () {
+                      UrlLauncherUtils.launch('https://usehoga.com/about');
+                    },
+                    child: Text(
+                      "About Hoga",
+                      style: AppTextStyles.titleMediumS.copyWith(
+                        decoration: TextDecoration.underline,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

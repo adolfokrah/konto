@@ -6,7 +6,7 @@ import 'package:Hoga/features/onboarding/data/models/onboarding_data.dart'
 
 final List<OnBoardingData> onBoardingData = [
   OnBoardingData(
-    title: "Create with\nPurpose",
+    title: "Create with Purpose",
     description:
         "Set up a jar in seconds to collect funds for weddings, funerals, birthdays, etc.",
     backgroundColor: AppColors.primaryLight,
