@@ -30,6 +30,7 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_balance_breakdown.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_more_menu.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
@@ -361,447 +362,475 @@ class _JarDetailViewState extends State<JarDetailView> {
       final jarData = state.jarData;
       bool isDark = Theme.of(context).brightness == Brightness.dark;
       return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 80),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(jarData.name, style: TextStyles.titleMediumM),
-              const SizedBox(height: 2),
-              GestureDetector(
-                onTap: () {
-                  if (jarData.isCreator) {
-                    JarBalanceBreakdown.show(context);
-                  }
-                },
-                child: RevolutStyleCounterWithCurrency(
-                  value:
-                      CurrencyUtils.getCurrencySymbol(jarData.currency) +
-                      jarData.balanceBreakDown.totalContributedAmount
-                          .toString(),
-                  style: TextStyles.titleBoldXl,
-                  duration: const Duration(milliseconds: 1000),
-                ),
-              ),
-              const SizedBox(height: 2),
-              // Only show amount to be transferred if user is the creator
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  final isCreator =
-                      authState is AuthAuthenticated &&
-                      jarData.creator.id == authState.user.id;
-                  if (!isCreator) {
-                    return const SizedBox(height: AppSpacing.spacingXs);
-                  }
-                  return Column(
-                    children: [
-                      Text(
-                        localizations.amountToBeTransferred(
-                          CurrencyUtils.getCurrencySymbol(jarData.currency),
-                          jarData.balanceBreakDown.totalAmountTobeTransferred
-                              .toString(),
-                        ),
-                        style: TextStyles.titleRegularXs,
-                      ),
-                      const SizedBox(height: AppSpacing.spacingXs),
-                    ],
-                  );
-                },
-              ),
-              AppSmallButton(
-                child: Text(localizations.jars, style: TextStyles.titleMedium),
-                onPressed: () {
-                  JarsListView.showModal(context);
-                },
-              ),
-              const SizedBox(height: AppSpacing.spacingL),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
-                  vertical: AppSpacing.spacingL,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          AppIconButton(
-                            key: const Key('contribute_button'),
-                            enabled: jarData.status != JarStatus.sealed,
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.addContribution,
-                              );
-                            },
-                            icon: Icons.add,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          Text(
-                            localizations.contribute,
-                            style: TextStyles.titleMediumS.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.color?.withValues(
-                                alpha:
-                                    jarData.status == JarStatus.sealed
-                                        ? 0.4
-                                        : 1.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          AppIconButton(
-                            key: const Key('request_button'),
-                            enabled: jarData.status != JarStatus.sealed,
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.contributionRequest,
-                                arguments: {
-                                  'paymentLink': state.jarData.link,
-                                  'jarName': state.jarData.name,
-                                },
-                              );
-                            },
-                            icon: Icons.call_received,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          Text(
-                            localizations.request,
-                            style: TextStyles.titleMediumS.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.color?.withValues(
-                                alpha:
-                                    jarData.status == JarStatus.sealed
-                                        ? 0.4
-                                        : 1.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, authState) {
-                              final isCreator =
-                                  authState is AuthAuthenticated &&
-                                  jarData.creator.id == authState.user.id;
-                              return Column(
-                                children: [
-                                  AppIconButton(
-                                    key: const Key('info_button'),
-                                    enabled: isCreator,
-                                    onPressed:
-                                        isCreator
-                                            ? () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                AppRoutes.jarInfo,
-                                              );
-                                            }
-                                            : null,
-                                    icon: Icons.info,
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          Text(
-                            localizations.info,
-                            style: TextStyles.titleMediumS,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(child: JarMoreMenu(jarId: jarData.id)),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
+          children: [
+            /// Dynamic CTA Banner Based on Missing Information
+            JarCompletionAlert(jarData: jarData),
+
+            /// CTA Banner Here
+            Padding(
+              padding: const EdgeInsets.only(top: 80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(jarData.name, style: TextStyles.titleMediumM),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: () {
+                      if (jarData.isCreator) {
+                        JarBalanceBreakdown.show(context);
+                      }
+                    },
+                    child: RevolutStyleCounterWithCurrency(
+                      value:
+                          CurrencyUtils.getCurrencySymbol(jarData.currency) +
+                          jarData.balanceBreakDown.totalContributedAmount
+                              .toString(),
+                      style: TextStyles.titleBoldXl,
+                      duration: const Duration(milliseconds: 1000),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  // Only show amount to be transferred if user is the creator
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, authState) {
                       final isCreator =
                           authState is AuthAuthenticated &&
                           jarData.creator.id == authState.user.id;
                       if (!isCreator) {
-                        return Container();
+                        return const SizedBox(height: AppSpacing.spacingXs);
                       }
-                      return Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            CollectorsView.show(context);
-                          },
-                          child: AppCard(
-                            margin: EdgeInsets.only(left: AppSpacing.spacingXs),
-                            variant: CardVariant.primary,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.person),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor:
-                                        isDark
-                                            ? Theme.of(
-                                              context,
-                                            ).colorScheme.surface
-                                            : Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.spacingL),
-                                Text(
-                                  localizations.collectors,
-                                  style: TextStyles.titleRegularM,
-                                ),
-                                const SizedBox(height: AppSpacing.spacingXs),
-                                AnimatedNumberTextScale(
-                                  value:
-                                      (jarData.invitedCollectors
-                                                  ?.where(
-                                                    (collector) =>
-                                                        collector.status ==
-                                                        'accepted',
-                                                  )
-                                                  .length ??
-                                              0)
-                                          .toString(),
-                                  style: TextStyles.titleBoldLg,
-                                  duration: const Duration(milliseconds: 600),
-                                ),
-                              ],
+                      return Column(
+                        children: [
+                          Text(
+                            localizations.amountToBeTransferred(
+                              CurrencyUtils.getCurrencySymbol(jarData.currency),
+                              jarData
+                                  .balanceBreakDown
+                                  .totalAmountTobeTransferred
+                                  .toString(),
                             ),
+                            style: TextStyles.titleRegularXs,
                           ),
-                        ),
+                          const SizedBox(height: AppSpacing.spacingXs),
+                        ],
                       );
                     },
                   ),
-                  const SizedBox(width: AppSpacing.spacingXs),
-                  Expanded(
-                    child: AppCard(
-                      margin: EdgeInsets.only(right: AppSpacing.spacingXs),
-                      variant: CardVariant.primary,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            localizations.contributions,
-                            style: TextStyles.titleRegularM,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          RevolutStyleCounterWithCurrency(
-                            value:
-                                CurrencyUtils.getCurrencySymbol(
-                                  jarData.currency,
-                                ) +
-                                jarData.balanceBreakDown.totalContributedAmount
-                                    .toString(),
-                            style: TextStyles.titleBoldLg,
-                            duration: const Duration(milliseconds: 800),
-                          ),
-                          const SizedBox(height: AppSpacing.spacingM),
-                          // Chart with real data from API
-                          ContributionChart(
-                            dataPoints: jarData.chartData ?? const [],
-                            chartColor: Colors.green,
-                            height: 50,
-                          ),
-                        ],
-                      ),
+                  AppSmallButton(
+                    child: Text(
+                      localizations.jars,
+                      style: TextStyles.titleMedium,
                     ),
+                    onPressed: () {
+                      JarsListView.showModal(context);
+                    },
                   ),
-                ],
-              ),
-
-              //end of top section
-              const SizedBox(height: AppSpacing.spacingXs),
-              // Goal Progress Card
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  final isCreator =
-                      state is AuthAuthenticated &&
-                      state.user.id == jarData.creator.id;
-                  if (!isCreator) {
-                    return Container();
-                  }
-                  return GoalProgressCard(
-                    currentAmount:
-                        jarData.balanceBreakDown.totalContributedAmount,
-                    goalAmount: jarData.goalAmount,
-                    currency: jarData.currency,
-                    deadline: jarData.deadline,
-                    variant: CardVariant.primary,
-                  );
-                },
-              ),
-
-              // Recent Contributions Section
-              const SizedBox(height: AppSpacing.spacingXs),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  const SizedBox(height: 45),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.spacingM,
-                      vertical: AppSpacing.spacingXs,
+                      vertical: AppSpacing.spacingL,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          localizations.recentContributions,
-                          style: TextStyles.titleMediumLg,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            // Clear all contribution filters before navigating
-                            try {
-                              context.read<FilterContributionsBloc>().add(
-                                ClearAllFilters(),
-                              );
-                            } catch (_) {
-                              // Bloc not found in context; ignore.
-                            }
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.contributionsList,
-                            );
-                          },
-                          child: Text(
-                            localizations.seeAll,
-                            style: TextStyles.titleMedium,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AppIconButton(
+                                key: const Key('contribute_button'),
+                                enabled: jarData.status != JarStatus.sealed,
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.addContribution,
+                                  );
+                                },
+                                icon: Icons.add,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              Text(
+                                localizations.contribute,
+                                style: TextStyles.titleMediumS.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color?.withValues(
+                                    alpha:
+                                        jarData.status == JarStatus.sealed
+                                            ? 0.4
+                                            : 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AppIconButton(
+                                key: const Key('request_button'),
+                                enabled: jarData.status != JarStatus.sealed,
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.contributionRequest,
+                                    arguments: {
+                                      'paymentLink': state.jarData.link,
+                                      'jarName': state.jarData.name,
+                                    },
+                                  );
+                                },
+                                icon: Icons.call_received,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              Text(
+                                localizations.request,
+                                style: TextStyles.titleMediumS.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color?.withValues(
+                                    alpha:
+                                        jarData.status == JarStatus.sealed
+                                            ? 0.4
+                                            : 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, authState) {
+                                  final isCreator =
+                                      authState is AuthAuthenticated &&
+                                      jarData.creator.id == authState.user.id;
+                                  return Column(
+                                    children: [
+                                      AppIconButton(
+                                        key: const Key('info_button'),
+                                        enabled: isCreator,
+                                        onPressed:
+                                            isCreator
+                                                ? () {
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    AppRoutes.jarInfo,
+                                                  );
+                                                }
+                                                : null,
+                                        icon: Icons.info,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              Text(
+                                localizations.info,
+                                style: TextStyles.titleMediumS,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: JarMoreMenu(jarId: jarData.id)),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppCard(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
-                      ),
-                      variant: CardVariant.primary,
-                      child:
-                          jarData.contributions.isEmpty
-                              ? Padding(
-                                padding: const EdgeInsets.all(
-                                  AppSpacing.spacingL,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, authState) {
+                          final isCreator =
+                              authState is AuthAuthenticated &&
+                              jarData.creator.id == authState.user.id;
+                          if (!isCreator) {
+                            return Container();
+                          }
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                CollectorsView.show(context);
+                              },
+                              child: AppCard(
+                                margin: EdgeInsets.only(
+                                  left: AppSpacing.spacingXs,
                                 ),
+                                variant: CardVariant.primary,
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Image.asset(
-                                      AppImages.onboardingSlide1,
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.contain,
-                                      color:
-                                          isDark
-                                              ? Colors.white
-                                              : AppColors.black,
-                                      colorBlendMode: BlendMode.srcIn,
+                                    IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.person),
+                                      style: IconButton.styleFrom(
+                                        backgroundColor:
+                                            isDark
+                                                ? Theme.of(
+                                                  context,
+                                                ).colorScheme.surface
+                                                : Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                        foregroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      ),
                                     ),
-                                    const SizedBox(height: AppSpacing.spacingM),
+                                    const SizedBox(height: AppSpacing.spacingL),
                                     Text(
-                                      localizations.noContributionsYet,
-                                      style: TextStyles.titleMedium,
+                                      localizations.collectors,
+                                      style: TextStyles.titleRegularM,
                                     ),
                                     const SizedBox(
                                       height: AppSpacing.spacingXs,
                                     ),
-                                    Text(
-                                      localizations.beTheFirstToContribute,
-                                      style: TextStyles.titleRegularSm,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: AppSpacing.spacingL),
-                                    AppButton.filled(
-                                      text: localizations.contribute,
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.addContribution,
-                                        );
-                                      },
+                                    AnimatedNumberTextScale(
+                                      value:
+                                          (jarData.invitedCollectors
+                                                      ?.where(
+                                                        (collector) =>
+                                                            collector.status ==
+                                                            'accepted',
+                                                      )
+                                                      .length ??
+                                                  0)
+                                              .toString(),
+                                      style: TextStyles.titleBoldLg,
+                                      duration: const Duration(
+                                        milliseconds: 600,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              )
-                              : Column(
-                                children: [
-                                  ...jarData.contributions
-                                      .map(
-                                        (contribution) => [
-                                          ContributionListItem(
-                                            contributionId: contribution.id,
-                                            contributorName:
-                                                contribution.contributor ??
-                                                (contribution
-                                                            .contributorPhoneNumber !=
-                                                        null
-                                                    ? localizations.userWithLastDigits(
-                                                      contribution
-                                                          .contributorPhoneNumber!
-                                                          .substring(
-                                                            contribution
-                                                                    .contributorPhoneNumber!
-                                                                    .length -
-                                                                4,
-                                                          ),
-                                                    )
-                                                    : 'Konto'),
-                                            amount:
-                                                contribution.amountContributed,
-                                            currency: jarData.currency,
-                                            timestamp:
-                                                contribution.createdAt ??
-                                                DateTime.now(),
-                                            paymentMethod:
-                                                contribution.paymentMethod,
-                                            isAnonymous:
-                                                contribution.contributor ==
-                                                null,
-                                            viaPaymentLink:
-                                                contribution.viaPaymentLink,
-                                            paymentStatus:
-                                                contribution.paymentStatus,
-                                          ),
-                                        ],
-                                      )
-                                      .expand((list) => list),
-                                ],
                               ),
-                    ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: AppSpacing.spacingXs),
+                      Expanded(
+                        child: AppCard(
+                          margin: EdgeInsets.only(right: AppSpacing.spacingXs),
+                          variant: CardVariant.primary,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                localizations.contributions,
+                                style: TextStyles.titleRegularM,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              RevolutStyleCounterWithCurrency(
+                                value:
+                                    CurrencyUtils.getCurrencySymbol(
+                                      jarData.currency,
+                                    ) +
+                                    jarData
+                                        .balanceBreakDown
+                                        .totalContributedAmount
+                                        .toString(),
+                                style: TextStyles.titleBoldLg,
+                                duration: const Duration(milliseconds: 800),
+                              ),
+                              const SizedBox(height: AppSpacing.spacingM),
+                              // Chart with real data from API
+                              ContributionChart(
+                                dataPoints: jarData.chartData ?? const [],
+                                chartColor: Colors.green,
+                                height: 50,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+
+                  //end of top section
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  // Goal Progress Card
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      final isCreator =
+                          state is AuthAuthenticated &&
+                          state.user.id == jarData.creator.id;
+                      if (!isCreator) {
+                        return Container();
+                      }
+                      return GoalProgressCard(
+                        currentAmount:
+                            jarData.balanceBreakDown.totalContributedAmount,
+                        goalAmount: jarData.goalAmount,
+                        currency: jarData.currency,
+                        deadline: jarData.deadline,
+                        variant: CardVariant.primary,
+                      );
+                    },
+                  ),
+
+                  // Recent Contributions Section
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.spacingM,
+                          vertical: AppSpacing.spacingXs,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              localizations.recentContributions,
+                              style: TextStyles.titleMediumLg,
+                            ),
+                            InkWell(
+                              onTap: () {
+                                // Clear all contribution filters before navigating
+                                try {
+                                  context.read<FilterContributionsBloc>().add(
+                                    ClearAllFilters(),
+                                  );
+                                } catch (_) {
+                                  // Bloc not found in context; ignore.
+                                }
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.contributionsList,
+                                );
+                              },
+                              child: Text(
+                                localizations.seeAll,
+                                style: TextStyles.titleMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppCard(
+                          margin: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.spacingXs,
+                          ),
+                          variant: CardVariant.primary,
+                          child:
+                              jarData.contributions.isEmpty
+                                  ? Padding(
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.spacingL,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          AppImages.onboardingSlide1,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.contain,
+                                          color:
+                                              isDark
+                                                  ? Colors.white
+                                                  : AppColors.black,
+                                          colorBlendMode: BlendMode.srcIn,
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingM,
+                                        ),
+                                        Text(
+                                          localizations.noContributionsYet,
+                                          style: TextStyles.titleMedium,
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingXs,
+                                        ),
+                                        Text(
+                                          localizations.beTheFirstToContribute,
+                                          style: TextStyles.titleRegularSm,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(
+                                          height: AppSpacing.spacingL,
+                                        ),
+                                        AppButton.filled(
+                                          text: localizations.contribute,
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              AppRoutes.addContribution,
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                  : Column(
+                                    children: [
+                                      ...jarData.contributions
+                                          .map(
+                                            (contribution) => [
+                                              ContributionListItem(
+                                                contributionId: contribution.id,
+                                                contributorName:
+                                                    contribution.contributor ??
+                                                    (contribution
+                                                                .contributorPhoneNumber !=
+                                                            null
+                                                        ? localizations.userWithLastDigits(
+                                                          contribution
+                                                              .contributorPhoneNumber!
+                                                              .substring(
+                                                                contribution
+                                                                        .contributorPhoneNumber!
+                                                                        .length -
+                                                                    4,
+                                                              ),
+                                                        )
+                                                        : 'Konto'),
+                                                amount:
+                                                    contribution
+                                                        .amountContributed,
+                                                currency: jarData.currency,
+                                                timestamp:
+                                                    contribution.createdAt ??
+                                                    DateTime.now(),
+                                                paymentMethod:
+                                                    contribution.paymentMethod,
+                                                isAnonymous:
+                                                    contribution.contributor ==
+                                                    null,
+                                                viaPaymentLink:
+                                                    contribution.viaPaymentLink,
+                                                paymentStatus:
+                                                    contribution.paymentStatus,
+                                              ),
+                                            ],
+                                          )
+                                          .expand((list) => list),
+                                    ],
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Final bottom padding
+                  const SizedBox(height: AppSpacing.spacingL),
                 ],
               ),
-
-              // Final bottom padding
-              const SizedBox(height: AppSpacing.spacingL),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }

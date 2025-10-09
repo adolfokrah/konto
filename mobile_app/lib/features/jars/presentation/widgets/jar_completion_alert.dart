@@ -1,0 +1,80 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/widgets/alert_banner.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/route.dart';
+
+/// A widget that displays contextual alerts for jar creators based on missing information
+/// Shows one alert at a time in priority order:
+/// 1. Missing jar description
+/// 2. Missing thank you message
+/// 3. Missing withdrawal account
+class JarCompletionAlert extends StatelessWidget {
+  final JarSummaryModel jarData;
+
+  const JarCompletionAlert({super.key, required this.jarData});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        if (authState is! AuthAuthenticated) {
+          return const SizedBox.shrink();
+        }
+
+        final user = authState.user;
+        final bool isCreator = jarData.creator.id == user.id;
+
+        // Only show alerts for jar creators
+        if (!isCreator) {
+          return const SizedBox.shrink();
+        }
+
+        // Check conditions and prioritize alerts
+        // 1. No jar description (Highest Priority)
+        if (jarData.description == null ||
+            jarData.description!.trim().isEmpty) {
+          return Alert(
+            message:
+                'Every successful jar is backed by a story, add a description to this jar to tell a story. Tap to add a description.',
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.jarDescriptionEdit);
+            },
+          );
+        }
+
+        // 2. No thank you message (Medium Priority)
+        if (jarData.thankYouMessage == null ||
+            jarData.thankYouMessage!.trim().isEmpty) {
+          return Alert(
+            message:
+                'Add a personalized thank you message to show appreciation to your contributors. Tap to add a thank you message.',
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.jarThankYouMessageEdit);
+            },
+          );
+        }
+
+        // 3. No withdrawal account set (Lowest Priority)
+        if (user.accountNumber == null ||
+            user.accountNumber!.trim().isEmpty ||
+            user.bank == null ||
+            user.bank!.trim().isEmpty ||
+            user.accountHolder == null ||
+            user.accountHolder!.trim().isEmpty) {
+          return Alert(
+            message:
+                'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+            },
+          );
+        }
+
+        // All conditions met - no alert needed
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
