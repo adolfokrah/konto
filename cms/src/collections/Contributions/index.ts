@@ -58,7 +58,7 @@ export const Contributions: CollectionConfig = {
       type: 'select',
       options: [
         { label: 'Mobile Money', value: 'mobile-money' },
-        { label: 'Bank Transfer', value: 'bank-transfer' },
+        { label: 'Bank Transfer', value: 'bank' },
         { label: 'Cash', value: 'cash' },
         { label: 'Card', value: 'card' },
         { label: 'Apple pay', value: 'apple-pay' },
@@ -87,14 +87,14 @@ export const Contributions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Account number for bank transfers',
-        condition: (data) => data?.paymentMethod === 'bank-transfer',
+        condition: (data) => data?.paymentMethod === 'bank',
       },
       hooks: {
         beforeChange: [
           ({ data }) => {
-            // Account number is only required for bank-transfer payments
-            if (data?.paymentMethod === 'bank-transfer' && !data?.accountNumber) {
-              throw new Error('Account number is required for bank-transfer payments')
+            // Account number is only required for bank payments
+            if (data?.paymentMethod === 'bank' && !data?.accountNumber) {
+              throw new Error('Account number is required for bank payments')
             }
           },
         ],

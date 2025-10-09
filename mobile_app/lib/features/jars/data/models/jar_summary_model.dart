@@ -70,6 +70,31 @@ class PaymentMethodBreakdown {
   }
 }
 
+/// Model for transactions grouped by payment method
+class TransactionByPaymentMethod {
+  final String paymentMethod;
+  final double totalContributions;
+
+  const TransactionByPaymentMethod({
+    required this.paymentMethod,
+    required this.totalContributions,
+  });
+
+  factory TransactionByPaymentMethod.fromJson(Map<String, dynamic> json) {
+    return TransactionByPaymentMethod(
+      paymentMethod: json['paymentMethod'] as String,
+      totalContributions: (json['totalContributions'] as num? ?? 0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'paymentMethod': paymentMethod,
+      'totalContributions': totalContributions,
+    };
+  }
+}
+
 /// Model for balance breakdown financial data
 class BalanceBreakDown {
   final double totalContributedAmount;
@@ -78,6 +103,8 @@ class BalanceBreakDown {
   final PaymentMethodBreakdown cash;
   final PaymentMethodBreakdown bankTransfer;
   final PaymentMethodBreakdown mobileMoney;
+  final PaymentMethodBreakdown card;
+  final PaymentMethodBreakdown applePay;
 
   const BalanceBreakDown({
     required this.totalContributedAmount,
@@ -86,6 +113,8 @@ class BalanceBreakDown {
     required this.cash,
     required this.bankTransfer,
     required this.mobileMoney,
+    required this.card,
+    required this.applePay,
   });
 
   factory BalanceBreakDown.fromJson(Map<String, dynamic> json) {
@@ -116,6 +145,8 @@ class BalanceBreakDown {
       cash: extractPaymentMethodBreakdown(json, 'cash'),
       bankTransfer: extractPaymentMethodBreakdown(json, 'bankTransfer'),
       mobileMoney: extractPaymentMethodBreakdown(json, 'mobileMoney'),
+      card: extractPaymentMethodBreakdown(json, 'card'),
+      applePay: extractPaymentMethodBreakdown(json, 'applePay'),
     );
   }
 
@@ -135,6 +166,14 @@ class BalanceBreakDown {
       'mobileMoney': {
         'totalMobileMoneyAmount': mobileMoney.totalAmount,
         'totalMobileMoneyCount': mobileMoney.totalCount,
+      },
+      'card': {
+        'totalCardAmount': card.totalAmount,
+        'totalCardCount': card.totalCount,
+      },
+      'applePay': {
+        'totalApplePayAmount': applePay.totalAmount,
+        'totalApplePayCount': applePay.totalCount,
       },
     };
   }
@@ -165,6 +204,8 @@ class JarSummaryModel {
   final DateTime updatedAt;
   final List<ContributionModel> contributions;
   final List<double>? chartData; // Chart data for last 10 days
+  final List<TransactionByPaymentMethod>?
+  transactionsByPaymentMethod; // Transactions grouped by payment method
   final BalanceBreakDown balanceBreakDown; // Financial breakdown
   final bool isCreator; // Whether the current user is the creator of this jar
   final String?
@@ -193,6 +234,7 @@ class JarSummaryModel {
     required this.updatedAt,
     required this.contributions,
     this.chartData,
+    this.transactionsByPaymentMethod,
     required this.balanceBreakDown,
     required this.isCreator,
     this.whoPaysPlatformFees,
@@ -369,6 +411,16 @@ class JarSummaryModel {
                   .map((value) => (value as num? ?? 0).toDouble())
                   .toList()
               : null,
+      transactionsByPaymentMethod:
+          json['transactionsByPaymentMethod'] != null
+              ? (json['transactionsByPaymentMethod'] as List<dynamic>)
+                  .map(
+                    (transaction) => TransactionByPaymentMethod.fromJson(
+                      transaction as Map<String, dynamic>,
+                    ),
+                  )
+                  .toList()
+              : null,
       balanceBreakDown:
           json['balanceBreakDown'] != null
               ? BalanceBreakDown.fromJson(
@@ -387,6 +439,8 @@ class JarSummaryModel {
                   totalAmount: 0,
                   totalCount: 0,
                 ),
+                card: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
+                applePay: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
               ),
       isCreator: json['isCreator'] as bool? ?? false,
       whoPaysPlatformFees: json['whoPaysPlatformFees'] as String?,
@@ -423,6 +477,10 @@ class JarSummaryModel {
       'contributions':
           contributions.map((contribution) => contribution.toJson()).toList(),
       'chartData': chartData,
+      'transactionsByPaymentMethod':
+          transactionsByPaymentMethod
+              ?.map((transaction) => transaction.toJson())
+              .toList(),
       'balanceBreakDown': balanceBreakDown.toJson(),
       'isCreator': isCreator,
       'whoPaysPlatformFees': whoPaysPlatformFees,

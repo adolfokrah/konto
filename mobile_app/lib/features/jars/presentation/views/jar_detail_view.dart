@@ -620,37 +620,44 @@ class _JarDetailViewState extends State<JarDetailView> {
                       ),
                       const SizedBox(width: AppSpacing.spacingXs),
                       Expanded(
-                        child: AppCard(
-                          margin: EdgeInsets.only(right: AppSpacing.spacingXs),
-                          variant: CardVariant.primary,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                localizations.contributions,
-                                style: TextStyles.titleRegularM,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              RevolutStyleCounterWithCurrency(
-                                value:
-                                    CurrencyUtils.getCurrencySymbol(
-                                      jarData.currency,
-                                    ) +
-                                    jarData
-                                        .balanceBreakDown
-                                        .totalContributedAmount
-                                        .toString(),
-                                style: TextStyles.titleBoldLg,
-                                duration: const Duration(milliseconds: 800),
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              // Chart with real data from API
-                              ContributionChart(
-                                dataPoints: jarData.chartData ?? const [],
-                                chartColor: Colors.green,
-                                height: 50,
-                              ),
-                            ],
+                        child: GestureDetector(
+                          onTap: () {
+                            JarBalanceBreakdown.show(context);
+                          },
+                          child: AppCard(
+                            margin: EdgeInsets.only(
+                              right: AppSpacing.spacingXs,
+                            ),
+                            variant: CardVariant.primary,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  localizations.contributions,
+                                  style: TextStyles.titleRegularM,
+                                ),
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                RevolutStyleCounterWithCurrency(
+                                  value:
+                                      CurrencyUtils.getCurrencySymbol(
+                                        jarData.currency,
+                                      ) +
+                                      jarData
+                                          .balanceBreakDown
+                                          .totalContributedAmount
+                                          .toString(),
+                                  style: TextStyles.titleBoldLg,
+                                  duration: const Duration(milliseconds: 800),
+                                ),
+                                const SizedBox(height: AppSpacing.spacingM),
+                                // Chart with real data from API
+                                ContributionChart(
+                                  dataPoints: jarData.chartData ?? const [],
+                                  chartColor: Colors.green,
+                                  height: 50,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

@@ -188,6 +188,23 @@ export const getJarSummary = async (req: PayloadRequest) => {
     return chartPoints
   }
 
+  const transactionsPerPaymentMethod = await req.payload.find({
+    collection: 'contributions',
+    where: {
+      jar: {
+        equals: jar.id,
+      },
+      paymentStatus: {
+        equals: 'completed',
+      },
+    },
+    pagination: false,
+    select: {
+      paymentMethod: true,
+      amountContributed: true,
+    },
+  })
+
   const allContributions = await req.payload.find({
     collection: 'contributions',
     where: {
@@ -216,8 +233,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
   const calculatePaymentMethodBreakdown = (contributions: any[]) => {
     const paymentMethods = {
       cash: { paymentMethod: 'cash', status: 'completed' },
-      bankTransfer: { paymentMethod: 'bank-transfer', status: 'completed' },
+      bankTransfer: { paymentMethod: 'bank', status: 'completed' },
       mobileMoney: { paymentMethod: 'mobile-money', status: 'completed' },
+      card: { paymentMethod: 'card', status: 'completed' },
+      applePay: { paymentMethod: 'apple-pay', status: 'completed' },
     }
 
     const breakdown: any = {}
@@ -258,7 +277,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
     .filter(
       (contribution) =>
         contribution.isTransferred === false &&
-        contribution.paymentMethod === 'mobile-money' &&
+        (contribution.paymentMethod === 'mobile-money' ||
+          contribution.paymentMethod === 'card' ||
+          contribution.paymentMethod === 'bank') &&
         contribution.type === 'contribution' &&
         contribution.paymentStatus === 'completed',
     )

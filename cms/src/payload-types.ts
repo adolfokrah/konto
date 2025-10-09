@@ -1357,7 +1357,7 @@ export interface Contribution {
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
-  paymentMethod?: ('mobile-money' | 'bank-transfer' | 'cash' | 'card' | 'apple-pay') | null;
+  paymentMethod?: ('mobile-money' | 'bank' | 'cash' | 'card' | 'apple-pay') | null;
   mobileMoneyProvider?: string | null;
   /**
    * Account number for bank transfers
