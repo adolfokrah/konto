@@ -107,7 +107,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
         jar: testJar.id,
         collector: testUser.id,
         amountContributed: 50.0,
-        paymentMethod: 'bank-transfer', // This is NOT mobile-money
+        paymentMethod: 'bank', // This is NOT mobile-money
         paymentStatus: 'pending',
         contributor: 'Jane Bank User',
         accountNumber: '1234567890', // Required for bank-transfer

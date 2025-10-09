@@ -69,7 +69,7 @@ export const verifyPayment = async (req: PayloadRequest) => {
       }
 
       const channel = (res.data as any)?.channel
-      const validPaymentMethods = ['mobile-money', 'bank-transfer', 'cash', 'card', 'apple-pay']
+      const validPaymentMethods = ['mobile-money', 'bank', 'cash', 'card', 'apple-pay']
 
       // Only update payment method if we can map the channel to a valid payment method
       let updatedPaymentMethod = foundContribution.docs[0].paymentMethod
@@ -78,7 +78,7 @@ export const verifyPayment = async (req: PayloadRequest) => {
         if (validPaymentMethods.includes(mappedChannel)) {
           updatedPaymentMethod = mappedChannel as
             | 'mobile-money'
-            | 'bank-transfer'
+            | 'bank'
             | 'cash'
             | 'card'
             | 'apple-pay'

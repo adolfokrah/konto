@@ -127,7 +127,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
       _pendingPaymentMethods = [
         'mobile-money',
         'cash',
-        'bank-transfer',
+        'bank',
         'card',
         'apple-pay',
       ];

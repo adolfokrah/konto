@@ -178,6 +178,8 @@ export const Users: CollectionConfig = {
                 if (data.kycStatus) {
                   data.kycStatus = 'none'
                 }
+              } else if (data?.isKYCVerified) {
+                data.kycStatus = 'verified'
               }
             }
           },

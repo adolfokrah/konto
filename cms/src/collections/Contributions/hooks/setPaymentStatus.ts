@@ -5,7 +5,10 @@ export const setPaymentStatus: CollectionBeforeChangeHook = async ({ data, opera
   if (operation === 'create') {
     if (data.paymentMethod === 'mobile-money' && data.type == 'contribution') {
       data.paymentStatus = 'pending'
-    } else if (data.paymentMethod === 'cash' || data.paymentMethod === 'bank-transfer') {
+    } else if (
+      ['cash', 'bank', 'card', 'apple-pay'].includes(data.paymentMethod) &&
+      data.type == 'contribution'
+    ) {
       data.paymentStatus = 'completed'
     }
   }

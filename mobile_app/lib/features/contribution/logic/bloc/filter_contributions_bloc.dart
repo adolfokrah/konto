@@ -137,7 +137,7 @@ class FilterContributionsBloc
     const allPaymentMethods = [
       'mobile-money',
       'cash',
-      'bank-transfer',
+      'bank',
       'card',
       'apple-pay',
     ];

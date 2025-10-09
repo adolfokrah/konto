@@ -259,7 +259,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                         ),
 
                         // // Account Name input (only show if Bank Transfer is selected)
-                        // if (_selectedPaymentMethod == 'bank-transfer') ...[
+                        // if (_selectedPaymentMethod == 'bank') ...[
                         //   const SizedBox(height: AppSpacing.spacingM),
                         //   AppTextInput(
                         //     controller: _accountNumberController,
@@ -334,7 +334,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       }
     }
 
-    if (_selectedPaymentMethod == 'bank-transfer') {
+    if (_selectedPaymentMethod == 'bank') {
       // Validate account number for bank transfer
       if (_accountNumberController.text.trim().isEmpty) {
         _showErrorSnackBar(localizations.pleaseEnterAccountName);
@@ -351,7 +351,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                 .trim(), // Phone number not required for Cash and Bank Transfer
         paymentMethod: _selectedPaymentMethod,
         accountNumber:
-            _selectedPaymentMethod == 'bank-transfer'
+            _selectedPaymentMethod == 'bank'
                 ? _accountNumberController.text.trim()
                 : null,
         amountContributed: double.tryParse(amount!) ?? 0.0,

@@ -746,7 +746,7 @@ class ContributionModel {
   jar; // Can be String ID or populated JarModel - keep as dynamic for flexibility
   final String? contributor;
   final String? contributorPhoneNumber;
-  final String? paymentMethod; // 'mobile-money' | 'bank-transfer' | 'cash'
+  final String? paymentMethod; // 'mobile-money' | 'bank' | 'cash'
   final String? accountNumber; // Account number for bank transfers
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution

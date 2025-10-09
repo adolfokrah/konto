@@ -5,7 +5,7 @@ import 'package:Hoga/core/widgets/select_input.dart';
 class PaymentMethodUtils {
   /// Convert payment method API value to localized display label
   ///
-  /// Maps API values like 'mobile-money', 'cash', 'bank-transfer'
+  /// Maps API values like 'mobile-money', 'cash', 'bank'
   /// to their localized display names
   static String getPaymentMethodLabel(
     String? paymentMethod,
@@ -18,7 +18,7 @@ class PaymentMethodUtils {
         return localizations.paymentMethodMobileMoney;
       case 'cash':
         return localizations.paymentMethodCash;
-      case 'bank-transfer':
+      case 'bank':
         return localizations.paymentMethodBankTransfer;
       default:
         // Return the original value with proper formatting if not found
@@ -39,7 +39,7 @@ class PaymentMethodUtils {
     return {
       'mobile-money': localizations.paymentMethodMobileMoney,
       'cash': localizations.paymentMethodCash,
-      // 'bank-transfer': localizations.paymentMethodBankTransfer,
+      // 'bank': localizations.paymentMethodBankTransfer,
     };
   }
 

@@ -4,7 +4,7 @@ part of 'contributions_list_bloc.dart';
 enum PaymentMethod {
   mobileMoney('mobile-money'),
   cash('cash'),
-  bankTransfer('bank-transfer');
+  bankTransfer('bank');
 
   const PaymentMethod(this.value);
   final String value;

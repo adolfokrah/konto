@@ -16,7 +16,7 @@ class ContributionApiProvider extends BaseApiProvider {
     required String jarId,
     String? contributor,
     String? contributorPhoneNumber,
-    required String paymentMethod, // 'mobile-money' | 'bank-transfer' | 'cash'
+    required String paymentMethod, // 'mobile-money' | 'bank' | 'cash'
     String? accountNumber, // Required for bank transfers
     required double amountContributed,
     bool viaPaymentLink = false,
@@ -73,7 +73,7 @@ class ContributionApiProvider extends BaseApiProvider {
       };
 
       // Add account number if payment method is bank transfer
-      if (paymentMethod == 'bank-transfer' && accountNumber != null) {
+      if (paymentMethod == 'bank' && accountNumber != null) {
         contributionData['accountNumber'] = accountNumber;
       }
 
@@ -205,7 +205,7 @@ class ContributionApiProvider extends BaseApiProvider {
   /// - Regular users only see their own contributions
   Future<Map<String, dynamic>> getContributions({
     String? jarId, // Filter contributions by jar ID
-    List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank-transfer']
+    List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank']
     List<String>? statuses, // ['pending', 'failed', 'transferred', 'completed]
     List<String>? collectors, // List of collector user IDs
     DateTime? startDate, // Filter contributions from this date onwards
@@ -240,7 +240,7 @@ class ContributionApiProvider extends BaseApiProvider {
                   (method) => [
                     'mobile-money',
                     'cash',
-                    'bank-transfer',
+                    'bank',
                     'card',
                     'apple-pay',
                   ].contains(method),

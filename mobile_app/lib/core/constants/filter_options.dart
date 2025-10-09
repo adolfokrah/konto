@@ -29,11 +29,7 @@ class FilterOptions {
       Icons.phone_android,
     ),
     PaymentMethodOption('cash', 'cashPayment', Icons.money),
-    PaymentMethodOption(
-      'bank-transfer',
-      'bankTransferPayment',
-      Icons.account_balance,
-    ),
+    PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
     PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
     PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
   ];

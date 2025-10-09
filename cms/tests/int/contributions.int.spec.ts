@@ -150,7 +150,7 @@ describe('Contributions Collection Integration Tests', () => {
         jar: testJar.id,
         contributor: 'Jane Smith',
         contributorPhoneNumber: '+233541234571',
-        paymentMethod: 'bank-transfer' as const,
+        paymentMethod: 'bank' as const,
         accountNumber: '1234567890',
         amountContributed: 200,
         collector: collectorUser.id,
@@ -164,7 +164,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(contribution.viaPaymentLink).toBe(true)
-      expect(contribution.paymentMethod).toBe('bank-transfer')
+      expect(contribution.paymentMethod).toBe('bank')
       expect(contribution.amountContributed).toBe(200)
     })
 
@@ -221,7 +221,7 @@ describe('Contributions Collection Integration Tests', () => {
           jar: testJar.id,
           contributor: 'Bob Wilson',
           contributorPhoneNumber: '+233541222222',
-          paymentMethod: 'bank-transfer' as const,
+          paymentMethod: 'bank' as const,
           accountNumber: '9876543210',
           amountContributed: 250,
           collector: testUser.id,
@@ -402,12 +402,12 @@ describe('Contributions Collection Integration Tests', () => {
         collection: 'contributions',
         id: testContribution.id,
         data: {
-          paymentMethod: 'bank-transfer',
+          paymentMethod: 'bank',
           accountNumber: '5555555555',
         },
       })
 
-      expect(updatedContribution.paymentMethod).toBe('bank-transfer')
+      expect(updatedContribution.paymentMethod).toBe('bank')
     })
 
     it('should update contributor information', async () => {
@@ -503,7 +503,7 @@ describe('Contributions Collection Integration Tests', () => {
           jar: testJar.id,
           contributor: 'Medium Value Contributor',
           contributorPhoneNumber: '+233541222222',
-          paymentMethod: 'bank-transfer' as const,
+          paymentMethod: 'bank' as const,
           accountNumber: '1111111111',
           amountContributed: 200,
           collector: testUser.id,
@@ -523,7 +523,7 @@ describe('Contributions Collection Integration Tests', () => {
           jar: testJar.id,
           contributor: 'Bank Transfer User',
           contributorPhoneNumber: '+233541444444',
-          paymentMethod: 'bank-transfer' as const,
+          paymentMethod: 'bank' as const,
           accountNumber: '2222222222',
           amountContributed: 294,
           collector: testUser.id,
@@ -571,7 +571,7 @@ describe('Contributions Collection Integration Tests', () => {
         collection: 'contributions',
         where: {
           paymentMethod: {
-            equals: 'bank-transfer',
+            equals: 'bank',
           },
         },
         sort: '-amountContributed',
@@ -597,7 +597,7 @@ describe('Contributions Collection Integration Tests', () => {
         0,
       )
 
-      expect(totalAmount).toBe(1034) // 490 (mobile-money, creator pays fees) + 200 (bank-transfer) + 50 (cash) + 294 (bank-transfer)
+      expect(totalAmount).toBe(1034) // 490 (mobile-money, creator pays fees) + 200 (bank) + 50 (cash) + 294 (bank)
       expect(jarContributions.docs).toHaveLength(4)
     })
 

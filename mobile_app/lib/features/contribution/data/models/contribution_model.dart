@@ -498,7 +498,7 @@ class ContributionModel {
   final ContributionJar jar;
   final String? contributor;
   final String? contributorPhoneNumber;
-  final String? paymentMethod; // 'mobile-money' | 'bank-transfer' | 'cash'
+  final String? paymentMethod; // 'mobile-money' | 'bank' | 'cash'
   final String? accountNumber;
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
@@ -671,7 +671,7 @@ class ContributionModel {
   bool get isTransferred => paymentStatus == 'transferred';
 
   bool get isMobileMoney => paymentMethod == 'mobile-money';
-  bool get isBankTransfer => paymentMethod == 'bank-transfer';
+  bool get isBankTransfer => paymentMethod == 'bank';
   bool get isCash => paymentMethod == 'cash';
 
   /// Helper getters for contribution type
