@@ -94,7 +94,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
           },
         ],
       },
-      limit: 5, // Get more jars to find one with valid creator
       depth: 3,
     })
 
@@ -126,7 +125,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
             },
           }),
     },
-    limit: 10,
+    limit: 5,
     sort: '-createdAt', // Sort by createdAt in descending order
   })
 
