@@ -4,6 +4,7 @@ import { Container, Tailwind, Hr, Img, Html } from '@react-email/components'
 interface LayoutProps {
   children: React.ReactNode
   title?: string
+  showSignature?: boolean
 }
 
 export const Footer = () => {
@@ -86,9 +87,9 @@ export const Signature = () => {
   )
 }
 
-export const Layout = ({ children, title }: LayoutProps) => {
+export const Layout = ({ children, title, showSignature = true }: LayoutProps) => {
   return (
-    <Html>
+    // <Html>
     <Tailwind
       config={{
         theme: {
@@ -118,11 +119,11 @@ export const Layout = ({ children, title }: LayoutProps) => {
         </h2>
         <div className="text-sm my-5 " style={{ lineHeight: 2 }}>
           {children}
-          <Signature />
+          {showSignature && <Signature />}
         </div>
         <Footer />
       </Container>
     </Tailwind>
-      </Html>
+      // </Html>
   )
 }

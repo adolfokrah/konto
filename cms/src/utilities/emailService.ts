@@ -3,6 +3,7 @@ import kycVerified from '@/components/emailTemplates/kycVerified'
 import Welcome from '@/components/emailTemplates/Welcome'
 import ContributionsReport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
+import Otp from '@/components/emailTemplates/otp'
 
 interface EmailOptions {
   to: string | string[]
@@ -124,7 +125,7 @@ class EmailService {
     return this.sendEmail({
       to: userEmail,
       subject: `Your Hoga OTP Code`,
-      html: `<p>Your OTP code is: <strong>${code}</strong></p><p>This code will expire in 10 minutes.</p>`,
+      react: Otp({ otpCode: code }),
     })
   }
 

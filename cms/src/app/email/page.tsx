@@ -3,6 +3,7 @@ import KycVerified from '@/components/emailTemplates/kycVerified'
 import Welcome from '@/components/emailTemplates/Welcome'
 import ContributionsRepport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
+import Otp from '@/components/emailTemplates/otp'
 
 export default function Email() {
   // Only allow this route in development
@@ -15,7 +16,8 @@ export default function Email() {
       {/* <KycVerified fullname="Ben" /> */}
       {/* <Welcome fullname="Adolphus Okrah" /> */}
       {/* <ContributionsRepport jarName="Adolphus's Jar" totalRecords={5} /> */}
-      <AccountDeletion fullname="Adolphus Okrah" />
+      {/* <AccountDeletion fullname="Adolphus Okrah" /> */}
+      <Otp otpCode="654321" />
     </div>
   )
 }
