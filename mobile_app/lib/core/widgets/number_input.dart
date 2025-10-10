@@ -105,7 +105,7 @@ class _NumberInputState extends State<NumberInput> {
                 onCountrySelected: _onCountrySelected,
               );
             },
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

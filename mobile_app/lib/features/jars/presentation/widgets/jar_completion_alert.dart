@@ -37,7 +37,7 @@ class JarCompletionAlert extends StatelessWidget {
             jarData.description!.trim().isEmpty) {
           return Alert(
             message:
-                'Every successful jar is backed by a story, add a description to this jar to tell a story. Tap to add a description.',
+                'Every jar holds a story worth sharing. Add a short description to tell yours. Tap to begin.',
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.jarDescriptionEdit);
             },
