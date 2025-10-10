@@ -215,7 +215,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           state.jarData.image!.url!,
                         ),
                         scrollOffset: _scrollOffset,
-                        height: 450.0,
+                        height: 500.0,
                         maxScrollForOpacity: 200.0,
                         baseOpacity: 0.30,
                       ),
@@ -337,7 +337,11 @@ class _JarDetailViewState extends State<JarDetailView> {
 
     if (state is JarSummaryLoading) {
       return SliverFillRemaining(
-        child: const Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       );
     } else if (state is JarSummaryError) {
       return SliverFillRemaining(

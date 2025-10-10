@@ -123,7 +123,11 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
             final localizations = AppLocalizations.of(context)!;
 
             if (state is MomoPaymentLoading) {
-              return Center(child: CircularProgressIndicator());
+              return Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              );
             } else if (state is MomoPaymentSuccess) {
               return builderContent(context, state);
             }

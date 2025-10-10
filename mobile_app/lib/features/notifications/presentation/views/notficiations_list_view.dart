@@ -71,7 +71,11 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
             return BlocBuilder<NotificationsBloc, NotificationsState>(
               builder: (context, state) {
                 if (state is NotificationsLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  );
                 }
                 if (state is NotificationsError) {
                   return Center(
@@ -124,7 +128,11 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
                   );
                 }
                 // Initial state - show loading indicator
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                );
               },
             );
           },

@@ -39,10 +39,14 @@ class JarBalanceBreakdown extends StatelessWidget {
                 top: Radius.circular(AppRadius.radiusM),
               ),
             ),
-            child: const SafeArea(
+            child: SafeArea(
               child: Padding(
                 padding: EdgeInsets.all(AppSpacing.spacingM),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
               ),
             ),
           );

@@ -174,8 +174,12 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           }
 
           // Show loading or error state
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           );
         },
       ),

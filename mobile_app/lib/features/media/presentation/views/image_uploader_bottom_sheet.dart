@@ -152,7 +152,9 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                     padding: EdgeInsets.all(AppSpacing.spacingL),
                     child: Column(
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         SizedBox(height: AppSpacing.spacingM),
                         Text(AppLocalizations.of(context)!.uploadingImage),
                       ],

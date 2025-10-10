@@ -163,7 +163,11 @@ class _CaptureDocumentWidgetState extends State<CaptureDocumentWidget> {
                         child: CameraPreview(_controller!),
                       ),
                     )
-                    : const Center(child: CircularProgressIndicator()),
+                    : Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
           ),
         ),
 

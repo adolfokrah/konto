@@ -223,8 +223,12 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       },
       builder: (context, state) {
         if (state is ContributionsListLoading && _currentPage == 1) {
-          return const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
+          return SliverFillRemaining(
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           );
         }
 
@@ -283,9 +287,13 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       delegate: SliverChildBuilderDelegate((context, index) {
         if (index == groupedContributions.length) {
           // Loading indicator for pagination
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.all(AppSpacing.spacingM),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           );
         }
 

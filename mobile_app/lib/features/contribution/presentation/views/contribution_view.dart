@@ -53,7 +53,11 @@ class ContributionView extends StatelessWidget {
             builder: (context, state) {
               final localizations = AppLocalizations.of(context)!;
               if (state is FetchContributionLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                );
               } else if (state is FetchContributionError) {
                 return Center(
                   child: Text(localizations.failedToFetchContribution),

@@ -221,7 +221,11 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                       ),
                     );
                   } else if (state is CollectorsLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    );
                   } else if (state is CollectorsLoaded) {
                     if (state.collectors.isEmpty) {
                       return Center(

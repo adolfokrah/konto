@@ -40,7 +40,11 @@ class _StartupScreenState extends State<StartupScreen> {
             Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
           }
         },
-        child: const Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
     );
   }

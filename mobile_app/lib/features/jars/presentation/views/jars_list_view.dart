@@ -206,7 +206,11 @@ class _JarsListViewState extends State<JarsListView> {
   ) {
     return switch (state) {
       JarListInitial() => Center(child: Text(localizations.tapToLoadYourJars)),
-      JarListLoading() => const Center(child: CircularProgressIndicator()),
+      JarListLoading() => Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
       JarListError(message: final message) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -425,20 +429,17 @@ class _JarsListViewState extends State<JarsListView> {
                         width: 16,
                         height: 16,
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: Theme.of(context).colorScheme.onSurface,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color:
-                                isDark
-                                    ? Theme.of(context).colorScheme.surface
-                                    : Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
                           size: 10,
-                          color: Colors.white,
+                          color: isDark ? Colors.black : Colors.white,
                         ),
                       ),
                     );

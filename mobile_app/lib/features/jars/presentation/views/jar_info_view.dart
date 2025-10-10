@@ -129,7 +129,11 @@ class _JarInfoViewState extends State<JarInfoView> {
         builder: (context, state) {
           if (state is JarSummaryLoading) {
             return Scaffold(
-              body: const Center(child: CircularProgressIndicator()),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             );
           }
 
@@ -779,7 +783,9 @@ class _JarInfoViewState extends State<JarInfoView> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const CircularProgressIndicator(),
+                              CircularProgressIndicator(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 localizations.updatingJar,

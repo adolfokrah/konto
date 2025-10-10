@@ -64,7 +64,11 @@ class UserAccountView extends StatelessWidget {
 
             // Show loading indicator during logout
             if (state is AuthLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              );
             }
 
             // Get current user from auth state or service registry

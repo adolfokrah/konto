@@ -153,7 +153,11 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
         // Show loading or error state
         return Scaffold(
           appBar: AppBar(title: Text(localizations.changePhoneNumber)),
-          body: const Center(child: CircularProgressIndicator()),
+          body: Center(
+            child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
         );
       },
     );

@@ -432,7 +432,13 @@ class _LivenessCameraState extends State<LivenessCamera> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized || _controller == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -493,7 +499,11 @@ class _LivenessCameraState extends State<LivenessCamera> {
                     ),
                     child:
                         _isProcessing
-                            ? const Center(child: CircularProgressIndicator())
+                            ? Center(
+                              child: CircularProgressIndicator(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            )
                             : const Icon(
                               Icons.camera_alt,
                               size: 40,

@@ -49,7 +49,11 @@ class _CollectorsViewState extends State<CollectorsView> {
                 topRight: Radius.circular(AppRadius.radiusM),
               ),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           );
         }
 

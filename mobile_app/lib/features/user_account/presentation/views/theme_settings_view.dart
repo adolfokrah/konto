@@ -66,15 +66,14 @@ class ThemeSettingsView extends StatelessWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const CircularProgressIndicator(),
+                                CircularProgressIndicator(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
                                 const SizedBox(height: 16),
                                 Text(
                                   translation.updatingThemeSettings,
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.surface,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: AppTextStyles.titleMediumS,
                                 ),
                               ],
                             ),
