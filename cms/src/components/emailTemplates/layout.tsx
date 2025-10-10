@@ -89,7 +89,7 @@ export const Signature = () => {
 
 export const Layout = ({ children, title, showSignature = true }: LayoutProps) => {
   return (
-    // <Html>
+    <Html>
     <Tailwind
       config={{
         theme: {
@@ -124,6 +124,6 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
         <Footer />
       </Container>
     </Tailwind>
-      // </Html>
+     </Html>
   )
 }
