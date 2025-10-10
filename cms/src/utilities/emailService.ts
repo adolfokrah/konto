@@ -4,6 +4,7 @@ import Welcome from '@/components/emailTemplates/Welcome'
 import ContributionsReport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
+import sendKyc from '@/components/emailTemplates/sendKyc'
 
 interface EmailOptions {
   to: string | string[]
@@ -126,6 +127,15 @@ class EmailService {
       to: userEmail,
       subject: `Your Hoga OTP Code`,
       react: Otp({ otpCode: code }),
+    })
+  }
+
+  // KYC Verification Email
+  async sendKycEmail(userEmail: string, link: string) {
+    return this.sendEmail({
+      to: userEmail,
+      subject: `Your Hoga KYC Verification`,
+      react: sendKyc({ link }),
     })
   }
 
