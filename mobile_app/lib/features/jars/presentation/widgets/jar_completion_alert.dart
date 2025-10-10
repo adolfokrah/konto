@@ -1,3 +1,4 @@
+import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/widgets/alert_banner.dart';
@@ -35,24 +36,37 @@ class JarCompletionAlert extends StatelessWidget {
         // 1. No jar description (Highest Priority)
         if (jarData.description == null ||
             jarData.description!.trim().isEmpty) {
-          return Alert(
-            message:
-                'Every jar holds a story worth sharing. Add a short description to tell yours. Tap to begin.',
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.jarDescriptionEdit);
-            },
+          return Column(
+            children: [
+              Alert(
+                message:
+                    'Every jar holds a story worth sharing. Add a short description to tell yours. Tap to begin.',
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.jarDescriptionEdit);
+                },
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+            ],
           );
         }
 
         // 2. No thank you message (Medium Priority)
         if (jarData.thankYouMessage == null ||
             jarData.thankYouMessage!.trim().isEmpty) {
-          return Alert(
-            message:
-                'Add a personalized thank you message to show appreciation to your contributors. Tap to add a thank you message.',
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.jarThankYouMessageEdit);
-            },
+          return Column(
+            children: [
+              Alert(
+                message:
+                    'Add a personalized thank you message to show appreciation to your contributors. Tap to add a thank you message.',
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.jarThankYouMessageEdit,
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+            ],
           );
         }
 
@@ -63,12 +77,17 @@ class JarCompletionAlert extends StatelessWidget {
             user.bank!.trim().isEmpty ||
             user.accountHolder == null ||
             user.accountHolder!.trim().isEmpty) {
-          return Alert(
-            message:
-                'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
-            },
+          return Column(
+            children: [
+              Alert(
+                message:
+                    'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+                },
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+            ],
           );
         }
 

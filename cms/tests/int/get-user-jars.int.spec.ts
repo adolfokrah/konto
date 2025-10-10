@@ -124,6 +124,9 @@ describe('getUserJars', () => {
               'invitedCollectors.collector': {
                 equals: mockUser,
               },
+              'invitedCollectors.status': {
+                equals: 'accepted',
+              },
               status: {
                 not_equals: 'broken',
               },
@@ -199,6 +202,9 @@ describe('getUserJars', () => {
               'invitedCollectors.collector': {
                 equals: mockUser,
               },
+              'invitedCollectors.status': {
+                equals: 'accepted',
+              },
               status: {
                 not_equals: 'broken',
               },
@@ -248,6 +254,9 @@ describe('getUserJars', () => {
             {
               'invitedCollectors.collector': {
                 equals: mockUser,
+              },
+              'invitedCollectors.status': {
+                equals: 'accepted',
               },
               status: {
                 not_equals: 'broken',
@@ -420,6 +429,9 @@ describe('getUserJars', () => {
               'invitedCollectors.collector': {
                 equals: mockUser,
               },
+              'invitedCollectors.status': {
+                equals: 'accepted',
+              },
               status: {
                 not_equals: 'broken',
               },
@@ -458,6 +470,9 @@ describe('getUserJars', () => {
       expect(callArgs.where.or[1]).toEqual({
         'invitedCollectors.collector': {
           equals: mockUser,
+        },
+        'invitedCollectors.status': {
+          equals: 'accepted',
         },
         status: {
           not_equals: 'broken',
