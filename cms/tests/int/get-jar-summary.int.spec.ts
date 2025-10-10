@@ -401,7 +401,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       expect(data.contributions).toHaveProperty('totalDocs')
       expect(data.contributions).toHaveProperty('limit')
       expect(data.contributions).toHaveProperty('page')
-      expect(data.contributions.limit).toBe(10)
+      expect(data.contributions.limit).toBe(5)
     })
   })
 })
