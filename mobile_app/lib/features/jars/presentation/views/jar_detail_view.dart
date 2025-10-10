@@ -433,8 +433,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                   ),
                   const SizedBox(height: 45),
 
-                  /// Dynamic CTA Banner Based on Missing Information
-                  JarCompletionAlert(jarData: jarData),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.spacingM,
@@ -555,6 +553,10 @@ class _JarDetailViewState extends State<JarDetailView> {
                       ],
                     ),
                   ),
+
+                  /// Dynamic CTA Banner Based on Missing Information
+                  JarCompletionAlert(jarData: jarData),
+                  SizedBox(height: AppSpacing.spacingS),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
