@@ -37,7 +37,6 @@ class FCMService {
       // Listen for messages while app is in foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         // if notification is type contribution, please reload the current jar
-
         _handlePush(message);
       });
 
@@ -60,7 +59,6 @@ class FCMService {
           await FirebaseMessaging.instance.getInitialMessage();
 
       if (initialMessage != null) {
-        print("🚀 App launched from notification");
         _handleNotificationTap(initialMessage);
       }
     } catch (e) {
@@ -70,8 +68,6 @@ class FCMService {
 
   /// Handle notification tap with step-by-step flow
   static void _handleNotificationTap(RemoteMessage message) {
-    print("🔔 User tapped notification: ${message.data}");
-
     try {
       // Step 1: User tapped notification (already happened)
       // Step 2: Check type
@@ -110,7 +106,7 @@ class FCMService {
       } else if (type == 'kyc') {
         final data = messageData['status'] ?? 'unknown';
         final BuildContext? context = navigatorKey.currentContext;
-        if (context != null && data == 'failed') {
+        if (context != null) {
           NavigationService.navigateToNotifications(context);
           SchedulerBinding.instance.addPostFrameCallback((_) {
             final postNavContext = navigatorKey.currentContext;
@@ -119,6 +115,11 @@ class FCMService {
                 postNavContext.read<NotificationsBloc>().add(
                   FetchNotifications(limit: 20, page: 1),
                 );
+
+                if (data == 'approved' || data == 'pending') {
+                  // Trigger auto login to refresh user data after KYC approval
+                  _triggerAutoLogin(postNavContext);
+                }
               } catch (e) {
                 print(
                   '⚠️ Could not dispatch FetchNotifications after kycFailed navigation: $e',
@@ -151,18 +152,16 @@ class FCMService {
     } else if (messageData['type'] == 'jarInvite' ||
         messageData['type'] == 'kyc') {
       final data = messageData['status'] ?? 'unknown';
-      print('🔔 FCM push received: ${message.data}');
       final BuildContext? context = navigatorKey.currentContext;
       if (context != null) {
         try {
           // Dispatch fetch notifications to update list
-          if (data == 'failed') {
-            context.read<NotificationsBloc>().add(
-              FetchNotifications(limit: 20, page: 1),
-            );
-            // Trigger auto login to refresh user data after KYC status change
-            _triggerAutoLogin(context);
-          } else if (data == 'approved' || data == 'pending') {
+          context.read<NotificationsBloc>().add(
+            FetchNotifications(limit: 20, page: 1),
+          );
+          // Trigger auto login to refresh user data after KYC status change
+          _triggerAutoLogin(context);
+          if (data == 'approved' || data == 'pending') {
             context.read<NotificationsBloc>().add(
               FetchNotifications(limit: 20, page: 1),
             );
@@ -181,7 +180,6 @@ class FCMService {
   /// Trigger auto login to refresh user authentication state
   static void _triggerAutoLogin(BuildContext context) {
     try {
-      print('🔄 FCM: Triggering auto login to refresh user data');
       context.read<AuthBloc>().add(AutoLoginRequested());
     } catch (e) {
       print('⚠️ Could not trigger auto login: $e');

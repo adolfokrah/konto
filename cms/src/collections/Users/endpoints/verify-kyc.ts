@@ -107,7 +107,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
     }
 
     // Send notifications if KYC is verified
-    if (newKycStatus === 'verified' && user.isKYCVerified) {
+    if (newKycStatus === 'verified' && !user.isKYCVerified) {
       // Send SMS notification (skip in test mode)
       if (user.phoneNumber && process.env.NODE_ENV !== 'test') {
         await sendSMS(
