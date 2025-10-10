@@ -7,7 +7,7 @@ interface EmailTemplateProps {
 
 export default function sendKyc({ link }: EmailTemplateProps) {
   return (
-    <Layout title={``} showSignature={false}>
+    <Layout title={`Time to Verify Your Account`} showSignature={false}>
       <div>
           <p>Your KYC session has been created successfully.</p>
           <p>Please complete your verification using the following link:</p>
