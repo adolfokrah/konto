@@ -61,16 +61,7 @@ class _LoginViewState extends State<LoginView> {
                 );
               }
               if (state is PhoneNumberAvailable) {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.otp,
-                  arguments: {
-                    'phoneNumber': state.phoneNumber,
-                    'countryCode': state.countryCode,
-                  },
-                );
-              } else if (state is PhoneNumberNotAvailable) {
-                // Navigate to registration screen if phone number is not available
+                // Phone number available for registration - redirect to register
                 Navigator.pushNamed(
                   context,
                   AppRoutes.register,
@@ -78,6 +69,18 @@ class _LoginViewState extends State<LoginView> {
                     'initialPhoneNumber': state.phoneNumber,
                     'initialCountryCode': state.countryCode,
                     'initialSelectedCountry': _selectedCountry,
+                  },
+                );
+              } else if (state is PhoneNumberNotAvailable) {
+                // Phone number exists - proceed to login OTP
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.otp,
+                  arguments: {
+                    'phoneNumber': state.phoneNumber,
+                    'countryCode': state.countryCode,
+                    'email': state.email ?? '',
+                    'isRegistering': false,
                   },
                 );
               } else if (state is AuthError) {

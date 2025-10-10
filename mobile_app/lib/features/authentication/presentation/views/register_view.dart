@@ -120,18 +120,22 @@ class _RegisterViewState extends State<RegisterView> {
             }
 
             if (state is PhoneNumberAvailable) {
-              AppSnackBar.showError(
-                context,
-                message: localizations.accountAlreadyExists,
-              );
-            } else if (state is PhoneNumberNotAvailable) {
+              // Phone number is available for registration - proceed to OTP
               Navigator.pushNamed(
                 context,
                 AppRoutes.otp,
                 arguments: {
                   'phoneNumber': _phoneNumber,
                   'countryCode': _countryCode,
+                  'email': _emailController.text.trim(),
+                  'isRegistering': true,
                 },
+              );
+            } else if (state is PhoneNumberNotAvailable) {
+              // Phone number already exists - show error
+              AppSnackBar.showError(
+                context,
+                message: localizations.accountAlreadyExists,
               );
             }
           },

@@ -34,18 +34,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (response['exists'] == true) {
-        // Emit a success state indicating phone number is available
-        emit(
-          PhoneNumberAvailable(
-            phoneNumber: event.phoneNumber,
-            countryCode: event.countryCode,
-          ),
-        );
-      } else if (response['exists'] == false) {
+        // User exists - available for login (not available for registration)
         emit(
           PhoneNumberNotAvailable(
             phoneNumber: event.phoneNumber,
             countryCode: event.countryCode,
+            email: response['email'],
+          ),
+        );
+      } else if (response['exists'] == false) {
+        // User doesn't exist - available for registration
+        emit(
+          PhoneNumberAvailable(
+            phoneNumber: event.phoneNumber,
+            countryCode: event.countryCode,
+            email: response['email'],
           ),
         );
       } else {
@@ -146,29 +149,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
 
     try {
+      print('🔄 Starting auto login process...');
       final authRepository = ServiceRegistry().authRepository;
 
       // Check if there's any user data stored locally first
       final isLoggedIn = await authRepository.isUserLoggedIn();
+      print('🔐 Is user logged in: $isLoggedIn');
 
       if (!isLoggedIn) {
-        emit(AuthInitial());
+        print('❌ User not logged in, emitting AuthInitial');
+        emit(const AuthInitial());
         return;
       }
 
       // Attempt auto-login using stored phone number and country code
+      print('🔄 Attempting auto login...');
       final autoLoginResult = await authRepository.autoLogin();
+      print(
+        '🔄 Auto login result: ${autoLoginResult['success']} - ${autoLoginResult['message']}',
+      );
 
       if (autoLoginResult['success'] == true) {
         final user = autoLoginResult['user'];
         final token = autoLoginResult['token'];
+        print('✅ Auto login successful, emitting AuthAuthenticated');
 
         emit(AuthAuthenticated(user: user, token: token));
       } else {
-        emit(AuthInitial());
+        print('❌ Auto login failed: ${autoLoginResult['message']}');
+        emit(const AuthInitial());
       }
     } catch (e) {
-      emit(AuthInitial());
+      print('💥 Auto login exception: $e');
+      emit(const AuthInitial());
     }
   }
 

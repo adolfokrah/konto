@@ -158,6 +158,52 @@ export const diditWebhook = async (req: PayloadRequest) => {
       has_decision: !!payload.decision,
     })
 
+    // Handle specific statuses that should set KYC status to pending
+    if (payload.status === 'In Progress' || payload.status === 'In Review') {
+      console.log(`🔄 Status is ${payload.status}, updating user KYC status to pending`)
+
+      try {
+        // Find user by session ID
+        const user = await req.payload.find({
+          collection: 'users',
+          where: {
+            kycSessionId: {
+              equals: payload.session_id,
+            },
+          },
+          limit: 1,
+        })
+
+        if (user.docs && user.docs.length > 0) {
+          const userId = user.docs[0].id
+
+          // Update user KYC status to pending
+          await req.payload.update({
+            collection: 'users',
+            id: userId,
+            data: {
+              kycStatus: 'pending',
+            },
+          })
+
+          console.log(`✅ Updated user ${userId} KYC status to pending`)
+
+          return Response.json(
+            {
+              message: 'KYC status updated to pending',
+              session_id: payload.session_id,
+              status: payload.status,
+            },
+            { status: 200 },
+          )
+        } else {
+          console.warn(`⚠️ No user found with session ID: ${payload.session_id}`)
+        }
+      } catch (error) {
+        console.error('❌ Error updating KYC status to pending:', error)
+      }
+    }
+
     // Call the existing verify-kyc function to handle the verification logic
     console.log('🔄 Calling verify-kyc function for session:', payload.session_id)
 

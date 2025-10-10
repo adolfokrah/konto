@@ -6,7 +6,6 @@ import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/core/services/jar_storage_service.dart';
 import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
-import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
 import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
 import 'package:Hoga/features/onboarding/data/repositories/onboarding_repository.dart';
@@ -44,7 +43,6 @@ class ServiceRegistry {
   late final TranslationService _translationService;
 
   // API providers
-  late final SmsApiProvider _smsApiProvider;
   late final AuthApiProvider _authApiProvider;
   late final VerificationProvider _verificationProvider;
   late final JarApiProvider _jarApiProvider;
@@ -102,7 +100,6 @@ class ServiceRegistry {
     _translationService.initialize();
 
     // Initialize API providers with Dio
-    _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
     _verificationProvider = VerificationProvider(
       dio: _dio,
@@ -145,7 +142,6 @@ class ServiceRegistry {
 
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
-      smsApiProvider: _smsApiProvider,
       verificationProvider: _verificationProvider,
     );
 
@@ -183,7 +179,6 @@ class ServiceRegistry {
   UserStorageService get userStorageService => _userStorageService;
   JarStorageService get jarStorageService => _jarStorageService;
   TranslationService get translationService => _translationService;
-  SmsApiProvider get smsApiProvider => _smsApiProvider;
   AuthApiProvider get authApiProvider => _authApiProvider;
   JarApiProvider get jarApiProvider => _jarApiProvider;
   MediaApiProvider get mediaApiProvider => _mediaApiProvider;
@@ -236,7 +231,6 @@ class ServiceRegistry {
     _translationService.initialize();
 
     // Initialize API providers with custom Dio
-    _smsApiProvider = SmsApiProvider(dio: _dio);
     _authApiProvider = AuthApiProvider(dio: _dio);
     _verificationProvider = VerificationProvider(
       dio: _dio,
@@ -279,7 +273,6 @@ class ServiceRegistry {
 
     _verificationRepository = VerificationRepository(
       smsOtpService: _smsOtpService,
-      smsApiProvider: _smsApiProvider,
       verificationProvider: _verificationProvider,
     );
 

@@ -17,6 +17,7 @@ import { sendEmptyJarReminder } from './endpoints/send-empty-jar-reminder'
 import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
+import { sendOTP } from './endpoints/send-otp'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -81,9 +82,9 @@ export const Users: CollectionConfig = {
       handler: manageUserRole,
     },
     {
-      path: '/send-whatsapp-otp',
+      path: '/send-otp',
       method: 'post',
-      handler: sendWhatsAppOtp,
+      handler: sendOTP,
     },
     {
       path: '/update-kyc',

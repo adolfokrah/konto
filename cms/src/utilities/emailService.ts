@@ -120,6 +120,14 @@ class EmailService {
     })
   }
 
+  async sendOTPEmail(userEmail: string, code: string) {
+    return this.sendEmail({
+      to: userEmail,
+      subject: `Your Hoga OTP Code`,
+      html: `<p>Your OTP code is: <strong>${code}</strong></p><p>This code will expire in 10 minutes.</p>`,
+    })
+  }
+
   // Generic email method for custom emails
   async sendCustomEmail(options: EmailOptions) {
     return this.sendEmail(options)

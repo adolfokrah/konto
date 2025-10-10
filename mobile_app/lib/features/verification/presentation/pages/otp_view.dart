@@ -59,13 +59,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
     final countryCode = args?['countryCode'] as String?;
-    final fullPhoneNumber =
-        phoneNumber != null && countryCode != null
-            ? '$countryCode$phoneNumber'
-            : phoneNumber;
+    final email = args?['email'] as String?;
 
     context.read<VerificationBloc>().add(
-      PhoneNumberVerificationRequested(phoneNumber: fullPhoneNumber ?? ''),
+      PhoneNumberVerificationRequested(
+        phoneNumber: phoneNumber ?? '',
+        email: email ?? '',
+        countryCode: countryCode ?? '',
+      ),
     );
     _startResendTimer();
   }
@@ -118,32 +119,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     context.read<VerificationBloc>().add(VerificationSuccessRequested());
   }
 
-  String get _contactInfo {
-    if (widget.phoneNumber != null) {
-      // Format phone number with country code for display
-      final countryCode = widget.countryCode ?? '';
-      final phoneNumber = widget.phoneNumber!;
-
-      if (countryCode.isNotEmpty) {
-        return '$countryCode $phoneNumber';
-      }
-      return phoneNumber;
-    } else if (widget.email != null) {
-      return widget.email!;
-    }
-    return '';
-  }
-
-  String _getContactType(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    if (widget.phoneNumber != null) {
-      return localizations.phoneNumberContactType;
-    } else if (widget.email != null) {
-      return localizations.emailContactType;
-    }
-    return localizations.contactType;
-  }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -174,24 +149,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                 const SizedBox(height: AppSpacing.spacingM),
 
                 // Subtitle with contact info
-                if (_contactInfo.isNotEmpty) ...[
-                  Text(
-                    localizations.otpSubtitle(_getContactType(context)),
-                    style: AppTextStyles.titleRegularM.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+                Text(
+                  'We sent a 6 digit code to your email and phone number',
+                  style: AppTextStyles.titleRegularM.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  Text(
-                    _contactInfo,
-                    style: AppTextStyles.titleMediumM.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+                ),
 
                 const SizedBox(height: AppSpacing.spacingL),
 

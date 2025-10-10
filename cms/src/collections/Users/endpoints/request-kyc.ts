@@ -62,7 +62,7 @@ export const requestKYC = async (req: PayloadRequest) => {
       id: user.id,
       data: {
         kycSessionId: session.session_id,
-        kycStatus: 'pending',
+        // kycStatus: 'pending',
       },
       overrideAccess: true,
     })

@@ -29,19 +29,23 @@ final class AuthError extends AuthState {
 final class PhoneNumberAvailable extends AuthState {
   final String phoneNumber;
   final String countryCode;
+  final String? email;
 
   const PhoneNumberAvailable({
     required this.phoneNumber,
     required this.countryCode,
+    this.email,
   });
 }
 
 final class PhoneNumberNotAvailable extends AuthState {
   final String phoneNumber;
   final String countryCode;
+  final String? email;
 
   const PhoneNumberNotAvailable({
     required this.phoneNumber,
     required this.countryCode,
+    this.email,
   });
 }

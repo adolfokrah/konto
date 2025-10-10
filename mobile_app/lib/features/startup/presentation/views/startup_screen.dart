@@ -1,42 +1,46 @@
-import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
-import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/route.dart';
 
-class StartupScreen extends StatelessWidget {
+class StartupScreen extends StatefulWidget {
   const StartupScreen({super.key});
+
+  @override
+  State<StartupScreen> createState() => _StartupScreenState();
+}
+
+class _StartupScreenState extends State<StartupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🚀 StartupScreen: Initialized, triggering auto login');
+      context.read<AuthBloc>().add(AutoLoginRequested());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<OnboardingBloc, OnboardingState>(
-            listener: (context, state) {
-              if (state is! OnboardingCompleted) {
-                Navigator.of(
-                  context,
-                ).pushReplacementNamed(AppRoutes.onboarding);
-              } else {
-                // Onboarding is completed, now check auth status
-                // Trigger auth check if needed
-                context.read<AuthBloc>().add(AutoLoginRequested());
-              }
-            },
-          ),
-          BlocListener<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthAuthenticated) {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
-              } else if (state is AuthInitial) {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-              }
-            },
-          ),
-        ],
-        child: Center(child: CircularProgressIndicator()),
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          print(
+            '🚀 StartupScreen: AuthBloc state changed to: ${state.runtimeType}',
+          );
+          if (state is AuthAuthenticated) {
+            print(
+              '🚀 StartupScreen: User authenticated, navigating to jar details',
+            );
+            Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
+          } else if (state is AuthInitial) {
+            print(
+              '🚀 StartupScreen: User not authenticated, navigating to onboarding',
+            );
+            Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
+          }
+        },
+        child: const Center(child: CircularProgressIndicator()),
       ),
     );
   }

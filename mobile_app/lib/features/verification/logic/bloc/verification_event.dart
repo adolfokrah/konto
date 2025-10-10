@@ -12,8 +12,14 @@ final class OtpChanged extends VerificationEvent {
 // Simple Phone Verification Events
 final class PhoneNumberVerificationRequested extends VerificationEvent {
   final String phoneNumber;
+  final String email;
+  final String countryCode;
 
-  PhoneNumberVerificationRequested({required this.phoneNumber});
+  PhoneNumberVerificationRequested({
+    required this.phoneNumber,
+    required this.email,
+    required this.countryCode,
+  });
 }
 
 final class VerificationSuccessRequested extends VerificationEvent {}

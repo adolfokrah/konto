@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 
@@ -6,11 +7,134 @@ class VerificationProvider {
   final Dio _dio;
   final UserStorageService _userStorageService;
 
+  // Test mode flag - can be set during testing
+  static bool isTestMode = false;
+
   VerificationProvider({
     required Dio dio,
     required UserStorageService userStorageService,
   }) : _dio = dio,
        _userStorageService = userStorageService;
+
+  /// Helper method to detect if we're running in Flutter test environment
+  bool _isFlutterTest() {
+    return const bool.fromEnvironment('flutter.testing', defaultValue: false);
+  }
+
+  /// Send OTP via SMS and WhatsApp using the backend endpoint
+  /// [isRegistering] - If true, will also send email OTP
+  Future<Map<String, dynamic>> sendOTP({
+    required String phoneNumber,
+    required String countryCode,
+    required String otpCode,
+    required String email,
+  }) async {
+    // Automatically detect test environment or use manual test mode
+    final isInTestMode = isTestMode || kDebugMode && _isFlutterTest();
+
+    // Mock OTP sending in test mode
+    if (isInTestMode) {
+      print(
+        '🧪 TEST MODE: Mocking OTP send to $phoneNumber with code: $otpCode',
+      );
+      await Future.delayed(
+        const Duration(milliseconds: 800),
+      ); // Simulate network delay
+      return {
+        'success': true,
+        'message': 'OTP sent successfully (mocked)',
+        'data': {
+          'messageId': 'mock_${DateTime.now().millisecondsSinceEpoch}',
+          'phoneNumber': phoneNumber,
+          'status': 'sent',
+        },
+        'messageId': 'mock_${DateTime.now().millisecondsSinceEpoch}',
+        'phoneNumber': phoneNumber,
+      };
+    }
+
+    try {
+      // Prepare request data - only include email if user is registering
+      final requestData = {
+        'phoneNumber': phoneNumber,
+        'code': otpCode,
+        'countryCode': countryCode,
+        'email': email,
+      };
+      // Make API call to backend endpoint
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.sendOTP}',
+        data: requestData,
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      print('📱 OTP API Response: ${response.statusCode} - ${response.data}');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'OTP sent successfully',
+          'data': response.data['data'],
+          'messageId': response.data['data']?['messageId'],
+          'phoneNumber': response.data['data']?['phoneNumber'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': response.data['message'] ?? 'Failed to send OTP',
+          'statusCode': response.statusCode,
+          'details': response.data,
+        };
+      }
+    } on DioException catch (e) {
+      print('❌ OTP Dio Error: ${e.type} - ${e.message}');
+
+      String errorMessage = 'Failed to send OTP';
+      int statusCode = e.response?.statusCode ?? 0;
+
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          errorMessage = 'OTP service timeout. Please try again.';
+          break;
+        case DioExceptionType.badResponse:
+          final responseData = e.response?.data;
+          if (responseData is Map && responseData['message'] != null) {
+            errorMessage = responseData['message'];
+          } else {
+            errorMessage = 'OTP service error ($statusCode)';
+          }
+          break;
+        case DioExceptionType.cancel:
+          errorMessage = 'OTP request was cancelled';
+          break;
+        case DioExceptionType.connectionError:
+          errorMessage = 'No internet connection. Please check your network.';
+          break;
+        case DioExceptionType.badCertificate:
+          errorMessage = 'Certificate error. Please try again.';
+          break;
+        case DioExceptionType.unknown:
+          errorMessage = 'Network error: ${e.message}';
+          break;
+      }
+
+      return {
+        'success': false,
+        'error': errorMessage,
+        'statusCode': statusCode,
+        'dioErrorType': e.type.toString(),
+      };
+    } catch (e) {
+      print('❌ Unexpected OTP Error: $e');
+      return {
+        'success': false,
+        'error': 'Unexpected error: ${e.toString()}',
+        'statusCode': 0,
+      };
+    }
+  }
 
   /// Request KYC verification session for the authenticated user
   ///

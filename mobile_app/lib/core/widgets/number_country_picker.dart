@@ -23,15 +23,15 @@ class NumberCountryPicker extends StatelessWidget {
 
   static const List<Country> _countries = [
     Country(name: 'Ghana', code: '+233', flag: '🇬🇭'),
-    // Country(name: 'United States', code: '+1', flag: '🇺🇸'),
-    // Country(name: 'United Kingdom', code: '+44', flag: '🇬🇧'),
-    // Country(name: 'Nigeria', code: '+234', flag: '🇳🇬'),
-    // Country(name: 'South Africa', code: '+27', flag: '🇿🇦'),
-    // Country(name: 'Kenya', code: '+254', flag: '🇰🇪'),
-    // Country(name: 'Canada', code: '+1', flag: '🇨🇦'),
-    // Country(name: 'Germany', code: '+49', flag: '🇩🇪'),
-    // Country(name: 'France', code: '+33', flag: '🇫🇷'),
-    // Country(name: 'Australia', code: '+61', flag: '🇦🇺'),
+    Country(name: 'United States', code: '+1', flag: '🇺🇸'),
+    Country(name: 'United Kingdom', code: '+44', flag: '🇬🇧'),
+    Country(name: 'Nigeria', code: '+234', flag: '🇳🇬'),
+    Country(name: 'South Africa', code: '+27', flag: '🇿🇦'),
+    Country(name: 'Kenya', code: '+254', flag: '🇰🇪'),
+    Country(name: 'Canada', code: '+1', flag: '🇨🇦'),
+    Country(name: 'Germany', code: '+49', flag: '🇩🇪'),
+    Country(name: 'France', code: '+33', flag: '🇫🇷'),
+    Country(name: 'Australia', code: '+61', flag: '🇦🇺'),
   ];
 
   static Widget _buildCountryTile(

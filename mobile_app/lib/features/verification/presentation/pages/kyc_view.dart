@@ -1,4 +1,6 @@
+import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/widgets/feedback_action_button.dart';
+import 'package:Hoga/core/widgets/notification_icon_button.dart';
 import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,7 @@ class KycView extends StatelessWidget {
         ),
         actions: [
           const FeedbackActionButton(),
+          const NotificationIconButton(),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: UserAvatarSmall(
@@ -85,7 +88,7 @@ class KycView extends StatelessWidget {
               if (isKYCVerified) {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(AppSpacing.spacingM),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -112,7 +115,7 @@ class KycView extends StatelessWidget {
               if (kycStatus == 'pending') {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(AppSpacing.spacingM),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

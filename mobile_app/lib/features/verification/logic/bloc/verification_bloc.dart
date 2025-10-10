@@ -27,10 +27,12 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       final verificationRepository = ServiceRegistry().verificationRepository;
       final result = await verificationRepository.requestPhoneVerification(
         phoneNumber: event.phoneNumber,
+        email: event.email,
+        countryCode: event.countryCode,
       );
 
       if (result['success'] == true) {
-        emit(VerificationCodeSent(otpCode: result['otp']!));
+        emit(VerificationCodeSent(otpCode: result['data'] ?? ''));
       } else {
         final translationService = ServiceRegistry().translationService;
         emit(
@@ -41,6 +43,8 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         );
       }
     } catch (e) {
+      print('❌ Verification failed: ${e.toString()}');
+
       final translationService = ServiceRegistry().translationService;
       emit(
         VerificationFailure(

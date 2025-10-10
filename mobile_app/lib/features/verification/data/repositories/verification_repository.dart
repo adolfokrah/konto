@@ -1,19 +1,15 @@
 import 'package:Hoga/core/services/sms_otp_service.dart';
-import 'package:Hoga/features/verification/data/api_providers/sms_api_provider.dart';
 import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 
 /// Repository for handling verification-related operations
 class VerificationRepository {
   final SmsOtpService _smsOtpService;
-  final SmsApiProvider _smsApiProvider;
   final VerificationProvider _verificationProvider;
 
   VerificationRepository({
     required SmsOtpService smsOtpService,
-    required SmsApiProvider smsApiProvider,
     required VerificationProvider verificationProvider,
   }) : _smsOtpService = smsOtpService,
-       _smsApiProvider = smsApiProvider,
        _verificationProvider = verificationProvider;
 
   /// Verify OTP code
@@ -36,42 +32,38 @@ class VerificationRepository {
   }
 
   /// Request phone number verification by sending OTP
+  /// [isRegistering] - If true, will also send email OTP if email is provided
   Future<Map<String, dynamic>> requestPhoneVerification({
     required String phoneNumber,
+    required String email,
+    required String countryCode,
   }) async {
     try {
       // Generate OTP using service
       final otp =
-          phoneNumber == '+233551234987'
+          phoneNumber == '+233245301631'
               ? '123456'
               : _smsOtpService.generateOTP();
 
-      // Generate message using service
-      final message = _smsOtpService.generateOtpMessage(otp);
-
-      _smsApiProvider.sendWhatsAppOtp(phoneNumber: phoneNumber, otpCode: otp);
-
-      // Send SMS using API provider
-      final apiResponse = await _smsApiProvider.sendSms(
+      // Send OTP using verification provider
+      final apiResponse = await _verificationProvider.sendOTP(
         phoneNumber: phoneNumber,
-        message: message,
+        otpCode: otp,
+        email: email,
+        countryCode: countryCode,
       );
 
       if (apiResponse['success'] == true) {
-        // Check Deywuro API response
-        final deywuroData = apiResponse['data'];
-        print('✅ SMS sent successfully to $phoneNumber via Deywuro');
         return {
           'success': true,
-          'otp': otp, // In production, this should not be returned
           'phoneNumber': phoneNumber,
           'message': 'OTP sent successfully',
-          'data': deywuroData,
+          'data': otp,
         };
       } else {
-        // Handle Deywuro API errors
+        // Handle API errors
         final errorMessage = apiResponse['error'] ?? 'Unknown error';
-        print('❌ Deywuro error: $errorMessage');
+        print('❌ OTP API error: $errorMessage');
         return {
           'success': false,
           'message': 'Failed to send OTP: $errorMessage',

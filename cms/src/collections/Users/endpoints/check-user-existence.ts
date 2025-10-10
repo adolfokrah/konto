@@ -73,6 +73,9 @@ export const checkUserExistence = async (req: PayloadRequest) => {
     return Response.json({
       success: true,
       exists: existingUser.docs.length > 0,
+      data: {
+        email: existingUser.docs[0]?.email || email,
+      },
       message:
         existingUser.docs.length > 0
           ? 'Phone number found in system'

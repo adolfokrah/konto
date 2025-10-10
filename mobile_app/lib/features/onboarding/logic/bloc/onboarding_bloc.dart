@@ -21,15 +21,20 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<CheckOnboardingStatus>((event, emit) async {
       try {
+        print('🔄 OnboardingBloc: Checking onboarding status...');
         final onboardingCompleted =
             await ServiceRegistry().onboardingRepository
                 .checkOnboardingStatus();
+        print('🔄 OnboardingBloc: Onboarding completed: $onboardingCompleted');
         if (onboardingCompleted) {
+          print('✅ OnboardingBloc: Emitting OnboardingCompleted');
           emit(OnboardingCompleted());
         } else {
+          print('📱 OnboardingBloc: Emitting OnboardingPageState(0)');
           emit(OnboardingPageState(0)); // Start from first page
         }
       } catch (e) {
+        print('❌ OnboardingBloc: Error checking status: $e');
         emit(OnboardingPageState(0)); // Start from first page on error
       }
     });

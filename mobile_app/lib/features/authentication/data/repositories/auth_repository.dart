@@ -36,9 +36,11 @@ class AuthRepository {
 
       if (apiResponse['success'] == true) {
         final exists = apiResponse['exists'] ?? false;
+        final userData = apiResponse['data'] ?? {};
         return {
           'success': true,
           'exists': exists,
+          'email': userData['email'],
           'message':
               exists
                   ? 'Phone number found. Proceed to login.'
