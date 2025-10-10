@@ -41,13 +41,13 @@ export const sendOTP = async (req: PayloadRequest) => {
     }
     // send email otp
     if (email) {
-      emailService.sendOTPEmail(email, code)
+      await emailService.sendOTPEmail(email, code)
     }
 
     if (phoneNumber && countryCode) {
       const fullPhoneNumber = countryCode ? `${countryCode}${phoneNumber}` : phoneNumber
       // Send SMS OTP
-      sendSMS(
+      await sendSMS(
         fullPhoneNumber,
         `Your Konto verification code is: ${code}. Do not share this code with anyone.`,
       )
@@ -55,7 +55,7 @@ export const sendOTP = async (req: PayloadRequest) => {
       // Send WhatsApp OTP
       try {
         const whatsappClient = new WhatsAppClient()
-        whatsappClient.sendText({
+        await whatsappClient.sendText({
           to: fullPhoneNumber,
           text: `Your Konto verification code is: ${code}. Do not share this code with anyone.`,
         })

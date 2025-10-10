@@ -104,7 +104,6 @@ class FCMService {
           print("❌ No navigation context available for jarInvite tap");
         }
       } else if (type == 'kyc') {
-        final data = messageData['status'] ?? 'unknown';
         final BuildContext? context = navigatorKey.currentContext;
         if (context != null) {
           NavigationService.navigateToNotifications(context);
@@ -115,11 +114,7 @@ class FCMService {
                 postNavContext.read<NotificationsBloc>().add(
                   FetchNotifications(limit: 20, page: 1),
                 );
-
-                if (data == 'approved' || data == 'pending') {
-                  // Trigger auto login to refresh user data after KYC approval
-                  _triggerAutoLogin(postNavContext);
-                }
+                _triggerAutoLogin(postNavContext);
               } catch (e) {
                 print(
                   '⚠️ Could not dispatch FetchNotifications after kycFailed navigation: $e',
@@ -151,7 +146,6 @@ class FCMService {
       }
     } else if (messageData['type'] == 'jarInvite' ||
         messageData['type'] == 'kyc') {
-      final data = messageData['status'] ?? 'unknown';
       final BuildContext? context = navigatorKey.currentContext;
       if (context != null) {
         try {
@@ -161,13 +155,6 @@ class FCMService {
           );
           // Trigger auto login to refresh user data after KYC status change
           _triggerAutoLogin(context);
-          if (data == 'approved' || data == 'pending') {
-            context.read<NotificationsBloc>().add(
-              FetchNotifications(limit: 20, page: 1),
-            );
-            // Trigger auto login to refresh user data after KYC status change
-            _triggerAutoLogin(context);
-          }
         } catch (e) {
           print('⚠️ Could not dispatch FetchNotifications on push: $e');
         }
