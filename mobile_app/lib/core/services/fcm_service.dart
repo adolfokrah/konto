@@ -151,6 +151,7 @@ class FCMService {
     } else if (messageData['type'] == 'jarInvite' ||
         messageData['type'] == 'kyc') {
       final data = messageData['status'] ?? 'unknown';
+      print('🔔 FCM push received: ${message.data}');
       final BuildContext? context = navigatorKey.currentContext;
       if (context != null) {
         try {

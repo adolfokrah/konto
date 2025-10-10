@@ -36,6 +36,7 @@ export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req
 
     const res = await fcmNotifications.sendNotification([fcmToken], doc.message, doc.title, {
       type: doc.type,
+      ...(doc.data || {}),
     })
   } catch (e) {
     req.payload.logger.error(`sendPushNotification hook error: ${(e as Error).message}`)
