@@ -39,7 +39,7 @@ class UserAccountView extends StatelessWidget {
                 // Navigate to login screen when user is logged out
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  AppRoutes.login,
+                  AppRoutes.onboarding,
                   (route) => false,
                 );
               }
