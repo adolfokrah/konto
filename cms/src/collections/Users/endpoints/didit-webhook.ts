@@ -159,7 +159,7 @@ export const diditWebhook = async (req: PayloadRequest) => {
     })
 
     // Handle specific statuses that should set KYC status to pending
-    if (payload.status === 'In Progress' || payload.status === 'In Review') {
+    if (payload.status === 'In Review') {
       console.log(`🔄 Status is ${payload.status}, updating user KYC status to pending`)
 
       try {
