@@ -5,8 +5,6 @@ const { verifyKYC } = await import('./verify-kyc')
 
 export const diditWebhook = async (req: PayloadRequest) => {
   try {
-    console.log('🔔 Didit webhook received')
-
     // Get headers
     const signature = req.headers.get('X-Signature') || req.headers.get('x-signature')
     const timestamp = req.headers.get('X-Timestamp') || req.headers.get('x-timestamp')
