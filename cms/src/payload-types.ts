@@ -1496,7 +1496,7 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kycFailed';
+  type: 'jarInvite' | 'info' | 'kyc';
   title: string;
   message: string;
   data?:

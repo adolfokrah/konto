@@ -97,8 +97,11 @@ export const verifyKYC = async (req: PayloadRequest) => {
           title: 'KYC Verification Failed',
           user: user.id,
           message,
-          type: 'kycFailed',
+          type: 'kyc',
           status: 'unread',
+          data: {
+            status: 'failed',
+          },
         },
       })
     }
@@ -127,6 +130,22 @@ export const verifyKYC = async (req: PayloadRequest) => {
       if (user.email) {
         await emailService.sendKycVerificationEmail(user.email, user.fullName || 'User')
       }
+
+      // send a push notification
+      req.payload.create({
+        collection: 'notifications',
+        data: {
+          title: 'KYC Verification Approved',
+          user: user.id,
+          message:
+            'Congratulations! Your KYC verification has been approved. You can now access all features of your account.',
+          type: 'kyc',
+          status: 'read',
+          data: {
+            status: 'approved',
+          },
+        },
+      })
     }
 
     // Redirect to homepage after successful KYC verification

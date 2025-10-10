@@ -5,6 +5,7 @@ import 'package:Hoga/core/services/navigation_service.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:Hoga/main.dart' show navigatorKey;
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 
 /// Simple Firebase Cloud Messaging service
 class FCMService {
@@ -106,9 +107,10 @@ class FCMService {
         } else {
           print("❌ No navigation context available for jarInvite tap");
         }
-      } else if (type == 'kycFailed') {
+      } else if (type == 'kyc') {
+        final data = messageData['status'] ?? 'unknown';
         final BuildContext? context = navigatorKey.currentContext;
-        if (context != null) {
+        if (context != null && data == 'failed') {
           NavigationService.navigateToNotifications(context);
           SchedulerBinding.instance.addPostFrameCallback((_) {
             final postNavContext = navigatorKey.currentContext;
@@ -147,20 +149,51 @@ class FCMService {
         NavigationService.reloadCurrentJar(context, jarId);
       }
     } else if (messageData['type'] == 'jarInvite' ||
-        messageData['type'] == 'kycFailed') {
+        messageData['type'] == 'kyc') {
+      final data = messageData['status'] ?? 'unknown';
       final BuildContext? context = navigatorKey.currentContext;
       if (context != null) {
         try {
           // Dispatch fetch notifications to update list
-          context.read<NotificationsBloc>().add(
-            FetchNotifications(limit: 20, page: 1),
-          );
+          if (data == 'failed') {
+            context.read<NotificationsBloc>().add(
+              FetchNotifications(limit: 20, page: 1),
+            );
+            // Trigger auto login to refresh user data after KYC status change
+            _triggerAutoLogin(context);
+          } else if (data == 'approved' || data == 'pending') {
+            context.read<NotificationsBloc>().add(
+              FetchNotifications(limit: 20, page: 1),
+            );
+            // Trigger auto login to refresh user data after KYC status change
+            _triggerAutoLogin(context);
+          }
         } catch (e) {
           print('⚠️ Could not dispatch FetchNotifications on push: $e');
         }
       }
     } else {
       print("ℹ️ Push notification type '${messageData['type']}' not handled");
+    }
+  }
+
+  /// Trigger auto login to refresh user authentication state
+  static void _triggerAutoLogin(BuildContext context) {
+    try {
+      print('🔄 FCM: Triggering auto login to refresh user data');
+      context.read<AuthBloc>().add(AutoLoginRequested());
+    } catch (e) {
+      print('⚠️ Could not trigger auto login: $e');
+    }
+  }
+
+  /// Public method to trigger auto login from anywhere in the app
+  static void triggerAutoLogin() {
+    final BuildContext? context = navigatorKey.currentContext;
+    if (context != null) {
+      _triggerAutoLogin(context);
+    } else {
+      print('❌ No context available to trigger auto login');
     }
   }
 }

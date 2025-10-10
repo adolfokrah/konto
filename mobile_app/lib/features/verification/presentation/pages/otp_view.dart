@@ -61,6 +61,9 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     final countryCode = args?['countryCode'] as String?;
     final email = args?['email'] as String?;
 
+    print('🔄 OTP View: Initializing verification...');
+    print('📱 Phone: $phoneNumber, Country: $countryCode, Email: $email');
+
     context.read<VerificationBloc>().add(
       PhoneNumberVerificationRequested(
         phoneNumber: phoneNumber ?? '',
@@ -68,6 +71,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
         countryCode: countryCode ?? '',
       ),
     );
+
+    print('✅ OTP View: PhoneNumberVerificationRequested event dispatched');
     _startResendTimer();
   }
 
@@ -98,9 +103,14 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     if (_canResend) {
       final localizations = AppLocalizations.of(context)!;
 
+      print('🔄 OTP View: Resend button tapped');
       AppSnackBar.showInfo(context, message: localizations.resendMessage);
 
       _initializeVerification();
+    } else {
+      print(
+        '⏳ OTP View: Resend not available yet, countdown: $_resendCountdown',
+      );
     }
   }
 

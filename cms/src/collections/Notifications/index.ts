@@ -24,7 +24,7 @@ export const Notifications: CollectionConfig = {
       options: [
         { label: 'Jar Invitation', value: 'jarInvite' },
         { label: 'Info', value: 'info' },
-        { label: 'KYC Failed', value: 'kycFailed' },
+        { label: 'KYC', value: 'kyc' },
       ],
       required: true,
     },

@@ -186,7 +186,20 @@ export const diditWebhook = async (req: PayloadRequest) => {
             },
           })
 
-          console.log(`✅ Updated user ${userId} KYC status to pending`)
+          //create a notification record
+          await req.payload.create({
+            collection: 'notifications',
+            data: {
+              title: 'KYC Verification Pending',
+              user: userId,
+              message: `Your KYC verification is currently under review. We will notify you once the process is complete.`,
+              type: 'kyc',
+              status: 'read',
+              data: {
+                status: 'pending',
+              },
+            },
+          })
 
           return Response.json(
             {
