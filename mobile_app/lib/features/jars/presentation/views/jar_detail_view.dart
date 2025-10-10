@@ -267,7 +267,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 if (state is JarSummaryLoaded)
                                   AppIconButton(
                                     key: const Key('request_button_qr_code'),
-                                    opacity: 0.6,
+                                    opacity: 0.8,
                                     onPressed: () {
                                       Navigator.pushNamed(
                                         context,
@@ -422,7 +422,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                     },
                   ),
                   AppSmallButton(
-                    opacity: 0.6,
+                    opacity: 0.8,
                     child: Text(
                       localizations.jars,
                       style: TextStyles.titleMedium,
@@ -457,7 +457,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   );
                                 },
                                 icon: Icons.add,
-                                opacity: 0.6,
+                                opacity: 0.8,
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
@@ -494,7 +494,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   );
                                 },
                                 icon: Icons.call_received,
-                                opacity: 0.6,
+                                opacity: 0.8,
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
@@ -527,7 +527,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppIconButton(
                                         key: const Key('info_button'),
                                         enabled: isCreator,
-                                        opacity: 0.6,
+                                        opacity: 0.8,
                                         onPressed:
                                             isCreator
                                                 ? () {

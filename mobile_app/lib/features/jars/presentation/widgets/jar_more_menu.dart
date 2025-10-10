@@ -119,8 +119,8 @@ class JarMoreMenu extends StatelessWidget {
                                 backgroundColor:
                                     isDark
                                         ? Theme.of(context).colorScheme.primary
-                                            .withValues(alpha: 0.5)
-                                        : Colors.white.withValues(alpha: 0.5),
+                                            .withValues(alpha: 0.8)
+                                        : Colors.white.withValues(alpha: 0.8),
                                 child: Icon(Icons.more_horiz),
                               )
                               : AppIconButton(
