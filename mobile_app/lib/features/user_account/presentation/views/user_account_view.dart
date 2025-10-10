@@ -9,7 +9,6 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
-import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
