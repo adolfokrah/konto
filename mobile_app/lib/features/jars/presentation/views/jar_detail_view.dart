@@ -1,3 +1,4 @@
+import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -328,6 +329,7 @@ class _JarDetailViewState extends State<JarDetailView> {
 
   Widget _buildSliverBody(BuildContext context, JarSummaryState state) {
     final localizations = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (state is JarSummaryLoading) {
       return SliverFillRemaining(
@@ -620,44 +622,37 @@ class _JarDetailViewState extends State<JarDetailView> {
                       ),
                       const SizedBox(width: AppSpacing.spacingXs),
                       Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            JarBalanceBreakdown.show(context);
-                          },
-                          child: AppCard(
-                            margin: EdgeInsets.only(
-                              right: AppSpacing.spacingXs,
-                            ),
-                            variant: CardVariant.primary,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  localizations.contributions,
-                                  style: TextStyles.titleRegularM,
-                                ),
-                                const SizedBox(height: AppSpacing.spacingXs),
-                                RevolutStyleCounterWithCurrency(
-                                  value:
-                                      CurrencyUtils.getCurrencySymbol(
-                                        jarData.currency,
-                                      ) +
-                                      jarData
-                                          .balanceBreakDown
-                                          .totalContributedAmount
-                                          .toString(),
-                                  style: TextStyles.titleBoldLg,
-                                  duration: const Duration(milliseconds: 800),
-                                ),
-                                const SizedBox(height: AppSpacing.spacingM),
-                                // Chart with real data from API
-                                ContributionChart(
-                                  dataPoints: jarData.chartData ?? const [],
-                                  chartColor: Colors.green,
-                                  height: 50,
-                                ),
-                              ],
-                            ),
+                        child: AppCard(
+                          margin: EdgeInsets.only(right: AppSpacing.spacingXs),
+                          variant: CardVariant.primary,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                localizations.contributions,
+                                style: TextStyles.titleRegularM,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              RevolutStyleCounterWithCurrency(
+                                value:
+                                    CurrencyUtils.getCurrencySymbol(
+                                      jarData.currency,
+                                    ) +
+                                    jarData
+                                        .balanceBreakDown
+                                        .totalContributedAmount
+                                        .toString(),
+                                style: TextStyles.titleBoldLg,
+                                duration: const Duration(milliseconds: 800),
+                              ),
+                              const SizedBox(height: AppSpacing.spacingM),
+                              // Chart with real data from API
+                              ContributionChart(
+                                dataPoints: jarData.chartData ?? const [],
+                                chartColor: Colors.green,
+                                height: 50,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -832,8 +827,140 @@ class _JarDetailViewState extends State<JarDetailView> {
                     ],
                   ),
 
-                  // Final bottom padding
-                  const SizedBox(height: AppSpacing.spacingL),
+                  // balance breakdown section (only for jar creators)
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, authState) {
+                      final isCreator =
+                          authState is AuthAuthenticated &&
+                          jarData.creator.id == authState.user.id;
+                      if (!isCreator) {
+                        return Container();
+                      }
+                      return Column(
+                        children: [
+                          const SizedBox(height: AppSpacing.spacingM),
+                          AppCard(
+                            margin: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.spacingXs,
+                            ),
+                            padding: EdgeInsets.all(0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    JarBalanceBreakdown.show(context);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: AppSpacing.spacingM,
+                                      right: AppSpacing.spacingM,
+                                      top: AppSpacing.spacingM,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'Contribution Breakdown',
+                                              style:
+                                                  AppTextStyles.titleMediumXs,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Icon(Icons.chevron_right, size: 16),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalContributedAmount}",
+                                          style: AppTextStyles.titleBoldXl,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.cash,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.cashContributionCount,
+                                  ),
+                                  amount:
+                                      jarData.balanceBreakDown.cash.totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.money,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.bankTransfer,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.bankTransferContributionCount,
+                                  ),
+                                  amount:
+                                      jarData
+                                          .balanceBreakDown
+                                          .bankTransfer
+                                          .totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.account_balance,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.mobileMoney,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.mobileMoneyContributionCount,
+                                  ),
+                                  amount:
+                                      jarData
+                                          .balanceBreakDown
+                                          .mobileMoney
+                                          .totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.phone_android,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.cardPayment,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.balanceBreakDown.card.totalCount,
+                                  ),
+                                  amount:
+                                      jarData.balanceBreakDown.card.totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.credit_card,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.applePayPayment,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData
+                                        .balanceBreakDown
+                                        .applePay
+                                        .totalCount,
+                                  ),
+                                  amount:
+                                      jarData
+                                          .balanceBreakDown
+                                          .applePay
+                                          .totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.credit_card,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.spacingM),
                 ],
               ),
             ),
@@ -841,7 +968,6 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
       );
     }
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SliverFillRemaining(
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.8,

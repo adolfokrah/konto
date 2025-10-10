@@ -7,6 +7,7 @@ import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/divider.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarBalanceBreakdown extends StatelessWidget {
@@ -97,8 +98,7 @@ class JarBalanceBreakdown extends StatelessWidget {
 
                     const SizedBox(height: AppSpacing.spacingM),
 
-                    _buildPaymentMethodContribution(
-                      context,
+                    PaymentMethodContributionItem(
                       title: localizations.cash,
                       subtitle: localizations.contributionsCount(
                         jarData.cashContributionCount,
@@ -108,8 +108,7 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.money,
                     ),
 
-                    _buildPaymentMethodContribution(
-                      context,
+                    PaymentMethodContributionItem(
                       title: localizations.bankTransfer,
                       subtitle: localizations.contributionsCount(
                         jarData.bankTransferContributionCount,
@@ -119,8 +118,7 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.account_balance,
                     ),
 
-                    _buildPaymentMethodContribution(
-                      context,
+                    PaymentMethodContributionItem(
                       title: localizations.mobileMoney,
                       subtitle: localizations.contributionsCount(
                         jarData.mobileMoneyContributionCount,
@@ -130,8 +128,7 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.phone_android,
                     ),
 
-                    _buildPaymentMethodContribution(
-                      context,
+                    PaymentMethodContributionItem(
                       title: localizations.cardPayment,
                       subtitle: localizations.contributionsCount(
                         jarData.balanceBreakDown.card.totalCount,
@@ -141,8 +138,7 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.credit_card,
                     ),
 
-                    _buildPaymentMethodContribution(
-                      context,
+                    PaymentMethodContributionItem(
                       title: localizations.applePayPayment,
                       subtitle: localizations.contributionsCount(
                         jarData.balanceBreakDown.applePay.totalCount,
@@ -246,37 +242,4 @@ class JarBalanceBreakdown extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _buildPaymentMethodContribution(
-  BuildContext context, {
-  required String title,
-  required String subtitle,
-  required double amount,
-  required String currency,
-  required IconData icon,
-}) {
-  return ListTile(
-    leading: CircleAvatar(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      child: Icon(
-        icon,
-        size: 16,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-    ),
-    title: Text(title, style: TextStyles.titleMediumM),
-    subtitle: Text(
-      subtitle,
-      style: TextStyles.titleMediumXs.copyWith(
-        color: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-      ),
-    ),
-    trailing: Text(
-      CurrencyUtils.formatAmount(amount, currency),
-      style: TextStyles.titleMediumM,
-    ),
-  );
 }

@@ -9,8 +9,6 @@ class AppImages {
   static const String onboardingSlide1 = '$_imagesPath/onboarding_slide_1.png';
   static const String onboardingSlide2 = '$_imagesPath/onboarding_slide_2.png';
   static const String onboardingSlide3 = '$_imagesPath/onboarding_slide_3.png';
-  static const String mainImage = '$_imagesPath/main-page.png';
-  static const String mainImageDark = '$_imagesPath/main-page-dark.png';
 
   // Jar Images
   static const String brokenJar = '$_imagesPath/broken_jar.png';

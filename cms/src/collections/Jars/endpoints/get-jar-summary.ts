@@ -94,7 +94,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
           },
         ],
       },
-      limit: 10, // Get more jars to find one with valid creator
+      limit: 5, // Get more jars to find one with valid creator
       depth: 3,
     })
 
