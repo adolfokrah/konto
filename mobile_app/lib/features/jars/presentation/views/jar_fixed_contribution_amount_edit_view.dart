@@ -63,101 +63,96 @@ class _JarFixedContributionAmountEditViewState
             );
           }
         },
-        child: SafeArea(
-          child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-            builder: (context, state) {
-              if (state is JarSummaryLoaded) {
-                final jarData = state.jarData;
+        child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+          builder: (context, state) {
+            if (state is JarSummaryLoaded) {
+              final jarData = state.jarData;
 
-                // Initialize the controller with the formatted amount if not already done
-                if (_isInitialized == false) {
-                  final currencySymbol = CurrencyUtils.getCurrencySymbol(
-                    jarData.currency,
-                  );
-                  // Format the amount with currency symbol for initial display
-                  _amountController.text =
-                      '$currencySymbol${jarData.acceptedContributionAmount}';
-                  _isInitialized = true;
-                }
+              // Initialize the controller with the formatted amount if not already done
+              if (_isInitialized == false) {
+                final currencySymbol = CurrencyUtils.getCurrencySymbol(
+                  jarData.currency,
+                );
+                // Format the amount with currency symbol for initial display
+                _amountController.text =
+                    '$currencySymbol${jarData.acceptedContributionAmount}';
+                _isInitialized = true;
+              }
 
-                return Padding(
-                  padding: const EdgeInsets.all(AppSpacing.spacingL),
-                  child: Column(
-                    children: [
-                      // Main content area
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large amount display
-                            CurrencyTextField(
+              return Padding(
+                padding: const EdgeInsets.all(AppSpacing.spacingL),
+                child: Column(
+                  children: [
+                    // Main content area
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Large amount display
+                          CurrencyTextField(
+                            controller: _amountController,
+                            focusNode: _focusNode,
+                            currencySymbol: CurrencyUtils.getCurrencySymbol(
+                              jarData.currency,
+                            ),
+                          ),
+
+                          const SizedBox(height: AppSpacing.spacingM),
+
+                          // Jar name
+                          Text(
+                            jarData.name,
+                            style: TextStyles.titleMediumLg.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Continue button at bottom
+                    BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                      builder: (context, state) {
+                        return AppButton.filled(
+                          text: localizations.continueText,
+                          isLoading: state is UpdateJarInProgress,
+                          onPressed: () {
+                            // Get the numeric value directly from the currency text field
+                            final currencyTextField = CurrencyTextField(
                               controller: _amountController,
-                              focusNode: _focusNode,
                               currencySymbol: CurrencyUtils.getCurrencySymbol(
                                 jarData.currency,
                               ),
-                            ),
+                            );
+                            final amount = currencyTextField.getNumericValue();
 
-                            const SizedBox(height: AppSpacing.spacingM),
-
-                            // Jar name
-                            Text(
-                              jarData.name,
-                              style: TextStyles.titleMediumLg.copyWith(
-                                fontWeight: FontWeight.w500,
+                            // Validate amount
+                            if (amount <= 0) {
+                              AppSnackBar.show(
+                                context,
+                                message: localizations.pleaseEnterValidAmount,
+                                type: SnackBarType.error,
+                              );
+                              return;
+                            }
+                            context.read<UpdateJarBloc>().add(
+                              UpdateJarRequested(
+                                jarId: jarData.id,
+                                updates: {'acceptedContributionAmount': amount},
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Continue button at bottom
-                      BlocBuilder<UpdateJarBloc, UpdateJarState>(
-                        builder: (context, state) {
-                          return AppButton.filled(
-                            text: localizations.continueText,
-                            isLoading: state is UpdateJarInProgress,
-                            onPressed: () {
-                              // Get the numeric value directly from the currency text field
-                              final currencyTextField = CurrencyTextField(
-                                controller: _amountController,
-                                currencySymbol: CurrencyUtils.getCurrencySymbol(
-                                  jarData.currency,
-                                ),
-                              );
-                              final amount =
-                                  currencyTextField.getNumericValue();
-
-                              // Validate amount
-                              if (amount <= 0) {
-                                AppSnackBar.show(
-                                  context,
-                                  message: localizations.pleaseEnterValidAmount,
-                                  type: SnackBarType.error,
-                                );
-                                return;
-                              }
-                              context.read<UpdateJarBloc>().add(
-                                UpdateJarRequested(
-                                  jarId: jarData.id,
-                                  updates: {
-                                    'acceptedContributionAmount': amount,
-                                  },
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return Container();
-            },
-          ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+            return Container();
+          },
         ),
       ),
     );

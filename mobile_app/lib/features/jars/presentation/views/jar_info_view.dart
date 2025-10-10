@@ -8,6 +8,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/alert_bottom_sheet.dart';
 import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/core/widgets/operation_complete_modal.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
@@ -238,6 +239,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                             children: <Widget>[
                               // Jar group and Currency info
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -335,6 +337,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               const SizedBox(height: AppSpacing.spacingXs),
 
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -378,6 +381,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               const SizedBox(height: AppSpacing.spacingXs),
 
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -419,6 +423,7 @@ class _JarInfoViewState extends State<JarInfoView> {
 
                               const SizedBox(height: AppSpacing.spacingXs),
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -438,8 +443,9 @@ class _JarInfoViewState extends State<JarInfoView> {
                                                   ?.withValues(alpha: 0.5),
                                             ),
                                       ),
-                                      trailing: CupertinoSwitch(
-                                        value: jarData.isFixedContribution,
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
+                                            jarData.isFixedContribution,
                                         onChanged: (value) {
                                           if (state is UpdateJarInProgress)
                                             return;
@@ -508,6 +514,7 @@ class _JarInfoViewState extends State<JarInfoView> {
 
                               const SizedBox(height: AppSpacing.spacingXs),
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -530,7 +537,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       subtitle: Text(
                                         'Contributors pay platform fees on this jar',
                                       ),
-                                      trailing: CupertinoSwitch(
+                                      trailing: CustomCupertinoSwitch(
                                         value:
                                             jarData.whoPaysPlatformFees ==
                                             'contributors',
@@ -578,6 +585,7 @@ class _JarInfoViewState extends State<JarInfoView> {
 
                               const SizedBox(height: AppSpacing.spacingXs),
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -600,8 +608,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       subtitle: Text(
                                         'Display jar goal in jar in on payment page',
                                       ),
-                                      trailing: CupertinoSwitch(
-                                        value: jarData.showGoal ?? false,
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue: jarData.showGoal ?? false,
                                         onChanged: (value) {
                                           if (state is UpdateJarInProgress) {
                                             return;
@@ -637,8 +645,8 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       subtitle: Text(
                                         'Display jar recent contributions in jar in on payment page',
                                       ),
-                                      trailing: CupertinoSwitch(
-                                        value:
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
                                             jarData.showRecentContributions ??
                                             false,
                                         onChanged: (value) {
@@ -666,6 +674,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               const SizedBox(height: AppSpacing.spacingXs),
 
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),
@@ -725,6 +734,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                               const SizedBox(height: AppSpacing.spacingXs),
 
                               AppCard(
+                                variant: CardVariant.secondary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.spacingM,
                                 ),

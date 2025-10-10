@@ -1,5 +1,5 @@
+import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_links.dart';
@@ -198,29 +198,27 @@ class UserAccountView extends StatelessWidget {
           const SizedBox(height: AppSpacing.spacingXs),
 
           // Security section
-          _buildSectionTitle(localizations.security),
+          // _buildSectionTitle(localizations.security),
+          // const SizedBox(height: AppSpacing.spacingXs),
 
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          _buildSectionCard([
-            _buildMenuItem(
-              context: context,
-              title: localizations.accountPin,
-              onTap: () {
-                // Navigate to transaction PIN
-                _showComingSoon(context);
-              },
-            ),
-            _buildToggleMenuItem(
-              title: localizations.enableDisableBiometric,
-              value: user?.appSettings.biometricAuthEnabled ?? true,
-              onChanged: (value) {
-                // Handle biometric toggle
-                _showComingSoon(context);
-              },
-            ),
-          ]),
-
+          // _buildSectionCard([
+          //   _buildMenuItem(
+          //     context: context,
+          //     title: localizations.accountPin,
+          //     onTap: () {
+          //       // Navigate to transaction PIN
+          //       _showComingSoon(context);
+          //     },
+          //   ),
+          //   _buildToggleMenuItem(
+          //     title: localizations.enableDisableBiometric,
+          //     value: user?.appSettings.biometricAuthEnabled ?? true,
+          //     onChanged: (value) {
+          //       // Handle biometric toggle
+          //       _showComingSoon(context);
+          //     },
+          //   ),
+          // ]),
           const SizedBox(height: AppSpacing.spacingXs),
 
           // App Settings section
@@ -244,14 +242,14 @@ class UserAccountView extends StatelessWidget {
                 Navigator.pushNamed(context, AppRoutes.languageSettings);
               },
             ),
-            _buildMenuItem(
-              context: context,
-              title: localizations.notifications,
-              onTap: () {
-                // _showComingSoon(context);
-                AppSnackBar.show(context, message: localizations.comingSoon);
-              },
-            ),
+            // _buildMenuItem(
+            //   context: context,
+            //   title: localizations.notifications,
+            //   onTap: () {
+            //     // _showComingSoon(context);
+            //     AppSnackBar.show(context, message: localizations.comingSoon);
+            //   },
+            // ),
           ]),
 
           const SizedBox(height: AppSpacing.spacingXs),
@@ -422,7 +420,7 @@ class UserAccountView extends StatelessWidget {
 
   /// Build toggle switch using Cupertino style
   Widget _buildToggleSwitch(bool value, ValueChanged<bool> onChanged) {
-    return CupertinoSwitch(value: value, onChanged: onChanged);
+    return CustomCupertinoSwitch(defaultValue: value, onChanged: onChanged);
   }
 
   /// Show coming soon dialog
