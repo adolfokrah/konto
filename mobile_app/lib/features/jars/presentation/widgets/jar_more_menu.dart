@@ -113,13 +113,14 @@ class JarMoreMenu extends StatelessWidget {
                       child:
                           isCreator
                               ? CircleAvatar(
-                                radius: 27,
+                                radius: 25,
                                 foregroundColor:
                                     isDark ? Colors.white : Colors.black,
                                 backgroundColor:
                                     isDark
                                         ? Theme.of(context).colorScheme.primary
-                                        : Colors.white,
+                                            .withValues(alpha: 0.5)
+                                        : Colors.white.withValues(alpha: 0.5),
                                 child: Icon(Icons.more_horiz),
                               )
                               : AppIconButton(

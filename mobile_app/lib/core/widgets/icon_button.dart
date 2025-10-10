@@ -17,6 +17,7 @@ class AppIconButton extends StatelessWidget {
   /// Whether to show a loading indicator instead of the icon
   final bool loading;
 
+  final double? opacity;
   const AppIconButton({
     super.key,
     required this.onPressed,
@@ -24,6 +25,7 @@ class AppIconButton extends StatelessWidget {
     this.size,
     this.enabled = true,
     this.loading = false,
+    this.opacity,
   });
 
   @override
@@ -44,11 +46,13 @@ class AppIconButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor:
             isDark
-                ? Theme.of(context).colorScheme.primary
-                : AppColors.surfaceWhite,
+                ? Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: opacity ?? 1)
+                : AppColors.surfaceWhite.withValues(alpha: opacity ?? 1),
         foregroundColor:
             isDark ? Theme.of(context).colorScheme.onSurface : AppColors.black,
-        minimumSize: size ?? const Size(55, 55), // Makes button bigger
+        minimumSize: size ?? const Size(50, 50), // Makes button bigger
       ),
     );
   }

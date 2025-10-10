@@ -88,6 +88,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
             'invitedCollectors.collector': {
               equals: req.user!,
             },
+            'invitedCollectors.status': {
+              equals: 'accepted',
+            },
             status: {
               not_equals: 'broken',
             },

@@ -53,6 +53,7 @@ class NotificationIconButton extends StatelessWidget {
           children: [
             AppIconButton(
               key: const Key('notifications_button'),
+              opacity: 0.6,
               icon: _icon,
               size: const Size(_buttonSize, _buttonSize),
               onPressed:

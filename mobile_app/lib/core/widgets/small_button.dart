@@ -8,6 +8,7 @@ class AppSmallButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final EdgeInsetsGeometry? padding;
+  final double? opacity;
 
   const AppSmallButton({
     super.key,
@@ -16,6 +17,7 @@ class AppSmallButton extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.padding,
+    this.opacity,
   });
 
   @override
@@ -25,7 +27,10 @@ class AppSmallButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         elevation: 0,
         backgroundColor:
-            backgroundColor ?? Theme.of(context).colorScheme.primary,
+            backgroundColor ??
+            Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: opacity ?? 1),
         foregroundColor: textColor ?? Theme.of(context).colorScheme.onSurface,
         padding:
             padding ??

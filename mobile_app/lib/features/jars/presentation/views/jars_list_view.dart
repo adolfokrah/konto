@@ -120,72 +120,79 @@ class _JarsListViewState extends State<JarsListView> {
           context,
         ).colorScheme.surface.withValues(alpha: 0.6),
         body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.spacingS),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingS),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Close button positioned at top right
-              const SizedBox(height: AppSpacing.spacingS),
-              Row(
-                children: [
-                  AppIconButton(
-                    onPressed: () {
-                      HapticUtils.heavy();
-                      Navigator.of(context).pop();
-                    },
-                    icon: Icons.close,
-                    size: const Size(40, 40),
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.spacingL),
+              const SizedBox(height: AppSpacing.spacingL),
+              AppIconButton(
+                onPressed: () {
+                  HapticUtils.heavy();
+                  Navigator.of(context).pop();
+                },
+                icon: Icons.close,
+                size: const Size(40, 40),
               ),
 
               // Content area - jar list
               Expanded(
-                child: BlocBuilder<JarListBloc, JarListState>(
-                  builder: (context, state) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildJarListContent(state, localizations),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-              Center(
-                child: AppSmallButton(
-                  backgroundColor:
-                      isDark
-                          ? Theme.of(context).colorScheme.onSurface
-                          : AppColors.black,
-                  padding: EdgeInsets.only(
-                    left: AppSpacing.spacingS,
-                    right: AppSpacing.spacingL,
-                    top: AppSpacing.spacingS,
-                    bottom: AppSpacing.spacingS,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add, size: 20, color: textColor),
-                      const SizedBox(width: AppSpacing.spacingXs),
-                      Text(
-                        localizations.createJar,
-                        style: TextStyles.titleMedium.copyWith(
-                          color: textColor,
+                child: Stack(
+                  children: [
+                    BlocBuilder<JarListBloc, JarListState>(
+                      builder: (context, state) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildJarListContent(state, localizations),
+                            ),
+                            // const SizedBox(height: 20),
+                          ],
+                        );
+                      },
+                    ),
+                    Positioned(
+                      bottom: 20,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: AppSmallButton(
+                          backgroundColor:
+                              isDark
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : AppColors.black,
+                          padding: EdgeInsets.only(
+                            left: AppSpacing.spacingS,
+                            right: AppSpacing.spacingL,
+                            top: AppSpacing.spacingS,
+                            bottom: AppSpacing.spacingS,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add, size: 20, color: textColor),
+                              const SizedBox(width: AppSpacing.spacingXs),
+                              Text(
+                                localizations.createJar,
+                                style: TextStyles.titleMedium.copyWith(
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            HapticUtils.heavy();
+                            Navigator.of(context).pushNamed('/jar_create');
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                  onPressed: () {
-                    HapticUtils.heavy();
-                    Navigator.of(context).pushNamed('/jar_create');
-                  },
+                    ),
+                  ],
                 ),
               ),
+              // const SizedBox(height: AppSpacing.spacingM),
             ],
           ),
         ),
@@ -251,20 +258,21 @@ class _JarsListViewState extends State<JarsListView> {
       itemBuilder: (context, index) {
         // First item is the title
         if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingXs,
-              vertical: AppSpacing.spacingS,
-            ),
-            child: Text(localizations.jars, style: TextStyles.titleMedium),
-          );
+          return Text(localizations.jars, style: TextStyles.titleMedium);
         }
 
         // Adjust index for jar groups (subtract 1 because title takes index 0)
         final jarGroup = jarList.groups[index - 1];
+        final isLastItem = index == jarList.groups.length;
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
+          padding: EdgeInsets.only(
+            top: AppSpacing.spacingXs,
+            bottom:
+                isLastItem
+                    ? 50.0
+                    : AppSpacing.spacingXs, // Extra bottom margin for last item
+          ),
           child: _buildCollapsibleCard(jarGroup, context, localizations),
         );
       },
@@ -376,6 +384,7 @@ class _JarsListViewState extends State<JarsListView> {
 
   Widget _buildJarItem(JarListItem jar, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
       child: InkWell(
@@ -388,15 +397,54 @@ class _JarsListViewState extends State<JarsListView> {
         },
         child: Row(
           children: [
-            // Jar icon
-            CircleAvatar(
-              radius: 25,
-              backgroundColor:
-                  isDark
-                      ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
-              child: const Icon(Icons.wallet, size: 20),
+            // Jar icon with check mark indicator
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor:
+                      isDark
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  child: const Icon(Icons.wallet, size: 20),
+                ),
+                // Check mark indicator for active jar
+                BlocBuilder<JarSummaryBloc, JarSummaryState>(
+                  builder: (context, jarSummaryState) {
+                    final isActiveJar =
+                        jarSummaryState is JarSummaryLoaded &&
+                        jarSummaryState.jarData.id == jar.id;
+
+                    if (!isActiveJar) return const SizedBox.shrink();
+
+                    return Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                isDark
+                                    ? Theme.of(context).colorScheme.surface
+                                    : Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          size: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             const SizedBox(width: AppSpacing.spacingM),
 

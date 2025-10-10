@@ -17,6 +17,7 @@ class FeedbackActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppIconButton(
       key: buttonKey ?? const Key('feedback_button'),
+      opacity: 0.6,
       onPressed: () async {
         try {
           await FeedbackService.openFeedbackForm();

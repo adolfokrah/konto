@@ -267,6 +267,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 if (state is JarSummaryLoaded)
                                   AppIconButton(
                                     key: const Key('request_button_qr_code'),
+                                    opacity: 0.6,
                                     onPressed: () {
                                       Navigator.pushNamed(
                                         context,
@@ -298,10 +299,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                           return UserAvatarSmall(
                                             backgroundColor:
                                                 isDark
-                                                    ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
-                                                    : Colors.white,
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                        .withValues(alpha: 0.5)
+                                                    : Colors.white.withValues(
+                                                      alpha: 0.5,
+                                                    ),
                                             radius: 20,
                                           );
                                         },
@@ -366,9 +370,6 @@ class _JarDetailViewState extends State<JarDetailView> {
       return SliverToBoxAdapter(
         child: Stack(
           children: [
-            /// Dynamic CTA Banner Based on Missing Information
-            JarCompletionAlert(jarData: jarData),
-
             /// CTA Banner Here
             Padding(
               padding: const EdgeInsets.only(top: 80),
@@ -421,6 +422,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                     },
                   ),
                   AppSmallButton(
+                    opacity: 0.6,
                     child: Text(
                       localizations.jars,
                       style: TextStyles.titleMedium,
@@ -430,6 +432,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                     },
                   ),
                   const SizedBox(height: 45),
+
+                  /// Dynamic CTA Banner Based on Missing Information
+                  JarCompletionAlert(jarData: jarData),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.spacingM,
@@ -452,6 +457,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   );
                                 },
                                 icon: Icons.add,
+                                opacity: 0.6,
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
@@ -488,6 +494,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   );
                                 },
                                 icon: Icons.call_received,
+                                opacity: 0.6,
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
@@ -520,6 +527,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppIconButton(
                                         key: const Key('info_button'),
                                         enabled: isCreator,
+                                        opacity: 0.6,
                                         onPressed:
                                             isCreator
                                                 ? () {
@@ -730,52 +738,47 @@ class _JarDetailViewState extends State<JarDetailView> {
                           variant: CardVariant.primary,
                           child:
                               jarData.contributions.isEmpty
-                                  ? Padding(
-                                    padding: const EdgeInsets.all(
-                                      AppSpacing.spacingL,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Image.asset(
-                                          AppImages.onboardingSlide1,
-                                          width: 80,
-                                          height: 80,
-                                          fit: BoxFit.contain,
-                                          color:
-                                              isDark
-                                                  ? Colors.white
-                                                  : AppColors.black,
-                                          colorBlendMode: BlendMode.srcIn,
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingM,
-                                        ),
-                                        Text(
-                                          localizations.noContributionsYet,
-                                          style: TextStyles.titleMedium,
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingXs,
-                                        ),
-                                        Text(
-                                          localizations.beTheFirstToContribute,
-                                          style: TextStyles.titleRegularSm,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(
-                                          height: AppSpacing.spacingL,
-                                        ),
-                                        AppButton.filled(
-                                          text: localizations.contribute,
-                                          onPressed: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.addContribution,
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                                  ? Column(
+                                    children: [
+                                      Image.asset(
+                                        AppImages.onboardingSlide1,
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.contain,
+                                        color:
+                                            isDark
+                                                ? Colors.white
+                                                : AppColors.black,
+                                        colorBlendMode: BlendMode.srcIn,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingM,
+                                      ),
+                                      Text(
+                                        localizations.noContributionsYet,
+                                        style: TextStyles.titleMedium,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingXs,
+                                      ),
+                                      Text(
+                                        localizations.beTheFirstToContribute,
+                                        style: TextStyles.titleRegularSm,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(
+                                        height: AppSpacing.spacingL,
+                                      ),
+                                      AppButton.filled(
+                                        text: localizations.contribute,
+                                        onPressed: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.addContribution,
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   )
                                   : Column(
                                     children: [
@@ -949,7 +952,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                           .applePay
                                           .totalAmount,
                                   currency: jarData.currency,
-                                  icon: Icons.credit_card,
+                                  icon: Icons.apple,
                                   backgroundColor:
                                       Theme.of(context).colorScheme.surface,
                                 ),
