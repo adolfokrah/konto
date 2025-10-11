@@ -49,7 +49,7 @@ export const sendOTP = async (req: PayloadRequest) => {
       // Send SMS OTP
       await sendSMS(
         fullPhoneNumber,
-        `Your Konto verification code is: ${code}. Do not share this code with anyone.`,
+        `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
       )
 
       // Send WhatsApp OTP
@@ -57,7 +57,7 @@ export const sendOTP = async (req: PayloadRequest) => {
         const whatsappClient = new WhatsAppClient()
         await whatsappClient.sendText({
           to: fullPhoneNumber,
-          text: `Your Konto verification code is: ${code}. Do not share this code with anyone.`,
+          text: `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
         })
       } catch (whatsappError) {
         console.warn('WhatsApp OTP failed, SMS sent as fallback:', whatsappError)

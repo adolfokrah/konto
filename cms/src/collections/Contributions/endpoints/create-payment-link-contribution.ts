@@ -82,8 +82,8 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
     return Response.json(
       {
         success: false,
-        message: 'Failed to create contribution',
-        error: error.message || 'Unknown error',
+        message: error.message || 'Failed to create contribution',
+        error: 'Unknown error',
       },
       { status: 500 },
     )
