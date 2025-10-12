@@ -24,6 +24,7 @@ import { Notifications } from './collections/Notifications'
 import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
+import { DailyActiveUsers } from './collections/DailyActiveUsers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -71,6 +72,7 @@ export default buildConfig({
     Jars,
     Notifications,
     DeletedUserAccounts,
+    DailyActiveUsers,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

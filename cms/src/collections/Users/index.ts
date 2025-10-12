@@ -17,6 +17,7 @@ import { sendEmptyJarReminder } from './endpoints/send-empty-jar-reminder'
 import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
+import { trackDailyActiveUser } from './hooks/track-daily-active-user'
 import { sendOTP } from './endpoints/send-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
 
@@ -416,5 +417,6 @@ export const Users: CollectionConfig = {
     beforeChange: [createSubAccount],
     afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
+    afterRead: [trackDailyActiveUser],
   },
 }

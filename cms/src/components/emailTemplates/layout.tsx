@@ -106,25 +106,15 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
         },
       }}
     >
-      <Container className="mx-auto py-8 px-6 font-chillax" style={{ maxWidth: '55em' }}>
-        {/* Logo with theme-aware versions */}
+      <Container className="mx-auto py-8 px-6 font-chillax bg-white" style={{ maxWidth: '55em' }}>
+        {/* Logo with background for visibility in both themes */}
         <div className="mb-6">
-          {/* Dark theme logo (white version) */}
-          <Img
-            src="https://www.usehoga.com/logo-white.png"
-            alt="Hoga Logo"
-            width="70"
-            height="23"
-            className="dark:block hidden"
-          />
-          {/* Light theme logo (dark version) */}
-          <Img
-            src="https://www.usehoga.com/logo.png"
-            alt="Hoga Logo"
-            width="70"
-            height="23"
-            className="dark:hidden block"
-          />
+           <Img
+              src="https://www.usehoga.com/logo.png"
+              alt="Hoga Logo"
+              width="70"
+              height="23"
+            />
         </div>
         <h2 className="text-4xl font-bold text-primary mb-4" style={{ lineHeight: 1.6 }}>
           {title}
