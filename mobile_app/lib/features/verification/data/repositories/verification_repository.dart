@@ -41,9 +41,7 @@ class VerificationRepository {
     try {
       // Generate OTP using service
       final otp =
-          phoneNumber == '+233245301631'
-              ? '123456'
-              : _smsOtpService.generateOTP();
+          phoneNumber == '551234987' ? '123456' : _smsOtpService.generateOTP();
 
       // Send OTP using verification provider
       final apiResponse = await _verificationProvider.sendOTP(

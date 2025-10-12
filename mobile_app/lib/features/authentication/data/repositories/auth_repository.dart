@@ -1,22 +1,17 @@
-import 'package:Hoga/core/services/sms_otp_service.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 
 /// Repository for authentication operations
 /// Orchestrates business logic between UI and API calls
 class AuthRepository {
-  final SmsOtpService _smsOtpService;
   final AuthApiProvider _authApiProvider;
   final UserStorageService _userStorageService;
 
   AuthRepository({
-    required SmsOtpService smsOtpService,
     required AuthApiProvider authApiProvider,
     required UserStorageService userStorageService,
-  }) : _smsOtpService = smsOtpService,
-       _authApiProvider = authApiProvider,
+  }) : _authApiProvider = authApiProvider,
        _userStorageService = userStorageService;
 
   /// Check if user exists in the system
@@ -72,21 +67,33 @@ class AuthRepository {
       );
 
       if (loginResponse['success'] == true) {
-        // Parse the login response
-        final loginData = LoginResponse.fromJson(loginResponse);
+        // Parse the login response - the response should contain user, token, and exp directly
+        final userData = loginResponse['user'];
+        final token = loginResponse['token'] ?? '';
+        final exp = loginResponse['exp'] ?? 0;
+
+        if (userData == null) {
+          return {
+            'success': false,
+            'message': 'Invalid response format: missing user data',
+          };
+        }
+
+        // Create User object from response
+        final user = User.fromJson(userData);
 
         // Save user data and token to local storage
         await _userStorageService.saveUserData(
-          user: loginData.user,
-          token: loginData.token,
-          tokenExpiry: loginData.exp,
+          user: user,
+          token: token,
+          tokenExpiry: exp,
         );
 
         return {
           'success': true,
           'message': 'Login successful',
-          'user': loginData.user,
-          'token': loginData.token,
+          'user': user,
+          'token': token,
           'phoneNumber': phoneNumber,
         };
       } else {
@@ -214,11 +221,11 @@ class AuthRepository {
   /// Sign out user
   Future<void> signOut() async {
     try {
-      // Clear user data from local storage
-      await _userStorageService.clearUserData();
-      print('🚪 User signed out and data cleared');
+      // Clear ALL data from local storage (complete clean slate)
+      await _userStorageService.clearAllData();
+      print('🚪 User signed out and ALL local storage cleared');
     } catch (e) {
-      print('� Error during sign out: $e');
+      print('💥 Error during sign out: $e');
     }
   }
 }

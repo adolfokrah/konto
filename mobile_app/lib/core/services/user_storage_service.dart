@@ -138,6 +138,19 @@ class UserStorageService {
     }
   }
 
+  /// Clear ALL data from local storage (complete reset)
+  Future<bool> clearAllData() async {
+    try {
+      await _localStorageService.clearAllData();
+
+      print('🧹 ALL local storage data cleared');
+      return true;
+    } catch (e) {
+      print('💥 Error clearing all data: $e');
+      return false;
+    }
+  }
+
   /// Update user data (for profile updates)
   Future<bool> updateUserData(User updatedUser) async {
     try {

@@ -18,6 +18,7 @@ import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
 import { sendOTP } from './endpoints/send-otp'
+import { deleteUserAccount } from './endpoints/delete-user-account'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -125,6 +126,11 @@ export const Users: CollectionConfig = {
       path: '/job-status',
       method: 'get',
       handler: getJobStatus,
+    },
+    {
+      path: '/delete-account',
+      method: 'post',
+      handler: deleteUserAccount,
     },
   ],
   fields: [

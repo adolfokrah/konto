@@ -15,4 +15,10 @@ class LocalStorageService {
     final sp = await SharedPreferences.getInstance();
     await sp.remove(token);
   }
+
+  /// Clear all data from local storage
+  Future<void> clearAllData() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.clear();
+  }
 }

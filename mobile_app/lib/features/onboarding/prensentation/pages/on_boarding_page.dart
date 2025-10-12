@@ -126,7 +126,7 @@ class OnBoardingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.spacingXs),
                   Text(
-                    "Set up a jar in seconds to collect contributions for weddings, projects, ngos, trips, funerals, church offerings, etc.",
+                    "Set up a jar in seconds to collect contributions for weddings, projects, NGOs, trips, funerals, church offerings, etc.",
                     style: AppTextStyles.titleMediumS,
                     textAlign: TextAlign.center,
                   ),

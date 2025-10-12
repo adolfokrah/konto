@@ -15,6 +15,7 @@ import 'package:Hoga/core/enums/media_upload_context.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/delete_account_reasons_bottom_sheet.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
@@ -319,7 +320,7 @@ class UserAccountView extends StatelessWidget {
                   description: localizations.closeAccountDescription,
                   confirmButtonText: localizations.continueText,
                   onConfirm: () {
-                    _showComingSoon(context);
+                    DeleteAccountReasonsBottomSheet.show(context);
                   },
                   isDangerous: true,
                 );
@@ -396,49 +397,6 @@ class UserAccountView extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  /// Build toggle menu item for biometric settings
-  Widget _buildToggleMenuItem({
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyles.titleMediumS),
-          _buildToggleSwitch(value, onChanged),
-        ],
-      ),
-    );
-  }
-
-  /// Build toggle switch using Cupertino style
-  Widget _buildToggleSwitch(bool value, ValueChanged<bool> onChanged) {
-    return CustomCupertinoSwitch(defaultValue: value, onChanged: onChanged);
-  }
-
-  /// Show coming soon dialog
-  void _showComingSoon(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(localizations.comingSoonTitle),
-            content: Text(localizations.comingSoonDescription),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(localizations.ok),
-              ),
-            ],
-          ),
     );
   }
 }

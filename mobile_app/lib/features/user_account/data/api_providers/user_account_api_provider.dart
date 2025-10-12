@@ -202,4 +202,55 @@ class UserAccountApiProvider extends BaseApiProvider {
       };
     }
   }
+
+  /// Delete user account
+  Future<Map<String, dynamic>> deleteUserAccount({
+    required String reason,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/users/delete-account',
+        data: {'reason': reason},
+        options: Options(headers: headers),
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'data': response.data['data'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': response.data['message'] ?? 'User account deletion failed',
+          'data': null,
+          'statusCode': response.statusCode,
+        };
+      }
+    } catch (e) {
+      if (e is DioException) {
+        return {
+          'success': false,
+          'message':
+              e.response?.data?['message'] ??
+              'Network error during user account deletion',
+          'valid': false,
+          'error': e.toString(),
+          'statusCode': e.response?.statusCode,
+        };
+      }
+      return {
+        'success': false,
+        'message': 'Error deleting user account: ${e.toString()}',
+        'valid': false,
+        'error': e.toString(),
+      };
+    }
+  }
 }

@@ -19,6 +19,7 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
       _authBloc = authBloc,
       super(UserAccountInitial()) {
     on<UpdatePersonalDetails>(_updatePersonalDetails);
+    on<DeleteAccount>(_deleteAccount);
   }
 
   Future<void> _updatePersonalDetails(
@@ -58,6 +59,30 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         UserAccountError(
           message: 'Failed to update personal details: ${e.toString()}',
         ),
+      );
+    }
+  }
+
+  Future<void> _deleteAccount(
+    DeleteAccount event,
+    Emitter<UserAccountState> emit,
+  ) async {
+    emit(UserAccountLoading());
+
+    try {
+      final result = await _userAccountRepository.deleteAccount(
+        reason: event.reason,
+      );
+
+      if (result.success) {
+        // emit(UserAccountDeleted(message: result.message));
+        _authBloc.add(SignOutRequested());
+      } else {
+        emit(UserAccountError(message: result.message));
+      }
+    } catch (e) {
+      emit(
+        UserAccountError(message: 'Failed to delete account: ${e.toString()}'),
       );
     }
   }

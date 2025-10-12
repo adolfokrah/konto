@@ -307,18 +307,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
                 // Add builder to handle Android navigation bar overlay
                 builder: (context, child) {
-                  // Get the bottom padding from MediaQuery (system navigation bar height)
-                  final mediaQuery = MediaQuery.of(context);
-                  final bottomPadding = mediaQuery.viewPadding.bottom;
-
-                  // Only add bottom padding if we have system navigation bar
-                  if (bottomPadding > 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: bottomPadding),
-                      child: child ?? Container(),
-                    );
-                  }
-                  return child ?? Container();
+                  return SafeArea(child: child ?? Container());
                 },
                 routes: AppRoutes.routes,
                 initialRoute: AppRoutes.initial,

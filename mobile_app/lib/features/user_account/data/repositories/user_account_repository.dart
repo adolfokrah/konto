@@ -115,4 +115,18 @@ class UserAccountRepository {
       );
     }
   }
+
+  /// Delete user account
+  Future deleteAccount({required String reason}) async {
+    try {
+      final result = await _apiProvider.deleteUserAccount(reason: reason);
+
+      return (success: result['success'] == true, message: result['message']);
+    } catch (e) {
+      return (
+        success: false,
+        message: 'Error deleting account: ${e.toString()}',
+      );
+    }
+  }
 }

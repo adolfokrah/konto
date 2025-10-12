@@ -75,6 +75,7 @@ export interface Config {
     contributions: Contribution;
     jars: Jar;
     notifications: Notification;
+    deletedUserAccounts: DeletedUserAccount;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -94,6 +95,7 @@ export interface Config {
     contributions: ContributionsSelect<false> | ContributionsSelect<true>;
     jars: JarsSelect<false> | JarsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    deletedUserAccounts: DeletedUserAccountsSelect<false> | DeletedUserAccountsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1515,6 +1517,17 @@ export interface Notification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deletedUserAccounts".
+ */
+export interface DeletedUserAccount {
+  id: string;
+  email: string;
+  deletionReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1717,6 +1730,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notifications';
         value: string | Notification;
+      } | null)
+    | ({
+        relationTo: 'deletedUserAccounts';
+        value: string | DeletedUserAccount;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2461,6 +2478,16 @@ export interface NotificationsSelect<T extends boolean = true> {
   data?: T;
   status?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deletedUserAccounts_select".
+ */
+export interface DeletedUserAccountsSelect<T extends boolean = true> {
+  email?: T;
+  deletionReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }

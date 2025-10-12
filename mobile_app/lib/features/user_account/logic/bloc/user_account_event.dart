@@ -32,3 +32,9 @@ final class UpdatePersonalDetails extends UserAccountEvent {
     this.fcmToken,
   });
 }
+
+final class DeleteAccount extends UserAccountEvent {
+  final String reason; // Reason for account deletion
+
+  DeleteAccount({required this.reason});
+}

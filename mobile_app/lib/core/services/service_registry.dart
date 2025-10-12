@@ -135,7 +135,6 @@ class ServiceRegistry {
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
-      smsOtpService: _smsOtpService,
       authApiProvider: _authApiProvider,
       userStorageService: _userStorageService,
     );
@@ -266,7 +265,6 @@ class ServiceRegistry {
 
     // Initialize repositories with dependencies
     _authRepository = AuthRepository(
-      smsOtpService: _smsOtpService,
       authApiProvider: _authApiProvider,
       userStorageService: _userStorageService,
     );

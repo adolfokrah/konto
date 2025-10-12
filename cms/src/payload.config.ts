@@ -23,6 +23,7 @@ import { resendAdapter } from '@payloadcms/email-resend'
 import { Notifications } from './collections/Notifications'
 import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
+import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -60,7 +61,17 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Posts, Media, Categories, Users, Contributions, Jars, Notifications],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    Contributions,
+    Jars,
+    Notifications,
+    DeletedUserAccounts,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   db: mongooseAdapter({
