@@ -149,7 +149,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
     }
     // Redirect to homepage after successful KYC verification
 
-    if (viawebhook === 'true') {
+    if (viawebhook === true) {
       return Response.json(
         {
           success: true,

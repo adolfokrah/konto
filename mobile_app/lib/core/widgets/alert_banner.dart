@@ -1,6 +1,7 @@
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/card.dart';
 import 'package:flutter/material.dart';
 
 class Alert extends StatelessWidget {
@@ -17,23 +18,15 @@ class Alert extends StatelessWidget {
       ),
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: AppCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(AppRadius.radiusM),
-          ),
+          variant: CardVariant.secondary,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.info_outline, size: 15, color: Colors.white),
               SizedBox(height: 3),
-              Text(
-                message,
-                style: AppTextStyles.titleRegularXs.copyWith(
-                  color: Colors.white,
-                ),
-              ),
+              Text(message, style: AppTextStyles.titleRegularXs),
             ],
           ),
         ),
