@@ -199,7 +199,7 @@ class BuildNotificationType extends StatelessWidget {
             ],
           ],
         );
-      case NotificationType.kycFailed:
+      case NotificationType.kyc:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

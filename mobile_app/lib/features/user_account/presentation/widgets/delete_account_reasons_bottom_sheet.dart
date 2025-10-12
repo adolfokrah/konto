@@ -60,12 +60,6 @@ class _DeleteAccountReasonsBottomSheetState
 
     return BlocListener<UserAccountBloc, UserAccountState>(
       listener: (context, state) {
-        if (state is UserAccountLoading) {
-          startLoading();
-        } else {
-          stopLoading();
-        }
-
         if (state is UserAccountError) {
           AppSnackBar.showError(context, message: state.message);
         }
@@ -154,27 +148,33 @@ class _DeleteAccountReasonsBottomSheetState
                     ),
                   ),
                   const SizedBox(width: AppSpacing.spacingM),
-                  Expanded(
-                    child: AppButton.filled(
-                      text: 'Delete Account',
-                      onPressed:
-                          selectedReason != null &&
-                                  (!isOtherSelected ||
-                                      _otherReasonController.text
-                                          .trim()
-                                          .isNotEmpty)
-                              ? () {
-                                context.read<UserAccountBloc>().add(
-                                  DeleteAccount(
-                                    reason:
-                                        isOtherSelected
-                                            ? _otherReasonController.text.trim()
-                                            : selectedReason!,
-                                  ),
-                                );
-                              }
-                              : null,
-                    ),
+                  BlocBuilder<UserAccountBloc, UserAccountState>(
+                    builder: (context, state) {
+                      return Expanded(
+                        child: AppButton.filled(
+                          text: 'Delete Account',
+                          isLoading: state is UserAccountLoading,
+                          onPressed:
+                              selectedReason != null &&
+                                      (!isOtherSelected ||
+                                          _otherReasonController.text
+                                              .trim()
+                                              .isNotEmpty)
+                                  ? () {
+                                    context.read<UserAccountBloc>().add(
+                                      DeleteAccount(
+                                        reason:
+                                            isOtherSelected
+                                                ? _otherReasonController.text
+                                                    .trim()
+                                                : selectedReason!,
+                                      ),
+                                    );
+                                  }
+                                  : null,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

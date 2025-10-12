@@ -11,7 +11,7 @@ import {
 export const verifyKYC = async (req: PayloadRequest) => {
   try {
     // Get sessionId from query parameters for GET request
-    const { verificationSessionId: sessionId } = req.query || {}
+    const { verificationSessionId: sessionId, viawebhook = false } = req.query || {}
     if (!sessionId) {
       return Response.json(
         {
@@ -147,9 +147,21 @@ export const verifyKYC = async (req: PayloadRequest) => {
         },
       })
     }
-
     // Redirect to homepage after successful KYC verification
-    return Response.redirect(process.env.NEXT_PUBLIC_SERVER_URL || 'https://usehoga.com', 302)
+
+    if (viawebhook === 'true') {
+      return Response.json(
+        {
+          success: true,
+          message: 'KYC status updated successfully',
+          kycStatus: newKycStatus,
+          sessionStatus,
+        },
+        { status: 200 },
+      )
+    } else {
+      return Response.redirect(process.env.NEXT_PUBLIC_SERVER_URL || 'https://usehoga.com', 302)
+    }
   } catch (error: any) {
     console.error('Error updating KYC status:', error)
     return Response.json(
