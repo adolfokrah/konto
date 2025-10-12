@@ -1,5 +1,6 @@
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
@@ -63,6 +64,10 @@ class _DeleteAccountReasonsBottomSheetState
           startLoading();
         } else {
           stopLoading();
+        }
+
+        if (state is UserAccountError) {
+          AppSnackBar.showError(context, message: state.message);
         }
       },
       child: Container(
