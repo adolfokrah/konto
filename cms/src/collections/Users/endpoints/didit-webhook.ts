@@ -223,6 +223,7 @@ export const diditWebhook = async (req: PayloadRequest) => {
       ...req,
       query: {
         verificationSessionId: payload.session_id,
+        viawebhook: true,
       },
     }
 
