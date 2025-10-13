@@ -53,6 +53,9 @@ export const sendJarCreationReminder = async (req: PayloadRequest) => {
           creator: {
             equals: user.id,
           },
+          status: {
+            equals: 'open',
+          },
         },
         limit: 1,
       })
