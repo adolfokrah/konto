@@ -19,6 +19,7 @@ import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
@@ -106,6 +107,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
@@ -282,6 +284,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),
@@ -343,6 +346,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider(create: (context) => VerificationBloc()),
             BlocProvider(create: (context) => KycBloc()),
             BlocProvider(create: (context) => JarSummaryBloc()),

@@ -19,6 +19,7 @@ import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -168,6 +169,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider<AuthBloc>(create: (context) => authBloc = AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider<VerificationBloc>(
               create: (context) => VerificationBloc(),
             ),
@@ -431,6 +433,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider<VerificationBloc>(
               create: (context) => VerificationBloc(),
             ),
@@ -524,6 +527,7 @@ void main() {
               MultiBlocProvider(
                 providers: [
                   BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+                  BlocProvider(create: (context) => OnboardingBloc()),
                   BlocProvider<VerificationBloc>(
                     create: (context) => VerificationBloc(),
                   ),
@@ -737,6 +741,7 @@ void main() {
         MultiBlocProvider(
           providers: [
             BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+            BlocProvider(create: (context) => OnboardingBloc()),
             BlocProvider<VerificationBloc>(
               create: (context) => VerificationBloc(),
             ),
@@ -819,6 +824,7 @@ void main() {
           MultiBlocProvider(
             providers: [
               BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+              BlocProvider(create: (context) => OnboardingBloc()),
               BlocProvider<JarSummaryBloc>(
                 create: (context) => JarSummaryBloc(),
               ),
