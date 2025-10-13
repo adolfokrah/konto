@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:story_view/controller/story_controller.dart';
-import 'package:story_view/utils.dart';
-import 'package:story_view/widgets/story_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/bloc/onboarding_bloc.dart';
 
@@ -13,85 +10,123 @@ class WalkThrough extends StatefulWidget {
 }
 
 class _WalkThroughState extends State<WalkThrough> {
-  final StoryController controller = StoryController();
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  final List<String> _walkThroughImages = [
+    "assets/images/walk/start.png",
+    "assets/images/walk/one.png",
+    "assets/images/walk/two.png",
+    "assets/images/walk/three.png",
+    "assets/images/walk/four.png",
+    "assets/images/walk/five.png",
+    "assets/images/walk/six.png",
+  ];
 
   @override
   void dispose() {
-    controller.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentPage = page;
+    });
+    debugPrint('Showing walkthrough page: $page');
+  }
+
+  void _completeWalkthrough() {
+    debugPrint(
+      '🎉 Walkthrough completed, dispatching OnboardingFinished event',
+    );
+    context.read<OnboardingBloc>().add(OnboardingFinished());
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<StoryItem> storyItems = [
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/start.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/one.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/two.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/three.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/four.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/five.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-      StoryItem.pageProviderImage(
-        const AssetImage("assets/images/walk/six.png"),
-        imageFit: BoxFit.cover,
-        duration: const Duration(seconds: 3),
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.black,
-      body: StoryView(
-        storyItems: storyItems,
-        controller: controller,
-        repeat: false, // Don't repeat the stories
-        inline: false, // Full screen mode
-        onStoryShow: (storyItem, index) {
-          // Callback when a story is shown
-          debugPrint('Showing story at index: $index');
-        },
-        onComplete: () {
-          // When all stories are completed, dispatch event to complete walkthrough
-          debugPrint(
-            '🎉 All stories completed, dispatching OnboardingFinished event',
-          );
-          context.read<OnboardingBloc>().add(OnboardingFinished());
-          // Pop the screen
-          if (mounted) {
-            Navigator.of(context).pop();
-          }
-        },
-        onVerticalSwipeComplete: (direction) {
-          if (direction == Direction.down) {
-            context.read<OnboardingBloc>().add(OnboardingFinished());
-            Navigator.of(context).pop();
-          }
-        },
-        progressPosition: ProgressPosition.top,
-        indicatorForegroundColor: Colors.white,
-        indicatorColor: Colors.grey.withValues(alpha: 0.4),
+      body: Stack(
+        children: [
+          // PageView with images
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: _onPageChanged,
+            itemCount: _walkThroughImages.length,
+            itemBuilder: (context, index) {
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(_walkThroughImages[index]),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Progress indicators
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 20,
+            left: 20,
+            right: 20,
+            child: Row(
+              children: List.generate(
+                _walkThroughImages.length,
+                (index) => Expanded(
+                  child: Container(
+                    height: 3,
+                    margin: EdgeInsets.only(
+                      right: index < _walkThroughImages.length - 1 ? 4 : 0,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          index <= _currentPage
+                              ? Colors.white
+                              : Colors.grey.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Skip/Done button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 30,
+            right: 20,
+            child: GestureDetector(
+              onTap: _completeWalkthrough,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _currentPage == _walkThroughImages.length - 1
+                      ? 'Done'
+                      : 'Skip',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
