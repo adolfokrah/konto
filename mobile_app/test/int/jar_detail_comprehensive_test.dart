@@ -18,6 +18,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_rel
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -212,6 +213,7 @@ void main() {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthBloc()),
+        BlocProvider(create: (context) => OnboardingBloc()),
         BlocProvider(create: (context) => JarSummaryBloc()),
         BlocProvider(create: (context) => JarListBloc()),
         BlocProvider(create: (context) => UpdateJarBloc()),
@@ -406,10 +408,12 @@ void main() {
       final testWidget = MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider(create: (context) => OnboardingBloc()),
           BlocProvider(create: (context) => JarSummaryBloc()),
           BlocProvider(create: (context) => JarListBloc()),
           BlocProvider(create: (context) => UpdateJarBloc()),
           BlocProvider(create: (context) => MediaBloc()),
+          BlocProvider(create: (context) => NotificationsBloc()),
           BlocProvider(
             create:
                 (context) =>

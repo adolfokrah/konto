@@ -50,6 +50,8 @@ class JarDetailView extends StatefulWidget {
 class _JarDetailViewState extends State<JarDetailView> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
+  bool _walkthroughTriggered =
+      false; // Flag to prevent multiple walkthrough navigations
 
   @override
   void initState() {
@@ -196,15 +198,27 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
         BlocListener<OnboardingBloc, OnboardingState>(
           listener: (context, state) {
-            if (state is OnboardingPageState) {
+            if (state is OnboardingPageState && !_walkthroughTriggered) {
               // User hasn't completed onboarding, show walkthrough with delay
+              _walkthroughTriggered =
+                  true; // Set flag to prevent multiple calls
               Future.delayed(const Duration(seconds: 1), () {
-                if (mounted) {
-                  Navigator.pushNamed(context, AppRoutes.walkthrough);
+                if (mounted && _walkthroughTriggered) {
+                  Navigator.pushNamed(context, AppRoutes.walkthrough).then((_) {
+                    // Reset flag when user returns from walkthrough
+                    if (mounted) {
+                      setState(() {
+                        _walkthroughTriggered = false;
+                      });
+                    }
+                  });
                 }
               });
             }
-            // If state is OnboardingCompleted, do nothing (user has completed walkthrough)
+            // If state is OnboardingCompleted, reset flag and do nothing (user has completed walkthrough)
+            if (state is OnboardingCompleted) {
+              _walkthroughTriggered = false;
+            }
           },
         ),
       ],
