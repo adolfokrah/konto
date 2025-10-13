@@ -12,7 +12,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<OnboardingFinished>((event, emit) async {
       try {
-        await ServiceRegistry().onboardingRepository.completeOnboarding();
+        await ServiceRegistry().walkthroughRepository.completeWalkthrough();
         emit(OnboardingCompleted());
       } catch (e) {
         // Still emit completed to avoid blocking user
@@ -23,8 +23,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       try {
         print('🔄 OnboardingBloc: Checking onboarding status...');
         final onboardingCompleted =
-            await ServiceRegistry().onboardingRepository
-                .checkOnboardingStatus();
+            await ServiceRegistry().walkthroughRepository
+                .checkWalkthroughStatus();
         print('🔄 OnboardingBloc: Onboarding completed: $onboardingCompleted');
         if (onboardingCompleted) {
           print('✅ OnboardingBloc: Emitting OnboardingCompleted');
@@ -40,7 +40,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<ResetOnboarding>((event, emit) async {
       try {
-        await ServiceRegistry().onboardingRepository.resetOnboarding();
+        await ServiceRegistry().walkthroughRepository.resetWalkthrough();
         emit(OnboardingPageState(0)); // Start from first page
       } catch (e) {
         // Handle reset error if needed

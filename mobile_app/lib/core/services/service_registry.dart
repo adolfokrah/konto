@@ -8,7 +8,7 @@ import 'package:Hoga/features/authentication/data/api_providers/auth_api_provide
 import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
 import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
-import 'package:Hoga/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:Hoga/features/onboarding/data/repositories/walkthrough_repository.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
 import 'package:Hoga/features/media/data/api_provider/media_api_provider.dart';
@@ -59,7 +59,7 @@ class ServiceRegistry {
   late final AuthRepository _authRepository;
   late final VerificationRepository _verificationRepository;
   // VerificationRepository? _overrideVerificationRepository; // test override
-  late final OnboardingRepository _onboardingRepository;
+  late final WalkthroughRepository _walkthroughRepository;
   late final JarRepository _jarRepository;
   late final MediaRepository _mediaRepository;
   late final ContributionRepository _contributionRepository;
@@ -144,7 +144,7 @@ class ServiceRegistry {
       verificationProvider: _verificationProvider,
     );
 
-    _onboardingRepository = OnboardingRepository(
+    _walkthroughRepository = WalkthroughRepository(
       localStorageService: _localStorageService,
     );
 
@@ -188,7 +188,7 @@ class ServiceRegistry {
       _notificationsApiProvider;
   AuthRepository get authRepository => _authRepository;
   VerificationRepository get verificationRepository => _verificationRepository;
-  OnboardingRepository get onboardingRepository => _onboardingRepository;
+  WalkthroughRepository get walkthroughRepository => _walkthroughRepository;
   JarRepository get jarRepository => _jarRepository;
   MediaRepository get mediaRepository => _mediaRepository;
   ContributionRepository get contributionRepository => _contributionRepository;
@@ -274,7 +274,7 @@ class ServiceRegistry {
       verificationProvider: _verificationProvider,
     );
 
-    _onboardingRepository = OnboardingRepository(
+    _walkthroughRepository = WalkthroughRepository(
       localStorageService: _localStorageService,
     );
 

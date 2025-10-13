@@ -44,9 +44,13 @@ void main() async {
   // Initialize configuration from .env file
   await AppConfig.initialize();
 
-  // Set initial system UI overlay style
+  // Set initial system UI overlay style with white status bar icons
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light, // White icons
+      statusBarBrightness: Brightness.dark, // iOS: dark status bar background
+    ),
   );
 
   // Initialize service registry for dependency injection
@@ -125,26 +129,17 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   void _updateSystemOverlay() {
-    final brightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
-
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness:
-            brightness == Brightness.dark
-                ? Brightness
-                    .light // Light icons on dark theme
-                : Brightness.dark, // Dark icons on light theme
-        statusBarBrightness:
-            brightness == Brightness.dark
-                ? Brightness
-                    .dark // Dark status bar on iOS dark mode
-                : Brightness.light, // Light status bar on iOS light mode
+        // Always use light icons (white) on status bar
+        statusBarIconBrightness: Brightness.light,
+        // Always use dark status bar background on iOS (makes icons white)
+        statusBarBrightness: Brightness.dark,
         // Android navigation bar configuration
-        systemNavigationBarColor: Colors.black.withOpacity(0.3),
+        systemNavigationBarColor: Colors.transparent,
         systemNavigationBarIconBrightness: Brightness.light,
-        systemNavigationBarContrastEnforced: true,
+        systemNavigationBarContrastEnforced: false,
       ),
     );
   }

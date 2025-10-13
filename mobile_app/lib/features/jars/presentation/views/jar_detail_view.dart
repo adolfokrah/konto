@@ -1,5 +1,6 @@
 import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -186,11 +187,24 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
           listener: (context, state) {
-            if (state is UpdateJarSuccess) {
-              context.read<JarSummaryReloadBloc>().add(
-                ReloadJarSummaryRequested(),
-              );
+            // if (state is UpdateJarSuccess) {
+            context.read<JarSummaryReloadBloc>().add(
+              ReloadJarSummaryRequested(),
+            );
+            // }
+          },
+        ),
+        BlocListener<OnboardingBloc, OnboardingState>(
+          listener: (context, state) {
+            if (state is OnboardingPageState) {
+              // User hasn't completed onboarding, show walkthrough with delay
+              Future.delayed(const Duration(seconds: 1), () {
+                if (mounted) {
+                  Navigator.pushNamed(context, AppRoutes.walkthrough);
+                }
+              });
             }
+            // If state is OnboardingCompleted, do nothing (user has completed walkthrough)
           },
         ),
       ],

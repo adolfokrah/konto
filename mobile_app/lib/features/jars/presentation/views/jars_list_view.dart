@@ -125,8 +125,7 @@ class _JarsListViewState extends State<JarsListView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Close button positioned at top right
-              const SizedBox(height: AppSpacing.spacingL),
-              const SizedBox(height: AppSpacing.spacingL),
+              const SizedBox(height: AppSpacing.spacingM),
               AppIconButton(
                 onPressed: () {
                   HapticUtils.heavy();

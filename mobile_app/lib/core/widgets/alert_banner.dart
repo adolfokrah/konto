@@ -1,4 +1,3 @@
-import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/card.dart';
@@ -20,11 +19,10 @@ class Alert extends StatelessWidget {
         onTap: onTap,
         child: AppCard(
           padding: const EdgeInsets.all(16),
-          variant: CardVariant.secondary,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline, size: 15, color: Colors.white),
+              Icon(Icons.info_outline, size: 15),
               SizedBox(height: 3),
               Text(message, style: AppTextStyles.titleRegularXs),
             ],

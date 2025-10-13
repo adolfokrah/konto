@@ -1,4 +1,5 @@
 import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
+import 'package:Hoga/features/onboarding/prensentation/pages/walk_through.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/document_type_selection_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/intro_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc/upload_document_view.dart';
@@ -67,6 +68,7 @@ class AppRoutes {
     '/take_photo': (context) => const LivenessCamera(),
     '/uploading_documents': (context) => const UploadingDocumentsView(),
     '/notifications': (context) => const NotficiationsListView(),
+    '/walkthrough': (context) => const WalkThrough(),
   };
 
   // Route names constants for easy access
@@ -102,4 +104,5 @@ class AppRoutes {
   static const String takePhoto = '/take_photo';
   static const String uploadingDocuments = '/uploading_documents';
   static const String notifications = '/notifications';
+  static const String walkthrough = '/walkthrough';
 }
