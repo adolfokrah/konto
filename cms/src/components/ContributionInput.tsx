@@ -334,8 +334,12 @@ export default function ContributionInput({
           />
         </div>
 
+        {isAnonymous && (<div className='mb-2'>
+          <small className="text-gray-500">We only use your phone number and email to send you a receipt for your payment. This information is not saved or shared.</small>
+        </div>)}
+
         <div>
-           <small className="text-gray-500">Phone number is only needed to request payment and send receipt but not saved</small>
+           
           <input
             type={'text'}
             placeholder="Phone number"
@@ -346,7 +350,6 @@ export default function ContributionInput({
           />
         </div>
         <div>
-        <small className="text-gray-500">Email is only needed to send you a receipt of your payment but not saved</small>
           <input
             type="email"
             placeholder="Your email address"
