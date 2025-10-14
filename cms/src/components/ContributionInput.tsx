@@ -318,7 +318,7 @@ export default function ContributionInput({
            <label className='flex items-center'>
             <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
             <span className="ml-3 text-sm font-supreme text-gray-700">
-              {isAnonymous ? 'You are contributing anonymously' : 'You are not contributing anonymously'}
+              {isAnonymous ? 'You are contributing anonymously' : 'Turn on to contribute anonymously'}
             </span>
           </label>
         </div>
