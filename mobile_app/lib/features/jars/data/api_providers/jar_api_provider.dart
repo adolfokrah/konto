@@ -186,6 +186,7 @@ class JarApiProvider extends BaseApiProvider {
     String? thankYouMessage,
     bool? showGoal,
     bool? showRecentContributions,
+    bool? allowAnonymousContributions,
     String? whoPaysPlatformFees,
   }) async {
     try {
@@ -254,14 +255,20 @@ class JarApiProvider extends BaseApiProvider {
       if (thankYouMessage != null) {
         jarData['thankYouMessage'] = thankYouMessage;
       }
+      if (allowAnonymousContributions != null) {
+        jarData['allowAnonymousContributions'] = allowAnonymousContributions;
+      }
 
+      // Handle paymentPage fields together to avoid overwriting
+      final paymentPageData = <String, dynamic>{};
       if (showGoal != null) {
-        jarData['paymentPage'] = {'showGoal': showGoal};
+        paymentPageData['showGoal'] = showGoal;
       }
       if (showRecentContributions != null) {
-        jarData['paymentPage'] = {
-          'showRecentContributions': showRecentContributions,
-        };
+        paymentPageData['showRecentContributions'] = showRecentContributions;
+      }
+      if (paymentPageData.isNotEmpty) {
+        jarData['paymentPage'] = paymentPageData;
       }
       if (whoPaysPlatformFees != null) {
         jarData['whoPaysPlatformFees'] = whoPaysPlatformFees;

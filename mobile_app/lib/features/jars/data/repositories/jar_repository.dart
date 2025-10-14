@@ -155,6 +155,7 @@ class JarRepository {
     String? thankYouMessage,
     bool? showGoal,
     bool? showRecentContributions,
+    bool? allowAnonymousContributions,
     String? whoPaysPlatformFees,
   }) async {
     try {
@@ -176,6 +177,7 @@ class JarRepository {
         thankYouMessage: thankYouMessage,
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
+        allowAnonymousContributions: allowAnonymousContributions,
         whoPaysPlatformFees: whoPaysPlatformFees,
       );
 

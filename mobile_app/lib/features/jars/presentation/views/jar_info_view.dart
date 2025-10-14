@@ -632,6 +632,47 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       contentPadding: EdgeInsets.zero,
                                       dense: true,
                                       title: Text(
+                                        "Allow Anonymous Contributions",
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        'Allow people to contribute without providing their name and phone number',
+                                      ),
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
+                                            jarData
+                                                .allowAnonymousContributions ??
+                                            false,
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          final updates = <String, dynamic>{
+                                            'allowAnonymousContributions':
+                                                value,
+                                          };
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
                                         "Show Recent Contributions",
                                         style: AppTextStyles.titleMediumS
                                             .copyWith(
