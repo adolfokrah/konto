@@ -1,3 +1,4 @@
+import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -208,7 +209,7 @@ class ContributionView extends StatelessWidget {
                                                         ),
                                                   ),
                                             ),
-                                            trailing: CupertinoSwitch(
+                                            trailing: CustomCupertinoSwitch(
                                               value:
                                                   contribution.viaPaymentLink,
                                               onChanged: (value) {

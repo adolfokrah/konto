@@ -229,6 +229,7 @@ export const Jars: CollectionConfig = {
       deleteInviteNotification,
       deleteInviteNotifications,
     ],
+    beforeRead: [],
   },
   endpoints: [
     {
