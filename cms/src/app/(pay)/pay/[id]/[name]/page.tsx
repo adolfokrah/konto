@@ -282,6 +282,7 @@ export default async function Page({
               jarName={jarWithBalance.name}
               isCreatorPaysPlatformFees={jarWithBalance.whoPaysPlatformFees === 'creator'}
               collectorId={effectiveCollectorId}
+              allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
             />
 
             <Separator />

@@ -105,13 +105,16 @@ const nextConfig = {
   redirects,
 }
 
-// Temporarily disable Sentry wrapper due to Next.js 15 conflicts  
-// export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
-//   org: 'kontoapp', 
-//   project: 'konto-cms',
-//   silent: !process.env.CI,
-//   hideSourceMaps: true,
-//   disableLogger: true,
-// })
-
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+// Re-enable Sentry with proper configuration to avoid OpenTelemetry issues
+export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
+  org: 'kontoapp', 
+  project: 'konto-cms',
+  silent: !process.env.CI,
+  hideSourceMaps: true,
+  disableLogger: true,
+  // Disable automatic instrumentation that causes OpenTelemetry warnings
+  widenClientFileUpload: true,
+  tunnelRoute: "/monitoring",
+  // Reduce the scope of auto-instrumentation
+  automaticVercelMonitors: false,
+})

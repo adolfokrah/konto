@@ -91,6 +91,10 @@ export const verifyPayment = async (req: PayloadRequest) => {
         data: {
           paymentStatus: (res.data as any)?.status === 'success' ? 'completed' : 'failed',
           paymentMethod: updatedPaymentMethod,
+          contributorPhoneNumber:
+            foundContribution.docs[0]?.contributor?.toLocaleLowerCase() == 'anonymous'
+              ? '-'
+              : foundContribution.docs[0]?.contributorPhoneNumber,
         },
       })
 
@@ -123,6 +127,7 @@ export const verifyPayment = async (req: PayloadRequest) => {
       )
     }
   } catch (error: any) {
+    console.log(error)
     // Handle errors and return a meaningful response
     return Response.json(
       {

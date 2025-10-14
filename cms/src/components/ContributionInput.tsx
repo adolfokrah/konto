@@ -8,6 +8,8 @@ import { toast } from 'sonner'
 import TransactionCharges from '@/utilities/transaction-charges'
 import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
+import { Switch } from "@/components/ui/switch"
+
 interface ContributionInputProps {
   currency?: string
   isFixedAmount?: boolean
@@ -17,6 +19,7 @@ interface ContributionInputProps {
   jarName?: string
   isCreatorPaysPlatformFees?: boolean
   collectorId?: string | { id: string } | undefined
+  allowAnonymousContributions?: boolean
 }
 
 export default function ContributionInput({
@@ -28,6 +31,7 @@ export default function ContributionInput({
   jarName = 'Jar Contribution',
   isCreatorPaysPlatformFees = true,
   collectorId = undefined,
+  allowAnonymousContributions = false,
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -37,6 +41,7 @@ export default function ContributionInput({
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const router = useRouter()
 
   // Preset amounts based on currency
@@ -104,9 +109,9 @@ export default function ContributionInput({
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
-    if (!contributorEmail || !contributorName) {
+    if (!contributorEmail || (!isAnonymous && !contributorName)) {
       toast.error('Missing Information', {
-        description: 'Please enter your email and name to continue',
+        description: isAnonymous ? 'Please enter your email to continue' : 'Please enter your email and name to continue',
         duration: 4000,
       })
       return
@@ -121,7 +126,7 @@ export default function ContributionInput({
       return
     }
 
-    if (!contributorPhoneNumber) {
+    if (!isAnonymous && !contributorPhoneNumber) {
       toast.error('Missing Information', {
         description: 'Please enter your phone number to continue',
         duration: 4000,
@@ -146,10 +151,10 @@ export default function ContributionInput({
           },
           body: JSON.stringify({
             jarId,
-            contributorName,
+            contributorName: isAnonymous ? 'Anonymous' : contributorName,
             amount: selectedAmount,
             currency,
-            contributorPhoneNumber,
+            contributorPhoneNumber: contributorPhoneNumber,
             collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
           }),
         },
@@ -195,7 +200,7 @@ export default function ContributionInput({
             {
               display_name: 'Contributor Name',
               variable_name: 'contributor_name',
-              value: contributorName,
+              value: isAnonymous ? 'Anonymous' : contributorName,
             },
             {
               display_name: 'Original Amount',
@@ -307,11 +312,22 @@ export default function ContributionInput({
 
       {/* Contributor Information */}
       <div className="space-y-4 mb-6">
+
+        {allowAnonymousContributions && (
+          <div>
+           <label className='flex items-center'>
+            <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
+            <span className="ml-3 text-sm font-supreme text-gray-700">
+              {isAnonymous ? 'You are contributing anonymously' : 'You are not contributing anonymously'}
+            </span>
+          </label>
+        </div>
+        )}
         <div>
           <input
-            type="text"
+            type={isAnonymous ? 'hidden' : 'text'}
             placeholder="Your name"
-            value={contributorName}
+            value={isAnonymous ? 'Anonymous' :  contributorName}
             onChange={(e) => setContributorName(e.target.value)}
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
             required
@@ -319,8 +335,9 @@ export default function ContributionInput({
         </div>
 
         <div>
+           <small className="text-gray-500">Phone number is only needed to request payment and send receipt but not saved</small>
           <input
-            type="text"
+            type={'text'}
             placeholder="Phone number"
             value={contributorPhoneNumber}
             onChange={(e) => setContributorPhoneNumber(e.target.value)}
@@ -328,8 +345,8 @@ export default function ContributionInput({
             required
           />
         </div>
-
         <div>
+        <small className="text-gray-500">Email is only needed to send you a receipt of your payment but not saved</small>
           <input
             type="email"
             placeholder="Your email address"
@@ -382,7 +399,7 @@ export default function ContributionInput({
       <button
         onClick={handleContribute}
         disabled={
-          selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || !contributorName
+          selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber)
         }
         className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >

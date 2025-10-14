@@ -213,6 +213,14 @@ export const Jars: CollectionConfig = {
       required: false,
       defaultValue: 0,
     },
+    {
+      name: 'allowAnonymousContributions',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Allow contributions from users not logged in',
+      },
+    },
   ],
   hooks: {
     afterChange: [

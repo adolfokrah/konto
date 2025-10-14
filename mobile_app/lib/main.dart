@@ -302,7 +302,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
                 // Add builder to handle Android navigation bar overlay
                 builder: (context, child) {
-                  return SafeArea(child: child ?? Container());
+                  return SafeArea(
+                    bottom: true,
+                    top: false,
+                    child: child ?? Container(),
+                  );
                 },
                 routes: AppRoutes.routes,
                 initialRoute: AppRoutes.initial,
