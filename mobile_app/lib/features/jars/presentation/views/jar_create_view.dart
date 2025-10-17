@@ -1,12 +1,11 @@
+import 'package:Hoga/core/widgets/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/currencies.dart';
-import 'package:Hoga/core/constants/jar_groups.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/category_selector.dart';
 import 'package:Hoga/core/widgets/currency_picker.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
@@ -23,6 +22,7 @@ import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/features/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:Hoga/features/jars/data/models/jar_model.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarCreateView extends StatefulWidget {
@@ -356,17 +356,62 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     controller: nameController,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
-                                  CategorySelector(
-                                    categories: JarGroups.groups,
-                                    selectedCategory:
-                                        selectedJarGroup.isEmpty
-                                            ? null
-                                            : selectedJarGroup,
-                                    onCategorySelected: (category) {
-                                      setState(() {
-                                        selectedJarGroup = category;
-                                      });
+                                  Text(
+                                    AppLocalizations.of(context)!.jarGroup,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  GestureDetector(
+                                    onTap: () {
+                                      JarGroupPicker.show(
+                                        context,
+                                        currentJarGroup: selectedJarGroup,
+                                        onJarGroupSelected: (
+                                          String selectedGroup,
+                                        ) {
+                                          setState(() {
+                                            selectedJarGroup = selectedGroup;
+                                          });
+                                        },
+                                      );
                                     },
+                                    child: AppCard(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingS,
+                                        vertical: AppSpacing.spacingS,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            selectedJarGroup.isEmpty
+                                                ? 'Select a jar group'
+                                                : selectedJarGroup,
+                                            style: AppTextStyles.titleMedium
+                                                .copyWith(
+                                                  color:
+                                                      selectedJarGroup.isEmpty
+                                                          ? Theme.of(
+                                                            context,
+                                                          ).hintColor
+                                                          : Theme.of(context)
+                                                              .textTheme
+                                                              .bodyLarge
+                                                              ?.color,
+                                                ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_drop_down,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.outline,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
                                   Text(

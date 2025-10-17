@@ -606,7 +606,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                             ),
                                       ),
                                       subtitle: Text(
-                                        'Display jar goal in jar in on payment page',
+                                        'Display jar goal on payment page',
                                       ),
                                       trailing: CustomCupertinoSwitch(
                                         defaultValue: jarData.showGoal ?? false,

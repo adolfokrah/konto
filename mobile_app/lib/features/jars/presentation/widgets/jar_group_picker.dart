@@ -16,6 +16,7 @@ class JarGroupPicker {
       selectedValue: currentJarGroup,
       items: JarGroups.groups,
       onItemSelected: onJarGroupSelected,
+      showSearch: true,
       itemBuilder: (String group, bool isSelected, VoidCallback onTap) {
         return ListTile(
           onTap: onTap,
@@ -41,7 +42,6 @@ class JarGroupPicker {
       isItemSelected:
           (String group, String selectedValue) => group == selectedValue,
       title: AppLocalizations.of(context)!.selectJarGroup,
-      showSearch: false, // Since there are only a few jar groups
     );
   }
 }

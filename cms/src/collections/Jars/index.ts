@@ -2,8 +2,6 @@ import type { CollectionConfig } from 'payload'
 
 import { getJarSummary } from './endpoints/get-jar-summary'
 import { getUserJars } from './endpoints/get-user-jars'
-import { generatePaymentLink } from './hooks'
-import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
@@ -158,14 +156,6 @@ export const Jars: CollectionConfig = {
       type: 'group',
       fields: [
         {
-          name: 'link',
-          type: 'text',
-          required: false,
-          admin: {
-            readOnly: true,
-          },
-        },
-        {
           name: 'showGoal',
           type: 'checkbox',
           defaultValue: true,
@@ -224,7 +214,6 @@ export const Jars: CollectionConfig = {
   ],
   hooks: {
     afterChange: [
-      generatePaymentLink,
       sendInviteNotificationToUser,
       deleteInviteNotification,
       deleteInviteNotifications,
