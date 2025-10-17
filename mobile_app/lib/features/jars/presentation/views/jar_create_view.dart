@@ -153,9 +153,10 @@ class _JarCreateViewState extends State<JarCreateView> {
 
     final invitedCollectorsData =
         newInvitedCollectors
+            .where((contributor) => contributor.collector?.id != null)
             .map(
               (contributor) => {
-                'collector': contributor.collector?.id,
+                'collector': contributor.collector!.id,
                 'status': 'pending',
               },
             )

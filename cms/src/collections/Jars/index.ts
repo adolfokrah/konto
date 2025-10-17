@@ -117,6 +117,22 @@ export const Jars: CollectionConfig = {
     {
       name: 'invitedCollectors',
       type: 'array',
+      required: false,
+      validate: (value: unknown) => {
+        if (!Array.isArray(value)) {
+          return true // Allow empty or non-array values
+        }
+
+        // Check for duplicate collectors
+        const collectorIds = value.map((item: any) => item?.collector).filter(Boolean)
+        const uniqueIds = new Set(collectorIds)
+
+        if (collectorIds.length !== uniqueIds.size) {
+          return 'Duplicate collectors are not allowed'
+        }
+
+        return true
+      },
       fields: [
         {
           name: 'collector',
@@ -124,18 +140,6 @@ export const Jars: CollectionConfig = {
           relationTo: 'users',
           required: true,
           hasMany: false,
-          filterOptions: ({ data }) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const filters: any = {}
-
-            if (data?.creator) {
-              filters.id = {
-                not_equals: data.creator,
-              }
-            }
-
-            return filters
-          },
           admin: {
             description: 'Users who can contribute to this jar (excluding the creator)',
           },
@@ -148,6 +152,7 @@ export const Jars: CollectionConfig = {
             { label: 'Pending', value: 'pending' },
           ],
           required: true,
+          defaultValue: 'pending',
         },
       ],
     },

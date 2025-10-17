@@ -684,7 +684,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                             ),
                                       ),
                                       subtitle: Text(
-                                        'Display jar recent contributions in jar in on payment page',
+                                        'Display jar recent contributions on payment page',
                                       ),
                                       trailing: CustomCupertinoSwitch(
                                         defaultValue:
