@@ -1,34 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 
-// Helper function to retry on MongoDB write conflicts
-async function retryOnWriteConflict<T>(
-  operation: () => Promise<T>,
-  maxRetries = 3,
-  baseDelay = 100,
-): Promise<T> {
-  let lastError: any
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await operation()
-    } catch (error: any) {
-      // Check if it's a MongoDB write conflict (code 112)
-      if (error.code === 112 && attempt < maxRetries - 1) {
-        // Exponential backoff with jitter
-        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 100
-        console.log(
-          `Write conflict detected, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
-        )
-        await new Promise((resolve) => setTimeout(resolve, delay))
-        lastError = error
-        continue
-      }
-      throw error
-    }
-  }
-  throw lastError
-}
-
 // to be careful not to re-consume the body stream if it was already parsed.
 export const verifyTransfer = async (req: PayloadRequest) => {
   try {
@@ -79,32 +51,28 @@ export const verifyTransfer = async (req: PayloadRequest) => {
     }
 
     // Insert a transfer record linked to this contribution
-    const transfer = await retryOnWriteConflict(() =>
-      req.payload.create({
-        collection: 'contributions',
-        data: {
-          ...foundContributionResult.docs[0],
-          type: 'transfer',
-          linkedContribution: contribution.id,
-          paymentStatus: 'transferred',
-          transactionReference: `transfer-${reference}`,
-          viaPaymentLink: false,
-          amountContributed: -contribution.amountContributed,
-        },
-      }),
-    )
+    const transfer = await req.payload.create({
+      collection: 'contributions',
+      data: {
+        ...foundContributionResult.docs[0],
+        type: 'transfer',
+        linkedContribution: contribution.id,
+        paymentStatus: 'transferred',
+        transactionReference: `transfer-${reference}`,
+        viaPaymentLink: false,
+        amountContributed: -contribution.amountContributed,
+      },
+    })
 
     // Update original contribution
-    const updated = await retryOnWriteConflict(() =>
-      req.payload.update({
-        collection: 'contributions',
-        id: contribution.id,
-        data: {
-          isTransferred: true,
-          linkedTransfer: transfer.id,
-        },
-      }),
-    )
+    const updated = await req.payload.update({
+      collection: 'contributions',
+      id: contribution.id,
+      data: {
+        isTransferred: true,
+        linkedTransfer: transfer.id,
+      },
+    })
 
     // Fetch the jar details if not already populated
     let jar: any

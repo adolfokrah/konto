@@ -126,7 +126,8 @@
     ],
     "overrides": {
       "webidl-conversions": "7.0.0",
-      "whatwg-url": "11.0.0"
+      "whatwg-url": "11.0.0",
+      "require-in-the-middle": "8.0.1"
     }
   }
 }
