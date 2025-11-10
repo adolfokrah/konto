@@ -1,5 +1,3 @@
-'use server'
-
 import type { GlobalAfterChangeHook } from 'payload'
 
 import { revalidateTag } from 'next/cache'
