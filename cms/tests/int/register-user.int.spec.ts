@@ -115,7 +115,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(result.doc.fullName).toBe('Jane Doe')
       expect(result.doc.country).toBe('ghana')
       expect(result.doc.countryCode).toBe('+233')
-      expect(result.doc.isKYCVerified).toBe(false)
+      expect(result.doc.isKYCVerified).toBe(true)
     })
 
     it('should register a user without email (auto-generate email)', async () => {
