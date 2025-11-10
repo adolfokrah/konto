@@ -20,6 +20,7 @@ import { sendWelcomeEmail } from './hooks/send-welcome-email'
 import { trackDailyActiveUser } from './hooks/track-daily-active-user'
 import { sendOTP } from './endpoints/send-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
+import { testPushNotification } from './endpoints/test-push-notification'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -132,6 +133,11 @@ export const Users: CollectionConfig = {
       path: '/delete-account',
       method: 'post',
       handler: deleteUserAccount,
+    },
+    {
+      path: '/test-push-notification',
+      method: 'post',
+      handler: testPushNotification,
     },
   ],
   fields: [

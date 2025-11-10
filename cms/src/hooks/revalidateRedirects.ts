@@ -1,3 +1,5 @@
+'use server'
+
 import type { CollectionAfterChangeHook } from 'payload'
 
 import { revalidateTag } from 'next/cache'
