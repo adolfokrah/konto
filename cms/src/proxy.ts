@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-function middleware(request: NextRequest) {
+function proxy(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname
     const referer = request.headers.get('referer')
@@ -90,14 +90,14 @@ function middleware(request: NextRequest) {
     return NextResponse.next()
   } catch (error) {
     // If middleware fails, just continue without modification
-    console.error('Middleware error:', error)
+    console.error('Proxy error:', error)
     return NextResponse.next()
   }
 }
 
 // Export both default and named for maximum compatibility
-export { middleware }
-export default middleware
+export { proxy }
+export default proxy
 
 export const config = {
   matcher: [

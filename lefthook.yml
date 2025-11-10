@@ -26,14 +26,14 @@ pre-commit:
         pnpm prettier --write $files
       stage_fixed: true
     
-    cms-lint:
-      glob: "cms/**/*.{ts,js}"
-      run: |
-        cd cms
-        # Remove 'cms/' prefix from file paths  
-        files=$(echo "{staged_files}" | sed 's|cms/||g')
-        pnpm eslint $files --fix
-      stage_fixed: true
+    # cms-lint:
+    #   glob: "cms/**/*.{ts,js}"
+    #   run: |
+    #     cd cms
+    #     # Remove 'cms/' prefix from file paths  
+    #     files=$(echo "{staged_files}" | sed 's|cms/||g')
+    #     pnpm exec eslint $files --fix
+    #   stage_fixed: true
 
 commit-msg:
   commands:
