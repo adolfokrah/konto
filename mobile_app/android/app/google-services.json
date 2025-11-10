@@ -7,28 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:191226486961:android:55f9c782e5b743f537c290",
+        "mobilesdk_app_id": "1:191226486961:android:784928e4f8c9be8637c290",
         "android_client_info": {
-          "package_name": "com.hoga.app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCGu9wPfE3A-azaebNkKCXySLdSaR0ce-A"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:191226486961:android:ce9af4692e54deb937c290",
-        "android_client_info": {
-          "package_name": "com.usehoga.app"
+          "package_name": "com.hoganame.hogapay"
         }
       },
       "oauth_client": [],

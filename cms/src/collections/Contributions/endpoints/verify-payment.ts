@@ -68,11 +68,28 @@ export const verifyPayment = async (req: PayloadRequest) => {
         )
       }
 
+      const contribution = foundContribution.docs[0]
+      const newStatus = (res.data as any)?.status === 'success' ? 'completed' : 'failed'
+
+      // Skip update if payment status is already set to the target status
+      // This prevents race conditions when webhook and app both try to update
+      if (contribution.paymentStatus === newStatus) {
+        console.log(
+          `Payment status already ${newStatus} for contribution ${contribution.id}, skipping update`,
+        )
+        return Response.json({
+          success: true,
+          data: res.data,
+          message: 'Transaction already verified',
+          alreadyProcessed: true,
+        })
+      }
+
       const channel = (res.data as any)?.channel
       const validPaymentMethods = ['mobile-money', 'bank', 'cash', 'card', 'apple-pay']
 
       // Only update payment method if we can map the channel to a valid payment method
-      let updatedPaymentMethod = foundContribution.docs[0].paymentMethod
+      let updatedPaymentMethod = contribution.paymentMethod
       if (channel && typeof channel === 'string') {
         const mappedChannel = channel.replace('_', '-')
         if (validPaymentMethods.includes(mappedChannel)) {
@@ -87,14 +104,14 @@ export const verifyPayment = async (req: PayloadRequest) => {
 
       await req.payload.update({
         collection: 'contributions',
-        id: foundContribution.docs[0].id,
+        id: contribution.id,
         data: {
-          paymentStatus: (res.data as any)?.status === 'success' ? 'completed' : 'failed',
+          paymentStatus: newStatus,
           paymentMethod: updatedPaymentMethod,
           contributorPhoneNumber:
-            foundContribution.docs[0]?.contributor?.toLocaleLowerCase() == 'anonymous'
+            contribution?.contributor?.toLocaleLowerCase() == 'anonymous'
               ? '-'
-              : foundContribution.docs[0]?.contributorPhoneNumber,
+              : contribution?.contributorPhoneNumber,
         },
       })
 

@@ -2,20 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>com.apple.developer.default-data-protection</key>
-	<string>NSFileProtectionComplete</string>
-	<!-- TODO: Add when Apple Developer Program is obtained ($99/year)
 	<key>aps-environment</key>
 	<string>development</string>
-	
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:hoga-2e89a.firebaseapp.com</string>
-		<string>applinks:hoga-2e89a.page.link</string>
-	</array>
-	
-	Both push notifications and associated domains require paid Apple Developer Program
-	Firebase Phone Auth will still work but may show reCAPTCHA more frequently
-	-->
+	<key>com.apple.developer.default-data-protection</key>
+	<string>NSFileProtectionComplete</string>
 </dict>
 </plist>

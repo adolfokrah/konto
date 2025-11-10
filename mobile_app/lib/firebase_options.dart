@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCGu9wPfE3A-azaebNkKCXySLdSaR0ce-A',
-    appId: '1:191226486961:android:ce9af4692e54deb937c290',
+    appId: '1:191226486961:android:784928e4f8c9be8637c290',
     messagingSenderId: '191226486961',
     projectId: 'hoga-2e89a',
     storageBucket: 'hoga-2e89a.firebasestorage.app',
@@ -59,11 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAyTvLvJOBncflUZ2lxjxwUmsl_xoc1wpo',
-    appId: '1:191226486961:ios:97ff86e4e5d240ef37c290',
+    appId: '1:191226486961:ios:e374feaa0e942d5c37c290',
     messagingSenderId: '191226486961',
     projectId: 'hoga-2e89a',
     storageBucket: 'hoga-2e89a.firebasestorage.app',
-    iosBundleId: 'com.usehoga.app',
+    iosBundleId: 'com.hoganame.hogapay',
   );
 
 }

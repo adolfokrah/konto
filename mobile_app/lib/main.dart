@@ -303,7 +303,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 // Add builder to handle Android navigation bar overlay
                 builder: (context, child) {
                   return SafeArea(
-                    bottom: true,
+                    bottom:
+                        Theme.of(context).platform == TargetPlatform.android,
                     top: false,
                     child: child ?? Container(),
                   );

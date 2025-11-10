@@ -1,4 +1,4 @@
-package com.usehoga.app
+package com.hoganame.hogapay
 
 import io.flutter.embedding.android.FlutterActivity
 
