@@ -59,8 +59,14 @@
 	<string>Hogapay needs camera access to capture photos for identity verification and to add visual content to your savings jars.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Hogapay needs access to your photo library to upload images for identity verification and to personalize your savings jars with photos.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Stay updated on contributions, transfers, and important updates for your jars. Get notified when someone contributes or when you receive a transfer.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
