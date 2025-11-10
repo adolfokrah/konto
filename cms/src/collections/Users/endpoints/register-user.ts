@@ -96,7 +96,7 @@ export const registerUser = async (req: PayloadRequest) => {
         countryCode,
         country,
         fullName,
-        isKYCVerified: false,
+        isKYCVerified: true,
         appSettings: {
           language: 'en',
           darkMode: false,
