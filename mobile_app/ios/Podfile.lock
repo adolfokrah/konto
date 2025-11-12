@@ -63,8 +63,6 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 7.8)
     - nanopb (< 2.30911.0, >= 2.30908.0)
   - Flutter (1.0.0)
-  - flutter_contacts (0.0.1):
-    - Flutter
   - flutter_loading_overlay (0.0.1):
     - Flutter
   - flutter_native_splash (2.4.3):
@@ -203,7 +201,6 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
-  - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
   - flutter_loading_overlay (from `.symlinks/plugins/flutter_loading_overlay/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
@@ -257,8 +254,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
-  flutter_contacts:
-    :path: ".symlinks/plugins/flutter_contacts/ios"
   flutter_loading_overlay:
     :path: ".symlinks/plugins/flutter_loading_overlay/ios"
   flutter_native_splash:
@@ -305,7 +300,6 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
   FirebaseMessaging: 88950ba9485052891ebe26f6c43a52bb62248952
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_contacts: 5383945387e7ca37cf963d4be57c21f2fc15ca9f
   flutter_loading_overlay: de2f8722b4285e48271739c53930aeed48d8a0af
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
   google_mlkit_commons: 414fc36ac51758c806381de33a1d148d2ba71ce4
