@@ -23,6 +23,29 @@ export const verifyPayment = async (req: PayloadRequest) => {
     }
 
     let res
+    const foundContribution = await req.payload.find({
+      collection: 'contributions',
+      where: {
+        transactionReference: { equals: reference },
+      },
+      limit: 1,
+    })
+    const contribution = foundContribution.docs[0]
+
+    // Skip if already in a final state (completed or failed)
+    // This prevents race conditions when webhook and app both try to update
+    if (contribution.paymentStatus === 'completed' || contribution.paymentStatus === 'failed') {
+      console.log(
+        `Contribution ${contribution.id} already in final state (${contribution.paymentStatus}), skipping update`,
+      )
+      return Response.json({
+        success: true,
+        data: contribution,
+        message: 'Transaction already verified',
+        alreadyProcessed: true,
+      })
+    }
+
     try {
       res = await paystack.checkTransactionStatus(reference)
     } catch (paystackError: any) {
@@ -50,15 +73,7 @@ export const verifyPayment = async (req: PayloadRequest) => {
     }
 
     if (res.status && (res.data as any)?.status != 'ongoing') {
-      const foundContribution = await req.payload.find({
-        collection: 'contributions',
-        where: {
-          transactionReference: { equals: reference },
-        },
-        limit: 1,
-      })
-
-      if (foundContribution.docs.length === 0) {
+      if (!contribution) {
         return Response.json(
           {
             success: false,
@@ -66,22 +81,6 @@ export const verifyPayment = async (req: PayloadRequest) => {
           },
           { status: 404 },
         )
-      }
-
-      const contribution = foundContribution.docs[0]
-
-      // Skip if already in a final state (completed or failed)
-      // This prevents race conditions when webhook and app both try to update
-      if (contribution.paymentStatus === 'completed' || contribution.paymentStatus === 'failed') {
-        console.log(
-          `Contribution ${contribution.id} already in final state (${contribution.paymentStatus}), skipping update`,
-        )
-        return Response.json({
-          success: true,
-          data: res.data,
-          message: 'Transaction already verified',
-          alreadyProcessed: true,
-        })
       }
 
       const newStatus = (res.data as any)?.status === 'success' ? 'completed' : 'failed'
