@@ -42,6 +42,17 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     _verificationTimer?.cancel(); // Cancel any existing timer
     _verificationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (mounted) {
+        // Check current state before making verification request
+        final currentState = context.read<MomoPaymentBloc>().state;
+        if (currentState is MomoPaymentSuccess) {
+          final status = currentState.charge.status;
+          // Stop timer if payment is in final state (success or failed)
+          if (status == 'success' || status == 'failed') {
+            timer.cancel();
+            _verificationTimer = null;
+            return;
+          }
+        }
         context.read<MomoPaymentBloc>().add(VerifyPaymentRequested(reference));
       } else {
         timer.cancel();
