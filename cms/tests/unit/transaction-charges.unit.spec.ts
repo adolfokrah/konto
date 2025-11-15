@@ -46,11 +46,11 @@ describe('TransactionCharges', () => {
   describe('calculateContributorAmount - Creator Pays Platform Fees', () => {
     it('should calculate correct total amount and paystack charge when creator pays platform fees', () => {
       const testCases = [
-        { amount: 100, expectedTotal: 101.95, expectedPaystackCharge: 1.99 },
-        { amount: 200, expectedTotal: 203.9, expectedPaystackCharge: 3.98 },
-        { amount: 150, expectedTotal: 152.93, expectedPaystackCharge: 2.98 },
-        { amount: 500, expectedTotal: 509.75, expectedPaystackCharge: 9.94 },
-        { amount: 1000, expectedTotal: 1019.5, expectedPaystackCharge: 19.88 },
+        { amount: 100, expectedTotal: 101.5, expectedPaystackCharge: 1.52 },
+        { amount: 200, expectedTotal: 203, expectedPaystackCharge: 3.04 },
+        { amount: 150, expectedTotal: 152.25, expectedPaystackCharge: 2.28 },
+        { amount: 500, expectedTotal: 507.5, expectedPaystackCharge: 7.61 },
+        { amount: 1000, expectedTotal: 1015, expectedPaystackCharge: 15.22 },
       ]
 
       testCases.forEach(({ amount, expectedTotal, expectedPaystackCharge }) => {
@@ -63,8 +63,8 @@ describe('TransactionCharges', () => {
 
     it('should handle decimal amounts correctly', () => {
       const result = transactionCharges.calculateContributorAmount(99.5)
-      expect(result.totalAmount).toBe(101.44)
-      expect(result.paystackCharge).toBe(1.98)
+      expect(result.totalAmount).toBe(100.99)
+      expect(result.paystackCharge).toBe(1.51)
     })
 
     it('should handle zero amount', () => {
@@ -77,9 +77,9 @@ describe('TransactionCharges', () => {
   describe('calculateContributorAmount - Contributor Pays Platform Fees', () => {
     it('should calculate correct total amount when contributor pays platform fees', () => {
       const testCases = [
-        { amount: 100, expectedTotalApprox: 103.9 }, // Should be higher due to platform fees
-        { amount: 200, expectedTotalApprox: 207.9 },
-        { amount: 150, expectedTotalApprox: 155.9 },
+        { amount: 100, expectedTotalApprox: 102.5 }, // Should be higher due to platform fees
+        { amount: 200, expectedTotalApprox: 205 },
+        { amount: 150, expectedTotalApprox: 153.75 },
       ]
 
       testCases.forEach(({ amount, expectedTotalApprox }) => {
@@ -97,19 +97,19 @@ describe('TransactionCharges', () => {
       const testCases = [
         {
           originalAmount: 100,
-          totalAmount: 101.95,
-          paystackCharge: 1.99,
-          expectedPlatformCharge: 1.96,
-          expectedAmountAfterCharges: 98, // baseAmountAfterCharges - transferFee
+          totalAmount: 101.5,
+          paystackCharge: 1.52,
+          expectedPlatformCharge: 0.98,
+          expectedAmountAfterCharges: 99, // baseAmountAfterCharges - transferFee
           description:
             'creator pays platform fees - recipient gets amount after charges minus transfer fee',
         },
         {
           originalAmount: 200,
-          totalAmount: 203.9,
-          paystackCharge: 3.98,
-          expectedPlatformCharge: 3.92,
-          expectedAmountAfterCharges: 196, // baseAmountAfterCharges - transferFee
+          totalAmount: 203,
+          paystackCharge: 3.04,
+          expectedPlatformCharge: 1.96,
+          expectedAmountAfterCharges: 198, // baseAmountAfterCharges - transferFee
           description:
             'creator pays platform fees - recipient gets amount after charges minus transfer fee',
         },
@@ -171,13 +171,13 @@ describe('TransactionCharges', () => {
       const testCases = [
         {
           amount: 100,
-          expectedAmountAfterCharges: 98, // Based on actual implementation: baseAmountAfterCharges - transferFee
-          description: '100 should result in 98 after charges (creator pays platform fees)',
+          expectedAmountAfterCharges: 99, // Based on actual implementation: baseAmountAfterCharges - transferFee
+          description: '100 should result in 99 after charges (creator pays platform fees)',
         },
         {
           amount: 200,
-          expectedAmountAfterCharges: 196, // Based on actual implementation: baseAmountAfterCharges - transferFee
-          description: '200 should result in 196 after charges (creator pays platform fees)',
+          expectedAmountAfterCharges: 198, // Based on actual implementation: baseAmountAfterCharges - transferFee
+          description: '200 should result in 198 after charges (creator pays platform fees)',
         },
       ]
 
@@ -320,8 +320,8 @@ describe('TransactionCharges', () => {
 
   describe('Fee Configuration', () => {
     it('should have correct fee percentages set', () => {
-      expect(transactionCharges.paystackFeeRate).toBe(0.0195) // 1.95%
-      expect(transactionCharges.platformFeeRate).toBe(0.02) // 2%
+      expect(transactionCharges.paystackFeeRate).toBe(0.015) // 1.5%
+      expect(transactionCharges.platformFeeRate).toBe(0.01) // 1%
       expect(transactionCharges.paystackTransferFeeMomo).toBe(0) // Updated to 0
     })
   })
