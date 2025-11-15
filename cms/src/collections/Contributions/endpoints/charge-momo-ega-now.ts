@@ -155,7 +155,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/contributions/eganow-webhook`, // Webhook endpoint
+      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/contributions/eganow-webhook`, // Webhook endpoint
     }
 
     // Initiate mobile money collection via Eganow
