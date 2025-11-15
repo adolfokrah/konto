@@ -32,6 +32,17 @@ export const verifyPayment = async (req: PayloadRequest) => {
     })
     const contribution = foundContribution.docs[0]
 
+    // Check if contribution exists
+    if (!contribution) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Contribution not found',
+        },
+        { status: 404 },
+      )
+    }
+
     // Skip if already in a final state (completed or failed)
     // This prevents race conditions when webhook and app both try to update
     if (contribution.paymentStatus === 'completed' || contribution.paymentStatus === 'failed') {
