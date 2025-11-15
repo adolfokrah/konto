@@ -229,6 +229,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       paymentMethod: true,
       type: true,
       paid: true,
+      charges: true,
+      chargesBreakdown: true,
     },
   })
 
@@ -300,6 +302,39 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
+  // Calculate charges breakdown for all completed contributions
+  const completedContributions = allContributions.docs.filter(
+    (contribution: any) => contribution.paymentStatus === 'completed',
+  )
+
+  const totalCharges = completedContributions.reduce(
+    (sum: number, contribution: any) => sum + (contribution.charges || 0),
+    0,
+  )
+
+  const totalPaystackTransferFeeMomo = completedContributions.reduce(
+    (sum: number, contribution: any) =>
+      sum + (contribution.chargesBreakdown?.paystackTransferFeeMomo || 0),
+    0,
+  )
+
+  const totalPlatformCharge = completedContributions.reduce(
+    (sum: number, contribution: any) => sum + (contribution.chargesBreakdown?.platformCharge || 0),
+    0,
+  )
+
+  const totalPaystackCharge = completedContributions.reduce(
+    (sum: number, contribution: any) => sum + (contribution.chargesBreakdown?.paystackCharge || 0),
+    0,
+  )
+
+  const totalAmountPaidByContributors = completedContributions.reduce(
+    (sum: number, contribution: any) =>
+      sum +
+      (contribution.chargesBreakdown?.amountPaidByContributor || contribution.amountContributed),
+    0,
+  )
+
   const data = {
     ...jar,
     invitedCollectors: jar.invitedCollectors.filter(
@@ -314,6 +349,13 @@ export const getJarSummary = async (req: PayloadRequest) => {
       totalAmountTobeTransferred: Number(totalAmountTobeTransferred.toFixed(2)),
       totalYouOwe: Number(totalYouOwe.toFixed(2)),
       ...paymentBreakdown,
+    },
+    chargesBreakdown: {
+      totalCharges: Number(totalCharges.toFixed(2)),
+      totalPaystackTransferFeeMomo: Number(totalPaystackTransferFeeMomo.toFixed(2)),
+      totalPlatformCharge: Number(totalPlatformCharge.toFixed(2)),
+      totalPaystackCharge: Number(totalPaystackCharge.toFixed(2)),
+      totalAmountPaidByContributors: Number(totalAmountPaidByContributors.toFixed(2)),
     },
   }
 
