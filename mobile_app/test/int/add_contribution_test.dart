@@ -10,6 +10,10 @@ import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/views/save_contribution_view.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/core/enums/app_language.dart';
+import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
@@ -112,6 +116,49 @@ void main() {
                           create: (context) => AddContributionBloc(),
                         ),
                         BlocProvider(create: (context) => MomoPaymentBloc()),
+                        BlocProvider(
+                          create: (context) {
+                            final authBloc = AuthBloc();
+                            // Initialize with authenticated state for testing
+                            final testUser = User(
+                              id: 'test-user-123',
+                              email: 'test@example.com',
+                              fullName: 'Test User',
+                              phoneNumber: '+1234567890',
+                              countryCode: 'US',
+                              country: 'United States',
+                              isKYCVerified: true,
+                              createdAt: DateTime.now(),
+                              updatedAt: DateTime.now(),
+                              accountHolder: 'Test Account Holder',
+                              sessions: [
+                                UserSession(
+                                  id: 'test-session-id',
+                                  createdAt: DateTime.now(),
+                                  expiresAt: DateTime.now().add(
+                                    const Duration(days: 30),
+                                  ),
+                                ),
+                              ],
+                              appSettings: const AppSettings(
+                                language: AppLanguage.english,
+                                theme: AppTheme.light,
+                                biometricAuthEnabled: false,
+                                notificationsSettings: NotificationSettings(
+                                  pushNotificationsEnabled: true,
+                                  emailNotificationsEnabled: true,
+                                  smsNotificationsEnabled: false,
+                                ),
+                              ),
+                            );
+                            return authBloc..add(
+                              UpdateUserData(
+                                updatedUser: testUser,
+                                token: 'test-jwt-token-123456',
+                              ),
+                            );
+                          },
+                        ),
                       ],
                       child: const SaveContributionView(),
                     ),

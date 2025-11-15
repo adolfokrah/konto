@@ -242,6 +242,7 @@ void main() {
         routes: {
           '/login': (context) => const Scaffold(body: Text('Login Screen')),
           '/request_contribution': (context) => const RequestContributionView(),
+          '/kycView': (context) => const Scaffold(body: Text('KYC View')),
         },
       ),
     );

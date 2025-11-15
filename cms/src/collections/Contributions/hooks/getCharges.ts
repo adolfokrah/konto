@@ -44,6 +44,17 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
 
       //  console.log(amountAfterCharges,  'amount after charges');
     }
+
+    if (data.paymentMethod === 'cash') {
+      //do cash charges calculations
+
+      data.chargesBreakdown = {
+        paystackTransferFeeMomo: 0,
+        platformCharge: 0.01 * data.amountContributed, //1% platform charge for cash
+        amountPaidByContributor: data.amountContributed,
+        paystackCharge: 0,
+      }
+    }
   }
 
   return data
