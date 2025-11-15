@@ -1,4 +1,5 @@
 import { PayloadRequest } from 'payload'
+import { payoutEganow } from './payout-eganow'
 
 interface EganowWebhookPayload {
   TransactionId: string
@@ -46,10 +47,10 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     const contribution = contributionResult.docs[0]
 
-    // Check if contribution is already in a final state (completed or failed)
-    if (contribution.paymentStatus === 'completed' || contribution.paymentStatus === 'failed') {
+    // Only process webhook if contribution status is pending
+    if (contribution.paymentStatus !== 'pending') {
       console.log(
-        `Contribution ${contribution.id} already in final state (${contribution.paymentStatus}), skipping update`,
+        `Contribution ${contribution.id} status is ${contribution.paymentStatus}, not pending. Skipping update.`,
       )
       return new Response(null, { status: 200 })
     }
@@ -75,6 +76,28 @@ export const eganowWebhook = async (req: PayloadRequest) => {
         // Keep the original transactionReference - don't change it
       },
     })
+
+    // If type is contribution and status is completed, automatically initiate payout
+    if (contribution.type === 'contribution' && newStatus === 'completed') {
+      console.log(`Contribution ${TransactionId} completed, initiating automatic payout`)
+
+      try {
+        // Create a mock request object for the payout
+        const payoutReq = {
+          ...req,
+          data: {
+            contributionId: contribution.id,
+          },
+        }
+
+        // Call the payout endpoint
+        await payoutEganow(payoutReq as PayloadRequest)
+        console.log(`Payout initiated successfully for contribution ${TransactionId}`)
+      } catch (payoutError: any) {
+        console.error(`Failed to initiate payout for contribution ${TransactionId}:`, payoutError)
+        // Don't fail the webhook if payout fails - log it and continue
+      }
+    }
 
     console.log(`Successfully updated contribution ${TransactionId} to ${newStatus}`)
     console.log(`Original reference maintained: ${contribution.transactionReference}`)

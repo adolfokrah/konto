@@ -79,6 +79,27 @@ interface EganowStatusResponse {
   referenceNo: string
 }
 
+interface EganowPayoutRequest {
+  paypartnerCode: string
+  amount: string
+  accountNoOrCardNoOrMSISDN: string
+  accountName: string
+  transactionId: string
+  narration: string
+  transCurrencyIso: string
+  expiryDateMonth: number
+  expiryDateYear: number
+  cvv: string
+  languageId: string
+  callback: string
+}
+
+interface EganowPayoutResponse {
+  transactionStatus: string
+  eganowReferenceNo: string
+  message: string
+}
+
 export default class Eganow {
   private readonly username: string
   private readonly password: string
@@ -267,6 +288,16 @@ export default class Eganow {
    */
   async checkTransactionStatus(params: EganowStatusRequest): Promise<EganowStatusResponse> {
     return this.request<EganowStatusResponse>('POST', '/api/transactions/status', {
+      body: params,
+    })
+  }
+
+  /**
+   * Payout
+   * Initiate a payout (credit) to a mobile money account or bank account
+   */
+  async payout(params: EganowPayoutRequest): Promise<EganowPayoutResponse> {
+    return this.request<EganowPayoutResponse>('POST', '/api/transactions/payout', {
       body: params,
     })
   }

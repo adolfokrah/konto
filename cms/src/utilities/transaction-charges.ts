@@ -1,6 +1,6 @@
 export default class TransactionCharges {
-  private readonly paystackFee = 0.0195 // 1.95%
-  private readonly platformFee = 0.02 // 2%
+  private readonly paystackFee = 0.015 // 1.5%
+  private readonly platformFee = 0.01 // 1%
   private readonly transferFee = 0 // 1 cedi
   private readonly transferFeeThreshold = 2 // Platform charge threshold for fee allocation
   private readonly isCreatorPaysPlatformFees: boolean

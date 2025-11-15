@@ -5,9 +5,11 @@ import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { paystackWebhook } from './endpoints/paystack-webhook'
 import { eganowWebhook } from './endpoints/eganow-webhook'
+import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
+import { payoutEganow } from './endpoints/payout-eganow'
 import { verifyPayment } from './endpoints/verify-payment'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus, updateJarTotalContributions } from './hooks'
@@ -320,6 +322,11 @@ export const Contributions: CollectionConfig = {
       handler: eganowWebhook,
     },
     {
+      path: '/eganow-payout-webhook',
+      method: 'post',
+      handler: eganowPayoutWebhook,
+    },
+    {
       path: '/send-otp',
       method: 'post',
       handler: sendOtp,
@@ -338,6 +345,11 @@ export const Contributions: CollectionConfig = {
       path: '/transfer-momo',
       method: 'post',
       handler: transferMomo,
+    },
+    {
+      path: '/payout-eganow',
+      method: 'post',
+      handler: payoutEganow,
     },
     {
       path: '/verify-transfer',

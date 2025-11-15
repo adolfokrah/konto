@@ -68,8 +68,7 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
 
     final bankLower = bank.toLowerCase();
     if (bankLower.contains('mtn')) return 'mtn';
-    if (bankLower.contains('telecel') || bankLower.contains('vodafone'))
-      return 'telecel';
+    if (bankLower.contains('telecel')) return 'telecel';
     if (bankLower.contains('airteltigo') || bankLower.contains('airtel')) {
       return 'airteltigo';
     }

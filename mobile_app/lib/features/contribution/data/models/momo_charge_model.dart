@@ -89,7 +89,7 @@ class MomoChargeModel {
   /// Check if the charge requires offline authorization (MTN, ATL)
   bool get requiresOfflineAuthorization => isPayOffline;
 
-  /// Check if the charge requires OTP (Telecel/Vodafone)
+  /// Check if the charge requires OTP (Telecel)
   bool get requiresOtp => isSendOtp;
 
   /// Get formatted amount with currency

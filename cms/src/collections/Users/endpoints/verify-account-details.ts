@@ -1,8 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-import { mobile_money_bank_codes } from '@/lib/constants/bank_codes'
-import { paystack } from '@/utilities/initalise'
+import { eganow } from '@/utilities/initalise'
+
 export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
@@ -30,29 +30,53 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
       )
     }
 
-    const data = {
-      account_number: phoneNumber,
-      bank_code:
-        mobile_money_bank_codes[bank.toLowerCase() as keyof typeof mobile_money_bank_codes],
+    // Map mobile money provider to Eganow paypartner code
+    const providerMap: Record<string, string> = {
+      mtn: 'MTNGH',
+      airteltigo: 'ATGH',
+      telecel: 'TCELGH',
     }
 
-    return Response.json(
-      {
-        success: true,
-        message: 'Account details verified successfully',
-        data: { ...data, account_name: 'TEST NAME' },
-      },
-      { status: 200 },
-    )
+    const paypartnerCode = providerMap[bank.toLowerCase()]
+    if (!paypartnerCode) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Unsupported mobile money provider',
+          valid: false,
+        },
+        { status: 400 },
+      )
+    }
 
-    const response = await paystack.verifyAccountDetails(data)
+    // Format phone number to international format (233...)
+    let formattedPhoneNumber = phoneNumber.replace(/\s+/g, '')
+    if (formattedPhoneNumber.startsWith('0')) {
+      formattedPhoneNumber = '233' + formattedPhoneNumber.substring(1)
+    } else if (!formattedPhoneNumber.startsWith('233')) {
+      formattedPhoneNumber = '233' + formattedPhoneNumber
+    }
 
-    if (response.status && response.data) {
+    // Get token (automatically cached by Eganow class)
+    await eganow.getToken()
+
+    // Verify KYC using Eganow
+    const kycResponse = await eganow.verifyKYC({
+      paypartnerCode,
+      accountNoOrCardNoOrMSISDN: formattedPhoneNumber,
+      languageId: 'en',
+      countryCode: 'GH',
+    })
+
+    if (kycResponse.isSuccess && kycResponse.accountName) {
       return Response.json(
         {
           success: true,
           message: 'Account details verified successfully',
-          data: response.data,
+          data: {
+            account_name: kycResponse.accountName,
+            account_number: phoneNumber,
+          },
         },
         { status: 200 },
       )
