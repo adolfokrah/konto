@@ -8,6 +8,8 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     }
     const { reference } = req.data || {}
 
+    console.log(`Verify Payment Eganow - Searching for reference: ${reference}`)
+
     // Validate required fields
     if (!reference) {
       return Response.json(
@@ -26,10 +28,14 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
       },
       limit: 1,
     })
+
+    console.log(`Verify Payment Eganow - Found ${foundContribution.docs.length} contributions`)
+
     const contribution = foundContribution.docs[0]
 
     // Check if contribution exists
     if (!contribution) {
+      console.log(`Verify Payment Eganow - Contribution not found for reference: ${reference}`)
       return Response.json(
         {
           success: false,
@@ -50,9 +56,12 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     const mappedStatus =
       (contribution.paymentStatus && statusMap[contribution.paymentStatus]) || 'failed'
 
-    // Return the current status of the contribution
-    // The status is updated by the Eganow webhook
-    return Response.json({
+    console.log(`Verify Payment Eganow - Contribution ID: ${contribution.id}`)
+    console.log(`Verify Payment Eganow - Payment Status: ${contribution.paymentStatus}`)
+    console.log(`Verify Payment Eganow - Mapped Status: ${mappedStatus}`)
+    console.log(`Verify Payment Eganow - Reference: ${contribution.transactionReference}`)
+
+    const responseData = {
       success: true,
       data: {
         status: mappedStatus,
@@ -65,7 +74,13 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
           : contribution.paymentStatus === 'failed'
             ? 'Payment failed'
             : 'Payment pending',
-    })
+    }
+
+    console.log('Verify Payment Eganow - Response:', JSON.stringify(responseData))
+
+    // Return the current status of the contribution
+    // The status is updated by the Eganow webhook
+    return Response.json(responseData)
   } catch (error: any) {
     console.log(error)
     // Handle errors and return a meaningful response

@@ -66,16 +66,18 @@ export const eganowWebhook = async (req: PayloadRequest) => {
     console.log(`Updating contribution ${TransactionId} to status: ${newStatus}`)
 
     // Update contribution status
+    // Do NOT update transactionReference - it should remain consistent for mobile app verification
     await req.payload.update({
       collection: 'contributions',
       id: contribution.id,
       data: {
         paymentStatus: newStatus,
-        transactionReference: EganowTransRefNo || contribution.transactionReference,
+        // Keep the original transactionReference - don't change it
       },
     })
 
     console.log(`Successfully updated contribution ${TransactionId} to ${newStatus}`)
+    console.log(`Original reference maintained: ${contribution.transactionReference}`)
 
     return new Response(null, { status: 200 })
   } catch (error: any) {
