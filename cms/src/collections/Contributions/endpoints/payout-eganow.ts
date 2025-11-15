@@ -145,7 +145,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `https://webhook.site/c6e2d91d-533b-4908-96e9-69344c8c5324`,
+      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/contributions/eganow-payout-webhook`,
     }
 
     console.log('Payout request data:', JSON.stringify(payoutData, null, 2))

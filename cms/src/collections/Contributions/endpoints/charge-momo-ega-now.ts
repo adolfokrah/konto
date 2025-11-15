@@ -142,12 +142,32 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     // Get token (automatically cached by Eganow class)
     await eganow.getToken()
 
+    // Try to get account name from Eganow KYC
+    let accountName = contribution.contributor || 'Anonymous'
+    try {
+      const kycResult = await eganow.verifyKYC({
+        paypartnerCode,
+        accountNoOrCardNoOrMSISDN: phoneNumber,
+        languageId: 'en',
+        countryCode: 'GH',
+      })
+      if (kycResult.accountName) {
+        accountName = kycResult.accountName
+      }
+    } catch (kycError) {
+      console.log('KYC lookup failed, using contributor name:', kycError)
+      // Continue with contributor name
+    }
+
     // Prepare collection request data
     const collectionData = {
       paypartnerCode,
-      amount: String(contribution.chargesBreakdown.amountPaidByContributor), // Amount as string
+      amount: String(
+        contribution.chargesBreakdown.amountPaidByContributor -
+          (contribution.chargesBreakdown.paystackCharge || 0),
+      ), // Amount as string
       accountNoOrCardNoOrMSISDN: phoneNumber,
-      accountName: contribution.contributor || 'Anonymous',
+      accountName,
       transactionId: contribution.id, // Use contribution ID as transaction reference
       narration: `Contribution for jar: ${jar.name}`,
       transCurrencyIso: jar.currency as string,

@@ -10,6 +10,7 @@ import { verifyTransfer } from './endpoints/verify-transfer'
 import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
 import { payoutEganow } from './endpoints/payout-eganow'
+import { testPayoutEganow } from './endpoints/test-payout-eganow'
 import { verifyPayment } from './endpoints/verify-payment'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus, updateJarTotalContributions } from './hooks'
@@ -350,6 +351,11 @@ export const Contributions: CollectionConfig = {
       path: '/payout-eganow',
       method: 'post',
       handler: payoutEganow,
+    },
+    {
+      path: '/test-payout-eganow',
+      method: 'post',
+      handler: testPayoutEganow,
     },
     {
       path: '/verify-transfer',
