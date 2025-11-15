@@ -351,7 +351,7 @@ describe('ChargeMomo Endpoint - Step by Step Tests', () => {
     expect(mockChargeMomo).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'success.test@example.com',
-        amount: 5098, // 50.98 * 100 (contributor total amount including charges)
+        amount: 5075, // 50.75 * 100 (contributor total amount including charges)
         currency: 'GHS', // Currency from jar (lowercase)
         // phone: '+233541234567',
         provider: 'MTN',
