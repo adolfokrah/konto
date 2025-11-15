@@ -115,7 +115,6 @@ export const Contributions: CollectionConfig = {
       type: 'group',
       admin: {
         description: 'Detailed breakdown of all charges applied to this contribution',
-        condition: (data) => data?.paymentMethod === 'mobile-money',
       },
       fields: [
         {

@@ -50,7 +50,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
 
       data.chargesBreakdown = {
         paystackTransferFeeMomo: 0,
-        platformCharge: 0.01 * data.amountContributed, //1% platform charge for cash
+        platformCharge: Number((0.01 * data.amountContributed).toFixed(2)), //1% platform charge for cash
         amountPaidByContributor: data.amountContributed,
         paystackCharge: 0,
       }

@@ -300,7 +300,11 @@ export const getJarSummary = async (req: PayloadRequest) => {
         contribution.paymentStatus === 'completed' &&
         contribution.paid === false,
     )
-    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+    .reduce(
+      (sum: number, contribution: any) =>
+        sum + (contribution?.chargesBreakdown?.platformCharge || 0),
+      0,
+    )
 
   // Calculate charges breakdown for all completed contributions
   const completedContributions = allContributions.docs.filter(

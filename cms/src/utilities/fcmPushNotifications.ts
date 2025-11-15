@@ -102,22 +102,22 @@ export class FCMPushNotifications {
       })
 
       // Log detailed results for debugging
-      console.log('FCM sendEachForMulticast result:', {
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-        responses: response.responses.map((r, i) => ({
-          index: i,
-          success: r.success,
-          messageId: r.messageId,
-          error: r.error
-            ? {
-                code: r.error.code,
-                message: r.error.message,
-                details: JSON.stringify(r.error, null, 2),
-              }
-            : null,
-        })),
-      })
+      // console.log('FCM sendEachForMulticast result:', {
+      //   successCount: response.successCount,
+      //   failureCount: response.failureCount,
+      //   responses: response.responses.map((r, i) => ({
+      //     index: i,
+      //     success: r.success,
+      //     messageId: r.messageId,
+      //     error: r.error
+      //       ? {
+      //           code: r.error.code,
+      //           message: r.error.message,
+      //           details: JSON.stringify(r.error, null, 2),
+      //         }
+      //       : null,
+      //   })),
+      // })
 
       // If there are failures, log full error details
       if (response.failureCount > 0) {
