@@ -145,7 +145,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/contributions/eganow-payout-webhook`,
+      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/contributions/eganow-payout-webhook`,
     }
 
     console.log('Payout request data:', JSON.stringify(payoutData, null, 2))
@@ -166,7 +166,10 @@ export const payoutEganow = async (req: PayloadRequest) => {
         amountContributed: -Math.abs(foundContribution.amountContributed), // Negative for payout
         collector: foundContribution.collector,
         contributorPhoneNumber: creator.accountNumber,
-        contributor: 'konto',
+        contributor:
+          typeof foundContribution.collector === 'string'
+            ? foundContribution.collector
+            : foundContribution.collector?.fullName || 'Anonymous',
         type: 'transfer',
       },
     })
