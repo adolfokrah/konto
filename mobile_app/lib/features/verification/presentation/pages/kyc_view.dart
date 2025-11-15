@@ -1,8 +1,4 @@
 import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/widgets/feedback_action_button.dart';
-import 'package:Hoga/core/widgets/notification_icon_button.dart';
-import 'package:Hoga/core/widgets/user_avatar_small.dart';
-import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
@@ -15,37 +11,10 @@ class KycView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            String firstName = localizations.user;
-            if (state is AuthAuthenticated) {
-              // Extract first name from full name
-              final fullName = state.user.fullName;
-              firstName = fullName.split(' ').first;
-            }
-            return Text(
-              localizations.hiUser(firstName),
-              style: TextStyles.titleMediumLg,
-            );
-          },
-        ),
-        actions: [
-          const FeedbackActionButton(),
-          const NotificationIconButton(),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: UserAvatarSmall(
-              backgroundColor:
-                  isDark ? Theme.of(context).colorScheme.primary : Colors.white,
-              radius: 20,
-            ),
-          ),
-        ],
+        title: Text('Verify your identity', style: TextStyles.titleMediumLg),
       ),
       body: BlocConsumer<KycBloc, KycState>(
         listener: (context, state) {
@@ -160,13 +129,13 @@ class KycView extends StatelessWidget {
                       Icon(Icons.verified_user, size: 64),
                       const SizedBox(height: 24),
                       Text(
-                        'In order to create a jar, please complete the KYC verification process.',
+                        'In order to set a withdrawal account or start receiving mobile money and card payments, you need to verify your account.',
                         style: TextStyles.titleRegularSm,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Please tap the button below to start your KYC verification.',
+                        'Please tap the button below to start your account verification.',
                         style: TextStyles.titleRegularSm,
                         textAlign: TextAlign.center,
                       ),

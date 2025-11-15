@@ -36,7 +36,6 @@ import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dar
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 
@@ -222,81 +221,91 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
       ],
-      child: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, authState) {
-          // Check if user is authenticated and KYC is not verified
-          if (authState is AuthAuthenticated && !authState.user.isKYCVerified) {
-            return const KycView();
-          }
-
-          return BlocBuilder<JarSummaryBloc, JarSummaryState>(
-            builder: (context, state) {
-              return Scaffold(
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                body: Stack(
-                  children: [
-                    // Background image positioned to cover upper section only
-                    if (state is JarSummaryLoaded &&
-                        state.jarData.image?.url != null)
-                      ScrollableBackgroundImage(
-                        imageUrl: ImageUtils.constructImageUrl(
-                          state.jarData.image!.url!,
-                        ),
-                        scrollOffset: _scrollOffset,
-                        height: 500.0,
-                        maxScrollForOpacity: 200.0,
-                        baseOpacity: 0.30,
-                      ),
-                    // Main content with custom scroll view
-                    NotificationListener<ScrollNotification>(
-                      onNotification: (ScrollNotification notification) {
-                        if (notification is ScrollUpdateNotification) {
-                          setState(() {
-                            _scrollOffset = notification.metrics.pixels;
-                          });
-                        }
-                        return false;
-                      },
-                      child: RefreshIndicator(
-                        onRefresh: _onRefresh,
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          slivers: [
-                            SliverAppBar(
-                              centerTitle: false,
-                              title: BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, state) {
-                                  String firstName = localizations.user;
-                                  if (state is AuthAuthenticated) {
-                                    // Extract first name from full name
-                                    final fullName = state.user.fullName;
-                                    firstName = fullName.split(' ').first;
+      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Stack(
+              children: [
+                // Background image positioned to cover upper section only
+                if (state is JarSummaryLoaded &&
+                    state.jarData.image?.url != null)
+                  ScrollableBackgroundImage(
+                    imageUrl: ImageUtils.constructImageUrl(
+                      state.jarData.image!.url!,
+                    ),
+                    scrollOffset: _scrollOffset,
+                    height: 500.0,
+                    maxScrollForOpacity: 200.0,
+                    baseOpacity: 0.30,
+                  ),
+                // Main content with custom scroll view
+                NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification notification) {
+                    if (notification is ScrollUpdateNotification) {
+                      setState(() {
+                        _scrollOffset = notification.metrics.pixels;
+                      });
+                    }
+                    return false;
+                  },
+                  child: RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverAppBar(
+                          centerTitle: false,
+                          title: BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              String firstName = localizations.user;
+                              if (state is AuthAuthenticated) {
+                                // Extract first name from full name
+                                final fullName = state.user.fullName;
+                                firstName = fullName.split(' ').first;
+                              }
+                              return Text(
+                                localizations.hiUser(firstName),
+                                style: TextStyles.titleMediumLg,
+                              );
+                            },
+                          ),
+                          backgroundColor: Color.lerp(
+                            Colors.transparent,
+                            Theme.of(context).colorScheme.surface,
+                            (_scrollOffset / 200).clamp(0.0, 1.0),
+                          ),
+                          surfaceTintColor: Colors.transparent,
+                          elevation: 0,
+                          floating: true,
+                          snap: true,
+                          pinned: true,
+                          actions: [
+                            const FeedbackActionButton(),
+                            const NotificationIconButton(),
+                            if (state is JarSummaryLoaded)
+                              BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, authState) {
+                                  bool isKYCVerified = false;
+                                  if (authState is AuthAuthenticated) {
+                                    isKYCVerified =
+                                        authState.user.isKYCVerified;
                                   }
-                                  return Text(
-                                    localizations.hiUser(firstName),
-                                    style: TextStyles.titleMediumLg,
-                                  );
-                                },
-                              ),
-                              backgroundColor: Color.lerp(
-                                Colors.transparent,
-                                Theme.of(context).colorScheme.surface,
-                                (_scrollOffset / 200).clamp(0.0, 1.0),
-                              ),
-                              surfaceTintColor: Colors.transparent,
-                              elevation: 0,
-                              floating: true,
-                              snap: true,
-                              pinned: true,
-                              actions: [
-                                const FeedbackActionButton(),
-                                const NotificationIconButton(),
-                                if (state is JarSummaryLoaded)
-                                  AppIconButton(
+
+                                  return AppIconButton(
                                     key: const Key('request_button_qr_code'),
                                     opacity: 0.8,
                                     onPressed: () {
+                                      // Check KYC verification before allowing request
+                                      if (!isKYCVerified) {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.kycView,
+                                        );
+                                        return;
+                                      }
+
                                       Navigator.pushNamed(
                                         context,
                                         AppRoutes.contributionRequest,
@@ -311,48 +320,48 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         state.jarData.status !=
                                         JarStatus.sealed,
                                     size: const Size(40, 40),
-                                  ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: AppSpacing.spacingXs,
-                                    right: AppSpacing.spacingM,
-                                  ),
-                                  child: BlocBuilder<AuthBloc, AuthState>(
-                                    builder: (context, authState) {
-                                      return BlocBuilder<
-                                        UserAccountBloc,
-                                        UserAccountState
-                                      >(
-                                        builder: (context, uaState) {
-                                          return UserAvatarSmall(
-                                            backgroundColor:
-                                                isDark
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withValues(alpha: 0.5)
-                                                    : Colors.white.withValues(
-                                                      alpha: 0.5,
-                                                    ),
-                                            radius: 20,
-                                          );
-                                        },
+                                  );
+                                },
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: AppSpacing.spacingXs,
+                                right: AppSpacing.spacingM,
+                              ),
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, authState) {
+                                  return BlocBuilder<
+                                    UserAccountBloc,
+                                    UserAccountState
+                                  >(
+                                    builder: (context, uaState) {
+                                      return UserAvatarSmall(
+                                        backgroundColor:
+                                            isDark
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withValues(alpha: 0.5)
+                                                : Colors.white.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                        radius: 20,
                                       );
                                     },
-                                  ),
-                                ),
-                              ],
+                                  );
+                                },
+                              ),
                             ),
-
-                            _buildSliverBody(context, state),
                           ],
                         ),
-                      ),
+
+                        _buildSliverBody(context, state),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           );
         },
       ),
@@ -507,40 +516,58 @@ class _JarDetailViewState extends State<JarDetailView> {
                           ),
                         ),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AppIconButton(
-                                key: const Key('request_button'),
-                                enabled: jarData.status != JarStatus.sealed,
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.contributionRequest,
-                                    arguments: {
-                                      'paymentLink': state.jarData.link,
-                                      'jarName': state.jarData.name,
+                          child: BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, authState) {
+                              bool isKYCVerified = false;
+                              if (authState is AuthAuthenticated) {
+                                isKYCVerified = authState.user.isKYCVerified;
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  AppIconButton(
+                                    key: const Key('request_button'),
+                                    enabled: jarData.status != JarStatus.sealed,
+                                    onPressed: () {
+                                      // Check KYC verification before allowing request
+                                      if (!isKYCVerified) {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.kycView,
+                                        );
+                                        return;
+                                      }
+
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.contributionRequest,
+                                        arguments: {
+                                          'paymentLink': state.jarData.link,
+                                          'jarName': state.jarData.name,
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                                icon: Icons.call_received,
-                                opacity: 0.8,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              Text(
-                                localizations.request,
-                                style: TextStyles.titleMediumS.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color?.withValues(
-                                    alpha:
-                                        jarData.status == JarStatus.sealed
-                                            ? 0.4
-                                            : 1.0,
+                                    icon: Icons.call_received,
+                                    opacity: 0.8,
                                   ),
-                                ),
-                              ),
-                            ],
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  Text(
+                                    localizations.request,
+                                    style: TextStyles.titleMediumS.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color?.withValues(
+                                        alpha:
+                                            jarData.status == JarStatus.sealed
+                                                ? 0.4
+                                                : 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                         Expanded(

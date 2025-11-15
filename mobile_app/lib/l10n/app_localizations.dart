@@ -686,6 +686,12 @@ abstract class AppLocalizations {
   /// **'Total we owe you'**
   String get totalWeOweYou;
 
+  /// Total amount user owes for unpaid cash contributions
+  ///
+  /// In en, this message translates to:
+  /// **'Total you owe'**
+  String get totalYouOwe;
+
   /// Note about transfers excluding certain payment methods
   ///
   /// In en, this message translates to:

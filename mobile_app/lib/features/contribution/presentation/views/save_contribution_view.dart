@@ -307,6 +307,15 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
     // Validation for mobile money - phone number is required
     if (_selectedPaymentMethod == 'mobile-money') {
+      // Check KYC verification first
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        if (!authState.user.isKYCVerified) {
+          Navigator.pushNamed(context, AppRoutes.kycView);
+          return;
+        }
+      }
+
       // Validate phone number for mobile money
       if (_phoneController.text.trim().isEmpty) {
         _showErrorSnackBar(localizations.pleaseEnterMobileMoneyNumber);
@@ -321,7 +330,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       }
 
       // Check if user has set up withdrawal account using AuthBloc
-      final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
         // Only check account holder if the current user is the creator of the jar
         if (authState.user.id == jarCreatorId) {

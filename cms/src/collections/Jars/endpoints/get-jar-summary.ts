@@ -228,6 +228,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       isTransferred: true,
       paymentMethod: true,
       type: true,
+      paid: true,
     },
   })
 
@@ -289,6 +290,16 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const paymentBreakdown = calculatePaymentMethodBreakdown(allContributions.docs)
 
+  // Calculate total you owe (unpaid cash contributions)
+  const totalYouOwe = allContributions.docs
+    .filter(
+      (contribution: any) =>
+        contribution.paymentMethod === 'cash' &&
+        contribution.paymentStatus === 'completed' &&
+        contribution.paid === false,
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
   const data = {
     ...jar,
     invitedCollectors: jar.invitedCollectors.filter(
@@ -301,6 +312,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
       totalTransfers: Number(totalTransfers.toFixed(2)),
       totalAmountTobeTransferred: Number(totalAmountTobeTransferred.toFixed(2)),
+      totalYouOwe: Number(totalYouOwe.toFixed(2)),
       ...paymentBreakdown,
     },
   }

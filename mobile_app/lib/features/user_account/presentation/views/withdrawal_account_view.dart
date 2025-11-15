@@ -11,6 +11,7 @@ import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/review_withdrawal_account.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 
 class WithdrawalAccountView extends StatefulWidget {
   const WithdrawalAccountView({super.key});
@@ -165,6 +166,11 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
+          // Check if user is authenticated and KYC is not verified
+          if (authState is AuthAuthenticated && !authState.user.isKYCVerified) {
+            return const KycView();
+          }
+
           // Populate user data after the frame is built
           if (authState is AuthAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) {

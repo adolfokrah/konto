@@ -329,6 +329,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get totalWeOweYou => 'Total que nous vous devons';
 
   @override
+  String get totalYouOwe => 'Total que vous devez';
+
+  @override
   String get transfersNote =>
       'Remarque : Les virements excluent les contributions en espèces et par virement bancaire';
 

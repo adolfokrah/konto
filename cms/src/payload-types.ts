@@ -1384,6 +1384,10 @@ export interface Contribution {
   };
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
+   * Mark as paid (for cash contributions)
+   */
+  paid?: boolean | null;
+  /**
    * Select the linked deposit for this contribution
    */
   linkedContribution?: (string | null) | Contribution;
@@ -2423,6 +2427,7 @@ export interface ContributionsSelect<T extends boolean = true> {
         paystackCharge?: T;
       };
   paymentStatus?: T;
+  paid?: T;
   linkedContribution?: T;
   linkedTransfer?: T;
   isTransferred?: T;

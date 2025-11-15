@@ -325,6 +325,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalWeOweYou => 'Total we owe you';
 
   @override
+  String get totalYouOwe => 'Total you owe';
+
+  @override
   String get transfersNote =>
       'Note: Transfers exclude cash and bank contributions';
 

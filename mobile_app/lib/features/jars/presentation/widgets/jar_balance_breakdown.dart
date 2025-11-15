@@ -170,6 +170,8 @@ class JarBalanceBreakdown extends StatelessWidget {
                       currency: jarData.currency,
                     ),
 
+                    const SizedBox(height: AppSpacing.spacingS),
+
                     _buildBalanceItem(
                       context,
                       title: localizations.totalWeOweYou,
@@ -177,6 +179,15 @@ class JarBalanceBreakdown extends StatelessWidget {
                           jarData.balanceBreakDown.totalAmountTobeTransferred,
                       currency: jarData.currency,
                       isLastItem: true,
+                      isGreenAmount: true,
+                    ),
+                    _buildBalanceItem(
+                      context,
+                      title: localizations.totalYouOwe,
+                      amount: jarData.balanceBreakDown.totalYouOwe,
+                      currency: jarData.currency,
+                      isLastItem: true,
+                      isRedAmount: true,
                     ),
 
                     AppDivider(),
@@ -211,11 +222,13 @@ class JarBalanceBreakdown extends StatelessWidget {
     required double amount,
     required String currency,
     bool isLastItem = false,
+    bool isRedAmount = false,
+    bool isGreenAmount = false,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.spacingXs,
-        vertical: isLastItem ? AppSpacing.spacingXs : 2,
+        vertical: 2,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -232,10 +245,21 @@ class JarBalanceBreakdown extends StatelessWidget {
                     ),
           ),
           Text(
-            CurrencyUtils.formatAmount(amount, currency),
+            isRedAmount
+                ? '-${CurrencyUtils.formatAmount(amount, currency)}'
+                : isGreenAmount
+                ? '+${CurrencyUtils.formatAmount(amount, currency)}'
+                : CurrencyUtils.formatAmount(amount, currency),
             style:
                 isLastItem
-                    ? TextStyles.titleMediumLg
+                    ? TextStyles.titleMediumLg.copyWith(
+                      color:
+                          isRedAmount
+                              ? Colors.red
+                              : isGreenAmount
+                              ? Colors.green
+                              : null,
+                    )
                     : TextStyles.titleMediumS.copyWith(
                       color: Theme.of(
                         context,

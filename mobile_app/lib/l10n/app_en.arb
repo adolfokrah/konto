@@ -501,6 +501,11 @@
     "description": "Total amount owed to user"
   },
 
+  "totalYouOwe": "Total you owe",
+  "@totalYouOwe": {
+    "description": "Total amount user owes for unpaid cash contributions"
+  },
+
   "transfersNote": "Note: Transfers exclude cash and bank contributions",
   "@transfersNote": {
     "description": "Note about transfers excluding certain payment methods"

@@ -169,6 +169,15 @@ export const Contributions: CollectionConfig = {
       defaultValue: 'pending',
     },
     {
+      name: 'paid',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Mark as paid (for cash contributions)',
+        condition: (data) => data?.paymentMethod === 'cash',
+      },
+    },
+    {
       name: 'linkedContribution',
       type: 'relationship',
       relationTo: 'contributions',
