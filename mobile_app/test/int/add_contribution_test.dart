@@ -568,6 +568,7 @@ void main() {
                   'totalContributedAmount': expectedNewTotal,
                   'totalTransfers': 0.0,
                   'totalAmountTobeTransferred': expectedNewTotal,
+                  'totalYouOwe': 0.0,
                 },
                 'isCreator': true,
                 'chartData': [
@@ -726,6 +727,7 @@ void main() {
                   'totalContributedAmount': expectedNewTotal,
                   'totalTransfers': 0.0,
                   'totalAmountTobeTransferred': expectedNewTotal,
+                  'totalYouOwe': 0.0,
                 },
                 'isCreator': true,
                 'chartData': null,

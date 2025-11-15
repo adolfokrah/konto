@@ -174,7 +174,7 @@ export const Contributions: CollectionConfig = {
       defaultValue: false,
       admin: {
         description: 'Mark as paid (for cash contributions)',
-        condition: (data) => data?.paymentMethod === 'cash',
+        condition: (data) => data?.paymentMethod?.toLowerCase() === 'cash',
       },
     },
     {

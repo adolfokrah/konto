@@ -85,6 +85,7 @@ void main() {
           'totalContributedAmount': totalContributedAmount,
           'totalTransfers': 0.0,
           'totalAmountTobeTransferred': totalContributedAmount,
+          'totalYouOwe': 0.0,
         },
         'isCreator': true,
       },
