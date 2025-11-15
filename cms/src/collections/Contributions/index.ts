@@ -1,12 +1,15 @@
 import type { CollectionConfig } from 'payload'
 
 import { chargeMomo } from './endpoints/charge-momo'
+import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { paystackWebhook } from './endpoints/paystack-webhook'
+import { eganowWebhook } from './endpoints/eganow-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { sendOtp } from './endpoints/send-otp'
 import { transferMomo } from './endpoints/transfer-momo'
 import { verifyPayment } from './endpoints/verify-payment'
+import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus, updateJarTotalContributions } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
@@ -307,6 +310,16 @@ export const Contributions: CollectionConfig = {
       handler: chargeMomo,
     },
     {
+      path: '/charge-momo-eganow',
+      method: 'post',
+      handler: chargeMomoEganow,
+    },
+    {
+      path: '/eganow-webhook',
+      method: 'post',
+      handler: eganowWebhook,
+    },
+    {
       path: '/send-otp',
       method: 'post',
       handler: sendOtp,
@@ -315,6 +328,11 @@ export const Contributions: CollectionConfig = {
       path: '/verify-payment',
       method: 'post',
       handler: verifyPayment,
+    },
+    {
+      path: '/verify-payment-ega-now',
+      method: 'post',
+      handler: verifyPaymentEgaNow,
     },
     {
       path: '/transfer-momo',

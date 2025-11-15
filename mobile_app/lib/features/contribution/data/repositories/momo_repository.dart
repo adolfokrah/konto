@@ -42,7 +42,7 @@ class MomoRepository {
     }
   }
 
-  /// Submit OTP for Vodafone mobile money verification
+  /// Submit OTP for Telecel mobile money verification
   /// Returns success response if OTP is valid
   Future<MomoChargeModel> submitOtp({
     required String reference,

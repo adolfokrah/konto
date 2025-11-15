@@ -32,9 +32,9 @@ class MomoApiProvider extends BaseApiProvider {
         };
       }
 
-      // Make request to charge-momo endpoint
+      // Make request to charge-momo-eganow endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions/charge-momo',
+        '${BackendConfig.apiBaseUrl}/contributions/charge-momo-eganow',
         data: {'contributionId': contributionId},
         options: Options(headers: headers),
       );
@@ -45,7 +45,7 @@ class MomoApiProvider extends BaseApiProvider {
     }
   }
 
-  /// Submit OTP for mobile money verification (Vodafone)
+  /// Submit OTP for mobile money verification (Telecel)
   /// Calls the send-otp endpoint with reference and OTP code
   Future<Map<String, dynamic>> submitOtp({
     required String reference,
@@ -105,7 +105,7 @@ class MomoApiProvider extends BaseApiProvider {
 
       // Make request to verify-payment endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions/verify-payment',
+        '${BackendConfig.apiBaseUrl}/contributions/verify-payment-ega-now',
         data: {'reference': reference},
         options: Options(headers: headers),
       );

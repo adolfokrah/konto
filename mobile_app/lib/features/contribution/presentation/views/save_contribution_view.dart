@@ -39,7 +39,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
   final List<String> _operators = [
     'MTN Mobile Money',
-    'Vodafone Cash',
+    'Telecel Cash',
     'AirtelTigo Money',
   ];
 
