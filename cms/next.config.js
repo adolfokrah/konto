@@ -38,9 +38,13 @@ const allowedImageDomains = [
 const nextConfig = {
   // Explicitly set the output file tracing root to silence workspace warning
   outputFileTracingRoot: process.cwd(),
-  experimental: {
-    serverComponentsExternalPackages: ['@payloadcms/richtext-lexical'],
-  },
+  // Mark Payload packages for transpilation so Turbopack/Next can handle their CSS/SCSS imports
+  transpilePackages: [
+    '@payloadcms/richtext-lexical',
+    '@payloadcms/plugin-seo',
+    '@payloadcms/plugin-search',
+    '@payloadcms/storage-uploadthing',
+  ],
   images: {
     remotePatterns: [
       // Allow all vercel.app subdomains (catches any preview deployments)
@@ -91,10 +95,10 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Ignore CSS imports in server-side builds for PayloadCMS
+    // Ignore CSS and SCSS imports in server-side builds for PayloadCMS
     if (isServer) {
       webpackConfig.module.rules.push({
-        test: /\.css$/,
+        test: /\.(css|scss|sass)$/,
         use: 'null-loader',
         include: /node_modules\/@payloadcms/,
       })
