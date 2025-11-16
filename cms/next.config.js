@@ -38,6 +38,9 @@ const allowedImageDomains = [
 const nextConfig = {
   // Explicitly set the output file tracing root to silence workspace warning
   outputFileTracingRoot: process.cwd(),
+  experimental: {
+    serverComponentsExternalPackages: ['@payloadcms/richtext-lexical'],
+  },
   images: {
     remotePatterns: [
       // Allow all vercel.app subdomains (catches any preview deployments)

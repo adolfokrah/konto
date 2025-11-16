@@ -55,20 +55,12 @@ export default function PaymentWaitingModal({
           </p>
 
           {/* Instructions */}
-          <div className="bg-gray-50 rounded-2xl p-4 mb-6 w-full">
+          <div className="bg-gray-50 rounded-2xl p-4 w-full">
             <p className="text-sm text-gray-700">
               Please check your phone and follow the prompt to complete the payment. This may take a
               few moments.
             </p>
           </div>
-
-          {/* Cancel Button */}
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium"
-          >
-            Cancel Payment
-          </button>
         </div>
       </div>
     </div>

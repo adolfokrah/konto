@@ -3,7 +3,14 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 export const createPaymentLinkContribution = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { jarId, contributorName, contributorPhoneNumber, amount, collector } = req.data || {}
+    const {
+      jarId,
+      contributorName,
+      contributorPhoneNumber,
+      amount,
+      collector,
+      mobileMoneyProvider,
+    } = req.data || {}
 
     // Validate required fields
     if (!jarId || !contributorName || !contributorPhoneNumber || !amount) {
@@ -52,7 +59,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         contributor: contributorName,
         contributorPhoneNumber, // Using phone number field as identifier for anonymous contributions
         paymentMethod: 'mobile-money', // Paystack payment
-        mobileMoneyProvider: 'paystack',
+        mobileMoneyProvider: mobileMoneyProvider || 'MTN', // Use the provider from request, default to MTN
         amountContributed: amount,
         paymentStatus: 'pending',
         type: 'contribution',

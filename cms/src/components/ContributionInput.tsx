@@ -10,6 +10,13 @@ import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import PaymentWaitingModal from './PaymentWaitingModal'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ContributionInputProps {
   currency?: string
@@ -45,6 +52,7 @@ export default function ContributionInput({
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+  const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'airteltigo' | 'telecel'>('mtn')
   const router = useRouter()
 
   // Preset amounts based on currency
@@ -90,7 +98,7 @@ export default function ContributionInput({
     }
   }
 
-  const verifyPayment = async (contributionId: string) => {
+  const verifyPayment = async (reference: string) => {
     try {
       const verifyResponse = await fetch('/api/contributions/verify-payment-ega-now', {
         method: 'POST',
@@ -98,24 +106,28 @@ export default function ContributionInput({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contributionId: contributionId,
+          reference: reference,
         }),
       })
 
       const verifyData = await verifyResponse.json()
-      return { success: verifyResponse.ok && verifyData.success, data: verifyData }
+      console.log('Verify response:', { ok: verifyResponse.ok, data: verifyData })
+      return { success: verifyResponse.ok && verifyData.success, data: verifyData.data }
     } catch (error) {
       console.error('Verification error:', error)
       return { success: false, data: null, error }
     }
   }
 
-  const startPaymentPolling = (contributionId: string) => {
+  const startPaymentPolling = (reference: string) => {
     const interval = setInterval(async () => {
-      const result = await verifyPayment(contributionId)
+      const result = await verifyPayment(reference)
       
-      if (result.success) {
+      console.log('Polling result:', result)
+      
+      if (result.success && (result.data?.status === 'completed' || result.data?.status === 'success')) {
         // Payment successful
+        console.log('Payment successful, navigating to congratulations page')
         if (pollingInterval) clearInterval(pollingInterval)
         setPollingInterval(null)
         setShowPaymentModal(false)
@@ -123,7 +135,7 @@ export default function ContributionInput({
 
         // Redirect to congratulations page
         const congratsParams = new URLSearchParams({
-          reference: contributionId,
+          reference,
           amount: selectedAmount.toString(),
           jarName: jarName,
           contributorName: isAnonymous ? 'Anonymous' : contributorName,
@@ -215,6 +227,7 @@ export default function ContributionInput({
             amount: selectedAmount,
             currency,
             contributorPhoneNumber: contributorPhoneNumber,
+            mobileMoneyProvider: mobileMoneyProvider,
             collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
           }),
         },
@@ -245,11 +258,17 @@ export default function ContributionInput({
         throw new Error(chargeData.message || 'Failed to initiate payment')
       }
 
+
+      // Get transaction reference from charge response
+      const transactionReference = chargeData?.data?.reference
+
+      console.log('Payment initiated:', { contributionId, transactionReference })
+
       // Show waiting modal
       setShowPaymentModal(true)
 
-      // Start polling for payment verification
-      startPaymentPolling(contributionId)
+      // Start polling for payment verification using transactionReference
+      startPaymentPolling(transactionReference)
 
     } catch (error: any) {
       setIsLoading(false)
@@ -283,7 +302,7 @@ export default function ContributionInput({
             <Button
               key={amount}
               onClick={() => handlePresetClick(amount)}
-              className={`px-5 py-7 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer duration-200 text-sm sm:text-base ${
+              className={`px-5 hover:text-white py-7 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer duration-200 text-sm sm:text-base ${
                 selectedAmount === amount && !isCustom
                   ? 'bg-black text-white border-black hover:text-black'
                   : 'bg-white text-black border-gray-300 hover:border-gray-400'
@@ -344,6 +363,17 @@ export default function ContributionInput({
           />
         </div>
 
+          <Select value={mobileMoneyProvider} onValueChange={(value: 'mtn' | 'airteltigo' | 'telecel') => setMobileMoneyProvider(value)}>
+            <SelectTrigger className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors">
+              <SelectValue placeholder="Select provider" />
+            </SelectTrigger>
+            <SelectContent className="bg-white text-black">
+              <SelectItem value="mtn" className="text-black">MTN Mobile Money</SelectItem>
+              <SelectItem value="airteltigo" className="text-black">AirtelTigo Money</SelectItem>
+              <SelectItem value="telecel" className="text-black">Telecel Cash</SelectItem>
+            </SelectContent>
+          </Select>
+
         {isAnonymous && (<div className='mb-2'>
           <small className="text-gray-500">We only use your phone number and email to send you a receipt for your payment. This information is not saved or shared.</small>
         </div>)}
@@ -359,6 +389,9 @@ export default function ContributionInput({
             required
           />
         </div>
+
+        
+
         <div>
           <input
             type="email"
@@ -422,11 +455,11 @@ export default function ContributionInput({
       {/* Payment Processing Fee Notice */}
       <p className="text-sm font-supreme text-gray-600 leading-relaxed">
         Upon completing this contribution, you agree to hoga&apos;s{' '}
-        <Link href="https://usehoga.com/terms" className="text-blue-500">
+        <Link href="https://hogapay.com/terms" className="text-blue-500">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link href="https://usehoga.com/privacy-policy" className="text-blue-500">
+        <Link href="https://hogapay.com/privacy-policy" className="text-blue-500">
           Privacy Policy
         </Link>
         .
