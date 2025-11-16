@@ -263,7 +263,7 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                             ),
                                             trailing: Text(
-                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.amountPaidByContributor!.abs().toStringAsFixed(2)}',
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.amountPaidByContributor!.toStringAsFixed(2)}',
                                               style: AppTextStyles.titleMediumS,
                                             ),
                                           ),
@@ -283,7 +283,7 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                             ),
                                             trailing: Text(
-                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.platformCharge!.abs().toStringAsFixed(2)}',
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.platformCharge!.toStringAsFixed(2)}',
                                               style: AppTextStyles.titleMediumS,
                                             ),
                                           ),
@@ -303,7 +303,7 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                             ),
                                             trailing: Text(
-                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackCharge!.abs().toStringAsFixed(2)}',
+                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackCharge!.toStringAsFixed(2)}',
                                               style: AppTextStyles.titleMediumS,
                                             ),
                                           ),
@@ -328,7 +328,7 @@ class ContributionView extends StatelessWidget {
                                                     ),
                                               ),
                                               trailing: Text(
-                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackTransferFeeMomo!.abs().toStringAsFixed(2)}',
+                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.paystackTransferFeeMomo!.toStringAsFixed(2)}',
                                                 style:
                                                     AppTextStyles.titleMediumS,
                                               ),

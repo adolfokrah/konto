@@ -60,7 +60,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
     // Map Eganow status to our payment status
     const statusMap: Record<string, 'transferred' | 'failed' | 'pending'> = {
-      COMPLETED: 'transferred',
+      SUCCESSFUL: 'transferred',
       FAILED: 'failed',
       PENDING: 'pending',
     }

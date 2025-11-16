@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from './ui/button'
@@ -9,6 +9,7 @@ import TransactionCharges from '@/utilities/transaction-charges'
 import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
+import PaymentWaitingModal from './PaymentWaitingModal'
 
 interface ContributionInputProps {
   currency?: string
@@ -42,6 +43,8 @@ export default function ContributionInput({
   const [emailError, setEmailError] = useState('')
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
   // Preset amounts based on currency
@@ -87,15 +90,15 @@ export default function ContributionInput({
     }
   }
 
-  const verifyPayment = async (reference: string) => {
+  const verifyPayment = async (contributionId: string) => {
     try {
-      const verifyResponse = await fetch('/api/contributions/verify-payment', {
+      const verifyResponse = await fetch('/api/contributions/verify-payment-ega-now', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          reference: reference,
+          contributionId: contributionId,
         }),
       })
 
@@ -106,6 +109,67 @@ export default function ContributionInput({
       return { success: false, data: null, error }
     }
   }
+
+  const startPaymentPolling = (contributionId: string) => {
+    const interval = setInterval(async () => {
+      const result = await verifyPayment(contributionId)
+      
+      if (result.success) {
+        // Payment successful
+        if (pollingInterval) clearInterval(pollingInterval)
+        setPollingInterval(null)
+        setShowPaymentModal(false)
+        setIsLoading(false)
+
+        // Redirect to congratulations page
+        const congratsParams = new URLSearchParams({
+          reference: contributionId,
+          amount: selectedAmount.toString(),
+          jarName: jarName,
+          contributorName: isAnonymous ? 'Anonymous' : contributorName,
+        })
+        router.push(`/congratulations?${congratsParams.toString()}`)
+      } else if (result.data?.status === 'failed') {
+        // Payment failed
+        if (pollingInterval) clearInterval(pollingInterval)
+        setPollingInterval(null)
+        setShowPaymentModal(false)
+        setIsLoading(false)
+
+        toast.error('Payment Failed', {
+          description: result.data?.message || 'Your payment was not successful. Please try again.',
+          duration: 5000,
+        })
+      }
+      // If still pending, continue polling
+    }, 3000) // Poll every 3 seconds
+
+    setPollingInterval(interval)
+
+    // Set timeout to stop polling after 5 minutes
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval)
+        setPollingInterval(null)
+        setShowPaymentModal(false)
+        setIsLoading(false)
+        
+        toast.error('Payment Timeout', {
+          description: 'Payment verification timed out. Please check your phone and try again.',
+          duration: 5000,
+        })
+      }
+    }, 300000) // 5 minutes
+  }
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+      }
+    }
+  }, [pollingInterval])
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
@@ -136,11 +200,7 @@ export default function ContributionInput({
 
     setIsLoading(true)
 
-    //here insert the contibution logic
-
     try {
-      // Generate unique reference
-
       // Create contribution record using our custom endpoint with admin access
       const contributionResponse = await fetch(
         '/api/contributions/create-payment-link-contribution',
@@ -166,81 +226,31 @@ export default function ContributionInput({
         throw new Error(contributionData.message || 'Failed to create contribution')
       }
 
-      // Use the calculated amount including fees from the response
-      const amountInSmallestUnit =
-        contributionData.data?.chargesBreakdown?.amountPaidByContributor * 100
+      const contributionId = contributionData.data.id
 
-      // Dynamically import PaystackPop to avoid SSR issues
-      const { default: PaystackPop } = await import('@paystack/inline-js')
-      const popup = new PaystackPop()
-
-      const reference = contributionData.data.id
-
-      popup.resumeTransaction(reference)
-
-      popup.newTransaction({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_your_test_key',
-        email: contributorEmail,
-        amount: amountInSmallestUnit,
-        phone: contributorPhoneNumber,
-        currency: currency === 'GHS' ? 'GHS' : 'NGN',
-        reference: reference,
-        metadata: {
-          custom_fields: [
-            {
-              display_name: 'Jar ID',
-              variable_name: 'jar_id',
-              value: jarId,
-            },
-            {
-              display_name: 'Jar Name',
-              variable_name: 'jar_name',
-              value: jarName,
-            },
-            {
-              display_name: 'Contributor Name',
-              variable_name: 'contributor_name',
-              value: isAnonymous ? 'Anonymous' : contributorName,
-            },
-            {
-              display_name: 'Original Amount',
-              variable_name: 'original_amount',
-              value: selectedAmount.toString(),
-            },
-          ],
+      // Charge mobile money via Eganow
+      const chargeResponse = await fetch('/api/contributions/charge-momo-eganow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        onSuccess: async (response: any) => {
-
-          const verificationResult = await verifyPayment(response.reference)
-
-          if (verificationResult.success) {
-            // Redirect to congratulations page with success data
-            const congratsParams = new URLSearchParams({
-              reference: response.reference,
-              amount: selectedAmount.toString(),
-              jarName: jarName,
-              contributorName: contributorName,
-            })
-
-            router.push(`/congratulations?${congratsParams.toString()}`)
-          } else {
-            toast.error('Verification Failed', {
-              description: `Payment completed but verification failed: ${verificationResult.data?.message || 'Unknown error'}`,
-              duration: 5000,
-            })
-            setIsLoading(false)
-          }
-        },
-        onCancel: async () => {
-          console.log('Payment cancelled')
-
-          const verificationResult = await verifyPayment(reference)
-          console.log('Cancel verification result:', verificationResult.data)
-
-          setIsLoading(false)
-          alert('Payment was cancelled')
-        },
+        body: JSON.stringify({
+          contributionId: contributionId,
+        }),
       })
+
+      const chargeData = await chargeResponse.json()
+
+      if (!chargeResponse.ok) {
+        throw new Error(chargeData.message || 'Failed to initiate payment')
+      }
+
+      // Show waiting modal
+      setShowPaymentModal(true)
+
+      // Start polling for payment verification
+      startPaymentPolling(contributionId)
+
     } catch (error: any) {
       setIsLoading(false)
       toast.error('Contribution Failed', {
@@ -421,6 +431,20 @@ export default function ContributionInput({
         </Link>
         .
       </p>
+
+      {/* Payment Waiting Modal */}
+      <PaymentWaitingModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false)
+          setIsLoading(false)
+          if (pollingInterval) {
+            clearInterval(pollingInterval)
+            setPollingInterval(null)
+          }
+        }}
+        phoneNumber={contributorPhoneNumber}
+      />
     </div>
   )
 }
