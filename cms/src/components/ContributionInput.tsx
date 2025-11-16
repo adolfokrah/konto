@@ -44,35 +44,19 @@ export default function ContributionInput({
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
   const [isCustom, setIsCustom] = useState(false)
-  const [contributorEmail, setContributorEmail] = useState('')
   const [contributorName, setContributorName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [emailError, setEmailError] = useState('')
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'airteltigo' | 'telecel'>('mtn')
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const router = useRouter()
 
   // Preset amounts based on currency
   const presetAmounts =
     currency === 'GHS' ? [500, 200, 100, 50, 10, 5] : [5000, 2000, 1000, 500, 100, 50] // NGN amounts
-
-  // Email validation function
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
-  const handleEmailChange = (email: string) => {
-    setContributorEmail(email)
-    if (email && !validateEmail(email)) {
-      setEmailError('Please enter a valid email address')
-    } else {
-      setEmailError('')
-    }
-  }
 
   const handlePresetClick = (amount: number) => {
     if (isFixedAmount) return // Don't allow changes for fixed amounts
@@ -120,6 +104,7 @@ export default function ContributionInput({
   }
 
   const startPaymentPolling = (reference: string) => {
+    setPaymentStatus('pending')
     const interval = setInterval(async () => {
       const result = await verifyPayment(reference)
       
@@ -132,6 +117,7 @@ export default function ContributionInput({
         setPollingInterval(null)
         setShowPaymentModal(false)
         setIsLoading(false)
+        setPaymentStatus('success')
 
         // Redirect to congratulations page
         const congratsParams = new URLSearchParams({
@@ -147,6 +133,7 @@ export default function ContributionInput({
         setPollingInterval(null)
         setShowPaymentModal(false)
         setIsLoading(false)
+        setPaymentStatus('failed')
 
         toast.error('Payment Failed', {
           description: result.data?.message || 'Your payment was not successful. Please try again.',
@@ -165,6 +152,7 @@ export default function ContributionInput({
         setPollingInterval(null)
         setShowPaymentModal(false)
         setIsLoading(false)
+        setPaymentStatus('failed')
         
         toast.error('Payment Timeout', {
           description: 'Payment verification timed out. Please check your phone and try again.',
@@ -185,18 +173,9 @@ export default function ContributionInput({
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
-    if (!contributorEmail || (!isAnonymous && !contributorName)) {
+    if (!isAnonymous && !contributorName) {
       toast.error('Missing Information', {
-        description: isAnonymous ? 'Please enter your email to continue' : 'Please enter your email and name to continue',
-        duration: 4000,
-      })
-      return
-    }
-
-    // Validate email format
-    if (!validateEmail(contributorEmail)) {
-      toast.error('Invalid Email', {
-        description: 'Please enter a valid email address',
+        description: 'Please enter your name to continue',
         duration: 4000,
       })
       return
@@ -211,6 +190,7 @@ export default function ContributionInput({
     }
 
     setIsLoading(true)
+    setPaymentStatus('idle')
 
     try {
       // Create contribution record using our custom endpoint with admin access
@@ -272,6 +252,7 @@ export default function ContributionInput({
 
     } catch (error: any) {
       setIsLoading(false)
+      setPaymentStatus('failed')
       toast.error('Contribution Failed', {
         description: error.message || 'Failed to process contribution. Please try again.',
         duration: 5000,
@@ -375,7 +356,7 @@ export default function ContributionInput({
           </Select>
 
         {isAnonymous && (<div className='mb-2'>
-          <small className="text-gray-500">We only use your phone number and email to send you a receipt for your payment. This information is not saved or shared.</small>
+          <small className="text-gray-500">We only use your phone number to process your payment. This information is not saved or shared.</small>
         </div>)}
 
         <div>
@@ -388,25 +369,6 @@ export default function ContributionInput({
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
             required
           />
-        </div>
-
-        
-
-        <div>
-          <input
-            type="email"
-            placeholder="Your email address"
-            value={contributorEmail}
-            onChange={(e) => handleEmailChange(e.target.value)}
-            className={`w-full p-4 border-2 rounded-2xl font-supreme outline-none transition-colors ${
-              emailError
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-gray-300 focus:border-gray-400'
-            }`}
-          />
-          {emailError && (
-            <p className="text-red-500 text-sm font-supreme mt-2 ml-1">{emailError}</p>
-          )}
         </div>
       </div>
 
@@ -445,7 +407,7 @@ export default function ContributionInput({
       <button
         onClick={handleContribute}
         disabled={
-          selectedAmount <= 0 || isLoading || !!emailError || !contributorEmail || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber)
+          selectedAmount <= 0 || isLoading || paymentStatus === 'pending' || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber)
         }
         className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
@@ -471,6 +433,7 @@ export default function ContributionInput({
         onClose={() => {
           setShowPaymentModal(false)
           setIsLoading(false)
+          setPaymentStatus('failed')
           if (pollingInterval) {
             clearInterval(pollingInterval)
             setPollingInterval(null)
