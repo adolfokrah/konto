@@ -56,11 +56,6 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     const mappedStatus =
       (contribution.paymentStatus && statusMap[contribution.paymentStatus]) || 'failed'
 
-    console.log(`Verify Payment Eganow - Contribution ID: ${contribution.id}`)
-    console.log(`Verify Payment Eganow - Payment Status: ${contribution.paymentStatus}`)
-    console.log(`Verify Payment Eganow - Mapped Status: ${mappedStatus}`)
-    console.log(`Verify Payment Eganow - Reference: ${contribution.transactionReference}`)
-
     const responseData = {
       success: true,
       data: {

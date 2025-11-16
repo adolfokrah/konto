@@ -1,5 +1,5 @@
 import { PayloadRequest } from 'payload'
-import { verifyPayment } from './verify-payment'
+import { eganow } from '@/utilities/initalise'
 
 export const verifyPendingTransactions = async (req: PayloadRequest) => {
   try {
@@ -110,31 +110,54 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
       }
 
       try {
-        // Create a fresh request object for each transaction to avoid shared state issues
-        const isolatedReq = {
-          ...req,
+        // Get token
+        await eganow.getToken()
+
+        // Check transaction status directly with Eganow
+        const statusResult = await eganow.checkTransactionStatus({
+          transactionId: id,
+          languageId: 'en',
+        })
+
+        // Map Eganow status to our payment status
+        const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
+          SUCCESSFUL: 'completed',
+          SUCCESS: 'completed',
+          FAILED: 'failed',
+          PENDING: 'pending',
+        }
+
+        const newStatus = statusMap[statusResult.transStatus?.toUpperCase()] || 'pending'
+
+        // Update contribution status
+        const collectorId = typeof collector === 'string' ? collector : collector?.id
+        const jarId = typeof jar === 'string' ? jar : jar?.id
+
+        await req.payload.update({
+          collection: 'contributions',
+          id,
           data: {
-            reference: transactionReference,
+            paymentStatus: newStatus,
+            ...(jarId ? { jar: jarId } : {}),
+            ...(collectorId ? { collector: collectorId } : {}),
           },
-        } as PayloadRequest
+          overrideAccess: true,
+          req,
+        })
 
-        const result = await verifyPayment(isolatedReq)
-
-        // Check if the response indicates the transaction was marked as failed
-        const resultJson = await result.json()
-        if (resultJson.status === 'failed') {
+        if (newStatus === 'failed') {
           results.push({
             transactionId: id,
             reference: transactionReference,
             status: 'failed',
-            reason: 'Not found on Paystack',
+            reason: 'Transaction failed on Eganow',
           })
         } else {
           results.push({
             transactionId: id,
             reference: transactionReference,
             status: 'processed',
-            result: 'success',
+            result: newStatus,
           })
         }
 

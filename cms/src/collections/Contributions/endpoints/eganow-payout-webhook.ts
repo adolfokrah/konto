@@ -1,4 +1,5 @@
 import { PayloadRequest } from 'payload'
+import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
 
 interface EganowPayoutWebhookPayload {
   TransactionId: string
@@ -58,8 +59,8 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     }
 
     // Map Eganow status to our payment status
-    const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
-      SUCCESSFUL: 'completed',
+    const statusMap: Record<string, 'transferred' | 'failed' | 'pending'> = {
+      COMPLETED: 'transferred',
       FAILED: 'failed',
       PENDING: 'pending',
     }
@@ -78,7 +79,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     })
 
     // If payout is completed, mark the original contribution as transferred
-    if (newStatus === 'completed') {
+    if (newStatus === 'transferred') {
       // Get the linkedContribution from the transfer
       const linkedContributionId =
         typeof transfer.linkedContribution === 'string'
@@ -87,6 +88,14 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
       if (linkedContributionId) {
         console.log(`Marking original contribution ${linkedContributionId} as transferred`)
+
+        // Fetch the original contribution with jar details for notification
+        const contribution = await req.payload.findByID({
+          collection: 'contributions',
+          id: linkedContributionId,
+          depth: 2,
+        })
+
         await req.payload.update({
           collection: 'contributions',
           id: linkedContributionId,
@@ -95,6 +104,23 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
           },
         })
         console.log(`Original contribution ${linkedContributionId} marked as transferred`)
+
+        // Send FCM notification to jar creator
+        if (contribution && typeof contribution.jar === 'object' && contribution.jar) {
+          const jar = contribution.jar
+          const message = `We sent you a transfer of ${jar.currency} ${Math.abs(Number(contribution.amountContributed)).toFixed(2)} for "${jar.name}"`
+          const title = 'New Transfer Sent 💸'
+          const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
+
+          if (creatorToken) {
+            const fcmNotifications = new FCMPushNotifications()
+            await fcmNotifications.sendNotification([creatorToken], message, title, {
+              type: 'contribution',
+              jarId: jar.id,
+              contributionId: transfer.id,
+            })
+          }
+        }
       } else {
         console.error('LinkedContribution not found on transfer record')
       }

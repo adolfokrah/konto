@@ -29,9 +29,9 @@ class FilterOptions {
       Icons.phone_android,
     ),
     PaymentMethodOption('cash', 'cashPayment', Icons.money),
-    PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
+    // PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
     PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
-    PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
+    // PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
   ];
 
   /// Status options for contributions filter
