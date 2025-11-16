@@ -112,15 +112,15 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.money,
                     ),
 
-                    PaymentMethodContributionItem(
-                      title: localizations.bankTransfer,
-                      subtitle: localizations.contributionsCount(
-                        jarData.bankTransferContributionCount,
-                      ),
-                      amount: jarData.balanceBreakDown.bankTransfer.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.account_balance,
-                    ),
+                    // PaymentMethodContributionItem(
+                    //   title: localizations.bankTransfer,
+                    //   subtitle: localizations.contributionsCount(
+                    //     jarData.bankTransferContributionCount,
+                    //   ),
+                    //   amount: jarData.balanceBreakDown.bankTransfer.totalAmount,
+                    //   currency: jarData.currency,
+                    //   icon: Icons.account_balance,
+                    // ),
                     PaymentMethodContributionItem(
                       title: localizations.mobileMoney,
                       subtitle: localizations.contributionsCount(
@@ -131,26 +131,25 @@ class JarBalanceBreakdown extends StatelessWidget {
                       icon: Icons.phone_android,
                     ),
 
-                    PaymentMethodContributionItem(
-                      title: localizations.cardPayment,
-                      subtitle: localizations.contributionsCount(
-                        jarData.balanceBreakDown.card.totalCount,
-                      ),
-                      amount: jarData.balanceBreakDown.card.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.credit_card,
-                    ),
+                    // PaymentMethodContributionItem(
+                    //   title: localizations.cardPayment,
+                    //   subtitle: localizations.contributionsCount(
+                    //     jarData.balanceBreakDown.card.totalCount,
+                    //   ),
+                    //   amount: jarData.balanceBreakDown.card.totalAmount,
+                    //   currency: jarData.currency,
+                    //   icon: Icons.credit_card,
+                    // ),
 
-                    PaymentMethodContributionItem(
-                      title: localizations.applePayPayment,
-                      subtitle: localizations.contributionsCount(
-                        jarData.balanceBreakDown.applePay.totalCount,
-                      ),
-                      amount: jarData.balanceBreakDown.applePay.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.apple,
-                    ),
-
+                    // PaymentMethodContributionItem(
+                    //   title: localizations.applePayPayment,
+                    //   subtitle: localizations.contributionsCount(
+                    //     jarData.balanceBreakDown.applePay.totalCount,
+                    //   ),
+                    //   amount: jarData.balanceBreakDown.applePay.totalAmount,
+                    //   currency: jarData.currency,
+                    //   icon: Icons.apple,
+                    // ),
                     AppDivider(),
                     const SizedBox(height: AppSpacing.spacingXs),
 
