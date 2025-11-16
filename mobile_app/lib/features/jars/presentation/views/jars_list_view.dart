@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
@@ -388,6 +389,8 @@ class _JarsListViewState extends State<JarsListView> {
 
   Widget _buildJarItem(JarListItem jar, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final imageUrl =
+        jar.image != null ? _resolveJarImageUrl(jar.image!.url) : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
@@ -411,7 +414,12 @@ class _JarsListViewState extends State<JarsListView> {
                           ? Theme.of(context).colorScheme.surface
                           : Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  child: const Icon(Icons.wallet, size: 20),
+                  backgroundImage:
+                      imageUrl != null ? NetworkImage(imageUrl) : null,
+                  child:
+                      imageUrl == null
+                          ? const Icon(Icons.wallet, size: 20)
+                          : null,
                 ),
                 // Check mark indicator for active jar
                 BlocBuilder<JarSummaryBloc, JarSummaryState>(
@@ -465,4 +473,19 @@ class _JarsListViewState extends State<JarsListView> {
       ),
     );
   }
+}
+
+/// Resolve the jar image URL by prefixing with image base when it's a relative path
+String _resolveJarImageUrl(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Guard against double slashes
+  final base =
+      AppConfig.imageBaseUrl.endsWith('/')
+          ? AppConfig.imageBaseUrl.substring(
+            0,
+            AppConfig.imageBaseUrl.length - 1,
+          )
+          : AppConfig.imageBaseUrl;
+  final cleaned = url.startsWith('/') ? url : '/$url';
+  return '$base$cleaned';
 }
