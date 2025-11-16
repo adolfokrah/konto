@@ -69,10 +69,24 @@ class _JarCreateViewState extends State<JarCreateView> {
       context,
       selectedContacts: selectedContacts,
       onContactsSelected: (contacts) {
-        // Convert Contact back to InvitedCollector and update the list
+        // Convert Contact back to InvitedCollector and append to the list
         setState(() {
-          newInvitedCollectors =
+          // Get the set of already selected collector IDs to avoid duplicates
+          final existingIds =
+              newInvitedCollectors
+                  .map((collector) => collector.collector?.id)
+                  .where((id) => id != null)
+                  .toSet();
+
+          // Filter out contacts that are already in the list
+          final newContacts =
               contacts
+                  .where((contact) => !existingIds.contains(contact.id))
+                  .toList();
+
+          // Convert new contacts to InvitedCollector and append
+          final newCollectors =
+              newContacts
                   .map(
                     (contact) => InvitedCollector(
                       collector: UserModel(
@@ -100,6 +114,9 @@ class _JarCreateViewState extends State<JarCreateView> {
                     ),
                   )
                   .toList();
+
+          // Append new collectors to the existing list
+          newInvitedCollectors = [...newInvitedCollectors, ...newCollectors];
         });
       },
     );

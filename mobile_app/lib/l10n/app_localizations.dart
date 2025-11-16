@@ -1364,10 +1364,10 @@ abstract class AppLocalizations {
   /// **'Currency'**
   String get currency;
 
-  /// Label for collaborators section
+  /// Label for collectors section
   ///
   /// In en, this message translates to:
-  /// **'Collaborators'**
+  /// **'Collectors'**
   String get collaborators;
 
   /// Invite button text

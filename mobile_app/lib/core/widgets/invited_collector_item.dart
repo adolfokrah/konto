@@ -128,6 +128,12 @@ class InvitedCollectorItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only pass avatarUrl if photo is not null and not empty
+    final avatarUrl =
+        invitedCollector.photo != null && invitedCollector.photo!.isNotEmpty
+            ? invitedCollector.photo
+            : null;
+
     return ListTile(
       contentPadding: EdgeInsets.all(0),
       onTap: () {
@@ -135,7 +141,7 @@ class InvitedCollectorItem extends StatelessWidget {
       },
       leading: ContributorAvatar(
         contributorName: invitedCollector.name ?? 'Unknown',
-        avatarUrl: invitedCollector.photo,
+        avatarUrl: avatarUrl,
         radius: 20,
         showStatusOverlay: false,
         backgroundColor:

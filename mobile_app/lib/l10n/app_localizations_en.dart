@@ -709,7 +709,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currency => 'Currency';
 
   @override
-  String get collaborators => 'Collaborators';
+  String get collaborators => 'Collectors';
 
   @override
   String get invite => 'Invite';

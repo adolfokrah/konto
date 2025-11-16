@@ -1172,9 +1172,9 @@
     "description": "Label for currency selection"
   },
 
-  "collaborators": "Collaborators",
+  "collaborators": "Collectors",
   "@collaborators": {
-    "description": "Label for collaborators section"
+    "description": "Label for collectors section"
   },
 
   "invite": "Invite",
