@@ -42,6 +42,9 @@ class ContributionListItem extends StatelessWidget {
   /// Optional callback when the item is tapped
   final VoidCallback? onTap;
 
+  /// Whether this is a transfer type contribution
+  final bool isTransfer;
+
   const ContributionListItem({
     super.key,
     required this.contributorName,
@@ -55,6 +58,7 @@ class ContributionListItem extends StatelessWidget {
     this.paymentStatus,
     this.onTap,
     required this.contributionId,
+    this.isTransfer = false,
   });
 
   @override
@@ -87,7 +91,7 @@ class ContributionListItem extends StatelessWidget {
             ),
           ),
           Text(
-            CurrencyUtils.formatAmount(amount, currency),
+            '${isTransfer ? '- ' : ''}${CurrencyUtils.formatAmount(amount, currency)}',
             style: TextStyles.titleBoldM.copyWith(
               decoration:
                   paymentStatus?.toLowerCase() == 'failed'

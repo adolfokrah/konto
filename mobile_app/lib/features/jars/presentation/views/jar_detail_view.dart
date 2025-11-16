@@ -879,6 +879,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     contribution.viaPaymentLink,
                                                 paymentStatus:
                                                     contribution.paymentStatus,
+                                                isTransfer:
+                                                    contribution.isTransfer,
                                               ),
                                             ],
                                           )

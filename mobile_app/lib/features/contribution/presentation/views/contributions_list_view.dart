@@ -363,6 +363,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           contribution.contributorPhoneNumber == null,
       paymentStatus: contribution.paymentStatus,
       viaPaymentLink: contribution.viaPaymentLink,
+      isTransfer: contribution.isTransfer,
     );
   }
 

@@ -125,7 +125,7 @@ class ContributionView extends StatelessWidget {
                                           ),
                                     ),
                                     trailing: Text(
-                                      '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.amountContributed.abs()}',
+                                      '${contribution.isTransfer ? '- ' : ''}${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.amountContributed.abs()}',
                                       style: AppTextStyles.titleBoldXl.copyWith(
                                         decoration:
                                             contribution.paymentStatus ==

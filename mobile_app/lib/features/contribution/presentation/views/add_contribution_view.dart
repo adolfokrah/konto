@@ -58,12 +58,7 @@ class _AddContributionViewState extends State<AddContributionView> {
               final currencySymbol = CurrencyUtils.getCurrencySymbol(
                 jarData.currency,
               );
-              // Only auto-focus if the field is editable (isFixedContribution is false)
-              if (!jarData.isFixedContribution) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _focusNode.requestFocus();
-                });
-              } else {
+              if (jarData.isFixedContribution) {
                 // Format the amount with currency symbol for initial display
                 _amountController.text =
                     '$currencySymbol${jarData.acceptedContributionAmount}';

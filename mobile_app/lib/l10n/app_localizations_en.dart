@@ -1114,7 +1114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
-  String get aboutKonto => 'About Hoga';
+  String get aboutKonto => 'About hogapay';
 
   @override
   String get socialMedia => 'Social Media';

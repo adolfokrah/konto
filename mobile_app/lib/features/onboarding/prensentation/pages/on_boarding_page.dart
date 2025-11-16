@@ -152,7 +152,7 @@ class OnBoardingPage extends StatelessWidget {
                       UrlLauncherUtils.launch('https://hogapay.com/about');
                     },
                     child: Text(
-                      "About Hoga",
+                      "About hogapay",
                       style: AppTextStyles.titleMediumS.copyWith(
                         decoration: TextDecoration.underline,
                       ),
