@@ -103,6 +103,7 @@
     "eslint": "9.38.0",
     "eslint-config-next": "16.0.0",
     "jsdom": "27.0.1",
+    "null-loader": "^4.0.1",
     "patch-package": "8.0.1",
     "playwright-core": "1.56.1",
     "postcss": "8.5.6",

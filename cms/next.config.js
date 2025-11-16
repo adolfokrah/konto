@@ -91,6 +91,15 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
+    // Ignore CSS imports in server-side builds for PayloadCMS
+    if (isServer) {
+      webpackConfig.module.rules.push({
+        test: /\.css$/,
+        use: 'null-loader',
+        include: /node_modules\/@payloadcms/,
+      })
+    }
+
     // // Memory optimizations for large builds
     // if (!dev) {
     //   webpackConfig.optimization = {

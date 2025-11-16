@@ -302,7 +302,7 @@ export default function ContributionInput({
             <Button
               key={amount}
               onClick={() => handlePresetClick(amount)}
-              className={`px-5 hover:text-white py-7 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer duration-200 text-sm sm:text-base ${
+              className={`px-5 hover:text-white hover:bg-black py-7 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer duration-200 text-sm sm:text-base ${
                 selectedAmount === amount && !isCustom
                   ? 'bg-black text-white border-black hover:text-black'
                   : 'bg-white text-black border-gray-300 hover:border-gray-400'
