@@ -60,20 +60,41 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/icon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
+
 flutter_native_splash:
+  # Background color for the splash screen
   color: "#ffffff"
   color_dark: "#161C25"
+  
+  # Platforms
   android: true
   ios: true
   web: false
-  image: "assets/images/splash_dark.png"
+  
+  # Splash image - using launcher icon for smaller size
+  image: "assets/images/new_splash_logo.png"
+  image_dark: "assets/images/new_splash_logo.png"
+  
+  # Image alignment - scaleAspectFit makes iOS icon smaller
   android_gravity: center
-  ios_content_mode: center
+  ios_content_mode: scaleAspectFit
+  
+  # Fullscreen mode
+  fullscreen: true
+  
+  # Android 12+ configuration
   android_12:
+    # Background color
     color: "#ffffff"
-    image: "assets/images/splash_dark.png"
-    ios_content_mode: center
-    android_gravity: center
+    color_dark: "#161C25"
+    
+    # Center icon (launcher icon)
+    image: "assets/images/android_icon.png"
+    image_dark: "assets/images/android_icon.png"
+    
+    # Icon background color
+    icon_background_color: "#ffffff"
+    icon_background_color_dark: "#161C25"
 
 flutter:
   generate: true

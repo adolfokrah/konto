@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Solid background color -->
-    <item android:drawable="@color/window_splash_background" />
-    <!-- Centered square logo with padding (provide splash_square.png) -->
     <item>
-        <bitmap android:gravity="center" android:src="@drawable/splash_square" />
+        <bitmap android:gravity="fill" android:src="@drawable/background"/>
+    </item>
+    <item>
+        <bitmap android:gravity="center" android:src="@drawable/splash"/>
     </item>
 </layer-list>
