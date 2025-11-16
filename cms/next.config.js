@@ -23,8 +23,8 @@ const allowedImageDomains = [
   NEXT_PUBLIC_SERVER_URL,
   // Explicit staging domain
   'https://konto-env-staging-ui-ninjas-projects.vercel.app',
-  'https://staging.usehoga.com',
-  'https://usehoga.com',
+  'https://staging.hogapay.com',
+  'https://hogapay.com',
   // Explicit production domain
   'https://konto-ruddy.vercel.app',
   // Localhost for development

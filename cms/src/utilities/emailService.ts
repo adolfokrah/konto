@@ -55,20 +55,20 @@ class EmailService {
     // return 'Hoga <noreply@gavazo.com>'
     // Different from addresses based on email type
     if (subject.toLowerCase().includes('kyc')) {
-      return 'Hoga <onboarding@usehoga.com>'
+      return 'Hoga <onboarding@hogapay.com>'
     }
     if (subject.toLowerCase().includes('report') || subject.toLowerCase().includes('export')) {
-      return 'Hoga <reports@usehoga.com>'
+      return 'Hoga <reports@hogapay.com>'
     }
     if (subject.toLowerCase().includes('welcome')) {
-      return 'Hoga <hello@usehoga.com>'
+      return 'Hoga <hello@hogapay.com>'
     }
     if (subject.toLowerCase().includes('deletion')) {
-      return 'Hoga <noreply@usehoga.com>'
+      return 'Hoga <noreply@hogapay.com>'
     }
 
     // Default
-    return process.env.RESEND_FROM_EMAIL || 'Hoga <noreply@usehoga.com>'
+    return process.env.RESEND_FROM_EMAIL || 'Hoga <noreply@hogapay.com>'
   }
 
   // KYC Verification Success Email

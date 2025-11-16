@@ -56,7 +56,7 @@ export default function Welcome({ fullname = 'John Doe' }: EmailTemplateProps) {
         </ul>
         <p>
           Need help? Just reply to this email or reach us at{' '}
-          <a href="mailto:hello@usehoga.com">hello@usehoga.com</a> — we’re here 24/7.
+          <a href="mailto:hello@hogapay.com">hello@hogapay.com</a> — we’re here 24/7.
         </p>
         <p>Welcome aboard 🤝</p>
       </div>

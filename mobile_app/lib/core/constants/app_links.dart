@@ -3,10 +3,10 @@
 /// Use these constants instead of hardcoding URLs.
 class AppLinks {
   // Konto website links
-  static const String about = 'https://usehoga.com/about';
-  static const String privacy = 'https://www.usehoga.com/privacy-policy';
-  static const String terms = 'https://www.usehoga.com/terms';
-  static const String contact = 'mailto:hello@usehoga.com';
+  static const String about = 'https://hogapay.com/about';
+  static const String privacy = 'https://www.hogapay.com/privacy-policy';
+  static const String terms = 'https://www.hogapay.com/terms';
+  static const String contact = 'mailto:hello@hogapay.com';
 
   // Social media links
 

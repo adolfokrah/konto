@@ -149,7 +149,7 @@ class OnBoardingPage extends StatelessWidget {
                   const SizedBox(height: AppSpacing.spacingXs),
                   InkWell(
                     onTap: () {
-                      UrlLauncherUtils.launch('https://usehoga.com/about');
+                      UrlLauncherUtils.launch('https://hogapay.com/about');
                     },
                     child: Text(
                       "About Hoga",

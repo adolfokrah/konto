@@ -6,14 +6,14 @@ This setup provides locale-based routing for your Next.js App Router application
 
 ### URL Structure
 
-- `usehoga.com` → serves English content (no redirect)
-- `usehoga.com/about` → serves English about page (no redirect)
-- `usehoga.com/fr` → French home page
-- `usehoga.com/fr/about` → French about page
-- `usehoga.com/en` → English home page (optional explicit locale)
-- `usehoga.com/en/about` → English about page (optional explicit locale)
-- `usehoga.com/es` → redirects to `usehoga.com` (unsupported locale fallback)
-- `usehoga.com/es/about` → redirects to `usehoga.com/about` (unsupported locale fallback)
+- `hogapay.com` → serves English content (no redirect)
+- `hogapay.com/about` → serves English about page (no redirect)
+- `hogapay.com/fr` → French home page
+- `hogapay.com/fr/about` → French about page
+- `hogapay.com/en` → English home page (optional explicit locale)
+- `hogapay.com/en/about` → English about page (optional explicit locale)
+- `hogapay.com/es` → redirects to `hogapay.com` (unsupported locale fallback)
+- `hogapay.com/es/about` → redirects to `hogapay.com/about` (unsupported locale fallback)
 
 ### How It Works Internally
 
@@ -26,7 +26,7 @@ This setup provides locale-based routing for your Next.js App Router application
 
 ### Key Features
 
-✅ **Clean URLs**: `usehoga.com/about` instead of `usehoga.com/en/about`  
+✅ **Clean URLs**: `hogapay.com/about` instead of `hogapay.com/en/about`  
 ✅ **No forced redirects**: Users stay on the URL they typed  
 ✅ **Automatic locale preservation**: Links clicked from `/fr/*` pages automatically go to `/fr/*` versions  
 ✅ **Unsupported locale fallback**: `/es/*` redirects to English root paths  

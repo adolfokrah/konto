@@ -61,11 +61,11 @@ export const Footer = () => {
           refundable. Review the event/jar details before contributing.
           <br />
           For more information, see:{' '}
-          <a href="https://usehoga.com/terms" className="text-gray-500 underline">
+          <a href="https://hogapay.com/terms" className="text-gray-500 underline">
             Terms of Use
           </a>{' '}
           ·{' '}
-          <a href="https://usehoga.com/privacy-policy" className="text-gray-500 underline">
+          <a href="https://hogapay.com/privacy-policy" className="text-gray-500 underline">
             Privacy Policy
           </a>
         </p>
@@ -110,7 +110,7 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
         {/* Logo with background for visibility in both themes */}
         <div className="mb-6">
            <Img
-              src="https://www.usehoga.com/logo.png"
+              src="https://www.hogapay.com/logo.png"
               alt="Hoga Logo"
               width="70"
               height="23"

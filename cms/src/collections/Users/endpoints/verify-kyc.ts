@@ -160,7 +160,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
         { status: 200 },
       )
     } else {
-      return Response.redirect(process.env.NEXT_PUBLIC_SERVER_URL || 'https://usehoga.com', 302)
+      return Response.redirect(process.env.NEXT_PUBLIC_SERVER_URL || 'https://hogapay.com', 302)
     }
   } catch (error: any) {
     console.error('Error updating KYC status:', error)

@@ -31,7 +31,7 @@ export default function AccountDeletion({ fullname = 'John Doe' }: EmailTemplate
         </ul>
         <p>
           If this wasn’t you, or if you’d like help starting fresh, just reply to this email or
-          contact us: <a href="mailto:hello@usehoga.com">hello@usehoga.com</a>. We’d love to have
+          contact us: <a href="mailto:hello@hogapay.com">hello@hogapay.com</a>. We’d love to have
           you back whenever you’re ready.
         </p>
       </div>
