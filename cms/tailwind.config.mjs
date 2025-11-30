@@ -3,6 +3,7 @@ import typography from '@tailwindcss/typography'
 
 /** @type {import('tailwindcss').Config} */
 const config = {
+  darkMode: ['selector', '[data-theme="dark"]'], // Disabled - dark mode removed
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',

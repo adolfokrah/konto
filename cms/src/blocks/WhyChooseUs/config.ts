@@ -75,10 +75,6 @@ export const WhyChooseUs: Block = {
           value: 'gray',
         },
         {
-          label: 'Dark',
-          value: 'dark',
-        },
-        {
           label: 'Transparent',
           value: 'transparent',
         },
