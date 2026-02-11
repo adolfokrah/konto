@@ -2,66 +2,88 @@ import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { emailService } from '@/utilities/emailService'
 import { sendSMS } from '@/utilities/sms'
-import { WhatsAppClient } from '@/utilities/whatsap'
+
+// In-memory OTP store for pre-registration users (keyed by countryCode+phoneNumber)
+// For existing users, OTP is stored on the user document
+export const otpStore = new Map<string, { code: string; expiry: Date; attempts: number }>()
+
+function generateOTPCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+const OTP_VALIDITY_MINUTES = 5
+
 export const sendOTP = async (req: PayloadRequest) => {
   try {
-    // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    const { countryCode, phoneNumber, code, email } = req.data || {}
-    if (!code) {
-      return Response.json(
-        {
-          success: false,
-          message: 'Missing required field: code is required',
-          errors: [
-            {
-              field: 'code',
-              message: `OTP code is required`,
-            },
-          ],
-        },
-        { status: 400 },
-      )
-    }
+    const { countryCode, phoneNumber, email } = req.data || {}
 
     if (!phoneNumber) {
       return Response.json(
         {
           success: false,
           message: 'Missing required field: phoneNumber is required',
-          errors: [
-            {
-              field: 'phoneNumber',
-              message: `Phone number is required`,
-            },
-          ],
+          errors: [{ field: 'phoneNumber', message: 'Phone number is required' }],
         },
         { status: 400 },
       )
     }
-    // send email otp
+
+    if (!countryCode) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Missing required field: countryCode is required',
+          errors: [{ field: 'countryCode', message: 'Country code is required' }],
+        },
+        { status: 400 },
+      )
+    }
+
+    // Generate OTP server-side
+    const code = generateOTPCode()
+    const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
+
+    // Try to find existing user
+    const userResult = await req.payload.find({
+      collection: 'users',
+      where: {
+        phoneNumber: { equals: phoneNumber },
+        countryCode: { equals: countryCode },
+      },
+      limit: 1,
+    })
+
+    if (userResult.docs.length > 0) {
+      // Store OTP on existing user document
+      await req.payload.update({
+        collection: 'users',
+        id: userResult.docs[0].id,
+        data: {
+          otpCode: code,
+          otpExpiry: expiry.toISOString(),
+          otpAttempts: 0,
+        },
+      })
+    } else {
+      // Store OTP in memory for pre-registration users
+      const key = `${countryCode}${phoneNumber}`
+      otpStore.set(key, { code, expiry, attempts: 0 })
+    }
+
+    // Send OTP via email
     if (email) {
       await emailService.sendOTPEmail(email, code)
     }
 
+    // Send OTP via SMS
     if (phoneNumber && countryCode) {
-      const fullPhoneNumber = countryCode ? `${countryCode}${phoneNumber}` : phoneNumber
-      // Send SMS OTP
+      const fullPhoneNumber = `${countryCode}${phoneNumber}`
+
       await sendSMS(
         fullPhoneNumber,
         `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
       )
-
-      // Send WhatsApp OTP
-      try {
-        const whatsappClient = new WhatsAppClient()
-        await whatsappClient.sendText({
-          to: fullPhoneNumber,
-          text: `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
-        })
-      } catch (whatsappError) {
-        console.warn('WhatsApp OTP failed, SMS sent as fallback:', whatsappError)
-      }
     }
 
     return Response.json(
@@ -72,7 +94,7 @@ export const sendOTP = async (req: PayloadRequest) => {
       { status: 200 },
     )
   } catch (error) {
-    console.error('Error sending WhatsApp OTP:', error)
+    console.error('Error sending OTP:', error)
     return Response.json(
       {
         success: false,

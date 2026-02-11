@@ -9,6 +9,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   VerificationBloc() : super(const VerificationInitial()) {
     on<PhoneNumberVerificationRequested>(_onPhoneNumberVerificationRequested);
     on<VerificationSuccessRequested>(_onVerificationSuccessRequested);
+    on<OtpVerificationRequested>(_onOtpVerificationRequested);
   }
 
   Future<void> _onVerificationSuccessRequested(
@@ -32,7 +33,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       );
 
       if (result['success'] == true) {
-        emit(VerificationCodeSent(otpCode: result['data'] ?? ''));
+        emit(const VerificationCodeSent());
       } else {
         final translationService = ServiceRegistry().translationService;
         emit(
@@ -51,6 +52,30 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
           translationService.failedToSendVerificationCodeTryAgain,
         ),
       );
+    }
+  }
+
+  Future<void> _onOtpVerificationRequested(
+    OtpVerificationRequested event,
+    Emitter<VerificationState> emit,
+  ) async {
+    emit(const VerificationVerifying());
+    try {
+      final verificationRepository = ServiceRegistry().verificationRepository;
+      final result = await verificationRepository.verifyOtp(
+        phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
+        code: event.code,
+      );
+
+      if (result['success'] == true) {
+        emit(const VerificationSuccess());
+      } else {
+        emit(VerificationFailure(result['message'] ?? 'Invalid OTP'));
+      }
+    } catch (e) {
+      print('❌ OTP verification failed: ${e.toString()}');
+      emit(VerificationFailure('Failed to verify OTP. Please try again.'));
     }
   }
 }

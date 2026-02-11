@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/services/local_storage_service.dart';
-import 'package:Hoga/core/services/sms_otp_service.dart';
 import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/core/services/jar_storage_service.dart';
@@ -37,7 +36,6 @@ class ServiceRegistry {
   // Core services
   late final Dio _dio;
   late final LocalStorageService _localStorageService;
-  late final SmsOtpService _smsOtpService;
   late final UserStorageService _userStorageService;
   late final JarStorageService _jarStorageService;
   late final TranslationService _translationService;
@@ -89,7 +87,6 @@ class ServiceRegistry {
 
     // Initialize core services
     _localStorageService = LocalStorageService();
-    _smsOtpService = SmsOtpService();
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
@@ -140,7 +137,6 @@ class ServiceRegistry {
     );
 
     _verificationRepository = VerificationRepository(
-      smsOtpService: _smsOtpService,
       verificationProvider: _verificationProvider,
     );
 
@@ -174,7 +170,6 @@ class ServiceRegistry {
   // Getters for accessing initialized services
   Dio get dio => _dio;
   LocalStorageService get localStorageService => _localStorageService;
-  SmsOtpService get smsOtpService => _smsOtpService;
   UserStorageService get userStorageService => _userStorageService;
   JarStorageService get jarStorageService => _jarStorageService;
   TranslationService get translationService => _translationService;
@@ -219,7 +214,6 @@ class ServiceRegistry {
 
     // Initialize core services
     _localStorageService = LocalStorageService();
-    _smsOtpService = SmsOtpService();
     _userStorageService = UserStorageService(
       localStorageService: _localStorageService,
     );
@@ -270,7 +264,6 @@ class ServiceRegistry {
     );
 
     _verificationRepository = VerificationRepository(
-      smsOtpService: _smsOtpService,
       verificationProvider: _verificationProvider,
     );
 

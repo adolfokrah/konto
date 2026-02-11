@@ -119,14 +119,15 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     if (state is! VerificationCodeSent) {
       return;
     }
-    final sentOtp = state.otpCode;
-    if (otp != sentOtp) {
-      final localizations = AppLocalizations.of(context)!;
-      AppSnackBar.showError(context, message: localizations.otpDoesNotMatch);
-      return;
-    }
 
-    context.read<VerificationBloc>().add(VerificationSuccessRequested());
+    // Verify OTP via backend
+    context.read<VerificationBloc>().add(
+      OtpVerificationRequested(
+        phoneNumber: widget.phoneNumber ?? '',
+        countryCode: widget.countryCode ?? '',
+        code: otp,
+      ),
+    );
   }
 
   @override

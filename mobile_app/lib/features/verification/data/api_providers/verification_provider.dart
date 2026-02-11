@@ -21,12 +21,10 @@ class VerificationProvider {
     return const bool.fromEnvironment('flutter.testing', defaultValue: false);
   }
 
-  /// Send OTP via SMS and WhatsApp using the backend endpoint
-  /// [isRegistering] - If true, will also send email OTP
+  /// Send OTP via backend — backend generates the OTP and dispatches via SMS/Email
   Future<Map<String, dynamic>> sendOTP({
     required String phoneNumber,
     required String countryCode,
-    required String otpCode,
     required String email,
   }) async {
     // Automatically detect test environment or use manual test mode
@@ -34,34 +32,21 @@ class VerificationProvider {
 
     // Mock OTP sending in test mode
     if (isInTestMode) {
-      print(
-        '🧪 TEST MODE: Mocking OTP send to $phoneNumber with code: $otpCode',
-      );
-      await Future.delayed(
-        const Duration(milliseconds: 800),
-      ); // Simulate network delay
+      print('🧪 TEST MODE: Mocking OTP send to $phoneNumber');
+      await Future.delayed(const Duration(milliseconds: 800));
       return {
         'success': true,
         'message': 'OTP sent successfully (mocked)',
-        'data': {
-          'messageId': 'mock_${DateTime.now().millisecondsSinceEpoch}',
-          'phoneNumber': phoneNumber,
-          'status': 'sent',
-        },
-        'messageId': 'mock_${DateTime.now().millisecondsSinceEpoch}',
-        'phoneNumber': phoneNumber,
       };
     }
 
     try {
-      // Prepare request data - only include email if user is registering
       final requestData = {
         'phoneNumber': phoneNumber,
-        'code': otpCode,
         'countryCode': countryCode,
         'email': email,
       };
-      // Make API call to backend endpoint
+
       final response = await _dio.post(
         '${BackendConfig.apiBaseUrl}${BackendConfig.sendOTP}',
         data: requestData,
@@ -74,9 +59,6 @@ class VerificationProvider {
         return {
           'success': true,
           'message': response.data['message'] ?? 'OTP sent successfully',
-          'data': response.data['data'],
-          'messageId': response.data['data']?['messageId'],
-          'phoneNumber': response.data['data']?['phoneNumber'],
         };
       } else {
         return {
@@ -132,6 +114,75 @@ class VerificationProvider {
         'success': false,
         'error': 'Unexpected error: ${e.toString()}',
         'statusCode': 0,
+      };
+    }
+  }
+
+  /// Verify OTP via backend
+  Future<Map<String, dynamic>> verifyOTP({
+    required String phoneNumber,
+    required String countryCode,
+    required String code,
+  }) async {
+    final isInTestMode = isTestMode || kDebugMode && _isFlutterTest();
+
+    if (isInTestMode) {
+      print('🧪 TEST MODE: Mocking OTP verify for $phoneNumber');
+      await Future.delayed(const Duration(milliseconds: 500));
+      final isValid = code == '123456';
+      return {
+        'success': true,
+        'verified': isValid,
+        'message': isValid ? 'OTP verified successfully' : 'Invalid OTP',
+      };
+    }
+
+    try {
+      final requestData = {
+        'phoneNumber': phoneNumber,
+        'countryCode': countryCode,
+        'code': code,
+      };
+
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.verifyOTP}',
+        data: requestData,
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {
+          'success': true,
+          'verified': response.data['verified'] ?? false,
+          'message': response.data['message'] ?? 'OTP verified',
+        };
+      } else {
+        return {
+          'success': false,
+          'verified': false,
+          'message': response.data['message'] ?? 'OTP verification failed',
+        };
+      }
+    } on DioException catch (e) {
+      print('❌ Verify OTP Dio Error: ${e.type} - ${e.message}');
+
+      String errorMessage = 'Failed to verify OTP';
+      final responseData = e.response?.data;
+      if (responseData is Map && responseData['message'] != null) {
+        errorMessage = responseData['message'];
+      }
+
+      return {
+        'success': false,
+        'verified': false,
+        'message': errorMessage,
+      };
+    } catch (e) {
+      print('❌ Unexpected Verify OTP Error: $e');
+      return {
+        'success': false,
+        'verified': false,
+        'message': 'Unexpected error: ${e.toString()}',
       };
     }
   }

@@ -23,3 +23,15 @@ final class PhoneNumberVerificationRequested extends VerificationEvent {
 }
 
 final class VerificationSuccessRequested extends VerificationEvent {}
+
+final class OtpVerificationRequested extends VerificationEvent {
+  final String phoneNumber;
+  final String countryCode;
+  final String code;
+
+  OtpVerificationRequested({
+    required this.phoneNumber,
+    required this.countryCode,
+    required this.code,
+  });
+}

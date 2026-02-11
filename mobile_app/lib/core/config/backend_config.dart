@@ -21,6 +21,7 @@ class BackendConfig {
   static const String loginWithPhoneEndpoint = '/users/login-with-phone';
   static const String registerUserEndpoint = '/users/register-user';
   static const String sendOTP = '/users/send-otp';
+  static const String verifyOTP = '/users/verify-otp';
 
   // Jar endpoints
   static const String jarsEndpoint = '/jars';

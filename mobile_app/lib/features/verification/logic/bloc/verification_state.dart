@@ -18,8 +18,11 @@ final class VerificationSuccess extends VerificationState {
 }
 
 final class VerificationCodeSent extends VerificationState {
-  final String otpCode;
-  const VerificationCodeSent({required this.otpCode});
+  const VerificationCodeSent();
+}
+
+final class VerificationVerifying extends VerificationState {
+  const VerificationVerifying();
 }
 
 final class VerificationFailure extends VerificationState {

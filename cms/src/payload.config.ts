@@ -97,6 +97,7 @@ export default buildConfig({
               },
               region: process.env.REGION || 'us-east-1',
               endpoint: process.env.ENDPOINT,
+              forcePathStyle: true,
             },
           }),
         ]

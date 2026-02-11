@@ -5,7 +5,6 @@ import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
 import { manageUserRole } from './endpoints/manage-user-role'
-import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
 import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
@@ -19,6 +18,7 @@ import { sendWelcomeEmail } from './hooks/send-welcome-email'
 import { trackDailyActiveUser } from './hooks/track-daily-active-user'
 import { validateKycForWithdrawalAccount } from './hooks/validate-kyc-for-withdrawal-account'
 import { sendOTP } from './endpoints/send-otp'
+import { verifyOTP } from './endpoints/verify-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
 import { testPushNotification } from './endpoints/test-push-notification'
 
@@ -88,6 +88,11 @@ export const Users: CollectionConfig = {
       path: '/send-otp',
       method: 'post',
       handler: sendOTP,
+    },
+    {
+      path: '/verify-otp',
+      method: 'post',
+      handler: verifyOTP,
     },
     {
       path: '/update-kyc',
@@ -239,6 +244,31 @@ export const Users: CollectionConfig = {
       admin: {
         readOnly: true,
         description: 'Firebase Cloud Messaging token for push notifications',
+      },
+    },
+    {
+      name: 'otpCode',
+      type: 'text',
+      required: false,
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'otpExpiry',
+      type: 'text',
+      required: false,
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'otpAttempts',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      admin: {
+        hidden: true,
       },
     },
     {
