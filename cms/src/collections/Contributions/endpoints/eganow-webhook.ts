@@ -3,9 +3,10 @@ import { payoutEganow } from './payout-eganow'
 
 interface EganowWebhookPayload {
   TransactionId: string
-  EganowTransRefNo: string
+  EganowReferenceNo: string
   TransactionStatus: string
   PayPartnerTransactionId: string
+  redirectHtml?: string
 }
 
 export const eganowWebhook = async (req: PayloadRequest) => {
@@ -20,7 +21,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     console.log('Eganow Webhook Received:', webhookData)
 
-    const { TransactionId, EganowTransRefNo, TransactionStatus, PayPartnerTransactionId } =
+    const { TransactionId, EganowReferenceNo, TransactionStatus, PayPartnerTransactionId } =
       webhookData
 
     // Validate required fields
@@ -60,6 +61,9 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       SUCCESSFUL: 'completed',
       FAILED: 'failed',
       PENDING: 'pending',
+      AUTHENTICATION_IN_PROGRESS: 'pending',
+      EXPIRED: 'failed',
+      CANCELLED: 'failed',
     }
 
     const newStatus = statusMap[TransactionStatus.toUpperCase()] || 'failed'

@@ -65,6 +65,11 @@ interface EganowCollectionResponse {
   transactionStatus: string
   eganowReferenceNo: string
   message: string
+  redirectHtml?: string
+}
+
+interface EganowBalanceResponse {
+  balance: number
 }
 
 interface EganowStatusRequest {
@@ -269,6 +274,7 @@ export default class Eganow {
   /**
    * Card Collection
    * Initiate a card payment collection
+   * Note: Card collection uses Basic Auth per Eganow API docs
    */
   async collectCard(params: EganowCollectionRequest): Promise<EganowCollectionResponse> {
     // For card payments, ensure paypartnerCode is CARDGATEWAY
@@ -279,6 +285,7 @@ export default class Eganow {
 
     return this.request<EganowCollectionResponse>('POST', '/api/transactions/collection', {
       body: requestBody,
+      useBasicAuth: true,
     })
   }
 
@@ -300,5 +307,21 @@ export default class Eganow {
     return this.request<EganowPayoutResponse>('POST', '/api/transactions/payout', {
       body: params,
     })
+  }
+
+  /**
+   * Get Payout Balance
+   * Retrieve available balance for payout operations
+   */
+  async getPayoutBalance(): Promise<EganowBalanceResponse> {
+    return this.request<EganowBalanceResponse>('GET', '/api/transactions/payout/get-balance')
+  }
+
+  /**
+   * Get Collection Balance
+   * Retrieve current balance of collection account (funds received from customers)
+   */
+  async getCollectionBalance(): Promise<EganowBalanceResponse> {
+    return this.request<EganowBalanceResponse>('GET', '/api/transactions/collection/get-balance')
   }
 }

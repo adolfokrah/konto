@@ -3,7 +3,7 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
 
 interface EganowPayoutWebhookPayload {
   TransactionId: string
-  EganowTransRefNo: string
+  EganowReferenceNo: string
   TransactionStatus: string
   PayPartnerTransactionId: string
 }
@@ -20,7 +20,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
     console.log('Eganow Payout Webhook Received:', webhookData)
 
-    const { TransactionId, EganowTransRefNo, TransactionStatus, PayPartnerTransactionId } =
+    const { TransactionId, EganowReferenceNo, TransactionStatus, PayPartnerTransactionId } =
       webhookData
 
     // Validate required fields
@@ -63,6 +63,8 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       SUCCESSFUL: 'transferred',
       FAILED: 'failed',
       PENDING: 'pending',
+      EXPIRED: 'failed',
+      CANCELLED: 'failed',
     }
 
     const newStatus = statusMap[TransactionStatus.toUpperCase()] || 'failed'

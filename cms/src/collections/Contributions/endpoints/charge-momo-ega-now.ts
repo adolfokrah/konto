@@ -189,6 +189,9 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       SUCCESSFUL: 'success',
       Failed: 'failed',
       FAILED: 'failed',
+      AUTHENTICATION_IN_PROGRESS: 'authentication_in_progress',
+      EXPIRED: 'failed',
+      CANCELLED: 'failed',
     }
 
     const mappedStatus = statusMap[collectionResult.transactionStatus] || 'pay_offline' // Default to pay_offline for unknown statuses
@@ -213,6 +216,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
         eganowReferenceNo: collectionResult.eganowReferenceNo,
         message: collectionResult.message,
         contributionId: contribution.id,
+        ...(collectionResult.redirectHtml && { redirectHtml: collectionResult.redirectHtml }),
       },
     })
   } catch (error: any) {

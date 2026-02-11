@@ -338,8 +338,11 @@ curl -X POST 'https://developer.sandbox.egacoreapi.com/api/transactions/status' 
 
 **Transaction Statuses:**
 - `PENDING` - Transaction initiated, waiting for customer approval
-- `SUCCESSFUL` - Payment completed successfully
-- `FAILED` - Payment failed or declined
+- `SUCCESSFUL` - Payment completed successfully (final)
+- `FAILED` - Payment failed or declined (final)
+- `AUTHENTICATION_IN_PROGRESS` - 3DS page returned, render redirectHtml
+- `EXPIRED` - Customer didn't approve in time (final)
+- `CANCELLED` - Merchant or system cancelled (final)
 
 **Note:** Status checking may be limited in sandbox environment.
 
@@ -355,7 +358,8 @@ After customer approves/declines payment, Eganow sends a callback to your webhoo
   "TransactionId": "TXN1731606737",
   "EganowReferenceNo": "GHOD057E0A324CFF47C986DD3A1012A1717F",
   "TransactionStatus": "SUCCESSFUL",
-  "PayPartnerTransactionId": "MP123456789"
+  "PayPartnerTransactionId": "MP123456789",
+  "redirectHtml": "<base64 encoded HTML - only present for AUTHENTICATION_IN_PROGRESS>"
 }
 ```
 
@@ -588,6 +592,42 @@ curl -s -X POST 'https://developer.sandbox.egacoreapi.com/api/transactions/statu
 - [ ] Handle token expiry
 - [ ] Test webhook endpoint
 - [ ] Test error scenarios (invalid phone, insufficient funds)
+
+---
+
+## Balance Endpoints
+
+### Get Payout Balance
+
+Check available balance for payout/disbursement operations.
+
+**Endpoint:** `GET /api/transactions/payout/get-balance`
+**Headers:**
+- `Authorization: Bearer <TOKEN>`
+- `x-Auth: <X_AUTH_TOKEN>`
+
+**Response:**
+```json
+{
+  "balance": 0
+}
+```
+
+### Get Collection Balance
+
+Check current balance of collection account (funds received from customers).
+
+**Endpoint:** `GET /api/transactions/collection/get-balance`
+**Headers:**
+- `Authorization: Bearer <TOKEN>`
+- `x-Auth: <X_AUTH_TOKEN>`
+
+**Response:**
+```json
+{
+  "balance": 24980
+}
+```
 
 ---
 
