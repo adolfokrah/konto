@@ -1,17 +1,12 @@
 import type { CollectionConfig } from 'payload'
 
-import { chargeMomo } from './endpoints/charge-momo'
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
-import { paystackWebhook } from './endpoints/paystack-webhook'
 import { eganowWebhook } from './endpoints/eganow-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
-import { sendOtp } from './endpoints/send-otp'
-import { transferMomo } from './endpoints/transfer-momo'
 import { payoutEganow } from './endpoints/payout-eganow'
 import { testPayoutEganow } from './endpoints/test-payout-eganow'
-import { verifyPayment } from './endpoints/verify-payment'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus, updateJarTotalContributions } from './hooks'
 import { getCharges } from './hooks/getCharges'
@@ -124,14 +119,6 @@ export const Contributions: CollectionConfig = {
       },
       fields: [
         {
-          name: 'paystackTransferFeeMomo',
-          type: 'number',
-          admin: {
-            description: 'Mobile money transfer fee (₵1)',
-            readOnly: true,
-          },
-        },
-        {
           name: 'platformCharge',
           type: 'number',
           admin: {
@@ -144,14 +131,6 @@ export const Contributions: CollectionConfig = {
           type: 'number',
           admin: {
             description: 'Total amount paid by contributor (including all fees)',
-            readOnly: true,
-          },
-        },
-        {
-          name: 'paystackCharge',
-          type: 'number',
-          admin: {
-            description: 'Paystack processing fee (1.95%)',
             readOnly: true,
           },
         },
@@ -308,11 +287,6 @@ export const Contributions: CollectionConfig = {
       handler: createPaymentLinkContribution,
     },
     {
-      path: '/charge-momo',
-      method: 'post',
-      handler: chargeMomo,
-    },
-    {
       path: '/charge-momo-eganow',
       method: 'post',
       handler: chargeMomoEganow,
@@ -328,24 +302,9 @@ export const Contributions: CollectionConfig = {
       handler: eganowPayoutWebhook,
     },
     {
-      path: '/send-otp',
-      method: 'post',
-      handler: sendOtp,
-    },
-    {
-      path: '/verify-payment',
-      method: 'post',
-      handler: verifyPayment,
-    },
-    {
       path: '/verify-payment-ega-now',
       method: 'post',
       handler: verifyPaymentEgaNow,
-    },
-    {
-      path: '/transfer-momo',
-      method: 'post',
-      handler: transferMomo,
     },
     {
       path: '/payout-eganow',
@@ -361,11 +320,6 @@ export const Contributions: CollectionConfig = {
       path: '/verify-transfer',
       method: 'post',
       handler: verifyTransfer,
-    },
-    {
-      path: '/paystack-webhook',
-      method: 'post',
-      handler: paystackWebhook,
     },
     {
       path: '/verify-pending-transactions',

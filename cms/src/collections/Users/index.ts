@@ -6,7 +6,6 @@ import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
 import { manageUserRole } from './endpoints/manage-user-role'
 import { sendWhatsAppOtp } from './endpoints/send-whatsapp-otp'
-import { createSubAccount } from './hooks/create-sub-account'
 import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
@@ -295,13 +294,6 @@ export const Users: CollectionConfig = {
           name: 'accountHolder',
           type: 'text',
         },
-        {
-          name: 'paystackSubAccountCode',
-          type: 'text',
-          admin: {
-            readOnly: true,
-          },
-        },
       ],
     },
     {
@@ -421,7 +413,7 @@ export const Users: CollectionConfig = {
         }
       },
     ],
-    beforeChange: [validateKycForWithdrawalAccount, createSubAccount],
+    beforeChange: [validateKycForWithdrawalAccount],
     afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
     afterRead: [trackDailyActiveUser],

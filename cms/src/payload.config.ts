@@ -13,7 +13,6 @@ import { Contributions } from './collections/Contributions'
 import { Jars } from './collections/Jars'
 import { Posts } from './collections/Posts'
 import { Pages } from './collections/Pages'
-import Paystack from './utilities/paystack'
 import { plugins } from './plugins'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { getServerSideURL } from './utilities/getURL'
@@ -28,9 +27,6 @@ import { DailyActiveUsers } from './collections/DailyActiveUsers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
-// Export paystack for tests and other modules that need it
-export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
 
 export default buildConfig({
   admin: {

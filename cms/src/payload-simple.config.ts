@@ -4,15 +4,12 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import Paystack from './utilities/paystack'
 import { Resend } from 'resend'
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
-
 export const resend = new Resend(process.env.RESEND_API_KEY)
 
 export default buildConfig({

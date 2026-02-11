@@ -12,7 +12,6 @@ import { Media } from '@collections/Media'
 import { Pages } from '@collections/Pages'
 import { Posts } from '@collections/Posts'
 import { Users } from '@collections/Users'
-import Paystack from './utilities/paystack'
 import { Contributions } from '@collections/Contributions'
 import { Jars } from '@collections/Jars'
 
@@ -30,11 +29,8 @@ const dirname = path.dirname(filename)
 const dbUrl =
   process.env.NODE_ENV == 'test' ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI
 
-export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
-
 export const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Removed test error throw that was used to verify Sentry integration.
 export default buildConfig({
   admin: {
     components: {

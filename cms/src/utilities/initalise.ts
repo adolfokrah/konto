@@ -1,8 +1,5 @@
 import { Resend } from 'resend'
-import Paystack from './paystack'
 import Eganow from './eganow'
-
-export const paystack = new Paystack({ secretKey: process.env.PAYSTACK_SECRET! })
 
 export const eganow = new Eganow({
   username: process.env.EGANOW_SECRET_USERNAME!,
