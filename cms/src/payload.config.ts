@@ -15,7 +15,7 @@ import { Posts } from './collections/Posts'
 import { Pages } from './collections/Pages'
 import Paystack from './utilities/paystack'
 import { plugins } from './plugins'
-import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { getServerSideURL } from './utilities/getURL'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -85,15 +85,24 @@ export default buildConfig({
   editor: lexicalEditor({}),
   plugins: [
     ...plugins,
-    ...(process.env.UPLOADTHING_TOKEN && process.env.NODE_ENV !== 'test'
+    ...(process.env.ACCESS_KEY_ID &&
+    process.env.SECRET_ACCESS_KEY &&
+    process.env.NODE_ENV !== 'test'
       ? [
-          uploadthingStorage({
+          s3Storage({
             collections: {
-              media: true, // Apply to 'media' collection
+              media: true,
             },
-            options: {
-              token: process.env.UPLOADTHING_TOKEN,
-              acl: 'public-read', // This is optional
+            bucket: process.env.RAILWAY_BUCKET_NAME || '',
+            acl: 'public-read',
+            config: {
+              credentials: {
+                accessKeyId: process.env.ACCESS_KEY_ID || '',
+                secretAccessKey: process.env.SECRET_ACCESS_KEY || '',
+              },
+              region: process.env.REGION || 'us-east-1',
+              endpoint: process.env.ENDPOINT,
+              forcePathStyle: true,
             },
           }),
         ]

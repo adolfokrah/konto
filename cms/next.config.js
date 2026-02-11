@@ -43,7 +43,7 @@ const nextConfig = {
     '@payloadcms/richtext-lexical',
     '@payloadcms/plugin-seo',
     '@payloadcms/plugin-search',
-    '@payloadcms/storage-uploadthing',
+    '@payloadcms/storage-s3',
   ],
   images: {
     remotePatterns: [

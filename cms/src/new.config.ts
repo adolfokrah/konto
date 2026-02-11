@@ -21,7 +21,7 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
-import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { Resend } from 'resend'
 
 const filename = fileURLToPath(import.meta.url)
@@ -82,17 +82,24 @@ export default buildConfig({
   globals: [Header, Footer],
   plugins: [
     ...plugins,
-    // storage-adapter-placeholder
-    // Only add UploadthingStorage plugin if UPLOADTHING_TOKEN is available AND not in test mode
-    ...(process.env.UPLOADTHING_TOKEN && process.env.NODE_ENV !== 'test'
+    ...(process.env.ACCESS_KEY_ID &&
+    process.env.SECRET_ACCESS_KEY &&
+    process.env.NODE_ENV !== 'test'
       ? [
-          uploadthingStorage({
+          s3Storage({
             collections: {
-              media: true, // Apply to 'media' collection
+              media: true,
             },
-            options: {
-              token: process.env.UPLOADTHING_TOKEN,
-              acl: 'public-read', // This is optional
+            bucket: process.env.RAILWAY_BUCKET_NAME || '',
+            acl: 'public-read',
+            config: {
+              credentials: {
+                accessKeyId: process.env.ACCESS_KEY_ID || '',
+                secretAccessKey: process.env.SECRET_ACCESS_KEY || '',
+              },
+              region: process.env.REGION || 'us-east-1',
+              endpoint: process.env.ENDPOINT,
+              forcePathStyle: true,
             },
           }),
         ]
