@@ -23,23 +23,16 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
         isCreatorPaysPlatformFees: jar?.whoPaysPlatformFees === 'creator',
       })
 
-      const {
-        totalAmount,
-        paystackCharge,
-        platformCharge,
-        amountAfterCharges,
-        paystackTransferFeeMomo,
-      } = transactionCharges.calculateAmountAndCharges(data.amountContributed)
+      const { totalAmount, platformCharge, amountAfterCharges } =
+        transactionCharges.calculateAmountAndCharges(data.amountContributed)
 
       // Update the contribution amount to the amount recipient actually receives
       data.amountContributed = amountAfterCharges
 
       // Store detailed charge breakdown
       data.chargesBreakdown = {
-        paystackTransferFeeMomo,
         platformCharge,
         amountPaidByContributor: totalAmount,
-        paystackCharge,
       }
 
       //  console.log(amountAfterCharges,  'amount after charges');
@@ -49,10 +42,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       //do cash charges calculations
 
       data.chargesBreakdown = {
-        paystackTransferFeeMomo: 0,
         platformCharge: Number((0.01 * data.amountContributed).toFixed(2)), //1% platform charge for cash
         amountPaidByContributor: data.amountContributed,
-        paystackCharge: 0,
       }
     }
   }

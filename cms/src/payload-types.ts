@@ -461,7 +461,6 @@ export interface User {
   bank?: string | null;
   accountNumber?: string | null;
   accountHolder?: string | null;
-  paystackSubAccountCode?: string | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;
     theme?: ('light' | 'dark' | 'system') | null;
@@ -1366,10 +1365,6 @@ export interface Contribution {
    */
   chargesBreakdown?: {
     /**
-     * Mobile money transfer fee (₵1)
-     */
-    paystackTransferFeeMomo?: number | null;
-    /**
      * Platform service charge (2%)
      */
     platformCharge?: number | null;
@@ -1377,10 +1372,6 @@ export interface Contribution {
      * Total amount paid by contributor (including all fees)
      */
     amountPaidByContributor?: number | null;
-    /**
-     * Paystack processing fee (1.95%)
-     */
-    paystackCharge?: number | null;
   };
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   /**
@@ -2373,7 +2364,6 @@ export interface UsersSelect<T extends boolean = true> {
   bank?: T;
   accountNumber?: T;
   accountHolder?: T;
-  paystackSubAccountCode?: T;
   appSettings?:
     | T
     | {
@@ -2421,10 +2411,8 @@ export interface ContributionsSelect<T extends boolean = true> {
   chargesBreakdown?:
     | T
     | {
-        paystackTransferFeeMomo?: T;
         platformCharge?: T;
         amountPaidByContributor?: T;
-        paystackCharge?: T;
       };
   paymentStatus?: T;
   paid?: T;

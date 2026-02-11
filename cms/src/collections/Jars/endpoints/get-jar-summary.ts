@@ -316,19 +316,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
     0,
   )
 
-  const totalPaystackTransferFeeMomo = completedContributions.reduce(
-    (sum: number, contribution: any) =>
-      sum + (contribution.chargesBreakdown?.paystackTransferFeeMomo || 0),
-    0,
-  )
-
   const totalPlatformCharge = completedContributions.reduce(
     (sum: number, contribution: any) => sum + (contribution.chargesBreakdown?.platformCharge || 0),
-    0,
-  )
-
-  const totalPaystackCharge = completedContributions.reduce(
-    (sum: number, contribution: any) => sum + (contribution.chargesBreakdown?.paystackCharge || 0),
     0,
   )
 
@@ -356,9 +345,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     },
     chargesBreakdown: {
       totalCharges: Number(totalCharges.toFixed(2)),
-      totalPaystackTransferFeeMomo: Number(totalPaystackTransferFeeMomo.toFixed(2)),
       totalPlatformCharge: Number(totalPlatformCharge.toFixed(2)),
-      totalPaystackCharge: Number(totalPaystackCharge.toFixed(2)),
       totalAmountPaidByContributors: Number(totalAmountPaidByContributors.toFixed(2)),
     },
   }
