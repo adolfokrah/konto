@@ -1470,10 +1470,6 @@ export interface Jar {
     showGoal?: boolean | null;
     showRecentContributions?: boolean | null;
   };
-  /**
-   * Who pays the platform fees for this jar
-   */
-  whoPaysPlatformFees?: ('creator' | 'contributors') | null;
   thankYouMessage?: string | null;
   /**
    * Current status of the jar
@@ -2461,7 +2457,6 @@ export interface JarsSelect<T extends boolean = true> {
         showGoal?: T;
         showRecentContributions?: T;
       };
-  whoPaysPlatformFees?: T;
   thankYouMessage?: T;
   status?: T;
   totalContributions?: T;
