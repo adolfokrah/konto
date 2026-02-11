@@ -1,6 +1,4 @@
 import { withPayload } from '@payloadcms/next/withPayload'
-// Injected content via Sentry wizard below
-import { withSentryConfig } from '@sentry/nextjs'
 import redirects from './redirects.js'
 
 // Helper function to clean environment variables (remove extra quotes)
@@ -121,16 +119,4 @@ const nextConfig = {
   redirects,
 }
 
-// Re-enable Sentry with proper configuration to avoid OpenTelemetry issues
-export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
-  org: 'kontoapp', 
-  project: 'konto-cms',
-  silent: !process.env.CI,
-  hideSourceMaps: true,
-  disableLogger: true,
-  // Disable automatic instrumentation that causes OpenTelemetry warnings
-  widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
-  // Reduce the scope of auto-instrumentation
-  automaticVercelMonitors: false,
-})
+export default withPayload(nextConfig, { devBundleServerPackages: false })
