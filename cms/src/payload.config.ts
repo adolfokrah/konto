@@ -89,8 +89,7 @@ export default buildConfig({
             collections: {
               media: true,
             },
-            bucket: process.env.RAILWAY_BUCKET_NAME || '',
-            acl: 'public-read',
+            bucket: process.env.BUCKET || process.env.RAILWAY_BUCKET_NAME || '',
             config: {
               credentials: {
                 accessKeyId: process.env.ACCESS_KEY_ID || '',
@@ -98,7 +97,6 @@ export default buildConfig({
               },
               region: process.env.REGION || 'us-east-1',
               endpoint: process.env.ENDPOINT,
-              forcePathStyle: true,
             },
           }),
         ]
