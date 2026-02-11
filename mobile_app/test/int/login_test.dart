@@ -23,7 +23,6 @@ import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
-import 'package:Hoga/core/services/sms_otp_service.dart';
 // No repository override now; we mock network.
 
 void main() {
@@ -31,23 +30,6 @@ void main() {
 
   setUpAll(() async {
     await TestSetup.initialize();
-    // Mock SMS API endpoint to always succeed
-    MockInterceptor.overrideEndpoint('?key=', (options) {
-      return Response(
-        requestOptions: options,
-        data: {
-          'status': 'success',
-          'code': '2000',
-          'message': 'SMS sent successfully',
-          'data': {
-            'status': 'success',
-            'code': '2000',
-            'message': 'Message sent',
-          },
-        },
-        statusCode: 200,
-      );
-    });
   });
 
   tearDownAll(() {
@@ -56,9 +38,6 @@ void main() {
 
   group('Login Flow Test', () {
     testWidgets('User can log in successfully', (tester) async {
-      // Ensure SmsOtpService test mode
-      SmsOtpService.isTestMode = true;
-
       // Instead of mocking SMS endpoint (which was leading to VerificationFailure due to response parsing),
       // we fake the repository by supplying a bloc that uses our fake repo result manually.
 
@@ -194,7 +173,7 @@ void main() {
         final currentState = verificationBloc.state;
         print('🔍 Current verification state: $currentState');
         if (currentState is VerificationCodeSent) {
-          print('🔍 OTP in state: ${currentState.otpCode}');
+          print('🔍 VerificationCodeSent state reached');
         }
 
         // Wait a moment for the OTP input to be ready
