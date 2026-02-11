@@ -91,6 +91,7 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
       )
     }
   } catch (error: any) {
+    console.error('[verify-account-details]', error.message)
     return Response.json(
       {
         success: false,

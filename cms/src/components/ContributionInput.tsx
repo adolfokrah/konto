@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import TransactionCharges from '@/utilities/transaction-charges'
 import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
@@ -25,7 +24,6 @@ interface ContributionInputProps {
   className?: string
   jarId?: string
   jarName?: string
-  isCreatorPaysPlatformFees?: boolean
   collectorId?: string | { id: string } | undefined
   allowAnonymousContributions?: boolean
 }
@@ -37,7 +35,6 @@ export default function ContributionInput({
   className = '',
   jarId = '',
   jarName = 'Jar Contribution',
-  isCreatorPaysPlatformFees = true,
   collectorId = undefined,
   allowAnonymousContributions = false,
 }: ContributionInputProps) {
@@ -264,12 +261,6 @@ export default function ContributionInput({
     return amount.toFixed(2)
   }
 
-  const transactionCharges = new TransactionCharges({ isCreatorPaysPlatformFees })
-
-  const { totalAmount, paystackCharge, platformCharge } =
-    transactionCharges.calculateAmountAndCharges(isFixedAmount ? fixedAmount : selectedAmount)
-
-  const charges = isCreatorPaysPlatformFees ? paystackCharge : paystackCharge + platformCharge
 
   return (
     <div className={`bg-white ${className}`}>
@@ -376,8 +367,8 @@ export default function ContributionInput({
 
       <div className="font-supreme space-y-2">
         <h3 className="font-bold my-2 mb-2">Your contribution</h3>
-        <div className="flex justify-between text-gray-600">
-          <span>Your donation</span>
+        <div className="flex justify-between">
+          <span>Total due to pay</span>
           <span>
             {currency}{' '}
             {isFixedAmount
@@ -387,20 +378,6 @@ export default function ContributionInput({
                 : formatAmount(selectedAmount)}
           </span>
         </div>
-
-        <div className="flex justify-between text-gray-600">
-          <span>Transaction Fee</span>
-          <span>
-            {currency} {charges.toFixed(2)}
-          </span>
-        </div>
-      </div>
-      <Separator />
-      <div className="flex justify-between">
-        <span>Total due to pay</span>
-        <span>
-          {currency} {totalAmount}
-        </span>
       </div>
 
       {/* Contribute Button */}

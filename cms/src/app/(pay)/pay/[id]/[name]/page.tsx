@@ -280,7 +280,6 @@ export default async function Page({
               className="my-6"
               jarId={jarId}
               jarName={jarWithBalance.name}
-              isCreatorPaysPlatformFees={jarWithBalance.whoPaysPlatformFees === 'creator'}
               collectorId={effectiveCollectorId}
               allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
             />

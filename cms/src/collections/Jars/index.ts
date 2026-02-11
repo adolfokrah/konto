@@ -167,18 +167,6 @@ export const Jars: CollectionConfig = {
       ],
     },
     {
-      name: 'whoPaysPlatformFees',
-      type: 'select',
-      defaultValue: 'creator',
-      options: [
-        { label: 'Creator', value: 'creator' },
-        { label: 'Contributors', value: 'contributors' },
-      ],
-      admin: {
-        description: 'Who pays the platform fees for this jar',
-      },
-    },
-    {
       name: 'thankYouMessage',
       type: 'text',
     },

@@ -213,8 +213,6 @@ class JarSummaryModel {
   transactionsByPaymentMethod; // Transactions grouped by payment method
   final BalanceBreakDown balanceBreakDown; // Financial breakdown
   final bool isCreator; // Whether the current user is the creator of this jar
-  final String?
-  whoPaysPlatformFees; // Who pays platform fees: 'creator' or 'contributors'
 
   const JarSummaryModel({
     required this.id,
@@ -243,7 +241,6 @@ class JarSummaryModel {
     this.transactionsByPaymentMethod,
     required this.balanceBreakDown,
     required this.isCreator,
-    this.whoPaysPlatformFees,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -451,7 +448,6 @@ class JarSummaryModel {
                 applePay: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
               ),
       isCreator: json['isCreator'] as bool? ?? false,
-      whoPaysPlatformFees: json['whoPaysPlatformFees'] as String?,
     );
   }
 
@@ -492,7 +488,6 @@ class JarSummaryModel {
               .toList(),
       'balanceBreakDown': balanceBreakDown.toJson(),
       'isCreator': isCreator,
-      'whoPaysPlatformFees': whoPaysPlatformFees,
     };
   }
 }

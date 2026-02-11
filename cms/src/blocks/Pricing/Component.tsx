@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/utilities/ui'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import TransactionCharges from '@/utilities/transaction-charges'
 import Ring from '@/components/ui/ring'
 
 type FeePayerOption = {
@@ -59,13 +58,6 @@ export const PricingBlock: React.FC<Props> = ({
   anchor,
 }) => {
   const [requestAmount, setRequestAmount] = useState<number>(50)
-  const [feePayer, setFeePayer] = useState<string>('organizer')
-  const [calculations, setCalculations] = useState({
-    totalAmount: 0,
-    paystackCharge: 0,
-    platformCharge: 0,
-    amountAfterCharges: 0,
-  })
 
   // Ref for the input to focus on button click
   const amountInputRef = React.useRef<HTMLInputElement>(null)
@@ -73,23 +65,6 @@ export const PricingBlock: React.FC<Props> = ({
   const handleDoTheMathClick = () => {
     amountInputRef.current?.focus()
   }
-
-  useEffect(() => {
-    const isCreatorPaysPlatformFees = feePayer === 'organizer'
-    const chargesCalculator = new TransactionCharges({ isCreatorPaysPlatformFees })
-    const result = chargesCalculator.calculateAmountAndCharges(requestAmount)
-
-    setCalculations({
-      totalAmount: result.totalAmount,
-      paystackCharge: result.paystackCharge,
-      platformCharge: result.platformCharge,
-      amountAfterCharges: result.amountAfterCharges,
-    })
-  }, [requestAmount, feePayer])
-
-  // Get fee rates from the utility for display
-  const chargesCalculator = new TransactionCharges()
-  const paystackFeeRate = chargesCalculator.paystackFeeRate
 
   return (
     <section
@@ -160,51 +135,12 @@ export const PricingBlock: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Fee Payer Selection */}
-            <div>
-              <label className="block text-sm text-gray-400 mb-3">
-                {calculatorSection?.feePayerLabel}
-              </label>
-              <select
-                value={feePayer}
-                onChange={(e) => setFeePayer(e.target.value)}
-                className="w-full bg-dark-background border-dark-background rounded-xl px-4 h-18 text-white text-2xl focus:outline-none"
-              >
-                {calculatorSection?.feePayerOptions?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Charges Breakdown */}
-            <div>
-              <h4 className="text-lg my-7">{calculatorSection?.chargesBreakdownLabel}</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm">
-                    {calculatorSection?.telcoFeeLabel} {(paystackFeeRate * 100).toFixed(2)}%
-                  </span>
-                  <span className="font-medium">GHS {calculations.paystackCharge.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">{calculatorSection?.platformFeeLabel}</span>
-                  <span className="font-medium">GHS {calculations.platformCharge.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">{calculatorSection?.contributorPaysLabel}</span>
-                  <span className="font-medium">GHS {calculations.totalAmount.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
             {/* You Receive */}
-            <div className="  pt-4">
+            <div className="pt-4">
               <div className="flex justify-between items-center">
                 <span className="text-2xl font-medium">{calculatorSection?.youReceiveLabel}</span>
                 <span className="text-2xl font-bold">
-                  GHS {calculations.amountAfterCharges.toFixed(2)}
+                  GHS {requestAmount.toFixed(2)}
                 </span>
               </div>
             </div>

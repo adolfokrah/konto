@@ -117,7 +117,7 @@ export default class Eganow {
     username,
     password,
     xAuth,
-    baseUrl = 'https://developer.sandbox.egacoreapi.com',
+    baseUrl = 'https://developer.deveganowapi.com',
   }: EganowOptions) {
     const isTest = process.env.NODE_ENV === 'test'
 
@@ -223,7 +223,7 @@ export default class Eganow {
     })
 
     if (!response.isSuccess || !response.developerJwtToken) {
-      throw new Error('Failed to get authentication token')
+      throw new Error(`Failed to get authentication token: ${response.message || 'Unknown error'}`)
     }
 
     this.cachedToken = response.developerJwtToken

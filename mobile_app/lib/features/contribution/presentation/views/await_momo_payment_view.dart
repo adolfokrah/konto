@@ -107,14 +107,14 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
                 ModalRoute.withName(AppRoutes.jarDetail),
               );
             } else if (charge.status == 'pay_offline') {
-              // Start periodic verification for offline payment
-              if (charge.reference != null) {
+              // Start periodic verification for offline payment (only once)
+              if (_verificationTimer == null && charge.reference != null) {
                 _startPaymentVerification(charge.reference!);
+                AppSnackBar.show(
+                  context,
+                  message: localizations.momoWaitingAuthorization,
+                );
               }
-              AppSnackBar.show(
-                context,
-                message: localizations.momoWaitingAuthorization,
-              );
             } else if (charge.status == 'send_otp') {
               AppSnackBar.show(
                 context,

@@ -1,50 +1,11 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
-import TransactionCharges from '@/utilities/transaction-charges'
-
-export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
-  // Set payment status based on payment method for new contributions
+export const getCharges: CollectionBeforeChangeHook = async ({ data, operation }) => {
   if (operation === 'create') {
-    if (
-      ['mobile-money', 'card', 'apple-pay'].includes(data.paymentMethod) &&
-      data.type == 'contribution'
-    ) {
-      // if(data.amountContributed < 2){
-      //   throw new Error('Minimum contribution amount is 2 cedis')
-      // }
-
-      const jar = await req.payload.findByID({
-        collection: 'jars',
-        id: data?.jar,
-        depth: 0,
-      })
-
-      const transactionCharges = new TransactionCharges({
-        isCreatorPaysPlatformFees: jar?.whoPaysPlatformFees === 'creator',
-      })
-
-      const { totalAmount, platformCharge, amountAfterCharges } =
-        transactionCharges.calculateAmountAndCharges(data.amountContributed)
-
-      // Update the contribution amount to the amount recipient actually receives
-      data.amountContributed = amountAfterCharges
-
-      // Store detailed charge breakdown
-      data.chargesBreakdown = {
-        platformCharge,
-        amountPaidByContributor: totalAmount,
-      }
-
-      //  console.log(amountAfterCharges,  'amount after charges');
-    }
-
-    if (data.paymentMethod === 'cash') {
-      //do cash charges calculations
-
-      data.chargesBreakdown = {
-        platformCharge: Number((0.01 * data.amountContributed).toFixed(2)), //1% platform charge for cash
-        amountPaidByContributor: data.amountContributed,
-      }
+    // No fees — amount in = amount out
+    data.chargesBreakdown = {
+      platformCharge: 0,
+      amountPaidByContributor: data.amountContributed,
     }
   }
 

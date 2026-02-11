@@ -187,7 +187,6 @@ class JarApiProvider extends BaseApiProvider {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
-    String? whoPaysPlatformFees,
   }) async {
     try {
       // Get authenticated headers
@@ -269,9 +268,6 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (paymentPageData.isNotEmpty) {
         jarData['paymentPage'] = paymentPageData;
-      }
-      if (whoPaysPlatformFees != null) {
-        jarData['whoPaysPlatformFees'] = whoPaysPlatformFees;
       }
       final response = await dio.patch(
         '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',

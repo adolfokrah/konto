@@ -156,7 +156,6 @@ class JarRepository {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
-    String? whoPaysPlatformFees,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -178,7 +177,6 @@ class JarRepository {
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
         allowAnonymousContributions: allowAnonymousContributions,
-        whoPaysPlatformFees: whoPaysPlatformFees,
       );
 
       if (apiResponse['doc'] != null) {
