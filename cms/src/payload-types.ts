@@ -453,6 +453,9 @@ export interface User {
    * Firebase Cloud Messaging token for push notifications
    */
   fcmToken?: string | null;
+  otpCode?: string | null;
+  otpExpiry?: string | null;
+  otpAttempts?: number | null;
   kycStatus?: ('pending' | 'verified' | 'none') | null;
   /**
    * User role - only admin users can access the CMS
@@ -2359,6 +2362,9 @@ export interface UsersSelect<T extends boolean = true> {
   documentType?: T;
   kycSessionId?: T;
   fcmToken?: T;
+  otpCode?: T;
+  otpExpiry?: T;
+  otpAttempts?: T;
   kycStatus?: T;
   role?: T;
   bank?: T;
