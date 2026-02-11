@@ -1,40 +1,46 @@
 import { PayloadRequest } from 'payload'
 import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
 
-interface EganowPayoutWebhookPayload {
-  TransactionId: string
-  EganowReferenceNo: string
-  TransactionStatus: string
-  PayPartnerTransactionId: string
+/**
+ * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
+ * The Eganow API responses use camelCase but the webhook callback format is undocumented.
+ */
+function normalizeWebhookPayload(data: Record<string, any>) {
+  return {
+    transactionId: data['TransactionId'] || data['transactionId'] || '',
+    eganowReferenceNo: data['EganowReferenceNo'] || data['eganowReferenceNo'] || '',
+    transactionStatus: data['TransactionStatus'] || data['transactionStatus'] || '',
+    payPartnerTransactionId:
+      data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
+  }
 }
 
 export const eganowPayoutWebhook = async (req: PayloadRequest) => {
   try {
-    console.log('Eganow Payout Webhook Called ✅')
+    console.log('Eganow Payout Webhook Called')
     if (!req.arrayBuffer) {
       return Response.json({ error: 'Bad Request' }, { status: 400 })
     }
 
     const raw = Buffer.from(await req.arrayBuffer())
-    const webhookData: EganowPayoutWebhookPayload = JSON.parse(raw.toString('utf8'))
+    const webhookData = JSON.parse(raw.toString('utf8'))
 
     console.log('Eganow Payout Webhook Received:', webhookData)
 
-    const { TransactionId, EganowReferenceNo, TransactionStatus, PayPartnerTransactionId } =
-      webhookData
+    const { transactionId, transactionStatus } = normalizeWebhookPayload(webhookData)
 
     // Validate required fields
-    if (!TransactionId || !TransactionStatus) {
+    if (!transactionId || !transactionStatus) {
       console.error('Invalid payout webhook data: missing required fields')
       return Response.json({ error: 'Invalid webhook data' }, { status: 400 })
     }
 
-    // Find the transfer contribution by TransactionId (which is the original contribution ID)
+    // Find the transfer contribution by transactionId (which is the original contribution ID)
     const transferResult = await req.payload.find({
       collection: 'contributions',
       where: {
         linkedContribution: {
-          equals: TransactionId,
+          equals: transactionId,
         },
         type: {
           equals: 'transfer',
@@ -44,7 +50,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     })
 
     if (transferResult.docs.length === 0) {
-      console.error(`Transfer not found for TransactionId: ${TransactionId}`)
+      console.error(`Transfer not found for transactionId: ${transactionId}`)
       return Response.json({ error: 'Transfer not found' }, { status: 404 })
     }
 
@@ -67,7 +73,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       CANCELLED: 'failed',
     }
 
-    const newStatus = statusMap[TransactionStatus.toUpperCase()] || 'failed'
+    const newStatus = statusMap[transactionStatus.toUpperCase()] || 'failed'
 
     console.log(`Updating transfer ${transfer.id} to status: ${newStatus}`)
 

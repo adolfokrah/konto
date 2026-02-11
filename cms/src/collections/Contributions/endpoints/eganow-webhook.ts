@@ -1,48 +1,53 @@
 import { PayloadRequest } from 'payload'
 import { payoutEganow } from './payout-eganow'
 
-interface EganowWebhookPayload {
-  TransactionId: string
-  EganowReferenceNo: string
-  TransactionStatus: string
-  PayPartnerTransactionId: string
-  redirectHtml?: string
+/**
+ * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
+ * The Eganow API responses use camelCase but the webhook callback format is undocumented.
+ */
+function normalizeWebhookPayload(data: Record<string, any>) {
+  return {
+    transactionId: data['TransactionId'] || data['transactionId'] || '',
+    eganowReferenceNo: data['EganowReferenceNo'] || data['eganowReferenceNo'] || '',
+    transactionStatus: data['TransactionStatus'] || data['transactionStatus'] || '',
+    payPartnerTransactionId:
+      data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
+  }
 }
 
 export const eganowWebhook = async (req: PayloadRequest) => {
   try {
-    console.log('called here pleas ✅✅✅✅✅')
+    console.log('Eganow Collection Webhook Called')
     if (!req.arrayBuffer) {
       return Response.json({ error: 'Bad Request' }, { status: 400 })
     }
 
     const raw = Buffer.from(await req.arrayBuffer())
-    const webhookData: EganowWebhookPayload = JSON.parse(raw.toString('utf8'))
+    const webhookData = JSON.parse(raw.toString('utf8'))
 
     console.log('Eganow Webhook Received:', webhookData)
 
-    const { TransactionId, EganowReferenceNo, TransactionStatus, PayPartnerTransactionId } =
-      webhookData
+    const { transactionId, transactionStatus } = normalizeWebhookPayload(webhookData)
 
     // Validate required fields
-    if (!TransactionId || !TransactionStatus) {
+    if (!transactionId || !transactionStatus) {
       console.error('Invalid webhook data: missing required fields')
       return Response.json({ error: 'Invalid webhook data' }, { status: 400 })
     }
 
-    // Find contribution by TransactionId (which is the contribution ID)
+    // Find contribution by transactionId (which is the contribution ID)
     const contributionResult = await req.payload.find({
       collection: 'contributions',
       where: {
         id: {
-          equals: TransactionId,
+          equals: transactionId,
         },
       },
       limit: 1,
     })
 
     if (contributionResult.docs.length === 0) {
-      console.error(`Contribution not found for TransactionId: ${TransactionId}`)
+      console.error(`Contribution not found for transactionId: ${transactionId}`)
       return Response.json({ error: 'Contribution not found' }, { status: 404 })
     }
 
@@ -66,9 +71,9 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       CANCELLED: 'failed',
     }
 
-    const newStatus = statusMap[TransactionStatus.toUpperCase()] || 'failed'
+    const newStatus = statusMap[transactionStatus.toUpperCase()] || 'failed'
 
-    console.log(`Updating contribution ${TransactionId} to status: ${newStatus}`)
+    console.log(`Updating contribution ${transactionId} to status: ${newStatus}`)
 
     // Update contribution status
     // Do NOT update transactionReference - it should remain consistent for mobile app verification
@@ -83,7 +88,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     // If type is contribution and status is completed, automatically initiate payout
     if (contribution.type === 'contribution' && newStatus === 'completed') {
-      console.log(`Contribution ${TransactionId} completed, initiating automatic payout`)
+      console.log(`Contribution ${transactionId} completed, initiating automatic payout`)
 
       try {
         // Create a mock request object for the payout
@@ -96,14 +101,14 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
         // Call the payout endpoint
         await payoutEganow(payoutReq as PayloadRequest)
-        console.log(`Payout initiated successfully for contribution ${TransactionId}`)
+        console.log(`Payout initiated successfully for contribution ${transactionId}`)
       } catch (payoutError: any) {
-        console.error(`Failed to initiate payout for contribution ${TransactionId}:`, payoutError)
+        console.error(`Failed to initiate payout for contribution ${transactionId}:`, payoutError)
         // Don't fail the webhook if payout fails - log it and continue
       }
     }
 
-    console.log(`Successfully updated contribution ${TransactionId} to ${newStatus}`)
+    console.log(`Successfully updated contribution ${transactionId} to ${newStatus}`)
     console.log(`Original reference maintained: ${contribution.transactionReference}`)
 
     return new Response(null, { status: 200 })
