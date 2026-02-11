@@ -2,19 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Flutter (Auto Secrets + Hot Reload)",
-      "type": "dart",
-      "request": "launch",
-      "program": "mobile_app/lib/main.dart",
-      "cwd": "${workspaceFolder}/mobile_app",
-      "preLaunchTask": "🔄 Generate Dart Defines (Infisical)",
-      "args": [
-        "--dart-define-from-file=.dart-defines.env"
-      ],
-      "console": "terminal"
-    },
-    {
-      "name": "Flutter (No Secrets)",
+      "name": "Flutter",
       "type": "dart",
       "request": "launch",
       "program": "mobile_app/lib/main.dart",

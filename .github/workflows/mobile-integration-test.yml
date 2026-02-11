@@ -94,30 +94,17 @@ jobs:
           echo "Full path: ${{ github.workspace }}/mobile_app/.env"
           ls -la mobile_app/.env
 
-      - name: Fetch secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.9
-        with:
-          method: universal
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          domain: "https://app.infisical.com"
-          env-slug: "dev"
-          project-slug: "konto-mobile-app"
-          export-type: "file"
-          file-output-path: "/mobile_app/.env"
-
-      - name: Verify .env file creation
+      - name: Create .env file from GitHub secrets
         working-directory: ./mobile_app
         run: |
-          echo "Checking .env file..."
-          if [ -f .env ]; then
-            echo "✅ .env file exists"
-            echo "File size: $(wc -c < .env) bytes"
-            echo "File permissions: $(ls -la .env)"
-          else
-            echo "❌ .env file not found"
-            exit 1
-          fi
+          cat > .env << 'ENVEOF'
+          API_BASE_URL=${{ secrets.API_BASE_URL }}
+          FLUTTER_ENV=staging
+          IMAGE_BASE_URL=${{ secrets.IMAGE_BASE_URL }}
+          NEXT_PROJECT_BASE_URL=${{ secrets.NEXT_PROJECT_BASE_URL }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          ENVEOF
+          echo "✅ .env file created"
 
       - name: Run Flutter Integration tests with .env file
         working-directory: ./mobile_app

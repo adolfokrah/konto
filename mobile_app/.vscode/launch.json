@@ -2,23 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Flutter (With Infisical Secrets)",
-      "type": "dart",
-      "request": "launch",
-      "program": "lib/main.dart",
-      "console": "terminal",
-      "args": [
-        "--dart-define=API_BASE_URL=http://192.168.0.160:3000/api",
-        "--dart-define=FLUTTER_ENV=development",
-        "--dart-define=IMAGE_BASE_URL=http://192.168.0.160:3000",
-        "--dart-define=MNOTIFY_API_BASE_URL=https://api.mnotify.com/api/sms/quick",
-        "--dart-define=MNOTIFY_API_KEY=7ojkaisA6ubazgrDAi9brjDiA",
-        "--dart-define=MNOTIFY_SENDER_ID=HAYA",
-        "--dart-define=SENTRY_DSN=https://ce6b2836fa04362ec3f9cbe4f0a8c7fa@o296861.ingest.us.sentry.io/4509977016008704"
-      ]
-    },
-    {
-      "name": "Flutter (No Secrets)",
+      "name": "Flutter",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",

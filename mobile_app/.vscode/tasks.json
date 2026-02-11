@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run with Infisical (Default)",
+      "label": "Run Flutter",
       "type": "shell",
       "command": "/usr/bin/make",
       "args": ["run"],
@@ -18,16 +18,11 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "options": {
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
-      },
       "problemMatcher": [],
-      "detail": "🚀 Run Flutter app with Infisical secrets"
+      "detail": "Run Flutter app"
     },
     {
-      "label": "Run iOS with Infisical",
+      "label": "Run iOS",
       "type": "shell",
       "command": "/usr/bin/make",
       "args": ["run-ios"],
@@ -40,16 +35,11 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "options": {
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
-      },
       "problemMatcher": [],
-      "detail": "🍎 Run Flutter app on iOS with Infisical secrets"
+      "detail": "Run Flutter app on iOS"
     },
     {
-      "label": "Run Android with Infisical",
+      "label": "Run Android",
       "type": "shell",
       "command": "/usr/bin/make",
       "args": ["run-android"],
@@ -62,16 +52,11 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "options": {
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
-      },
       "problemMatcher": [],
-      "detail": "🤖 Run Flutter app on Android with Infisical secrets"
+      "detail": "Run Flutter app on Android"
     },
     {
-      "label": "Test with Infisical",
+      "label": "Run Tests",
       "type": "shell",
       "command": "/usr/bin/make",
       "args": ["test"],
@@ -84,13 +69,8 @@
         "showReuseMessage": false,
         "clear": true
       },
-      "options": {
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
-      },
       "problemMatcher": [],
-      "detail": "🧪 Run Flutter tests with Infisical secrets"
+      "detail": "Run Flutter tests"
     }
   ]
 }

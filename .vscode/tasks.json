@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "🚀 Run Flutter with Infisical",
+      "label": "Run Flutter",
       "type": "shell",
       "command": "make",
       "args": ["run"],
@@ -19,15 +19,12 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
+        "cwd": "${workspaceFolder}/mobile_app"
       },
       "problemMatcher": []
     },
     {
-      "label": "🍎 Run iOS with Infisical",
+      "label": "Run iOS",
       "type": "shell",
       "command": "make",
       "args": ["run-ios"],
@@ -41,15 +38,12 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
+        "cwd": "${workspaceFolder}/mobile_app"
       },
       "problemMatcher": []
     },
     {
-      "label": "🤖 Run Android with Infisical",
+      "label": "Run Android",
       "type": "shell",
       "command": "make",
       "args": ["run-android"],
@@ -63,31 +57,7 @@
         "clear": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
-      },
-      "problemMatcher": []
-    }
-    ,{
-      "label": "🔄 Generate Dart Defines (Infisical)",
-      "type": "shell",
-      "command": "make",
-      "args": ["generate-defines"],
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": false,
-        "clear": false
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/mobile_app",
-        "env": {
-          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-        }
+        "cwd": "${workspaceFolder}/mobile_app"
       },
       "problemMatcher": []
     }
