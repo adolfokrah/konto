@@ -173,19 +173,20 @@ class JarBalanceBreakdown extends StatelessWidget {
                     _buildBalanceItem(
                       context,
                       title: localizations.totalWeOweYou,
-                      amount:
-                          jarData.balanceBreakDown.totalAmountTobeTransferred,
+                      amount: jarData.balanceBreakDown.totalAmountTobeTransferred,
                       currency: jarData.currency,
                       isLastItem: true,
                       isGreenAmount: true,
                     ),
+
+                    const SizedBox(height: AppSpacing.spacingS),
+
                     _buildBalanceItem(
                       context,
-                      title: localizations.totalYouOwe,
-                      amount: jarData.balanceBreakDown.totalYouOwe,
+                      title: localizations.upcomingBalance,
+                      amount: jarData.balanceBreakDown.upcomingBalance,
                       currency: jarData.currency,
-                      isLastItem: true,
-                      isRedAmount: true,
+                      isLastItem: false,
                     ),
 
                     AppDivider(),

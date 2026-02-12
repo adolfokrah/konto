@@ -115,4 +115,42 @@ class MomoApiProvider extends BaseApiProvider {
       return handleApiError(e, 'verifying payment status');
     }
   }
+
+  /// Initiate payout for a jar via Eganow
+  /// Sends the jar's available balance to the creator's withdrawal account
+  Future<Map<String, dynamic>> requestPayout({
+    required String jarId,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      if (jarId.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Jar ID is required',
+          'statusCode': 400,
+        };
+      }
+
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/transactions/payout-eganow',
+        data: {'jarId': jarId},
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map<String, dynamic>) {
+          return data;
+        }
+      }
+      return handleApiError(e, 'requesting payout');
+    }
+  }
 }

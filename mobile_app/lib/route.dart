@@ -20,6 +20,7 @@ import 'package:Hoga/features/contribution/presentation/views/save_contribution_
 import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_info_view.dart';
+import 'package:Hoga/features/jars/presentation/views/withdraw_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_thank_you_message_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:Hoga/features/onboarding/prensentation/pages/on_boarding_page.dart';
@@ -69,6 +70,7 @@ class AppRoutes {
     '/uploading_documents': (context) => const UploadingDocumentsView(),
     '/notifications': (context) => const NotficiationsListView(),
     '/walkthrough': (context) => const WalkThrough(),
+    '/withdraw': (context) => const WithdrawView(),
   };
 
   // Route names constants for easy access
@@ -105,4 +107,5 @@ class AppRoutes {
   static const String uploadingDocuments = '/uploading_documents';
   static const String notifications = '/notifications';
   static const String walkthrough = '/walkthrough';
+  static const String withdraw = '/withdraw';
 }

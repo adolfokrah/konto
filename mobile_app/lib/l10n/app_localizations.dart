@@ -632,6 +632,18 @@ abstract class AppLocalizations {
   /// **'{currency}{amount} to be transferred'**
   String amountToBeTransferred(String currency, String amount);
 
+  /// Amount ready for withdrawal with currency and amount
+  ///
+  /// In en, this message translates to:
+  /// **'{currency}{amount} ready for withdrawal'**
+  String readyForWithdrawal(String currency, String amount);
+
+  /// Upcoming balance amount with currency and amount
+  ///
+  /// In en, this message translates to:
+  /// **'{currency}{amount} upcoming'**
+  String upcomingBalanceAmount(String currency, String amount);
+
   /// Balance breakdown title
   ///
   /// In en, this message translates to:
@@ -680,11 +692,17 @@ abstract class AppLocalizations {
   /// **'Total Transfers'**
   String get totalTransfers;
 
-  /// Total amount owed to user
+  /// Amount ready for withdrawal
   ///
   /// In en, this message translates to:
-  /// **'Total we owe you'**
+  /// **'Ready for withdrawal'**
   String get totalWeOweYou;
+
+  /// Completed but unsettled contributions
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming balance'**
+  String get upcomingBalance;
 
   /// Total amount user owes for unpaid cash contributions
   ///
@@ -2311,6 +2329,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Charge Breakdown'**
   String get chargeBreakdown;
+
+  /// Withdraw button label
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get withdraw;
+
+  /// Withdrawal confirmation dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to withdraw {currency}{amount} to your withdrawal account?'**
+  String withdrawConfirmation(String currency, String amount);
+
+  /// Success message after withdrawal is initiated
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal initiated successfully'**
+  String get withdrawSuccess;
+
+  /// Error message when withdrawal fails
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal failed. Please try again.'**
+  String get withdrawFailed;
+
+  /// Message when there are no funds to withdraw
+  ///
+  /// In en, this message translates to:
+  /// **'No funds available to withdraw'**
+  String get noFundsToWithdraw;
+
+  /// Label for payout balance in withdraw page
+  ///
+  /// In en, this message translates to:
+  /// **'Payout balance'**
+  String get payoutBalance;
+
+  /// Label for transfer charges in withdraw page
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer charges'**
+  String get transferCharges;
+
+  /// Label for total amount in withdraw page
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
 }
 
 class _AppLocalizationsDelegate

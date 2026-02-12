@@ -6,12 +6,22 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
  * The Eganow API responses use camelCase but the webhook callback format is undocumented.
  */
 function normalizeWebhookPayload(data: Record<string, any>) {
+  // Handle both success and failure responses
+  // Success: { TransactionStatus, EganowReferenceNo, ... }
+  // Failure: { Status: false, Message, TransactionId }
+  const status = data['Status'] !== undefined ? data['Status'] : data['status']
+  const transactionStatus =
+    data['TransactionStatus'] ||
+    data['transactionStatus'] ||
+    (status === false ? 'failed' : status === true ? 'success' : '')
+
   return {
     transactionId: data['TransactionId'] || data['transactionId'] || '',
     eganowReferenceNo: data['EganowReferenceNo'] || data['eganowReferenceNo'] || '',
-    transactionStatus: data['TransactionStatus'] || data['transactionStatus'] || '',
+    transactionStatus,
     payPartnerTransactionId:
       data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
+    message: data['Message'] || data['message'] || '',
   }
 }
 
@@ -27,7 +37,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
     console.log('Eganow Payout Webhook Received:', webhookData)
 
-    const { transactionId, eganowReferenceNo, transactionStatus } =
+    const { transactionId, eganowReferenceNo, transactionStatus, message } =
       normalizeWebhookPayload(webhookData)
 
     // Validate required fields
@@ -37,7 +47,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     }
 
     // Find the payout record by Eganow reference number stored in transactionReference
-    const transferResult = await req.payload.find({
+    let transferResult = await req.payload.find({
       collection: 'transactions',
       where: {
         transactionReference: {
@@ -50,8 +60,33 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       limit: 1,
     })
 
+    // Fallback: If not found by eganowReferenceNo, search by transaction ID extracted from transactionId
+    // TransactionId format: "payout-{transactionId}"
+    if (transferResult.docs.length === 0 && transactionId) {
+      const transactionIdMatch = transactionId.match(/^payout-([a-f0-9]+)$/)
+      if (transactionIdMatch) {
+        const extractedTransactionId = transactionIdMatch[1]
+        console.log(`Searching for payout by transaction ID: ${extractedTransactionId}`)
+
+        transferResult = await req.payload.find({
+          collection: 'transactions',
+          where: {
+            id: {
+              equals: extractedTransactionId,
+            },
+            type: {
+              equals: 'payout',
+            },
+          },
+          limit: 1,
+        })
+      }
+    }
+
     if (transferResult.docs.length === 0) {
-      console.error(`Transfer not found for transactionId: ${transactionId}`)
+      console.error(
+        `Transfer not found for transactionId: ${transactionId}, eganowReferenceNo: ${eganowReferenceNo}`,
+      )
       return Response.json({ error: 'Transfer not found' }, { status: 404 })
     }
 
@@ -76,7 +111,9 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
     const newStatus = statusMap[transactionStatus.toUpperCase()] || 'failed'
 
-    console.log(`Updating transfer ${transfer.id} to status: ${newStatus}`)
+    console.log(
+      `Updating transfer ${transfer.id} to status: ${newStatus}${message ? ` (${message})` : ''}`,
+    )
 
     // Update transfer status
     await req.payload.update({
@@ -87,31 +124,43 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       },
     })
 
-    // If payout is completed, send FCM notification to jar creator
-    if (newStatus === 'transferred') {
-      // Fetch the transfer with jar details for notification
-      const transferWithDetails = await req.payload.findByID({
-        collection: 'transactions',
-        id: transfer.id,
-        depth: 2,
-      })
+    // Send FCM notification to jar creator
+    // Fetch the transfer with jar details for notification
+    const transferWithDetails = await req.payload.findByID({
+      collection: 'transactions',
+      id: transfer.id,
+      depth: 2,
+    })
 
-      if (
-        transferWithDetails &&
-        typeof transferWithDetails.jar === 'object' &&
-        transferWithDetails.jar
-      ) {
-        const jar = transferWithDetails.jar
-        const message = `We sent you a transfer of ${jar.currency} ${Math.abs(Number(transferWithDetails.amountContributed)).toFixed(2)} for "${jar.name}"`
-        const title = 'New Transfer Sent 💸'
-        const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
+    if (
+      transferWithDetails &&
+      typeof transferWithDetails.jar === 'object' &&
+      transferWithDetails.jar
+    ) {
+      const jar = transferWithDetails.jar
+      const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
 
-        if (creatorToken) {
-          const fcmNotifications = new FCMPushNotifications()
+      if (creatorToken) {
+        const fcmNotifications = new FCMPushNotifications()
+        const amount = `${jar.currency} ${Math.abs(Number(transferWithDetails.amountContributed)).toFixed(2)}`
+
+        if (newStatus === 'transferred') {
+          // Success notification
+          const message = `We sent you a transfer of ${amount} for "${jar.name}"`
+          const title = 'Transfer Sent 💸'
           await fcmNotifications.sendNotification([creatorToken], message, title, {
-            type: 'contribution',
+            type: 'payout',
             jarId: jar.id,
-            contributionId: transfer.id,
+            transactionId: transfer.id,
+          })
+        } else if (newStatus === 'failed') {
+          // Failure notification
+          const message = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
+          const title = 'Transfer Failed ❌'
+          await fcmNotifications.sendNotification([creatorToken], message, title, {
+            type: 'payout-failed',
+            jarId: jar.id,
+            transactionId: transfer.id,
           })
         }
       }

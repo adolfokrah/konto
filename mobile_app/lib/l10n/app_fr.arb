@@ -88,6 +88,8 @@
   "contributions": "Contributions",
   "searchContributions": "Rechercher des contributions",
   "amountToBeTransferred": "{currency}{amount} à transférer",
+  "readyForWithdrawal": "{currency}{amount} prêt pour le retrait",
+  "upcomingBalanceAmount": "{currency}{amount} à venir",
   "balanceBreakdown": "Répartition du Solde",
   "balanceBreakdownDescription": "Voici une répartition détaillée du solde de votre pot, des contributions et de ce que nous vous devons.",
   "cash": "Espèces",
@@ -96,7 +98,8 @@
   "contributionsCount": "{count} Contributions",
   "totalContributions": "Total des Contributions",
   "totalTransfers": "Total des Virements",
-  "totalWeOweYou": "Total que nous vous devons",
+  "totalWeOweYou": "Prêt pour le retrait",
+  "upcomingBalance": "Solde à venir",
   "totalYouOwe": "Total que vous devez",
   "transfersNote": "Remarque : Les virements excluent les contributions en espèces et par virement bancaire",
   "selectDateRange": "Sélectionner la Plage de Dates",
@@ -379,5 +382,13 @@
   "platformCharge": "Frais de plateforme",
   "paymentProcessing": "Traitement de paiement",
   "transferFee": "Frais de transfert",
-  "chargeBreakdown": "Répartition des frais"
+  "chargeBreakdown": "Répartition des frais",
+  "withdraw": "Retirer",
+  "withdrawConfirmation": "Êtes-vous sûr de vouloir retirer {currency}{amount} vers votre compte de retrait?",
+  "withdrawSuccess": "Retrait initié avec succès",
+  "withdrawFailed": "Le retrait a échoué. Veuillez réessayer.",
+  "noFundsToWithdraw": "Aucun fonds disponible pour le retrait",
+  "payoutBalance": "Solde de paiement",
+  "transferCharges": "Frais de transfert",
+  "total": "Total"
 }

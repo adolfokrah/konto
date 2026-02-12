@@ -157,15 +157,6 @@ export const Transactions: CollectionConfig = {
       defaultValue: 'pending',
     },
     {
-      name: 'paid',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Mark as paid (for cash contributions)',
-        condition: (data) => data?.paymentMethod?.toLowerCase() === 'cash',
-      },
-    },
-    {
       name: 'type',
       type: 'select',
       required: true,
@@ -180,7 +171,8 @@ export const Transactions: CollectionConfig = {
       defaultValue: false,
       admin: {
         description: 'Whether this contribution has been settled',
-        condition: (data) => data?.type === 'contribution',
+        condition: (data) =>
+          data?.type === 'contribution' && data?.paymentMethod === 'mobile-money',
       },
     },
     {

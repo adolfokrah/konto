@@ -31,7 +31,9 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
         </h1>
 
         <p className="text-gray-600 font-supreme mb-6">
-          Thank you {contributorName ? `${contributorName}` : ''} for your generous contribution!
+          {contributorName && contributorName.toLowerCase() !== 'anonymous'
+            ? `Thank you ${contributorName} for your generous contribution!`
+            : 'Thank you for your generous contribution!'}
         </p>
 
         {/* Contribution Details */}

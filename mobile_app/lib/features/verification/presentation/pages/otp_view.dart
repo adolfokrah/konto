@@ -116,7 +116,10 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   void _handleOtpCompleted(String otp) {
     final state = context.read<VerificationBloc>().state;
-    if (state is! VerificationCodeSent) {
+
+    // Allow verification from both VerificationCodeSent and VerificationFailure states
+    // This enables retry after failed attempts
+    if (state is! VerificationCodeSent && state is! VerificationFailure) {
       return;
     }
 

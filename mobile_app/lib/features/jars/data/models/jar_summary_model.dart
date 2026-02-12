@@ -105,6 +105,7 @@ class BalanceBreakDown {
   final double totalContributedAmount;
   final double totalTransfers;
   final double totalAmountTobeTransferred;
+  final double upcomingBalance;
   final double totalYouOwe;
   final PaymentMethodBreakdown cash;
   final PaymentMethodBreakdown bankTransfer;
@@ -116,6 +117,7 @@ class BalanceBreakDown {
     required this.totalContributedAmount,
     required this.totalTransfers,
     required this.totalAmountTobeTransferred,
+    required this.upcomingBalance,
     required this.totalYouOwe,
     required this.cash,
     required this.bankTransfer,
@@ -149,6 +151,7 @@ class BalanceBreakDown {
       totalTransfers: (json['totalTransfers'] as num? ?? 0).toDouble(),
       totalAmountTobeTransferred:
           (json['totalAmountTobeTransferred'] as num? ?? 0).toDouble(),
+      upcomingBalance: (json['upcomingBalance'] as num? ?? 0).toDouble(),
       totalYouOwe: (json['totalYouOwe'] as num? ?? 0).toDouble(),
       cash: extractPaymentMethodBreakdown(json, 'cash'),
       bankTransfer: extractPaymentMethodBreakdown(json, 'bankTransfer'),
@@ -163,6 +166,7 @@ class BalanceBreakDown {
       'totalContributedAmount': totalContributedAmount,
       'totalTransfers': totalTransfers,
       'totalAmountTobeTransferred': totalAmountTobeTransferred,
+      'upcomingBalance': upcomingBalance,
       'totalYouOwe': totalYouOwe,
       'cash': {
         'totalCashAmount': cash.totalAmount,
@@ -439,6 +443,7 @@ class JarSummaryModel {
                 totalContributedAmount: 0,
                 totalTransfers: 0,
                 totalAmountTobeTransferred: 0,
+                upcomingBalance: 0,
                 totalYouOwe: 0,
                 cash: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
                 bankTransfer: PaymentMethodBreakdown(

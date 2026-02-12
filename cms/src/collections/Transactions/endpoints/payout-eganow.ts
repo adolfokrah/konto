@@ -110,12 +110,14 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
       .reduce((sum, tx) => sum + tx.amountContributed, 0)
 
-    // Sum payouts (negative amounts)
+    // Sum payouts (negative amounts) - includes pending, completed, and transferred
     const payoutsSum = allTransactions.docs
       .filter(
         (tx) =>
           tx.type === 'payout' &&
-          (tx.paymentStatus === 'completed' || tx.paymentStatus === 'transferred'),
+          (tx.paymentStatus === 'pending' ||
+            tx.paymentStatus === 'completed' ||
+            tx.paymentStatus === 'transferred'),
       )
       .reduce((sum, tx) => sum + tx.amountContributed, 0)
 
@@ -161,13 +163,32 @@ export const payoutEganow = async (req: PayloadRequest) => {
     // Get token (automatically cached by Eganow class)
     await eganow.getToken()
 
-    // Prepare payout request data
+    // Create payout transaction record first (negative amount)
+    const transaction = await req.payload.create({
+      collection: 'transactions',
+      data: {
+        paymentStatus: 'pending',
+        paymentMethod: 'mobile-money',
+        transactionReference: '', // Will be updated after Eganow call
+        jar: jarId,
+        mobileMoneyProvider: user.bank,
+        amountContributed: -netBalance,
+        collector: user.id,
+        contributorPhoneNumber: user.accountNumber,
+        contributor: user.fullName || user.email || 'Creator',
+        type: 'payout',
+      },
+    })
+
+    console.log(`Payout transaction created with ID: ${transaction.id}`)
+
+    // Prepare payout request data using the transaction ID
     const payoutData = {
       paypartnerCode: paypartner,
       amount: String(netBalance),
       accountNoOrCardNoOrMSISDN: phoneNumber,
       accountName: user.accountHolder,
-      transactionId: `payout-${jarId}-${Date.now()}`,
+      transactionId: `payout-${transaction.id}`,
       narration: `Payout for jar ${jar.name}`,
       transCurrencyIso: jar.currency || 'GHS',
       expiryDateMonth: 0,
@@ -182,22 +203,22 @@ export const payoutEganow = async (req: PayloadRequest) => {
     // Initiate payout via Eganow
     const payoutResult = await eganow.payout(payoutData)
 
-    // Create payout transaction record (negative amount)
-    await req.payload.create({
+    console.log(
+      `Payout initiated - eganowReferenceNo: ${payoutResult.eganowReferenceNo}, transactionId: ${payoutData.transactionId}`,
+    )
+
+    // Update transaction with Eganow reference number
+    await req.payload.update({
       collection: 'transactions',
+      id: transaction.id,
       data: {
-        paymentStatus: 'pending',
-        paymentMethod: 'mobile-money',
         transactionReference: payoutResult.eganowReferenceNo,
-        jar: jarId,
-        mobileMoneyProvider: user.bank,
-        amountContributed: -netBalance,
-        collector: user.id,
-        contributorPhoneNumber: user.accountNumber,
-        contributor: user.fullName || user.email || 'Creator',
-        type: 'payout',
       },
     })
+
+    console.log(
+      `Payout transaction ${transaction.id} updated with reference: ${payoutResult.eganowReferenceNo}`,
+    )
 
     // Return success response
     return Response.json({

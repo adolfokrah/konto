@@ -444,7 +444,37 @@
         "description": "Currency symbol"
       },
       "amount": {
-        "type": "String", 
+        "type": "String",
+        "description": "Amount value"
+      }
+    }
+  },
+
+  "readyForWithdrawal": "{currency}{amount} ready for withdrawal",
+  "@readyForWithdrawal": {
+    "description": "Amount ready for withdrawal with currency and amount",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "description": "Currency symbol"
+      },
+      "amount": {
+        "type": "String",
+        "description": "Amount value"
+      }
+    }
+  },
+
+  "upcomingBalanceAmount": "{currency}{amount} upcoming",
+  "@upcomingBalanceAmount": {
+    "description": "Upcoming balance amount with currency and amount",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "description": "Currency symbol"
+      },
+      "amount": {
+        "type": "String",
         "description": "Amount value"
       }
     }
@@ -496,9 +526,14 @@
     "description": "Total transfers label"
   },
 
-  "totalWeOweYou": "Total we owe you",
+  "totalWeOweYou": "Ready for withdrawal",
   "@totalWeOweYou": {
-    "description": "Total amount owed to user"
+    "description": "Amount ready for withdrawal"
+  },
+
+  "upcomingBalance": "Upcoming balance",
+  "@upcomingBalance": {
+    "description": "Completed but unsettled contributions"
   },
 
   "totalYouOwe": "Total you owe",
@@ -2057,5 +2092,53 @@
   "chargeBreakdown": "Charge Breakdown",
   "@chargeBreakdown": {
     "description": "Charge breakdown title"
+  },
+
+  "withdraw": "Withdraw",
+  "@withdraw": {
+    "description": "Withdraw button label"
+  },
+
+  "withdrawConfirmation": "Are you sure you want to withdraw {currency}{amount} to your withdrawal account?",
+  "@withdrawConfirmation": {
+    "description": "Withdrawal confirmation dialog message",
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "withdrawSuccess": "Withdrawal initiated successfully",
+  "@withdrawSuccess": {
+    "description": "Success message after withdrawal is initiated"
+  },
+
+  "withdrawFailed": "Withdrawal failed. Please try again.",
+  "@withdrawFailed": {
+    "description": "Error message when withdrawal fails"
+  },
+
+  "noFundsToWithdraw": "No funds available to withdraw",
+  "@noFundsToWithdraw": {
+    "description": "Message when there are no funds to withdraw"
+  },
+
+  "payoutBalance": "Payout balance",
+  "@payoutBalance": {
+    "description": "Label for payout balance in withdraw page"
+  },
+
+  "transferCharges": "Transfer charges",
+  "@transferCharges": {
+    "description": "Label for transfer charges in withdraw page"
+  },
+
+  "total": "Total",
+  "@total": {
+    "description": "Label for total amount in withdraw page"
   }
 }

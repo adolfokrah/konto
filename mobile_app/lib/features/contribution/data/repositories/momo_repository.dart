@@ -76,6 +76,22 @@ class MomoRepository {
     }
   }
 
+  /// Request payout for a jar via Eganow
+  /// Returns a map with success status and message
+  Future<Map<String, dynamic>> requestPayout({required String jarId}) async {
+    try {
+      final apiResponse = await _momoApiProvider.requestPayout(jarId: jarId);
+      return apiResponse;
+    } catch (e) {
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception(
+        'An unexpected error occurred while requesting payout: ${e.toString()}',
+      );
+    }
+  }
+
   /// Verify payment status using transaction reference
   /// Returns MomoChargeModel with updated payment status if successful
   Future<MomoChargeModel> verifyPayment({required String reference}) async {

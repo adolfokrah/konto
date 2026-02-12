@@ -21,7 +21,6 @@ import 'package:Hoga/core/widgets/scrollable_background_image.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
-import 'package:Hoga/core/widgets/feedback_action_button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/collaborators/presentation/views/collectors_view.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
@@ -111,6 +110,34 @@ class _JarDetailViewState extends State<JarDetailView> {
   void _onRefetch() {
     // Trigger jar summary request with loading indicator
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
+  }
+
+  /// Navigate to withdraw page, checking withdrawal account first
+  void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
+    // Check if user has withdrawal account set up
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      final user = authState.user;
+      if (user.bank == null ||
+          user.bank!.isEmpty ||
+          user.accountNumber == null ||
+          user.accountNumber!.isEmpty ||
+          user.accountHolder == null ||
+          user.accountHolder!.isEmpty) {
+        Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+        return;
+      }
+    }
+
+    Navigator.pushNamed(
+      context,
+      AppRoutes.withdraw,
+      arguments: {
+        'jarId': jarData.id,
+        'payoutBalance': jarData.balanceBreakDown.totalAmountTobeTransferred,
+        'currency': jarData.currency,
+      },
+    );
   }
 
   /// Request FCM permissions and update user token
@@ -282,7 +309,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                           snap: true,
                           pinned: true,
                           actions: [
-                            const FeedbackActionButton(),
                             const NotificationIconButton(),
                             if (state is JarSummaryLoaded)
                               BlocBuilder<AuthBloc, AuthState>(
@@ -436,7 +462,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  // Only show amount to be transferred if user is the creator
+                  // Only show balances if user is the creator
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, authState) {
                       final isCreator =
@@ -448,7 +474,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       return Column(
                         children: [
                           Text(
-                            localizations.amountToBeTransferred(
+                            localizations.readyForWithdrawal(
                               CurrencyUtils.getCurrencySymbol(jarData.currency),
                               jarData
                                   .balanceBreakDown
@@ -456,6 +482,23 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   .toString(),
                             ),
                             style: TextStyles.titleRegularXs,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            localizations.upcomingBalanceAmount(
+                              CurrencyUtils.getCurrencySymbol(jarData.currency),
+                              jarData
+                                  .balanceBreakDown
+                                  .upcomingBalance
+                                  .toString(),
+                            ),
+                            style: TextStyles.titleRegularXs.copyWith(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withValues(alpha: 0.7),
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.spacingXs),
                         ],
@@ -579,22 +622,25 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   final isCreator =
                                       authState is AuthAuthenticated &&
                                       jarData.creator.id == authState.user.id;
+                                  final hasFunds =
+                                      jarData.balanceBreakDown
+                                          .totalAmountTobeTransferred >
+                                      0;
+                                  final canWithdraw = isCreator && hasFunds;
                                   return Column(
                                     children: [
                                       AppIconButton(
-                                        key: const Key('info_button'),
-                                        enabled: isCreator,
+                                        key: const Key('withdraw_button'),
+                                        enabled: canWithdraw,
                                         opacity: 0.8,
                                         onPressed:
-                                            isCreator
-                                                ? () {
-                                                  Navigator.pushNamed(
-                                                    context,
-                                                    AppRoutes.jarInfo,
-                                                  );
-                                                }
+                                            canWithdraw
+                                                ? () => _handleWithdraw(
+                                                  context,
+                                                  jarData,
+                                                )
                                                 : null,
-                                        icon: Icons.info,
+                                        icon: Icons.arrow_downward,
                                       ),
                                     ],
                                   );
@@ -602,7 +648,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
-                                localizations.info,
+                                localizations.withdraw,
                                 style: TextStyles.titleMediumS,
                               ),
                             ],

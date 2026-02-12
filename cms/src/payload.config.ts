@@ -21,6 +21,7 @@ import { Header } from './Header/config'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { Notifications } from './collections/Notifications'
 import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
+import { settleContributionsTask } from './tasks/settle-contributions'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
@@ -130,7 +131,13 @@ export default buildConfig({
         return authHeader === `Bearer ${process.env.CRON_SECRET}`
       },
     },
-    tasks: [sendEmptyJarReminderTask as any],
+    tasks: [sendEmptyJarReminderTask as any, settleContributionsTask as any],
+    autoRun: [
+      {
+        cron: '* * * * *', // Every 5 minutes
+        queue: 'settle-contributions',
+      },
+    ],
   },
   endpoints: [
     {

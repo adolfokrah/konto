@@ -213,13 +213,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
-      ...(isJarCreator
-        ? {}
-        : {
-            collector: {
-              equals: req.user!,
-            },
-          }),
+      // Note: Collector filter removed to include all jar transactions (including payouts)
     },
     pagination: false,
     select: {
@@ -272,6 +266,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
+  // Sum ALL settled mobile money contributions (for withdrawal eligibility)
   const settledContributionsSum = allContributions.docs
     .filter(
       (contribution) =>
@@ -281,11 +276,31 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
+  // Sum ALL unsettled mobile money contributions (upcoming balance)
+  const unsettledContributionsSum = allContributions.docs
+    .filter(
+      (contribution) =>
+        contribution.type === 'contribution' &&
+        contribution.paymentStatus === 'completed' &&
+        contribution.isSettled === false &&
+        contribution.paymentMethod === 'mobile-money',
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
+  // Sum ALL completed contributions (for "we owe you" balance display)
+  const allCompletedContributionsSum = allContributions.docs
+    .filter(
+      (contribution) =>
+        contribution.type === 'contribution' && contribution.paymentStatus === 'completed',
+    )
+    .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
   const payoutsSum = allContributions.docs
     .filter(
       (contribution) =>
         contribution.type === 'payout' &&
-        (contribution.paymentStatus === 'completed' ||
+        (contribution.paymentStatus === 'pending' ||
+          contribution.paymentStatus === 'completed' ||
           contribution.paymentStatus === 'transferred'),
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
@@ -294,19 +309,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const paymentBreakdown = calculatePaymentMethodBreakdown(allContributions.docs)
 
-  // Calculate total you owe (unpaid cash contributions)
-  const totalYouOwe = allContributions.docs
-    .filter(
-      (contribution: any) =>
-        contribution.paymentMethod === 'cash' &&
-        contribution.paymentStatus === 'completed' &&
-        contribution.paid === false,
-    )
-    .reduce(
-      (sum: number, contribution: any) =>
-        sum + (contribution?.chargesBreakdown?.platformCharge || 0),
-      0,
-    )
+  // Calculate total we owe you (ALL completed contributions minus all payouts = current balance)
+  const totalYouOwe = allCompletedContributionsSum + payoutsSum
 
   // Calculate charges breakdown for all completed contributions
   const completedContributions = allContributions.docs.filter(
@@ -341,6 +345,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     balanceBreakDown: {
       totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
       totalAmountTobeTransferred: Number(totalAmountTobeTransferred.toFixed(2)),
+      upcomingBalance: Number(unsettledContributionsSum.toFixed(2)),
       totalYouOwe: Number(totalYouOwe.toFixed(2)),
       ...paymentBreakdown,
     },

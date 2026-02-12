@@ -106,6 +106,16 @@ class JarMoreMenu extends StatelessWidget {
                                 contentPadding: EdgeInsets.zero,
                               ),
                             ),
+                            PopupMenuItem<String>(
+                              value: 'info',
+                              child: ListTile(
+                                leading: Icon(Icons.info),
+                                title: Text(
+                                  AppLocalizations.of(context)!.info,
+                                ),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
                             // Add additional menu items if provided
                             if (additionalMenuItems != null)
                               ...additionalMenuItems!,
@@ -152,6 +162,9 @@ class JarMoreMenu extends StatelessWidget {
           context,
           uploadContext: MediaUploadContext.jarImageHome,
         );
+        break;
+      case 'info':
+        Navigator.pushNamed(context, AppRoutes.jarInfo);
         break;
     }
   }

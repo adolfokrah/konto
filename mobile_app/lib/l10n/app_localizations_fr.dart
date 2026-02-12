@@ -299,6 +299,16 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String readyForWithdrawal(String currency, String amount) {
+    return '$currency$amount prêt pour le retrait';
+  }
+
+  @override
+  String upcomingBalanceAmount(String currency, String amount) {
+    return '$currency$amount à venir';
+  }
+
+  @override
   String get balanceBreakdown => 'Répartition du Solde';
 
   @override
@@ -326,7 +336,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get totalTransfers => 'Total des Virements';
 
   @override
-  String get totalWeOweYou => 'Total que nous vous devons';
+  String get totalWeOweYou => 'Prêt pour le retrait';
+
+  @override
+  String get upcomingBalance => 'Solde à venir';
 
   @override
   String get totalYouOwe => 'Total que vous devez';
@@ -1234,4 +1247,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chargeBreakdown => 'Répartition des frais';
+
+  @override
+  String get withdraw => 'Retirer';
+
+  @override
+  String withdrawConfirmation(String currency, String amount) {
+    return 'Êtes-vous sûr de vouloir retirer $currency$amount vers votre compte de retrait?';
+  }
+
+  @override
+  String get withdrawSuccess => 'Retrait initié avec succès';
+
+  @override
+  String get withdrawFailed => 'Le retrait a échoué. Veuillez réessayer.';
+
+  @override
+  String get noFundsToWithdraw => 'Aucun fonds disponible pour le retrait';
+
+  @override
+  String get payoutBalance => 'Solde de paiement';
+
+  @override
+  String get transferCharges => 'Frais de transfert';
+
+  @override
+  String get total => 'Total';
 }

@@ -295,6 +295,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String readyForWithdrawal(String currency, String amount) {
+    return '$currency$amount ready for withdrawal';
+  }
+
+  @override
+  String upcomingBalanceAmount(String currency, String amount) {
+    return '$currency$amount upcoming';
+  }
+
+  @override
   String get balanceBreakdown => 'Balance Breakdown';
 
   @override
@@ -322,7 +332,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalTransfers => 'Total Transfers';
 
   @override
-  String get totalWeOweYou => 'Total we owe you';
+  String get totalWeOweYou => 'Ready for withdrawal';
+
+  @override
+  String get upcomingBalance => 'Upcoming balance';
 
   @override
   String get totalYouOwe => 'Total you owe';
@@ -1216,4 +1229,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chargeBreakdown => 'Charge Breakdown';
+
+  @override
+  String get withdraw => 'Withdraw';
+
+  @override
+  String withdrawConfirmation(String currency, String amount) {
+    return 'Are you sure you want to withdraw $currency$amount to your withdrawal account?';
+  }
+
+  @override
+  String get withdrawSuccess => 'Withdrawal initiated successfully';
+
+  @override
+  String get withdrawFailed => 'Withdrawal failed. Please try again.';
+
+  @override
+  String get noFundsToWithdraw => 'No funds available to withdraw';
+
+  @override
+  String get payoutBalance => 'Payout balance';
+
+  @override
+  String get transferCharges => 'Transfer charges';
+
+  @override
+  String get total => 'Total';
 }
