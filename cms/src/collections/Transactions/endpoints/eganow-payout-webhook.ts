@@ -146,18 +146,18 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
         if (newStatus === 'transferred') {
           // Success notification
-          const message = `We sent you a transfer of ${amount} for "${jar.name}"`
+          const notificationMessage = `We sent you a transfer of ${amount} for "${jar.name}"`
           const title = 'Transfer Sent 💸'
-          await fcmNotifications.sendNotification([creatorToken], message, title, {
+          await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
             type: 'payout',
             jarId: jar.id,
             transactionId: transfer.id,
           })
         } else if (newStatus === 'failed') {
           // Failure notification
-          const message = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
+          const notificationMessage = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
           const title = 'Transfer Failed ❌'
-          await fcmNotifications.sendNotification([creatorToken], message, title, {
+          await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
             type: 'payout-failed',
             jarId: jar.id,
             transactionId: transfer.id,
