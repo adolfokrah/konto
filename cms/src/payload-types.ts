@@ -1372,9 +1372,6 @@ export interface Transaction {
    * Detailed breakdown of all charges applied to this contribution
    */
   chargesBreakdown?: {
-    /**
-     * Platform service charge (2%)
-     */
     platformCharge?: number | null;
     /**
      * Total amount paid by contributor (including all fees)
