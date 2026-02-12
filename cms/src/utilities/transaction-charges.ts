@@ -1,6 +1,6 @@
 export default class TransactionCharges {
   private readonly paystackFee = 0
-  private readonly platformFee = 0
+  private readonly platformFee = 0.01 // 1% platform charge
   private readonly transferFee = 0
   private readonly transferFeeThreshold = 2 // Platform charge threshold for fee allocation
   private readonly isCreatorPaysPlatformFees: boolean
@@ -47,7 +47,7 @@ export default class TransactionCharges {
     const amountAfterPaystackFees = this.roundToTwo(totalAmount - paystackCharge)
     const roundingDifference = this.roundToTwo(amountAfterPaystackFees - originalAmount)
 
-    // Calculate our platform charge (2% of original amount, adjusted for rounding)
+    // Calculate our platform charge (1% of original amount, adjusted for rounding)
     const basePlatformCharge = this.isCreatorPaysPlatformFees
       ? originalAmount * this.platformFee + roundingDifference
       : roundingDifference

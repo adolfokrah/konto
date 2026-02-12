@@ -113,11 +113,13 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'system-settings': SystemSetting;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'system-settings': SystemSettingsSelect<false> | SystemSettingsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'fr';
@@ -1386,6 +1388,18 @@ export interface Transaction {
    */
   isSettled?: boolean | null;
   /**
+   * Transfer fee percentage applied to this payout
+   */
+  payoutFeePercentage?: number | null;
+  /**
+   * Transfer fee amount deducted from this payout
+   */
+  payoutFeeAmount?: number | null;
+  /**
+   * Net amount transferred to user (after fee deduction)
+   */
+  payoutNetAmount?: number | null;
+  /**
    * Transaction reference for tracking payments
    */
   transactionReference?: string | null;
@@ -2419,6 +2433,9 @@ export interface TransactionsSelect<T extends boolean = true> {
   paymentStatus?: T;
   type?: T;
   isSettled?: T;
+  payoutFeePercentage?: T;
+  payoutFeeAmount?: T;
+  payoutNetAmount?: T;
   transactionReference?: T;
   collector?: T;
   viaPaymentLink?: T;
@@ -2855,6 +2872,27 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "system-settings".
+ */
+export interface SystemSetting {
+  id: string;
+  /**
+   * Percentage fee charged on withdrawals/payouts (e.g., 1 for 1%). This fee is deducted from the payout amount.
+   */
+  transferFeePercentage: number;
+  /**
+   * Minimum amount (in base currency) required to process a payout. Users cannot withdraw if their balance is below this amount.
+   */
+  minimumPayoutAmount: number;
+  /**
+   * Optional message displayed to users when they initiate a payout (e.g., "Payouts are processed within 24-48 hours")
+   */
+  payoutProcessingMessage?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
 export interface PayloadJobsStat {
@@ -2937,6 +2975,18 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "system-settings_select".
+ */
+export interface SystemSettingsSelect<T extends boolean = true> {
+  transferFeePercentage?: T;
+  minimumPayoutAmount?: T;
+  payoutProcessingMessage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -18,11 +18,13 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { getServerSideURL } from './utilities/getURL'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { SystemSettings } from './globals/SystemSettings'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { Notifications } from './collections/Notifications'
 import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
 import { settleContributionsTask } from './tasks/settle-contributions'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
+import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
 
@@ -72,7 +74,7 @@ export default buildConfig({
     DailyActiveUsers,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
     url:
       process.env.NODE_ENV == 'test'
@@ -144,6 +146,11 @@ export default buildConfig({
       path: '/recalculate-jar-totals',
       method: 'post',
       handler: recalculateJarTotals,
+    },
+    {
+      path: '/system-settings',
+      method: 'get',
+      handler: getSystemSettings,
     },
   ],
 })

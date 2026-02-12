@@ -134,6 +134,30 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Fetch system settings to get transfer fee
+    const systemSettings = await req.payload.findGlobal({
+      slug: 'system-settings',
+    })
+
+    const transferFeePercentage = systemSettings?.transferFeePercentage || 1
+    const minimumPayoutAmount = systemSettings?.minimumPayoutAmount || 10
+
+    // Check minimum payout amount
+    if (netBalance < minimumPayoutAmount) {
+      return Response.json(
+        {
+          success: false,
+          message: `Minimum payout amount is ${jar.currency || 'GHS'} ${minimumPayoutAmount}`,
+        },
+        { status: 400 },
+      )
+    }
+
+    // Calculate transfer fee for display/transparency purposes only
+    // Eganow will handle the actual fee deduction on their end
+    const transferFee = (netBalance * transferFeePercentage) / 100
+    const expectedNetAmount = netBalance - transferFee
+
     // Map mobile money provider to Eganow paypartner code
     const providerMap: Record<string, string> = {
       mtn: 'MTNGH',
@@ -164,6 +188,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
     await eganow.getToken()
 
     // Create payout transaction record first (negative amount)
+    // Store the full amount sent to Eganow (they will deduct the fee on their end)
     const transaction = await req.payload.create({
       collection: 'transactions',
       data: {
@@ -172,20 +197,25 @@ export const payoutEganow = async (req: PayloadRequest) => {
         transactionReference: '', // Will be updated after Eganow call
         jar: jarId,
         mobileMoneyProvider: user.bank,
-        amountContributed: -netBalance,
+        amountContributed: -netBalance, // Full amount sent to Eganow
         collector: user.id,
         contributorPhoneNumber: user.accountNumber,
         contributor: user.fullName || user.email || 'Creator',
         type: 'payout',
+        // Store fee information for display purposes (Eganow handles actual deduction)
+        payoutFeePercentage: transferFeePercentage,
+        payoutFeeAmount: transferFee,
+        payoutNetAmount: expectedNetAmount,
       },
     })
 
     console.log(`Payout transaction created with ID: ${transaction.id}`)
 
     // Prepare payout request data using the transaction ID
+    // Send FULL amount to Eganow - they will deduct their fee on their end
     const payoutData = {
       paypartnerCode: paypartner,
-      amount: String(netBalance),
+      amount: String(netBalance.toFixed(2)), // Full amount - Eganow deducts fee
       accountNoOrCardNoOrMSISDN: phoneNumber,
       accountName: user.accountHolder,
       transactionId: `payout-${transaction.id}`,
@@ -225,7 +255,9 @@ export const payoutEganow = async (req: PayloadRequest) => {
       success: true,
       message: 'Payout initiated successfully via Eganow',
       data: {
-        amount: netBalance,
+        grossAmount: netBalance,
+        transferFee: transferFee,
+        netAmount: expectedNetAmount, // Expected amount user will receive (for display)
         currency: jar.currency || 'GHS',
         transactionStatus: payoutResult.transactionStatus,
         eganowReferenceNo: payoutResult.eganowReferenceNo,

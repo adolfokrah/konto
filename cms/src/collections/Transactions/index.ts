@@ -126,7 +126,6 @@ export const Transactions: CollectionConfig = {
           name: 'platformCharge',
           type: 'number',
           admin: {
-            description: 'Platform service charge (2%)',
             readOnly: true,
           },
         },
@@ -173,6 +172,33 @@ export const Transactions: CollectionConfig = {
         description: 'Whether this contribution has been settled',
         condition: (data) =>
           data?.type === 'contribution' && data?.paymentMethod === 'mobile-money',
+      },
+    },
+    {
+      name: 'payoutFeePercentage',
+      type: 'number',
+      admin: {
+        description: 'Transfer fee percentage applied to this payout',
+        readOnly: true,
+        condition: (data) => data?.type === 'payout',
+      },
+    },
+    {
+      name: 'payoutFeeAmount',
+      type: 'number',
+      admin: {
+        description: 'Transfer fee amount deducted from this payout',
+        readOnly: true,
+        condition: (data) => data?.type === 'payout',
+      },
+    },
+    {
+      name: 'payoutNetAmount',
+      type: 'number',
+      admin: {
+        description: 'Net amount transferred to user (after fee deduction)',
+        readOnly: true,
+        condition: (data) => data?.type === 'payout',
       },
     },
     {

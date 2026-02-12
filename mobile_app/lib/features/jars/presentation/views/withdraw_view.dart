@@ -8,6 +8,8 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
+import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -21,11 +23,21 @@ class WithdrawView extends StatefulWidget {
 class _WithdrawViewState extends State<WithdrawView> {
   bool _isLoading = false;
   bool _isSendingOtp = false;
+  bool _isLoadingSettings = true;
 
   // Arguments from previous screen
   String? jarId;
   double? payoutBalance;
   String? currency;
+
+  // System settings for transfer fee calculation
+  SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSystemSettings();
+  }
 
   @override
   void didChangeDependencies() {
@@ -38,6 +50,30 @@ class _WithdrawViewState extends State<WithdrawView> {
       jarId = arguments['jarId'] as String?;
       payoutBalance = arguments['payoutBalance'] as double?;
       currency = arguments['currency'] as String?;
+    }
+  }
+
+  /// Load system settings to get transfer fee percentage
+  Future<void> _loadSystemSettings() async {
+    try {
+      final serviceRegistry = ServiceRegistry();
+      final apiProvider = SystemSettingsApiProvider(
+        dio: serviceRegistry.dio,
+        userStorageService: serviceRegistry.userStorageService,
+      );
+      final settings = await apiProvider.getSystemSettings();
+      if (mounted) {
+        setState(() {
+          _systemSettings = settings;
+          _isLoadingSettings = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSettings = false;
+        });
+      }
     }
   }
 
@@ -180,8 +216,10 @@ class _WithdrawViewState extends State<WithdrawView> {
     final localizations = AppLocalizations.of(context)!;
     final balance = payoutBalance ?? 0.0;
     final cur = currency ?? 'GHS';
-    const double transferCharges = 0.0;
-    final double total = balance - transferCharges;
+
+    // Calculate transfer fee using system settings
+    final double transferCharges = _systemSettings.calculateTransferFee(balance);
+    final double total = _systemSettings.calculateNetPayout(balance);
 
     return Scaffold(
       appBar: AppBar(
@@ -194,54 +232,87 @@ class _WithdrawViewState extends State<WithdrawView> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.spacingM,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.spacingL),
+      body: _isLoadingSettings
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingM,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppSpacing.spacingL),
 
-            // Payout balance row
-            _buildBreakdownRow(
-              localizations.payoutBalance,
-              CurrencyUtils.formatAmount(balance, cur),
-              context,
+                  // Payout balance row
+                  _buildBreakdownRow(
+                    localizations.payoutBalance,
+                    CurrencyUtils.formatAmount(balance, cur),
+                    context,
+                  ),
+                  const SizedBox(height: AppSpacing.spacingM),
+
+                  // Transfer charges row with percentage
+                  _buildBreakdownRow(
+                    '${localizations.transferCharges} (${_systemSettings.transferFeePercentage}%)',
+                    '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
+                    context,
+                  ),
+                  const SizedBox(height: AppSpacing.spacingM),
+
+                  const Divider(),
+                  const SizedBox(height: AppSpacing.spacingM),
+
+                  // Total row
+                  _buildBreakdownRow(
+                    localizations.total,
+                    CurrencyUtils.formatAmount(total, cur),
+                    context,
+                    isBold: true,
+                  ),
+
+                  const Spacer(),
+
+                  // Optional processing message
+                  if (_systemSettings.payoutProcessingMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.spacingS),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: AppSpacing.spacingS),
+                          Expanded(
+                            child: Text(
+                              _systemSettings.payoutProcessingMessage!,
+                              style: TextStyles.titleMedium.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacingM),
+                  ],
+
+                  // Withdraw button
+                  AppButton.filled(
+                    text: localizations.withdraw,
+                    isLoading: _isLoading || _isSendingOtp,
+                    onPressed: (_isLoading || _isSendingOtp) ? null : _handleWithdraw,
+                  ),
+                  const SizedBox(height: AppSpacing.spacingL),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.spacingM),
-
-            // Transfer charges row
-            _buildBreakdownRow(
-              localizations.transferCharges,
-              '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
-              context,
-            ),
-            const SizedBox(height: AppSpacing.spacingM),
-
-            const Divider(),
-            const SizedBox(height: AppSpacing.spacingM),
-
-            // Total row
-            _buildBreakdownRow(
-              localizations.total,
-              CurrencyUtils.formatAmount(total, cur),
-              context,
-              isBold: true,
-            ),
-
-            const Spacer(),
-
-            // Withdraw button
-            AppButton.filled(
-              text: localizations.withdraw,
-              isLoading: _isLoading || _isSendingOtp,
-              onPressed: (_isLoading || _isSendingOtp) ? null : _handleWithdraw,
-            ),
-            const SizedBox(height: AppSpacing.spacingL),
-          ],
-        ),
-      ),
     );
   }
 

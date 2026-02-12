@@ -199,19 +199,27 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
       if (creatorToken) {
         const fcmNotifications = new FCMPushNotifications()
-        const amount = `${jar.currency} ${Math.abs(Number(transferWithDetails.amountContributed)).toFixed(2)}`
+        const grossAmount = Math.abs(Number(transferWithDetails.amountContributed))
+
+        // Get fee information from transaction
+        const feePercentage = transferWithDetails.payoutFeePercentage || 1
+        const netAmount = transferWithDetails.payoutNetAmount
+          ? Math.abs(Number(transferWithDetails.payoutNetAmount))
+          : grossAmount - (grossAmount * feePercentage) / 100
 
         if (newStatus === 'transferred') {
-          // Success notification
-          const notificationMessage = `We sent you a transfer of ${amount} for "${jar.name}"`
-          const title = 'Transfer Sent 💸'
+          // Success notification - show net amount user received
+          const mobileMoneyProvider = transferWithDetails.mobileMoneyProvider || 'mobile money'
+          const notificationMessage = `${jar.currency} ${netAmount.toFixed(2)} sent to your ${mobileMoneyProvider.toUpperCase()} account (${feePercentage}% fee deducted)`
+          const title = 'Payout Sent 💸'
           await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
             type: 'payout',
             jarId: jar.id,
             transactionId: transfer.id,
           })
         } else if (newStatus === 'failed') {
-          // Failure notification
+          // Failure notification - show gross amount
+          const amount = `${jar.currency} ${grossAmount.toFixed(2)}`
           const notificationMessage = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
           const title = 'Transfer Failed ❌'
           await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
