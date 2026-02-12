@@ -1,5 +1,6 @@
 import { PayloadRequest } from 'payload'
 import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
+import Eganow from '@/utilities/eganow'
 
 /**
  * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
@@ -100,7 +101,50 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       return new Response(null, { status: 200 })
     }
 
-    // Map Eganow status to our payment status
+    // Verify transaction status with Eganow API before updating
+    console.log(`Verifying transaction with Eganow: ${transactionId}`)
+    const eganow = new Eganow({
+      username: process.env.EGANOW_SECRET_USERNAME!,
+      password: process.env.EGANOW_SECRET_PASSWORD!,
+      xAuth: process.env.EGANOW_X_AUTH!,
+      baseUrl: process.env.EGANOW_BASE_URL,
+    })
+
+    let verifiedStatus: string
+    try {
+      const statusResponse = await eganow.checkTransactionStatus({
+        transactionId: transactionId,
+        languageId: 'en',
+      })
+
+      if (!statusResponse.isSuccess) {
+        console.error(
+          `Eganow status verification failed for ${transactionId}: ${statusResponse.message}`,
+        )
+        return Response.json(
+          { error: 'Transaction verification failed', message: statusResponse.message },
+          { status: 400 },
+        )
+      }
+
+      verifiedStatus = statusResponse.transStatus
+      console.log(`Verified transaction status from Eganow: ${verifiedStatus}`)
+
+      // Check if webhook status matches verified status
+      if (verifiedStatus.toUpperCase() !== transactionStatus.toUpperCase()) {
+        console.warn(
+          `Status mismatch! Webhook: ${transactionStatus}, Eganow API: ${verifiedStatus}. Using verified status.`,
+        )
+      }
+    } catch (error: any) {
+      console.error(`Failed to verify transaction with Eganow: ${error.message}`)
+      return Response.json(
+        { error: 'Failed to verify transaction', message: error.message },
+        { status: 500 },
+      )
+    }
+
+    // Map Eganow status to our payment status (use verified status)
     const statusMap: Record<string, 'transferred' | 'failed' | 'pending'> = {
       SUCCESSFUL: 'transferred',
       FAILED: 'failed',
@@ -109,7 +153,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       CANCELLED: 'failed',
     }
 
-    const newStatus = statusMap[transactionStatus.toUpperCase()] || 'failed'
+    const newStatus = statusMap[verifiedStatus.toUpperCase()] || 'failed'
 
     console.log(
       `Updating transfer ${transfer.id} to status: ${newStatus}${message ? ` (${message})` : ''}`,

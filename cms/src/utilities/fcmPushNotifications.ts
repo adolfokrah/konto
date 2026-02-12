@@ -28,15 +28,21 @@ export class FCMPushNotifications {
           try {
             const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
             firebaseConfig.credential = admin.credential.cert(serviceAccount)
+            console.log('✅ Firebase initialized with service account credentials')
           } catch (parseError) {
-            // Failed to parse service account key, falling back to default credentials
+            console.error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', parseError)
+            throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format')
           }
+        } else {
+          console.error('❌ FIREBASE_SERVICE_ACCOUNT_KEY not found in environment variables')
+          throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is required')
         }
 
         admin.initializeApp(firebaseConfig)
       }
       this._initialized = true
     } catch (error) {
+      console.error('❌ Firebase initialization failed:', error)
       // Don't throw error during initialization to prevent build failures
       this._initialized = false
     }

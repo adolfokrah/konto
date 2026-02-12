@@ -20,11 +20,13 @@ class OtpView extends StatelessWidget {
     final phoneNumber = args?['phoneNumber'] as String?;
     final email = args?['email'] as String?;
     final countryCode = args?['countryCode'] as String?;
+    final skipInitialOtp = args?['skipInitialOtp'] as bool? ?? false;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
       email: email,
       countryCode: countryCode,
+      skipInitialOtp: skipInitialOtp,
     );
   }
 }
@@ -33,8 +35,14 @@ class _OtpViewContent extends StatefulWidget {
   final String? phoneNumber;
   final String? email;
   final String? countryCode;
+  final bool skipInitialOtp;
 
-  const _OtpViewContent({this.phoneNumber, this.email, this.countryCode});
+  const _OtpViewContent({
+    this.phoneNumber,
+    this.email,
+    this.countryCode,
+    this.skipInitialOtp = false,
+  });
 
   @override
   State<_OtpViewContent> createState() => _OtpViewContentState();
@@ -54,8 +62,26 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   }
 
   void _initializeVerification() {
-    // OTP is already sent before navigating to this screen
-    // Just start the resend timer
+    // If skipInitialOtp is true (withdrawal flow), OTP was already sent
+    // Otherwise (login/register flow), send OTP now
+    if (!widget.skipInitialOtp) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final phoneNumber = args?['phoneNumber'] as String?;
+      final countryCode = args?['countryCode'] as String?;
+      final email = args?['email'] as String?;
+
+      print('🔄 OTP View: Sending OTP on initialization (login/register flow)');
+      context.read<VerificationBloc>().add(
+            PhoneNumberVerificationRequested(
+              phoneNumber: phoneNumber ?? '',
+              email: email ?? '',
+              countryCode: countryCode ?? '',
+            ),
+          );
+    } else {
+      print('⏭️  OTP View: Skipping initial OTP (withdrawal flow)');
+    }
+
     _startResendTimer();
   }
 

@@ -102,6 +102,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     final email = authState is AuthAuthenticated ? authState.user.email : '';
 
     // Navigate to existing OTP view
+    // Pass skipInitialOtp flag since we already sent the OTP
     await Navigator.pushNamed(
       context,
       '/otp',
@@ -109,6 +110,7 @@ class _WithdrawViewState extends State<WithdrawView> {
         'phoneNumber': phoneNumber,
         'email': email,
         'countryCode': countryCode,
+        'skipInitialOtp': true, // OTP already sent before navigation
       },
     );
 
