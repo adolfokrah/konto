@@ -194,7 +194,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
         amountContributed: -netBalance,
         collector: user.id,
         contributorPhoneNumber: user.accountNumber,
-        contributor: user.name || user.email || 'Creator',
+        contributor: user.fullName || user.email || 'Creator',
         type: 'payout',
       },
     })
