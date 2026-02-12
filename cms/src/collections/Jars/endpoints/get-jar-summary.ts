@@ -243,6 +243,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     Object.entries(paymentMethods).forEach(([key, config]) => {
       const filtered = contributions.filter(
         (contribution) =>
+          contribution.type === 'contribution' &&
           contribution.paymentMethod === config.paymentMethod &&
           contribution.paymentStatus === config.status,
       )

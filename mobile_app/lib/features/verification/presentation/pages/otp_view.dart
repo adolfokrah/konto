@@ -54,25 +54,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   }
 
   void _initializeVerification() {
-    // Initialize VerificationBloc with phone number and OTP from navigation arguments
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final phoneNumber = args?['phoneNumber'] as String?;
-    final countryCode = args?['countryCode'] as String?;
-    final email = args?['email'] as String?;
-
-    print('🔄 OTP View: Initializing verification...');
-    print('📱 Phone: $phoneNumber, Country: $countryCode, Email: $email');
-
-    context.read<VerificationBloc>().add(
-      PhoneNumberVerificationRequested(
-        phoneNumber: phoneNumber ?? '',
-        email: email ?? '',
-        countryCode: countryCode ?? '',
-      ),
-    );
-
-    print('✅ OTP View: PhoneNumberVerificationRequested event dispatched');
+    // OTP is already sent before navigating to this screen
+    // Just start the resend timer
     _startResendTimer();
   }
 
