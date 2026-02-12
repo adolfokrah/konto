@@ -199,6 +199,13 @@ export const getJarSummary = async (req: PayloadRequest) => {
       paymentStatus: {
         equals: 'completed',
       },
+      ...(isJarCreator
+        ? {}
+        : {
+            collector: {
+              equals: req.user!,
+            },
+          }),
     },
     pagination: false,
     select: {
@@ -213,7 +220,14 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
-      // Note: Collector filter removed to include all jar transactions (including payouts)
+      // If not creator, only show this user's transactions
+      ...(isJarCreator
+        ? {}
+        : {
+            collector: {
+              equals: req.user!,
+            },
+          }),
     },
     pagination: false,
     select: {
