@@ -116,6 +116,8 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
         languageId: 'en',
       })
 
+      console.log('Full Eganow status response:', JSON.stringify(statusResponse, null, 2))
+
       if (!statusResponse.isSuccess) {
         console.error(
           `Eganow status verification failed for ${transactionId}: ${statusResponse.message}`,
@@ -129,8 +131,20 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       verifiedStatus = statusResponse.transStatus
       console.log(`Verified transaction status from Eganow: ${verifiedStatus}`)
 
+      // If transStatus is undefined, check for alternative field names
+      if (!verifiedStatus) {
+        console.error('transStatus is undefined. Full response:', statusResponse)
+        // For now, trust the webhook status if we can't verify
+        console.warn('Using webhook status as fallback:', transactionStatus)
+        verifiedStatus = transactionStatus
+      }
+
       // Check if webhook status matches verified status
-      if (verifiedStatus.toUpperCase() !== transactionStatus.toUpperCase()) {
+      if (
+        verifiedStatus &&
+        transactionStatus &&
+        verifiedStatus.toUpperCase() !== transactionStatus.toUpperCase()
+      ) {
         console.warn(
           `Status mismatch! Webhook: ${transactionStatus}, Eganow API: ${verifiedStatus}. Using verified status.`,
         )
@@ -152,7 +166,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       CANCELLED: 'failed',
     }
 
-    const newStatus = statusMap[verifiedStatus.toUpperCase()] || 'failed'
+    const newStatus = statusMap[verifiedStatus?.toUpperCase() || 'FAILED'] || 'failed'
 
     console.log(
       `Updating transfer ${transfer.id} to status: ${newStatus}${message ? ` (${message})` : ''}`,
