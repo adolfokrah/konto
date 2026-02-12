@@ -115,7 +115,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   const isJarCreator = jar.creator?.id === req.user!.id
 
   const recentJarContributions = await req.payload.find({
-    collection: 'contributions',
+    collection: 'transactions',
     where: {
       jar: {
         equals: jar.id,
@@ -133,7 +133,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   })
 
   const last100Contributions = await req.payload.find({
-    collection: 'contributions',
+    collection: 'transactions',
     where: {
       jar: {
         equals: jar.id,
@@ -191,7 +191,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   }
 
   const transactionsPerPaymentMethod = await req.payload.find({
-    collection: 'contributions',
+    collection: 'transactions',
     where: {
       jar: {
         equals: jar.id,
@@ -208,7 +208,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   })
 
   const allContributions = await req.payload.find({
-    collection: 'contributions',
+    collection: 'transactions',
     where: {
       jar: {
         equals: jar.id,
@@ -225,12 +225,12 @@ export const getJarSummary = async (req: PayloadRequest) => {
     select: {
       amountContributed: true,
       paymentStatus: true,
-      isTransferred: true,
       paymentMethod: true,
       type: true,
       paid: true,
       charges: true,
       chargesBreakdown: true,
+      isSettled: true,
     },
   })
 
@@ -272,23 +272,25 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
-  const totalTransfers = allContributions.docs
+  const settledContributionsSum = allContributions.docs
     .filter(
-      (contribution) => contribution.paymentStatus === 'completed' && contribution.isTransferred,
+      (contribution) =>
+        contribution.type === 'contribution' &&
+        contribution.paymentStatus === 'completed' &&
+        contribution.isSettled === true,
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 
-  const totalAmountTobeTransferred = allContributions.docs
+  const payoutsSum = allContributions.docs
     .filter(
       (contribution) =>
-        contribution.isTransferred === false &&
-        (contribution.paymentMethod === 'mobile-money' ||
-          contribution.paymentMethod === 'card' ||
-          contribution.paymentMethod === 'bank') &&
-        contribution.type === 'contribution' &&
-        contribution.paymentStatus === 'completed',
+        contribution.type === 'payout' &&
+        (contribution.paymentStatus === 'completed' ||
+          contribution.paymentStatus === 'transferred'),
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
+
+  const totalAmountTobeTransferred = settledContributionsSum + payoutsSum
 
   const paymentBreakdown = calculatePaymentMethodBreakdown(allContributions.docs)
 
@@ -338,7 +340,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
     isCreator: jar.creator?.id === req.user!.id,
     balanceBreakDown: {
       totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
-      totalTransfers: Number(totalTransfers.toFixed(2)),
       totalAmountTobeTransferred: Number(totalAmountTobeTransferred.toFixed(2)),
       totalYouOwe: Number(totalYouOwe.toFixed(2)),
       ...paymentBreakdown,

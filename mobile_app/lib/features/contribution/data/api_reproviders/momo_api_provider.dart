@@ -34,7 +34,7 @@ class MomoApiProvider extends BaseApiProvider {
 
       // Make request to charge-momo-eganow endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions/charge-momo-eganow',
+        '${BackendConfig.apiBaseUrl}/transactions/charge-momo-eganow',
         data: {'contributionId': contributionId},
         options: Options(headers: headers),
       );
@@ -70,7 +70,7 @@ class MomoApiProvider extends BaseApiProvider {
 
       // Make request to send-otp endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions/send-otp',
+        '${BackendConfig.apiBaseUrl}/transactions/send-otp',
         data: {'reference': reference, 'otp': otp},
         options: Options(headers: headers),
       );
@@ -105,7 +105,7 @@ class MomoApiProvider extends BaseApiProvider {
 
       // Make request to verify-payment endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions/verify-payment-ega-now',
+        '${BackendConfig.apiBaseUrl}/transactions/verify-payment-ega-now',
         data: {'reference': reference},
         options: Options(headers: headers),
       );

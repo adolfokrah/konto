@@ -202,7 +202,7 @@ void main() {
     ) async {
       // Mock successful API response
       MockInterceptor.overrideEndpoint(
-        '/contributions',
+        '/transactions',
         (options) => Response(
           requestOptions: options,
           data: {
@@ -255,7 +255,7 @@ void main() {
     ) async {
       // Mock successful API response
       MockInterceptor.overrideEndpoint(
-        '/contributions',
+        '/transactions',
         (options) => Response(
           requestOptions: options,
           data: {
@@ -378,7 +378,7 @@ void main() {
     ) async {
       // Mock API error response with proper structure expected by the API provider
       MockInterceptor.overrideEndpoint(
-        '/contributions',
+        '/transactions',
         (options) => Response(
           requestOptions: options,
           data: {
@@ -431,7 +431,7 @@ void main() {
     ) async {
       // Mock network error
       MockInterceptor.overrideEndpoint(
-        '/contributions',
+        '/transactions',
         (options) =>
             throw DioException(
               requestOptions: options,
@@ -480,7 +480,7 @@ void main() {
     ) async {
       // Mock delayed API response
       MockInterceptor.overrideEndpoint(
-        '/contributions',
+        '/transactions',
         (options) => Response(
           requestOptions: options,
           data: {'success': true, 'message': 'Contribution added successfully'},
@@ -541,7 +541,7 @@ void main() {
 
         // Mock successful contribution API response
         MockInterceptor.overrideEndpoint(
-          '/contributions',
+          '/transactions',
           (options) => Response(
             requestOptions: options,
             data: {
@@ -722,7 +722,7 @@ void main() {
 
         // Mock successful contribution response
         MockInterceptor.overrideEndpoint(
-          '/contributions',
+          '/transactions',
           (options) => Response(
             requestOptions: options,
             data: {

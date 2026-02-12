@@ -62,6 +62,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
   }
 
   void _sharePaymentLink(
+    BuildContext context,
     String paymentLink,
     String? jarName,
     AppLocalizations localizations,
@@ -71,16 +72,24 @@ class _RequestContributionViewState extends State<RequestContributionView> {
             ? localizations.shareJarMessage(jarName, paymentLink)
             : localizations.shareGenericMessage(paymentLink);
 
+    final box = context.findRenderObject() as RenderBox?;
     Share.share(
       shareText,
       subject:
           jarName != null
               ? localizations.contributeToJar(jarName)
               : localizations.requestContribution,
+      sharePositionOrigin:
+          box != null
+              ? box.localToGlobal(Offset.zero) & box.size
+              : null,
     );
   }
 
-  Future<void> _downloadQRImage(String jarName) async {
+  Future<void> _downloadQRImage(BuildContext context, String jarName) async {
+    final box = context.findRenderObject() as RenderBox?;
+    final shareOrigin =
+        box != null ? box.localToGlobal(Offset.zero) & box.size : null;
     try {
       // Load the template image from assets
       final ByteData templateData = await rootBundle.load(
@@ -172,9 +181,11 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       await file.writeAsBytes(pngBytes);
 
       // Share the saved image
-      await Share.shareXFiles([
-        XFile(filePath),
-      ], text: 'Payment QR Code for $jarName');
+      await Share.shareXFiles(
+        [XFile(filePath)],
+        text: 'Payment QR Code for $jarName',
+        sharePositionOrigin: shareOrigin,
+      );
     } catch (e) {
       // Handle error - maybe show a snackbar
       if (mounted) {
@@ -271,6 +282,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                           ),
                           onPressed:
                               () => _sharePaymentLink(
+                                context,
                                 paymentLink,
                                 jarName,
                                 localizations,
@@ -287,7 +299,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                             ],
                           ),
                           onPressed:
-                              () => _downloadQRImage(jarName ?? 'QR_Code'),
+                              () => _downloadQRImage(context, jarName ?? 'QR_Code'),
                         ),
                       ],
                     ),

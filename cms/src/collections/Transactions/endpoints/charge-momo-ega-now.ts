@@ -29,7 +29,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
 
     // Fetch the contribution
     const contribution = await req.payload.findByID({
-      collection: 'contributions',
+      collection: 'transactions',
       id: contributionId,
     })
 
@@ -172,7 +172,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/contributions/eganow-webhook`, // Webhook endpoint
+      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-webhook`, // Webhook endpoint
     }
 
     // Initiate mobile money collection via Eganow
@@ -195,7 +195,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
 
     // Update contribution status and add charge data
     await req.payload.update({
-      collection: 'contributions',
+      collection: 'transactions',
       id: contributionId,
       data: {
         transactionReference: collectionResult.eganowReferenceNo,

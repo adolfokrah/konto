@@ -226,7 +226,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               } else if (authState is AuthAuthenticated) {
                 appTheme = authState.user.appSettings.theme;
               }
-              appTheme ??= theme_enum.AppTheme.system;
+              appTheme ??= theme_enum.AppTheme.dark;
 
               // Determine selected language locale from appSettings; fallback to system locale
               String? languageCode;

@@ -4,17 +4,22 @@ import 'package:Hoga/core/utils/currency_utils.dart';
 /// Enum representing the type of contribution
 enum ContributionType {
   contribution('contribution'),
-  transfer('transfer');
+  payout('payout');
 
   const ContributionType(this.value);
   final String value;
+
+  /// Whether this type is a payout
+  bool get isPayout => this == ContributionType.payout;
 
   static ContributionType fromString(String value) {
     switch (value) {
       case 'contribution':
         return ContributionType.contribution;
+      case 'payout':
+        return ContributionType.payout;
       case 'transfer':
-        return ContributionType.transfer;
+        return ContributionType.payout; // Backward compatibility
       default:
         return ContributionType.contribution; // Default fallback
     }
@@ -758,7 +763,8 @@ class ContributionModel {
   paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
   final UserModel? collector;
   final bool? viaPaymentLink;
-  final ContributionType type; // contribution | transfer
+  final ContributionType type; // contribution | payout
+  final bool isSettled;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -775,6 +781,7 @@ class ContributionModel {
     this.collector,
     this.viaPaymentLink,
     required this.type,
+    this.isSettled = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -799,6 +806,7 @@ class ContributionModel {
       type: ContributionType.fromString(
         json['type'] as String? ?? 'contribution',
       ),
+      isSettled: json['isSettled'] as bool? ?? false,
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)
@@ -824,6 +832,7 @@ class ContributionModel {
       'collector': collector?.toJson(),
       'viaPaymentLink': viaPaymentLink,
       'type': type.value,
+      'isSettled': isSettled,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -831,7 +840,8 @@ class ContributionModel {
 
   /// Helper getters for contribution type
   bool get isContribution => type == ContributionType.contribution;
-  bool get isTransfer => type == ContributionType.transfer;
+  bool get isPayout => type == ContributionType.payout;
+  bool get isTransfer => isPayout; // Alias for backward compatibility
 }
 
 class ContributionsPaginatedModel {

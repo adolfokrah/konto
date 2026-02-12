@@ -22,7 +22,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
     }
 
     const foundContributionResult = await req.payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         transactionReference: reference,
       },
@@ -41,22 +41,12 @@ export const verifyTransfer = async (req: PayloadRequest) => {
 
     const contribution = foundContributionResult.docs[0]
 
-    // If already transferred just return early
-    if (contribution.isTransferred) {
-      return Response.json({
-        success: true,
-        data: contribution,
-        message: 'Contribution already marked as transferred',
-      })
-    }
-
-    // Insert a transfer record linked to this contribution
+    // Insert a payout record for this contribution
     const transfer = await req.payload.create({
-      collection: 'contributions',
+      collection: 'transactions',
       data: {
         ...foundContributionResult.docs[0],
-        type: 'transfer',
-        linkedContribution: contribution.id,
+        type: 'payout',
         paymentStatus: 'transferred',
         transactionReference: `transfer-${reference}`,
         viaPaymentLink: false,
@@ -64,15 +54,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
       },
     })
 
-    // Update original contribution
-    const updated = await req.payload.update({
-      collection: 'contributions',
-      id: contribution.id,
-      data: {
-        isTransferred: true,
-        linkedTransfer: transfer.id,
-      },
-    })
+    const updated = contribution
 
     // Fetch the jar details if not already populated
     let jar: any

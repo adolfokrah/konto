@@ -62,7 +62,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
     testContributions = []
     for (const contrib of contributionData) {
       const contribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: {
           ...contrib,
           jar: testJar.id,
@@ -72,6 +72,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
           paymentStatus: 'completed',
           collector: testUser.id,
           type: 'contribution' as const,
+          isSettled: false,
         },
       })
       testContributions.push(contribution)
@@ -230,7 +231,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       const extraContributions = []
       for (let i = 0; i < 12; i++) {
         const contribution = await payload.create({
-          collection: 'contributions',
+          collection: 'transactions',
           data: {
             amountContributed: 10 + i,
             contributorPhoneNumber: `+1234567${890 + i}`,
@@ -241,6 +242,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
             paymentStatus: 'completed',
             collector: testUser.id,
             type: 'contribution' as const,
+            isSettled: false,
           },
         })
         extraContributions.push(contribution)
@@ -264,7 +266,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       // Clean up extra contributions
       for (const contrib of extraContributions) {
         await payload.delete({
-          collection: 'contributions',
+          collection: 'transactions',
           id: contrib.id,
         })
       }

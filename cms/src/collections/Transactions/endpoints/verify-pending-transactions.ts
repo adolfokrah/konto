@@ -4,7 +4,7 @@ import { eganow } from '@/utilities/initalise'
 export const verifyPendingTransactions = async (req: PayloadRequest) => {
   try {
     const pendingTransactions = await req.payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         paymentStatus: {
           equals: 'pending',
@@ -33,7 +33,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
           if (
             typeof (anyReq.payload?.db as any)?.collections?.contributions?.updateOne === 'function'
           ) {
-            const res = await (anyReq.payload.db as any).collections.contributions.updateOne(
+            const res = await (anyReq.payload.db as any).collections.transactions.updateOne(
               { _id: id },
               { $set: { paymentStatus: 'failed' } },
             )
@@ -61,7 +61,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
           const collectorId = typeof collector === 'string' ? collector : collector?.id
           const jarId = typeof jar === 'string' ? jar : jar?.id
           await req.payload.update({
-            collection: 'contributions',
+            collection: 'transactions',
             id,
             data: {
               paymentStatus: 'failed',
@@ -87,7 +87,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
               typeof (anyReq.payload?.db as any)?.collections?.contributions?.updateOne ===
               'function'
             ) {
-              const res = await (anyReq.payload.db as any).collections.contributions.updateOne(
+              const res = await (anyReq.payload.db as any).collections.transactions.updateOne(
                 { _id: id },
                 { $set: { paymentStatus: 'failed' } },
               )
@@ -134,7 +134,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
         const jarId = typeof jar === 'string' ? jar : jar?.id
 
         await req.payload.update({
-          collection: 'contributions',
+          collection: 'transactions',
           id,
           data: {
             paymentStatus: newStatus,

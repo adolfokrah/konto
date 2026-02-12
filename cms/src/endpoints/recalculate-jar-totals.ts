@@ -18,7 +18,7 @@ export const recalculateJarTotals = async (req: PayloadRequest) => {
     for (const jar of jars.docs) {
       // Get count of completed contributions for this jar
       const contributions = await req.payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           jar: {
             equals: jar.id,

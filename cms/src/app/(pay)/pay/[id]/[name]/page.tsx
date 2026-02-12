@@ -136,7 +136,7 @@ export default async function Page({
 
     // Get all contributions for this jar to calculate total
     const allContributions = await payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         jar: {
           equals: jarId,

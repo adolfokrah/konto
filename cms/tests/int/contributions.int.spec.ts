@@ -19,9 +19,9 @@ describe('Contributions Collection Integration Tests', () => {
 
   beforeEach(async () => {
     // Clean up existing data
-    const contributions = await payload.find({ collection: 'contributions' })
+    const contributions = await payload.find({ collection: 'transactions' })
     for (const contribution of contributions.docs) {
-      await payload.delete({ collection: 'contributions', id: contribution.id })
+      await payload.delete({ collection: 'transactions', id: contribution.id })
     }
 
     const jars = await payload.find({ collection: 'jars' })
@@ -100,10 +100,11 @@ describe('Contributions Collection Integration Tests', () => {
         collector: collectorUser.id,
         viaPaymentLink: false,
         type: 'contribution' as const,
+        isSettled: false,
       }
 
       const contribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: contributionData,
       })
 
@@ -132,10 +133,11 @@ describe('Contributions Collection Integration Tests', () => {
         amountContributed: 50,
         collector: testUser.id,
         type: 'contribution' as const,
+        isSettled: false,
       }
 
       const contribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: contributionData,
       })
 
@@ -156,10 +158,11 @@ describe('Contributions Collection Integration Tests', () => {
         collector: collectorUser.id,
         viaPaymentLink: true,
         type: 'contribution' as const,
+        isSettled: false,
       }
 
       const contribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: contributionData,
       })
 
@@ -177,7 +180,7 @@ describe('Contributions Collection Integration Tests', () => {
 
       await expect(
         payload.create({
-          collection: 'contributions',
+          collection: 'transactions',
           data: incompleteContributionData,
         }),
       ).rejects.toThrow()
@@ -191,11 +194,12 @@ describe('Contributions Collection Integration Tests', () => {
         amountContributed: 100,
         collector: collectorUser.id,
         type: 'contribution' as const,
+        isSettled: false,
       }
 
       await expect(
         payload.create({
-          collection: 'contributions',
+          collection: 'transactions',
           data: contributionData,
         }),
       ).rejects.toThrow()
@@ -216,6 +220,7 @@ describe('Contributions Collection Integration Tests', () => {
           collector: collectorUser.id,
           viaPaymentLink: false,
           type: 'contribution' as const,
+          isSettled: false,
         },
         {
           jar: testJar.id,
@@ -227,6 +232,7 @@ describe('Contributions Collection Integration Tests', () => {
           collector: testUser.id,
           viaPaymentLink: true,
           type: 'contribution' as const,
+          isSettled: false,
         },
         {
           jar: testJar.id,
@@ -236,12 +242,13 @@ describe('Contributions Collection Integration Tests', () => {
           collector: collectorUser.id,
           viaPaymentLink: false,
           type: 'contribution' as const,
+          isSettled: false,
         },
       ]
 
       for (const contributionData of contributionsData) {
         await payload.create({
-          collection: 'contributions',
+          collection: 'transactions',
           data: contributionData,
         })
       }
@@ -249,7 +256,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find all contributions', async () => {
       const result = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
       })
 
       expect(result.docs).toHaveLength(3)
@@ -258,7 +265,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions by jar', async () => {
       const jarContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           jar: {
             equals: testJar.id,
@@ -276,7 +283,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions by payment method', async () => {
       const mobileMoneyContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           paymentMethod: {
             equals: 'mobile-money',
@@ -290,7 +297,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions by collector', async () => {
       const collectorContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           collector: {
             equals: collectorUser.id,
@@ -310,7 +317,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions by amount range', async () => {
       const highValueContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           amountContributed: {
             greater_than: 100,
@@ -326,7 +333,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions via payment link', async () => {
       const paymentLinkContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           viaPaymentLink: {
             equals: true,
@@ -340,7 +347,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find anonymous contributions', async () => {
       const anonymousContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           contributor: {
             equals: null,
@@ -358,7 +365,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     beforeEach(async () => {
       testContribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Update Test User',
@@ -369,13 +376,14 @@ describe('Contributions Collection Integration Tests', () => {
           collector: collectorUser.id,
           viaPaymentLink: false,
           type: 'contribution' as const,
+          isSettled: false,
         },
       })
     })
 
     it('should update contribution payment status', async () => {
       const updatedContribution = await payload.update({
-        collection: 'contributions',
+        collection: 'transactions',
         id: testContribution.id,
         data: {
           paymentStatus: 'completed',
@@ -387,7 +395,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should update contribution amount', async () => {
       const updatedContribution = await payload.update({
-        collection: 'contributions',
+        collection: 'transactions',
         id: testContribution.id,
         data: {
           amountContributed: 180,
@@ -399,7 +407,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should update payment method', async () => {
       const updatedContribution = await payload.update({
-        collection: 'contributions',
+        collection: 'transactions',
         id: testContribution.id,
         data: {
           paymentMethod: 'bank',
@@ -412,7 +420,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should update contributor information', async () => {
       const updatedContribution = await payload.update({
-        collection: 'contributions',
+        collection: 'transactions',
         id: testContribution.id,
         data: {
           contributor: 'Updated Contributor Name',
@@ -427,7 +435,7 @@ describe('Contributions Collection Integration Tests', () => {
     it('should fail to update with invalid payment status', async () => {
       await expect(
         payload.update({
-          collection: 'contributions',
+          collection: 'transactions',
           id: testContribution.id,
           data: {
             paymentStatus: 'invalid-status' as any,
@@ -442,7 +450,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     beforeEach(async () => {
       testContribution = await payload.create({
-        collection: 'contributions',
+        collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Delete Test User',
@@ -451,13 +459,14 @@ describe('Contributions Collection Integration Tests', () => {
           amountContributed: 90,
           collector: testUser.id,
           type: 'contribution' as const,
+          isSettled: false,
         },
       })
     })
 
     it('should delete a contribution', async () => {
       const deletedContribution = await payload.delete({
-        collection: 'contributions',
+        collection: 'transactions',
         id: testContribution.id,
       })
 
@@ -466,7 +475,7 @@ describe('Contributions Collection Integration Tests', () => {
       // Verify contribution is deleted
       await expect(
         payload.findByID({
-          collection: 'contributions',
+          collection: 'transactions',
           id: testContribution.id,
         }),
       ).rejects.toThrow()
@@ -477,7 +486,7 @@ describe('Contributions Collection Integration Tests', () => {
 
       await expect(
         payload.delete({
-          collection: 'contributions',
+          collection: 'transactions',
           id: fakeId,
         }),
       ).rejects.toThrow()
@@ -498,6 +507,7 @@ describe('Contributions Collection Integration Tests', () => {
           collector: collectorUser.id,
           viaPaymentLink: true,
           type: 'contribution' as const,
+          isSettled: false,
         },
         {
           jar: testJar.id,
@@ -509,6 +519,7 @@ describe('Contributions Collection Integration Tests', () => {
           collector: testUser.id,
           viaPaymentLink: false,
           type: 'contribution' as const,
+          isSettled: false,
         },
         {
           jar: testJar.id,
@@ -518,6 +529,7 @@ describe('Contributions Collection Integration Tests', () => {
           collector: collectorUser.id,
           viaPaymentLink: false,
           type: 'contribution' as const,
+          isSettled: false,
         },
         {
           jar: testJar.id,
@@ -529,12 +541,13 @@ describe('Contributions Collection Integration Tests', () => {
           collector: testUser.id,
           viaPaymentLink: true,
           type: 'contribution' as const,
+          isSettled: false,
         },
       ]
 
       for (const contributionData of contributionsData) {
         await payload.create({
-          collection: 'contributions',
+          collection: 'transactions',
           data: contributionData,
         })
       }
@@ -542,7 +555,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find high value contributions via payment link', async () => {
       const result = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           and: [
             {
@@ -568,7 +581,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find bank transfer contributions', async () => {
       const result = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           paymentMethod: {
             equals: 'bank',
@@ -584,7 +597,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should calculate total contributions for jar', async () => {
       const jarContributions = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           jar: {
             equals: testJar.id,
@@ -603,7 +616,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find contributions by collector with pagination', async () => {
       const page1 = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           collector: {
             equals: collectorUser.id,
@@ -615,7 +628,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       const page2 = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           collector: {
             equals: collectorUser.id,
@@ -636,7 +649,7 @@ describe('Contributions Collection Integration Tests', () => {
 
     it('should find non-anonymous contributions only', async () => {
       const result = await payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           contributor: {
             not_equals: null,

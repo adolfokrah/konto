@@ -81,7 +81,7 @@ export default function ContributionInput({
 
   const verifyPayment = async (reference: string) => {
     try {
-      const verifyResponse = await fetch('/api/contributions/verify-payment-ega-now', {
+      const verifyResponse = await fetch('/api/transactions/verify-payment-ega-now', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export default function ContributionInput({
     try {
       // Create contribution record using our custom endpoint with admin access
       const contributionResponse = await fetch(
-        '/api/contributions/create-payment-link-contribution',
+        '/api/transactions/create-payment-link-contribution',
         {
           method: 'POST',
           headers: {
@@ -219,7 +219,7 @@ export default function ContributionInput({
       const contributionId = contributionData.data.id
 
       // Charge mobile money via Eganow
-      const chargeResponse = await fetch('/api/contributions/charge-momo-eganow', {
+      const chargeResponse = await fetch('/api/transactions/charge-momo-eganow', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

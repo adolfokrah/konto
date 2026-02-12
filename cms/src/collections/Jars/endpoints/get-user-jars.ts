@@ -76,7 +76,7 @@ export const getUserJars = async (req: PayloadRequest) => {
 
       // Get completed contributions for this jar
       const contributions = await req.payload.find({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           and: [
             {

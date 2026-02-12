@@ -103,7 +103,7 @@ void main() {
     ) async {
       // Mock API to return error
       MockInterceptor.overrideEndpoint(
-        '/contributions/contrib-123',
+        '/transactions/contrib-123',
         (options) =>
             throw DioException(
               requestOptions: options,

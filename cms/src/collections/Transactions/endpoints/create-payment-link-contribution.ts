@@ -53,7 +53,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
 
     // Create the contribution record using admin access
     const contribution = await req.payload.create({
-      collection: 'contributions',
+      collection: 'transactions',
       data: {
         jar: jarId,
         contributor: contributorName,
@@ -71,7 +71,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
     })
 
     await req.payload.update({
-      collection: 'contributions',
+      collection: 'transactions',
       id: contribution.id,
       data: {
         transactionReference: contribution.id,

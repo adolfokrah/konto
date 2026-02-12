@@ -9,7 +9,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
-import { Contributions } from './collections/Contributions'
+import { Transactions } from './collections/Transactions'
 import { Jars } from './collections/Jars'
 import { Posts } from './collections/Posts'
 import { Pages } from './collections/Pages'
@@ -64,7 +64,7 @@ export default buildConfig({
     Media,
     Categories,
     Users,
-    Contributions,
+    Transactions,
     Jars,
     Notifications,
     DeletedUserAccounts,

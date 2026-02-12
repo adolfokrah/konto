@@ -125,7 +125,7 @@ export const exportContributions = async (req: PayloadRequest) => {
 
     // Fetch all matching contributions (pagination: false)
     const contributions = await req.payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where,
       pagination: false,
       depth: 1,
@@ -441,7 +441,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       const statusVal = String(c.paymentStatus || '-')
       const type = String(c.type || '-')
       const dateStr = new Date(c.createdAt).toLocaleString()
-      if (showTotals && type.toLowerCase() !== 'transfer' && statusVal === 'completed') {
+      if (showTotals && type.toLowerCase() !== 'payout' && statusVal === 'completed') {
         total += amountNum
       }
       // New order matches headers: ID, Contributor, Collector, Payment, Status, Type, Amount, Date

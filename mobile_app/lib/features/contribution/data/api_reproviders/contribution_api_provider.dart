@@ -81,7 +81,7 @@ class ContributionApiProvider extends BaseApiProvider {
       contributionData.removeWhere((key, value) => value == null);
 
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/contributions',
+        '${BackendConfig.apiBaseUrl}/transactions',
         data: contributionData,
         options: Options(headers: headers),
       );
@@ -121,7 +121,7 @@ class ContributionApiProvider extends BaseApiProvider {
       }
 
       final response = await dio.get(
-        '${BackendConfig.apiBaseUrl}/contributions/$contributionId',
+        '${BackendConfig.apiBaseUrl}/transactions/$contributionId',
         queryParameters: {
           'depth': '2', // Include related data (collector, jar, etc.)
         },
@@ -322,7 +322,7 @@ class ContributionApiProvider extends BaseApiProvider {
       queryParams['depth'] = '2'; // Include related data
 
       final response = await dio.get(
-        '${BackendConfig.apiBaseUrl}/contributions',
+        '${BackendConfig.apiBaseUrl}/transactions',
         queryParameters: queryParams,
         options: Options(headers: headers),
       );
@@ -385,7 +385,7 @@ class ContributionApiProvider extends BaseApiProvider {
       }
 
       final response = await dio.get(
-        '${BackendConfig.apiBaseUrl}/contributions/export-contributions',
+        '${BackendConfig.apiBaseUrl}/transactions/export-contributions',
         queryParameters: queryParams,
         options: Options(headers: headers),
       );

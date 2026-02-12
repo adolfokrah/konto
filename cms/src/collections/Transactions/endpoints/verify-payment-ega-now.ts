@@ -22,7 +22,7 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     }
 
     const foundContribution = await req.payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         transactionReference: { equals: reference },
       },

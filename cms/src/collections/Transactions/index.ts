@@ -15,8 +15,12 @@ import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 
-export const Contributions: CollectionConfig = {
-  slug: 'contributions',
+export const Transactions: CollectionConfig = {
+  slug: 'transactions',
+  labels: {
+    singular: 'Transaction',
+    plural: 'Transactions',
+  },
   admin: {
     useAsTitle: 'contributor',
   },
@@ -141,7 +145,7 @@ export const Contributions: CollectionConfig = {
       type: 'select',
       admin: {
         components: {
-          Cell: '@collections/Contributions/components/PaymentStatus.tsx',
+          Cell: '@collections/Transactions/components/PaymentStatus.tsx',
         },
       },
       options: [
@@ -162,41 +166,22 @@ export const Contributions: CollectionConfig = {
       },
     },
     {
-      name: 'linkedContribution',
-      type: 'relationship',
-      relationTo: 'contributions',
-      hasMany: false,
-      admin: {
-        description: 'Select the linked deposit for this contribution',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'linkedTransfer',
-      type: 'relationship',
-      relationTo: 'contributions',
-      hasMany: false,
-      admin: {
-        description: 'Select the linked transfer for this contribution',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'isTransferred',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Check if this contribution has been transferred',
-      },
-    },
-    {
       name: 'type',
       type: 'select',
       required: true,
       options: [
-        { label: 'transfer', value: 'transfer' },
+        { label: 'payout', value: 'payout' },
         { label: 'contribution', value: 'contribution' },
       ],
+    },
+    {
+      name: 'isSettled',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether this contribution has been settled',
+        condition: (data) => data?.type === 'contribution',
+      },
     },
     {
       name: 'transactionReference',

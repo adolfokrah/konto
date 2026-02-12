@@ -1,5 +1,4 @@
 import { PayloadRequest } from 'payload'
-import { payoutEganow } from './payout-eganow'
 
 /**
  * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
@@ -37,7 +36,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     // Find contribution by transactionId (which is the contribution ID)
     const contributionResult = await req.payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         id: {
           equals: transactionId,
@@ -78,35 +77,13 @@ export const eganowWebhook = async (req: PayloadRequest) => {
     // Update contribution status
     // Do NOT update transactionReference - it should remain consistent for mobile app verification
     await req.payload.update({
-      collection: 'contributions',
+      collection: 'transactions',
       id: contribution.id,
       data: {
         paymentStatus: newStatus,
         // Keep the original transactionReference - don't change it
       },
     })
-
-    // If type is contribution and status is completed, automatically initiate payout
-    if (contribution.type === 'contribution' && newStatus === 'completed') {
-      console.log(`Contribution ${transactionId} completed, initiating automatic payout`)
-
-      try {
-        // Create a mock request object for the payout
-        const payoutReq = {
-          ...req,
-          data: {
-            contributionId: contribution.id,
-          },
-        }
-
-        // Call the payout endpoint
-        await payoutEganow(payoutReq as PayloadRequest)
-        console.log(`Payout initiated successfully for contribution ${transactionId}`)
-      } catch (payoutError: any) {
-        console.error(`Failed to initiate payout for contribution ${transactionId}:`, payoutError)
-        // Don't fail the webhook if payout fails - log it and continue
-      }
-    }
 
     console.log(`Successfully updated contribution ${transactionId} to ${newStatus}`)
     console.log(`Original reference maintained: ${contribution.transactionReference}`)

@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Contribution } from '@/payload-types'
+import type { Transaction } from '@/payload-types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 interface RecentContributionsProps {
@@ -8,7 +8,7 @@ interface RecentContributionsProps {
   limit?: number
 }
 
-interface ContributionWithRelations extends Omit<Contribution, 'jar' | 'collector'> {
+interface ContributionWithRelations extends Omit<Transaction, 'jar' | 'collector'> {
   jar: {
     id: string
     name: string
@@ -78,7 +78,7 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
     const jarCurrency = jarResult.currency || 'GHS'
 
     const contributions = await payload.find({
-      collection: 'contributions',
+      collection: 'transactions',
       where: {
         jar: {
           equals: jarId,

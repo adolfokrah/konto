@@ -78,6 +78,14 @@ export class FCMPushNotifications {
     data?: Record<string, string>,
   ): Promise<{ success: boolean; successCount: number; failureCount: number }> {
     try {
+      // Skip FCM in test/development when no credentials are configured
+      if (
+        process.env.NODE_ENV === 'test' ||
+        (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS)
+      ) {
+        return { success: false, successCount: 0, failureCount: tokens?.length || 0 }
+      }
+
       if (!tokens || tokens.length === 0) {
         throw new Error('No tokens provided')
       }

@@ -72,7 +72,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
-    contributions: Contribution;
+    transactions: Transaction;
     jars: Jar;
     notifications: Notification;
     deletedUserAccounts: DeletedUserAccount;
@@ -93,7 +93,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
-    contributions: ContributionsSelect<false> | ContributionsSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     jars: JarsSelect<false> | JarsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     deletedUserAccounts: DeletedUserAccountsSelect<false> | DeletedUserAccountsSelect<true>;
@@ -1342,9 +1342,9 @@ export interface FAQBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "contributions".
+ * via the `definition` "transactions".
  */
-export interface Contribution {
+export interface Transaction {
   id: string;
   /**
    * Select the jar to contribute to
@@ -1381,19 +1381,11 @@ export interface Contribution {
    * Mark as paid (for cash contributions)
    */
   paid?: boolean | null;
+  type: 'payout' | 'contribution';
   /**
-   * Select the linked deposit for this contribution
+   * Whether this contribution has been settled
    */
-  linkedContribution?: (string | null) | Contribution;
-  /**
-   * Select the linked transfer for this contribution
-   */
-  linkedTransfer?: (string | null) | Contribution;
-  /**
-   * Check if this contribution has been transferred
-   */
-  isTransferred?: boolean | null;
-  type: 'transfer' | 'contribution';
+  isSettled?: boolean | null;
   /**
    * Transaction reference for tracking payments
    */
@@ -1721,8 +1713,8 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
-        relationTo: 'contributions';
-        value: string | Contribution;
+        relationTo: 'transactions';
+        value: string | Transaction;
       } | null)
     | ({
         relationTo: 'jars';
@@ -2399,9 +2391,9 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "contributions_select".
+ * via the `definition` "transactions_select".
  */
-export interface ContributionsSelect<T extends boolean = true> {
+export interface TransactionsSelect<T extends boolean = true> {
   jar?: T;
   contributor?: T;
   contributorPhoneNumber?: T;
@@ -2418,10 +2410,8 @@ export interface ContributionsSelect<T extends boolean = true> {
       };
   paymentStatus?: T;
   paid?: T;
-  linkedContribution?: T;
-  linkedTransfer?: T;
-  isTransferred?: T;
   type?: T;
+  isSettled?: T;
   transactionReference?: T;
   collector?: T;
   viaPaymentLink?: T;

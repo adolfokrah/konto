@@ -15,7 +15,7 @@ export const updateJarTotalContributions: CollectionAfterChangeHook = async ({
 
       // Get current jar data
       const totalContributions = await req.payload.count({
-        collection: 'contributions',
+        collection: 'transactions',
         where: {
           jar: {
             equals: jarId,

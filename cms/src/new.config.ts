@@ -12,7 +12,7 @@ import { Media } from '@collections/Media'
 import { Pages } from '@collections/Pages'
 import { Posts } from '@collections/Posts'
 import { Users } from '@collections/Users'
-import { Contributions } from '@collections/Contributions'
+import { Transactions } from '@collections/Transactions'
 import { Jars } from '@collections/Jars'
 
 import { Footer } from './Footer/config'
@@ -73,7 +73,7 @@ export default buildConfig({
   db: mongooseAdapter({
     url: dbUrl || 'mongodb://localhost:27017/konto',
   }),
-  collections: [Pages, Posts, Media, Categories, Users, Contributions, Jars],
+  collections: [Pages, Posts, Media, Categories, Users, Transactions, Jars],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [

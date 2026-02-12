@@ -307,7 +307,7 @@ class ContributionView extends StatelessWidget {
 
                                   // ignore: unrelated_type_equality_checks
                                   if (contribution.type !=
-                                      ContributionType.transfer) ...[
+                                      ContributionType.payout) ...[
                                     const SizedBox(height: AppSpacing.spacingM),
                                     AppCard(
                                       padding: const EdgeInsets.symmetric(
