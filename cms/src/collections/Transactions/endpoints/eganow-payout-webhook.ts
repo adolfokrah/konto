@@ -106,8 +106,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     const eganow = new Eganow({
       username: process.env.EGANOW_SECRET_USERNAME!,
       password: process.env.EGANOW_SECRET_PASSWORD!,
-      xAuth: process.env.EGANOW_X_AUTH!,
-      baseUrl: process.env.EGANOW_BASE_URL,
+      xAuth: process.env.EGANOW_X_AUTH_TOKEN!,
     })
 
     let verifiedStatus: string
