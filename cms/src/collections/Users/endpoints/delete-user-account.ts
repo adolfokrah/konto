@@ -72,7 +72,7 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
       )
     }
 
-    // Check if user has any jars with balance > 0
+    // Check if user has any jars with totalContributions > 0
     const jarsWithBalance = await req.payload.find({
       collection: 'jars',
       where: {
@@ -83,7 +83,7 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
             },
           },
           {
-            balance: {
+            totalContributions: {
               greater_than: 0,
             },
           },

@@ -3,11 +3,18 @@
  */
 
 /**
+ * Generate unique username for tests
+ */
+const generateUsername = (prefix: string = 'user') =>
+  `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 5)}`
+
+/**
  * Base user data template with required role field
  */
 export const createTestUserData = (overrides: any = {}, role: 'user' | 'admin' = 'user') => ({
   role,
-  kycStatus: 'verified',
+  kycStatus: 'verified' as const,
+  username: generateUsername(),
   ...overrides,
 })
 

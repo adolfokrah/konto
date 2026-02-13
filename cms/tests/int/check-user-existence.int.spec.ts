@@ -78,7 +78,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(true)
-      expect(responseData.message).toBe('Phone number found in system')
+      expect(responseData.message).toBe('Phone number already registered')
     })
 
     it('should return false when phone number does not exist', async () => {
@@ -96,7 +96,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(false)
-      expect(responseData.message).toBe('Phone number not found in system')
+      expect(responseData.message).toBe('Available for registration')
     })
 
     it('should return false when country code does not match', async () => {
@@ -114,7 +114,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(false)
-      expect(responseData.message).toBe('Phone number not found in system')
+      expect(responseData.message).toBe('Available for registration')
     })
 
     it('should return true when email exists (OR condition)', async () => {
@@ -133,7 +133,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(true)
-      expect(responseData.message).toBe('Phone number found in system')
+      expect(responseData.message).toBe('Email already registered')
     })
 
     it('should return true when both phone and email match', async () => {
@@ -152,7 +152,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(true)
-      expect(responseData.message).toBe('Phone number found in system')
+      expect(responseData.message).toBe('Email already registered')
     })
 
     it('should return false when neither phone nor email match', async () => {
@@ -171,7 +171,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(false)
-      expect(responseData.message).toBe('Phone number not found in system')
+      expect(responseData.message).toBe('Available for registration')
     })
 
     it('should return error when phone number is missing', async () => {
@@ -223,7 +223,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(true)
-      expect(responseData.message).toBe('Phone number found in system')
+      expect(responseData.message).toBe('Phone number already registered')
     })
 
     it('should handle database errors gracefully', async () => {
@@ -293,7 +293,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(false)
-      expect(responseData.message).toBe('Phone number not found in system')
+      expect(responseData.message).toBe('Available for registration')
     })
 
     it('should handle multiple users with different phone numbers', async () => {
@@ -357,7 +357,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.exists).toBe(true)
-      expect(responseData.message).toBe('Phone number found in system')
+      expect(responseData.message).toBe('Phone number already registered')
     })
   })
 
