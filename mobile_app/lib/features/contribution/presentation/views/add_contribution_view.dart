@@ -24,6 +24,7 @@ class _AddContributionViewState extends State<AddContributionView> {
   bool _isInitialized = false;
   double _selectedAmount = 0.0;
   bool _isEditingAmount = false;
+  String _currencySymbol = '';
 
   // Predefined quick amount options
   final List<double> _quickAmounts = [10, 25, 50, 100];
@@ -44,9 +45,12 @@ class _AddContributionViewState extends State<AddContributionView> {
   }
 
   void _onAmountChanged() {
+    // Skip if currency symbol not yet initialized
+    if (_currencySymbol.isEmpty) return;
+
     final currencyTextField = CurrencyTextField(
       controller: _amountController,
-      currencySymbol: '', // Will be set dynamically
+      currencySymbol: _currencySymbol,
     );
     final amount = currencyTextField.getNumericValue();
     if (_selectedAmount != amount) {
@@ -62,7 +66,7 @@ class _AddContributionViewState extends State<AddContributionView> {
 
     setState(() {
       _selectedAmount = amount;
-      _amountController.text = '$currencySymbol$amount';
+      _amountController.text = '$currencySymbol ${amount.toStringAsFixed(0)}';
       _isEditingAmount = false; // Exit edit mode
     });
 
@@ -100,6 +104,7 @@ class _AddContributionViewState extends State<AddContributionView> {
             // Initialize the controller with the formatted amount if not already done
             if (_isInitialized == false) {
               _isInitialized = true;
+              _currencySymbol = currencySymbol;
 
               if (jarData.isFixedContribution) {
                 // Set the amount first (without triggering setState during build)
@@ -111,7 +116,7 @@ class _AddContributionViewState extends State<AddContributionView> {
                     // Temporarily remove listener to avoid conflict
                     _amountController.removeListener(_onAmountChanged);
                     _amountController.text =
-                        '$currencySymbol${jarData.acceptedContributionAmount}';
+                        '$currencySymbol ${jarData.acceptedContributionAmount.toStringAsFixed(0)}';
                     // Re-add listener
                     _amountController.addListener(_onAmountChanged);
                   }
@@ -126,7 +131,7 @@ class _AddContributionViewState extends State<AddContributionView> {
                     // Temporarily remove listener to avoid conflict
                     _amountController.removeListener(_onAmountChanged);
                     _amountController.text =
-                        '$currencySymbol${_quickAmounts.first}';
+                        '$currencySymbol ${_quickAmounts.first.toStringAsFixed(0)}';
                     // Re-add listener
                     _amountController.addListener(_onAmountChanged);
                   }

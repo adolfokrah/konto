@@ -177,11 +177,15 @@ export default async function Page({
           : jarWithBalance.creator.photo
         : null
 
-    // Get creator name and initials
+    // Get creator name, username, and initials
     const creatorName =
       typeof jarWithBalance?.creator === 'object'
         ? jarWithBalance?.creator?.fullName
         : jarWithBalance?.creator
+    const creatorUsername =
+      typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.username : null
+    const creatorKycStatus =
+      typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.kycStatus : null
     const creatorInitials = creatorName
       ? creatorName
           .split(' ')
@@ -240,6 +244,9 @@ export default async function Page({
                       ? jarWithBalance?.creator?.fullName
                       : jarWithBalance?.creator}
                   </p>
+                  {creatorUsername && (
+                    <p className="text-gray-600 text-sm">@{creatorUsername}</p>
+                  )}
                   <p>Organizer</p>
                   <p>
                     {typeof jarWithBalance?.creator === 'object'
@@ -247,10 +254,12 @@ export default async function Page({
                       : jarWithBalance?.creator}
                   </p>
                 </div>
-                <div className="text-xs mt-2 text-green-900 bg-green-100 rounded-lg w-fit px-1.5 py-0.5 flex gap-1">
-                  <ShieldCheck className="h-4 w-4" />
-                  Verified Organizer
-                </div>
+                {creatorKycStatus === 'verified' && (
+                  <div className="text-xs mt-2 text-green-900 bg-green-100 rounded-lg w-fit px-1.5 py-0.5 flex gap-1">
+                    <ShieldCheck className="h-4 w-4" />
+                    Verified Organizer
+                  </div>
+                )}
               </div>
             </div>
 
