@@ -49,7 +49,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
-        kycStatus: 'verified', // Explicitly set for testing
+        kycStatus: 'verified' as const, // Explicitly set for testing
       }
 
       const user = await payload.create({
@@ -75,7 +75,7 @@ describe('Users Collection Integration Tests', () => {
 
         country: 'ng' as const,
         role: 'user' as const,
-        kycStatus: 'verified',
+        kycStatus: 'verified' as const,
         appSettings: {
           language: 'fr' as const,
           theme: 'dark' as const,
@@ -123,6 +123,7 @@ describe('Users Collection Integration Tests', () => {
         email: generateUniqueEmail('duplicate'),
         password: 'testPassword123',
         fullName: 'First User',
+        username: generateUsername('duplicate'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
@@ -160,7 +161,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('alice'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
-          kycStatus: 'verified',
+          kycStatus: 'verified' as const,
           role: 'user' as const,
         },
         {
@@ -171,7 +172,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234802222222',
           country: 'ng' as const,
           role: 'user' as const,
-          kycStatus: 'none',
+          kycStatus: 'none' as const,
         },
         {
           email: 'user3@example.com',
@@ -180,7 +181,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('charlie'),
           phoneNumber: '+233543333333',
           country: 'gh' as const,
-          kycStatus: 'verified',
+          kycStatus: 'verified' as const,
           role: 'user' as const,
         },
       ]
@@ -308,7 +309,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('update'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
-          kycStatus: 'none',
+          kycStatus: 'none' as const,
           role: 'user' as const,
         },
       })
@@ -319,7 +320,7 @@ describe('Users Collection Integration Tests', () => {
         collection: 'users',
         id: testUser.id,
         data: {
-          kycStatus: 'verified',
+          kycStatus: 'verified' as const,
           role: 'user' as const,
         },
       })
@@ -471,10 +472,11 @@ describe('Users Collection Integration Tests', () => {
         email: 'defaults@example.com',
         password: 'password123',
         fullName: 'Default User',
+        username: generateUsername('defaults'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
-        kycStatus: 'verified', // Explicitly set for testing
+        kycStatus: 'verified' as const, // Explicitly set for testing
         appSettings: {
           language: 'en' as const,
           theme: 'dark' as const,
@@ -514,7 +516,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('ghverified'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
-          kycStatus: 'verified',
+          kycStatus: 'verified' as const,
           role: 'user' as const,
         },
         {
@@ -524,7 +526,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('ghunverified'),
           phoneNumber: '+233542222222',
           country: 'gh' as const,
-          kycStatus: 'none',
+          kycStatus: 'none' as const,
           role: 'user' as const,
         },
         {
@@ -535,7 +537,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234803333333',
           country: 'ng' as const,
           role: 'user' as const,
-          kycStatus: 'verified',
+          kycStatus: 'verified' as const,
         },
         {
           email: 'nigeria.unverified@example.com',
@@ -545,7 +547,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234804444444',
           country: 'ng' as const,
           role: 'user' as const,
-          kycStatus: 'none',
+          kycStatus: 'none' as const,
         },
       ]
 
