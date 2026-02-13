@@ -72,6 +72,37 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
       )
     }
 
+    // Check if user has any jars with balance > 0
+    const jarsWithBalance = await req.payload.find({
+      collection: 'jars',
+      where: {
+        and: [
+          {
+            creator: {
+              equals: req.user.id,
+            },
+          },
+          {
+            balance: {
+              greater_than: 0,
+            },
+          },
+        ],
+      },
+      limit: 1, // We only need to know if at least one exists
+    })
+
+    if (jarsWithBalance.docs.length > 0) {
+      return Response.json(
+        {
+          success: false,
+          message:
+            'Cannot delete account. You have jars with remaining balance. Please withdraw all funds before deleting your account.',
+        },
+        { status: 400 },
+      )
+    }
+
     // Store deleted user account details in a separate collection
     await req.payload.create({
       collection: 'deletedUserAccounts',
