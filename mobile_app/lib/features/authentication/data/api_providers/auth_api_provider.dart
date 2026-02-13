@@ -12,6 +12,7 @@ class AuthApiProvider {
     required String phoneNumber,
     required String countryCode,
     String? email,
+    String? username,
   }) async {
     try {
       final response = await _dio.post(
@@ -20,6 +21,7 @@ class AuthApiProvider {
           'phoneNumber': phoneNumber,
           'countryCode': countryCode,
           'email': email,
+          'username': username,
         },
         options: Options(headers: BackendConfig.defaultHeaders),
       );
@@ -120,6 +122,12 @@ class AuthApiProvider {
     } catch (e) {
       print('💥 Registration error: $e');
       if (e is DioException) {
+        // Check if we have a response from the server
+        if (e.response?.data != null) {
+          print('📥 Server error response: ${e.response?.data}');
+          // Return the server's error response (which includes the error message)
+          return e.response!.data;
+        }
         return {
           'success': false,
           'message': 'Network error: ${e.message}',

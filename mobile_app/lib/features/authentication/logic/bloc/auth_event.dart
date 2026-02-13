@@ -7,11 +7,13 @@ final class CheckUserExistence extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
   final String? email;
+  final String? username;
 
   CheckUserExistence({
     required this.phoneNumber,
     required this.countryCode,
     this.email,
+    this.username,
   });
 }
 

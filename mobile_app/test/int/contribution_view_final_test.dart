@@ -27,7 +27,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true}',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified"}',
     );
   });
 

@@ -117,6 +117,7 @@ class _RegisterViewState extends State<RegisterView> {
         phoneNumber: _phoneNumber,
         countryCode: _countryCode,
         email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
       ),
     );
   }
@@ -143,6 +144,14 @@ class _RegisterViewState extends State<RegisterView> {
                 context,
                 AppRoutes.jarDetail,
                 (route) => false,
+              );
+            }
+
+            if (state is AuthError) {
+              // Show error message from registration
+              AppSnackBar.showError(
+                context,
+                message: state.error,
               );
             }
 

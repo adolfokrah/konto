@@ -46,15 +46,13 @@ class KycView extends StatelessWidget {
             builder: (context, authState) {
               // Check user's KYC status
               String? kycStatus;
-              bool isKYCVerified = false;
               if (authState is AuthAuthenticated) {
                 kycStatus = authState.user.kycStatus;
-                isKYCVerified = authState.user.isKYCVerified;
               }
 
               // If user is already KYC verified, don't show any KYC screens
               // They should be navigated elsewhere in the app
-              if (isKYCVerified) {
+              if (kycStatus == 'verified') {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.spacingM),
@@ -80,8 +78,8 @@ class KycView extends StatelessWidget {
                 );
               }
 
-              // Show pending screen if KYC status is pending (for unverified users)
-              if (kycStatus == 'pending') {
+              // Show in_review screen if KYC status is in_review (for unverified users)
+              if (kycStatus == 'in_review') {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.spacingM),
@@ -129,7 +127,7 @@ class KycView extends StatelessWidget {
                       Icon(Icons.verified_user, size: 64),
                       const SizedBox(height: 24),
                       Text(
-                        'In order to set a withdrawal account or start receiving mobile money and card payments, you need to verify your account.',
+                        'In order to transfer your jar balance, you need to verify your account.',
                         style: TextStyles.titleRegularSm,
                         textAlign: TextAlign.center,
                       ),

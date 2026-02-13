@@ -16,7 +16,7 @@ import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
 import { trackDailyActiveUser } from './hooks/track-daily-active-user'
-import { validateKycForWithdrawalAccount } from './hooks/validate-kyc-for-withdrawal-account'
+import { checkUsernameUniqueness } from './hooks/check-username-uniqueness'
 import { sendOTP } from './endpoints/send-otp'
 import { verifyOTP } from './endpoints/verify-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
@@ -187,28 +187,6 @@ export const Users: CollectionConfig = {
         }
         return true
       },
-      hooks: {
-        beforeChange: [
-          ({ data, originalDoc, operation }) => {
-            // Normalize username to lowercase for case-insensitive uniqueness
-            if (data?.username && typeof data.username === 'string') {
-              data.username = data.username.toLowerCase()
-            }
-
-            // Prevent username changes after it's been set
-            if (operation === 'update' && originalDoc?.username && data) {
-              if (
-                data.username &&
-                data.username.toLowerCase() !== originalDoc.username.toLowerCase()
-              ) {
-                throw new APIError('Username cannot be changed once set', 400)
-              }
-              // Ensure username remains unchanged
-              data.username = originalDoc.username
-            }
-          },
-        ],
-      },
     },
     {
       name: 'countryCode',
@@ -226,34 +204,6 @@ export const Users: CollectionConfig = {
       name: 'country',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'isKYCVerified',
-      type: 'checkbox',
-      defaultValue: true, //only for testing
-      hooks: {
-        beforeChange: [
-          ({ data, originalDoc, operation }) => {
-            // Only apply this logic for updates, not creation
-            if (operation === 'update' && data && originalDoc) {
-              // Check if fullName or country has changed
-              const fullNameChanged = data.fullName && data.fullName !== originalDoc.fullName
-              const countryChanged = data.country && data.country !== originalDoc.country
-
-              if (fullNameChanged || countryChanged) {
-                console.log('Critical user information changed - resetting KYC verification status')
-                data.isKYCVerified = false
-                // Also reset KYC status if it exists
-                if (data.kycStatus) {
-                  data.kycStatus = 'none'
-                }
-              } else if (data?.isKYCVerified) {
-                data.kycStatus = 'verified'
-              }
-            }
-          },
-        ],
-      },
     },
     {
       name: 'frontFile',
@@ -325,25 +275,24 @@ export const Users: CollectionConfig = {
       name: 'kycStatus',
       type: 'select',
       options: [
-        { label: 'Pending', value: 'pending' },
-        { label: 'Verified', value: 'verified' },
         { label: 'None', value: 'none' },
+        { label: 'In Review', value: 'in_review' },
+        { label: 'Verified', value: 'verified' },
       ],
       defaultValue: 'none',
       required: false,
-      // hooks: {
-      //   beforeChange: [
-      //     ({ data, originalDoc }) => {
-      //       // Prevent manual setting to 'verified'
-      //       if (data && originalDoc) {
-      //         if (data.kycStatus === 'verified' && originalDoc.kycStatus !== 'verified') {
-      //           console.log('Manual setting of KYC status to verified is not allowed')
-      //           data.kycStatus = originalDoc.kycStatus || 'none'
-      //         }
-      //       }
-      //     },
-      //   ],
-      // },
+      hooks: {
+        beforeChange: [
+          ({ data, originalDoc, value }) => {
+            console.log('🔄 kycStatus beforeChange hook:', {
+              originalValue: originalDoc?.kycStatus,
+              newValue: value,
+              dataValue: data?.kycStatus,
+            })
+            return value
+          },
+        ],
+      },
     },
     {
       name: 'role',
@@ -430,6 +379,7 @@ export const Users: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
+      checkUsernameUniqueness,
       async ({ data, originalDoc, operation, req }) => {
         if (!data || operation !== 'update') {
           return
@@ -493,7 +443,7 @@ export const Users: CollectionConfig = {
         }
       },
     ],
-    beforeChange: [validateKycForWithdrawalAccount],
+    beforeChange: [],
     afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
     afterRead: [trackDailyActiveUser],

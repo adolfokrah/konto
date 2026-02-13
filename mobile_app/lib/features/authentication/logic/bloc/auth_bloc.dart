@@ -31,17 +31,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         email: event.email,
+        username: event.username,
       );
 
       if (response['exists'] == true) {
-        // User exists - available for login (not available for registration)
-        emit(
-          PhoneNumberNotAvailable(
-            phoneNumber: event.phoneNumber,
-            countryCode: event.countryCode,
-            email: response['email'],
-          ),
-        );
+        // User exists - check which field conflicts
+        final conflictField = response['conflictField'];
+        final message = response['message'] ?? 'User already exists';
+
+        // If username or email conflicts, show as error
+        if (conflictField == 'username' || conflictField == 'email') {
+          emit(AuthError(error: message));
+        } else {
+          // Phone number conflict - user should login
+          emit(
+            PhoneNumberNotAvailable(
+              phoneNumber: event.phoneNumber,
+              countryCode: event.countryCode,
+              email: response['email'],
+            ),
+          );
+        }
       } else if (response['exists'] == false) {
         // User doesn't exist - available for registration
         emit(

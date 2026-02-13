@@ -64,14 +64,14 @@ export const verifyKYC = async (req: PayloadRequest) => {
     const user = users.docs[0]
 
     // Update user's KYC status based on session status using helper functions
-    let newKycStatus: 'none' | 'pending' | 'verified' = 'pending'
+    let newKycStatus: 'none' | 'in_review' | 'verified' = 'in_review'
 
     if (isSessionCompleted(sessionStatus.status)) {
       newKycStatus = 'verified'
     } else if (isSessionFailed(sessionStatus.status)) {
       newKycStatus = 'none'
     } else if (isSessionPending(sessionStatus.status)) {
-      newKycStatus = 'pending'
+      newKycStatus = 'in_review'
     }
 
     // Update user in database if status is failed/declined
@@ -81,7 +81,6 @@ export const verifyKYC = async (req: PayloadRequest) => {
         id: user.id,
         data: {
           kycStatus: 'none',
-          isKYCVerified: false,
         },
       })
 
@@ -107,7 +106,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
     }
 
     // Send notifications if KYC is verified
-    if (newKycStatus === 'verified' && !user.isKYCVerified) {
+    if (newKycStatus === 'verified' && user.kycStatus !== 'verified') {
       // Send SMS notification (skip in test mode)
       if (user.phoneNumber && process.env.NODE_ENV !== 'test') {
         await sendSMS(
@@ -122,7 +121,6 @@ export const verifyKYC = async (req: PayloadRequest) => {
         id: user.id,
         data: {
           kycStatus: newKycStatus,
-          isKYCVerified: true,
         },
       })
 

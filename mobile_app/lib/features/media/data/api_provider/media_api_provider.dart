@@ -242,7 +242,7 @@ class MediaApiProvider extends BaseApiProvider {
       print('Back ID: $backFileId');
       print('Photo ID: $photoFileId');
 
-      // Update user KYC fields with media IDs - kycStatus set to pending by default
+      // Update user KYC fields with media IDs
       final kycData = {
         'userId': userId,
         'frontFileId': frontFileId,

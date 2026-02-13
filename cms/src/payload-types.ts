@@ -449,7 +449,6 @@ export interface User {
   countryCode?: string | null;
   phoneNumber: string;
   country: string;
-  isKYCVerified?: boolean | null;
   frontFile?: (string | null) | Media;
   backFile?: (string | null) | Media;
   photoFile?: (string | null) | Media;
@@ -465,7 +464,7 @@ export interface User {
   otpCode?: string | null;
   otpExpiry?: string | null;
   otpAttempts?: number | null;
-  kycStatus?: ('pending' | 'verified' | 'none') | null;
+  kycStatus?: ('none' | 'in_review' | 'verified') | null;
   /**
    * User role - only admin users can access the CMS
    */
@@ -2367,7 +2366,6 @@ export interface UsersSelect<T extends boolean = true> {
   countryCode?: T;
   phoneNumber?: T;
   country?: T;
-  isKYCVerified?: T;
   frontFile?: T;
   backFile?: T;
   photoFile?: T;

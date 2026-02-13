@@ -310,7 +310,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       // Check KYC verification first
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        if (!authState.user.isKYCVerified) {
+        if (authState.user.kycStatus != 'verified') {
           Navigator.pushNamed(context, AppRoutes.kycView);
           return;
         }

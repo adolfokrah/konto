@@ -35,7 +35,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true}',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified"}',
     );
   });
 
@@ -128,7 +128,7 @@ void main() {
                               phoneNumber: '+1234567890',
                               countryCode: 'US',
                               country: 'United States',
-                              isKYCVerified: true,
+                              kycStatus: "verified",
                               createdAt: DateTime.now(),
                               updatedAt: DateTime.now(),
                               accountHolder: 'Test Account Holder',
@@ -585,7 +585,7 @@ void main() {
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
                   'country': 'United States',
-                  'isKYCVerified': true,
+                  'kycStatus': 'verified',
                 },
                 'invitedCollectors': [],
                 'acceptAnonymousContributions': false,

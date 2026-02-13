@@ -10,8 +10,7 @@ class User {
   final String phoneNumber;
   final String countryCode;
   final String country;
-  final bool isKYCVerified;
-  final String? kycStatus;
+  final String kycStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<UserSession> sessions;
@@ -34,8 +33,7 @@ class User {
     required this.phoneNumber,
     required this.countryCode,
     required this.country,
-    required this.isKYCVerified,
-    this.kycStatus,
+    required this.kycStatus,
     required this.createdAt,
     required this.updatedAt,
     required this.sessions,
@@ -58,8 +56,7 @@ class User {
       phoneNumber: json['phoneNumber'] as String,
       countryCode: json['countryCode'] as String,
       country: json['country'] as String,
-      isKYCVerified: json['isKYCVerified'] as bool? ?? false,
-      kycStatus: json['kycStatus'] as String?,
+      kycStatus: json['kycStatus'] as String? ?? 'none',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       sessions:
@@ -105,8 +102,7 @@ class User {
       'phoneNumber': phoneNumber,
       'countryCode': countryCode,
       'country': country,
-      'isKYCVerified': isKYCVerified,
-      if (kycStatus != null) 'kycStatus': kycStatus,
+      'kycStatus': kycStatus,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
@@ -130,7 +126,6 @@ class User {
     String? phoneNumber,
     String? countryCode,
     String? country,
-    bool? isKYCVerified,
     String? kycStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -152,7 +147,6 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       countryCode: countryCode ?? this.countryCode,
       country: country ?? this.country,
-      isKYCVerified: isKYCVerified ?? this.isKYCVerified,
       kycStatus: kycStatus ?? this.kycStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

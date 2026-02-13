@@ -6,7 +6,14 @@ export const checkUserExistence = async (req: PayloadRequest) => {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
 
-    const { phoneNumber, countryCode, email } = req.data || {}
+    const { phoneNumber, countryCode, email, username } = req.data || {}
+
+    console.log('Check User Existence Called', {
+      phoneNumber,
+      countryCode,
+      email,
+      username,
+    })
 
     // Format phone number by removing leading 0 if present
     const formattedPhoneNumber =
@@ -34,52 +41,116 @@ export const checkUserExistence = async (req: PayloadRequest) => {
       )
     }
 
-    // Find the user with the phone number and country code OR email
-    const whereConditions: any = {
-      or: [
-        // Phone number and country code must both match
-        {
-          and: [
-            {
-              phoneNumber: {
-                equals: formattedPhoneNumber,
-              },
-            },
-            {
-              countryCode: {
-                equals: countryCode,
-              },
-            },
-          ],
-        },
-      ],
-    }
+    // Check in priority order: username -> email -> phone
+    let conflictField = null
+    let message = 'Available for registration'
+    let existingUser = null
 
-    // Add email condition if provided
-    if (email) {
-      whereConditions.or.push({
-        email: {
-          equals: email,
+    // 1. Check username first (if provided)
+    if (username) {
+      const normalizedUsername = username.trim().toLowerCase()
+      const userByUsername = await req.payload.find({
+        collection: 'users',
+        where: {
+          username: {
+            like: normalizedUsername,
+          },
         },
+        limit: 1,
       })
+      console.log('User by username', userByUsername.docs.length, username)
+
+      if (userByUsername.docs.length > 0) {
+        conflictField = 'username'
+        message = 'Username already taken'
+        existingUser = userByUsername.docs[0]
+
+        return Response.json({
+          success: true,
+          exists: true,
+          conflictField,
+          data: {
+            email: existingUser.email,
+          },
+          message,
+        })
+      }
     }
 
-    const existingUser = await req.payload.find({
+    // 2. Check email second (if provided)
+    if (email) {
+      const userByEmail = await req.payload.find({
+        collection: 'users',
+        where: {
+          email: {
+            equals: email,
+          },
+        },
+        limit: 1,
+      })
+
+      if (userByEmail.docs.length > 0) {
+        conflictField = 'email'
+        message = 'Email already registered'
+        existingUser = userByEmail.docs[0]
+
+        return Response.json({
+          success: true,
+          exists: true,
+          conflictField,
+          data: {
+            email: existingUser.email,
+          },
+          message,
+        })
+      }
+    }
+
+    // 3. Check phone number last
+    const userByPhone = await req.payload.find({
       collection: 'users',
-      where: whereConditions,
+      where: {
+        and: [
+          {
+            phoneNumber: {
+              equals: formattedPhoneNumber,
+            },
+          },
+          {
+            countryCode: {
+              equals: countryCode,
+            },
+          },
+        ],
+      },
       limit: 1,
     })
 
+    if (userByPhone.docs.length > 0) {
+      conflictField = 'phoneNumber'
+      message = 'Phone number already registered'
+      existingUser = userByPhone.docs[0]
+
+      return Response.json({
+        success: true,
+        exists: true,
+        conflictField,
+        data: {
+          email: existingUser.email,
+        },
+        message,
+      })
+    }
+
+    // No conflicts - available for registration
     return Response.json({
       success: true,
-      exists: existingUser.docs.length > 0,
+      exists: false,
+      conflictField: null,
       data: {
-        email: existingUser.docs[0]?.email || email,
+        email: email,
       },
-      message:
-        existingUser.docs.length > 0
-          ? 'Phone number found in system'
-          : 'Phone number not found in system',
+      message: 'Available for registration',
     })
   } catch (error) {
     return Response.json(

@@ -57,7 +57,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user',
         },
       })
@@ -308,7 +308,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           phoneNumber: '+233541234568',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user',
         },
       })

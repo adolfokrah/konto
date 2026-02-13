@@ -28,12 +28,6 @@ export const updateKYC = async (req: PayloadRequest) => {
     if (photoFileId) updateData.photoFile = photoFileId
     if (documentType) updateData.documentType = documentType
     if (kycStatus) updateData.kycStatus = kycStatus
-    // Set isKYCVerified based on kycStatus
-    if (kycStatus === 'verified') {
-      updateData.isKYCVerified = true
-    } else if (kycStatus === 'pending') {
-      updateData.isKYCVerified = false
-    }
 
     const user = await req.payload.update({
       collection: 'users',

@@ -143,8 +143,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Show KYC lock warning when KYC is verified
-                          if (state.user.isKYCVerified) ...[
+                          // Show KYC lock warning when KYC is in_review or verified
+                          if (state.user.kycStatus == 'in_review' || state.user.kycStatus == 'verified') ...[
                             AppCard(
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                             ),
                             const SizedBox(height: 20),
                           ]
-                          // Show warning only when critical fields are changed and KYC is not verified
+                          // Show warning only when critical fields are changed and KYC is none
                           else if (_hasChangedCriticalFields()) ...[
                             AppCard(
                               child: Row(
@@ -187,7 +187,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                           _buildHeader(state.user),
                           const SizedBox(height: 38),
                           // Personal information section
-                          _buildPersonalInformationSection(isLoading, state.user.isKYCVerified),
+                          _buildPersonalInformationSection(isLoading, state.user.kycStatus),
                           const SizedBox(height: 40), // Add bottom padding
                         ],
                       ),
@@ -237,8 +237,10 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     );
   }
 
-  Widget _buildPersonalInformationSection(bool isLoading, bool isKYCVerified) {
+  Widget _buildPersonalInformationSection(bool isLoading, String kycStatus) {
     final localizations = AppLocalizations.of(context)!;
+    // Only allow editing if KYC status is 'none'
+    final canEdit = kycStatus == 'none';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,41 +255,29 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
         AppTextInput(
           label: localizations.fullName,
           controller: _fullNameController,
-          enabled: !isLoading && !isKYCVerified,
+          enabled: !isLoading && canEdit,
         ),
         const SizedBox(height: 17),
-        // Username input
+        // Username input - always disabled, cannot be changed
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTextInput(
               label: 'Username',
               controller: _usernameController,
-              enabled: !isLoading && !_hasExistingUsername,
-              onChanged: (value) {
-                if (!_hasExistingUsername) {
-                  // Convert to lowercase for case-insensitive username
-                  final cursorPosition = _usernameController.selection.baseOffset;
-                  _usernameController.value = TextEditingValue(
-                    text: value.toLowerCase(),
-                    selection: TextSelection.collapsed(offset: cursorPosition),
-                  );
-                }
-              },
+              enabled: false,
             ),
-            if (_hasExistingUsername) ...[
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: Text(
-                  'Username cannot be changed once set',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Text(
+                'Username cannot be changed once set',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
-            ],
+            ),
           ],
         ),
         const SizedBox(height: 17),
@@ -296,7 +286,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           label: localizations.email,
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          enabled: !isLoading && !isKYCVerified,
+          enabled: !isLoading && canEdit,
         ),
         const SizedBox(height: 17),
         // Country selector
@@ -304,7 +294,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           label: localizations.country,
           value: selectedCountry,
           options: AppSelectOptions.getCountryOptions(localizations),
-          enabled: !isLoading && !isKYCVerified,
+          enabled: !isLoading && canEdit,
           onChanged: (value) {
             setState(() {
               selectedCountry = value;
@@ -312,8 +302,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           },
         ),
         const SizedBox(height: 17),
-        // Update button - hide when KYC is verified
-        if (!isKYCVerified)
+        // Update button - show only when KYC is none
+        if (canEdit)
           AppButton.filled(
             text: localizations.updateAccount,
             isLoading: isLoading,

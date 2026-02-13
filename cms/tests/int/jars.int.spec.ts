@@ -45,7 +45,7 @@ describe('Jars Collection Integration Tests', () => {
         username: `jarcreator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         role: 'user',
       },
     })
@@ -59,7 +59,7 @@ describe('Jars Collection Integration Tests', () => {
         username: `jarcollector${Date.now()}`,
         phoneNumber: '+233541234568',
         country: 'gh' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         role: 'user',
       },
     })

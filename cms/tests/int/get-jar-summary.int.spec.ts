@@ -28,7 +28,7 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
         username: `creator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         role: 'user',
         accountNumber: '1234567890', // Required for mobile money contributions
       },

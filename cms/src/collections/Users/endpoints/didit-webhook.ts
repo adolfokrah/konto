@@ -156,9 +156,9 @@ export const diditWebhook = async (req: PayloadRequest) => {
       has_decision: !!payload.decision,
     })
 
-    // Handle specific statuses that should set KYC status to pending
+    // Handle specific statuses that should set KYC status to in_review
     if (payload.status === 'In Review') {
-      console.log(`🔄 Status is ${payload.status}, updating user KYC status to pending`)
+      console.log(`🔄 Status is ${payload.status}, updating user KYC status to in_review`)
 
       try {
         // Find user by session ID
@@ -175,12 +175,12 @@ export const diditWebhook = async (req: PayloadRequest) => {
         if (user.docs && user.docs.length > 0) {
           const userId = user.docs[0].id
 
-          // Update user KYC status to pending
+          // Update user KYC status to in_review
           await req.payload.update({
             collection: 'users',
             id: userId,
             data: {
-              kycStatus: 'pending',
+              kycStatus: 'in_review',
             },
           })
 
@@ -188,20 +188,20 @@ export const diditWebhook = async (req: PayloadRequest) => {
           await req.payload.create({
             collection: 'notifications',
             data: {
-              title: 'KYC Verification Pending',
+              title: 'KYC Verification In Review',
               user: userId,
               message: `Your KYC verification is currently under review. We will notify you once the process is complete.`,
               type: 'kyc',
               status: 'read',
               data: {
-                status: 'pending',
+                status: 'in_review',
               },
             },
           })
 
           return Response.json(
             {
-              message: 'KYC status updated to pending',
+              message: 'KYC status updated to in_review',
               session_id: payload.session_id,
               status: payload.status,
             },
@@ -213,6 +213,16 @@ export const diditWebhook = async (req: PayloadRequest) => {
       } catch (error) {
         console.error('❌ Error updating KYC status to pending:', error)
       }
+
+      // Always return here for "In Review" status - don't call verify-kyc
+      return Response.json(
+        {
+          message: 'In Review status handled',
+          session_id: payload.session_id,
+          status: payload.status,
+        },
+        { status: 200 },
+      )
     }
 
     // Call the existing verify-kyc function to handle the verification logic

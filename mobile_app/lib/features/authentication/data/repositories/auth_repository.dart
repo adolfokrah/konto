@@ -21,25 +21,28 @@ class AuthRepository {
     required String phoneNumber,
     required String countryCode,
     String? email,
+    String? username,
   }) async {
     try {
       final apiResponse = await _authApiProvider.checkUserExistence(
         phoneNumber: phoneNumber,
         countryCode: countryCode,
         email: email,
+        username: username,
       );
 
       if (apiResponse['success'] == true) {
         final exists = apiResponse['exists'] ?? false;
         final userData = apiResponse['data'] ?? {};
+        final conflictField = apiResponse['conflictField'];
         return {
           'success': true,
           'exists': exists,
+          'conflictField': conflictField,
           'email': userData['email'],
-          'message':
-              exists
-                  ? 'Phone number found. Proceed to login.'
-                  : 'Phone number not found. Please register first.',
+          'message': apiResponse['message'] ?? (exists
+                  ? 'User already exists'
+                  : 'Available for registration'),
         };
       } else {
         return {

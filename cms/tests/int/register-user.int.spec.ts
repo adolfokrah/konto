@@ -69,7 +69,7 @@ describe('Register User Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'ghana',
           fullName: 'John Doe',
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user',
           appSettings: {
             language: 'en',
@@ -90,7 +90,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(newUser.fullName).toBe('John Doe')
       expect(newUser.country).toBe('ghana')
       expect(newUser.countryCode).toBe('+233')
-      expect(newUser.isKYCVerified).toBe(false)
+      expect(newUser.kycStatus).toBe('none')
     })
 
     // Test the actual registerUser endpoint function
@@ -100,6 +100,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
         fullName: 'Jane Doe',
@@ -119,7 +120,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(result.doc.fullName).toBe('Jane Doe')
       expect(result.doc.country).toBe('ghana')
       expect(result.doc.countryCode).toBe('+233')
-      expect(result.doc.isKYCVerified).toBe(true)
+      expect(result.doc.kycStatus).toBe('verified')
     })
 
     it('should register a user without email (auto-generate email)', async () => {
@@ -127,6 +128,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
         fullName: 'Auto Email User',
@@ -158,7 +160,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
       )
     })
 
@@ -167,6 +169,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         country: 'ghana',
         fullName: 'John Doe',
       })
@@ -186,6 +189,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         fullName: 'John Doe',
       })
@@ -205,6 +209,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
       })
@@ -228,7 +233,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
       )
     })
   })
@@ -248,7 +253,7 @@ describe('Register User Endpoint Integration Tests', () => {
           countryCode: '+233',
           country: 'ghana',
           fullName: 'Existing User',
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user',
         },
       })
@@ -257,6 +262,7 @@ describe('Register User Endpoint Integration Tests', () => {
     it('should return 409 when user exists with same phone number and country code', async () => {
       const mockRequest = createMockRequest({
         phoneNumber: existingUser.phoneNumber,
+        username: generateUsername(),
         countryCode: existingUser.countryCode,
         country: 'ghana',
         fullName: 'Another User',
@@ -278,6 +284,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
         fullName: 'Another User',
@@ -321,6 +328,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber: newPhoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
         fullName: 'Different Phone User',
@@ -342,6 +350,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
         fullName: 'Special Char User',
@@ -361,6 +370,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
         fullName: specialName,
@@ -382,6 +392,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
         const mockRequest = createMockRequest({
           phoneNumber,
+          username: generateUsername(),
           countryCode: '+233',
           country,
           fullName: `User from ${country}`,
@@ -401,6 +412,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber,
+        username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
         fullName: 'Settings Test User',
@@ -432,6 +444,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
         const mockRequest = createMockRequest({
           phoneNumber,
+          username: generateUsername(),
           countryCode: '+233',
           country: 'ghana',
           fullName: 'Email Format User',

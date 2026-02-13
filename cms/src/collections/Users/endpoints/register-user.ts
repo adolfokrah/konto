@@ -96,7 +96,7 @@ export const registerUser = async (req: PayloadRequest) => {
         country,
         fullName,
         username,
-        isKYCVerified: true,
+        kycStatus: 'none',
         appSettings: {
           language: 'en',
           darkMode: false,
@@ -122,6 +122,17 @@ export const registerUser = async (req: PayloadRequest) => {
     )
   } catch (error: any) {
     console.error('Registration error:', error)
+
+    // Handle API errors (from hooks)
+    if (error.name === 'APIError') {
+      const response = {
+        success: false,
+        message: error.message,
+        errors: error.data || [],
+      }
+      console.log('📤 Sending APIError response to client:', JSON.stringify(response))
+      return Response.json(response, { status: error.status || 400 })
+    }
 
     // Handle validation errors
     if (error.name === 'ValidationError') {

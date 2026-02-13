@@ -57,7 +57,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user',
         },
       })
@@ -235,7 +235,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+2348012345678',
           countryCode: '+234',
           country: 'ng' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user',
         },
       })
@@ -270,7 +270,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+233541234568',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: false, // Not verified
+          kycStatus: 'none', // Not verified
           role: 'user',
         },
       })
@@ -289,7 +289,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
       expect(response.status).toBe(200)
       expect(responseData.success).toBe(true)
       expect(responseData.user.id).toBe(unverifiedUser.id)
-      expect(responseData.user.isKYCVerified).toBe(false)
+      expect(responseData.user.kycStatus).toBe('none')
     })
 
     it('should handle phone numbers with different formats correctly', async () => {
@@ -339,7 +339,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+233541234999', // Different phone number
           countryCode: '+233', // Same country code
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user',
         },
       })
@@ -391,7 +391,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user',
         },
       })
@@ -516,7 +516,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber,
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user',
         },
       })
@@ -551,7 +551,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user',
         },
       })

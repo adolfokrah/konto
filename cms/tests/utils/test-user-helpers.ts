@@ -7,7 +7,7 @@
  */
 export const createTestUserData = (overrides: any = {}, role: 'user' | 'admin' = 'user') => ({
   role,
-  isKYCVerified: true,
+  kycStatus: 'verified',
   ...overrides,
 })
 

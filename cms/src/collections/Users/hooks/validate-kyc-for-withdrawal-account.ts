@@ -40,7 +40,7 @@ export const validateKycForWithdrawalAccount: CollectionBeforeChangeHook = async
   })
 
   // Check if user has completed KYC verification
-  if (!user?.isKYCVerified) {
+  if (user?.kycStatus !== 'verified') {
     throw new APIError(
       'You must complete KYC verification before setting a withdrawal account',
       403,

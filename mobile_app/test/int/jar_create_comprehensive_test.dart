@@ -32,7 +32,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
     );
 
     print('✅ Authentication data set up for testing');
@@ -52,7 +52,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "isKYCVerified": true, "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
     );
   }
 
@@ -82,7 +82,7 @@ void main() {
               'phoneNumber': '+1234567890',
               'countryCode': 'US',
               'country': 'United States',
-              'isKYCVerified': true,
+              'kycStatus': 'verified',
               'createdAt': '2025-07-21T18:32:42.806Z',
               'updatedAt': '2025-08-21T18:32:42.806Z',
             },
@@ -361,7 +361,7 @@ void main() {
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
                   'country': 'United States',
-                  'isKYCVerified': true,
+                  'kycStatus': 'verified',
                   'createdAt': '2025-07-21T18:32:42.806Z',
                   'updatedAt': '2025-08-21T18:32:42.806Z',
                 },

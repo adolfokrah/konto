@@ -49,7 +49,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
-        isKYCVerified: true, // Explicitly set for testing
+        kycStatus: 'verified', // Explicitly set for testing
       }
 
       const user = await payload.create({
@@ -62,7 +62,7 @@ describe('Users Collection Integration Tests', () => {
       expect(user.fullName).toBe(userData.fullName)
       expect(user.phoneNumber).toBe(userData.phoneNumber)
       expect(user.country).toBe(userData.country)
-      expect(user.isKYCVerified).toBe(true) // Default value
+      expect(user.kycStatus).toBe('verified') // Default value
     })
 
     it('should create a user with complete app settings', async () => {
@@ -75,7 +75,7 @@ describe('Users Collection Integration Tests', () => {
 
         country: 'ng' as const,
         role: 'user' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         appSettings: {
           language: 'fr' as const,
           theme: 'dark' as const,
@@ -94,7 +94,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       expect(user).toBeDefined()
-      expect(user.isKYCVerified).toBe(true)
+      expect(user.kycStatus).toBe('verified')
       expect(user.appSettings?.language).toBe('fr')
       expect(user.appSettings?.theme).toBe('dark')
       expect(user.appSettings?.biometricAuthEnabled).toBe(true)
@@ -160,7 +160,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('alice'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user' as const,
         },
         {
@@ -171,7 +171,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234802222222',
           country: 'ng' as const,
           role: 'user' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
         },
         {
           email: 'user3@example.com',
@@ -180,7 +180,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('charlie'),
           phoneNumber: '+233543333333',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user' as const,
         },
       ]
@@ -238,8 +238,8 @@ describe('Users Collection Integration Tests', () => {
         where: {
           and: [
             {
-              isKYCVerified: {
-                equals: true,
+              kycStatus: {
+                equals: 'verified',
               },
             },
             {
@@ -253,7 +253,7 @@ describe('Users Collection Integration Tests', () => {
 
       expect(verifiedUsers.docs).toHaveLength(2)
       verifiedUsers.docs.forEach((user) => {
-        expect(user.isKYCVerified).toBe(true)
+        expect(user.kycStatus).toBe('verified')
       })
     })
 
@@ -308,7 +308,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('update'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user' as const,
         },
       })
@@ -319,12 +319,12 @@ describe('Users Collection Integration Tests', () => {
         collection: 'users',
         id: testUser.id,
         data: {
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user' as const,
         },
       })
 
-      expect(updatedUser.isKYCVerified).toBe(true)
+      expect(updatedUser.kycStatus).toBe('verified')
     })
 
     it('should update user app settings', async () => {
@@ -474,7 +474,7 @@ describe('Users Collection Integration Tests', () => {
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
-        isKYCVerified: true, // Explicitly set for testing
+        kycStatus: 'verified', // Explicitly set for testing
         appSettings: {
           language: 'en' as const,
           theme: 'dark' as const,
@@ -493,7 +493,7 @@ describe('Users Collection Integration Tests', () => {
       })
 
       // Check default values
-      expect(user.isKYCVerified).toBe(true)
+      expect(user.kycStatus).toBe('verified')
       expect(user.appSettings?.language).toBe('en')
       expect(user.appSettings?.theme).toBe('dark')
       expect(user.appSettings?.biometricAuthEnabled).toBe(false)
@@ -514,7 +514,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('ghverified'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
           role: 'user' as const,
         },
         {
@@ -524,7 +524,7 @@ describe('Users Collection Integration Tests', () => {
           username: generateUsername('ghunverified'),
           phoneNumber: '+233542222222',
           country: 'gh' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
           role: 'user' as const,
         },
         {
@@ -535,7 +535,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234803333333',
           country: 'ng' as const,
           role: 'user' as const,
-          isKYCVerified: true,
+          kycStatus: 'verified',
         },
         {
           email: 'nigeria.unverified@example.com',
@@ -545,7 +545,7 @@ describe('Users Collection Integration Tests', () => {
           phoneNumber: '+234804444444',
           country: 'ng' as const,
           role: 'user' as const,
-          isKYCVerified: false,
+          kycStatus: 'none',
         },
       ]
 
@@ -568,8 +568,8 @@ describe('Users Collection Integration Tests', () => {
               },
             },
             {
-              isKYCVerified: {
-                equals: true,
+              kycStatus: {
+                equals: 'verified',
               },
             },
             {
@@ -583,7 +583,7 @@ describe('Users Collection Integration Tests', () => {
 
       expect(result.docs).toHaveLength(1)
       expect(result.docs[0].country).toBe('gh')
-      expect(result.docs[0].isKYCVerified).toBe(true)
+      expect(result.docs[0].kycStatus).toBe('verified')
     })
 
     it('should find unverified users from any country', async () => {
@@ -592,8 +592,8 @@ describe('Users Collection Integration Tests', () => {
         where: {
           and: [
             {
-              isKYCVerified: {
-                equals: false,
+              kycStatus: {
+                equals: 'none',
               },
             },
             {
@@ -608,7 +608,7 @@ describe('Users Collection Integration Tests', () => {
 
       expect(result.docs).toHaveLength(2)
       result.docs.forEach((user) => {
-        expect(user.isKYCVerified).toBe(false)
+        expect(user.kycStatus).toBe('none')
       })
     })
 

@@ -112,12 +112,30 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
-  /// Navigate to withdraw page, checking withdrawal account first
+  /// Navigate to withdraw page, checking KYC and withdrawal account first
   void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
-    // Check if user has withdrawal account set up
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final user = authState.user;
+
+      // Check KYC status first
+      if (user.kycStatus == 'none') {
+        // User hasn't completed KYC - navigate to KYC page
+        Navigator.pushNamed(context, AppRoutes.kycView);
+        return;
+      }
+
+      if (user.kycStatus == 'in_review') {
+        // KYC verification is in review
+        AppSnackBar.show(
+          context,
+          message: 'Your KYC verification is in review. Please wait for approval before making withdrawals.',
+          type: SnackBarType.info,
+        );
+        return;
+      }
+
+      // KYC is verified, now check if user has withdrawal account set up
       if (user.bank == null ||
           user.bank!.isEmpty ||
           user.accountNumber == null ||
@@ -313,10 +331,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                             if (state is JarSummaryLoaded)
                               BlocBuilder<AuthBloc, AuthState>(
                                 builder: (context, authState) {
-                                  bool isKYCVerified = false;
+                                  String kycStatus = 'none';
                                   if (authState is AuthAuthenticated) {
-                                    isKYCVerified =
-                                        authState.user.isKYCVerified;
+                                    kycStatus = authState.user.kycStatus;
                                   }
 
                                   return AppIconButton(
@@ -324,7 +341,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     opacity: 0.8,
                                     onPressed: () {
                                       // Check KYC verification before allowing request
-                                      if (!isKYCVerified) {
+                                      if (kycStatus != 'verified') {
                                         Navigator.pushNamed(
                                           context,
                                           AppRoutes.kycView,
@@ -550,9 +567,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                         Expanded(
                           child: BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, authState) {
-                              bool isKYCVerified = false;
+                              String kycStatus = 'none';
                               if (authState is AuthAuthenticated) {
-                                isKYCVerified = authState.user.isKYCVerified;
+                                kycStatus = authState.user.kycStatus;
                               }
 
                               return Column(
@@ -563,7 +580,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     enabled: jarData.status != JarStatus.sealed,
                                     onPressed: () {
                                       // Check KYC verification before allowing request
-                                      if (!isKYCVerified) {
+                                      if (kycStatus != 'verified') {
                                         Navigator.pushNamed(
                                           context,
                                           AppRoutes.kycView,

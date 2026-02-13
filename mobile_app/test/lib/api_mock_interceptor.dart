@@ -136,7 +136,7 @@ class MockInterceptor extends Interceptor {
             'phoneNumber': '+1234567890',
             'countryCode': '+1',
             'country': 'US',
-            'isKYCVerified': true,
+            'kycStatus': 'verified',
             'createdAt': now.toIso8601String(),
             'updatedAt': now.toIso8601String(),
             'sessions': [

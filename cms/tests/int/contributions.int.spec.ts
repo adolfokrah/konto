@@ -51,7 +51,7 @@ describe('Contributions Collection Integration Tests', () => {
         username: `contribcreator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         role: 'user',
         accountNumber: '1234567890', // Required for mobile money contributions
       },
@@ -66,7 +66,7 @@ describe('Contributions Collection Integration Tests', () => {
         username: `contribcollector${Date.now()}`,
         phoneNumber: '+233541234568',
         country: 'gh' as const,
-        isKYCVerified: true,
+        kycStatus: 'verified',
         role: 'user',
       },
     })
