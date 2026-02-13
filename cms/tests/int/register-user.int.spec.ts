@@ -120,7 +120,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(result.doc.fullName).toBe('Jane Doe')
       expect(result.doc.country).toBe('ghana')
       expect(result.doc.countryCode).toBe('+233')
-      expect(result.doc.kycStatus).toBe('verified')
+      expect(result.doc.kycStatus).toBe('none')
     })
 
     it('should register a user without email (auto-generate email)', async () => {
@@ -180,7 +180,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
       )
     })
 
@@ -200,7 +200,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
       )
     })
 
@@ -220,7 +220,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
       )
     })
 
@@ -309,6 +309,7 @@ describe('Register User Endpoint Integration Tests', () => {
 
       const mockRequest = createMockRequest({
         phoneNumber: newPhoneNumber,
+        username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
         fullName: 'Different Country User',
