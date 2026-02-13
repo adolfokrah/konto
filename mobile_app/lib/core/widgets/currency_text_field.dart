@@ -22,6 +22,9 @@ class CurrencyTextField extends StatefulWidget {
   /// Text style for the input field
   final TextStyle? textStyle;
 
+  /// Text alignment for the input field
+  final TextAlign textAlign;
+
   /// Called when the value changes
   final ValueChanged<String>? onChanged;
 
@@ -37,6 +40,7 @@ class CurrencyTextField extends StatefulWidget {
     required this.currencySymbol,
     this.focusNode,
     this.textStyle,
+    this.textAlign = TextAlign.center,
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
@@ -103,7 +107,7 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
             fontSize: 64,
             fontWeight: FontWeight.bold,
           ),
-      textAlign: TextAlign.center,
+      textAlign: widget.textAlign,
       onChanged: widget.onChanged,
       onEditingComplete: widget.onEditingComplete,
       onSubmitted: widget.onSubmitted,

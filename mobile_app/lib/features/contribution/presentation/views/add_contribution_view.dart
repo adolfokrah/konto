@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
@@ -19,20 +20,59 @@ class AddContributionView extends StatefulWidget {
 
 class _AddContributionViewState extends State<AddContributionView> {
   final TextEditingController _amountController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  final FocusNode _amountFocusNode = FocusNode();
   bool _isInitialized = false;
+  double _selectedAmount = 0.0;
+  bool _isEditingAmount = false;
+
+  // Predefined quick amount options
+  final List<double> _quickAmounts = [10, 25, 50, 100];
 
   @override
   void initState() {
     super.initState();
-    // Auto-focus logic moved to BlocBuilder where we have access to jarData
+    // Listen to controller changes to update _selectedAmount
+    _amountController.addListener(_onAmountChanged);
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
-    _focusNode.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onAmountChanged() {
+    final currencyTextField = CurrencyTextField(
+      controller: _amountController,
+      currencySymbol: '', // Will be set dynamically
+    );
+    final amount = currencyTextField.getNumericValue();
+    if (_selectedAmount != amount) {
+      setState(() {
+        _selectedAmount = amount;
+      });
+    }
+  }
+
+  void _selectQuickAmount(double amount, String currencySymbol) {
+    // Remove listener temporarily to avoid conflict
+    _amountController.removeListener(_onAmountChanged);
+
+    setState(() {
+      _selectedAmount = amount;
+      _amountController.text = '$currencySymbol$amount';
+      _isEditingAmount = false; // Exit edit mode
+    });
+
+    // Re-add listener after a brief delay
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _amountController.addListener(_onAmountChanged);
+    });
+
+    // Remove focus from text field when quick amount is selected
+    _amountFocusNode.unfocus();
   }
 
   @override
@@ -53,78 +93,184 @@ class _AddContributionViewState extends State<AddContributionView> {
         builder: (context, state) {
           if (state is JarSummaryLoaded) {
             final jarData = state.jarData;
+            final currencySymbol = CurrencyUtils.getCurrencySymbol(
+              jarData.currency,
+            );
+
             // Initialize the controller with the formatted amount if not already done
             if (_isInitialized == false) {
-              final currencySymbol = CurrencyUtils.getCurrencySymbol(
-                jarData.currency,
-              );
+              _isInitialized = true;
+
               if (jarData.isFixedContribution) {
-                // Format the amount with currency symbol for initial display
-                _amountController.text =
-                    '$currencySymbol${jarData.acceptedContributionAmount}';
-                _isInitialized = true;
+                // Set the amount first (without triggering setState during build)
+                _selectedAmount = jarData.acceptedContributionAmount;
+
+                // Use post frame callback to set the controller text after build
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    // Temporarily remove listener to avoid conflict
+                    _amountController.removeListener(_onAmountChanged);
+                    _amountController.text =
+                        '$currencySymbol${jarData.acceptedContributionAmount}';
+                    // Re-add listener
+                    _amountController.addListener(_onAmountChanged);
+                  }
+                });
+              } else {
+                // For non-fixed contributions, auto-select the first quick amount
+                _selectedAmount = _quickAmounts.first;
+
+                // Use post frame callback to set the controller text after build
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    // Temporarily remove listener to avoid conflict
+                    _amountController.removeListener(_onAmountChanged);
+                    _amountController.text =
+                        '$currencySymbol${_quickAmounts.first}';
+                    // Re-add listener
+                    _amountController.addListener(_onAmountChanged);
+                  }
+                });
               }
             }
 
             return Padding(
-              padding: const EdgeInsets.all(AppSpacing.spacingL),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingL,
+                vertical: AppSpacing.spacingM,
+              ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Main content area
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Large amount display
-                        Opacity(
-                          opacity: jarData.isFixedContribution ? 0.6 : 1.0,
-                          child: IgnorePointer(
-                            ignoring: jarData.isFixedContribution,
-                            child: CurrencyTextField(
-                              controller: _amountController,
-                              focusNode:
-                                  jarData.isFixedContribution
-                                      ? null
-                                      : _focusNode,
-                              currencySymbol: CurrencyUtils.getCurrencySymbol(
-                                jarData.currency,
-                              ),
-                              onChanged:
-                                  jarData.isFixedContribution ? null : null,
+                  const SizedBox(height: AppSpacing.spacingL),
+
+                  // Large amount display with edit icon
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (jarData.isFixedContribution || !_isEditingAmount)
+                        Text(
+                          _selectedAmount > 0
+                              ? '$currencySymbol${_selectedAmount.toStringAsFixed(0)}'
+                              : '$currencySymbol${0}',
+                          style: TextStyles.titleBoldXl.copyWith(
+                            fontSize: 64,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      else
+                        IntrinsicWidth(
+                          child: CurrencyTextField(
+                            controller: _amountController,
+                            focusNode: _amountFocusNode,
+                            currencySymbol: currencySymbol,
+                            textAlign: TextAlign.left,
+                            textStyle: TextStyles.titleBoldXl.copyWith(
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: AppSpacing.spacingM),
-
-                        // Jar name
-                        Text(
-                          jarData.name,
-                          style: TextStyles.titleMediumLg.copyWith(
-                            fontWeight: FontWeight.w500,
+                      if (!jarData.isFixedContribution && !_isEditingAmount)
+                        IconButton(
+                          icon: Icon(
+                            Icons.edit,
+                            size: 24,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .color
+                                ?.withValues(alpha: 0.4),
                           ),
-                          textAlign: TextAlign.center,
+                          onPressed: () {
+                            setState(() {
+                              _isEditingAmount = true;
+                            });
+                            // Focus the text field after a brief delay
+                            Future.delayed(
+                              const Duration(milliseconds: 100),
+                              () {
+                                _amountFocusNode.requestFocus();
+                              },
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                    ],
                   ),
+
+                  const SizedBox(height: AppSpacing.spacingL),
+
+                  // Quick amount selection buttons
+                  Wrap(
+                    spacing: AppSpacing.spacingXs,
+                    runSpacing: AppSpacing.spacingXs,
+                    children: _quickAmounts.map((amount) {
+                      final isSelected = _selectedAmount == amount;
+                      final isDark =
+                          Theme.of(context).brightness == Brightness.dark;
+                      final isDisabled = jarData.isFixedContribution;
+
+                      // Define colors based on selection and theme
+                      final backgroundColor = isSelected
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.surface;
+                      final textColor = isSelected
+                          ? (isDark
+                              ? AppColors.onSurfaceDark
+                              : AppColors.onPrimaryWhite)
+                          : Theme.of(context).colorScheme.onSurface;
+                      final borderColor = isSelected
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.2);
+
+                      return Opacity(
+                        opacity: isDisabled ? 0.4 : 1.0,
+                        child: GestureDetector(
+                          onTap: isDisabled
+                              ? null
+                              : () => _selectQuickAmount(amount, currencySymbol),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: backgroundColor,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: borderColor,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Text(
+                              '$currencySymbol${amount.toStringAsFixed(0)}',
+                              style: TextStyles.titleMedium.copyWith(
+                                color: textColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: AppSpacing.spacingL),
+
+                  const Spacer(),
 
                   // Continue button at bottom
                   AppButton.filled(
-                    text: localizations.continueText,
+                    text: _selectedAmount > 0
+                        ? '${localizations.contribute} ${CurrencyUtils.formatAmount(_selectedAmount, jarData.currency)}'
+                        : localizations.continueText,
                     onPressed: () {
-                      // Get the numeric value directly from the currency text field
-                      final currencyTextField = CurrencyTextField(
-                        controller: _amountController,
-                        currencySymbol: CurrencyUtils.getCurrencySymbol(
-                          state.jarData.currency,
-                        ),
-                      );
-                      final amount = currencyTextField.getNumericValue();
-
                       // Validate amount
-                      if (amount <= 0) {
+                      if (_selectedAmount <= 0) {
                         AppSnackBar.show(
                           context,
                           message: localizations.pleaseEnterValidAmount,
@@ -139,12 +285,13 @@ class _AddContributionViewState extends State<AddContributionView> {
                         AppRoutes.saveContribution,
                         arguments: {
                           'jar': state.jarData,
-                          'amount': amount.toString(),
+                          'amount': _selectedAmount.toString(),
                           'currency': state.jarData.currency,
                         },
                       );
                     },
                   ),
+                  const SizedBox(height: AppSpacing.spacingM),
                 ],
               ),
             );
