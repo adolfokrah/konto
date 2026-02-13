@@ -20,6 +20,7 @@ const createMockRequest = (overrides: Partial<PayloadRequest> = {}): PayloadRequ
 const createMockUser = (id: string = 'user123') => ({
   id,
   fullName: 'Test User',
+  username: `testuser${id}`,
   phoneNumber: '+1234567890',
   country: 'US',
   email: 'test@example.com',

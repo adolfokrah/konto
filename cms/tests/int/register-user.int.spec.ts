@@ -13,6 +13,9 @@ const generateUniqueEmail = (prefix: string = 'test') =>
 const generateUniquePhone = (countryCode: string = '+233') =>
   `${countryCode}54${Math.floor(Math.random() * 90000000) + 10000000}`
 
+const generateUsername = (prefix: string = 'user') =>
+  `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 5)}`
+
 const createMockRequest = (data: any): any => ({
   payload,
   data,
@@ -62,6 +65,7 @@ describe('Register User Endpoint Integration Tests', () => {
           email,
           password: '123456',
           phoneNumber,
+          username: generateUsername('newuser'),
           countryCode: '+233',
           country: 'ghana',
           fullName: 'John Doe',
@@ -240,6 +244,7 @@ describe('Register User Endpoint Integration Tests', () => {
           email: generateUniqueEmail('existing'),
           password: '123456',
           phoneNumber: generateUniquePhone('+233'),
+          username: generateUsername('existing'),
           countryCode: '+233',
           country: 'ghana',
           fullName: 'Existing User',

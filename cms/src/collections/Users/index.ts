@@ -196,9 +196,9 @@ export const Users: CollectionConfig = {
             }
 
             // Prevent username changes after it's been set
-            if (operation === 'update' && originalDoc?.username) {
+            if (operation === 'update' && originalDoc?.username && data) {
               if (
-                data?.username &&
+                data.username &&
                 data.username.toLowerCase() !== originalDoc.username.toLowerCase()
               ) {
                 throw new APIError('Username cannot be changed once set', 400)

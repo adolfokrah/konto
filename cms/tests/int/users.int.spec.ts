@@ -10,6 +10,9 @@ const ADMIN_EMAIL = 'admin@test.com'
 const generateUniqueEmail = (prefix: string = 'test') =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@example.com`
 
+const generateUsername = (prefix: string = 'user') =>
+  `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 5)}`
+
 describe('Users Collection Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
@@ -42,6 +45,7 @@ describe('Users Collection Integration Tests', () => {
         email: generateUniqueEmail('test'),
         password: 'testPassword123',
         fullName: 'John Doe',
+        username: generateUsername('johndoe'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
         role: 'user' as const,
@@ -66,6 +70,7 @@ describe('Users Collection Integration Tests', () => {
         email: 'user2@example.com',
         password: 'testPassword123',
         fullName: 'Jane Smith',
+        username: generateUsername('janesmith'),
         phoneNumber: '+234801234567',
 
         country: 'ng' as const,
@@ -152,6 +157,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'user1@example.com',
           password: 'password123',
           fullName: 'Alice Johnson',
+          username: generateUsername('alice'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
           isKYCVerified: true,
@@ -161,6 +167,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'user2@example.com',
           password: 'password123',
           fullName: 'Bob Wilson',
+          username: generateUsername('bob'),
           phoneNumber: '+234802222222',
           country: 'ng' as const,
           role: 'user' as const,
@@ -170,6 +177,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'user3@example.com',
           password: 'password123',
           fullName: 'Charlie Brown',
+          username: generateUsername('charlie'),
           phoneNumber: '+233543333333',
           country: 'gh' as const,
           isKYCVerified: true,
@@ -297,6 +305,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'update@example.com',
           password: 'password123',
           fullName: 'Update Test User',
+          username: generateUsername('update'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
           isKYCVerified: false,
@@ -368,6 +377,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'delete@example.com',
           password: 'password123',
           fullName: 'Delete Test User',
+          username: generateUsername('delete'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
           role: 'user' as const,
@@ -414,6 +424,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'auth@example.com',
           password: 'securePassword123',
           fullName: 'Auth Test User',
+          username: generateUsername('auth'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
           role: 'user' as const,
@@ -500,6 +511,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'ghana.verified@example.com',
           password: 'password123',
           fullName: 'Ghana Verified User',
+          username: generateUsername('ghverified'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
           isKYCVerified: true,
@@ -509,6 +521,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'ghana.unverified@example.com',
           password: 'password123',
           fullName: 'Ghana Unverified User',
+          username: generateUsername('ghunverified'),
           phoneNumber: '+233542222222',
           country: 'gh' as const,
           isKYCVerified: false,
@@ -518,6 +531,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'nigeria.verified@example.com',
           password: 'password123',
           fullName: 'Nigeria Verified User',
+          username: generateUsername('ngverified'),
           phoneNumber: '+234803333333',
           country: 'ng' as const,
           role: 'user' as const,
@@ -527,6 +541,7 @@ describe('Users Collection Integration Tests', () => {
           email: 'nigeria.unverified@example.com',
           password: 'password123',
           fullName: 'Nigeria Unverified User',
+          username: generateUsername('ngunverified'),
           phoneNumber: '+234804444444',
           country: 'ng' as const,
           role: 'user' as const,

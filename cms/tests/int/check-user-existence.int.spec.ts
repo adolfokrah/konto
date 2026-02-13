@@ -13,6 +13,9 @@ const generateUniqueEmail = (prefix: string = 'test') =>
 const generateUniquePhone = (countryCode: string = '+233') =>
   `${countryCode}54${Math.floor(Math.random() * 90000000) + 10000000}`
 
+const generateUsername = (prefix: string = 'user') =>
+  `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 5)}`
+
 describe('Check User Existence Endpoint Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
@@ -50,6 +53,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           email: generateUniqueEmail('existing'),
           password: '123456',
           fullName: 'Existing User',
+          username: generateUsername('existing'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
@@ -300,6 +304,7 @@ describe('Check User Existence Endpoint Integration Tests', () => {
           email: generateUniqueEmail('second'),
           password: '123456',
           fullName: 'Second User',
+          username: generateUsername('second'),
           phoneNumber: '+233541234568',
           countryCode: '+233',
           country: 'gh' as const,

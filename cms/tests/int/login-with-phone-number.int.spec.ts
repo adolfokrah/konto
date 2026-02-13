@@ -13,6 +13,9 @@ const generateUniqueEmail = (prefix: string = 'test') =>
 const generateUniquePhone = (countryCode: string = '+233') =>
   `${countryCode}54${Math.floor(Math.random() * 90000000) + 10000000}`
 
+const generateUsername = (prefix: string = 'user') =>
+  `${prefix}${Date.now()}${Math.random().toString(36).substr(2, 5)}`
+
 describe('Login with Phone Number Endpoint Integration Tests', () => {
   beforeAll(async () => {
     const payloadConfig = await config
@@ -50,6 +53,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('logintest'),
           password: '123456',
           fullName: 'Login Test User',
+          username: generateUsername('logintest'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
@@ -227,6 +231,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('nigeria'),
           password: '123456',
           fullName: 'Nigerian User',
+          username: generateUsername('nigeria'),
           phoneNumber: '+2348012345678',
           countryCode: '+234',
           country: 'ng' as const,
@@ -261,6 +266,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('unverified'),
           password: '123456',
           fullName: 'Unverified User',
+          username: generateUsername('unverified'),
           phoneNumber: '+233541234568',
           countryCode: '+233',
           country: 'gh' as const,
@@ -329,6 +335,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('second'),
           password: '123456',
           fullName: 'Second User',
+          username: generateUsername('second'),
           phoneNumber: '+233541234999', // Different phone number
           countryCode: '+233', // Same country code
           country: 'gh' as const,
@@ -380,6 +387,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('edgecase'),
           password: '123456',
           fullName: 'Edge Case User',
+          username: generateUsername('edgecase'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
@@ -504,6 +512,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: userEmail,
           password: '123456',
           fullName: 'Full Flow User',
+          username: generateUsername('fullflow'),
           phoneNumber,
           countryCode: '+233',
           country: 'gh' as const,
@@ -538,6 +547,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           email: generateUniqueEmail('concurrent'),
           password: '123456',
           fullName: 'Concurrent User',
+          username: generateUsername('concurrent'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
           country: 'gh' as const,
