@@ -112,14 +112,27 @@ void main() {
       await tester.enterText(emailField, 'john.doe@example.com');
       await tester.pumpAndSettle();
 
+      // Fill the username field
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'johndoe');
+      await tester.pumpAndSettle();
+
       // Fill the phone number field
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
       await tester.enterText(phoneNumberField, '245301631');
       await tester.pumpAndSettle();
 
-      // Tap create account button
+      // Scroll to the create account button
       final createAccountButton = find.text('Create Account');
       expect(createAccountButton, findsOneWidget);
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -240,6 +253,11 @@ void main() {
       await tester.enterText(emailField, 'jane.smith@example.com');
       await tester.pumpAndSettle();
 
+      // Fill the username field
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'janesmith');
+      await tester.pumpAndSettle();
+
       // The phone number should be pre-filled, but let's also add it to ensure the test works
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
       await tester.enterText(phoneNumberField, '245301631');
@@ -247,6 +265,10 @@ void main() {
 
       // Tap create account button
       final createAccountButton = find.text('Create Account');
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -291,9 +313,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill email and phone but leave full name empty
+      // Fill email, username and phone but leave full name empty
       final emailField = find.byKey(const Key('email'));
       await tester.enterText(emailField, 'test@example.com');
+      await tester.pumpAndSettle();
+
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'testuser');
       await tester.pumpAndSettle();
 
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
@@ -302,6 +328,10 @@ void main() {
 
       // Tap create account button
       final createAccountButton = find.text('Create Account');
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -341,9 +371,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill full name and phone but leave email empty
+      // Fill full name, username and phone but leave email empty
       final fullNameField = find.byKey(const Key('fullName'));
       await tester.enterText(fullNameField, 'John Doe');
+      await tester.pumpAndSettle();
+
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'testuser');
       await tester.pumpAndSettle();
 
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
@@ -352,6 +386,10 @@ void main() {
 
       // Tap create account button
       final createAccountButton = find.text('Create Account');
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -391,9 +429,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill full name and email but leave phone number empty
+      // Fill full name, username and email but leave phone number empty
       final fullNameField = find.byKey(const Key('fullName'));
       await tester.enterText(fullNameField, 'John Doe');
+      await tester.pumpAndSettle();
+
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'testuser');
       await tester.pumpAndSettle();
 
       final emailField = find.byKey(const Key('email'));
@@ -402,6 +444,10 @@ void main() {
 
       // Tap create account button
       final createAccountButton = find.text('Create Account');
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -469,12 +515,20 @@ void main() {
       await tester.enterText(emailField, 'john@example.com');
       await tester.pumpAndSettle();
 
+      final usernameField = find.byKey(const Key('username'));
+      await tester.enterText(usernameField, 'johndoe');
+      await tester.pumpAndSettle();
+
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
       await tester.enterText(phoneNumberField, '245301631');
       await tester.pumpAndSettle();
 
       // Tap create account button
       final createAccountButton = find.text('Create Account');
+      await tester.ensureVisible(createAccountButton);
+      await tester.pumpAndSettle();
+
+      // Tap create account button
       await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 

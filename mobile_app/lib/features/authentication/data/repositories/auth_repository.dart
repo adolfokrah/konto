@@ -116,6 +116,7 @@ class AuthRepository {
     required String countryCode,
     required String country,
     required String fullName,
+    required String username,
     required String email,
   }) async {
     try {
@@ -124,6 +125,7 @@ class AuthRepository {
         countryCode: countryCode,
         country: country,
         fullName: fullName,
+        username: username,
         email: email,
       );
 

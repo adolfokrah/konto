@@ -5,14 +5,14 @@ export const registerUser = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    const { phoneNumber, countryCode, country, fullName, email } = req.data || {}
+    const { phoneNumber, countryCode, country, fullName, username, email } = req.data || {}
     // Validate required fields
-    if (!phoneNumber || !countryCode || !country || !fullName) {
+    if (!phoneNumber || !countryCode || !country || !fullName || !username) {
       return Response.json(
         {
           success: false,
           message:
-            'Missing required fields: phoneNumber, countryCode, country, fullName are required',
+            'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
           errors: [],
         },
         { status: 400 },
@@ -95,6 +95,7 @@ export const registerUser = async (req: PayloadRequest) => {
         countryCode,
         country,
         fullName,
+        username,
         isKYCVerified: true,
         appSettings: {
           language: 'en',

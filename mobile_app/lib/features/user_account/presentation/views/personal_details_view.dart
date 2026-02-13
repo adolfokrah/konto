@@ -24,11 +24,13 @@ class PersonalDetailsView extends StatefulWidget {
 
 class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
 
   String selectedCountry = 'ghana';
   bool _hasPopulatedData = false;
+  bool _hasExistingUsername = false;
 
   // Track original values to detect changes
   String _originalFullName = '';
@@ -37,6 +39,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
     super.dispose();
@@ -46,11 +49,13 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     if (_hasPopulatedData) return; // Only populate once
 
     _fullNameController.text = user.fullName;
+    _usernameController.text = user.username;
     _emailController.text = user.email;
     _phoneNumberController.text = user.phoneNumber;
 
     // Store original values
     _originalFullName = user.fullName;
+    _hasExistingUsername = user.username.isNotEmpty;
 
     // Add listener to full name controller to trigger rebuilds
     _fullNameController.addListener(() {
@@ -138,13 +143,33 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Show warning only when critical fields are changed
-                          if (_hasChangedCriticalFields()) ...[
+                          // Show KYC lock warning when KYC is verified
+                          if (state.user.isKYCVerified) ...[
                             AppCard(
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.info),
+                                  Icon(Icons.lock_outline, color: Theme.of(context).colorScheme.primary),
+                                  const SizedBox(width: AppSpacing.spacingXs),
+                                  Expanded(
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.kycVerifiedDetailsLocked,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ]
+                          // Show warning only when critical fields are changed and KYC is not verified
+                          else if (_hasChangedCriticalFields()) ...[
+                            AppCard(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.info, color: Theme.of(context).colorScheme.onSurface),
                                   const SizedBox(width: AppSpacing.spacingXs),
                                   Expanded(
                                     child: Text(
@@ -162,7 +187,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                           _buildHeader(state.user),
                           const SizedBox(height: 38),
                           // Personal information section
-                          _buildPersonalInformationSection(isLoading),
+                          _buildPersonalInformationSection(isLoading, state.user.isKYCVerified),
                           const SizedBox(height: 40), // Add bottom padding
                         ],
                       ),
@@ -212,7 +237,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     );
   }
 
-  Widget _buildPersonalInformationSection(bool isLoading) {
+  Widget _buildPersonalInformationSection(bool isLoading, bool isKYCVerified) {
     final localizations = AppLocalizations.of(context)!;
 
     return Column(
@@ -228,7 +253,42 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
         AppTextInput(
           label: localizations.fullName,
           controller: _fullNameController,
-          enabled: !isLoading,
+          enabled: !isLoading && !isKYCVerified,
+        ),
+        const SizedBox(height: 17),
+        // Username input
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppTextInput(
+              label: 'Username',
+              controller: _usernameController,
+              enabled: !isLoading && !_hasExistingUsername,
+              onChanged: (value) {
+                if (!_hasExistingUsername) {
+                  // Convert to lowercase for case-insensitive username
+                  final cursorPosition = _usernameController.selection.baseOffset;
+                  _usernameController.value = TextEditingValue(
+                    text: value.toLowerCase(),
+                    selection: TextSelection.collapsed(offset: cursorPosition),
+                  );
+                }
+              },
+            ),
+            if (_hasExistingUsername) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Text(
+                  'Username cannot be changed once set',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 17),
         // Email input
@@ -236,7 +296,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           label: localizations.email,
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          enabled: !isLoading,
+          enabled: !isLoading && !isKYCVerified,
         ),
         const SizedBox(height: 17),
         // Country selector
@@ -244,7 +304,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           label: localizations.country,
           value: selectedCountry,
           options: AppSelectOptions.getCountryOptions(localizations),
-          enabled: !isLoading,
+          enabled: !isLoading && !isKYCVerified,
           onChanged: (value) {
             setState(() {
               selectedCountry = value;
@@ -252,12 +312,13 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           },
         ),
         const SizedBox(height: 17),
-        // Update button
-        AppButton.filled(
-          text: localizations.updateAccount,
-          isLoading: isLoading,
-          onPressed: isLoading ? null : _handleUpdateAccount,
-        ),
+        // Update button - hide when KYC is verified
+        if (!isKYCVerified)
+          AppButton.filled(
+            text: localizations.updateAccount,
+            isLoading: isLoading,
+            onPressed: isLoading ? null : _handleUpdateAccount,
+          ),
       ],
     );
   }
@@ -273,10 +334,37 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
       return;
     }
 
+    // Validate username (required if not already set)
+    final username = _usernameController.text.trim();
+    if (!_hasExistingUsername) {
+      if (username.isEmpty) {
+        AppSnackBar.showError(
+          context,
+          message: 'Please enter a username',
+        );
+        return;
+      }
+      if (username.length < 3 || username.length > 30) {
+        AppSnackBar.showError(
+          context,
+          message: 'Username must be between 3 and 30 characters',
+        );
+        return;
+      }
+      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username)) {
+        AppSnackBar.showError(
+          context,
+          message: 'Username can only contain letters, numbers, and underscores',
+        );
+        return;
+      }
+    }
+
     // Trigger user account update
     context.read<UserAccountBloc>().add(
       UpdatePersonalDetails(
         fullName: _fullNameController.text.trim(),
+        username: username.isNotEmpty ? username : null,
         email: _emailController.text.trim(),
         country: selectedCountry,
       ),

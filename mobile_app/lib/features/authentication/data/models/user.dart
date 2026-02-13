@@ -6,6 +6,7 @@ class User {
   final String id;
   final String email;
   final String fullName;
+  final String username;
   final String phoneNumber;
   final String countryCode;
   final String country;
@@ -29,6 +30,7 @@ class User {
     required this.id,
     required this.email,
     required this.fullName,
+    required this.username,
     required this.phoneNumber,
     required this.countryCode,
     required this.country,
@@ -52,6 +54,7 @@ class User {
       id: json['id'] as String,
       email: json['email'] as String,
       fullName: json['fullName'] as String,
+      username: json['username'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String,
       countryCode: json['countryCode'] as String,
       country: json['country'] as String,
@@ -98,6 +101,7 @@ class User {
       'id': id,
       'email': email,
       'fullName': fullName,
+      'username': username,
       'phoneNumber': phoneNumber,
       'countryCode': countryCode,
       'country': country,
@@ -122,6 +126,7 @@ class User {
     String? id,
     String? email,
     String? fullName,
+    String? username,
     String? phoneNumber,
     String? countryCode,
     String? country,
@@ -143,6 +148,7 @@ class User {
       id: id ?? this.id,
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       countryCode: countryCode ?? this.countryCode,
       country: country ?? this.country,

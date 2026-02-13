@@ -526,9 +526,9 @@
     "description": "Total transfers label"
   },
 
-  "totalWeOweYou": "Ready for withdrawal",
+  "totalWeOweYou": "Ready for transfer",
   "@totalWeOweYou": {
-    "description": "Amount ready for withdrawal"
+    "description": "Amount ready for transfer"
   },
 
   "upcomingBalance": "Upcoming balance",
@@ -2024,6 +2024,36 @@
     "description": "Warning message when user changes critical account information"
   },
 
+  "kycVerifiedDetailsLocked": "Your personal details are locked because your account has been verified. Contact support if you need to make changes.",
+  "@kycVerifiedDetailsLocked": {
+    "description": "Message shown when personal details cannot be edited due to KYC verification"
+  },
+
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+
+  "usernameCannotBeChanged": "Username cannot be changed once set",
+  "@usernameCannotBeChanged": {
+    "description": "Message shown when username field is locked"
+  },
+
+  "usernameInvalidLength": "Username must be between 3 and 30 characters",
+  "@usernameInvalidLength": {
+    "description": "Username validation error for length"
+  },
+
+  "usernameInvalidCharacters": "Username can only contain letters, numbers, and underscores",
+  "@usernameInvalidCharacters": {
+    "description": "Username validation error for invalid characters"
+  },
+
+  "usernameAlreadyTaken": "This username is already taken",
+  "@usernameAlreadyTaken": {
+    "description": "Username validation error when username already exists"
+  },
+
   "phoneNumberUpdatedSuccessfully": "Phone number updated successfully",
   "@phoneNumberUpdatedSuccessfully": {
     "description": "Success message when phone number is updated"
@@ -2094,9 +2124,9 @@
     "description": "Charge breakdown title"
   },
 
-  "withdraw": "Withdraw",
+  "withdraw": "Transfer",
   "@withdraw": {
-    "description": "Withdraw button label"
+    "description": "Transfer button label"
   },
 
   "withdrawConfirmation": "Are you sure you want to withdraw {currency}{amount} to your withdrawal account?",
@@ -2112,14 +2142,14 @@
     }
   },
 
-  "withdrawSuccess": "Withdrawal initiated successfully",
+  "withdrawSuccess": "Transfer initiated successfully",
   "@withdrawSuccess": {
-    "description": "Success message after withdrawal is initiated"
+    "description": "Success message after transfer is initiated"
   },
 
-  "withdrawFailed": "Withdrawal failed. Please try again.",
+  "withdrawFailed": "Transfer failed. Please try again.",
   "@withdrawFailed": {
-    "description": "Error message when withdrawal fails"
+    "description": "Error message when transfer fails"
   },
 
   "noFundsToWithdraw": "No funds available to withdraw",

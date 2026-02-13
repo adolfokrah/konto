@@ -332,7 +332,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalTransfers => 'Total Transfers';
 
   @override
-  String get totalWeOweYou => 'Ready for withdrawal';
+  String get totalWeOweYou => 'Ready for transfer';
 
   @override
   String get upcomingBalance => 'Upcoming balance';
@@ -1189,6 +1189,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.';
 
   @override
+  String get kycVerifiedDetailsLocked =>
+      'Your personal details are locked because your account has been verified. Contact support if you need to make changes.';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get usernameCannotBeChanged => 'Username cannot be changed once set';
+
+  @override
+  String get usernameInvalidLength =>
+      'Username must be between 3 and 30 characters';
+
+  @override
+  String get usernameInvalidCharacters =>
+      'Username can only contain letters, numbers, and underscores';
+
+  @override
+  String get usernameAlreadyTaken => 'This username is already taken';
+
+  @override
   String get phoneNumberUpdatedSuccessfully =>
       'Phone number updated successfully';
 
@@ -1231,7 +1252,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chargeBreakdown => 'Charge Breakdown';
 
   @override
-  String get withdraw => 'Withdraw';
+  String get withdraw => 'Transfer';
 
   @override
   String withdrawConfirmation(String currency, String amount) {
@@ -1239,10 +1260,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get withdrawSuccess => 'Withdrawal initiated successfully';
+  String get withdrawSuccess => 'Transfer initiated successfully';
 
   @override
-  String get withdrawFailed => 'Withdrawal failed. Please try again.';
+  String get withdrawFailed => 'Transfer failed. Please try again.';
 
   @override
   String get noFundsToWithdraw => 'No funds available to withdraw';

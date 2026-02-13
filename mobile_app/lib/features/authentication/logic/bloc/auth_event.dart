@@ -27,6 +27,7 @@ final class RequestRegistration extends AuthEvent {
   final String countryCode;
   final String country;
   final String fullName;
+  final String username;
   final String email;
 
   RequestRegistration({
@@ -34,6 +35,7 @@ final class RequestRegistration extends AuthEvent {
     required this.countryCode,
     required this.country,
     required this.fullName,
+    required this.username,
     required this.email,
   });
 }

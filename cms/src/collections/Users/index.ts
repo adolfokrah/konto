@@ -161,6 +161,56 @@ export const Users: CollectionConfig = {
       required: true,
     },
     {
+      name: 'username',
+      type: 'text',
+      required: true,
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Unique username - cannot be changed once set',
+      },
+      validate: (value: unknown) => {
+        if (typeof value !== 'string' && value !== null && value !== undefined) {
+          return 'Username must be a string'
+        }
+        if (value && typeof value === 'string') {
+          // Username validation rules
+          if (value.length < 3) {
+            return 'Username must be at least 3 characters long'
+          }
+          if (value.length > 30) {
+            return 'Username must be at most 30 characters long'
+          }
+          if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+            return 'Username can only contain letters, numbers, and underscores'
+          }
+        }
+        return true
+      },
+      hooks: {
+        beforeChange: [
+          ({ data, originalDoc, operation }) => {
+            // Normalize username to lowercase for case-insensitive uniqueness
+            if (data?.username && typeof data.username === 'string') {
+              data.username = data.username.toLowerCase()
+            }
+
+            // Prevent username changes after it's been set
+            if (operation === 'update' && originalDoc?.username) {
+              if (
+                data?.username &&
+                data.username.toLowerCase() !== originalDoc.username.toLowerCase()
+              ) {
+                throw new APIError('Username cannot be changed once set', 400)
+              }
+              // Ensure username remains unchanged
+              data.username = originalDoc.username
+            }
+          },
+        ],
+      },
+    },
+    {
       name: 'countryCode',
       type: 'text',
       admin: {

@@ -25,6 +25,7 @@ class RegisterView extends StatefulWidget {
 
 class _RegisterViewState extends State<RegisterView> {
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   String _phoneNumber = '';
   String _countryCode = '+233'; // Default to Ghana
@@ -77,6 +78,31 @@ class _RegisterViewState extends State<RegisterView> {
       );
       return;
     }
+
+    // Validate username (required)
+    final username = _usernameController.text.trim();
+    if (username.isEmpty) {
+      AppSnackBar.showError(
+        context,
+        message: 'Please enter a username',
+      );
+      return;
+    }
+    if (username.length < 3 || username.length > 30) {
+      AppSnackBar.showError(
+        context,
+        message: 'Username must be between 3 and 30 characters',
+      );
+      return;
+    }
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username)) {
+      AppSnackBar.showError(
+        context,
+        message: 'Username can only contain letters, numbers, and underscores',
+      );
+      return;
+    }
+
     if (_phoneNumber.isEmpty) {
       AppSnackBar.showError(
         context,
@@ -98,6 +124,7 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -149,6 +176,7 @@ class _RegisterViewState extends State<RegisterView> {
                   countryCode: _countryCode,
                   country: _selectedCountry,
                   fullName: _nameController.text.trim(),
+                  username: _usernameController.text.trim(),
                   email: _emailController.text.trim(),
                 ),
               );
@@ -189,6 +217,26 @@ class _RegisterViewState extends State<RegisterView> {
                 label: localizations.email,
                 keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
+              ),
+              const SizedBox(height: AppSpacing.spacingS),
+              AppTextInput(
+                key: const Key('username'),
+                label: 'Username',
+                keyboardType: TextInputType.text,
+                controller: _usernameController,
+                onChanged: (value) {
+                  // Convert to lowercase for case-insensitive username
+                  final cursorPosition = _usernameController.selection.baseOffset;
+                  _usernameController.value = TextEditingValue(
+                    text: value.toLowerCase(),
+                    selection: TextSelection.collapsed(offset: cursorPosition),
+                  );
+                },
+              ),
+              const SizedBox(height: 3),
+              const Text(
+                'Username is required and could be name of organization, institution or unique name to identify you. It cannot be changed once set.',
+                style: AppTextStyles.titleRegularXs,
               ),
               const SizedBox(height: AppSpacing.spacingS),
               SelectInput<String>(

@@ -50,8 +50,7 @@ class AppIconButton extends StatelessWidget {
                   context,
                 ).colorScheme.primary.withValues(alpha: opacity ?? 1)
                 : AppColors.surfaceWhite.withValues(alpha: opacity ?? 1),
-        foregroundColor:
-            isDark ? Theme.of(context).colorScheme.onSurface : AppColors.black,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         minimumSize: size ?? const Size(50, 50), // Makes button bigger
       ),
     );

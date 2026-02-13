@@ -692,10 +692,10 @@ abstract class AppLocalizations {
   /// **'Total Transfers'**
   String get totalTransfers;
 
-  /// Amount ready for withdrawal
+  /// Amount ready for transfer
   ///
   /// In en, this message translates to:
-  /// **'Ready for withdrawal'**
+  /// **'Ready for transfer'**
   String get totalWeOweYou;
 
   /// Completed but unsettled contributions
@@ -2252,6 +2252,42 @@ abstract class AppLocalizations {
   /// **'Upon updating your full name or country, you must complete account re-verification to confirm the accuracy of your information.'**
   String get reVerificationWarning;
 
+  /// Message shown when personal details cannot be edited due to KYC verification
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal details are locked because your account has been verified. Contact support if you need to make changes.'**
+  String get kycVerifiedDetailsLocked;
+
+  /// Username field label
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// Message shown when username field is locked
+  ///
+  /// In en, this message translates to:
+  /// **'Username cannot be changed once set'**
+  String get usernameCannotBeChanged;
+
+  /// Username validation error for length
+  ///
+  /// In en, this message translates to:
+  /// **'Username must be between 3 and 30 characters'**
+  String get usernameInvalidLength;
+
+  /// Username validation error for invalid characters
+  ///
+  /// In en, this message translates to:
+  /// **'Username can only contain letters, numbers, and underscores'**
+  String get usernameInvalidCharacters;
+
+  /// Username validation error when username already exists
+  ///
+  /// In en, this message translates to:
+  /// **'This username is already taken'**
+  String get usernameAlreadyTaken;
+
   /// Success message when phone number is updated
   ///
   /// In en, this message translates to:
@@ -2330,10 +2366,10 @@ abstract class AppLocalizations {
   /// **'Charge Breakdown'**
   String get chargeBreakdown;
 
-  /// Withdraw button label
+  /// Transfer button label
   ///
   /// In en, this message translates to:
-  /// **'Withdraw'**
+  /// **'Transfer'**
   String get withdraw;
 
   /// Withdrawal confirmation dialog message
@@ -2342,16 +2378,16 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to withdraw {currency}{amount} to your withdrawal account?'**
   String withdrawConfirmation(String currency, String amount);
 
-  /// Success message after withdrawal is initiated
+  /// Success message after transfer is initiated
   ///
   /// In en, this message translates to:
-  /// **'Withdrawal initiated successfully'**
+  /// **'Transfer initiated successfully'**
   String get withdrawSuccess;
 
-  /// Error message when withdrawal fails
+  /// Error message when transfer fails
   ///
   /// In en, this message translates to:
-  /// **'Withdrawal failed. Please try again.'**
+  /// **'Transfer failed. Please try again.'**
   String get withdrawFailed;
 
   /// Message when there are no funds to withdraw

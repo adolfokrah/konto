@@ -6,6 +6,7 @@ import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
 import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
+import { validateJarBalanceBeforeDelete } from './hooks/validateJarBalanceBeforeDelete'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -206,6 +207,7 @@ export const Jars: CollectionConfig = {
       deleteInviteNotifications,
     ],
     beforeRead: [],
+    beforeDelete: [validateJarBalanceBeforeDelete],
   },
   endpoints: [
     {

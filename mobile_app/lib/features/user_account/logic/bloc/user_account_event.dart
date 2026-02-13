@@ -5,6 +5,7 @@ sealed class UserAccountEvent {}
 
 final class UpdatePersonalDetails extends UserAccountEvent {
   final String? fullName;
+  final String? username;
   final String? phoneNumber;
   final String? countryCode;
   final String? country;
@@ -19,6 +20,7 @@ final class UpdatePersonalDetails extends UserAccountEvent {
 
   UpdatePersonalDetails({
     this.fullName,
+    this.username,
     this.phoneNumber,
     this.countryCode,
     this.country,

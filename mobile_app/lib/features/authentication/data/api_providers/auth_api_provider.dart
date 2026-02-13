@@ -84,30 +84,34 @@ class AuthApiProvider {
     required String countryCode,
     required String country,
     required String fullName,
+    required String username,
     required String email,
   }) async {
     try {
-      final response = await _dio.post(
-        '${BackendConfig.apiBaseUrl}${BackendConfig.registerUserEndpoint}',
-        data: {
-          'fullName': fullName,
-          'email': email,
-          'password': '123456', // Default password or user-provided
-          'phoneNumber': phoneNumber,
-          'countryCode': countryCode,
-          'country': country,
-          'isKYCVerified': true,
-          'appSettings': {
-            'language': 'en',
-            'darkMode': false,
-            'biometricAuthEnabled': false,
-            'notificationsSettings': {
-              'pushNotificationsEnabled': true,
-              'emailNotificationsEnabled': true,
-              'smsNotificationsEnabled': false,
-            },
+      final requestData = {
+        'fullName': fullName,
+        'username': username,
+        'email': email,
+        'password': '123456', // Default password or user-provided
+        'phoneNumber': phoneNumber,
+        'countryCode': countryCode,
+        'country': country,
+        'isKYCVerified': true,
+        'appSettings': {
+          'language': 'en',
+          'darkMode': false,
+          'biometricAuthEnabled': false,
+          'notificationsSettings': {
+            'pushNotificationsEnabled': true,
+            'emailNotificationsEnabled': true,
+            'smsNotificationsEnabled': false,
           },
         },
+      };
+
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.registerUserEndpoint}',
+        data: requestData,
         options: Options(headers: BackendConfig.defaultHeaders),
       );
 

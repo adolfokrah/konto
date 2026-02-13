@@ -440,6 +440,10 @@ export interface User {
   photo?: (string | null) | Media;
   fullName: string;
   /**
+   * Unique username - cannot be changed once set
+   */
+  username: string;
+  /**
    * Country code for the phone number, e.g., +233 for Ghana
    */
   countryCode?: string | null;
@@ -2359,6 +2363,7 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface UsersSelect<T extends boolean = true> {
   photo?: T;
   fullName?: T;
+  username?: T;
   countryCode?: T;
   phoneNumber?: T;
   country?: T;

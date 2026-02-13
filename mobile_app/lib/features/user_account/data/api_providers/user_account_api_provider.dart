@@ -15,6 +15,7 @@ class UserAccountApiProvider extends BaseApiProvider {
   /// Update user details (personal information)
   Future<Map<String, dynamic>> updateUserDetails({
     String? fullName,
+    String? username,
     String? phoneNumber,
     String? countryCode,
     String? country,
@@ -40,6 +41,7 @@ class UserAccountApiProvider extends BaseApiProvider {
 
       final updateData = <String, dynamic>{};
       if (fullName != null) updateData['fullName'] = fullName;
+      if (username != null) updateData['username'] = username;
       if (phoneNumber != null) updateData['phoneNumber'] = phoneNumber;
       if (countryCode != null) updateData['countryCode'] = countryCode;
       if (country != null) updateData['country'] = country;

@@ -1207,6 +1207,27 @@ class AppLocalizationsFr extends AppLocalizations {
       'Lors de la mise à jour de votre nom complet ou de votre pays, vous devez effectuer une re-vérification de compte pour confirmer l\'exactitude de vos informations.';
 
   @override
+  String get kycVerifiedDetailsLocked =>
+      'Your personal details are locked because your account has been verified. Contact support if you need to make changes.';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get usernameCannotBeChanged => 'Username cannot be changed once set';
+
+  @override
+  String get usernameInvalidLength =>
+      'Username must be between 3 and 30 characters';
+
+  @override
+  String get usernameInvalidCharacters =>
+      'Username can only contain letters, numbers, and underscores';
+
+  @override
+  String get usernameAlreadyTaken => 'This username is already taken';
+
+  @override
   String get phoneNumberUpdatedSuccessfully =>
       'Numéro de téléphone mis à jour avec succès';
 

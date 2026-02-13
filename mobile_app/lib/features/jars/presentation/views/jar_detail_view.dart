@@ -474,17 +474,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                       return Column(
                         children: [
                           Text(
-                            localizations.readyForWithdrawal(
-                              CurrencyUtils.getCurrencySymbol(jarData.currency),
-                              jarData
-                                  .balanceBreakDown
-                                  .totalAmountTobeTransferred
-                                  .toString(),
-                            ),
-                            style: TextStyles.titleRegularXs,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
                             localizations.upcomingBalanceAmount(
                               CurrencyUtils.getCurrencySymbol(jarData.currency),
                               jarData
@@ -617,38 +606,16 @@ class _JarDetailViewState extends State<JarDetailView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, authState) {
-                                  final isCreator =
-                                      authState is AuthAuthenticated &&
-                                      jarData.creator.id == authState.user.id;
-                                  final hasFunds =
-                                      jarData.balanceBreakDown
-                                          .totalAmountTobeTransferred >
-                                      0;
-                                  final canWithdraw = isCreator && hasFunds;
-                                  return Column(
-                                    children: [
-                                      AppIconButton(
-                                        key: const Key('withdraw_button'),
-                                        enabled: canWithdraw,
-                                        opacity: 0.8,
-                                        onPressed:
-                                            canWithdraw
-                                                ? () => _handleWithdraw(
-                                                  context,
-                                                  jarData,
-                                                )
-                                                : null,
-                                        icon: Icons.arrow_downward,
-                                      ),
-                                    ],
-                                  );
+                              AppIconButton(
+                                key: const Key('info_button'),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, AppRoutes.jarInfo);
                                 },
+                                icon: Icons.info_outline,
                               ),
                               const SizedBox(height: AppSpacing.spacingXs),
                               Text(
-                                localizations.withdraw,
+                                localizations.info,
                                 style: TextStyles.titleMediumS,
                               ),
                             ],
@@ -661,6 +628,85 @@ class _JarDetailViewState extends State<JarDetailView> {
 
                   /// Dynamic CTA Banner Based on Missing Information
                   JarCompletionAlert(jarData: jarData),
+
+                  /// Jar Balance Card (only for jar creators)
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, authState) {
+                      final isCreator =
+                          authState is AuthAuthenticated &&
+                          jarData.creator.id == authState.user.id;
+                      if (!isCreator) {
+                        return Container();
+                      }
+                      final hasFunds =
+                          jarData.balanceBreakDown.totalAmountTobeTransferred >
+                              0;
+                      return SizedBox(
+                        width: double.infinity,
+                        child: AppCard(
+                          margin: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.spacingXs,
+                          ),
+                          variant: CardVariant.primary,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Jar balance',
+                                      style: TextStyles.titleRegularM,
+                                    ),
+                                    const SizedBox(height: AppSpacing.spacingXs),
+                                    RevolutStyleCounterWithCurrency(
+                                      value:
+                                          CurrencyUtils.getCurrencySymbol(
+                                            jarData.currency,
+                                          ) +
+                                          jarData
+                                              .balanceBreakDown
+                                              .totalAmountTobeTransferred
+                                              .toString(),
+                                      style: TextStyles.titleBoldLg,
+                                      duration: const Duration(milliseconds: 800),
+                                    ),
+                                    const SizedBox(height: AppSpacing.spacingXs),
+                                    Text(
+                                      localizations.totalWeOweYou,
+                                      style: TextStyles.titleRegularXs.copyWith(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color
+                                            ?.withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (hasFunds)
+                                SizedBox(
+                                  width: 100,
+                                  height: 40,
+                                  child: AppButton.filled(
+                                    key: const Key('withdraw_button'),
+                                    text: 'Transfer',
+                                    isFullWidth: false,
+                                    onPressed: () => _handleWithdraw(
+                                      context,
+                                      jarData,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
