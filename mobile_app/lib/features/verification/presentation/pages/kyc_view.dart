@@ -137,6 +137,14 @@ class KycView extends StatelessWidget {
                         style: TextStyles.titleRegularSm,
                         textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Once verified, you\'ll receive a verified badge on your account, building trust with contributors.',
+                        style: TextStyles.titleRegularSm.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 24),
                       AppButton.filled(
                         onPressed:

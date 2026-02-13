@@ -10,6 +10,7 @@ import 'package:Hoga/route.dart';
 /// 1. Missing jar description
 /// 2. Missing thank you message
 /// 3. Missing withdrawal account
+/// 4. KYC not verified or in review
 class JarCompletionAlert extends StatelessWidget {
   final JarSummaryModel jarData;
 
@@ -44,7 +45,7 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 2. No thank you message (Medium Priority)
+        // 2. No thank you message
         if (jarData.thankYouMessage == null ||
             jarData.thankYouMessage!.trim().isEmpty) {
           return Alert(
@@ -56,7 +57,7 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 3. No withdrawal account set (Lowest Priority)
+        // 3. No withdrawal account set
         if (user.accountNumber == null ||
             user.accountNumber!.trim().isEmpty ||
             user.bank == null ||
@@ -69,6 +70,26 @@ class JarCompletionAlert extends StatelessWidget {
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
             },
+          );
+        }
+
+        // 4. KYC not verified
+        if (user.kycStatus == 'none') {
+          return Alert(
+            message:
+                'Verify your identity to transfer funds from your jar. Tap to start verification.',
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.kycView);
+            },
+          );
+        }
+
+        // 5. KYC in review (Lowest Priority)
+        if (user.kycStatus == 'in_review') {
+          return Alert(
+            message:
+                'Your identity verification is under review. This usually takes 24 hours. We\'ll notify you once complete.',
+            onTap: null, // Non-clickable, just informational
           );
         }
 
