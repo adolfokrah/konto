@@ -19,13 +19,20 @@ class SystemSettingsApiProvider extends BaseApiProvider {
         '${BackendConfig.apiBaseUrl}/system-settings',
       );
 
+      print('System Settings API Response: ${response.statusCode}');
+      print('System Settings Data: ${response.data}');
+
       if (response.statusCode == 200 && response.data['success'] == true) {
-        return SystemSettingsModel.fromJson(response.data['data']);
+        final settings = SystemSettingsModel.fromJson(response.data['data']);
+        print('Parsed collectionFee: ${settings.collectionFee}');
+        return settings;
       } else {
+        print('API call failed or success != true, using default settings');
         // Return default settings if fetch fails
         return SystemSettingsModel.defaultSettings;
       }
     } catch (e) {
+      print('Error fetching system settings: $e');
       // Return default settings on error
       return SystemSettingsModel.defaultSettings;
     }

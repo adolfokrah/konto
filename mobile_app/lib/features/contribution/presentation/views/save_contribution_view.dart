@@ -12,6 +12,9 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
+import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -42,6 +45,39 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     'Telecel Cash',
     'AirtelTigo Money',
   ];
+
+  // System settings for collection fee
+  SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSystemSettings();
+  }
+
+  /// Load system settings to get collection fee percentage
+  Future<void> _loadSystemSettings() async {
+    try {
+      final serviceRegistry = ServiceRegistry();
+      final apiProvider = SystemSettingsApiProvider(
+        dio: serviceRegistry.dio,
+        userStorageService: serviceRegistry.userStorageService,
+      );
+      final settings = await apiProvider.getSystemSettings();
+      if (mounted) {
+        setState(() {
+          _systemSettings = settings;
+        });
+      }
+    } catch (e) {
+      // Use default settings on error
+      if (mounted) {
+        setState(() {
+          _systemSettings = SystemSettingsModel.defaultSettings;
+        });
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -258,16 +294,115 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           keyboardType: TextInputType.name,
                         ),
 
-                        // // Account Name input (only show if Bank Transfer is selected)
-                        // if (_selectedPaymentMethod == 'bank') ...[
-                        //   const SizedBox(height: AppSpacing.spacingM),
-                        //   AppTextInput(
-                        //     controller: _accountNumberController,
-                        //     label: localizations.accountNumber,
-                        //     hintText: localizations.enterAccountName,
-                        //     keyboardType: TextInputType.name,
-                        //   ),
-                        // ],
+                        const SizedBox(height: AppSpacing.spacingL),
+
+                        // Fee Breakdown Section
+                        if (amount != null && currency != null) ...[
+                          Container(
+                            padding: EdgeInsets.all(AppSpacing.spacingM),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outline
+                                    .withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Payment Summary',
+                                  style: TextStyles.titleMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.spacingS),
+                                // Contribution Amount
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Contribution amount',
+                                      style: TextStyles.titleRegularSm.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    Text(
+                                      CurrencyUtils.formatAmount(
+                                        double.tryParse(amount!) ?? 0.0,
+                                        currency!,
+                                      ),
+                                      style: TextStyles.titleRegularSm.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                // Transaction Fee
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Transaction fee (${_systemSettings.collectionFee}%)',
+                                      style: TextStyles.titleRegularSm.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    Text(
+                                      CurrencyUtils.formatAmount(
+                                        _systemSettings.calculateCollectionFee(
+                                          double.tryParse(amount!) ?? 0.0,
+                                        ),
+                                        currency!,
+                                      ),
+                                      style: TextStyles.titleRegularSm.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: AppSpacing.spacingM),
+                                // Total
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Total due to pay',
+                                      style: TextStyles.titleMedium.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      CurrencyUtils.formatAmount(
+                                        _systemSettings.calculateTotalWithCollectionFee(
+                                          double.tryParse(amount!) ?? 0.0,
+                                        ),
+                                        currency!,
+                                      ),
+                                      style: TextStyles.titleMedium.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
+                        ],
 
                         // Add spacing to push button to bottom, but allow scrolling if needed
                         Spacer(),

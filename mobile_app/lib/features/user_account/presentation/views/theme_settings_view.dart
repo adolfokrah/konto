@@ -102,13 +102,14 @@ class _ThemeOptionsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _ThemeOption(
-          label: AppLocalizations.of(context)!.light,
-          asset: AppImages.lightMode,
-          isSelected: selected == theme_enum.AppTheme.light,
-          onTap: () => onSelect(theme_enum.AppTheme.light),
-        ),
-        const SizedBox(width: AppSpacing.spacingS),
+        // COMMENTED OUT - Light theme disabled
+        // _ThemeOption(
+        //   label: AppLocalizations.of(context)!.light,
+        //   asset: AppImages.lightMode,
+        //   isSelected: selected == theme_enum.AppTheme.light,
+        //   onTap: () => onSelect(theme_enum.AppTheme.light),
+        // ),
+        // const SizedBox(width: AppSpacing.spacingS),
         _ThemeOption(
           label: AppLocalizations.of(context)!.dark,
           asset: AppImages.darkMode,

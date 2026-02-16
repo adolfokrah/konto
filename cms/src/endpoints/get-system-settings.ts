@@ -3,7 +3,7 @@ import type { PayloadRequest } from 'payload'
 /**
  * Get System Settings Endpoint
  *
- * Returns public system settings like transfer fee percentage
+ * Returns public system settings like collection fee and transfer fee percentages
  * Used by mobile app to calculate fees and display relevant information
  */
 export const getSystemSettings = async (req: PayloadRequest) => {
@@ -31,6 +31,7 @@ export const getSystemSettings = async (req: PayloadRequest) => {
       {
         success: true,
         data: {
+          collectionFee: settings.collectionFee || 0,
           transferFeePercentage: settings.transferFeePercentage || 1,
           minimumPayoutAmount: settings.minimumPayoutAmount || 10,
           payoutProcessingMessage: settings.payoutProcessingMessage || null,
