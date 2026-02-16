@@ -229,7 +229,7 @@ void main() {
 
       // Verify the form is displayed
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
 
       // Fill in contributor name
       final nameFields = find.byType(AppTextInput);
@@ -296,6 +296,8 @@ void main() {
 
       // Submit the form
       final submitButton = find.text('Save Contribution').last;
+      await tester.ensureVisible(submitButton); // Scroll button into view
+      await tester.pumpAndSettle();
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -322,10 +324,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify the save contribution view is loaded with proper data
-        expect(find.text('₵ 100.00'), findsOneWidget);
+        expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
 
         // Leave contributor name empty and try to find the submit button
         final submitButton = find.text('Request Payment').first;
+        await tester.ensureVisible(submitButton); // Scroll button into view
+        await tester.pumpAndSettle();
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
 
@@ -359,6 +363,8 @@ void main() {
 
         // Submit without entering phone number (Mobile Money is default)
         final submitButton = find.text('Request Payment').first;
+        await tester.ensureVisible(submitButton); // Scroll button into view
+        await tester.pumpAndSettle();
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
 
@@ -424,7 +430,7 @@ void main() {
       // are difficult to test reliably in integration tests.
       expect(find.text('Request Payment'), findsWidgets);
       expect(find.text('Amount'), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
     });
 
     testWidgets('should handle network error gracefully', (
@@ -473,7 +479,7 @@ void main() {
       // are difficult to test reliably in integration tests.
       expect(find.text('Request Payment'), findsWidgets);
       expect(find.text('Amount'), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsOneWidget);
+      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
     });
 
     testWidgets('should show loading state during submission', (
@@ -683,7 +689,7 @@ void main() {
         expect(find.byType(AppBar), findsOneWidget);
         expect(
           find.text('₵ ${contributionAmount.toStringAsFixed(2)}'),
-          findsOneWidget,
+          findsWidgets, // Multiple instances due to fee breakdown
         );
 
         // Fill in contributor details
@@ -818,6 +824,8 @@ void main() {
         // Submit the form - look for the correct button text for Cash payments
         final submitButtons = find.text('Save Contribution');
         if (submitButtons.evaluate().isNotEmpty) {
+          await tester.ensureVisible(submitButtons.last); // Scroll button into view
+          await tester.pumpAndSettle();
           await tester.tap(submitButtons.last);
           await tester.pumpAndSettle();
         }

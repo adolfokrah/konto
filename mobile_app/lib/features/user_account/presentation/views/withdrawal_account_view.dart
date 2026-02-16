@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/payment_method_utils.dart';
+import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
@@ -87,6 +88,16 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       AppSnackBar.showError(
         context,
         message: localizations.pleaseEnterAccountNumber,
+      );
+      return;
+    }
+
+    // Validate Ghana phone number format
+    String phoneNumber = _accountNumberController.text.trim();
+    if (!PhoneValidationUtils.isValidGhanaPhoneNumber(phoneNumber)) {
+      AppSnackBar.showError(
+        context,
+        message: PhoneValidationUtils.getDetailedValidationError(phoneNumber),
       );
       return;
     }

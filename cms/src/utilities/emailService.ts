@@ -52,23 +52,25 @@ class EmailService {
   }
 
   private getFromEmail(subject: string): string {
-    // return 'Hoga <noreply@gavazo.com>'
+    // Get sender name from env or use default
+    const senderName = process.env.RESEND_FROM_NAME || 'Hogapay'
+
     // Different from addresses based on email type
     if (subject.toLowerCase().includes('kyc')) {
-      return 'Hoga <onboarding@hogapay.com>'
+      return `${senderName} <onboarding@hogapay.com>`
     }
     if (subject.toLowerCase().includes('report') || subject.toLowerCase().includes('export')) {
-      return 'Hoga <reports@hogapay.com>'
+      return `${senderName} <reports@hogapay.com>`
     }
     if (subject.toLowerCase().includes('welcome')) {
-      return 'Hoga <hello@hogapay.com>'
+      return `${senderName} <hello@hogapay.com>`
     }
     if (subject.toLowerCase().includes('deletion')) {
-      return 'Hoga <noreply@hogapay.com>'
+      return `${senderName} <noreply@hogapay.com>`
     }
 
     // Default
-    return process.env.RESEND_FROM_EMAIL || 'Hoga <noreply@hogapay.com>'
+    return process.env.RESEND_FROM_EMAIL || `${senderName} <noreply@hogapay.com>`
   }
 
   // KYC Verification Success Email

@@ -128,8 +128,9 @@ export interface Config {
   };
   jobs: {
     tasks: {
-      'send-empty-jar-reminder': TaskSendEmptyJarReminder;
       'settle-contributions': TaskSettleContributions;
+      'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
+      'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1658,7 +1659,12 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'send-empty-jar-reminder' | 'settle-contributions' | 'schedulePublish';
+        taskSlug:
+          | 'inline'
+          | 'settle-contributions'
+          | 'check-empty-jars-daily'
+          | 'check-withdrawal-balance-daily'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1691,7 +1697,15 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'send-empty-jar-reminder' | 'settle-contributions' | 'schedulePublish') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'settle-contributions'
+        | 'check-empty-jars-daily'
+        | 'check-withdrawal-balance-daily'
+        | 'schedulePublish'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -3013,17 +3027,25 @@ export interface PayloadJobsStatsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskSend-empty-jar-reminder".
+ * via the `definition` "TaskSettle-contributions".
  */
-export interface TaskSendEmptyJarReminder {
+export interface TaskSettleContributions {
   input?: unknown;
   output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskSettle-contributions".
+ * via the `definition` "TaskCheck-empty-jars-daily".
  */
-export interface TaskSettleContributions {
+export interface TaskCheckEmptyJarsDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCheck-withdrawal-balance-daily".
+ */
+export interface TaskCheckWithdrawalBalanceDaily {
   input?: unknown;
   output?: unknown;
 }

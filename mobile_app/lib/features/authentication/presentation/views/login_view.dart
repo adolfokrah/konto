@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/button_variants.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
@@ -141,20 +142,30 @@ class _LoginViewState extends State<LoginView> {
                         state is AuthLoading
                             ? null
                             : () {
-                              if (_phoneNumber.isNotEmpty) {
-                                // First check if user exists
-                                context.read<AuthBloc>().add(
-                                  CheckUserExistence(
-                                    phoneNumber: _phoneNumber,
-                                    countryCode: _countryCode,
-                                  ),
-                                );
-                              } else {
+                              if (_phoneNumber.isEmpty) {
                                 AppSnackBar.showError(
                                   context,
                                   message: localizations.pleaseEnterPhoneNumber,
                                 );
+                                return;
                               }
+
+                              // Validate Ghana phone number format
+                              if (!PhoneValidationUtils.isValidGhanaPhoneNumber(_phoneNumber)) {
+                                AppSnackBar.showError(
+                                  context,
+                                  message: PhoneValidationUtils.getDetailedValidationError(_phoneNumber),
+                                );
+                                return;
+                              }
+
+                              // First check if user exists
+                              context.read<AuthBloc>().add(
+                                CheckUserExistence(
+                                  phoneNumber: _phoneNumber,
+                                  countryCode: _countryCode,
+                                ),
+                              );
                             },
                   ),
                   const SizedBox(height: AppSpacing.spacingS),

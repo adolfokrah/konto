@@ -6,6 +6,7 @@ import 'package:Hoga/core/constants/app_links.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/select_options.dart';
 import 'package:Hoga/core/utils/url_launcher_utils.dart';
+import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
@@ -107,6 +108,15 @@ class _RegisterViewState extends State<RegisterView> {
       AppSnackBar.showError(
         context,
         message: localizations.pleaseEnterPhoneNumberRegister,
+      );
+      return;
+    }
+
+    // Validate Ghana phone number format
+    if (!PhoneValidationUtils.isValidGhanaPhoneNumber(_phoneNumber)) {
+      AppSnackBar.showError(
+        context,
+        message: PhoneValidationUtils.getDetailedValidationError(_phoneNumber),
       );
       return;
     }

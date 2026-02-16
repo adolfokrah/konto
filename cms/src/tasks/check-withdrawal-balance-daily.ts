@@ -27,7 +27,7 @@ export const checkWithdrawalBalanceDailyTask = {
         overrideAccess: true,
       })
 
-      const minimumPayoutAmount = systemSettings?.minimumPayoutAmount || 10
+      const minimumPayoutAmount = systemSettings?.minimumPayoutAmount || 0
 
       console.log(`Using minimum payout amount: ${minimumPayoutAmount}`)
 

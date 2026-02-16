@@ -4,6 +4,7 @@ import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/utils/payment_method_utils.dart';
+import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
@@ -457,10 +458,10 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         return;
       }
 
-      // Basic phone number validation (should start with 0 and be at least 10 digits)
+      // Validate Ghana phone number format
       String phoneNumber = _phoneController.text.trim();
-      if (!RegExp(r'^0[0-9]{9,}$').hasMatch(phoneNumber)) {
-        _showErrorSnackBar(localizations.pleaseEnterValidMobileMoneyNumber);
+      if (!PhoneValidationUtils.isValidGhanaPhoneNumber(phoneNumber)) {
+        _showErrorSnackBar(PhoneValidationUtils.getDetailedValidationError(phoneNumber));
         return;
       }
 
