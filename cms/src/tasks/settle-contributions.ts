@@ -9,7 +9,7 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
  * - paymentMethod: 'mobile-money'
  * - paymentStatus: 'completed'
  * - isSettled: false
- * - createdAt is older than 2 minutes
+ * - createdAt is older than the configured settlement delay
  */
 export const settleContributionsTask = {
   slug: 'settle-contributions',
@@ -23,10 +23,24 @@ export const settleContributionsTask = {
     try {
       const payload = args.req?.payload || args.payload
 
-      // Calculate the cutoff time (2 minutes ago)
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+      // Fetch system settings to get settlement delay
+      const systemSettings = await payload.findGlobal({
+        slug: 'system-settings',
+        overrideAccess: true,
+      })
 
-      // Find all unsettled completed mobile money contributions older than 2 minutes
+      // Get settlement delay in hours (default to ~2 minutes if not set)
+      const settlementDelayHours = systemSettings?.settlementDelayHours || 0.033
+
+      // Convert hours to milliseconds
+      const settlementDelayMs = settlementDelayHours * 60 * 60 * 1000
+
+      // Calculate the cutoff time
+      const cutoffTime = new Date(Date.now() - settlementDelayMs).toISOString()
+
+      console.log(`Settlement delay: ${settlementDelayHours} hours (${settlementDelayMs}ms)`)
+
+      // Find all unsettled completed mobile money contributions older than cutoff time
       const unsettledContributions = await payload.find({
         collection: 'transactions',
         where: {
@@ -34,7 +48,7 @@ export const settleContributionsTask = {
           paymentMethod: { equals: 'mobile-money' },
           paymentStatus: { equals: 'completed' },
           isSettled: { equals: false },
-          createdAt: { less_than: twoMinutesAgo },
+          createdAt: { less_than: cutoffTime },
         },
         limit: 500,
         depth: 2,

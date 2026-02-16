@@ -60,5 +60,18 @@ export const SystemSettings: GlobalConfig = {
           'Optional message displayed to users when they initiate a payout (e.g., "Payouts are processed within 24-48 hours")',
       },
     },
+    {
+      name: 'settlementDelayHours',
+      label: 'Settlement Delay (Hours)',
+      type: 'number',
+      required: true,
+      defaultValue: 0.033, // ~2 minutes (2/60 hours)
+      min: 0,
+      admin: {
+        description:
+          'Time delay in hours before completed contributions are automatically settled (e.g., 0.033 for ~2 minutes, 1 for 1 hour, 24 for 1 day)',
+        step: 0.001,
+      },
+    },
   ],
 }

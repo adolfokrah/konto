@@ -21,8 +21,9 @@ import { Header } from './Header/config'
 import { SystemSettings } from './globals/SystemSettings'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { Notifications } from './collections/Notifications'
-import { sendEmptyJarReminderTask } from './tasks/send-empty-jar-reminder'
 import { settleContributionsTask } from './tasks/settle-contributions'
+import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
+import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
@@ -133,11 +134,23 @@ export default buildConfig({
         return authHeader === `Bearer ${process.env.CRON_SECRET}`
       },
     },
-    tasks: [sendEmptyJarReminderTask as any, settleContributionsTask as any],
+    tasks: [
+      settleContributionsTask as any,
+      checkEmptyJarsDailyTask as any,
+      checkWithdrawalBalanceDailyTask as any,
+    ],
     autoRun: [
       {
-        cron: '* * * * *', // Every 5 minutes
+        cron: '*/5 * * * *', // Every 5 minutes
         queue: 'settle-contributions',
+      },
+      {
+        cron: '0 9 * * *', // Every day at 9:00 AM
+        queue: 'check-empty-jars-daily',
+      },
+      {
+        cron: '0 10 * * *', // Every day at 10:00 AM
+        queue: 'check-withdrawal-balance-daily',
       },
     ],
   },
