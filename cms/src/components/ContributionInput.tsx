@@ -26,6 +26,7 @@ interface ContributionInputProps {
   jarName?: string
   collectorId?: string | { id: string } | undefined
   allowAnonymousContributions?: boolean
+  transactionFeePercentage?: number
 }
 
 export default function ContributionInput({
@@ -37,6 +38,7 @@ export default function ContributionInput({
   jarName = 'Jar Contribution',
   collectorId = undefined,
   allowAnonymousContributions = false,
+  transactionFeePercentage = 1.95,
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -239,7 +241,6 @@ export default function ContributionInput({
       // Get transaction reference from charge response
       const transactionReference = chargeData?.data?.reference
 
-      console.log('Payment initiated:', { contributionId, transactionReference })
 
       // Show waiting modal
       setShowPaymentModal(true)
@@ -261,6 +262,10 @@ export default function ContributionInput({
     return amount.toFixed(2)
   }
 
+  // Calculate transaction fee from system settings (percentage is stored as 1.95, not 0.0195)
+  const contributionAmount = selectedAmount
+  const transactionFee = contributionAmount * (transactionFeePercentage / 100)
+  const totalAmountToPay = contributionAmount + transactionFee
 
   return (
     <div className={`bg-white ${className}`}>
@@ -367,15 +372,28 @@ export default function ContributionInput({
 
       <div className="font-supreme space-y-2">
         <h3 className="font-bold my-2 mb-2">Your contribution</h3>
-        <div className="flex justify-between">
+
+        {/* Contribution Amount */}
+        <div className="flex justify-between text-gray-700">
+          <span>Contribution amount</span>
+          <span>
+            {currency} {formatAmount(contributionAmount)}
+          </span>
+        </div>
+
+        {/* Transaction Fee */}
+        <div className="flex justify-between text-gray-700">
+          <span>Transaction fee ({transactionFeePercentage}%)</span>
+          <span>
+            {currency} {formatAmount(transactionFee)}
+          </span>
+        </div>
+
+        {/* Total Due */}
+        <div className="flex justify-between font-bold text-black pt-2 border-t border-gray-200">
           <span>Total due to pay</span>
           <span>
-            {currency}{' '}
-            {isFixedAmount
-              ? formatAmount(fixedAmount)
-              : isCustom
-                ? customAmount
-                : formatAmount(selectedAmount)}
+            {currency} {formatAmount(totalAmountToPay)}
           </span>
         </div>
       </div>

@@ -2877,6 +2877,10 @@ export interface Footer {
 export interface SystemSetting {
   id: string;
   /**
+   * Percentage fee charged on contributions/collections (e.g., 1.95 for 1.95%). This fee is added to the contribution amount and paid by the contributor.
+   */
+  collectionFee: number;
+  /**
    * Percentage fee charged on withdrawals/payouts (e.g., 1 for 1%). This fee is deducted from the payout amount.
    */
   transferFeePercentage: number;
@@ -2984,6 +2988,7 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "system-settings_select".
  */
 export interface SystemSettingsSelect<T extends boolean = true> {
+  collectionFee?: T;
   transferFeePercentage?: T;
   minimumPayoutAmount?: T;
   payoutProcessingMessage?: T;

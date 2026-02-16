@@ -12,6 +12,20 @@ export const SystemSettings: GlobalConfig = {
   },
   fields: [
     {
+      name: 'collectionFee',
+      label: 'Collection Fee Percentage',
+      type: 'number',
+      required: true,
+      defaultValue: 1.95,
+      min: 0,
+      max: 100,
+      admin: {
+        description:
+          'Percentage fee charged on contributions/collections (e.g., 1.95 for 1.95%). This fee is added to the contribution amount and paid by the contributor.',
+        step: 0.01,
+      },
+    },
+    {
       name: 'transferFeePercentage',
       label: 'Transfer Fee Percentage',
       type: 'number',
