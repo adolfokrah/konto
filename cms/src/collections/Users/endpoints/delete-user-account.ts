@@ -83,7 +83,7 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
             },
           },
           {
-            balance: {
+            totalContributions: {
               greater_than: 0,
             },
           },

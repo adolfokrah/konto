@@ -236,7 +236,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
       paymentMethod: true,
       type: true,
       paid: true,
-      charges: true,
       chargesBreakdown: true,
       isSettled: true,
     },
@@ -332,11 +331,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
     (contribution: any) => contribution.paymentStatus === 'completed',
   )
 
-  const totalCharges = completedContributions.reduce(
-    (sum: number, contribution: any) => sum + (contribution.charges || 0),
-    0,
-  )
-
   const totalPlatformCharge = completedContributions.reduce(
     (sum: number, contribution: any) => sum + (contribution.chargesBreakdown?.platformCharge || 0),
     0,
@@ -365,7 +359,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
       ...paymentBreakdown,
     },
     chargesBreakdown: {
-      totalCharges: Number(totalCharges.toFixed(2)),
       totalPlatformCharge: Number(totalPlatformCharge.toFixed(2)),
       totalAmountPaidByContributors: Number(totalAmountPaidByContributors.toFixed(2)),
     },

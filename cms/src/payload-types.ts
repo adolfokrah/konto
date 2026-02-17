@@ -1371,7 +1371,6 @@ export interface Transaction {
    */
   accountNumber?: string | null;
   amountContributed: number;
-  charges?: number | null;
   /**
    * Detailed breakdown of all charges applied to this contribution
    */
@@ -2437,7 +2436,6 @@ export interface TransactionsSelect<T extends boolean = true> {
   mobileMoneyProvider?: T;
   accountNumber?: T;
   amountContributed?: T;
-  charges?: T;
   chargesBreakdown?:
     | T
     | {
