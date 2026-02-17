@@ -218,7 +218,9 @@ class _WithdrawViewState extends State<WithdrawView> {
     final cur = currency ?? 'GHS';
 
     // Calculate transfer fee using system settings
-    final double transferCharges = _systemSettings.calculateTransferFee(balance);
+    final double transferCharges = _systemSettings.calculateTransferFee(
+      balance,
+    );
     final double total = _systemSettings.calculateNetPayout(balance);
 
     return Scaffold(
@@ -226,93 +228,64 @@ class _WithdrawViewState extends State<WithdrawView> {
         elevation: 0,
         title: Text(
           localizations.withdraw,
-          style: TextStyles.titleMediumLg.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
-      body: _isLoadingSettings
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingM,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppSpacing.spacingL),
+      body:
+          _isLoadingSettings
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.spacingM,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppSpacing.spacingL),
 
-                  // Payout balance row
-                  _buildBreakdownRow(
-                    localizations.payoutBalance,
-                    CurrencyUtils.formatAmount(balance, cur),
-                    context,
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-
-                  // Transfer charges row with percentage
-                  _buildBreakdownRow(
-                    '${localizations.transferCharges} (${_systemSettings.transferFeePercentage}%)',
-                    '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
-                    context,
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-
-                  const Divider(),
-                  const SizedBox(height: AppSpacing.spacingM),
-
-                  // Total row
-                  _buildBreakdownRow(
-                    localizations.total,
-                    CurrencyUtils.formatAmount(total, cur),
-                    context,
-                    isBold: true,
-                  ),
-
-                  const Spacer(),
-
-                  // Optional processing message
-                  if (_systemSettings.payoutProcessingMessage != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.spacingS),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: AppSpacing.spacingS),
-                          Expanded(
-                            child: Text(
-                              _systemSettings.payoutProcessingMessage!,
-                              style: TextStyles.titleMedium.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    // Payout balance row
+                    _buildBreakdownRow(
+                      localizations.payoutBalance,
+                      CurrencyUtils.formatAmount(balance, cur),
+                      context,
                     ),
                     const SizedBox(height: AppSpacing.spacingM),
-                  ],
 
-                  // Withdraw button
-                  AppButton.filled(
-                    text: localizations.withdraw,
-                    isLoading: _isLoading || _isSendingOtp,
-                    onPressed: (_isLoading || _isSendingOtp) ? null : _handleWithdraw,
-                  ),
-                  const SizedBox(height: AppSpacing.spacingL),
-                ],
+                    // Transfer charges row with percentage
+                    _buildBreakdownRow(
+                      '${localizations.transferCharges} (${_systemSettings.transferFeePercentage}%)',
+                      '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
+                      context,
+                    ),
+                    const SizedBox(height: AppSpacing.spacingM),
+
+                    const Divider(),
+                    const SizedBox(height: AppSpacing.spacingM),
+
+                    // Total row
+                    _buildBreakdownRow(
+                      localizations.total,
+                      CurrencyUtils.formatAmount(total, cur),
+                      context,
+                      isBold: true,
+                    ),
+
+                    const Spacer(),
+
+                    // Withdraw button
+                    AppButton.filled(
+                      text: localizations.withdraw,
+                      isLoading: _isLoading || _isSendingOtp,
+                      onPressed:
+                          (_isLoading || _isSendingOtp)
+                              ? null
+                              : _handleWithdraw,
+                    ),
+                    const SizedBox(height: AppSpacing.spacingL),
+                  ],
+                ),
               ),
-            ),
     );
   }
 
@@ -329,10 +302,7 @@ class _WithdrawViewState extends State<WithdrawView> {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: style),
-        Text(value, style: style),
-      ],
+      children: [Text(label, style: style), Text(value, style: style)],
     );
   }
 }

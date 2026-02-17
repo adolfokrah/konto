@@ -178,7 +178,8 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
           // Check if user is authenticated and KYC is not verified
-          if (authState is AuthAuthenticated && authState.user.kycStatus != 'verified') {
+          if (authState is AuthAuthenticated &&
+              authState.user.kycStatus != 'verified') {
             return const KycView();
           }
 

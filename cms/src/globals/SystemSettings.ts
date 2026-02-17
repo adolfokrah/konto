@@ -52,15 +52,6 @@ export const SystemSettings: GlobalConfig = {
       },
     },
     {
-      name: 'payoutProcessingMessage',
-      label: 'Payout Processing Message',
-      type: 'text',
-      admin: {
-        description:
-          'Optional message displayed to users when they initiate a payout (e.g., "Payouts are processed within 24-48 hours")',
-      },
-    },
-    {
       name: 'settlementDelayHours',
       label: 'Settlement Delay (Hours)',
       type: 'number',

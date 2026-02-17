@@ -720,7 +720,6 @@ class _JarDetailViewState extends State<JarDetailView> {
                               ),
                               if (hasFunds)
                                 SizedBox(
-                                  height: 40,
                                   child: AppButton.filled(
                                     key: const Key('withdraw_button'),
                                     text: 'Transfer',
