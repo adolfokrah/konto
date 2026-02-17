@@ -279,7 +279,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           const SizedBox(height: AppSpacing.spacingM),
                         ],
 
-                        // Phone number input (only show for Mobile Money)
+                        // Phone number input
                         AppTextInput(
                           controller: _phoneController,
                           label: localizations.phoneNumber,
@@ -297,111 +297,115 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
                         const SizedBox(height: AppSpacing.spacingL),
 
-                        // Fee Breakdown Section (only for mobile money)
-                        if (amount != null && currency != null && _selectedPaymentMethod == 'mobile-money') ...[
-                          Container(
-                            padding: EdgeInsets.all(AppSpacing.spacingM),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outline
-                                    .withValues(alpha: 0.1),
+                        // Fee Breakdown Section
+                        if (amount != null && currency != null) ...[
+                          Builder(builder: (context) {
+                            final contributionAmount = double.tryParse(amount!) ?? 0.0;
+                            final isMobileMoney = _selectedPaymentMethod == 'mobile-money';
+                            final feePercentage = isMobileMoney ? _systemSettings.collectionFee : 0.0;
+                            final feeAmount = isMobileMoney ? _systemSettings.calculateCollectionFee(contributionAmount) : 0.0;
+                            final totalAmount = contributionAmount + feeAmount;
+
+                            return Container(
+                              padding: EdgeInsets.all(AppSpacing.spacingM),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withValues(alpha: 0.1),
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Payment Summary',
-                                  style: TextStyles.titleMedium.copyWith(
-                                    fontWeight: FontWeight.w600,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Payment Summary',
+                                    style: TextStyles.titleMedium.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: AppSpacing.spacingS),
-                                // Contribution Amount
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Contribution amount',
-                                      style: TextStyles.titleRegularSm.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                    Text(
-                                      CurrencyUtils.formatAmount(
-                                        double.tryParse(amount!) ?? 0.0,
-                                        currency!,
-                                      ),
-                                      style: TextStyles.titleRegularSm.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppSpacing.spacingXs),
-                                // Transaction Fee
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Transaction fee (${_systemSettings.collectionFee}%)',
-                                      style: TextStyles.titleRegularSm.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                    Text(
-                                      CurrencyUtils.formatAmount(
-                                        _systemSettings.calculateCollectionFee(
-                                          double.tryParse(amount!) ?? 0.0,
+                                  const SizedBox(height: AppSpacing.spacingS),
+                                  // Contribution Amount
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Contribution amount',
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7),
                                         ),
-                                        currency!,
                                       ),
-                                      style: TextStyles.titleRegularSm.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(height: AppSpacing.spacingM),
-                                // Total
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Total due to pay',
-                                      style: TextStyles.titleMedium.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    Text(
-                                      CurrencyUtils.formatAmount(
-                                        _systemSettings.calculateTotalWithCollectionFee(
-                                          double.tryParse(amount!) ?? 0.0,
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          contributionAmount,
+                                          currency!,
                                         ),
-                                        currency!,
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                      style: TextStyles.titleMedium.copyWith(
-                                        fontWeight: FontWeight.w700,
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  // Transaction Fee
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Transaction fee ($feePercentage%)',
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          feeAmount,
+                                          currency!,
+                                        ),
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(height: AppSpacing.spacingM),
+                                  // Total
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total due to pay',
+                                        style: TextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          totalAmount,
+                                          currency!,
+                                        ),
+                                        style: TextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           const SizedBox(height: AppSpacing.spacingM),
                         ],
 
