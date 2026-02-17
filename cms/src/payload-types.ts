@@ -2901,10 +2901,6 @@ export interface SystemSetting {
    */
   minimumPayoutAmount: number;
   /**
-   * Optional message displayed to users when they initiate a payout (e.g., "Payouts are processed within 24-48 hours")
-   */
-  payoutProcessingMessage?: string | null;
-  /**
    * Time delay in hours before completed contributions are automatically settled (e.g., 0.033 for ~2 minutes, 1 for 1 hour, 24 for 1 day)
    */
   settlementDelayHours: number;
@@ -3007,7 +3003,6 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   collectionFee?: T;
   transferFeePercentage?: T;
   minimumPayoutAmount?: T;
-  payoutProcessingMessage?: T;
   settlementDelayHours?: T;
   updatedAt?: T;
   createdAt?: T;

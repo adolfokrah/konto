@@ -1,7 +1,7 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
 export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
-  if (operation === 'create') {
+  if (operation === 'create' || operation === 'update') {
     // Pull fee percentages from system settings
     const settings = await req.payload.findGlobal({
       slug: 'system-settings',
