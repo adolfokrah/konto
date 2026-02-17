@@ -162,7 +162,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     // Prepare collection request data
     const collectionData = {
       paypartnerCode,
-      amount: String(contribution.chargesBreakdown.amountPaidByContributor || 0), // Amount as string
+      amount: String(contribution.amountContributed || 0), // Send only the contribution amount (without fees)
       accountNoOrCardNoOrMSISDN: phoneNumber,
       accountName,
       transactionId: contribution.id, // Use contribution ID as transaction reference
