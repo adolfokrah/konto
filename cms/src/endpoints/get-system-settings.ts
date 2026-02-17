@@ -13,7 +13,7 @@ export const getSystemSettings = async (req: PayloadRequest) => {
     // Fetch system settings global
     const settings = await payload.findGlobal({
       slug: 'system-settings',
-      overrideAccess: false, // Use access control (read is public)
+      overrideAccess: true, // Public endpoint - bypass auth for mobile app access
     })
 
     if (!settings) {
@@ -26,15 +26,23 @@ export const getSystemSettings = async (req: PayloadRequest) => {
       )
     }
 
+    console.log('System settings from DB:', JSON.stringify(settings, null, 2))
+    console.log(
+      'collectionFee value:',
+      settings.collectionFee,
+      'type:',
+      typeof settings.collectionFee,
+    )
+
     // Return public settings
     return Response.json(
       {
         success: true,
         data: {
-          collectionFee: settings.collectionFee || 0,
-          transferFeePercentage: settings.transferFeePercentage || 1,
-          minimumPayoutAmount: settings.minimumPayoutAmount || 10,
-          payoutProcessingMessage: settings.payoutProcessingMessage || null,
+          collectionFee: settings.collectionFee ?? 0,
+          transferFeePercentage: settings.transferFeePercentage ?? 1,
+          minimumPayoutAmount: settings.minimumPayoutAmount ?? 10,
+          payoutProcessingMessage: settings.payoutProcessingMessage ?? null,
         },
       },
       { status: 200 },

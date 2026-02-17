@@ -703,17 +703,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 ),
                               ),
                               if (hasFunds)
-                                SizedBox(
-                                  width: 100,
-                                  height: 40,
-                                  child: AppButton.filled(
-                                    key: const Key('withdraw_button'),
-                                    text: 'Transfer',
-                                    isFullWidth: false,
-                                    onPressed: () => _handleWithdraw(
-                                      context,
-                                      jarData,
-                                    ),
+                                AppButton.filled(
+                                  key: const Key('withdraw_button'),
+                                  text: 'Transfer',
+                                  isFullWidth: false,
+                                  onPressed: () => _handleWithdraw(
+                                    context,
+                                    jarData,
                                   ),
                                 ),
                             ],

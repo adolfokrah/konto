@@ -297,8 +297,8 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
                         const SizedBox(height: AppSpacing.spacingL),
 
-                        // Fee Breakdown Section
-                        if (amount != null && currency != null) ...[
+                        // Fee Breakdown Section (only for mobile money)
+                        if (amount != null && currency != null && _selectedPaymentMethod == 'mobile-money') ...[
                           Container(
                             padding: EdgeInsets.all(AppSpacing.spacingM),
                             decoration: BoxDecoration(
