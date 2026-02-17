@@ -111,11 +111,6 @@ export const Transactions: CollectionConfig = {
       required: true,
     },
     {
-      name: 'charges',
-      type: 'number',
-      required: false,
-    },
-    {
       name: 'chargesBreakdown',
       type: 'group',
       admin: {
