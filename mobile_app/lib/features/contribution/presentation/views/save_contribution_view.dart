@@ -414,18 +414,28 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                         // Add spacing to push button to bottom, but allow scrolling if needed
                         Spacer(),
                         // Request button
-                        AppButton.filled(
-                          isLoading: state is AddContributionLoading,
-                          text:
-                              state is AddContributionLoading
-                                  ? localizations.processing
-                                  : _selectedPaymentMethod == 'mobile-money'
-                                  ? localizations.requestPayment
-                                  : localizations.saveContribution,
-                          onPressed: () {
-                            _handlePaymentRequest(context);
-                          },
-                        ),
+                        Builder(builder: (context) {
+                          String buttonText;
+                          if (state is AddContributionLoading) {
+                            buttonText = localizations.processing;
+                          } else if (_selectedPaymentMethod == 'mobile-money' && amount != null) {
+                            final contributionAmount = double.tryParse(amount!) ?? 0.0;
+                            final totalAmount = contributionAmount + _systemSettings.calculateCollectionFee(contributionAmount);
+                            buttonText = '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
+                          } else if (_selectedPaymentMethod == 'mobile-money') {
+                            buttonText = localizations.requestPayment;
+                          } else {
+                            buttonText = localizations.saveContribution;
+                          }
+                          return AppButton.filled(
+                            key: const Key('submit_contribution_button'),
+                            isLoading: state is AddContributionLoading,
+                            text: buttonText,
+                            onPressed: () {
+                              _handlePaymentRequest(context);
+                            },
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -449,15 +459,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
     // Validation for mobile money - phone number is required
     if (_selectedPaymentMethod == 'mobile-money') {
-      // Check KYC verification first
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
-        if (authState.user.kycStatus != 'verified') {
-          Navigator.pushNamed(context, AppRoutes.kycView);
-          return;
-        }
-      }
-
       // Validate phone number for mobile money
       if (_phoneController.text.trim().isEmpty) {
         _showErrorSnackBar(localizations.pleaseEnterMobileMoneyNumber);
@@ -472,6 +473,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       }
 
       // Check if user has set up withdrawal account using AuthBloc
+      final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
         // Only check account holder if the current user is the creator of the jar
         if (authState.user.id == jarCreatorId) {

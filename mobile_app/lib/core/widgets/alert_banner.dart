@@ -11,20 +11,18 @@ class Alert extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.spacingM,
-        horizontal: AppSpacing.spacingXs,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingM),
       child: GestureDetector(
         onTap: onTap,
         child: AppCard(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
               Icon(Icons.info_outline, size: 15),
-              SizedBox(height: 3),
-              Text(message, style: AppTextStyles.titleRegularXs),
+              SizedBox(width: AppSpacing.spacingXs),
+              Expanded(
+                child: Text(message, style: AppTextStyles.titleRegularXs),
+              ),
             ],
           ),
         ),

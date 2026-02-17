@@ -26,20 +26,12 @@ export const getSystemSettings = async (req: PayloadRequest) => {
       )
     }
 
-    console.log('System settings from DB:', JSON.stringify(settings, null, 2))
-    console.log(
-      'collectionFee value:',
-      settings.collectionFee,
-      'type:',
-      typeof settings.collectionFee,
-    )
-
     // Return public settings
     return Response.json(
       {
         success: true,
         data: {
-          collectionFee: settings.collectionFee ?? 0,
+          collectionFee: settings.collectionFee ?? 1.95,
           transferFeePercentage: settings.transferFeePercentage ?? 1,
           minimumPayoutAmount: settings.minimumPayoutAmount ?? 10,
           payoutProcessingMessage: settings.payoutProcessingMessage ?? null,

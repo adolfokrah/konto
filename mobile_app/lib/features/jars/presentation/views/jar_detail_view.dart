@@ -129,7 +129,8 @@ class _JarDetailViewState extends State<JarDetailView> {
         // KYC verification is in review
         AppSnackBar.show(
           context,
-          message: 'Your KYC verification is in review. Please wait for approval before making withdrawals.',
+          message:
+              'Your KYC verification is in review. Please wait for approval before making withdrawals.',
           type: SnackBarType.info,
         );
         return;
@@ -493,9 +494,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                           Text(
                             localizations.upcomingBalanceAmount(
                               CurrencyUtils.getCurrencySymbol(jarData.currency),
-                              jarData
-                                  .balanceBreakDown
-                                  .upcomingBalance
+                              jarData.balanceBreakDown.upcomingBalance
                                   .toString(),
                             ),
                             style: TextStyles.titleRegularXs.copyWith(
@@ -626,7 +625,10 @@ class _JarDetailViewState extends State<JarDetailView> {
                               AppIconButton(
                                 key: const Key('info_button'),
                                 onPressed: () {
-                                  Navigator.pushNamed(context, AppRoutes.jarInfo);
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.jarInfo,
+                                  );
                                 },
                                 icon: Icons.info_outline,
                               ),
@@ -644,7 +646,15 @@ class _JarDetailViewState extends State<JarDetailView> {
                   ),
 
                   /// Dynamic CTA Banner Based on Missing Information
-                  JarCompletionAlert(jarData: jarData),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.spacingXs,
+                      ),
+                      child: JarCompletionAlert(jarData: jarData),
+                    ),
+                  ),
 
                   /// Jar Balance Card (only for jar creators)
                   BlocBuilder<AuthBloc, AuthState>(
@@ -657,7 +667,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       }
                       final hasFunds =
                           jarData.balanceBreakDown.totalAmountTobeTransferred >
-                              0;
+                          0;
                       return SizedBox(
                         width: double.infinity,
                         child: AppCard(
@@ -675,7 +685,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       'Jar balance',
                                       style: TextStyles.titleRegularM,
                                     ),
-                                    const SizedBox(height: AppSpacing.spacingXs),
+                                    const SizedBox(
+                                      height: AppSpacing.spacingXs,
+                                    ),
                                     RevolutStyleCounterWithCurrency(
                                       value:
                                           CurrencyUtils.getCurrencySymbol(
@@ -686,9 +698,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                               .totalAmountTobeTransferred
                                               .toString(),
                                       style: TextStyles.titleBoldLg,
-                                      duration: const Duration(milliseconds: 800),
+                                      duration: const Duration(
+                                        milliseconds: 800,
+                                      ),
                                     ),
-                                    const SizedBox(height: AppSpacing.spacingXs),
+                                    const SizedBox(
+                                      height: AppSpacing.spacingXs,
+                                    ),
                                     Text(
                                       localizations.totalWeOweYou,
                                       style: TextStyles.titleRegularXs.copyWith(
@@ -703,13 +719,14 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 ),
                               ),
                               if (hasFunds)
-                                AppButton.filled(
-                                  key: const Key('withdraw_button'),
-                                  text: 'Transfer',
-                                  isFullWidth: false,
-                                  onPressed: () => _handleWithdraw(
-                                    context,
-                                    jarData,
+                                SizedBox(
+                                  height: 40,
+                                  child: AppButton.filled(
+                                    key: const Key('withdraw_button'),
+                                    text: 'Transfer',
+                                    isFullWidth: false,
+                                    onPressed:
+                                        () => _handleWithdraw(context, jarData),
                                   ),
                                 ),
                             ],

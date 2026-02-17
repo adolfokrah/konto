@@ -243,7 +243,7 @@ void main() {
       }
 
       // Submit the form
-      final submitButton = find.text('Request Payment').last;
+      final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -295,7 +295,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit the form
-      final submitButton = find.text('Save Contribution').last;
+      final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.ensureVisible(submitButton); // Scroll button into view
       await tester.pumpAndSettle();
       await tester.tap(submitButton);
@@ -327,7 +327,7 @@ void main() {
         expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
 
         // Leave contributor name empty and try to find the submit button
-        final submitButton = find.text('Request Payment').first;
+        final submitButton = find.byKey(const Key('submit_contribution_button'));
         await tester.ensureVisible(submitButton); // Scroll button into view
         await tester.pumpAndSettle();
         await tester.tap(submitButton);
@@ -362,7 +362,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Submit without entering phone number (Mobile Money is default)
-        final submitButton = find.text('Request Payment').first;
+        final submitButton = find.byKey(const Key('submit_contribution_button'));
         await tester.ensureVisible(submitButton); // Scroll button into view
         await tester.pumpAndSettle();
         await tester.tap(submitButton);
@@ -417,7 +417,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit the form
-      final submitButton = find.text('Request Payment').last;
+      final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -428,7 +428,7 @@ void main() {
       // For API error test, verify that the form is still present (submission failed)
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
-      expect(find.text('Request Payment'), findsWidgets);
+      expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
       expect(find.text('Amount'), findsOneWidget);
       expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
     });
@@ -466,7 +466,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit the form
-      final submitButton = find.text('Request Payment').last;
+      final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -477,7 +477,7 @@ void main() {
       // For network error test, verify that the form is still present (submission failed)
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
-      expect(find.text('Request Payment'), findsWidgets);
+      expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
       expect(find.text('Amount'), findsOneWidget);
       expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
     });
@@ -514,7 +514,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit the form
-      final submitButton = find.text('Request Payment').last;
+      final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
 
       // Check for loading state immediately after tap (before pumpAndSettle)
@@ -530,7 +530,7 @@ void main() {
         expect(processingText, findsOneWidget);
       } else {
         // If loading was too brief to catch, verify submission was attempted
-        expect(find.text('Request Payment'), findsWidgets);
+        expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
       }
 
       await tester.pumpAndSettle();
@@ -703,7 +703,7 @@ void main() {
         }
 
         // Submit the contribution
-        final submitButton = find.text('Request Payment').last;
+        final submitButton = find.byKey(const Key('submit_contribution_button'));
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
 
@@ -821,12 +821,12 @@ void main() {
           await tester.pumpAndSettle();
         }
 
-        // Submit the form - look for the correct button text for Cash payments
-        final submitButtons = find.text('Save Contribution');
-        if (submitButtons.evaluate().isNotEmpty) {
-          await tester.ensureVisible(submitButtons.last); // Scroll button into view
+        // Submit the form
+        final submitButton = find.byKey(const Key('submit_contribution_button'));
+        if (submitButton.evaluate().isNotEmpty) {
+          await tester.ensureVisible(submitButton); // Scroll button into view
           await tester.pumpAndSettle();
-          await tester.tap(submitButtons.last);
+          await tester.tap(submitButton);
           await tester.pumpAndSettle();
         }
 
