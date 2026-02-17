@@ -1898,6 +1898,12 @@ abstract class AppLocalizations {
   /// **'Enter mobile money number'**
   String get enterMobileMoneyNumber;
 
+  /// Placeholder for phone number input (non-mobile money)
+  ///
+  /// In en, this message translates to:
+  /// **'Enter phone number'**
+  String get enterPhoneNumber;
+
   /// Label for contributor name input
   ///
   /// In en, this message translates to:

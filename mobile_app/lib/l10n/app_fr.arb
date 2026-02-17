@@ -304,6 +304,7 @@
   "operator": "Opérateur",
   "mobileMoneyNumber": "Numéro Mobile Money",
   "enterMobileMoneyNumber": "Entrez le numéro mobile money",
+  "enterPhoneNumber": "Entrez le numéro de téléphone",
   "contributorName": "Nom du contributeur",
   "enterContributorName": "Entrez le nom du contributeur",
   "accountName": "Nom du compte",

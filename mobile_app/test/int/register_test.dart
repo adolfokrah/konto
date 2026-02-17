@@ -672,11 +672,11 @@ void main() {
       expect(phoneNumberField, findsOneWidget);
 
       // Enter a phone number
-      await tester.enterText(phoneNumberField, '987654321');
+      await tester.enterText(phoneNumberField, '241234567');
       await tester.pumpAndSettle();
 
       // Verify the text was entered
-      expect(find.text('987654321'), findsOneWidget);
+      expect(find.text('241234567'), findsOneWidget);
     });
 
     testWidgets('Terms and conditions links are interactive', (tester) async {

@@ -1674,6 +1674,10 @@
   "@enterMobileMoneyNumber": {
     "description": "Placeholder for mobile money number input"
   },
+  "enterPhoneNumber": "Enter phone number",
+  "@enterPhoneNumber": {
+    "description": "Placeholder for phone number input (non-mobile money)"
+  },
 
   "contributorName": "Contributor Name",
   "@contributorName": {

@@ -1010,6 +1010,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enterMobileMoneyNumber => 'Entrez le numéro mobile money';
 
   @override
+  String get enterPhoneNumber => 'Entrez le numéro de téléphone';
+
+  @override
   String get contributorName => 'Nom du contributeur';
 
   @override

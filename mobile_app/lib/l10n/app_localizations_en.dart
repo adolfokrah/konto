@@ -996,6 +996,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterMobileMoneyNumber => 'Enter mobile money number';
 
   @override
+  String get enterPhoneNumber => 'Enter phone number';
+
+  @override
   String get contributorName => 'Contributor Name';
 
   @override

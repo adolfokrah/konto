@@ -283,7 +283,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                         AppTextInput(
                           controller: _phoneController,
                           label: localizations.phoneNumber,
-                          hintText: localizations.enterMobileMoneyNumber,
+                          hintText: _selectedPaymentMethod == 'mobile-money'
+                              ? localizations.enterMobileMoneyNumber
+                              : localizations.enterPhoneNumber,
                           keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: AppSpacing.spacingM),

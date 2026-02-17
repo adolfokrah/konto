@@ -292,9 +292,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill the number input with non-existing phone
+      // Fill the number input with non-existing phone (valid Ghana format)
       final phoneNumber = find.byKey(const Key('phone_number'));
-      await tester.enterText(phoneNumber, '999999999');
+      await tester.enterText(phoneNumber, '241234567');
       await tester.pumpAndSettle();
 
       // Tap login
