@@ -233,12 +233,11 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
+          listenWhen: (previous, current) => current is UpdateJarSuccess,
           listener: (context, state) {
-            // if (state is UpdateJarSuccess) {
             context.read<JarSummaryReloadBloc>().add(
               ReloadJarSummaryRequested(),
             );
-            // }
           },
         ),
         BlocListener<OnboardingBloc, OnboardingState>(

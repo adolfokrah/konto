@@ -156,7 +156,6 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       }
     } catch (kycError) {
       console.log('KYC lookup failed, using contributor name:', kycError)
-      // Continue with contributor name
     }
 
     // Prepare collection request data

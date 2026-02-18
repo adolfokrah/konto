@@ -11,11 +11,12 @@ class StartupScreen extends StatefulWidget {
 }
 
 class _StartupScreenState extends State<StartupScreen> {
+  bool _hasNavigated = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print('🚀 StartupScreen: Initialized, triggering auto login');
       context.read<AuthBloc>().add(AutoLoginRequested());
     });
   }
@@ -25,18 +26,13 @@ class _StartupScreenState extends State<StartupScreen> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          print(
-            '🚀 StartupScreen: AuthBloc state changed to: ${state.runtimeType}',
-          );
+          if (_hasNavigated) return;
+
           if (state is AuthAuthenticated) {
-            print(
-              '🚀 StartupScreen: User authenticated, navigating to jar details',
-            );
+            _hasNavigated = true;
             Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
           } else if (state is AuthInitial) {
-            print(
-              '🚀 StartupScreen: User not authenticated, navigating to onboarding',
-            );
+            _hasNavigated = true;
             Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
           }
         },
