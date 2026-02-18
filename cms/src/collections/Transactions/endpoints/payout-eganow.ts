@@ -2,6 +2,9 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
 import { eganow } from '@/utilities/initalise'
 
+// In-memory lock to prevent concurrent payouts for the same jar
+const payoutLocks = new Set<string>()
+
 export const payoutEganow = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
@@ -17,6 +20,18 @@ export const payoutEganow = async (req: PayloadRequest) => {
         { status: 400 },
       )
     }
+
+    // Prevent concurrent payouts for the same jar
+    if (payoutLocks.has(jarId)) {
+      return Response.json(
+        {
+          success: false,
+          message: 'A payout is already being processed for this jar',
+        },
+        { status: 429 },
+      )
+    }
+    payoutLocks.add(jarId)
 
     // Ensure user is authenticated
     if (!req.user) {
@@ -250,6 +265,8 @@ export const payoutEganow = async (req: PayloadRequest) => {
       `Payout transaction ${transaction.id} updated with reference: ${payoutResult.eganowReferenceNo}`,
     )
 
+    payoutLocks.delete(jarId)
+
     // Return success response
     return Response.json({
       success: true,
@@ -265,6 +282,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       },
     })
   } catch (error: any) {
+    payoutLocks.delete(jarId)
     console.error('Eganow payout error:', error)
     return Response.json(
       {
