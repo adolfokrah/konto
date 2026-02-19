@@ -34,10 +34,9 @@ interface CreateSessionRequest {
 
 interface CreateSessionResponse {
   session_id: string
-  url: string
+  session_token: string
+  verification_url: string
   status: string
-  expires_at: string
-  created_at: string
 }
 
 // Didit API session status types
@@ -98,7 +97,7 @@ interface DiditError {
 export class DiditKYC {
   private readonly apiKey: string
   private readonly workflowId: string
-  private readonly baseUrl = 'https://verification.didit.me/v2'
+  private readonly baseUrl = 'https://verification.didit.me/v3'
 
   constructor(apiKey: string, workflowId: string) {
     if (!apiKey) {

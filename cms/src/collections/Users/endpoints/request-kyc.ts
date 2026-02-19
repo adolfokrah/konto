@@ -49,7 +49,6 @@ export const requestKYC = async (req: PayloadRequest) => {
     // Create a new KYC session for a user
     const session = await kycService.createSession(user.id, {
       callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
-      // callbackUrl: `http://192.168.0.160:3000/api/users/verify-kyc`,
       language: 'en',
       expectedDetails: {
         first_name: firstName,
@@ -57,6 +56,8 @@ export const requestKYC = async (req: PayloadRequest) => {
         country: user?.country.toLocaleLowerCase() == 'ghana' ? 'GHA' : 'NGN',
       },
     })
+
+    console.log('Didit v3 session response:', JSON.stringify(session, null, 2))
 
     await req.payload.update({
       collection: 'users',
@@ -70,16 +71,17 @@ export const requestKYC = async (req: PayloadRequest) => {
 
     const data = {
       sessionId: session.session_id,
-      sessionUrl: session.url,
+      sessionToken: session.session_token,
+      sessionUrl: session.verification_url,
       status: session.status,
     }
 
     await sendSMS(
       user.phoneNumber,
-      `Your KYC session has been created. Please complete your verification using the following link: ${session.url}`,
+      `Your KYC session has been created. Please complete your verification using the following link: ${session.verification_url}`,
     )
 
-    await emailService.sendKycEmail(user.email, session.url)
+    await emailService.sendKycEmail(user.email, session.verification_url)
 
     return Response.json(
       {

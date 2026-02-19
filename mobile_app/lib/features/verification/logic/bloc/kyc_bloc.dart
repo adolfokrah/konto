@@ -1,8 +1,7 @@
-import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:bloc/bloc.dart';
+import 'package:didit_sdk/sdk_flutter.dart';
 import 'package:meta/meta.dart';
 import 'package:Hoga/core/services/service_registry.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 part 'kyc_event.dart';
 part 'kyc_state.dart';
@@ -11,36 +10,7 @@ class KycBloc extends Bloc<KycEvent, KycState> {
   final ServiceRegistry _serviceRegistry = ServiceRegistry();
 
   KycBloc() : super(KycInitial()) {
-    on<SetDocument>(_setDocument);
-    on<ClearDocumentSide>(_clearDocumentSide);
     on<RequestKycSession>(_requestKycSession);
-  }
-
-  void _setDocument(SetDocument event, Emitter<KycState> emit) {
-    final currentState = state is KycDocument ? state as KycDocument : null;
-
-    emit(
-      KycDocument(
-        documentType: event.documentType ?? currentState?.documentType,
-        frontFilePath: event.frontFilePath ?? currentState?.frontFilePath,
-        backFilePath: event.backFilePath ?? currentState?.backFilePath,
-        photoFilePath: event.photoFilePath ?? currentState?.photoFilePath,
-      ),
-    );
-  }
-
-  void _clearDocumentSide(ClearDocumentSide event, Emitter<KycState> emit) {
-    final currentState = state is KycDocument ? state as KycDocument : null;
-
-    emit(
-      KycDocument(
-        documentType: currentState?.documentType,
-        frontFilePath:
-            event.side == 'front' ? null : currentState?.frontFilePath,
-        backFilePath: event.side == 'back' ? null : currentState?.backFilePath,
-        photoFilePath: currentState?.photoFilePath,
-      ),
-    );
   }
 
   Future<void> _requestKycSession(
@@ -50,22 +20,41 @@ class KycBloc extends Bloc<KycEvent, KycState> {
     emit(KycInProgress());
 
     try {
-      // Call the repository to request KYC verification
+      // Request a KYC session from the backend
       final result =
           await _serviceRegistry.verificationRepository
               .requestKycVerification();
 
-      if (result['success'] == true) {
-        UrlLauncherUtils.launch(result['sessionUrl']);
-        // On success, emit KycSuccess state
-        emit(KycSuccess());
-      } else {
-        // If the API call succeeded but returned success: false
+      if (result['success'] != true) {
         emit(KycFailure(result['message'] ?? 'Failed to create KYC session'));
+        return;
+      }
+
+      final sessionToken = result['sessionToken'] as String?;
+      if (sessionToken == null || sessionToken.isEmpty) {
+        emit(KycFailure('Session token not received from server'));
+        return;
+      }
+
+      // Launch native Didit verification SDK
+      final sdkResult = await DiditSdk.startVerification(sessionToken);
+
+      switch (sdkResult) {
+        case VerificationCompleted(:final session):
+          if (session.status == VerificationStatus.approved) {
+            emit(KycSuccess());
+          } else if (session.status == VerificationStatus.pending) {
+            emit(KycInReview());
+          } else {
+            emit(KycFailure('Verification was declined'));
+          }
+        case VerificationCancelled():
+          emit(KycInitial());
+        case VerificationFailed(:final error):
+          emit(KycFailure(error.message ?? 'Verification failed'));
       }
     } catch (e) {
-      // On failure, emit KycFailure state with an error message
-      emit(KycFailure('Failed to request KYC session: ${e.toString()}'));
+      emit(KycFailure('Failed to start verification: ${e.toString()}'));
     }
   }
 }

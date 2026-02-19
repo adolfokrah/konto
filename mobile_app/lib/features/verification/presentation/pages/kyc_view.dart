@@ -22,17 +22,27 @@ class KycView extends StatelessWidget {
             // Reload user data to get updated KYC status
             context.read<AuthBloc>().add(AutoLoginRequested());
 
-            // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(
-                  'KYC session created successfully! Opening verification page...',
-                ),
+                content: Text('Identity verified successfully!'),
                 backgroundColor: Colors.green,
               ),
             );
+            Navigator.of(context).pop();
+          } else if (state is KycInReview) {
+            // Reload user data to get updated KYC status
+            context.read<AuthBloc>().add(AutoLoginRequested());
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Verification submitted. We\'ll notify you once it\'s reviewed.',
+                ),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            Navigator.of(context).pop();
           } else if (state is KycFailure) {
-            // Show error message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage),

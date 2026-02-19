@@ -25,6 +25,12 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    packaging {
+        resources {
+            pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
+
     // Load signing properties
     val keystoreProperties = Properties()
     val keystorePropertiesFile = rootProject.file("key.properties")

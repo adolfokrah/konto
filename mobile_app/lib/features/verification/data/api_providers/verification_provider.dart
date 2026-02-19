@@ -225,6 +225,7 @@ class VerificationProvider {
           return {
             'success': true,
             'sessionId': data['data']['sessionId'],
+            'sessionToken': data['data']['sessionToken'],
             'sessionUrl': data['data']['sessionUrl'],
             'status': data['data']['status'],
             'message': data['message'],

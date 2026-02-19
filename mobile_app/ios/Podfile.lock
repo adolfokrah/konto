@@ -1,8 +1,10 @@
 PODS:
-  - camera_avfoundation (0.0.1):
-    - Flutter
   - device_info_plus (0.0.1):
     - Flutter
+  - didit_sdk (3.2.0):
+    - DiditSDK (~> 3.2)
+    - Flutter
+  - DiditSDK (3.2.0)
   - Firebase/Analytics (10.25.0):
     - Firebase/Core
   - Firebase/Core (10.25.0):
@@ -67,13 +69,6 @@ PODS:
     - Flutter
   - flutter_native_splash (2.4.3):
     - Flutter
-  - google_mlkit_commons (0.8.1):
-    - Flutter
-    - MLKitVision
-  - google_mlkit_face_detection (0.11.1):
-    - Flutter
-    - google_mlkit_commons
-    - GoogleMLKit/FaceDetection (~> 6.0.0)
   - GoogleAppMeasurement (10.25.0):
     - GoogleAppMeasurement/AdIdSupport (= 10.25.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
@@ -98,16 +93,6 @@ PODS:
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30911.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleMLKit/FaceDetection (6.0.0):
-    - GoogleMLKit/MLKitCore
-    - MLKitFaceDetection (~> 5.0.0)
-  - GoogleMLKit/MLKitCore (6.0.0):
-    - MLKitCommon (~> 11.0.0)
-  - GoogleToolboxForMac/Defines (4.2.1)
-  - GoogleToolboxForMac/Logger (4.2.1):
-    - GoogleToolboxForMac/Defines (= 4.2.1)
-  - "GoogleToolboxForMac/NSData+zlib (4.2.1)":
-    - GoogleToolboxForMac/Defines (= 4.2.1)
   - GoogleUtilities/AppDelegateSwizzler (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -136,30 +121,10 @@ PODS:
   - GoogleUtilities/UserDefaults (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GoogleUtilitiesComponents (1.1.0):
-    - GoogleUtilities/Logger
-  - GTMSessionFetcher/Core (3.5.0)
   - image_picker_ios (0.0.1):
     - Flutter
   - integration_test (0.0.1):
     - Flutter
-  - MLImage (1.0.0-beta5)
-  - MLKitCommon (11.0.0):
-    - GoogleDataTransport (< 10.0, >= 9.4.1)
-    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
-    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
-    - GoogleUtilities/UserDefaults (< 8.0, >= 7.13.0)
-    - GoogleUtilitiesComponents (~> 1.0)
-    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
-  - MLKitFaceDetection (5.0.0):
-    - MLKitCommon (~> 11.0)
-    - MLKitVision (~> 7.0)
-  - MLKitVision (7.0.0):
-    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
-    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
-    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
-    - MLImage (= 1.0.0-beta5)
-    - MLKitCommon (~> 11.0)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -195,16 +160,15 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
-  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - didit_sdk (from `.symlinks/plugins/didit_sdk/ios`)
+  - DiditSDK (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/main/DiditSDK.podspec`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_loading_overlay (from `.symlinks/plugins/flutter_loading_overlay/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
-  - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
-  - google_mlkit_face_detection (from `.symlinks/plugins/google_mlkit_face_detection/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -228,24 +192,18 @@ SPEC REPOS:
     - FirebaseMessaging
     - GoogleAppMeasurement
     - GoogleDataTransport
-    - GoogleMLKit
-    - GoogleToolboxForMac
     - GoogleUtilities
-    - GoogleUtilitiesComponents
-    - GTMSessionFetcher
-    - MLImage
-    - MLKitCommon
-    - MLKitFaceDetection
-    - MLKitVision
     - nanopb
     - PromisesObjC
     - Sentry
 
 EXTERNAL SOURCES:
-  camera_avfoundation:
-    :path: ".symlinks/plugins/camera_avfoundation/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
+  didit_sdk:
+    :path: ".symlinks/plugins/didit_sdk/ios"
+  DiditSDK:
+    :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/main/DiditSDK.podspec
   firebase_analytics:
     :path: ".symlinks/plugins/firebase_analytics/ios"
   firebase_core:
@@ -258,10 +216,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_loading_overlay/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
-  google_mlkit_commons:
-    :path: ".symlinks/plugins/google_mlkit_commons/ios"
-  google_mlkit_face_detection:
-    :path: ".symlinks/plugins/google_mlkit_face_detection/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   integration_test:
@@ -288,8 +242,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  camera_avfoundation: be3be85408cd4126f250386828e9b1dfa40ab436
   device_info_plus: 71ffc6ab7634ade6267c7a93088ed7e4f74e5896
+  didit_sdk: 204e817bbaef942e52a69b6e2c5584f4469886ec
+  DiditSDK: b6b16201f140551e012605c0d4378472beed27da
   Firebase: 0312a2352584f782ea56f66d91606891d4607f06
   firebase_analytics: e7280be84e7ff1c1e5859bd8e48de410b07e0b73
   firebase_core: 3b49a055ff54114cae400581c13671fe53936c36
@@ -302,21 +257,11 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_loading_overlay: de2f8722b4285e48271739c53930aeed48d8a0af
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
-  google_mlkit_commons: 414fc36ac51758c806381de33a1d148d2ba71ce4
-  google_mlkit_face_detection: d782e03ecc0b87ab828ab41ed6a865b04ac100f4
   GoogleAppMeasurement: 9abf64b682732fed36da827aa2a68f0221fd2356
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
-  GoogleMLKit: 97ac7af399057e99182ee8edfa8249e3226a4065
-  GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
-  GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
-  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
-  MLImage: 1824212150da33ef225fbd3dc49f184cf611046c
-  MLKitCommon: afec63980417d29ffbb4790529a1b0a2291699e1
-  MLKitFaceDetection: 7c0e8bf09ddd27105da32d088fca978a99fc30cc
-  MLKitVision: e858c5f125ecc288e4a31127928301eaba9ae0c1
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
@@ -331,6 +276,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
-PODFILE CHECKSUM: 1f37467cce641bcfef40a29eff6c850982787715
+PODFILE CHECKSUM: 71440a6e606884143113617c966af22b7a684cf3
 
 COCOAPODS: 1.16.2

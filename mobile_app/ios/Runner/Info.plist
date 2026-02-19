@@ -57,6 +57,10 @@
 		<true/>
 		<key>NSCameraUsageDescription</key>
 		<string>Hogapay needs camera access to capture photos for identity verification and to add visual content to your savings jars.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Hogapay needs microphone access for identity verification liveness detection.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Hogapay uses your location to help verify your identity and prevent fraud.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Hogapay needs access to your photo library to upload images for identity verification and to personalize your savings jars with photos.</string>
 		<key>NSUserNotificationsUsageDescription</key>
