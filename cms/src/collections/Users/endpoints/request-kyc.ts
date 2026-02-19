@@ -1,6 +1,4 @@
 import { createDiditKYC } from '@/utilities/diditKyc'
-import { emailService } from '@/utilities/emailService'
-import { sendSMS } from '@/utilities/sms'
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
@@ -75,13 +73,6 @@ export const requestKYC = async (req: PayloadRequest) => {
       sessionUrl: session.verification_url,
       status: session.status,
     }
-
-    await sendSMS(
-      user.phoneNumber,
-      `Your KYC session has been created. Please complete your verification using the following link: ${session.verification_url}`,
-    )
-
-    await emailService.sendKycEmail(user.email, session.verification_url)
 
     return Response.json(
       {
