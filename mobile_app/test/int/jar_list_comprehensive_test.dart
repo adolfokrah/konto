@@ -11,6 +11,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -208,9 +209,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => AuthBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
-            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()..add(LoadJarList())),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -452,9 +453,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => AuthBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
-            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()..add(LoadJarList())),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -545,9 +546,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => AuthBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
-            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()..add(LoadJarList())),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -599,9 +600,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => AuthBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
-            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()..add(LoadJarList())),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [

@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:Hoga/core/constants/filter_options.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
@@ -15,10 +14,9 @@ class ContributionsListBloc
   FilterContributionsBloc? _filterBloc;
 
   ContributionsListBloc({
-    ContributionRepository? contributionRepository,
+    required ContributionRepository contributionRepository,
     FilterContributionsBloc? filterBloc,
-  }) : _contributionRepository =
-           contributionRepository ?? ServiceRegistry().contributionRepository,
+  }) : _contributionRepository = contributionRepository,
        _filterBloc = filterBloc,
        super(ContributionsListInitial()) {
     on<FetchContributions>(_onFetchContributions);

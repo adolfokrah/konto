@@ -100,6 +100,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
           status: 'unread',
           data: {
             status: 'failed',
+            path: '/kycView',
           },
         },
       })

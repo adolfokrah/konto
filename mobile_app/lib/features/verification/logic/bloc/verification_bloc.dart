@@ -1,12 +1,21 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
+import 'package:Hoga/core/services/translation_service.dart';
 
 part 'verification_event.dart';
 part 'verification_state.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
-  VerificationBloc() : super(const VerificationInitial()) {
+  final VerificationRepository _verificationRepository;
+  final TranslationService _translationService;
+
+  VerificationBloc({
+    required VerificationRepository verificationRepository,
+    required TranslationService translationService,
+  }) : _verificationRepository = verificationRepository,
+       _translationService = translationService,
+       super(const VerificationInitial()) {
     on<PhoneNumberVerificationRequested>(_onPhoneNumberVerificationRequested);
     on<VerificationSuccessRequested>(_onVerificationSuccessRequested);
     on<OtpVerificationRequested>(_onOtpVerificationRequested);
@@ -25,8 +34,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   ) async {
     emit(const VerificationLoading());
     try {
-      final verificationRepository = ServiceRegistry().verificationRepository;
-      final result = await verificationRepository.requestPhoneVerification(
+      final result = await _verificationRepository.requestPhoneVerification(
         phoneNumber: event.phoneNumber,
         email: event.email,
         countryCode: event.countryCode,
@@ -35,21 +43,19 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       if (result['success'] == true) {
         emit(const VerificationCodeSent());
       } else {
-        final translationService = ServiceRegistry().translationService;
         emit(
           VerificationFailure(
             result['message'] ??
-                translationService.failedToSendVerificationCode,
+                _translationService.failedToSendVerificationCode,
           ),
         );
       }
     } catch (e) {
       print('❌ Verification failed: ${e.toString()}');
 
-      final translationService = ServiceRegistry().translationService;
       emit(
         VerificationFailure(
-          translationService.failedToSendVerificationCodeTryAgain,
+          _translationService.failedToSendVerificationCodeTryAgain,
         ),
       );
     }
@@ -61,8 +67,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   ) async {
     emit(const VerificationVerifying());
     try {
-      final verificationRepository = ServiceRegistry().verificationRepository;
-      final result = await verificationRepository.verifyOtp(
+      final result = await _verificationRepository.verifyOtp(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         code: event.code,

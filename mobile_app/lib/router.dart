@@ -54,9 +54,10 @@ GoRouter createRouter(AuthBloc authBloc) {
       final isOnAuthRoute = authRoutes.contains(currentLocation);
       final isOnStartup = currentLocation == AppRoutes.initial;
 
-      // Auth still loading — stay on startup spinner
+      // Auth still loading — stay where you are on auth/startup routes
       if (authState is AuthLoading) {
-        return isOnStartup ? null : AppRoutes.initial;
+        if (isOnAuthRoute || isOnStartup) return null;
+        return AppRoutes.initial;
       }
 
       // Not authenticated — force to onboarding unless already on auth route

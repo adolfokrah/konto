@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:dio/dio.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
@@ -58,10 +61,9 @@ class _WithdrawViewState extends State<WithdrawView> {
   /// Load system settings to get transfer fee percentage
   Future<void> _loadSystemSettings() async {
     try {
-      final serviceRegistry = ServiceRegistry();
       final apiProvider = SystemSettingsApiProvider(
-        dio: serviceRegistry.dio,
-        userStorageService: serviceRegistry.userStorageService,
+        dio: getIt<Dio>(),
+        userStorageService: getIt<UserStorageService>(),
       );
       final settings = await apiProvider.getSystemSettings();
       if (mounted) {
@@ -173,8 +175,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     });
 
     try {
-      final serviceRegistry = ServiceRegistry();
-      final result = await serviceRegistry.momoRepository.requestPayout(
+      final result = await getIt<MomoRepository>().requestPayout(
         jarId: jarId!,
       );
 

@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'fetch_contribution_event.dart';
@@ -8,7 +8,11 @@ part 'fetch_contribution_state.dart';
 
 class FetchContributionBloc
     extends Bloc<FetchContributionEvent, FetchContributionState> {
-  FetchContributionBloc() : super(FetchContributionInitial()) {
+  final ContributionRepository _contributionRepository;
+
+  FetchContributionBloc({required ContributionRepository contributionRepository})
+    : _contributionRepository = contributionRepository,
+      super(FetchContributionInitial()) {
     on<FetchContributionById>(_fetchContributionById);
   }
 
@@ -18,10 +22,8 @@ class FetchContributionBloc
   ) async {
     emit(FetchContributionLoading());
 
-    final serviceRegistry = ServiceRegistry();
-
     try {
-      final response = await serviceRegistry.contributionRepository
+      final response = await _contributionRepository
           .getContributionById(contributionId: event.contributionId);
 
       if (response['success']) {

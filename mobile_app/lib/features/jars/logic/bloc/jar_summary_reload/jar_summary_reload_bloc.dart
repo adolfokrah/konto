@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/services/jar_storage_service.dart';
+import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -10,9 +12,19 @@ part 'jar_summary_reload_state.dart';
 class JarSummaryReloadBloc
     extends Bloc<JarSummaryReloadEvent, JarSummaryReloadState> {
   final JarSummaryBloc jarSummaryBloc;
+  final JarRepository _jarRepository;
+  final JarStorageService _jarStorageService;
+  final TranslationService _translationService;
 
-  JarSummaryReloadBloc({required this.jarSummaryBloc})
-    : super(JarSummaryReloadInitial()) {
+  JarSummaryReloadBloc({
+    required this.jarSummaryBloc,
+    required JarRepository jarRepository,
+    required JarStorageService jarStorageService,
+    required TranslationService translationService,
+  }) : _jarRepository = jarRepository,
+       _jarStorageService = jarStorageService,
+       _translationService = translationService,
+       super(JarSummaryReloadInitial()) {
     on<ReloadJarSummaryRequested>(_reloadJarSummaryRequested);
   }
 
@@ -22,16 +34,11 @@ class JarSummaryReloadBloc
   ) async {
     emit(JarSummaryReloading());
 
-    final serviceRegistry = ServiceRegistry();
-    final jarStorageService = serviceRegistry.jarStorageService;
-    final jarRepository = serviceRegistry.jarRepository;
-    final translationService = serviceRegistry.translationService;
-
     try {
       // Get jarId from storage
-      final jarId = await jarStorageService.getCurrentJarId();
+      final jarId = await _jarStorageService.getCurrentJarId();
 
-      final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
+      final result = await _jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
         if (result['data'] == null) {
@@ -51,14 +58,14 @@ class JarSummaryReloadBloc
           JarSummaryReloadError(
             message:
                 result['message'] ??
-                translationService.failedToReloadJarSummary,
+                _translationService.failedToReloadJarSummary,
           ),
         );
       }
     } catch (e) {
       emit(
         JarSummaryReloadError(
-          message: translationService.unexpectedErrorOccurredWithDetails(
+          message: _translationService.unexpectedErrorOccurredWithDetails(
             e.toString(),
           ),
         ),

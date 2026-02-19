@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/views/save_contribution_view.dart';
-import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
@@ -18,6 +17,7 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 
@@ -94,61 +94,47 @@ void main() {
             builder:
                 (context, state) => MultiBlocProvider(
                   providers: [
-                    BlocProvider(
-                      create: (context) {
-                        final jarSummaryBloc = JarSummaryBloc();
-                        return JarSummaryReloadBloc(
-                          jarSummaryBloc: jarSummaryBloc,
-                        );
-                      },
-                    ),
-                    BlocProvider(
-                      create: (context) => AddContributionBloc(),
-                    ),
-                    BlocProvider(create: (context) => MomoPaymentBloc()),
-                    BlocProvider(
-                      create: (context) {
-                        final authBloc = AuthBloc();
-                        // Initialize with authenticated state for testing
-                        final testUser = User(
-                          id: 'test-user-123',
-                          email: 'test@example.com',
-                          fullName: 'Test User',
-                          username: 'testuser',
-                          phoneNumber: '+1234567890',
-                          countryCode: 'US',
-                          country: 'United States',
-                          kycStatus: "verified",
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          accountHolder: 'Test Account Holder',
-                          sessions: [
-                            UserSession(
-                              id: 'test-session-id',
-                              createdAt: DateTime.now(),
-                              expiresAt: DateTime.now().add(
-                                const Duration(days: 30),
+                    BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+                    BlocProvider.value(value: getIt<AddContributionBloc>()),
+                    BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+                    BlocProvider.value(
+                      value: getIt<AuthBloc>()..add(
+                        UpdateUserData(
+                          updatedUser: User(
+                            id: 'test-user-123',
+                            email: 'test@example.com',
+                            fullName: 'Test User',
+                            username: 'testuser',
+                            phoneNumber: '+1234567890',
+                            countryCode: 'US',
+                            country: 'United States',
+                            kycStatus: "verified",
+                            createdAt: DateTime.now(),
+                            updatedAt: DateTime.now(),
+                            accountHolder: 'Test Account Holder',
+                            sessions: [
+                              UserSession(
+                                id: 'test-session-id',
+                                createdAt: DateTime.now(),
+                                expiresAt: DateTime.now().add(
+                                  const Duration(days: 30),
+                                ),
+                              ),
+                            ],
+                            appSettings: const AppSettings(
+                              language: AppLanguage.english,
+                              theme: AppTheme.light,
+                              biometricAuthEnabled: false,
+                              notificationsSettings: NotificationSettings(
+                                pushNotificationsEnabled: true,
+                                emailNotificationsEnabled: true,
+                                smsNotificationsEnabled: false,
                               ),
                             ),
-                          ],
-                          appSettings: const AppSettings(
-                            language: AppLanguage.english,
-                            theme: AppTheme.light,
-                            biometricAuthEnabled: false,
-                            notificationsSettings: NotificationSettings(
-                              pushNotificationsEnabled: true,
-                              emailNotificationsEnabled: true,
-                              smsNotificationsEnabled: false,
-                            ),
                           ),
-                        );
-                        return authBloc..add(
-                          UpdateUserData(
-                            updatedUser: testUser,
-                            token: 'test-jwt-token-123456',
-                          ),
-                        );
-                      },
+                          token: 'test-jwt-token-123456',
+                        ),
+                      ),
                     ),
                   ],
                   child: const SaveContributionView(),
@@ -647,15 +633,8 @@ void main() {
               builder:
                   (context, state) => MultiBlocProvider(
                     providers: [
-                      BlocProvider(
-                        create: (context) {
-                          final jarSummaryBloc = JarSummaryBloc();
-                          return JarSummaryReloadBloc(
-                            jarSummaryBloc: jarSummaryBloc,
-                          );
-                        },
-                      ),
-                      BlocProvider(create: (context) => AddContributionBloc()),
+                      BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+                      BlocProvider.value(value: getIt<AddContributionBloc>()),
                     ],
                     child: const SaveContributionView(),
                   ),

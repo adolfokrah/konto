@@ -22,6 +22,7 @@ import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -213,23 +214,15 @@ void main() {
   Widget createTestWidget() {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthBloc()),
-        BlocProvider(create: (context) => OnboardingBloc()),
-        BlocProvider(create: (context) => JarSummaryBloc()),
-        BlocProvider(create: (context) => JarListBloc()),
-        BlocProvider(create: (context) => UpdateJarBloc()),
-        BlocProvider(create: (context) => MediaBloc()),
-        BlocProvider(create: (context) => NotificationsBloc()),
-        BlocProvider(
-          create:
-              (context) => UserAccountBloc(authBloc: context.read<AuthBloc>()),
-        ),
-        BlocProvider(
-          create:
-              (context) => JarSummaryReloadBloc(
-                jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-              ),
-        ),
+        BlocProvider.value(value: getIt<AuthBloc>()),
+        BlocProvider.value(value: getIt<OnboardingBloc>()),
+        BlocProvider.value(value: getIt<JarSummaryBloc>()),
+        BlocProvider.value(value: getIt<JarListBloc>()),
+        BlocProvider.value(value: getIt<UpdateJarBloc>()),
+        BlocProvider.value(value: getIt<MediaBloc>()),
+        BlocProvider.value(value: getIt<NotificationsBloc>()),
+        BlocProvider.value(value: getIt<UserAccountBloc>()),
+        BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
       ],
       child: MaterialApp.router(
         localizationsDelegates: const [
@@ -385,7 +378,7 @@ void main() {
       setupSuccessfulJarMock();
 
       // Create authenticated user
-      final authBloc = AuthBloc();
+      final authBloc = getIt<AuthBloc>();
       final mockUser = User(
         id: 'test-user-123',
         email: 'test@example.com',
@@ -414,23 +407,14 @@ void main() {
       final testWidget = MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
-          BlocProvider(create: (context) => OnboardingBloc()),
-          BlocProvider(create: (context) => JarSummaryBloc()),
-          BlocProvider(create: (context) => JarListBloc()),
-          BlocProvider(create: (context) => UpdateJarBloc()),
-          BlocProvider(create: (context) => MediaBloc()),
-          BlocProvider(create: (context) => NotificationsBloc()),
-          BlocProvider(
-            create:
-                (context) =>
-                    UserAccountBloc(authBloc: context.read<AuthBloc>()),
-          ),
-          BlocProvider(
-            create:
-                (context) => JarSummaryReloadBloc(
-                  jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                ),
-          ),
+          BlocProvider.value(value: getIt<OnboardingBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
+          BlocProvider.value(value: getIt<JarListBloc>()),
+          BlocProvider.value(value: getIt<UpdateJarBloc>()),
+          BlocProvider.value(value: getIt<MediaBloc>()),
+          BlocProvider.value(value: getIt<NotificationsBloc>()),
+          BlocProvider.value(value: getIt<UserAccountBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [

@@ -13,7 +13,9 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:dio/dio.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
 import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/route.dart';
@@ -60,10 +62,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   /// Load system settings to get collection fee percentage
   Future<void> _loadSystemSettings() async {
     try {
-      final serviceRegistry = ServiceRegistry();
       final apiProvider = SystemSettingsApiProvider(
-        dio: serviceRegistry.dio,
-        userStorageService: serviceRegistry.userStorageService,
+        dio: getIt<Dio>(),
+        userStorageService: getIt<UserStorageService>(),
       );
       final settings = await apiProvider.getSystemSettings();
       if (mounted) {

@@ -9,6 +9,7 @@ import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.da
 import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -44,8 +45,8 @@ void main() {
     testWidgets('should render without crashing', (WidgetTester tester) async {
       final testWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => FetchContributionBloc()),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<FetchContributionBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
@@ -77,13 +78,12 @@ void main() {
     ) async {
       final testWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create:
-                (_) =>
-                    FetchContributionBloc()
-                      ..add(FetchContributionById('contrib-123')),
+          BlocProvider.value(
+            value:
+                getIt<FetchContributionBloc>()
+                  ..add(FetchContributionById('contrib-123')),
           ),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
@@ -130,13 +130,12 @@ void main() {
 
       final testWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create:
-                (_) =>
-                    FetchContributionBloc()
-                      ..add(FetchContributionById('contrib-123')),
+          BlocProvider.value(
+            value:
+                getIt<FetchContributionBloc>()
+                  ..add(FetchContributionById('contrib-123')),
           ),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
@@ -167,8 +166,8 @@ void main() {
       // Test English locale
       final englishWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => FetchContributionBloc()),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<FetchContributionBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
@@ -223,8 +222,8 @@ void main() {
       // Test French locale
       final frenchWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => FetchContributionBloc()),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<FetchContributionBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
@@ -284,8 +283,8 @@ void main() {
     ) async {
       final testWidget = MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => FetchContributionBloc()),
-          BlocProvider(create: (_) => JarSummaryBloc()),
+          BlocProvider.value(value: getIt<FetchContributionBloc>()),
+          BlocProvider.value(value: getIt<JarSummaryBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [

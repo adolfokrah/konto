@@ -11,6 +11,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -113,11 +114,11 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => AuthBloc()),
-            BlocProvider(
-              create: (_) => JarSummaryBloc()..add(GetJarSummaryRequested()),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(
+              value: getIt<JarSummaryBloc>()..add(GetJarSummaryRequested()),
             ),
-            BlocProvider(create: (_) => UpdateJarBloc()),
+            BlocProvider.value(value: getIt<UpdateJarBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [

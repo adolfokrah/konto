@@ -1,18 +1,22 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/onboarding/data/repositories/walkthrough_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  OnboardingBloc() : super(OnboardingInitial()) {
+  final WalkthroughRepository _walkthroughRepository;
+
+  OnboardingBloc({required WalkthroughRepository walkthroughRepository})
+    : _walkthroughRepository = walkthroughRepository,
+      super(OnboardingInitial()) {
     on<PageChanged>((event, emit) {
       emit(OnboardingPageState(event.pageIndex));
     });
     on<OnboardingFinished>((event, emit) async {
       try {
-        await ServiceRegistry().walkthroughRepository.completeWalkthrough();
+        await _walkthroughRepository.completeWalkthrough();
         emit(OnboardingCompleted());
       } catch (e) {
         // Still emit completed to avoid blocking user
@@ -23,7 +27,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       try {
         print('🔄 OnboardingBloc: Checking onboarding status...');
         final onboardingCompleted =
-            await ServiceRegistry().walkthroughRepository
+            await _walkthroughRepository
                 .checkWalkthroughStatus();
         print('🔄 OnboardingBloc: Onboarding completed: $onboardingCompleted');
         if (onboardingCompleted) {
@@ -40,7 +44,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
     on<ResetOnboarding>((event, emit) async {
       try {
-        await ServiceRegistry().walkthroughRepository.resetWalkthrough();
+        await _walkthroughRepository.resetWalkthrough();
         emit(OnboardingPageState(0)); // Start from first page
       } catch (e) {
         // Handle reset error if needed

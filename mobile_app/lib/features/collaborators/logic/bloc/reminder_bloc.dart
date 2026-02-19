@@ -1,16 +1,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:Hoga/features/collaborators/data/repositories/collaborators_repository.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 
 part 'reminder_event.dart';
 part 'reminder_state.dart';
 
 class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
-  final CollaboratorsRepository _collaboratorsRepository =
-      ServiceRegistry().collaboratorsRepository;
+  final CollaboratorsRepository _collaboratorsRepository;
 
-  ReminderBloc() : super(ReminderInitial()) {
+  ReminderBloc({required CollaboratorsRepository collaboratorsRepository})
+    : _collaboratorsRepository = collaboratorsRepository,
+      super(ReminderInitial()) {
     on<SendReminderToCollector>(_sendReminderToCollector);
   }
   Future<void> _sendReminderToCollector(

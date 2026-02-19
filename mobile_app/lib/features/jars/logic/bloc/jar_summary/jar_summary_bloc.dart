@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
+import 'package:Hoga/core/services/jar_storage_service.dart';
+import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:meta/meta.dart';
 
@@ -7,7 +9,18 @@ part 'jar_summary_event.dart';
 part 'jar_summary_state.dart';
 
 class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
-  JarSummaryBloc() : super(JarSummaryInitial()) {
+  final JarRepository _jarRepository;
+  final JarStorageService _jarStorageService;
+  final TranslationService _translationService;
+
+  JarSummaryBloc({
+    required JarRepository jarRepository,
+    required JarStorageService jarStorageService,
+    required TranslationService translationService,
+  }) : _jarRepository = jarRepository,
+       _jarStorageService = jarStorageService,
+       _translationService = translationService,
+       super(JarSummaryInitial()) {
     on<GetJarSummaryRequested>(_getJarSummaryRequested);
     on<UpdateJarSummaryRequested>(_updateJarSummaryRequested);
     on<SetCurrentJarRequested>(_setCurrentJarRequested);
@@ -21,13 +34,8 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     //only show loading if currnent jar is not the same as requested jar
 
     try {
-      final serviceRegistry = ServiceRegistry();
-      final jarStorageService = serviceRegistry.jarStorageService;
-      final jarRepository = serviceRegistry.jarRepository;
-      final translationService = serviceRegistry.translationService;
-
       // Get jarId from storage
-      final jarId = await jarStorageService.getCurrentJarId();
+      final jarId = await _jarStorageService.getCurrentJarId();
 
       final currentState = state;
       if (currentState is JarSummaryLoaded) {
@@ -38,7 +46,7 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         emit(JarSummaryLoading());
       }
 
-      final result = await jarRepository.getJarSummary(jarId: jarId ?? 'null');
+      final result = await _jarRepository.getJarSummary(jarId: jarId ?? 'null');
 
       if (result['success'] == true) {
         if (result['data'] == null) {
@@ -55,17 +63,15 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
         emit(
           JarSummaryError(
             message:
-                result['message'] ?? translationService.failedToLoadJarSummary,
+                result['message'] ?? _translationService.failedToLoadJarSummary,
             statusCode: result['statusCode'],
           ),
         );
       }
     } catch (e) {
-      final serviceRegistry = ServiceRegistry();
-      final translationService = serviceRegistry.translationService;
       emit(
         JarSummaryError(
-          message: translationService.unexpectedErrorOccurredWithDetails(
+          message: _translationService.unexpectedErrorOccurredWithDetails(
             e.toString(),
           ),
         ),
@@ -78,15 +84,12 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
     Emitter<JarSummaryState> emit,
   ) async {
     try {
-      final serviceRegistry = ServiceRegistry();
-      serviceRegistry.jarStorageService.saveCurrentJarId(event.jarId);
+      _jarStorageService.saveCurrentJarId(event.jarId);
       add(GetJarSummaryRequested());
     } catch (e) {
-      final serviceRegistry = ServiceRegistry();
-      final translationService = serviceRegistry.translationService;
       emit(
         JarSummaryError(
-          message: translationService.unexpectedErrorSettingCurrentJar,
+          message: _translationService.unexpectedErrorSettingCurrentJar,
         ),
       );
     }
@@ -98,15 +101,12 @@ class JarSummaryBloc extends Bloc<JarEvent, JarSummaryState> {
   ) async {
     try {
       emit(JarSummaryLoading());
-      final serviceRegistry = ServiceRegistry();
-      serviceRegistry.jarStorageService.clearCurrentJarId();
+      _jarStorageService.clearCurrentJarId();
       add(GetJarSummaryRequested());
     } catch (e) {
-      final serviceRegistry = ServiceRegistry();
-      final translationService = serviceRegistry.translationService;
       emit(
         JarSummaryError(
-          message: translationService.unexpectedErrorSettingCurrentJar,
+          message: _translationService.unexpectedErrorSettingCurrentJar,
         ),
       );
     }

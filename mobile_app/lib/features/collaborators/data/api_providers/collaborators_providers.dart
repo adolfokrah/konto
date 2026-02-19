@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/config/backend_config.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/core/services/base_api_provider.dart';
 
 class CollaboratorsProvider extends BaseApiProvider {
-  CollaboratorsProvider()
+  CollaboratorsProvider({required Dio dio, required UserStorageService userStorageService})
     : super(
-        dio: ServiceRegistry().dio,
-        userStorageService: ServiceRegistry().userStorageService,
+        dio: dio,
+        userStorageService: userStorageService,
       );
 
   /// Search users by email, phone number, or full name

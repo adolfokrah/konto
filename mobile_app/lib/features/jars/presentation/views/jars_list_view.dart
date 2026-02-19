@@ -13,6 +13,7 @@ import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -33,7 +34,7 @@ class JarsListView extends StatefulWidget {
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, animation, secondaryAnimation) {
         return BlocProvider(
-          create: (context) => JarListBloc()..add(LoadJarList()),
+          create: (context) => getIt<JarListBloc>()..add(LoadJarList()),
           child: const JarsListView(),
         );
       },

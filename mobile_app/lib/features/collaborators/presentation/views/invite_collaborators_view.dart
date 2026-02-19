@@ -11,6 +11,7 @@ import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/core/widgets/searh_input.dart';
 import 'package:Hoga/features/collaborators/data/models/collector_model.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/features/collaborators/logic/bloc/collectors_bloc.dart';
 
 class Contact {
@@ -66,7 +67,7 @@ class _InviteCollaboratorsSheetState extends State<InviteCollaboratorsSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CollectorsBloc(),
+      create: (context) => getIt<CollectorsBloc>(),
       child: InviteCollaboratorsView(
         selectedContacts: widget.selectedContacts,
         onContactsSelected: widget.onContactsSelected,

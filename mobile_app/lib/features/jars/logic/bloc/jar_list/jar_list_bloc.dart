@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
 import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:meta/meta.dart';
 
@@ -7,7 +7,11 @@ part 'jar_list_event.dart';
 part 'jar_list_state.dart';
 
 class JarListBloc extends Bloc<JarListEvent, JarListState> {
-  JarListBloc() : super(JarListInitial()) {
+  final JarRepository _jarRepository;
+
+  JarListBloc({required JarRepository jarRepository})
+    : _jarRepository = jarRepository,
+      super(JarListInitial()) {
     on<LoadJarList>(_loadJarList);
   }
 
@@ -15,11 +19,9 @@ class JarListBloc extends Bloc<JarListEvent, JarListState> {
     LoadJarList event,
     Emitter<JarListState> emit,
   ) async {
-    final serviceRegistry = ServiceRegistry();
-    final jarRepository = serviceRegistry.jarRepository;
     emit(JarListLoading());
 
-    final response = await jarRepository.getUserJars();
+    final response = await _jarRepository.getUserJars();
     print(response);
     if (response['success']) {
       final jars = JarList.fromJson(response['data']);

@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/contribution/data/models/momo_charge_model.dart';
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
 import 'package:meta/meta.dart';
@@ -10,8 +9,8 @@ part 'momo_payment_state.dart';
 class MomoPaymentBloc extends Bloc<MomoPaymentEvent, MomoPaymentState> {
   final MomoRepository _momoRepository;
 
-  MomoPaymentBloc({MomoRepository? momoRepository})
-    : _momoRepository = momoRepository ?? ServiceRegistry().momoRepository,
+  MomoPaymentBloc({required MomoRepository momoRepository})
+    : _momoRepository = momoRepository,
       super(MomoPaymentInitial()) {
     on<MomoPaymentRequested>(_onMomoPaymentRequested);
     on<SubmitOtpRequested>(_onSubmitOtpRequested);

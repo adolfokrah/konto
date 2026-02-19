@@ -1,12 +1,16 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'update_jar_event.dart';
 part 'update_jar_state.dart';
 
 class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
-  UpdateJarBloc() : super(UpdateJarInitial()) {
+  final JarRepository _jarRepository;
+
+  UpdateJarBloc({required JarRepository jarRepository})
+    : _jarRepository = jarRepository,
+      super(UpdateJarInitial()) {
     on<UpdateJarRequested>(_updateJarDynamic);
   }
 
@@ -15,8 +19,6 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
     Emitter<UpdateJarState> emit,
   ) async {
     emit(UpdateJarInProgress());
-
-    final serviceRegistry = ServiceRegistry();
 
     // Process invitedCollectors if present in updates
     List<Map<String, dynamic>>? processedCollectors;
@@ -36,7 +38,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       }
     }
 
-    final response = await serviceRegistry.jarRepository.updateJar(
+    final response = await _jarRepository.updateJar(
       jarId: event.jarId,
       name: event.updates['name'],
       description: event.updates['description'],

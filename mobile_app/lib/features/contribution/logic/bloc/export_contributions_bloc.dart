@@ -1,15 +1,18 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 
 part 'export_contributions_event.dart';
 part 'export_contributions_state.dart';
 
 class ExportContributionsBloc
     extends Bloc<ExportContributionsEvent, ExportContributionsState> {
-  final ServiceRegistry _serviceRegistry = ServiceRegistry();
+  final ContributionRepository _contributionRepository;
 
-  ExportContributionsBloc() : super(ExportContributionsInitial()) {
+  ExportContributionsBloc({
+    required ContributionRepository contributionRepository,
+  }) : _contributionRepository = contributionRepository,
+       super(ExportContributionsInitial()) {
     on<TriggerExportContributions>(_onTriggerExport);
   }
 
@@ -18,7 +21,7 @@ class ExportContributionsBloc
     Emitter<ExportContributionsState> emit,
   ) async {
     emit(ExportContributionsInProgress());
-    final result = await _serviceRegistry.contributionRepository
+    final result = await _contributionRepository
         .exportContributionsToEmail(
           jarId: event.jarId,
           paymentMethods: event.paymentMethods,

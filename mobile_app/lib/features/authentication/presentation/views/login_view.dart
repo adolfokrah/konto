@@ -24,6 +24,7 @@ class _LoginViewState extends State<LoginView> {
   String _phoneNumber = '';
   String _countryCode = '+233';
   String _selectedCountry = 'Ghana';
+  bool _navigatedToOtp = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +56,11 @@ class _LoginViewState extends State<LoginView> {
               }
 
               if (state is AuthAuthenticated) {
+                _navigatedToOtp = false;
                 // Navigate to home on success
                 context.go(AppRoutes.jarDetail);
-              }
-              if (state is PhoneNumberAvailable) {
+              } else if (state is PhoneNumberAvailable) {
+                _navigatedToOtp = false;
                 // Phone number available for registration - redirect to register
                 context.push(
                   AppRoutes.register,
@@ -69,6 +71,8 @@ class _LoginViewState extends State<LoginView> {
                   },
                 );
               } else if (state is PhoneNumberNotAvailable) {
+                if (_navigatedToOtp) return;
+                _navigatedToOtp = true;
                 // Phone number exists - proceed to login OTP
                 context.push(
                   AppRoutes.otp,
@@ -80,6 +84,7 @@ class _LoginViewState extends State<LoginView> {
                   },
                 );
               } else if (state is AuthError) {
+                _navigatedToOtp = false;
                 // Show error message from auth state
                 AppSnackBar.showError(context, message: state.error);
               }

@@ -21,6 +21,7 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -85,25 +86,16 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => KycBloc()),
-            BlocProvider(create: (context) => JarSummaryBloc()),
-            BlocProvider(create: (context) => JarListBloc()),
-            BlocProvider(create: (context) => MediaBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
-            BlocProvider(create: (context) => UpdateJarBloc()),
-            BlocProvider(
-              create:
-                  (context) => JarSummaryReloadBloc(
-                    jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                  ),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<KycBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<MediaBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
+            BlocProvider.value(value: getIt<UpdateJarBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -263,12 +255,12 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => KycBloc()),
-            BlocProvider(create: (context) => JarSummaryBloc()),
-            BlocProvider(create: (context) => JarListBloc()),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<KycBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -326,12 +318,12 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(create: (context) => KycBloc()),
-            BlocProvider(create: (context) => JarSummaryBloc()),
-            BlocProvider(create: (context) => JarListBloc()),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<KycBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [

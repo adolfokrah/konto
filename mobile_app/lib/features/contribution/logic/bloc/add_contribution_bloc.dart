@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'add_contribution_event.dart';
@@ -7,7 +7,11 @@ part 'add_contribution_state.dart';
 
 class AddContributionBloc
     extends Bloc<AddContributionEvent, AddContributionState> {
-  AddContributionBloc() : super(AddContributionInitial()) {
+  final ContributionRepository _contributionRepository;
+
+  AddContributionBloc({required ContributionRepository contributionRepository})
+    : _contributionRepository = contributionRepository,
+      super(AddContributionInitial()) {
     on<AddContributionSubmitted>(_addContributionSubmitted);
   }
 
@@ -18,11 +22,8 @@ class AddContributionBloc
     emit(AddContributionLoading());
 
     try {
-      final serviceRegistry = ServiceRegistry();
-      final contributionRepository = serviceRegistry.contributionRepository;
-
       // Call the repository to add the contribution
-      final response = await contributionRepository.addContribution(
+      final response = await _contributionRepository.addContribution(
         jarId: event.jarId,
         contributor: event.contributor,
         contributorPhoneNumber: event.contributorPhoneNumber,

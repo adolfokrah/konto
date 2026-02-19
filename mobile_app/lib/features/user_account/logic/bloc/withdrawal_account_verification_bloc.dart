@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 import 'package:meta/meta.dart';
 
@@ -14,9 +13,10 @@ class WithdrawalAccountVerificationBloc
         > {
   final UserAccountRepository _userAccountRepository;
 
-  WithdrawalAccountVerificationBloc()
-    : _userAccountRepository = ServiceRegistry().userAccountRepository,
-      super(WithdrawalAccountVerificationInitial()) {
+  WithdrawalAccountVerificationBloc({
+    required UserAccountRepository userAccountRepository,
+  }) : _userAccountRepository = userAccountRepository,
+       super(WithdrawalAccountVerificationInitial()) {
     on<RequestValidateWithdrawalAccountEvent>(
       _onRequestValidateWithdrawalAccount,
     );

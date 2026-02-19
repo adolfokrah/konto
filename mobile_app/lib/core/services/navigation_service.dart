@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/jar_storage_service.dart';
 import 'dart:async';
 import 'package:go_router/go_router.dart';
 
@@ -29,7 +30,7 @@ class NavigationService {
     final jarSummaryBloc = context.read<JarSummaryBloc>();
 
     // Save jar ID to storage first
-    final jarStorageService = ServiceRegistry().jarStorageService;
+    final jarStorageService = getIt<JarStorageService>();
     final saved = await jarStorageService.saveCurrentJarId(jarId);
 
     if (!saved) {

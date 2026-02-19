@@ -14,6 +14,7 @@ import 'package:Hoga/features/authentication/presentation/views/login_view.dart'
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -70,13 +71,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -184,13 +181,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -283,13 +276,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -346,13 +335,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -409,13 +394,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -491,13 +472,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -563,13 +540,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -622,13 +595,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -670,13 +639,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -716,13 +681,9 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => VerificationBloc()),
-            BlocProvider(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [

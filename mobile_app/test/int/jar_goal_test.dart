@@ -23,6 +23,7 @@ import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -165,42 +166,23 @@ void main() {
       );
 
       // Create widget with proper BLoC providers and navigation
-      late AuthBloc authBloc;
+      final authBloc = getIt<AuthBloc>();
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>(create: (context) => authBloc = AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider<VerificationBloc>(
-              create: (context) => VerificationBloc(),
-            ),
-            BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
-            BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-            BlocProvider<JarSummaryReloadBloc>(
-              create:
-                  (context) => JarSummaryReloadBloc(
-                    jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                  ),
-            ),
-            BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
-            BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
-            BlocProvider<AddContributionBloc>(
-              create: (context) => AddContributionBloc(),
-            ),
-            BlocProvider<FetchContributionBloc>(
-              create: (context) => FetchContributionBloc(),
-            ),
-            BlocProvider<MomoPaymentBloc>(
-              create: (context) => MomoPaymentBloc(),
-            ),
-            BlocProvider<NotificationsBloc>(
-              create: (context) => NotificationsBloc(),
-            ),
+            BlocProvider.value(value: authBloc),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+            BlocProvider.value(value: getIt<UpdateJarBloc>()),
+            BlocProvider.value(value: getIt<MediaBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
+            BlocProvider.value(value: getIt<AddContributionBloc>()),
+            BlocProvider.value(value: getIt<FetchContributionBloc>()),
+            BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -435,38 +417,19 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider<VerificationBloc>(
-              create: (context) => VerificationBloc(),
-            ),
-            BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
-            BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-            BlocProvider<JarSummaryReloadBloc>(
-              create:
-                  (context) => JarSummaryReloadBloc(
-                    jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                  ),
-            ),
-            BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
-            BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
-            BlocProvider<AddContributionBloc>(
-              create: (context) => AddContributionBloc(),
-            ),
-            BlocProvider<FetchContributionBloc>(
-              create: (context) => FetchContributionBloc(),
-            ),
-            BlocProvider<MomoPaymentBloc>(
-              create: (context) => MomoPaymentBloc(),
-            ),
-            BlocProvider<NotificationsBloc>(
-              create: (context) => NotificationsBloc(),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+            BlocProvider.value(value: getIt<UpdateJarBloc>()),
+            BlocProvider.value(value: getIt<MediaBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
+            BlocProvider.value(value: getIt<AddContributionBloc>()),
+            BlocProvider.value(value: getIt<FetchContributionBloc>()),
+            BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -490,9 +453,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Trigger auto-login to authenticate user
-      final authBloc = BlocProvider.of<AuthBloc>(
-        tester.element(find.byType(JarDetailView)),
-      );
+      final authBloc = getIt<AuthBloc>();
       authBloc.add(AutoLoginRequested());
       await tester.pumpAndSettle();
 
@@ -531,44 +492,19 @@ void main() {
             await tester.pumpWidget(
               MultiBlocProvider(
                 providers: [
-                  BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-                  BlocProvider(create: (context) => OnboardingBloc()),
-                  BlocProvider<VerificationBloc>(
-                    create: (context) => VerificationBloc(),
-                  ),
-                  BlocProvider<JarSummaryBloc>(
-                    create: (context) => JarSummaryBloc(),
-                  ),
-                  BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-                  BlocProvider<JarSummaryReloadBloc>(
-                    create:
-                        (context) => JarSummaryReloadBloc(
-                          jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(
-                            context,
-                          ),
-                        ),
-                  ),
-                  BlocProvider<UpdateJarBloc>(
-                    create: (context) => UpdateJarBloc(),
-                  ),
-                  BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-                  BlocProvider<UserAccountBloc>(
-                    create:
-                        (context) =>
-                            UserAccountBloc(authBloc: context.read<AuthBloc>()),
-                  ),
-                  BlocProvider<AddContributionBloc>(
-                    create: (context) => AddContributionBloc(),
-                  ),
-                  BlocProvider<FetchContributionBloc>(
-                    create: (context) => FetchContributionBloc(),
-                  ),
-                  BlocProvider<MomoPaymentBloc>(
-                    create: (context) => MomoPaymentBloc(),
-                  ),
-                  BlocProvider<NotificationsBloc>(
-                    create: (context) => NotificationsBloc(),
-                  ),
+                  BlocProvider.value(value: getIt<AuthBloc>()),
+                  BlocProvider.value(value: getIt<OnboardingBloc>()),
+                  BlocProvider.value(value: getIt<VerificationBloc>()),
+                  BlocProvider.value(value: getIt<JarSummaryBloc>()),
+                  BlocProvider.value(value: getIt<JarListBloc>()),
+                  BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+                  BlocProvider.value(value: getIt<UpdateJarBloc>()),
+                  BlocProvider.value(value: getIt<MediaBloc>()),
+                  BlocProvider.value(value: getIt<UserAccountBloc>()),
+                  BlocProvider.value(value: getIt<AddContributionBloc>()),
+                  BlocProvider.value(value: getIt<FetchContributionBloc>()),
+                  BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+                  BlocProvider.value(value: getIt<NotificationsBloc>()),
                 ],
                 child: MaterialApp.router(
                   localizationsDelegates: const [
@@ -747,41 +683,19 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-            BlocProvider(create: (context) => OnboardingBloc()),
-            BlocProvider<VerificationBloc>(
-              create: (context) => VerificationBloc(),
-            ),
-            BlocProvider<NotificationsBloc>(
-              create: (context) => NotificationsBloc(),
-            ),
-            BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
-            BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-            BlocProvider<JarSummaryReloadBloc>(
-              create:
-                  (context) => JarSummaryReloadBloc(
-                    jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                  ),
-            ),
-            BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
-            BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-            BlocProvider<UserAccountBloc>(
-              create:
-                  (context) =>
-                      UserAccountBloc(authBloc: context.read<AuthBloc>()),
-            ),
-            BlocProvider<AddContributionBloc>(
-              create: (context) => AddContributionBloc(),
-            ),
-            BlocProvider<FetchContributionBloc>(
-              create: (context) => FetchContributionBloc(),
-            ),
-            BlocProvider<MomoPaymentBloc>(
-              create: (context) => MomoPaymentBloc(),
-            ),
-            BlocProvider<NotificationsBloc>(
-              create: (context) => NotificationsBloc(),
-            ),
+            BlocProvider.value(value: getIt<AuthBloc>()),
+            BlocProvider.value(value: getIt<OnboardingBloc>()),
+            BlocProvider.value(value: getIt<VerificationBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryBloc>()),
+            BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+            BlocProvider.value(value: getIt<UpdateJarBloc>()),
+            BlocProvider.value(value: getIt<MediaBloc>()),
+            BlocProvider.value(value: getIt<UserAccountBloc>()),
+            BlocProvider.value(value: getIt<AddContributionBloc>()),
+            BlocProvider.value(value: getIt<FetchContributionBloc>()),
+            BlocProvider.value(value: getIt<MomoPaymentBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -805,9 +719,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Trigger auto-login to authenticate user
-      final authBloc = BlocProvider.of<AuthBloc>(
-        tester.element(find.byType(JarDetailView)),
-      );
+      final authBloc = getIt<AuthBloc>();
       authBloc.add(AutoLoginRequested());
       await tester.pumpAndSettle();
 
@@ -832,25 +744,14 @@ void main() {
         await tester.pumpWidget(
           MultiBlocProvider(
             providers: [
-              BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-              BlocProvider(create: (context) => OnboardingBloc()),
-              BlocProvider<JarSummaryBloc>(
-                create: (context) => JarSummaryBloc(),
-              ),
-              BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-              BlocProvider<JarSummaryReloadBloc>(
-                create:
-                    (context) => JarSummaryReloadBloc(
-                      jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-                    ),
-              ),
-              BlocProvider<UpdateJarBloc>(create: (context) => UpdateJarBloc()),
-              BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-              BlocProvider<UserAccountBloc>(
-                create:
-                    (context) =>
-                        UserAccountBloc(authBloc: context.read<AuthBloc>()),
-              ),
+              BlocProvider.value(value: getIt<AuthBloc>()),
+              BlocProvider.value(value: getIt<OnboardingBloc>()),
+              BlocProvider.value(value: getIt<JarSummaryBloc>()),
+              BlocProvider.value(value: getIt<JarListBloc>()),
+              BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+              BlocProvider.value(value: getIt<UpdateJarBloc>()),
+              BlocProvider.value(value: getIt<MediaBloc>()),
+              BlocProvider.value(value: getIt<UserAccountBloc>()),
             ],
             child: MaterialApp.router(
               localizationsDelegates: const [

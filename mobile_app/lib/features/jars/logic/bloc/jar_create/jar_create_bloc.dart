@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
 import 'package:Hoga/features/jars/data/models/jar_model.dart';
 import 'package:meta/meta.dart';
 
@@ -11,7 +11,11 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
   static const String _errorFailedToCreateJar = 'failedToCreateJar';
   static const String _errorUnexpected = 'unexpectedErrorOccurred';
 
-  JarCreateBloc() : super(JarCreateInitial()) {
+  final JarRepository _jarRepository;
+
+  JarCreateBloc({required JarRepository jarRepository})
+    : _jarRepository = jarRepository,
+      super(JarCreateInitial()) {
     on<JarCreateSubmitted>(_onJarCreateSubmitted);
   }
 
@@ -21,11 +25,8 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
   ) async {
     emit(JarCreateLoading());
     try {
-      final serviceRegistry = ServiceRegistry();
-      final jarRepository = serviceRegistry.jarRepository;
-
       // Call the createJar function from the repository
-      final result = await jarRepository.createJar(
+      final result = await _jarRepository.createJar(
         name: event.name,
         description: event.description,
         jarGroup: event.jarGroup,

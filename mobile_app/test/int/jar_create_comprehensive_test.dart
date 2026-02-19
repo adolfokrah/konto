@@ -14,6 +14,7 @@ import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -174,15 +175,12 @@ void main() {
   Widget createTestWidget() {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-        BlocProvider<JarCreateBloc>(create: (context) => JarCreateBloc()),
-        BlocProvider<JarListBloc>(create: (context) => JarListBloc()),
-        BlocProvider<JarSummaryBloc>(create: (context) => JarSummaryBloc()),
-        BlocProvider<MediaBloc>(create: (context) => MediaBloc()),
-        BlocProvider<UserAccountBloc>(
-          create:
-              (context) => UserAccountBloc(authBloc: context.read<AuthBloc>()),
-        ),
+        BlocProvider.value(value: getIt<AuthBloc>()),
+        BlocProvider.value(value: getIt<JarCreateBloc>()),
+        BlocProvider.value(value: getIt<JarListBloc>()),
+        BlocProvider.value(value: getIt<JarSummaryBloc>()),
+        BlocProvider.value(value: getIt<MediaBloc>()),
+        BlocProvider.value(value: getIt<UserAccountBloc>()),
       ],
       child: MaterialApp.router(
         localizationsDelegates: const [

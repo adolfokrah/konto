@@ -1,6 +1,5 @@
 import 'package:Hoga/features/collaborators/data/models/collector_model.dart';
 import 'package:Hoga/features/collaborators/data/repositories/collaborators_repository.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -10,9 +9,8 @@ part 'collectors_state.dart';
 class CollectorsBloc extends Bloc<CollectorsEvent, CollectorsState> {
   final CollaboratorsRepository _collaboratorsRepository;
 
-  CollectorsBloc({CollaboratorsRepository? collaboratorsRepository})
-    : _collaboratorsRepository =
-          collaboratorsRepository ?? ServiceRegistry().collaboratorsRepository,
+  CollectorsBloc({required CollaboratorsRepository collaboratorsRepository})
+    : _collaboratorsRepository = collaboratorsRepository,
       super(CollectorsInitial()) {
     on<SearchCollectors>(_searchCollectors);
   }

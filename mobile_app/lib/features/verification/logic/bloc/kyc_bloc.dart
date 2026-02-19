@@ -1,15 +1,17 @@
 import 'package:bloc/bloc.dart';
 import 'package:didit_sdk/sdk_flutter.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
 
 part 'kyc_event.dart';
 part 'kyc_state.dart';
 
 class KycBloc extends Bloc<KycEvent, KycState> {
-  final ServiceRegistry _serviceRegistry = ServiceRegistry();
+  final VerificationRepository _verificationRepository;
 
-  KycBloc() : super(KycInitial()) {
+  KycBloc({required VerificationRepository verificationRepository})
+    : _verificationRepository = verificationRepository,
+      super(KycInitial()) {
     on<RequestKycSession>(_requestKycSession);
   }
 
@@ -22,7 +24,7 @@ class KycBloc extends Bloc<KycEvent, KycState> {
     try {
       // Request a KYC session from the backend
       final result =
-          await _serviceRegistry.verificationRepository
+          await _verificationRepository
               .requestKycVerification();
 
       if (result['success'] != true) {

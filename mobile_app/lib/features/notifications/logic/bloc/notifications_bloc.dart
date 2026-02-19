@@ -1,13 +1,18 @@
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
+import 'package:Hoga/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 
 part 'notifications_event.dart';
 part 'notifications_state.dart';
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
-  NotificationsBloc() : super(NotificationsInitial()) {
+  final NotificationsRepository _notificationsRepository;
+
+  NotificationsBloc({
+    required NotificationsRepository notificationsRepository,
+  }) : _notificationsRepository = notificationsRepository,
+       super(NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
     on<MarkjarInviteAsRead>(_markJarInviteAsRead);
   }
@@ -18,10 +23,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   ) async {
     emit(NotificationsLoading());
     try {
-      // Access repository from ServiceRegistry
-      final repo = ServiceRegistry().notificationsRepository;
-
-      final response = await repo.fetchUserNotifications(
+      final response = await _notificationsRepository.fetchUserNotifications(
         limit: event.limit,
         page: event.page,
       );
@@ -54,11 +56,10 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     Emitter<NotificationsState> emit,
   ) async {
     try {
-      final repo = ServiceRegistry().notificationsRepository;
-      await repo.markNotificationAsRead(notificationId: event.notificationId);
+      await _notificationsRepository.markNotificationAsRead(notificationId: event.notificationId);
       // After marking as read, refetch the latest notifications without flashing loading state.
       try {
-        final response = await repo.fetchUserNotifications(limit: 20, page: 1);
+        final response = await _notificationsRepository.fetchUserNotifications(limit: 20, page: 1);
         if (response['success'] == true) {
           final List<NotificationModel> notifications =
               (response['data'] as List<NotificationModel>);

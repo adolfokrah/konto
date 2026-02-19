@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/media/data/repository_provider/media_repository.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
 
 import '../../data/models/media_model.dart';
@@ -10,7 +10,11 @@ part 'media_event.dart';
 part 'media_state.dart';
 
 class MediaBloc extends Bloc<MediaEvent, MediaState> {
-  MediaBloc() : super(MediaInitial()) {
+  final MediaRepository _mediaRepository;
+
+  MediaBloc({required MediaRepository mediaRepository})
+    : _mediaRepository = mediaRepository,
+      super(MediaInitial()) {
     on<RequestUploadMedia>(_requestUploadMedia);
     on<RequestUploadKycDocuments>(_requestUploadKycDocuments);
   }
@@ -22,11 +26,8 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
     emit(MediaLoading());
 
     try {
-      // Use MediaRepository from ServiceRegistry
-      final mediaRepository = ServiceRegistry().mediaRepository;
-
       // Upload image using MediaRepository
-      final response = await mediaRepository.uploadImage(
+      final response = await _mediaRepository.uploadImage(
         imageFile: event.imageFile,
         alt: event.alt ?? 'Uploaded Image',
       );
@@ -59,11 +60,8 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
     emit(KycDocumentsUploading());
 
     try {
-      // Use MediaRepository from ServiceRegistry
-      final mediaRepository = ServiceRegistry().mediaRepository;
-
       // Upload KYC documents using MediaRepository
-      final response = await mediaRepository.uploadKycDocuments(
+      final response = await _mediaRepository.uploadKycDocuments(
         frontFilePath: event.frontFilePath,
         backFilePath: event.backFilePath,
         photoFilePath: event.photoFilePath,

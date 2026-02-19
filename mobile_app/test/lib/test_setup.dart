@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 import 'api_mock_interceptor.dart';
 
@@ -34,11 +34,16 @@ class TestSetup {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
     dio.interceptors.add(MockInterceptor());
 
-    // Initialize ServiceRegistry with our mocked Dio
-    ServiceRegistry().initializeWithDio(dio);
+    // Allow reassignment for test isolation and set up get_it
+    getIt.allowReassignment = true;
+    setupServiceLocator();
+
+    // Replace the default Dio with our mocked Dio
+    getIt.unregister<Dio>();
+    getIt.registerLazySingleton<Dio>(() => dio);
 
     _isInitialized = true;
-    print('✅ ServiceRegistry initialized with custom Dio for testing');
+    print('✅ get_it initialized with mock Dio for testing');
   }
 
   static void reset() {

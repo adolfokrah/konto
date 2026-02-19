@@ -10,7 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:Hoga/core/config/app_config.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/core/theme/app_theme.dart';
 import 'package:Hoga/core/enums/app_theme.dart' as theme_enum;
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
@@ -52,8 +53,8 @@ void main() async {
     ),
   );
 
-  // Initialize service registry for dependency injection
-  ServiceRegistry().initialize();
+  // Initialize dependency injection
+  setupServiceLocator();
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -111,7 +112,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   GoRouter? _router;
 
   GoRouter _getRouter(BuildContext context) {
-    return _router ??= createRouter(context.read<AuthBloc>());
+    return _router ??= createRouter(getIt<AuthBloc>());
   }
 
   @override
@@ -158,47 +159,29 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => OnboardingBloc()..add(CheckOnboardingStatus()),
+        BlocProvider.value(
+          value: getIt<OnboardingBloc>()..add(CheckOnboardingStatus()),
         ),
-        BlocProvider(create: (context) => AuthBloc()),
-        BlocProvider(create: (context) => VerificationBloc()),
-        BlocProvider(create: (context) => JarSummaryBloc()),
-        BlocProvider(
-          create:
-              (context) => JarSummaryReloadBloc(
-                jarSummaryBloc: BlocProvider.of<JarSummaryBloc>(context),
-              ),
-        ),
-        BlocProvider(create: (context) => JarListBloc()),
-        BlocProvider(create: (context) => JarCreateBloc()),
-        BlocProvider(create: (context) => MediaBloc()),
-        BlocProvider(create: (context) => AddContributionBloc()),
-        BlocProvider(create: (context) => FetchContributionBloc()),
-        BlocProvider(create: (context) => UpdateJarBloc()),
-        BlocProvider(
-          create:
-              (context) =>
-                  UserAccountBloc(authBloc: BlocProvider.of<AuthBloc>(context)),
-        ),
-        BlocProvider(create: (context) => WithdrawalAccountVerificationBloc()),
-        BlocProvider(create: (context) => MomoPaymentBloc()),
-        BlocProvider(create: (context) => FilterContributionsBloc()),
-        BlocProvider(
-          create:
-              (context) => ContributionsListBloc(
-                filterBloc: context.read<FilterContributionsBloc>(),
-              ),
-        ),
-        BlocProvider(create: (context) => ExportContributionsBloc()),
-        BlocProvider(create: (context) => KycBloc()),
-        BlocProvider(create: (context) => NotificationsBloc()),
-        BlocProvider(create: (context) => JarInviteActionBloc()),
-        BlocProvider(create: (context) => ReminderBloc()),
-        // Add more BLoCs here as you create them
-        // BlocProvider(
-        //   create: (context) => HomeBloc(),
-        // ),
+        BlocProvider.value(value: getIt<AuthBloc>()),
+        BlocProvider.value(value: getIt<VerificationBloc>()),
+        BlocProvider.value(value: getIt<JarSummaryBloc>()),
+        BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+        BlocProvider.value(value: getIt<JarListBloc>()),
+        BlocProvider.value(value: getIt<JarCreateBloc>()),
+        BlocProvider.value(value: getIt<MediaBloc>()),
+        BlocProvider.value(value: getIt<AddContributionBloc>()),
+        BlocProvider.value(value: getIt<FetchContributionBloc>()),
+        BlocProvider.value(value: getIt<UpdateJarBloc>()),
+        BlocProvider.value(value: getIt<UserAccountBloc>()),
+        BlocProvider.value(value: getIt<WithdrawalAccountVerificationBloc>()),
+        BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+        BlocProvider.value(value: getIt<FilterContributionsBloc>()),
+        BlocProvider.value(value: getIt<ContributionsListBloc>()),
+        BlocProvider.value(value: getIt<ExportContributionsBloc>()),
+        BlocProvider.value(value: getIt<KycBloc>()),
+        BlocProvider.value(value: getIt<NotificationsBloc>()),
+        BlocProvider.value(value: getIt<JarInviteActionBloc>()),
+        BlocProvider.value(value: getIt<ReminderBloc>()),
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
@@ -288,7 +271,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 localeResolutionCallback: (locale, supportedLocales) {
                   // If we already have a resolvedLocale, use that.
                   if (resolvedLocale != null) {
-                    ServiceRegistry().translationService.updateLocale(
+                    getIt<TranslationService>().updateLocale(
                       resolvedLocale,
                     );
                     return resolvedLocale;
@@ -299,11 +282,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                       (l) => l.languageCode == locale.languageCode,
                       orElse: () => supportedLocales.first,
                     );
-                    ServiceRegistry().translationService.updateLocale(match);
+                    getIt<TranslationService>().updateLocale(match);
                     return match;
                   }
                   // Fallback to first supported
-                  ServiceRegistry().translationService.updateLocale(
+                  getIt<TranslationService>().updateLocale(
                     supportedLocales.first,
                   );
                   return supportedLocales.first;

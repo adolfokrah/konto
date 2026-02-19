@@ -3,7 +3,6 @@ import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/core/enums/app_language.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 
@@ -14,8 +13,8 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
   final UserAccountRepository _userAccountRepository;
   final AuthBloc _authBloc;
 
-  UserAccountBloc({required AuthBloc authBloc})
-    : _userAccountRepository = ServiceRegistry().userAccountRepository,
+  UserAccountBloc({required AuthBloc authBloc, required UserAccountRepository userAccountRepository})
+    : _userAccountRepository = userAccountRepository,
       _authBloc = authBloc,
       super(UserAccountInitial()) {
     on<UpdatePersonalDetails>(_updatePersonalDetails);

@@ -1,13 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:Hoga/core/services/service_registry.dart';
+import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
+import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc() : super(const AuthInitial()) {
+  final AuthRepository _authRepository;
+  final TranslationService _translationService;
+
+  AuthBloc({
+    required AuthRepository authRepository,
+    required TranslationService translationService,
+  }) : _authRepository = authRepository,
+       _translationService = translationService,
+       super(const AuthInitial()) {
     on<RequestRegistration>(_onRequestRegistration);
     on<AutoLoginRequested>(_onAutoLoginRequested);
     on<CheckUserExistence>(_onCheckUserExistence);
@@ -23,11 +32,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      final authRepository = ServiceRegistry().authRepository;
-      final translationService = ServiceRegistry().translationService;
-
       // Check user existence
-      final response = await authRepository.checkUserExistence(
+      final response = await _authRepository.checkUserExistence(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         email: event.email,
@@ -63,14 +69,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
       } else {
         throw Exception(
-          translationService.errorCheckingPhoneAvailabilityWithMessage(
+          _translationService.errorCheckingPhoneAvailabilityWithMessage(
             response['message'],
           ),
         );
       }
     } catch (e) {
-      final translationService = ServiceRegistry().translationService;
-      emit(AuthError(error: translationService.failedToCheckPhoneNumber));
+      emit(AuthError(error: _translationService.failedToCheckPhoneNumber));
     }
   }
 
@@ -80,10 +85,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      final authRepository = ServiceRegistry().authRepository;
-
       // Attempt to login with the provided phone number and country code
-      final loginResult = await authRepository.loginWithPhoneNumber(
+      final loginResult = await _authRepository.loginWithPhoneNumber(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
       );
@@ -94,18 +97,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
-        final translationService = ServiceRegistry().translationService;
         emit(
           AuthError(
-            error: loginResult['message'] ?? translationService.loginFailed,
+            error: loginResult['message'] ?? _translationService.loginFailed,
           ),
         );
       }
     } catch (e) {
-      final translationService = ServiceRegistry().translationService;
       emit(
         AuthError(
-          error: translationService.loginFailedWithDetails(e.toString()),
+          error: _translationService.loginFailedWithDetails(e.toString()),
         ),
       );
     }
@@ -117,10 +118,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      final authRepository = ServiceRegistry().authRepository;
-
       // Register user after OTP verification
-      final result = await authRepository.registerUser(
+      final result = await _authRepository.registerUser(
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         country: event.country,
@@ -135,18 +134,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         emit(AuthAuthenticated(user: user, token: token ?? ''));
       } else {
-        final translationService = ServiceRegistry().translationService;
         emit(
           AuthError(
-            error: result['message'] ?? translationService.registrationFailed,
+            error: result['message'] ?? _translationService.registrationFailed,
           ),
         );
       }
     } catch (e) {
-      final translationService = ServiceRegistry().translationService;
       emit(
         AuthError(
-          error: translationService.registrationFailedWithDetails(e.toString()),
+          error: _translationService.registrationFailedWithDetails(e.toString()),
         ),
       );
     }
@@ -161,10 +158,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       print('🔄 Starting auto login process...');
-      final authRepository = ServiceRegistry().authRepository;
 
       // Check if there's any user data stored locally first
-      final isLoggedIn = await authRepository.isUserLoggedIn();
+      final isLoggedIn = await _authRepository.isUserLoggedIn();
       print('🔐 Is user logged in: $isLoggedIn');
 
       if (!isLoggedIn) {
@@ -175,7 +171,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       // Attempt auto-login using stored phone number and country code
       print('🔄 Attempting auto login...');
-      final autoLoginResult = await authRepository.autoLogin();
+      final autoLoginResult = await _authRepository.autoLogin();
       print(
         '🔄 Auto login result: ${autoLoginResult['success']} - ${autoLoginResult['message']}',
       );
@@ -201,17 +197,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      final authRepository = ServiceRegistry().authRepository;
-
       // Clear user session
-      await authRepository.signOut();
+      await _authRepository.signOut();
 
       emit(const AuthInitial());
     } catch (e) {
-      final translationService = ServiceRegistry().translationService;
       emit(
         AuthError(
-          error: translationService.failedToSignOutWithDetails(e.toString()),
+          error: _translationService.failedToSignOutWithDetails(e.toString()),
         ),
       );
     }

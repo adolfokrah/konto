@@ -37,6 +37,14 @@ class FCMService {
   /// Initialize FCM listeners
   static void initialize() {
     try {
+      // Disable Firebase's own foreground notification display on iOS
+      // so flutter_local_notifications handles it instead
+      FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: false,
+        badge: false,
+        sound: false,
+      );
+
       // Listen for messages while app is in foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         // if notification is type contribution, please reload the current jar
@@ -147,8 +155,6 @@ class FCMService {
           context.read<NotificationsBloc>().add(
             FetchNotifications(limit: 20, page: 1),
           );
-          // Trigger auto login to refresh user data after KYC status change
-          _triggerAutoLogin(context);
         } catch (e) {
           print('⚠️ Could not dispatch FetchNotifications on push: $e');
         }

@@ -9,8 +9,15 @@ import Firebase
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     FirebaseApp.configure()
-    
+
     GeneratedPluginRegistrant.register(with: self)
+
+    // Ensure flutter_local_notifications can present foreground notifications
+    // by reclaiming the UNUserNotificationCenter delegate after Firebase
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
