@@ -138,20 +138,18 @@ class FCMService {
   /// Handle push notification received while app is in foreground
   static void _handlePush(RemoteMessage message) {
     final messageData = message.data;
+    final BuildContext? context = rootNavigatorKey.currentContext;
 
-    if (messageData['type'] == 'contribution') {
-      final jarId = messageData['jarId'];
-      final BuildContext? context = rootNavigatorKey.currentContext;
-      if (jarId != null && context != null) {
-        // Reload current jar summary to reflect new contribution
-        NavigationService.reloadCurrentJar(context, jarId);
-      }
-    } else if (messageData['type'] == 'jarInvite' ||
-        messageData['type'] == 'kyc') {
-      final BuildContext? context = rootNavigatorKey.currentContext;
+    // Refresh the current jar if the notification is related to it
+    final jarId = messageData['jarId'];
+    if (jarId != null && context != null) {
+      NavigationService.reloadCurrentJar(context, jarId);
+    }
+
+    // Refresh notifications list for relevant types
+    if (messageData['type'] == 'jarInvite' || messageData['type'] == 'kyc') {
       if (context != null) {
         try {
-          // Dispatch fetch notifications to update list
           context.read<NotificationsBloc>().add(
             FetchNotifications(limit: 20, page: 1),
           );

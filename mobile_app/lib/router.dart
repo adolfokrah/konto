@@ -47,7 +47,6 @@ GoRouter createRouter(AuthBloc authBloc) {
       const authRoutes = {
         AppRoutes.login,
         AppRoutes.register,
-        AppRoutes.otp,
         AppRoutes.onboarding,
         AppRoutes.walkthrough,
       };

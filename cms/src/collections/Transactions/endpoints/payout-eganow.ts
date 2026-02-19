@@ -215,8 +215,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
         amountContributed: -netBalance, // Full amount sent to Eganow
         collector: user.id,
         contributorPhoneNumber: user.accountNumber,
-        contributor:
-          `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Creator',
+        contributor: user.accountHolder,
         type: 'payout',
         // Store fee information for display purposes (Eganow handles actual deduction)
         payoutFeePercentage: transferFeePercentage,
