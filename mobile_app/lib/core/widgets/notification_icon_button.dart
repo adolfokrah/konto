@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:go_router/go_router.dart';
 
 /// Reusable notification icon button with optional red badge indicator.
 /// Wraps an [IconButton]-like appearance with a stack badge.
@@ -33,7 +34,7 @@ class NotificationIconButton extends StatelessWidget {
         icon: _icon,
         size: const Size(_buttonSize, _buttonSize),
         onPressed:
-            () => Navigator.of(context).pushNamed(AppRoutes.notifications),
+            () => context.push(AppRoutes.notifications),
       );
     }
 
@@ -58,7 +59,7 @@ class NotificationIconButton extends StatelessWidget {
               size: const Size(_buttonSize, _buttonSize),
               onPressed:
                   () =>
-                      Navigator.of(context).pushNamed(AppRoutes.notifications),
+                      context.push(AppRoutes.notifications),
             ),
             if (showBadge)
               Positioned(

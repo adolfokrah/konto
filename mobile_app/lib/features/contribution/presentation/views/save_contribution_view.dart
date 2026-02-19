@@ -18,6 +18,7 @@ import 'package:Hoga/features/settings/data/api_providers/system_settings_api_pr
 import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class SaveContributionView extends StatefulWidget {
   const SaveContributionView({super.key});
@@ -86,7 +87,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
 
     // Get arguments passed from add_contribution_view
     final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     if (arguments != null) {
       amount = arguments['amount'] as String?;
@@ -144,12 +145,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
             context.read<MomoPaymentBloc>().add(
               MomoPaymentRequested(state.contributionId),
             );
-            Navigator.pushNamed(context, AppRoutes.awaitMomoPayment);
+            context.push(AppRoutes.awaitMomoPayment);
           } else {
-            Navigator.popUntil(
-              context,
-              ModalRoute.withName(AppRoutes.jarDetail),
-            );
+            context.go(AppRoutes.jarDetail);
           }
           // Show success message
           AppSnackBar.showSuccess(
@@ -479,7 +477,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         if (authState.user.id == jarCreatorId) {
           if (authState.user.accountHolder == null ||
               authState.user.accountHolder!.isEmpty) {
-            Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+            context.push(AppRoutes.withdrawalAccount);
             return;
           }
         }

@@ -5,6 +5,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class KycView extends StatelessWidget {
   const KycView({super.key});
@@ -28,7 +29,7 @@ class KycView extends StatelessWidget {
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.of(context).pop();
+            context.pop();
           } else if (state is KycInReview) {
             // Reload user data to get updated KYC status
             context.read<AuthBloc>().add(AutoLoginRequested());
@@ -41,7 +42,7 @@ class KycView extends StatelessWidget {
                 backgroundColor: Colors.orange,
               ),
             );
-            Navigator.of(context).pop();
+            context.pop();
           } else if (state is KycFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

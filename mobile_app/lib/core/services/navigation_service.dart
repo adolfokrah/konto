@@ -5,6 +5,7 @@ import 'package:Hoga/features/contribution/presentation/views/contribution_view.
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/core/services/service_registry.dart';
 import 'dart:async';
+import 'package:go_router/go_router.dart';
 
 /// Service for handling deep navigation within the app
 class NavigationService {
@@ -99,7 +100,7 @@ class NavigationService {
     final jarSummaryBloc = context.read<JarSummaryBloc>();
     jarSummaryBloc.add(SetCurrentJarRequested(jarId: jarId));
 
-    Navigator.of(context).pushReplacementNamed(AppRoutes.jarDetail);
+    GoRouter.of(context).pushReplacement(AppRoutes.jarDetail);
   }
 
   /// Navigate to notifications list view and optionally trigger a refresh callback
@@ -110,7 +111,7 @@ class NavigationService {
     try {
       onBeforeNavigate?.call();
       if (context.mounted) {
-        Navigator.of(context).pushNamed(AppRoutes.notifications);
+        GoRouter.of(context).push(AppRoutes.notifications);
       } else {
         print('❌ Context unmounted before navigating to notifications');
       }

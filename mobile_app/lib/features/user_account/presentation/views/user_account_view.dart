@@ -20,6 +20,7 @@ import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/core/utils/url_launcher_utils.dart';
+import 'package:go_router/go_router.dart';
 
 /// User account view - profile screen with settings and account management
 class UserAccountView extends StatelessWidget {
@@ -37,11 +38,7 @@ class UserAccountView extends StatelessWidget {
             listener: (context, state) {
               if (state is AuthInitial) {
                 // Navigate to login screen when user is logged out
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.onboarding,
-                  (route) => false,
-                );
+                context.go(AppRoutes.onboarding);
               }
             },
           ),
@@ -174,7 +171,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.personalDetails,
               onTap: () {
                 // Navigate to personal details
-                Navigator.pushNamed(context, AppRoutes.personalDetails);
+                context.push(AppRoutes.personalDetails);
               },
             ),
             _buildMenuItem(
@@ -182,7 +179,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.withdrawalAccount,
               onTap: () {
                 // Navigate to withdrawal account
-                Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+                context.push(AppRoutes.withdrawalAccount);
               },
             ),
             _buildMenuItem(
@@ -190,7 +187,7 @@ class UserAccountView extends StatelessWidget {
               title: localizations.changePhoneNumber,
               onTap: () {
                 // Navigate to change phone number
-                Navigator.pushNamed(context, AppRoutes.changePhoneNumber);
+                context.push(AppRoutes.changePhoneNumber);
               },
             ),
           ]),
@@ -229,17 +226,10 @@ class UserAccountView extends StatelessWidget {
           _buildSectionCard([
             _buildMenuItem(
               context: context,
-              title: localizations.theme,
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.themeSettings);
-              },
-            ),
-            _buildMenuItem(
-              context: context,
               title: localizations.language,
               onTap: () {
                 // _showComingSoon(context);
-                Navigator.pushNamed(context, AppRoutes.languageSettings);
+                context.push(AppRoutes.languageSettings);
               },
             ),
             // _buildMenuItem(

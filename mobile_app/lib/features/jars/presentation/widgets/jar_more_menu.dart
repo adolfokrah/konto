@@ -12,6 +12,7 @@ import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 /// A reusable popup menu widget for jar actions
 class JarMoreMenu extends StatelessWidget {
@@ -144,7 +145,7 @@ class JarMoreMenu extends StatelessWidget {
   void _handleMenuSelection(BuildContext context, String value) {
     switch (value) {
       case 'name':
-        Navigator.pushNamed(context, AppRoutes.jarNameEdit);
+        context.push(AppRoutes.jarNameEdit);
         break;
       case 'image':
         // Navigate to jar info/edit

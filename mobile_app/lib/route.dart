@@ -1,68 +1,5 @@
-import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
-import 'package:Hoga/features/onboarding/prensentation/pages/walk_through.dart';
-import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
-import 'package:flutter/material.dart';
-import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
-import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
-import 'package:Hoga/features/contribution/presentation/views/add_contribution_view.dart';
-import 'package:Hoga/features/contribution/presentation/views/await_momo_payment_view.dart';
-import 'package:Hoga/features/contribution/presentation/views/contributions_list_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_description_edit_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_fixed_contribution_amount_edit_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
-import 'package:Hoga/features/contribution/presentation/views/request_contribution_view.dart';
-import 'package:Hoga/features/contribution/presentation/views/save_contribution_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_info_view.dart';
-import 'package:Hoga/features/jars/presentation/views/withdraw_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_thank_you_message_view.dart';
-import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
-import 'package:Hoga/features/onboarding/prensentation/pages/on_boarding_page.dart';
-import 'package:Hoga/features/startup/presentation/views/startup_screen.dart';
-import 'package:Hoga/features/user_account/presentation/views/change_phone_number_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/personal_details_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/theme_settings_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/language_settings_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/user_account_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/withdrawal_account_view.dart';
-import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
-
 class AppRoutes {
-  static Map<String, WidgetBuilder> get routes => {
-    '/': (context) => const StartupScreen(),
-    '/onboarding': (context) => const OnBoardingPage(),
-    '/login': (context) => const LoginView(),
-    '/register': (context) => const RegisterView(),
-    '/otp': (context) => const OtpView(),
-    '/jar_detail': (context) => const JarDetailView(),
-    '/request_contribution': (context) => RequestContributionView(),
-    '/add_contribution': (context) => const AddContributionView(),
-    '/save_contribution': (context) => const SaveContributionView(),
-    '/jar_create': (context) => const JarCreateView(),
-    '/jar_goal': (context) => const JarGoalView(),
-    '/jar_info': (context) => const JarInfoView(),
-    '/jar_description_edit': (context) => const JarDescriptionEditView(),
-    '/jar_thank_you_message_edit':
-        (context) => const JarThankYouMessageEditView(),
-    '/jar_fixed_contribution_amount_edit':
-        (context) => const JarFixedContributionAmountEditView(),
-    '/jar_name_edit': (context) => const JarNameEditView(),
-    '/user_account_view': (context) => const UserAccountView(),
-    '/personal_details': (context) => const PersonalDetailsView(),
-    '/change_phone_number': (context) => const ChangePhoneNumberView(),
-    '/withdrawal_account': (context) => const WithdrawalAccountView(),
-    '/await_momo_payment': (context) => const AwaitMomoPaymentView(),
-    '/contributions_list': (context) => const ContributionsListView(),
-    '/theme_settings': (context) => const ThemeSettingsView(),
-    '/language_settings': (context) => const LanguageSettingsView(),
-    '/kycView': (context) => const KycView(),
-    '/notifications': (context) => const NotficiationsListView(),
-    '/walkthrough': (context) => const WalkThrough(),
-    '/withdraw': (context) => const WithdrawView(),
-  };
-
-  // Route names constants for easy access
+  // Route path constants
   static const String initial = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
@@ -92,4 +29,5 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String walkthrough = '/walkthrough';
   static const String withdraw = '/withdraw';
+  static const String requestContribution = '/request_contribution';
 }

@@ -10,6 +10,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class AddContributionView extends StatefulWidget {
   const AddContributionView({super.key});
@@ -285,10 +286,9 @@ class _AddContributionViewState extends State<AddContributionView> {
                       }
 
                       // Navigate to request momo screen with jar and amount data
-                      Navigator.pushNamed(
-                        context,
+                      context.push(
                         AppRoutes.saveContribution,
-                        arguments: {
+                        extra: {
                           'jar': state.jarData,
                           'amount': _selectedAmount.toString(),
                           'currency': state.jarData.currency,

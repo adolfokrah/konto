@@ -12,6 +12,8 @@ import 'package:Hoga/features/settings/data/api_providers/system_settings_api_pr
 import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class WithdrawView extends StatefulWidget {
   const WithdrawView({super.key});
@@ -44,7 +46,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     super.didChangeDependencies();
 
     final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     if (arguments != null) {
       jarId = arguments['jarId'] as String?;
@@ -139,10 +141,9 @@ class _WithdrawViewState extends State<WithdrawView> {
 
     // Navigate to existing OTP view
     // Pass skipInitialOtp flag since we already sent the OTP
-    await Navigator.pushNamed(
-      context,
-      '/otp',
-      arguments: {
+    await context.push(
+      AppRoutes.otp,
+      extra: {
         'phoneNumber': phoneNumber,
         'email': email,
         'countryCode': countryCode,
@@ -187,7 +188,7 @@ class _WithdrawViewState extends State<WithdrawView> {
         );
         // Refresh jar summary to reflect updated balance
         context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
-        Navigator.pop(context);
+        context.pop();
       } else {
         AppSnackBar.show(
           context,

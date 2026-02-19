@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/bloc/onboarding_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class WalkThrough extends StatefulWidget {
   const WalkThrough({super.key});
@@ -42,7 +43,7 @@ class _WalkThroughState extends State<WalkThrough> {
     );
     context.read<OnboardingBloc>().add(OnboardingFinished());
     if (mounted) {
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class AwaitMomoPaymentView extends StatefulWidget {
   const AwaitMomoPaymentView({super.key});
@@ -102,10 +103,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
               context.read<JarSummaryReloadBloc>().add(
                 ReloadJarSummaryRequested(),
               );
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName(AppRoutes.jarDetail),
-              );
+              context.go(AppRoutes.jarDetail);
             } else if (charge.status == 'pay_offline') {
               // Start periodic verification for offline payment (only once)
               if (_verificationTimer == null && charge.reference != null) {

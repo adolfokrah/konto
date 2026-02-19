@@ -8,6 +8,7 @@ import 'package:Hoga/core/widgets/otp_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class OtpView extends StatelessWidget {
   const OtpView({super.key});
@@ -16,7 +17,7 @@ class OtpView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Extract phone number from route arguments
     final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
     final email = args?['email'] as String?;
     final countryCode = args?['countryCode'] as String?;
@@ -65,7 +66,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     // If skipInitialOtp is true (withdrawal flow), OTP was already sent
     // Otherwise (login/register flow), send OTP now
     if (!widget.skipInitialOtp) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       final phoneNumber = args?['phoneNumber'] as String?;
       final countryCode = args?['countryCode'] as String?;
       final email = args?['email'] as String?;
@@ -153,7 +154,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
         listener: (context, state) async {
           if (state is VerificationSuccess) {
             //remove the opt screen
-            Navigator.pop(context);
+            context.pop();
           } else if (state is VerificationFailure) {
             AppSnackBar.showError(context, message: state.errorMessage);
           }

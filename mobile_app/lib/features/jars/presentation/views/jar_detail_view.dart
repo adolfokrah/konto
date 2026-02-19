@@ -37,6 +37,7 @@ import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
@@ -121,7 +122,7 @@ class _JarDetailViewState extends State<JarDetailView> {
       // Check KYC status first
       if (user.kycStatus == 'none') {
         // User hasn't completed KYC - navigate to KYC page
-        Navigator.pushNamed(context, AppRoutes.kycView);
+        context.push(AppRoutes.kycView);
         return;
       }
 
@@ -143,15 +144,14 @@ class _JarDetailViewState extends State<JarDetailView> {
           user.accountNumber!.isEmpty ||
           user.accountHolder == null ||
           user.accountHolder!.isEmpty) {
-        Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+        context.push(AppRoutes.withdrawalAccount);
         return;
       }
     }
 
-    Navigator.pushNamed(
-      context,
+    context.push(
       AppRoutes.withdraw,
-      arguments: {
+      extra: {
         'jarId': jarData.id,
         'payoutBalance': jarData.balanceBreakDown.totalAmountTobeTransferred,
         'currency': jarData.currency,
@@ -226,9 +226,7 @@ class _JarDetailViewState extends State<JarDetailView> {
           listener: (context, state) {
             // Handle sign out - navigate to login
             if (state is AuthInitial) {
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/login', (route) => false);
+              context.go(AppRoutes.login);
             }
           },
         ),
@@ -248,7 +246,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                   true; // Set flag to prevent multiple calls
               Future.delayed(const Duration(seconds: 1), () {
                 if (mounted && _walkthroughTriggered) {
-                  Navigator.pushNamed(context, AppRoutes.walkthrough).then((_) {
+                  context.push(AppRoutes.walkthrough).then((_) {
                     // Reset flag when user returns from walkthrough
                     if (mounted) {
                       setState(() {
@@ -342,17 +340,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     onPressed: () {
                                       // Check KYC verification before allowing request
                                       if (kycStatus != 'verified') {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.kycView,
-                                        );
+                                        context.push(AppRoutes.kycView);
                                         return;
                                       }
 
-                                      Navigator.pushNamed(
-                                        context,
+                                      context.push(
                                         AppRoutes.contributionRequest,
-                                        arguments: {
+                                        extra: {
                                           'paymentLink': state.jarData.link,
                                           'jarName': state.jarData.name,
                                         },
@@ -537,10 +531,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 key: const Key('contribute_button'),
                                 enabled: jarData.status != JarStatus.sealed,
                                 onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.addContribution,
-                                  );
+                                  context.push(AppRoutes.addContribution);
                                 },
                                 icon: Icons.add,
                                 opacity: 0.8,
@@ -579,17 +570,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     onPressed: () {
                                       // Check KYC verification before allowing request
                                       if (kycStatus != 'verified') {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.kycView,
-                                        );
+                                        context.push(AppRoutes.kycView);
                                         return;
                                       }
 
-                                      Navigator.pushNamed(
-                                        context,
+                                      context.push(
                                         AppRoutes.contributionRequest,
-                                        arguments: {
+                                        extra: {
                                           'paymentLink': state.jarData.link,
                                           'jarName': state.jarData.name,
                                         },
@@ -624,10 +611,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                               AppIconButton(
                                 key: const Key('info_button'),
                                 onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.jarInfo,
-                                  );
+                                  context.push(AppRoutes.jarInfo);
                                 },
                                 icon: Icons.info_outline,
                               ),
@@ -896,10 +880,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 } catch (_) {
                                   // Bloc not found in context; ignore.
                                 }
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.contributionsList,
-                                );
+                                context.push(AppRoutes.contributionsList);
                               },
                               child: Text(
                                 localizations.seeAll,
@@ -952,10 +933,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppButton.filled(
                                         text: localizations.contribute,
                                         onPressed: () {
-                                          Navigator.pushNamed(
-                                            context,
-                                            AppRoutes.addContribution,
-                                          );
+                                          context.push(AppRoutes.addContribution);
                                         },
                                       ),
                                     ],
@@ -1179,7 +1157,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                 AppButton.outlined(
                   text: localizations.createNewJar,
                   onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.jarCreate);
+                    context.push(AppRoutes.jarCreate);
                   },
                 ),
               ],

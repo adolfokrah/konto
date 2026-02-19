@@ -8,6 +8,7 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class GoalProgressCard extends StatelessWidget {
   /// Current amount raised
@@ -70,7 +71,7 @@ class GoalProgressCard extends StatelessWidget {
                   key: const Key('goalProgressCardEditIcon'),
                   child: Icon(Icons.chevron_right, size: 20),
                   onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.jarGoal);
+                    context.push(AppRoutes.jarGoal);
                   },
                 ),
               ],
@@ -211,7 +212,7 @@ class GoalProgressCard extends StatelessWidget {
         AppButton.filled(
           text: localizations.setGoal,
           onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.jarGoal);
+            context.push(AppRoutes.jarGoal);
           },
         ),
       ],

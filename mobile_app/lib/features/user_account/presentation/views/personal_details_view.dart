@@ -14,6 +14,7 @@ import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class PersonalDetailsView extends StatefulWidget {
   const PersonalDetailsView({super.key});
@@ -110,13 +111,10 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
 
           if (criticalFieldsChanged) {
             // Navigate to KYC view to re-verify identity and clear entire navigation stack
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRoutes.kycView,
-              (route) => false, // Remove all previous routes
-            );
+            context.go(AppRoutes.kycView);
           } else {
             // Just go back to previous screen if no critical fields changed
-            Navigator.of(context).pop();
+            context.pop();
           }
         } else if (userAccountState is UserAccountError) {
           AppSnackBar.showError(context, message: userAccountState.message);

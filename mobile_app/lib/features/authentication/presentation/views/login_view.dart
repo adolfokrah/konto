@@ -11,6 +11,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -55,18 +56,13 @@ class _LoginViewState extends State<LoginView> {
 
               if (state is AuthAuthenticated) {
                 // Navigate to home on success
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.jarDetail,
-                  (route) => false,
-                );
+                context.go(AppRoutes.jarDetail);
               }
               if (state is PhoneNumberAvailable) {
                 // Phone number available for registration - redirect to register
-                Navigator.pushNamed(
-                  context,
+                context.push(
                   AppRoutes.register,
-                  arguments: {
+                  extra: {
                     'initialPhoneNumber': state.phoneNumber,
                     'initialCountryCode': state.countryCode,
                     'initialSelectedCountry': _selectedCountry,
@@ -74,10 +70,9 @@ class _LoginViewState extends State<LoginView> {
                 );
               } else if (state is PhoneNumberNotAvailable) {
                 // Phone number exists - proceed to login OTP
-                Navigator.pushNamed(
-                  context,
+                context.push(
                   AppRoutes.otp,
-                  arguments: {
+                  extra: {
                     'phoneNumber': state.phoneNumber,
                     'countryCode': state.countryCode,
                     'email': state.email ?? '',
@@ -174,7 +169,7 @@ class _LoginViewState extends State<LoginView> {
                     text: localizations.createAccount,
                     variant: ButtonVariant.outline,
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.register);
+                      context.push(AppRoutes.register);
                     },
                   ),
                 ],

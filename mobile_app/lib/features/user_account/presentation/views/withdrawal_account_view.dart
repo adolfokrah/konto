@@ -13,6 +13,7 @@ import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verific
 import 'package:Hoga/features/user_account/presentation/widgets/review_withdrawal_account.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:go_router/go_router.dart';
 
 class WithdrawalAccountView extends StatefulWidget {
   const WithdrawalAccountView({super.key});
@@ -145,7 +146,7 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
                   token: state.token,
                 ),
               );
-              Navigator.pop(context);
+              context.pop();
             } else if (state is UserAccountError) {
               AppSnackBar.showError(context, message: state.message);
             }

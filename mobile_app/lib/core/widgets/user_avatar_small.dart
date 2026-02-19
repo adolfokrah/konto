@@ -4,6 +4,7 @@ import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class UserAvatarSmall extends StatelessWidget {
   final double radius;
@@ -33,7 +34,7 @@ class UserAvatarSmall extends StatelessWidget {
 
             return GestureDetector(
               onTap: () {
-                Navigator.of(context).pushNamed(AppRoutes.userAccountView);
+                context.push(AppRoutes.userAccountView);
               },
               child: ContributorAvatar(
                 contributorName: contributorName,

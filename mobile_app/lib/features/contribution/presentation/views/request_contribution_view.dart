@@ -17,6 +17,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:go_router/go_router.dart';
 
 class RequestContributionView extends StatefulWidget {
   const RequestContributionView({super.key});
@@ -204,14 +205,14 @@ class _RequestContributionViewState extends State<RequestContributionView> {
 
     // Extract arguments from the route
     final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
     final String? jarName = args?['jarName'];
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           localizations.requestContribution,

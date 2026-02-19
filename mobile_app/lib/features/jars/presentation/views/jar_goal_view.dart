@@ -13,6 +13,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class JarGoalView extends StatefulWidget {
   const JarGoalView({super.key});
@@ -123,7 +124,7 @@ class _JarGoalViewState extends State<JarGoalView>
       body: BlocListener<UpdateJarBloc, UpdateJarState>(
         listener: (context, state) {
           if (state is UpdateJarSuccess) {
-            Navigator.of(context).pop();
+            context.pop();
             context.read<JarSummaryReloadBloc>().add(
               ReloadJarSummaryRequested(),
             );

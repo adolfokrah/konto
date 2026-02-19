@@ -4,6 +4,7 @@ import 'package:Hoga/core/widgets/alert_banner.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 /// A widget that displays contextual alerts for jar creators based on missing information
 /// Shows one alert at a time in priority order:
@@ -40,7 +41,7 @@ class JarCompletionAlert extends StatelessWidget {
             message:
                 'Every jar holds a story worth sharing. Add a short description to tell yours. Tap to begin.',
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.jarDescriptionEdit);
+              context.push(AppRoutes.jarDescriptionEdit);
             },
           );
         }
@@ -52,7 +53,7 @@ class JarCompletionAlert extends StatelessWidget {
             message:
                 'Add a personalized thank you message to show appreciation to your contributors. Tap to add a thank you message.',
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.jarThankYouMessageEdit);
+              context.push(AppRoutes.jarThankYouMessageEdit);
             },
           );
         }
@@ -68,7 +69,7 @@ class JarCompletionAlert extends StatelessWidget {
             message:
                 'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.withdrawalAccount);
+              context.push(AppRoutes.withdrawalAccount);
             },
           );
         }
@@ -79,7 +80,7 @@ class JarCompletionAlert extends StatelessWidget {
             message:
                 'Verify your identity to transfer funds from your jar. Tap to start verification.',
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.kycView);
+              context.push(AppRoutes.kycView);
             },
           );
         }

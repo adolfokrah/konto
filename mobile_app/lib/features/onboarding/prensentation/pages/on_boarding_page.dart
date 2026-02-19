@@ -7,6 +7,7 @@ import 'package:Hoga/core/constants/button_variants.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:marqueer/marqueer.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class OnBoardingPage extends StatelessWidget {
   const OnBoardingPage({super.key});
@@ -135,7 +136,7 @@ class OnBoardingPage extends StatelessWidget {
                     text: "Login",
                     variant: ButtonVariant.fill,
                     onPressed: () {
-                      Navigator.of(context).pushNamed(AppRoutes.login);
+                      context.push(AppRoutes.login);
                     },
                   ),
                   const SizedBox(height: AppSpacing.spacingXs),
@@ -143,7 +144,7 @@ class OnBoardingPage extends StatelessWidget {
                     text: "Register",
                     variant: ButtonVariant.outline,
                     onPressed: () {
-                      Navigator.of(context).pushNamed(AppRoutes.register);
+                      context.push(AppRoutes.register);
                     },
                   ),
                   const SizedBox(height: AppSpacing.spacingXs),

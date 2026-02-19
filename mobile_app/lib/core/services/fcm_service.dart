@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/services/navigation_service.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:Hoga/main.dart' show navigatorKey;
+import 'package:Hoga/router.dart' show rootNavigatorKey;
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/core/services/local_notification_service.dart';
+import 'package:go_router/go_router.dart';
 
 /// Simple Firebase Cloud Messaging service
 class FCMService {
@@ -69,21 +72,17 @@ class FCMService {
   /// Handle notification tap with step-by-step flow
   static void _handleNotificationTap(RemoteMessage message) {
     try {
-      // Step 1: User tapped notification (already happened)
-      // Step 2: Check type
       final messageData = message.data;
       final type = messageData['type'];
+      final path = messageData['path'];
 
       if (type == 'contribution') {
-        // Extract jarId and contributionId from message data
+        // Special handling: multi-step jar loading + contribution bottom sheet
         final jarId = messageData['jarId'];
         final contributionId = messageData['contributionId'];
         if (jarId != null && contributionId != null) {
-          // Get current context from global navigator key
-          final BuildContext? context = navigatorKey.currentContext;
-
+          final BuildContext? context = rootNavigatorKey.currentContext;
           if (context != null) {
-            // Steps 3 & 4: Set selected jar and open contribution view
             NavigationService.navigateToContribution(
               context: context,
               jarId: jarId,
@@ -95,38 +94,33 @@ class FCMService {
         } else {
           print("❌ Missing jarId or contributionId in notification data");
         }
-      } else if (type == 'jarInvite') {
-        final BuildContext? context = navigatorKey.currentContext;
+      } else if (path != null) {
+        // Generic path-based navigation for all other types
+        final BuildContext? context = rootNavigatorKey.currentContext;
         if (context != null) {
-          // Navigate first so the NotificationsBloc in that route tree is mounted
-          NavigationService.navigateToNotifications(context);
-        } else {
-          print("❌ No navigation context available for jarInvite tap");
-        }
-      } else if (type == 'kyc') {
-        final BuildContext? context = navigatorKey.currentContext;
-        if (context != null) {
-          NavigationService.navigateToNotifications(context);
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            final postNavContext = navigatorKey.currentContext;
-            if (postNavContext != null) {
-              try {
-                postNavContext.read<NotificationsBloc>().add(
-                  FetchNotifications(limit: 20, page: 1),
-                );
-                _triggerAutoLogin(postNavContext);
-              } catch (e) {
-                print(
-                  '⚠️ Could not dispatch FetchNotifications after kycFailed navigation: $e',
-                );
+          GoRouter.of(context).push(path);
+
+          // Type-specific side effects after navigation
+          if (type == 'kyc') {
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              final postNavContext = rootNavigatorKey.currentContext;
+              if (postNavContext != null) {
+                try {
+                  postNavContext.read<NotificationsBloc>().add(
+                    FetchNotifications(limit: 20, page: 1),
+                  );
+                  _triggerAutoLogin(postNavContext);
+                } catch (e) {
+                  print('⚠️ Could not dispatch side effects after $type navigation: $e');
+                }
               }
-            }
-          });
+            });
+          }
         } else {
-          print("❌ No navigation context available for kycFailed tap");
+          print("❌ No navigation context available for '$type' tap");
         }
       } else {
-        print("ℹ️ Notification type '$type' not handled by contribution flow");
+        print("ℹ️ No path in notification data for type '$type'");
       }
     } catch (e) {
       print("❌ Error handling notification tap: $e");
@@ -139,14 +133,14 @@ class FCMService {
 
     if (messageData['type'] == 'contribution') {
       final jarId = messageData['jarId'];
-      final BuildContext? context = navigatorKey.currentContext;
+      final BuildContext? context = rootNavigatorKey.currentContext;
       if (jarId != null && context != null) {
         // Reload current jar summary to reflect new contribution
         NavigationService.reloadCurrentJar(context, jarId);
       }
     } else if (messageData['type'] == 'jarInvite' ||
         messageData['type'] == 'kyc') {
-      final BuildContext? context = navigatorKey.currentContext;
+      final BuildContext? context = rootNavigatorKey.currentContext;
       if (context != null) {
         try {
           // Dispatch fetch notifications to update list
@@ -159,9 +153,39 @@ class FCMService {
           print('⚠️ Could not dispatch FetchNotifications on push: $e');
         }
       }
-    } else {
-      print("ℹ️ Push notification type '${messageData['type']}' not handled");
     }
+
+    // Show in-app notification banner
+    _showInAppNotification(message);
+  }
+
+  /// Show a local notification for foreground push notifications.
+  /// Skips if the notification is a contribution for the currently selected jar.
+  static void _showInAppNotification(RemoteMessage message) {
+    final messageData = message.data;
+    final type = messageData['type'];
+    final BuildContext? context = rootNavigatorKey.currentContext;
+
+    // Skip notification for contribution on the currently selected jar
+    if (type == 'contribution' && context != null) {
+      final jarId = messageData['jarId'];
+      try {
+        final state = context.read<JarSummaryBloc>().state;
+        if (state is JarSummaryLoaded && state.jarData.id == jarId) {
+          return;
+        }
+      } catch (_) {}
+    }
+
+    final title = message.notification?.title ?? '';
+    final body = message.notification?.body ?? '';
+    if (title.isEmpty && body.isEmpty) return;
+
+    LocalNotificationService.show(
+      title: title,
+      body: body,
+      data: messageData,
+    );
   }
 
   /// Trigger auto login to refresh user authentication state
@@ -175,7 +199,7 @@ class FCMService {
 
   /// Public method to trigger auto login from anywhere in the app
   static void triggerAutoLogin() {
-    final BuildContext? context = navigatorKey.currentContext;
+    final BuildContext? context = rootNavigatorKey.currentContext;
     if (context != null) {
       _triggerAutoLogin(context);
     } else {

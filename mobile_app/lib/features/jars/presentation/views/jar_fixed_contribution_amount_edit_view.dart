@@ -9,6 +9,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class JarFixedContributionAmountEditView extends StatefulWidget {
   const JarFixedContributionAmountEditView({super.key});
@@ -56,7 +57,7 @@ class _JarFixedContributionAmountEditViewState
       body: BlocListener<UpdateJarBloc, UpdateJarState>(
         listener: (context, state) {
           if (state is UpdateJarSuccess) {
-            Navigator.of(context).pop();
+            context.pop();
             AppSnackBar.showSuccess(
               context,
               message: localizations.fixedContributionAmountUpdatedSuccessfully,

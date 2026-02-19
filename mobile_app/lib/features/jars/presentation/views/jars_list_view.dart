@@ -16,6 +16,8 @@ import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:Hoga/route.dart';
 
 class JarsListView extends StatefulWidget {
   const JarsListView({super.key});
@@ -185,7 +187,7 @@ class _JarsListViewState extends State<JarsListView> {
                           ),
                           onPressed: () {
                             HapticUtils.heavy();
-                            Navigator.of(context).pushNamed('/jar_create');
+                            context.push(AppRoutes.jarCreate);
                           },
                         ),
                       ),

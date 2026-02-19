@@ -10,6 +10,7 @@ import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class ChangePhoneNumberView extends StatefulWidget {
   const ChangePhoneNumberView({super.key});
@@ -32,10 +33,9 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
   void _handleChangePhoneNumber() {
     if (_isPhoneNumberChanged()) {
       // Navigate to OTP view
-      Navigator.pushNamed(
-        context,
+      context.push(
         AppRoutes.otp,
-        arguments: {'phoneNumber': _phoneNumber, 'countryCode': _countryCode},
+        extra: {'phoneNumber': _phoneNumber, 'countryCode': _countryCode},
       );
     }
   }

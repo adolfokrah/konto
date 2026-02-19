@@ -1,4 +1,5 @@
 import 'package:Hoga/core/services/fcm_service.dart';
+import 'package:Hoga/core/services/local_notification_service.dart';
 import 'package:Hoga/features/collaborators/logic/bloc/reminder_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
@@ -25,7 +26,8 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
-import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
+import 'package:Hoga/router.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -34,9 +36,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
-
-// Global navigator key for deep navigation
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +57,9 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize local notifications for foreground push display
+  await LocalNotificationService.initialize();
 
   // Initialize FCM listeners
   FCMService.initialize();
@@ -106,6 +108,12 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
+  GoRouter? _router;
+
+  GoRouter _getRouter(BuildContext context) {
+    return _router ??= createRouter(context.read<AuthBloc>());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -146,7 +154,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    FlutterLoadingOverlay().init(navigatorKey: navigatorKey);
+    FlutterLoadingOverlay().init(navigatorKey: rootNavigatorKey);
 
     return MultiBlocProvider(
       providers: [
@@ -258,8 +266,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 theme_enum.AppTheme.system => ThemeMode.dark, // Force dark even for system
               };
 
-              return MaterialApp(
-                navigatorKey: navigatorKey,
+              return MaterialApp.router(
+                routerConfig: _getRouter(context),
                 title: 'hoga',
                 // theme: AppTheme.lightTheme, // COMMENTED OUT - Light theme disabled
                 darkTheme: AppTheme.darkTheme,
@@ -310,8 +318,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                     child: child ?? Container(),
                   );
                 },
-                routes: AppRoutes.routes,
-                initialRoute: AppRoutes.initial,
               );
             },
           );

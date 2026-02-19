@@ -11,6 +11,7 @@ class AppSnackBar {
     Duration duration = const Duration(seconds: 3),
     String? actionLabel,
     VoidCallback? onActionPressed,
+    VoidCallback? onTap,
   }) {
     final color = _getColorForType(type);
     final icon = _getIconForType(type);
@@ -26,6 +27,7 @@ class AppSnackBar {
         duration: duration,
         actionLabel: actionLabel,
         onActionPressed: onActionPressed,
+        onTap: onTap,
       );
       return;
     } catch (e) {
@@ -121,6 +123,7 @@ class AppSnackBar {
     Duration duration = const Duration(seconds: 3),
     String? actionLabel,
     VoidCallback? onActionPressed,
+    VoidCallback? onTap,
   }) {
     show(
       context,
@@ -129,6 +132,7 @@ class AppSnackBar {
       duration: duration,
       actionLabel: actionLabel,
       onActionPressed: onActionPressed,
+      onTap: onTap,
     );
   }
 
@@ -167,6 +171,7 @@ class AppSnackBar {
     required Duration duration,
     String? actionLabel,
     VoidCallback? onActionPressed,
+    VoidCallback? onTap,
   }) {
     late OverlayEntry overlayEntry;
 
@@ -176,48 +181,56 @@ class AppSnackBar {
             bottom: 50,
             left: 16,
             right: 16,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(icon, color: Colors.white, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        message,
-                        style: TextStyles.titleRegularM.copyWith(
-                          color: Colors.white,
-                        ),
+            child: GestureDetector(
+              onTap: onTap != null
+                  ? () {
+                      overlayEntry.remove();
+                      onTap();
+                    }
+                  : null,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    if (actionLabel != null)
-                      TextButton(
-                        onPressed: () {
-                          overlayEntry.remove();
-                          onActionPressed?.call();
-                        },
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(icon, color: Colors.white, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: Text(
-                          actionLabel,
-                          style: const TextStyle(color: Colors.white),
+                          message,
+                          style: TextStyles.titleRegularM.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                  ],
+                      if (actionLabel != null)
+                        TextButton(
+                          onPressed: () {
+                            overlayEntry.remove();
+                            onActionPressed?.call();
+                          },
+                          child: Text(
+                            actionLabel,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

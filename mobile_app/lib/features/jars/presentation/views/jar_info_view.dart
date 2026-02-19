@@ -17,6 +17,7 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class JarInfoView extends StatefulWidget {
   const JarInfoView({super.key});
@@ -80,7 +81,7 @@ class _JarInfoViewState extends State<JarInfoView> {
         BlocListener<JarSummaryBloc, JarSummaryState>(
           listener: (context, state) {
             if (_isBreakingJar) {
-              Navigator.pop(context);
+              context.pop();
             }
           },
         ),
@@ -115,7 +116,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                       ClearCurrentJarRequested(),
                     );
                     Navigator.of(context).pop();
-                    Navigator.pop(context); // Go back to previous screen
+                    context.pop(); // Go back to previous screen
                   },
                 );
               }
@@ -346,10 +347,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                     ListTile(
                                       contentPadding: EdgeInsets.zero,
                                       onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.jarThankYouMessageEdit,
-                                        );
+                                        context.push(AppRoutes.jarThankYouMessageEdit);
                                       },
                                       dense: true,
                                       title: Text(
@@ -390,10 +388,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                     ListTile(
                                       contentPadding: EdgeInsets.zero,
                                       onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.jarDescriptionEdit,
-                                        );
+                                        context.push(AppRoutes.jarDescriptionEdit);
                                       },
                                       dense: true,
                                       title: Text(
@@ -482,11 +477,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       ListTile(
                                         contentPadding: EdgeInsets.zero,
                                         onTap: () {
-                                          Navigator.pushNamed(
-                                            context,
-                                            AppRoutes
-                                                .jarFixedContributionAmountEdit,
-                                          );
+                                          context.push(AppRoutes.jarFixedContributionAmountEdit);
                                         },
                                         dense: true,
                                         title: Text(

@@ -16,6 +16,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -38,7 +39,7 @@ class _RegisterViewState extends State<RegisterView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          GoRouterState.of(context).extra as Map<String, dynamic>?;
       // Set initial values from widget parameters
       setState(() {
         _countryCode = args?['initialCountryCode'] ?? '+233';
@@ -150,11 +151,7 @@ class _RegisterViewState extends State<RegisterView> {
           listener: (context, state) {
             if (state is AuthAuthenticated) {
               // Navigate to home on success
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.jarDetail,
-                (route) => false,
-              );
+              context.go(AppRoutes.jarDetail);
             }
 
             if (state is AuthError) {
@@ -167,10 +164,9 @@ class _RegisterViewState extends State<RegisterView> {
 
             if (state is PhoneNumberAvailable) {
               // Phone number is available for registration - proceed to OTP
-              Navigator.pushNamed(
-                context,
+              context.push(
                 AppRoutes.otp,
-                arguments: {
+                extra: {
                   'phoneNumber': _phoneNumber,
                   'countryCode': _countryCode,
                   'email': _emailController.text.trim(),
@@ -351,7 +347,7 @@ class _RegisterViewState extends State<RegisterView> {
                         onPressed: () {
                           if (state is AuthLoading) return;
                           // Handle login navigation
-                          Navigator.pop(context);
+                          context.pop();
                         },
                       ),
                     ],
