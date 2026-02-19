@@ -56,7 +56,7 @@ class _OtpViewContent extends StatefulWidget {
 }
 
 class _OtpViewContentState extends State<_OtpViewContent> {
-  late Timer _timer;
+  Timer? _timer;
   int _resendCountdown = 30;
   bool _canResend = false;
 
@@ -99,7 +99,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 

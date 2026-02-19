@@ -470,6 +470,10 @@ export interface User {
    * User role - only admin users can access the CMS
    */
   role: 'user' | 'admin';
+  /**
+   * Demo users always use OTP 123456 and skip SMS/email sending
+   */
+  demoUser?: boolean | null;
   bank?: string | null;
   accountNumber?: string | null;
   accountHolder?: string | null;
@@ -2390,6 +2394,7 @@ export interface UsersSelect<T extends boolean = true> {
   otpAttempts?: T;
   kycStatus?: T;
   role?: T;
+  demoUser?: T;
   bank?: T;
   accountNumber?: T;
   accountHolder?: T;
