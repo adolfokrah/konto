@@ -13,6 +13,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/route.dart';
+import 'package:go_router/go_router.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
@@ -239,9 +240,7 @@ class _JarCreateViewState extends State<JarCreateView> {
               context.read<JarListBloc>().add(LoadJarList());
 
               // 4. Replace the entire navigation stack with the jar detail view
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(AppRoutes.jarDetail, (route) => false);
+              context.go(AppRoutes.jarDetail);
             } else if (state is JarCreateFailure) {
               AppSnackBar.showError(
                 context,

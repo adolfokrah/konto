@@ -13,8 +13,10 @@ import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
 import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -76,7 +78,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -87,11 +89,14 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
-            routes: {
-              '/otp': (context) => const OtpView(),
-              '/login': (context) => const LoginView(),
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+                '/otp': (context) => const OtpView(),
+                '/login': (context) => const LoginView(),
+              },
+            ),
           ),
         ),
       );
@@ -175,9 +180,6 @@ void main() {
         );
       });
 
-      // Create a navigator key to control navigation
-      final navigatorKey = GlobalKey<NavigatorState>();
-
       // Start with a simple app that can navigate to RegisterView with arguments
       await tester.pumpWidget(
         MultiBlocProvider(
@@ -190,8 +192,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
-            navigatorKey: navigatorKey,
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -202,29 +203,23 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      navigatorKey.currentContext!,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterView(),
-                        settings: const RouteSettings(
-                          arguments: {
-                            'initialPhoneNumber': '245301631',
-                            'initialCountryCode': '+233',
-                            'initialSelectedCountry': 'Ghana',
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text('Navigate to Register'),
+            routerConfig: createTestRouter(
+              initialRoute: '/start',
+              routes: {
+                '/start': (context) => Scaffold(
+                  body: Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        GoRouter.of(context).push('/register');
+                      },
+                      child: const Text('Navigate to Register'),
+                    ),
+                  ),
                 ),
-              ),
+                '/register': (context) => const RegisterView(),
+                '/otp': (context) => const OtpView(),
+              },
             ),
-            routes: {'/otp': (context) => const OtpView()},
           ),
         ),
       );
@@ -296,7 +291,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -307,7 +302,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -354,7 +354,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -365,7 +365,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -412,7 +417,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -423,7 +428,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -489,7 +499,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -500,7 +510,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -556,7 +571,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -567,11 +582,23 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
-            routes: {'/login': (context) => const LoginView()},
+            routerConfig: createTestRouter(
+              initialRoute: '/login',
+              routes: {
+                '/login': (context) => const Scaffold(
+                  body: Center(child: Text('Login Page')),
+                ),
+                '/register': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
+
+      // Navigate to register so there's a route to pop back to
+      final element = tester.element(find.byType(Scaffold));
+      GoRouter.of(element).push('/register');
       await tester.pumpAndSettle();
 
       // Find and tap the login button using its key
@@ -585,12 +612,8 @@ void main() {
       await tester.tap(loginButton, warnIfMissed: false);
       await tester.pumpAndSettle();
 
-      // Should navigate back (pop) since it's likely Navigator.pop()
-      // We can verify by checking if we're still on register view or not
-      // If using Navigator.pop(), the view might disappear
-      // If using named route, we'd see LoginView
-
-      // This test verifies the button exists and is tappable
+      // Should navigate back (pop) to login page
+      expect(find.text('Login Page'), findsOneWidget);
     });
   });
 
@@ -607,7 +630,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -618,7 +641,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -650,7 +678,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -661,7 +689,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );
@@ -691,7 +724,7 @@ void main() {
                       UserAccountBloc(authBloc: context.read<AuthBloc>()),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -702,7 +735,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const RegisterView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const RegisterView(),
+              },
+            ),
           ),
         ),
       );

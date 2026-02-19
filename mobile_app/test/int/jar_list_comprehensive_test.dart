@@ -13,6 +13,8 @@ import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -204,21 +206,26 @@ void main() {
       setupSuccessfulJarListMock();
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()),
+            BlocProvider(create: (_) => JarSummaryBloc()),
+            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
           ],
-          supportedLocales: const [Locale('en')],
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => AuthBloc()),
-              BlocProvider(create: (_) => JarSummaryBloc()),
-              BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
-            child: const JarsListView(),
+            supportedLocales: const [Locale('en')],
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const JarsListView(),
+              },
+            ),
           ),
         ),
       );
@@ -443,25 +450,38 @@ void main() {
       setupJarDetailsMock();
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()),
+            BlocProvider(create: (_) => JarSummaryBloc()),
+            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
           ],
-          supportedLocales: const [Locale('en')],
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => AuthBloc()),
-              BlocProvider(create: (_) => JarSummaryBloc()),
-              BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
-            child: const JarsListView(),
+            supportedLocales: const [Locale('en')],
+            routerConfig: createTestRouter(
+              initialRoute: '/jar_detail',
+              routes: {
+                '/jar_detail': (context) => const Scaffold(
+                  body: Center(child: Text('Jar Detail Placeholder')),
+                ),
+                '/jar_list': (context) => const JarsListView(),
+              },
+            ),
           ),
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Navigate to jar list (pushed on top of jar detail)
+      final element = tester.element(find.byType(Scaffold));
+      GoRouter.of(element).push('/jar_list');
       await tester.pumpAndSettle();
 
       await tester.pump(const Duration(milliseconds: 500));
@@ -480,6 +500,7 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
 
+      // Jar list should be popped, showing the jar detail placeholder
       expect(find.byType(JarsListView), findsNothing);
 
       final jarNameInDetails = find.text('Emergency Fund');
@@ -522,21 +543,26 @@ void main() {
       setupEmptyJarListMock();
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()),
+            BlocProvider(create: (_) => JarSummaryBloc()),
+            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
           ],
-          supportedLocales: const [Locale('en')],
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => AuthBloc()),
-              BlocProvider(create: (_) => JarSummaryBloc()),
-              BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
-            child: const JarsListView(),
+            supportedLocales: const [Locale('en')],
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const JarsListView(),
+              },
+            ),
           ),
         ),
       );
@@ -571,21 +597,26 @@ void main() {
       setupErrorJarListMock();
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()),
+            BlocProvider(create: (_) => JarSummaryBloc()),
+            BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
           ],
-          supportedLocales: const [Locale('en')],
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => AuthBloc()),
-              BlocProvider(create: (_) => JarSummaryBloc()),
-              BlocProvider(create: (_) => JarListBloc()..add(LoadJarList())),
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
-            child: const JarsListView(),
+            supportedLocales: const [Locale('en')],
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const JarsListView(),
+              },
+            ),
           ),
         ),
       );

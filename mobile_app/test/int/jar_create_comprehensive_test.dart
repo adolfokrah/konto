@@ -16,6 +16,7 @@ import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -183,7 +184,7 @@ void main() {
               (context) => UserAccountBloc(authBloc: context.read<AuthBloc>()),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -191,24 +192,15 @@ void main() {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [Locale('en')],
-        home: const JarCreateView(),
-        onGenerateRoute: (settings) {
-          // Handle navigation for test environment
-          switch (settings.name) {
-            case '/jar_detail':
-              // Return a simple placeholder for jar detail
-              return MaterialPageRoute(
-                builder:
-                    (context) => const Scaffold(
-                      body: Center(child: Text('Jar Detail View')),
-                    ),
-              );
-            default:
-              return MaterialPageRoute(
-                builder: (context) => const JarCreateView(),
-              );
-          }
-        },
+        routerConfig: createTestRouter(
+          initialRoute: '/jar_create',
+          routes: {
+            '/jar_create': (context) => const JarCreateView(),
+            '/jar_detail': (context) => const Scaffold(
+              body: Center(child: Text('Jar Detail View')),
+            ),
+          },
+        ),
       ),
     );
   }

@@ -24,6 +24,7 @@ import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -230,7 +231,7 @@ void main() {
               ),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -238,12 +239,15 @@ void main() {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [Locale('en'), Locale('fr')],
-        home: const JarDetailView(),
-        routes: {
-          '/login': (context) => const Scaffold(body: Text('Login Screen')),
-          '/request_contribution': (context) => const RequestContributionView(),
-          '/kycView': (context) => const Scaffold(body: Text('KYC View')),
-        },
+        routerConfig: createTestRouter(
+          initialRoute: '/jar_detail',
+          routes: {
+            '/jar_detail': (context) => const JarDetailView(),
+            '/login': (context) => const Scaffold(body: Text('Login Screen')),
+            '/request_contribution': (context) => const RequestContributionView(),
+            '/kycView': (context) => const Scaffold(body: Text('KYC View')),
+          },
+        ),
       ),
     );
   }
@@ -428,7 +432,7 @@ void main() {
                 ),
           ),
         ],
-        child: MaterialApp(
+        child: MaterialApp.router(
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -436,11 +440,14 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('en'), Locale('fr')],
-          home: const JarDetailView(),
-          routes: {
-            '/request_contribution':
-                (context) => const RequestContributionView(),
-          },
+          routerConfig: createTestRouter(
+            initialRoute: '/jar_detail',
+            routes: {
+              '/jar_detail': (context) => const JarDetailView(),
+              '/request_contribution':
+                  (context) => const RequestContributionView(),
+            },
+          ),
         ),
       );
 

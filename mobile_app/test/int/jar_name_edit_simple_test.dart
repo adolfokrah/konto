@@ -13,6 +13,7 @@ import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -110,23 +111,28 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => AuthBloc()),
+            BlocProvider(
+              create: (_) => JarSummaryBloc()..add(GetJarSummaryRequested()),
+            ),
+            BlocProvider(create: (_) => UpdateJarBloc()),
           ],
-          supportedLocales: const [Locale('en')],
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => AuthBloc()),
-              BlocProvider(
-                create: (_) => JarSummaryBloc()..add(GetJarSummaryRequested()),
-              ),
-              BlocProvider(create: (_) => UpdateJarBloc()),
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
-            child: const JarNameEditView(),
+            supportedLocales: const [Locale('en')],
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const JarNameEditView(),
+              },
+            ),
           ),
         ),
       );

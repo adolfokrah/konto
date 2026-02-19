@@ -133,7 +133,7 @@ class _JarsListViewState extends State<JarsListView> {
               AppIconButton(
                 onPressed: () {
                   HapticUtils.heavy();
-                  Navigator.of(context).pop();
+                  context.pop();
                 },
                 icon: Icons.close,
                 size: const Size(40, 40),
@@ -398,7 +398,7 @@ class _JarsListViewState extends State<JarsListView> {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
       child: InkWell(
         onTap: () {
-          Navigator.pop(context);
+          if (context.canPop()) context.pop();
           HapticUtils.heavy();
           context.read<JarSummaryBloc>().add(
             SetCurrentJarRequested(jarId: jar.id),

@@ -17,6 +17,7 @@ import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:go_router/go_router.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 
@@ -69,7 +70,94 @@ void main() {
       String amount = '100.0',
       String currency = 'USD',
     }) {
-      return MaterialApp(
+      final router = GoRouter(
+        initialLocation: '/jar_detail',
+        routes: [
+          GoRoute(
+            path: '/jar_detail',
+            builder:
+                (context, state) => Scaffold(
+                  appBar: AppBar(title: const Text('Jar Detail')),
+                  body: const Center(child: Text('Jar Detail View')),
+                ),
+          ),
+          GoRoute(
+            path: '/add_contribution',
+            builder:
+                (context, state) => Scaffold(
+                  appBar: AppBar(title: const Text('Add Contribution')),
+                  body: const Center(child: Text('Add Contribution View')),
+                ),
+          ),
+          GoRoute(
+            path: '/save_contribution',
+            builder:
+                (context, state) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) {
+                        final jarSummaryBloc = JarSummaryBloc();
+                        return JarSummaryReloadBloc(
+                          jarSummaryBloc: jarSummaryBloc,
+                        );
+                      },
+                    ),
+                    BlocProvider(
+                      create: (context) => AddContributionBloc(),
+                    ),
+                    BlocProvider(create: (context) => MomoPaymentBloc()),
+                    BlocProvider(
+                      create: (context) {
+                        final authBloc = AuthBloc();
+                        // Initialize with authenticated state for testing
+                        final testUser = User(
+                          id: 'test-user-123',
+                          email: 'test@example.com',
+                          fullName: 'Test User',
+                          username: 'testuser',
+                          phoneNumber: '+1234567890',
+                          countryCode: 'US',
+                          country: 'United States',
+                          kycStatus: "verified",
+                          createdAt: DateTime.now(),
+                          updatedAt: DateTime.now(),
+                          accountHolder: 'Test Account Holder',
+                          sessions: [
+                            UserSession(
+                              id: 'test-session-id',
+                              createdAt: DateTime.now(),
+                              expiresAt: DateTime.now().add(
+                                const Duration(days: 30),
+                              ),
+                            ),
+                          ],
+                          appSettings: const AppSettings(
+                            language: AppLanguage.english,
+                            theme: AppTheme.light,
+                            biometricAuthEnabled: false,
+                            notificationsSettings: NotificationSettings(
+                              pushNotificationsEnabled: true,
+                              emailNotificationsEnabled: true,
+                              smsNotificationsEnabled: false,
+                            ),
+                          ),
+                        );
+                        return authBloc..add(
+                          UpdateUserData(
+                            updatedUser: testUser,
+                            token: 'test-jwt-token-123456',
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  child: const SaveContributionView(),
+                ),
+          ),
+        ],
+      );
+
+      return MaterialApp.router(
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -78,123 +166,25 @@ void main() {
         ],
         supportedLocales: const [Locale('en'), Locale('fr')],
         locale: const Locale('en'),
-        onGenerateRoute: (settings) {
-          // Handle different routes to simulate proper navigation stack
-          switch (settings.name) {
-            case '/jar_detail':
-              return MaterialPageRoute(
-                builder:
-                    (context) => Scaffold(
-                      appBar: AppBar(title: const Text('Jar Detail')),
-                      body: const Center(child: Text('Jar Detail View')),
-                    ),
-                settings: const RouteSettings(name: '/jar_detail'),
-              );
-            case '/add_contribution':
-              return MaterialPageRoute(
-                builder:
-                    (context) => Scaffold(
-                      appBar: AppBar(title: const Text('Add Contribution')),
-                      body: const Center(child: Text('Add Contribution View')),
-                    ),
-                settings: const RouteSettings(name: '/add_contribution'),
-              );
-            case '/save_contribution':
-              return MaterialPageRoute(
-                builder:
-                    (context) => MultiBlocProvider(
-                      providers: [
-                        BlocProvider(
-                          create: (context) {
-                            final jarSummaryBloc = JarSummaryBloc();
-                            return JarSummaryReloadBloc(
-                              jarSummaryBloc: jarSummaryBloc,
-                            );
-                          },
-                        ),
-                        BlocProvider(
-                          create: (context) => AddContributionBloc(),
-                        ),
-                        BlocProvider(create: (context) => MomoPaymentBloc()),
-                        BlocProvider(
-                          create: (context) {
-                            final authBloc = AuthBloc();
-                            // Initialize with authenticated state for testing
-                            final testUser = User(
-                              id: 'test-user-123',
-                              email: 'test@example.com',
-                              fullName: 'Test User',
-                              username: 'testuser',
-                              phoneNumber: '+1234567890',
-                              countryCode: 'US',
-                              country: 'United States',
-                              kycStatus: "verified",
-                              createdAt: DateTime.now(),
-                              updatedAt: DateTime.now(),
-                              accountHolder: 'Test Account Holder',
-                              sessions: [
-                                UserSession(
-                                  id: 'test-session-id',
-                                  createdAt: DateTime.now(),
-                                  expiresAt: DateTime.now().add(
-                                    const Duration(days: 30),
-                                  ),
-                                ),
-                              ],
-                              appSettings: const AppSettings(
-                                language: AppLanguage.english,
-                                theme: AppTheme.light,
-                                biometricAuthEnabled: false,
-                                notificationsSettings: NotificationSettings(
-                                  pushNotificationsEnabled: true,
-                                  emailNotificationsEnabled: true,
-                                  smsNotificationsEnabled: false,
-                                ),
-                              ),
-                            );
-                            return authBloc..add(
-                              UpdateUserData(
-                                updatedUser: testUser,
-                                token: 'test-jwt-token-123456',
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                      child: const SaveContributionView(),
-                    ),
-                settings: RouteSettings(
-                  name: '/save_contribution',
-                  arguments: {
-                    'amount': amount,
-                    'currency': currency,
-                    'jar': sampleJar,
-                  },
-                ),
-              );
-            default:
-              return MaterialPageRoute(
-                builder:
-                    (context) => const Scaffold(
-                      body: Center(child: Text('Unknown Route')),
-                    ),
-              );
-          }
-        },
-        // Start with jar detail and then navigate through the flow
-        initialRoute: '/jar_detail',
-        navigatorKey: GlobalKey<NavigatorState>(),
+        routerConfig: router,
       );
     }
 
-    Future<void> navigateToSaveContribution(WidgetTester tester) async {
+    Future<void> navigateToSaveContribution(
+      WidgetTester tester, {
+      String amount = '100.0',
+      String currency = 'USD',
+    }) async {
       // Simulate navigation from jar detail -> add contribution -> save contribution
-      final navigatorState = tester.state<NavigatorState>(
-        find.byType(Navigator),
-      );
-      navigatorState.pushNamed('/add_contribution');
+      final element = tester.element(find.byType(Scaffold));
+      GoRouter.of(element).push('/add_contribution');
       await tester.pumpAndSettle();
-      navigatorState.pushNamed('/save_contribution');
+      final element2 = tester.element(find.byType(Scaffold));
+      GoRouter.of(element2).push('/save_contribution', extra: {
+        'amount': amount,
+        'currency': currency,
+        'jar': sampleJar,
+      });
       await tester.pumpAndSettle();
     }
 
@@ -277,7 +267,7 @@ void main() {
       );
 
       await tester.pumpWidget(createSaveContributionTestWidget(amount: '50.0'));
-      await navigateToSaveContribution(tester);
+      await navigateToSaveContribution(tester, amount: '50.0');
 
       // Select Cash payment method
       final paymentMethodSelector = find.byType(SelectInput<String>).first;
@@ -644,19 +634,18 @@ void main() {
         });
 
         // Create widget that can simulate navigation back to jar detail view
-        final testApp = MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('en'), Locale('fr')],
-          locale: const Locale('en'),
-          onGenerateRoute: (settings) {
-            return MaterialPageRoute(
+        final testRouter = GoRouter(
+          initialLocation: '/save-contribution',
+          initialExtra: {
+            'amount': contributionAmount.toString(),
+            'currency': 'USD',
+            'jar': sampleJar,
+          },
+          routes: [
+            GoRoute(
+              path: '/save-contribution',
               builder:
-                  (context) => MultiBlocProvider(
+                  (context, state) => MultiBlocProvider(
                     providers: [
                       BlocProvider(
                         create: (context) {
@@ -670,16 +659,19 @@ void main() {
                     ],
                     child: const SaveContributionView(),
                   ),
-              settings: RouteSettings(
-                arguments: {
-                  'amount': contributionAmount.toString(),
-                  'currency': 'USD',
-                  'jar': sampleJar,
-                },
-              ),
-            );
-          },
-          initialRoute: '/save-contribution',
+            ),
+          ],
+        );
+        final testApp = MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: testRouter,
         );
 
         await tester.pumpWidget(testApp);
@@ -799,7 +791,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navigate to save contribution page
-        await navigateToSaveContribution(tester);
+        await navigateToSaveContribution(tester, amount: contributionAmount.toString());
         await tester.pumpAndSettle();
 
         // Select Cash payment method to test different payment flow

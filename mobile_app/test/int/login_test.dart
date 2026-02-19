@@ -23,6 +23,7 @@ import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 // No repository override now; we mock network.
 
 void main() {
@@ -104,7 +105,7 @@ void main() {
                   ),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -115,14 +116,15 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const LoginView(),
-            routes: {
-              '/otp': (context) => const OtpView(),
-              '/jar_detail': (context) => const JarDetailView(),
-              '/home':
-                  (context) =>
-                      const JarDetailView(), // Add home route for successful login
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const LoginView(),
+                '/otp': (context) => const OtpView(),
+                '/jar_detail': (context) => const JarDetailView(),
+                '/home': (context) => const JarDetailView(),
+              },
+            ),
           ),
         ),
       );
@@ -268,7 +270,7 @@ void main() {
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -279,14 +281,15 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const LoginView(),
-            routes: {
-              '/jar_detail': (context) => const JarDetailView(),
-              '/register':
-                  (context) =>
-                      const RegisterView(), // Assuming you have a RegisterView
-              '/home': (context) => const JarDetailView(), // Add home route
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const LoginView(),
+                '/jar_detail': (context) => const JarDetailView(),
+                '/register': (context) => const RegisterView(),
+                '/home': (context) => const JarDetailView(),
+              },
+            ),
           ),
         ),
       );
@@ -330,7 +333,7 @@ void main() {
             BlocProvider(create: (context) => JarSummaryBloc()),
             BlocProvider(create: (context) => JarListBloc()),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -341,7 +344,12 @@ void main() {
               Locale('en'), // English
               Locale('fr'), // French
             ],
-            home: const LoginView(),
+            routerConfig: createTestRouter(
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const LoginView(),
+              },
+            ),
           ),
         ),
       );

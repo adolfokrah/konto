@@ -11,6 +11,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -41,21 +42,26 @@ void main() {
     });
 
     testWidgets('should render without crashing', (WidgetTester tester) async {
-      final testWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final testWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => FetchContributionBloc()),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('en'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => FetchContributionBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: const ContributionView(),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const ContributionView(),
+            },
+          ),
         ),
       );
 
@@ -69,26 +75,31 @@ void main() {
     testWidgets('should show loading state when fetching data', (
       WidgetTester tester,
     ) async {
-      final testWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final testWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create:
+                (_) =>
+                    FetchContributionBloc()
+                      ..add(FetchContributionById('contrib-123')),
+          ),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('en'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create:
-                  (_) =>
-                      FetchContributionBloc()
-                        ..add(FetchContributionById('contrib-123')),
-            ),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: const ContributionView(),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const ContributionView(),
+            },
+          ),
         ),
       );
 
@@ -117,26 +128,31 @@ void main() {
             ),
       );
 
-      final testWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final testWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create:
+                (_) =>
+                    FetchContributionBloc()
+                      ..add(FetchContributionById('contrib-123')),
+          ),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('en'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create:
-                  (_) =>
-                      FetchContributionBloc()
-                        ..add(FetchContributionById('contrib-123')),
-            ),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: const ContributionView(),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const ContributionView(),
+            },
+          ),
         ),
       );
 
@@ -149,38 +165,43 @@ void main() {
 
     testWidgets('should show localized content', (WidgetTester tester) async {
       // Test English locale
-      final englishWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final englishWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => FetchContributionBloc()),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('en'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => FetchContributionBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: Scaffold(
-            appBar: AppBar(title: const Text('Test')),
-            body: Builder(
-              builder: (context) {
-                final localizations = AppLocalizations.of(context)!;
-                return Center(
-                  child: Column(
-                    children: [
-                      Text(localizations.paymentMethod),
-                      Text(localizations.status),
-                      Text(localizations.charges),
-                      Text(localizations.contributor),
-                      Text(localizations.collector),
-                    ],
-                  ),
-                );
-              },
-            ),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => Scaffold(
+                appBar: AppBar(title: const Text('Test')),
+                body: Builder(
+                  builder: (context) {
+                    final localizations = AppLocalizations.of(context)!;
+                    return Center(
+                      child: Column(
+                        children: [
+                          Text(localizations.paymentMethod),
+                          Text(localizations.status),
+                          Text(localizations.charges),
+                          Text(localizations.contributor),
+                          Text(localizations.collector),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            },
           ),
         ),
       );
@@ -200,38 +221,43 @@ void main() {
       WidgetTester tester,
     ) async {
       // Test French locale
-      final frenchWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final frenchWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => FetchContributionBloc()),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('fr'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => FetchContributionBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: Scaffold(
-            appBar: AppBar(title: const Text('Test')),
-            body: Builder(
-              builder: (context) {
-                final localizations = AppLocalizations.of(context)!;
-                return Center(
-                  child: Column(
-                    children: [
-                      Text(localizations.paymentMethod),
-                      Text(localizations.status),
-                      Text(localizations.charges),
-                      Text(localizations.contributor),
-                      Text(localizations.collector),
-                    ],
-                  ),
-                );
-              },
-            ),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('fr'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => Scaffold(
+                appBar: AppBar(title: const Text('Test')),
+                body: Builder(
+                  builder: (context) {
+                    final localizations = AppLocalizations.of(context)!;
+                    return Center(
+                      child: Column(
+                        children: [
+                          Text(localizations.paymentMethod),
+                          Text(localizations.status),
+                          Text(localizations.charges),
+                          Text(localizations.contributor),
+                          Text(localizations.collector),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            },
           ),
         ),
       );
@@ -256,21 +282,26 @@ void main() {
     testWidgets('should handle different BLoC states correctly', (
       WidgetTester tester,
     ) async {
-      final testWidget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      final testWidget = MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => FetchContributionBloc()),
+          BlocProvider(create: (_) => JarSummaryBloc()),
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        locale: const Locale('en'),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => FetchContributionBloc()),
-            BlocProvider(create: (_) => JarSummaryBloc()),
+        child: MaterialApp.router(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
-          child: const ContributionView(),
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          locale: const Locale('en'),
+          routerConfig: createTestRouter(
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const ContributionView(),
+            },
+          ),
         ),
       );
 

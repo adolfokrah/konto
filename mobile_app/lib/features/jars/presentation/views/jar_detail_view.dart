@@ -769,21 +769,38 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     const SizedBox(
                                       height: AppSpacing.spacingXs,
                                     ),
-                                    AnimatedNumberTextScale(
-                                      value:
-                                          (jarData.invitedCollectors
-                                                      ?.where(
-                                                        (collector) =>
-                                                            collector.status ==
-                                                            'accepted',
-                                                      )
-                                                      .length ??
-                                                  0)
-                                              .toString(),
-                                      style: TextStyles.titleBoldLg,
-                                      duration: const Duration(
-                                        milliseconds: 600,
-                                      ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        AnimatedNumberTextScale(
+                                          value:
+                                              (jarData.invitedCollectors
+                                                          ?.where(
+                                                            (collector) =>
+                                                                collector
+                                                                    .status ==
+                                                                'accepted',
+                                                          )
+                                                          .length ??
+                                                      0)
+                                                  .toString(),
+                                          style: TextStyles.titleBoldLg,
+                                          duration: const Duration(
+                                            milliseconds: 600,
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.add,
+                                          size: 20,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

@@ -25,6 +25,7 @@ import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
+import '../lib/test_router.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -201,7 +202,7 @@ void main() {
               create: (context) => NotificationsBloc(),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -209,11 +210,13 @@ void main() {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('fr')],
-            initialRoute: '/jar_detail',
-            routes: {
-              '/jar_detail': (context) => const JarDetailView(),
-              '/jar_goal': (context) => const JarGoalView(),
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/jar_detail',
+              routes: {
+                '/jar_detail': (context) => const JarDetailView(),
+                '/jar_goal': (context) => const JarGoalView(),
+              },
+            ),
           ),
         ),
       );
@@ -465,7 +468,7 @@ void main() {
               create: (context) => NotificationsBloc(),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -473,11 +476,13 @@ void main() {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('fr')],
-            initialRoute: '/jar_detail',
-            routes: {
-              '/jar_detail': (context) => const JarDetailView(),
-              '/jar_goal': (context) => const JarGoalView(),
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/jar_detail',
+              routes: {
+                '/jar_detail': (context) => const JarDetailView(),
+                '/jar_goal': (context) => const JarGoalView(),
+              },
+            ),
           ),
         ),
       );
@@ -565,7 +570,7 @@ void main() {
                     create: (context) => NotificationsBloc(),
                   ),
                 ],
-                child: MaterialApp(
+                child: MaterialApp.router(
                   localizationsDelegates: const [
                     AppLocalizations.delegate,
                     GlobalMaterialLocalizations.delegate,
@@ -573,11 +578,13 @@ void main() {
                     GlobalCupertinoLocalizations.delegate,
                   ],
                   supportedLocales: const [Locale('en'), Locale('fr')],
-                  initialRoute: '/jar_goal',
-                  routes: {
-                    '/jar_detail': (context) => const JarDetailView(),
-                    '/jar_goal': (context) => const JarGoalView(),
-                  },
+                  routerConfig: createTestRouter(
+                    initialRoute: '/jar_goal',
+                    routes: {
+                      '/jar_detail': (context) => const JarDetailView(),
+                      '/jar_goal': (context) => const JarGoalView(),
+                    },
+                  ),
                 ),
               ),
             );
@@ -776,7 +783,7 @@ void main() {
               create: (context) => NotificationsBloc(),
             ),
           ],
-          child: MaterialApp(
+          child: MaterialApp.router(
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -784,11 +791,13 @@ void main() {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('fr')],
-            initialRoute: '/jar_detail',
-            routes: {
-              '/jar_detail': (context) => const JarDetailView(),
-              '/jar_goal': (context) => const JarGoalView(),
-            },
+            routerConfig: createTestRouter(
+              initialRoute: '/jar_detail',
+              routes: {
+                '/jar_detail': (context) => const JarDetailView(),
+                '/jar_goal': (context) => const JarGoalView(),
+              },
+            ),
           ),
         ),
       );
@@ -843,7 +852,7 @@ void main() {
                         UserAccountBloc(authBloc: context.read<AuthBloc>()),
               ),
             ],
-            child: MaterialApp(
+            child: MaterialApp.router(
               localizationsDelegates: const [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,
@@ -851,11 +860,13 @@ void main() {
                 GlobalCupertinoLocalizations.delegate,
               ],
               supportedLocales: const [Locale('en'), Locale('fr')],
-              initialRoute: '/jar_goal',
-              routes: {
-                '/jar_detail': (context) => const JarDetailView(),
-                '/jar_goal': (context) => const JarGoalView(),
-              },
+              routerConfig: createTestRouter(
+                initialRoute: '/jar_goal',
+                routes: {
+                  '/jar_detail': (context) => const JarDetailView(),
+                  '/jar_goal': (context) => const JarGoalView(),
+                },
+              ),
             ),
           ),
         );
