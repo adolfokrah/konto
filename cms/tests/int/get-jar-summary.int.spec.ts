@@ -24,7 +24,8 @@ describe('Get Jar Summary Endpoint Integration Tests', () => {
       data: {
         email: `creator-${Date.now()}-${Math.random()}@example.com`,
         password: 'password123',
-        fullName: 'Creator User',
+        firstName: 'Creator',
+        lastName: 'User',
         username: `creator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,

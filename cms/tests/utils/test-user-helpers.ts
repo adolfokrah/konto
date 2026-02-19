@@ -34,7 +34,8 @@ export const createTestRegularUserData = (overrides: any = {}) =>
  */
 export const createMockUser = (overrides: any = {}, role: 'user' | 'admin' = 'user') => ({
   id: 'mock-user-id',
-  fullName: 'Test User',
+  firstName: 'Test',
+  lastName: 'User',
   phoneNumber: '+233123456789',
   country: 'gh',
   email: 'test@example.com',

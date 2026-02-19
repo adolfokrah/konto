@@ -19,7 +19,8 @@ const createMockRequest = (overrides: Partial<PayloadRequest> = {}): PayloadRequ
 // Mock user factory
 const createMockUser = (id: string = 'user123') => ({
   id,
-  fullName: 'Test User',
+  firstName: 'Test',
+  lastName: 'User',
   username: `testuser${id}`,
   phoneNumber: '+1234567890',
   country: 'US',

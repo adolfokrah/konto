@@ -52,7 +52,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('logintest'),
           password: '123456',
-          fullName: 'Login Test User',
+          firstName: 'Login Test',
+          lastName: 'User',
           username: generateUsername('logintest'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
@@ -82,7 +83,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
       expect(responseData.user.id).toBe(testUser.id)
       expect(responseData.user.phoneNumber).toBe('+233541234567')
       expect(responseData.user.countryCode).toBe('+233')
-      expect(responseData.user.fullName).toBe('Login Test User')
+      expect(responseData.user.firstName).toBe('Login Test')
+      expect(responseData.user.lastName).toBe('User')
     })
 
     it('should fail login with non-existent phone number', async () => {
@@ -195,7 +197,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
       expect(responseData.user).toBeDefined()
       expect(responseData.user.phoneNumber).toBe('+233541234567')
       expect(responseData.user.email).toBeDefined()
-      expect(responseData.user.fullName).toBe('Login Test User')
+      expect(responseData.user.firstName).toBe('Login Test')
+      expect(responseData.user.lastName).toBe('User')
       // Password should not be exposed
       expect(responseData.user.password).toBeUndefined()
     })
@@ -230,7 +233,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('nigeria'),
           password: '123456',
-          fullName: 'Nigerian User',
+          firstName: 'Nigerian',
+          lastName: 'User',
           username: generateUsername('nigeria'),
           phoneNumber: '+2348012345678',
           countryCode: '+234',
@@ -255,7 +259,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
       expect(responseData.success).toBe(true)
       expect(responseData.user.id).toBe(nigerianUser.id)
       expect(responseData.user.countryCode).toBe('+234')
-      expect(responseData.user.fullName).toBe('Nigerian User')
+      expect(responseData.user.firstName).toBe('Nigerian')
+      expect(responseData.user.lastName).toBe('User')
     })
 
     it('should work with users who have different verification status', async () => {
@@ -265,7 +270,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('unverified'),
           password: '123456',
-          fullName: 'Unverified User',
+          firstName: 'Unverified',
+          lastName: 'User',
           username: generateUsername('unverified'),
           phoneNumber: '+233541234568',
           countryCode: '+233',
@@ -334,7 +340,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('second'),
           password: '123456',
-          fullName: 'Second User',
+          firstName: 'Second',
+          lastName: 'User',
           username: generateUsername('second'),
           phoneNumber: '+233541234999', // Different phone number
           countryCode: '+233', // Same country code
@@ -386,7 +393,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('edgecase'),
           password: '123456',
-          fullName: 'Edge Case User',
+          firstName: 'Edge Case',
+          lastName: 'User',
           username: generateUsername('edgecase'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
@@ -511,7 +519,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: userEmail,
           password: '123456',
-          fullName: 'Full Flow User',
+          firstName: 'Full Flow',
+          lastName: 'User',
           username: generateUsername('fullflow'),
           phoneNumber,
           countryCode: '+233',
@@ -546,7 +555,8 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('concurrent'),
           password: '123456',
-          fullName: 'Concurrent User',
+          firstName: 'Concurrent',
+          lastName: 'User',
           username: generateUsername('concurrent'),
           phoneNumber: '+233541234567',
           countryCode: '+233',

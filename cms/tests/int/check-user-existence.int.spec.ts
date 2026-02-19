@@ -52,7 +52,8 @@ describe('Check User Existence Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('existing'),
           password: '123456',
-          fullName: 'Existing User',
+          firstName: 'Existing',
+          lastName: 'User',
           username: generateUsername('existing'),
           phoneNumber: '+233541234567',
           countryCode: '+233',
@@ -303,7 +304,8 @@ describe('Check User Existence Endpoint Integration Tests', () => {
         data: {
           email: generateUniqueEmail('second'),
           password: '123456',
-          fullName: 'Second User',
+          firstName: 'Second',
+          lastName: 'User',
           username: generateUsername('second'),
           phoneNumber: '+233541234568',
           countryCode: '+233',

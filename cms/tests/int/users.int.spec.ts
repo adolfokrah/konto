@@ -44,7 +44,8 @@ describe('Users Collection Integration Tests', () => {
       const userData = {
         email: generateUniqueEmail('test'),
         password: 'testPassword123',
-        fullName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         username: generateUsername('johndoe'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
@@ -59,7 +60,8 @@ describe('Users Collection Integration Tests', () => {
 
       expect(user).toBeDefined()
       expect(user.email).toBe(userData.email)
-      expect(user.fullName).toBe(userData.fullName)
+      expect(user.firstName).toBe(userData.firstName)
+      expect(user.lastName).toBe(userData.lastName)
       expect(user.phoneNumber).toBe(userData.phoneNumber)
       expect(user.country).toBe(userData.country)
       expect(user.kycStatus).toBe('verified') // Default value
@@ -69,7 +71,8 @@ describe('Users Collection Integration Tests', () => {
       const userData = {
         email: 'user2@example.com',
         password: 'testPassword123',
-        fullName: 'Jane Smith',
+        firstName: 'Jane',
+        lastName: 'Smith',
         username: generateUsername('janesmith'),
         phoneNumber: '+234801234567',
 
@@ -107,7 +110,7 @@ describe('Users Collection Integration Tests', () => {
       const incompleteUserData = {
         email: 'incomplete@example.com',
         password: 'testPassword123',
-        // Missing fullName, phoneNumber, country
+        // Missing firstName, lastName, phoneNumber, country
       } as any
 
       await expect(
@@ -122,7 +125,8 @@ describe('Users Collection Integration Tests', () => {
       const userData = {
         email: generateUniqueEmail('duplicate'),
         password: 'testPassword123',
-        fullName: 'First User',
+        firstName: 'First',
+        lastName: 'User',
         username: generateUsername('duplicate'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
@@ -138,7 +142,8 @@ describe('Users Collection Integration Tests', () => {
       // Try to create second user with same email
       const duplicateUserData = {
         ...userData,
-        fullName: 'Second User',
+        firstName: 'Second',
+        lastName: 'User',
       }
 
       await expect(
@@ -157,7 +162,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'user1@example.com',
           password: 'password123',
-          fullName: 'Alice Johnson',
+          firstName: 'Alice',
+          lastName: 'Johnson',
           username: generateUsername('alice'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
@@ -167,7 +173,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'user2@example.com',
           password: 'password123',
-          fullName: 'Bob Wilson',
+          firstName: 'Bob',
+          lastName: 'Wilson',
           username: generateUsername('bob'),
           phoneNumber: '+234802222222',
           country: 'ng' as const,
@@ -177,7 +184,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'user3@example.com',
           password: 'password123',
-          fullName: 'Charlie Brown',
+          firstName: 'Charlie',
+          lastName: 'Brown',
           username: generateUsername('charlie'),
           phoneNumber: '+233543333333',
           country: 'gh' as const,
@@ -280,18 +288,19 @@ describe('Users Collection Integration Tests', () => {
       expect(foundUser.email).toBe(firstUser.email)
     })
 
-    it('should search users by full name', async () => {
+    it('should search users by first name', async () => {
       const searchResult = await payload.find({
         collection: 'users',
         where: {
-          fullName: {
+          firstName: {
             contains: 'Alice',
           },
         },
       })
 
       expect(searchResult.docs).toHaveLength(1)
-      expect(searchResult.docs[0].fullName).toBe('Alice Johnson')
+      expect(searchResult.docs[0].firstName).toBe('Alice')
+      expect(searchResult.docs[0].lastName).toBe('Johnson')
     })
   })
 
@@ -305,7 +314,8 @@ describe('Users Collection Integration Tests', () => {
         data: {
           email: 'update@example.com',
           password: 'password123',
-          fullName: 'Update Test User',
+          firstName: 'Update Test',
+          lastName: 'User',
           username: generateUsername('update'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
@@ -377,7 +387,8 @@ describe('Users Collection Integration Tests', () => {
         data: {
           email: 'delete@example.com',
           password: 'password123',
-          fullName: 'Delete Test User',
+          firstName: 'Delete Test',
+          lastName: 'User',
           username: generateUsername('delete'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
@@ -424,7 +435,8 @@ describe('Users Collection Integration Tests', () => {
         data: {
           email: 'auth@example.com',
           password: 'securePassword123',
-          fullName: 'Auth Test User',
+          firstName: 'Auth Test',
+          lastName: 'User',
           username: generateUsername('auth'),
           phoneNumber: '+233541234567',
           country: 'gh' as const,
@@ -436,7 +448,8 @@ describe('Users Collection Integration Tests', () => {
     it('should create user for authentication testing', async () => {
       // Verify user was created with auth fields
       expect(testUser.email).toBe('auth@example.com')
-      expect(testUser.fullName).toBe('Auth Test User')
+      expect(testUser.firstName).toBe('Auth Test')
+      expect(testUser.lastName).toBe('User')
 
       // Verify user can be found by email (simulating auth lookup)
       const foundUser = await payload.find({
@@ -471,7 +484,8 @@ describe('Users Collection Integration Tests', () => {
       const userData = {
         email: 'defaults@example.com',
         password: 'password123',
-        fullName: 'Default User',
+        firstName: 'Default',
+        lastName: 'User',
         username: generateUsername('defaults'),
         phoneNumber: '+233541234567',
         country: 'gh' as const,
@@ -512,7 +526,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'ghana.verified@example.com',
           password: 'password123',
-          fullName: 'Ghana Verified User',
+          firstName: 'Ghana Verified',
+          lastName: 'User',
           username: generateUsername('ghverified'),
           phoneNumber: '+233541111111',
           country: 'gh' as const,
@@ -522,7 +537,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'ghana.unverified@example.com',
           password: 'password123',
-          fullName: 'Ghana Unverified User',
+          firstName: 'Ghana Unverified',
+          lastName: 'User',
           username: generateUsername('ghunverified'),
           phoneNumber: '+233542222222',
           country: 'gh' as const,
@@ -532,7 +548,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'nigeria.verified@example.com',
           password: 'password123',
-          fullName: 'Nigeria Verified User',
+          firstName: 'Nigeria Verified',
+          lastName: 'User',
           username: generateUsername('ngverified'),
           phoneNumber: '+234803333333',
           country: 'ng' as const,
@@ -542,7 +559,8 @@ describe('Users Collection Integration Tests', () => {
         {
           email: 'nigeria.unverified@example.com',
           password: 'password123',
-          fullName: 'Nigeria Unverified User',
+          firstName: 'Nigeria Unverified',
+          lastName: 'User',
           username: generateUsername('ngunverified'),
           phoneNumber: '+234804444444',
           country: 'ng' as const,

@@ -41,7 +41,8 @@ describe('Jars Collection Integration Tests', () => {
       data: {
         email: `jar-creator-${Date.now()}-${Math.random()}@example.com`,
         password: 'password123',
-        fullName: 'Jar Creator',
+        firstName: 'Jar',
+        lastName: 'Creator',
         username: `jarcreator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,
@@ -55,7 +56,8 @@ describe('Jars Collection Integration Tests', () => {
       data: {
         email: `jar-collector-${Date.now()}-${Math.random()}@example.com`,
         password: 'password123',
-        fullName: 'Jar Collector',
+        firstName: 'Jar',
+        lastName: 'Collector',
         username: `jarcollector${Date.now()}`,
         phoneNumber: '+233541234568',
         country: 'gh' as const,

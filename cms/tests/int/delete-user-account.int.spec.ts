@@ -44,7 +44,8 @@ describe('Delete User Account Integration Tests', () => {
       data: createTestUserData({
         email: generateUniqueEmail('jar-creator'),
         password: 'password123',
-        fullName: 'Jar Creator User',
+        firstName: 'Jar Creator',
+        lastName: 'User',
         phoneNumber: generateUniquePhone(),
         country: 'gh',
       }),
@@ -55,7 +56,8 @@ describe('Delete User Account Integration Tests', () => {
       data: createTestUserData({
         email: generateUniqueEmail('test-user-to-delete'),
         password: 'password123',
-        fullName: 'User To Delete',
+        firstName: 'User To',
+        lastName: 'Delete',
         phoneNumber: generateUniquePhone(),
         country: 'gh',
       }),
@@ -66,7 +68,8 @@ describe('Delete User Account Integration Tests', () => {
       data: createTestUserData({
         email: generateUniqueEmail('another-collector'),
         password: 'password123',
-        fullName: 'Another Collector',
+        firstName: 'Another',
+        lastName: 'Collector',
         phoneNumber: generateUniquePhone(),
         country: 'gh',
       }),
@@ -182,7 +185,8 @@ describe('Delete User Account Integration Tests', () => {
         data: createTestUserData({
           email: generateUniqueEmail('isolated-user'),
           password: 'password123',
-          fullName: 'Isolated User',
+          firstName: 'Isolated',
+          lastName: 'User',
           phoneNumber: generateUniquePhone(),
           country: 'gh',
         }),

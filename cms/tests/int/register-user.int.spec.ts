@@ -68,7 +68,8 @@ describe('Register User Endpoint Integration Tests', () => {
           username: generateUsername('newuser'),
           countryCode: '+233',
           country: 'ghana',
-          fullName: 'John Doe',
+          firstName: 'John',
+          lastName: 'Doe',
           kycStatus: 'none',
           role: 'user',
           appSettings: {
@@ -87,7 +88,8 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(newUser).toBeDefined()
       expect(newUser.phoneNumber).toBe(phoneNumber)
       expect(newUser.email).toBe(email)
-      expect(newUser.fullName).toBe('John Doe')
+      expect(newUser.firstName).toBe('John')
+      expect(newUser.lastName).toBe('Doe')
       expect(newUser.country).toBe('ghana')
       expect(newUser.countryCode).toBe('+233')
       expect(newUser.kycStatus).toBe('none')
@@ -103,7 +105,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
-        fullName: 'Jane Doe',
+        firstName: 'Jane',
+        lastName: 'Doe',
         email,
       })
 
@@ -117,7 +120,8 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(result.user).toBeDefined()
       expect(result.doc.phoneNumber).toBe(phoneNumber)
       expect(result.doc.email).toBe(email)
-      expect(result.doc.fullName).toBe('Jane Doe')
+      expect(result.doc.firstName).toBe('Jane')
+      expect(result.doc.lastName).toBe('Doe')
       expect(result.doc.country).toBe('ghana')
       expect(result.doc.countryCode).toBe('+233')
       expect(result.doc.kycStatus).toBe('none')
@@ -131,7 +135,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
-        fullName: 'Auto Email User',
+        firstName: 'Auto Email',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -141,7 +146,8 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(result.success).toBe(true)
       expect(result.doc.phoneNumber).toBe(phoneNumber)
       expect(result.doc.email).toBe(`${phoneNumber.replace(/\+/g, '')}@konto.app`)
-      expect(result.doc.fullName).toBe('Auto Email User')
+      expect(result.doc.firstName).toBe('Auto Email')
+      expect(result.doc.lastName).toBe('User')
       expect(result.doc.country).toBe('nigeria')
     })
   })
@@ -151,7 +157,8 @@ describe('Register User Endpoint Integration Tests', () => {
       const mockRequest = createMockRequest({
         countryCode: '+233',
         country: 'ghana',
-        fullName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
       })
 
       const response = await registerUser(mockRequest)
@@ -160,7 +167,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
+        'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
       )
     })
 
@@ -171,7 +178,8 @@ describe('Register User Endpoint Integration Tests', () => {
         phoneNumber,
         username: generateUsername(),
         country: 'ghana',
-        fullName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
       })
 
       const response = await registerUser(mockRequest)
@@ -180,7 +188,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
+        'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
       )
     })
 
@@ -191,7 +199,8 @@ describe('Register User Endpoint Integration Tests', () => {
         phoneNumber,
         username: generateUsername(),
         countryCode: '+233',
-        fullName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
       })
 
       const response = await registerUser(mockRequest)
@@ -200,11 +209,11 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
+        'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
       )
     })
 
-    it('should return 400 when fullName is missing', async () => {
+    it('should return 400 when firstName/lastName is missing', async () => {
       const phoneNumber = generateUniquePhone()
 
       const mockRequest = createMockRequest({
@@ -220,7 +229,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
+        'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
       )
     })
 
@@ -233,7 +242,7 @@ describe('Register User Endpoint Integration Tests', () => {
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
       expect(result.message).toBe(
-        'Missing required fields: phoneNumber, countryCode, country, fullName, username are required',
+        'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
       )
     })
   })
@@ -252,7 +261,8 @@ describe('Register User Endpoint Integration Tests', () => {
           username: generateUsername('existing'),
           countryCode: '+233',
           country: 'ghana',
-          fullName: 'Existing User',
+          firstName: 'Existing',
+          lastName: 'User',
           kycStatus: 'none',
           role: 'user',
         },
@@ -265,7 +275,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: existingUser.countryCode,
         country: 'ghana',
-        fullName: 'Another User',
+        firstName: 'Another',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -287,7 +298,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
-        fullName: 'Another User',
+        firstName: 'Another',
+        lastName: 'User',
         email: existingUser.email,
       })
 
@@ -312,7 +324,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+234',
         country: 'nigeria',
-        fullName: 'Different Country User',
+        firstName: 'Different Country',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -332,7 +345,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
-        fullName: 'Different Phone User',
+        firstName: 'Different Phone',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -354,7 +368,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
-        fullName: 'Special Char User',
+        firstName: 'Special Char',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -367,14 +382,16 @@ describe('Register User Endpoint Integration Tests', () => {
 
     it('should handle names with special characters and spaces', async () => {
       const phoneNumber = generateUniquePhone('+233')
-      const specialName = "John O'Connor-Smith Jr."
+      const specialFirstName = "John O'Connor-Smith"
+      const specialLastName = 'Jr.'
 
       const mockRequest = createMockRequest({
         phoneNumber,
         username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
-        fullName: specialName,
+        firstName: specialFirstName,
+        lastName: specialLastName,
       })
 
       const response = await registerUser(mockRequest)
@@ -382,7 +399,8 @@ describe('Register User Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(201)
       expect(result.success).toBe(true)
-      expect(result.doc.fullName).toBe(specialName)
+      expect(result.doc.firstName).toBe(specialFirstName)
+      expect(result.doc.lastName).toBe(specialLastName)
     })
 
     it('should handle different country values', async () => {
@@ -396,7 +414,8 @@ describe('Register User Endpoint Integration Tests', () => {
           username: generateUsername(),
           countryCode: '+233',
           country,
-          fullName: `User from ${country}`,
+          firstName: 'User',
+          lastName: `from ${country}`,
         })
 
         const response = await registerUser(mockRequest)
@@ -416,7 +435,8 @@ describe('Register User Endpoint Integration Tests', () => {
         username: generateUsername(),
         countryCode: '+233',
         country: 'ghana',
-        fullName: 'Settings Test User',
+        firstName: 'Settings Test',
+        lastName: 'User',
       })
 
       const response = await registerUser(mockRequest)
@@ -448,7 +468,8 @@ describe('Register User Endpoint Integration Tests', () => {
           username: generateUsername(),
           countryCode: '+233',
           country: 'ghana',
-          fullName: 'Email Format User',
+          firstName: 'Email Format',
+          lastName: 'User',
           email,
         })
 

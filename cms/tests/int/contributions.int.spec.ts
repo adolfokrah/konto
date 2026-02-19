@@ -47,7 +47,8 @@ describe('Contributions Collection Integration Tests', () => {
       data: {
         email: `contrib-creator-${Date.now()}-${Math.random()}@example.com`,
         password: 'password123',
-        fullName: 'Jar Creator',
+        firstName: 'Jar',
+        lastName: 'Creator',
         username: `contribcreator${Date.now()}`,
         phoneNumber: '+233541234567',
         country: 'gh' as const,
@@ -62,7 +63,8 @@ describe('Contributions Collection Integration Tests', () => {
       data: {
         email: `contrib-collector-${Date.now()}-${Math.random()}@example.com`,
         password: 'password123',
-        fullName: 'Jar Collector',
+        firstName: 'Jar',
+        lastName: 'Collector',
         username: `contribcollector${Date.now()}`,
         phoneNumber: '+233541234568',
         country: 'gh' as const,

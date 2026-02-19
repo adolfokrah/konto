@@ -555,10 +555,14 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Support both fullName (from CMS afterRead hook) and firstName/lastName
+    final fullName = json['fullName'] as String? ??
+        '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim();
+
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      fullName: json['fullName'] as String,
+      fullName: fullName,
       phoneNumber: json['phoneNumber'] as String,
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String,
