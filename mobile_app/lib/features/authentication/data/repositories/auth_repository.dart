@@ -118,7 +118,8 @@ class AuthRepository {
     required String phoneNumber,
     required String countryCode,
     required String country,
-    required String fullName,
+    required String firstName,
+    required String lastName,
     required String username,
     required String email,
   }) async {
@@ -127,7 +128,8 @@ class AuthRepository {
         phoneNumber: phoneNumber,
         countryCode: countryCode,
         country: country,
-        fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
         username: username,
         email: email,
       );

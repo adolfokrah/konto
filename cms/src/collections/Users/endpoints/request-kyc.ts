@@ -2,26 +2,6 @@ import { createDiditKYC } from '@/utilities/diditKyc'
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-// Utility function to extract first and last name from fullName
-const extractNames = (fullName: string) => {
-  if (!fullName || typeof fullName !== 'string') {
-    return { firstName: '', lastName: '' }
-  }
-
-  const nameParts = fullName.trim().split(/\s+/)
-
-  if (nameParts.length === 0) {
-    return { firstName: '', lastName: '' }
-  } else if (nameParts.length === 1) {
-    return { firstName: nameParts[0], lastName: '' }
-  } else {
-    // Last word is last name, everything else is first name
-    const lastName = nameParts[nameParts.length - 1]
-    const firstName = nameParts.slice(0, -1).join(' ')
-    return { firstName, lastName }
-  }
-}
-
 export const requestKYC = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
@@ -38,9 +18,6 @@ export const requestKYC = async (req: PayloadRequest) => {
       )
     }
 
-    // Extract first and last name from user's fullName
-    const { firstName, lastName } = extractNames(user.fullName)
-
     // Initialize the service
     const kycService = createDiditKYC()
 
@@ -49,13 +26,18 @@ export const requestKYC = async (req: PayloadRequest) => {
       callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
       language: 'en',
       expectedDetails: {
-        first_name: firstName,
-        last_name: lastName,
+        first_name: user.firstName || '',
+        last_name: user.lastName || '',
         country: user?.country?.toLowerCase() === 'ghana' ? 'GHA' : 'GHA',
       },
     })
 
-    console.log('Didit v3 session response:', JSON.stringify(session, null, 2))
+    console.log(
+      'Didit v3 session created for user:',
+      user.id,
+      'response:',
+      JSON.stringify(session, null, 2),
+    )
 
     await req.payload.update({
       collection: 'users',

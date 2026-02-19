@@ -16,6 +16,10 @@ class KycView extends StatelessWidget {
       appBar: AppBar(
         centerTitle: false,
         title: Text('Verify your identity', style: TextStyles.titleMediumLg),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: BlocConsumer<KycBloc, KycState>(
         listener: (context, state) {

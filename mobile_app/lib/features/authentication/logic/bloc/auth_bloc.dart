@@ -123,7 +123,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,
         country: event.country,
-        fullName: event.fullName,
+        firstName: event.firstName,
+        lastName: event.lastName,
         username: event.username,
         email: event.email,
       );

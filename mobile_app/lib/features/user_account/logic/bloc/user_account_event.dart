@@ -4,7 +4,8 @@ part of 'user_account_bloc.dart';
 sealed class UserAccountEvent {}
 
 final class UpdatePersonalDetails extends UserAccountEvent {
-  final String? fullName;
+  final String? firstName;
+  final String? lastName;
   final String? username;
   final String? phoneNumber;
   final String? countryCode;
@@ -19,7 +20,8 @@ final class UpdatePersonalDetails extends UserAccountEvent {
   final String? fcmToken; // new FCM token
 
   UpdatePersonalDetails({
-    this.fullName,
+    this.firstName,
+    this.lastName,
     this.username,
     this.phoneNumber,
     this.countryCode,

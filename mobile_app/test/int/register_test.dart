@@ -100,13 +100,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify we're on the register page by checking for form fields
-      expect(find.byKey(const Key('fullName')), findsOneWidget);
+      expect(find.byKey(const Key('firstName')), findsOneWidget);
       expect(find.byKey(const Key('email')), findsOneWidget);
       expect(find.byKey(const Key('phoneNumber')), findsOneWidget);
 
-      // Fill the full name field
-      final fullNameField = find.byKey(const Key('fullName'));
-      await tester.enterText(fullNameField, 'John Doe');
+      // Fill the first name and last name fields
+      final firstNameField = find.byKey(const Key('firstName'));
+      await tester.enterText(firstNameField, 'John');
+      await tester.pumpAndSettle();
+      final lastNameField1 = find.byKey(const Key('lastName'));
+      await tester.enterText(lastNameField1, 'Doe');
       await tester.pumpAndSettle();
 
       // Fill the email field
@@ -145,7 +148,7 @@ void main() {
       expect(find.byType(OtpView), findsOneWidget);
 
       // Check that we're no longer on the register page
-      expect(find.byKey(const Key('fullName')), findsNothing);
+      expect(find.byKey(const Key('firstName')), findsNothing);
       expect(find.byKey(const Key('email')), findsNothing);
 
       // Look for OTP-specific elements
@@ -228,13 +231,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1000));
 
       // Verify we're now on the register page
-      expect(find.byKey(const Key('fullName')), findsOneWidget);
+      expect(find.byKey(const Key('firstName')), findsOneWidget);
       expect(find.byKey(const Key('email')), findsOneWidget);
       expect(find.byKey(const Key('phoneNumber')), findsOneWidget);
 
       // Fill remaining required fields
-      final fullNameField = find.byKey(const Key('fullName'));
-      await tester.enterText(fullNameField, 'Jane Smith');
+      final firstNameField = find.byKey(const Key('firstName'));
+      await tester.enterText(firstNameField, 'Jane');
+      await tester.pumpAndSettle();
+      final lastNameField2 = find.byKey(const Key('lastName'));
+      await tester.enterText(lastNameField2, 'Smith');
       await tester.pumpAndSettle();
 
       final emailField = find.byKey(const Key('email'));
@@ -272,7 +278,7 @@ void main() {
   });
 
   group('Register Validation Tests', () {
-    testWidgets('Show error when full name is missing', (tester) async {
+    testWidgets('Show error when first name is missing', (tester) async {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
@@ -302,7 +308,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill email, username and phone but leave full name empty
+      // Fill email, username and phone but leave first name empty
       final emailField = find.byKey(const Key('email'));
       await tester.enterText(emailField, 'test@example.com');
       await tester.pumpAndSettle();
@@ -326,7 +332,7 @@ void main() {
 
       // Check for error message
       expect(
-        find.textContaining('Please enter your full name'),
+        find.textContaining('Please enter your first name'),
         findsOneWidget,
       );
     });
@@ -361,9 +367,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill full name, username and phone but leave email empty
-      final fullNameField = find.byKey(const Key('fullName'));
-      await tester.enterText(fullNameField, 'John Doe');
+      // Fill first name, last name, username and phone but leave email empty
+      final firstNameField = find.byKey(const Key('firstName'));
+      await tester.enterText(firstNameField, 'John');
+      await tester.pumpAndSettle();
+      final lastNameField3 = find.byKey(const Key('lastName'));
+      await tester.enterText(lastNameField3, 'Doe');
       await tester.pumpAndSettle();
 
       final usernameField = find.byKey(const Key('username'));
@@ -420,9 +429,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Fill full name, username and email but leave phone number empty
-      final fullNameField = find.byKey(const Key('fullName'));
-      await tester.enterText(fullNameField, 'John Doe');
+      // Fill first name, last name, username and email but leave phone number empty
+      final firstNameField = find.byKey(const Key('firstName'));
+      await tester.enterText(firstNameField, 'John');
+      await tester.pumpAndSettle();
+      final lastNameField4 = find.byKey(const Key('lastName'));
+      await tester.enterText(lastNameField4, 'Doe');
       await tester.pumpAndSettle();
 
       final usernameField = find.byKey(const Key('username'));
@@ -499,8 +511,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill all fields
-      final fullNameField = find.byKey(const Key('fullName'));
-      await tester.enterText(fullNameField, 'John Doe');
+      final firstNameField = find.byKey(const Key('firstName'));
+      await tester.enterText(firstNameField, 'John');
+      await tester.pumpAndSettle();
+      final lastNameField5 = find.byKey(const Key('lastName'));
+      await tester.enterText(lastNameField5, 'Doe');
       await tester.pumpAndSettle();
 
       final emailField = find.byKey(const Key('email'));

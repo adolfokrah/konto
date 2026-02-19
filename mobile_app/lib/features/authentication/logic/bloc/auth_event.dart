@@ -28,7 +28,8 @@ final class RequestRegistration extends AuthEvent {
   final String phoneNumber;
   final String countryCode;
   final String country;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String username;
   final String email;
 
@@ -36,7 +37,8 @@ final class RequestRegistration extends AuthEvent {
     required this.phoneNumber,
     required this.countryCode,
     required this.country,
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.username,
     required this.email,
   });

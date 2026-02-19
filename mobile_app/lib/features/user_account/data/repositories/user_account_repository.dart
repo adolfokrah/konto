@@ -19,7 +19,8 @@ class UserAccountRepository {
   /// Update user personal details
   Future<({bool success, String message, User? user, String? token})>
   updatePersonalDetails({
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? username,
     String? phoneNumber,
     String? countryCode,
@@ -35,7 +36,8 @@ class UserAccountRepository {
   }) async {
     try {
       final result = await _apiProvider.updateUserDetails(
-        fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
         username: username,
         phoneNumber: phoneNumber,
         countryCode: countryCode,

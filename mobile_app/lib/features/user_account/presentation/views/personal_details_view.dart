@@ -13,7 +13,6 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
-import 'package:Hoga/route.dart';
 import 'package:go_router/go_router.dart';
 
 class PersonalDetailsView extends StatefulWidget {
@@ -24,7 +23,8 @@ class PersonalDetailsView extends StatefulWidget {
 }
 
 class _PersonalDetailsViewState extends State<PersonalDetailsView> {
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -34,12 +34,14 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   bool _hasExistingUsername = false;
 
   // Track original values to detect changes
-  String _originalFullName = '';
+  String _originalFirstName = '';
+  String _originalLastName = '';
   String _originalCountry = 'ghana';
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
@@ -49,18 +51,23 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   void _populateUserData(User user) {
     if (_hasPopulatedData) return; // Only populate once
 
-    _fullNameController.text = user.fullName;
+    _firstNameController.text = user.firstName;
+    _lastNameController.text = user.lastName;
     _usernameController.text = user.username;
     _emailController.text = user.email;
     _phoneNumberController.text = user.phoneNumber;
 
     // Store original values
-    _originalFullName = user.fullName;
+    _originalFirstName = user.firstName;
+    _originalLastName = user.lastName;
     _hasExistingUsername = user.username.isNotEmpty;
 
-    // Add listener to full name controller to trigger rebuilds
-    _fullNameController.addListener(() {
-      setState(() {}); // Trigger rebuild when full name changes
+    // Add listeners to name controllers to trigger rebuilds
+    _firstNameController.addListener(() {
+      setState(() {});
+    });
+    _lastNameController.addListener(() {
+      setState(() {});
     });
 
     // Set country based on user's country
@@ -81,7 +88,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   }
 
   bool _hasChangedCriticalFields() {
-    return _fullNameController.text.trim() != _originalFullName ||
+    return _firstNameController.text.trim() != _originalFirstName ||
+        _lastNameController.text.trim() != _originalLastName ||
         selectedCountry != _originalCountry;
   }
 
@@ -98,9 +106,6 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
             ),
           );
 
-          // Check if critical fields were changed
-          final criticalFieldsChanged = _hasChangedCriticalFields();
-
           AppSnackBar.showSuccess(
             context,
             message:
@@ -109,13 +114,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                 )!.personalDetailsUpdatedSuccessfully,
           );
 
-          if (criticalFieldsChanged) {
-            // Navigate to KYC view to re-verify identity and clear entire navigation stack
-            context.go(AppRoutes.kycView);
-          } else {
-            // Just go back to previous screen if no critical fields changed
-            context.pop();
-          }
+          context.pop();
         } else if (userAccountState is UserAccountError) {
           AppSnackBar.showError(context, message: userAccountState.message);
         }
@@ -249,10 +248,17 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: 17),
-        // Full name input
+        // First name input
         AppTextInput(
-          label: localizations.fullName,
-          controller: _fullNameController,
+          label: 'First name',
+          controller: _firstNameController,
+          enabled: !isLoading && canEdit,
+        ),
+        const SizedBox(height: 17),
+        // Last name input
+        AppTextInput(
+          label: 'Last name',
+          controller: _lastNameController,
           enabled: !isLoading && canEdit,
         ),
         const SizedBox(height: 17),
@@ -312,13 +318,14 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   }
 
   void _handleUpdateAccount() {
-    final localizations = AppLocalizations.of(context)!;
-
     // Validate form
-    if (_fullNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizations.pleaseEnterFullName)),
-      );
+    if (_firstNameController.text.trim().isEmpty) {
+      AppSnackBar.showError(context, message: 'Please enter your first name');
+      return;
+    }
+
+    if (_lastNameController.text.trim().isEmpty) {
+      AppSnackBar.showError(context, message: 'Please enter your last name');
       return;
     }
 
@@ -351,7 +358,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     // Trigger user account update
     context.read<UserAccountBloc>().add(
       UpdatePersonalDetails(
-        fullName: _fullNameController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
         username: username.isNotEmpty ? username : null,
         email: _emailController.text.trim(),
         country: selectedCountry,

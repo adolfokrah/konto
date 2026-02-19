@@ -5,7 +5,8 @@ import '../../../media/data/models/media_model.dart';
 class User {
   final String id;
   final String email;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String username;
   final String phoneNumber;
   final String countryCode;
@@ -19,6 +20,9 @@ class User {
   final String? accountNumber;
   final String? bank;
 
+  /// Computed full name from firstName and lastName
+  String get fullName => '$firstName $lastName'.trim();
+
   /// Rich media document for the user's profile photo (can include size variants)
   final MediaModel? photo;
   final String? paystackSubAccountCode;
@@ -28,7 +32,8 @@ class User {
   const User({
     required this.id,
     required this.email,
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.username,
     required this.phoneNumber,
     required this.countryCode,
@@ -51,7 +56,8 @@ class User {
     return User(
       id: json['id'] as String,
       email: json['email'] as String,
-      fullName: json['fullName'] as String,
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
       username: json['username'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String,
       countryCode: json['countryCode'] as String,
@@ -97,7 +103,8 @@ class User {
     return {
       'id': id,
       'email': email,
-      'fullName': fullName,
+      'firstName': firstName,
+      'lastName': lastName,
       'username': username,
       'phoneNumber': phoneNumber,
       'countryCode': countryCode,
@@ -121,7 +128,8 @@ class User {
   User copyWith({
     String? id,
     String? email,
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? username,
     String? phoneNumber,
     String? countryCode,
@@ -142,7 +150,8 @@ class User {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
-      fullName: fullName ?? this.fullName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       username: username ?? this.username,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       countryCode: countryCode ?? this.countryCode,

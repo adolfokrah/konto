@@ -26,7 +26,8 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   String _phoneNumber = '';
@@ -53,10 +54,18 @@ class _RegisterViewState extends State<RegisterView> {
   void _handleCreateAccount(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    if (_nameController.text.isEmpty) {
+    if (_firstNameController.text.isEmpty) {
       AppSnackBar.showError(
         context,
-        message: localizations.pleaseEnterFullName,
+        message: 'Please enter your first name',
+      );
+      return;
+    }
+
+    if (_lastNameController.text.isEmpty) {
+      AppSnackBar.showError(
+        context,
+        message: 'Please enter your last name',
       );
       return;
     }
@@ -135,7 +144,8 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     super.dispose();
@@ -172,7 +182,8 @@ class _RegisterViewState extends State<RegisterView> {
                   'email': _emailController.text.trim(),
                   'isRegistering': true,
                   'country': _selectedCountry,
-                  'fullName': _nameController.text.trim(),
+                  'firstName': _firstNameController.text.trim(),
+                  'lastName': _lastNameController.text.trim(),
                   'username': _usernameController.text.trim(),
                 },
               );
@@ -207,14 +218,21 @@ class _RegisterViewState extends State<RegisterView> {
             children: [
               const SizedBox(height: AppSpacing.spacingL),
               AppTextInput(
-                label: localizations.fullName,
+                label: 'First name',
                 keyboardType: TextInputType.name,
-                controller: _nameController,
-                key: const Key('fullName'),
+                controller: _firstNameController,
+                key: const Key('firstName'),
+              ),
+              const SizedBox(height: AppSpacing.spacingS),
+              AppTextInput(
+                label: 'Last name',
+                keyboardType: TextInputType.name,
+                controller: _lastNameController,
+                key: const Key('lastName'),
               ),
               const SizedBox(height: 3),
               const Text(
-                'Your full name should match the name on your ID.',
+                'Your name should match the name on your ID.',
                 style: AppTextStyles.titleRegularXs,
               ),
 

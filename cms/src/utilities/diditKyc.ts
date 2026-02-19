@@ -201,8 +201,16 @@ export class DiditKYC {
       })
 
       if (!response.ok) {
-        const errorData: DiditError = await response.json()
-        throw new Error(`Didit API error (${errorData.status_code}): ${errorData.message}`)
+        const responseText = await response.text()
+        console.error(`Didit API error response (${response.status}):`, responseText)
+        try {
+          const errorData = JSON.parse(responseText)
+          throw new Error(
+            `Didit API error (${response.status}): ${errorData.message || errorData.detail || responseText}`,
+          )
+        } catch (parseError) {
+          throw new Error(`Didit API error (${response.status}): ${responseText}`)
+        }
       }
 
       const sessionData: CreateSessionResponse = await response.json()

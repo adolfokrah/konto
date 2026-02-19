@@ -132,7 +132,7 @@ class MockInterceptor extends Interceptor {
           'user': {
             'id': 'test-user-id',
             'email': 'test@example.com',
-            'fullName': 'Test User',
+            'firstName': 'Test', 'lastName': 'User',
             'phoneNumber': '+1234567890',
             'countryCode': '+1',
             'country': 'US',

@@ -25,7 +25,8 @@ import { testPushNotification } from './endpoints/test-push-notification'
 export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
-    useAsTitle: 'fullName',
+    useAsTitle: 'firstName',
+    defaultColumns: ['firstName', 'lastName', 'username', 'phoneNumber', 'kycStatus', 'role'],
   },
   auth: true,
   access: {
@@ -156,7 +157,12 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: 'fullName',
+      name: 'firstName',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'lastName',
       type: 'text',
       required: true,
     },
@@ -204,29 +210,6 @@ export const Users: CollectionConfig = {
       name: 'country',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'frontFile',
-      type: 'upload',
-      relationTo: 'media',
-      required: false,
-    },
-    {
-      name: 'backFile',
-      type: 'upload',
-      relationTo: 'media',
-      required: false,
-    },
-    {
-      name: 'photoFile',
-      type: 'upload',
-      relationTo: 'media',
-      required: false,
-    },
-    {
-      name: 'documentType',
-      type: 'text',
-      required: false,
     },
     {
       name: 'kycSessionId',
@@ -454,6 +437,13 @@ export const Users: CollectionConfig = {
     beforeChange: [],
     afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
-    afterRead: [trackDailyActiveUser],
+    afterRead: [
+      ({ doc }) => {
+        // Compute virtual fullName from firstName and lastName
+        doc.fullName = `${doc.firstName || ''} ${doc.lastName || ''}`.trim()
+        return doc
+      },
+      trackDailyActiveUser,
+    ],
   },
 }

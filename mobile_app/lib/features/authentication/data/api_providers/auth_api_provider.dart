@@ -85,13 +85,15 @@ class AuthApiProvider {
     required String phoneNumber,
     required String countryCode,
     required String country,
-    required String fullName,
+    required String firstName,
+    required String lastName,
     required String username,
     required String email,
   }) async {
     try {
       final requestData = {
-        'fullName': fullName,
+        'firstName': firstName,
+        'lastName': lastName,
         'username': username,
         'email': email,
         'password': '123456', // Default password or user-provided

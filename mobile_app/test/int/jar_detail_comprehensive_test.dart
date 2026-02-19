@@ -42,7 +42,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+      '{"id": "test-user-123", "email": "test@example.com", "firstName": "Test", "lastName": "User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
     );
     await prefs.setString('konto_current_jar_id', 'jar123');
 
@@ -63,7 +63,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "fullName": "Test User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
+      '{"id": "test-user-123", "email": "test@example.com", "firstName": "Test", "lastName": "User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "${DateTime.now().subtract(const Duration(days: 30)).toIso8601String()}", "updatedAt": "${DateTime.now().toIso8601String()}", "sessions": [], "appSettings": {"language": "en", "darkMode": false, "biometricAuthEnabled": false, "notificationsSettings": {"pushNotificationsEnabled": true, "emailNotificationsEnabled": true, "smsNotificationsEnabled": false}}}',
     );
     await prefs.setString('konto_current_jar_id', 'jar123');
   }
@@ -90,7 +90,7 @@ void main() {
             'isFixedContribution': false,
             'creator': {
               'id': 'test-user-123',
-              'fullName': 'Test User',
+              'firstName': 'Test', 'lastName': 'User',
               'email': 'test@example.com',
               'phoneNumber': '+1234567890',
               'countryCode': 'US',
@@ -103,7 +103,7 @@ void main() {
             'collectors': [
               {
                 'id': 'collector-1',
-                'fullName': 'Test Collector',
+                'firstName': 'Test', 'lastName': 'Collector',
                 'phoneNumber': '+1234567890',
                 'email': 'collector@test.com',
                 'countryCode': 'US',
@@ -134,7 +134,7 @@ void main() {
                 'paymentStatus': 'completed',
                 'collector': {
                   'id': 'test-user-123',
-                  'fullName': 'Test User',
+                  'firstName': 'Test', 'lastName': 'User',
                   'phoneNumber': '+1234567890',
                   'email': 'test@example.com',
                   'countryCode': 'US',
@@ -382,7 +382,7 @@ void main() {
       final mockUser = User(
         id: 'test-user-123',
         email: 'test@example.com',
-        fullName: 'John Doe',
+        firstName: 'John', lastName: 'Doe',
         username: 'johndoe',
         phoneNumber: '+1234567890',
         countryCode: 'US',
@@ -565,7 +565,7 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'fullName': 'Test User',
+                'firstName': 'Test', 'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',
@@ -755,7 +755,7 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'fullName': 'Test User',
+                'firstName': 'Test', 'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',

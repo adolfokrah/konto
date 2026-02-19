@@ -59,7 +59,7 @@ void main() {
               'id': 'test_user_123',
               'phoneNumber': '245301631',
               'countryCode': '+233',
-              'fullName': 'Test User',
+              'firstName': 'Test', 'lastName': 'User',
               'email': 'test@example.com',
               'country': 'Ghana',
               'kycStatus': 'none',

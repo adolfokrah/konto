@@ -29,7 +29,8 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
 
     try {
       final result = await _userAccountRepository.updatePersonalDetails(
-        fullName: event.fullName,
+        firstName: event.firstName,
+        lastName: event.lastName,
         username: event.username,
         phoneNumber: event.phoneNumber,
         countryCode: event.countryCode,

@@ -191,13 +191,22 @@ GoRouter createRouter(AuthBloc authBloc) {
   );
 }
 
-/// Converts a Bloc stream into a ChangeNotifier for go_router's refreshListenable
+/// Converts a Bloc stream into a ChangeNotifier for go_router's refreshListenable.
+/// Only notifies when the auth state **type** changes (e.g. AuthInitial → AuthAuthenticated),
+/// not when the same state type is re-emitted with updated data.
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+    _subscription = stream.asBroadcastStream().listen((state) {
+      final stateType = state.runtimeType;
+      if (stateType != _lastStateType) {
+        _lastStateType = stateType;
+        notifyListeners();
+      }
+    });
   }
 
+  Type? _lastStateType;
   late final StreamSubscription<dynamic> _subscription;
 
   @override

@@ -439,7 +439,8 @@ export interface User {
    * Upload a profile photo
    */
   photo?: (string | null) | Media;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   /**
    * Unique username - cannot be changed once set
    */
@@ -450,10 +451,6 @@ export interface User {
   countryCode?: string | null;
   phoneNumber: string;
   country: string;
-  frontFile?: (string | null) | Media;
-  backFile?: (string | null) | Media;
-  photoFile?: (string | null) | Media;
-  documentType?: string | null;
   /**
    * KYC session ID from the KYC provider
    */
@@ -2378,15 +2375,12 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   photo?: T;
-  fullName?: T;
+  firstName?: T;
+  lastName?: T;
   username?: T;
   countryCode?: T;
   phoneNumber?: T;
   country?: T;
-  frontFile?: T;
-  backFile?: T;
-  photoFile?: T;
-  documentType?: T;
   kycSessionId?: T;
   fcmToken?: T;
   otpCode?: T;
