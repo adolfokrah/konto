@@ -282,7 +282,8 @@ export const payoutEganow = async (req: PayloadRequest) => {
       },
     })
   } catch (error: any) {
-    payoutLocks.delete(jarId)
+    const catchJarId = req.data?.jarId
+    if (catchJarId) payoutLocks.delete(catchJarId)
     console.error('Eganow payout error:', error)
     return Response.json(
       {
