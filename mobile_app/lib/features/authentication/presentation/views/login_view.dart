@@ -36,14 +36,8 @@ class _LoginViewState extends State<LoginView> {
         listeners: [
           BlocListener<VerificationBloc, VerificationState>(
             listener: (context, state) {
-              if (state is VerificationSuccess) {
-                context.read<AuthBloc>().add(
-                  RequestLogin(
-                    phoneNumber: _phoneNumber,
-                    countryCode: _countryCode,
-                  ),
-                );
-              } else if (state is VerificationFailure) {
+              // RequestLogin is dispatched from the OTP view for the login flow
+              if (state is VerificationFailure) {
                 AppSnackBar.showError(context, message: state.errorMessage);
               }
             },

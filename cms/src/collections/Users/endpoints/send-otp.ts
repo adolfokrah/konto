@@ -40,10 +40,6 @@ export const sendOTP = async (req: PayloadRequest) => {
       )
     }
 
-    // Generate OTP server-side
-    const code = generateOTPCode()
-    const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
-
     // Try to find existing user
     const userResult = await req.payload.find({
       collection: 'users',
@@ -53,6 +49,12 @@ export const sendOTP = async (req: PayloadRequest) => {
       },
       limit: 1,
     })
+
+    const isDemoUser = userResult.docs.length > 0 && userResult.docs[0].demoUser === true
+
+    // Demo users always get 123456; real users get a random code
+    const code = isDemoUser ? '123456' : generateOTPCode()
+    const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
 
     if (userResult.docs.length > 0) {
       // Store OTP on existing user document
@@ -71,19 +73,22 @@ export const sendOTP = async (req: PayloadRequest) => {
       otpStore.set(key, { code, expiry, attempts: 0 })
     }
 
-    // Send OTP via email
-    if (email) {
-      await emailService.sendOTPEmail(email, code)
-    }
+    // Skip SMS/email for demo users
+    if (!isDemoUser) {
+      // Send OTP via email
+      if (email) {
+        await emailService.sendOTPEmail(email, code)
+      }
 
-    // Send OTP via SMS
-    if (phoneNumber && countryCode) {
-      const fullPhoneNumber = `${countryCode}${phoneNumber}`
+      // Send OTP via SMS
+      if (phoneNumber && countryCode) {
+        const fullPhoneNumber = `${countryCode}${phoneNumber}`
 
-      await sendSMS(
-        fullPhoneNumber,
-        `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
-      )
+        await sendSMS(
+          fullPhoneNumber,
+          `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
+        )
+      }
     }
 
     return Response.json(

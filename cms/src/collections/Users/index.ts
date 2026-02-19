@@ -308,6 +308,14 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'demoUser',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Demo users always use OTP 123456 and skip SMS/email sending',
+      },
+    },
+    {
       label: 'Withdrawal Account',
       type: 'group',
       fields: [

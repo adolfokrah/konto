@@ -137,6 +137,7 @@ export const checkUserExistence = async (req: PayloadRequest) => {
         conflictField,
         data: {
           email: existingUser.email,
+          demoUser: existingUser.demoUser === true,
         },
         message,
       })

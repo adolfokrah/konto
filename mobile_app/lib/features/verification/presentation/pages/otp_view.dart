@@ -7,6 +7,8 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/otp_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,12 +24,14 @@ class OtpView extends StatelessWidget {
     final email = args?['email'] as String?;
     final countryCode = args?['countryCode'] as String?;
     final skipInitialOtp = args?['skipInitialOtp'] as bool? ?? false;
+    final isRegistering = args?['isRegistering'] as bool? ?? true;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
       email: email,
       countryCode: countryCode,
       skipInitialOtp: skipInitialOtp,
+      isRegistering: isRegistering,
     );
   }
 }
@@ -37,12 +41,14 @@ class _OtpViewContent extends StatefulWidget {
   final String? email;
   final String? countryCode;
   final bool skipInitialOtp;
+  final bool isRegistering;
 
   const _OtpViewContent({
     this.phoneNumber,
     this.email,
     this.countryCode,
     this.skipInitialOtp = false,
+    this.isRegistering = true,
   });
 
   @override
@@ -62,16 +68,23 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     });
   }
 
-  void _initializeVerification() {
+  void _initializeVerification({bool isResend = false}) {
     // If skipInitialOtp is true (withdrawal flow), OTP was already sent
     // Otherwise (login/register flow), send OTP now
     if (!widget.skipInitialOtp) {
+      // Guard against duplicate OTP sends (e.g. GoRouter refresh rebuilding the widget)
+      if (!isResend) {
+        final currentState = context.read<VerificationBloc>().state;
+        if (currentState is VerificationLoading || currentState is VerificationCodeSent) {
+          return;
+        }
+      }
+
       final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       final phoneNumber = args?['phoneNumber'] as String?;
       final countryCode = args?['countryCode'] as String?;
       final email = args?['email'] as String?;
 
-      print('🔄 OTP View: Sending OTP on initialization (login/register flow)');
       context.read<VerificationBloc>().add(
             PhoneNumberVerificationRequested(
               phoneNumber: phoneNumber ?? '',
@@ -79,8 +92,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
               countryCode: countryCode ?? '',
             ),
           );
-    } else {
-      print('⏭️  OTP View: Skipping initial OTP (withdrawal flow)');
     }
 
     _startResendTimer();
@@ -116,7 +127,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
       print('🔄 OTP View: Resend button tapped');
       AppSnackBar.showInfo(context, message: localizations.resendMessage);
 
-      _initializeVerification();
+      _initializeVerification(isResend: true);
     } else {
       print(
         '⏳ OTP View: Resend not available yet, countdown: $_resendCountdown',
@@ -150,15 +161,38 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: BlocListener<VerificationBloc, VerificationState>(
-        listener: (context, state) async {
-          if (state is VerificationSuccess) {
-            //remove the opt screen
-            context.pop();
-          } else if (state is VerificationFailure) {
-            AppSnackBar.showError(context, message: state.errorMessage);
-          }
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<VerificationBloc, VerificationState>(
+            listener: (context, state) {
+              if (state is VerificationSuccess) {
+                if (!widget.isRegistering) {
+                  // Login flow: dispatch RequestLogin directly from OTP view
+                  context.read<AuthBloc>().add(
+                    RequestLogin(
+                      phoneNumber: widget.phoneNumber ?? '',
+                      countryCode: widget.countryCode ?? '',
+                    ),
+                  );
+                } else {
+                  // Registration/other flow: pop back to caller
+                  context.pop();
+                }
+              } else if (state is VerificationFailure) {
+                AppSnackBar.showError(context, message: state.errorMessage);
+              }
+            },
+          ),
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthAuthenticated) {
+                context.go(AppRoutes.jarDetail);
+              } else if (state is AuthError) {
+                AppSnackBar.showError(context, message: state.error);
+              }
+            },
+          ),
+        ],
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.spacingS),
