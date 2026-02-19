@@ -171,6 +171,9 @@ class _RegisterViewState extends State<RegisterView> {
                   'countryCode': _countryCode,
                   'email': _emailController.text.trim(),
                   'isRegistering': true,
+                  'country': _selectedCountry,
+                  'fullName': _nameController.text.trim(),
+                  'username': _usernameController.text.trim(),
                 },
               );
             } else if (state is PhoneNumberNotAvailable) {
@@ -184,18 +187,7 @@ class _RegisterViewState extends State<RegisterView> {
         ),
         BlocListener<VerificationBloc, VerificationState>(
           listener: (context, state) {
-            if (state is VerificationSuccess) {
-              context.read<AuthBloc>().add(
-                RequestRegistration(
-                  phoneNumber: _phoneNumber,
-                  countryCode: _countryCode,
-                  country: _selectedCountry,
-                  fullName: _nameController.text.trim(),
-                  username: _usernameController.text.trim(),
-                  email: _emailController.text.trim(),
-                ),
-              );
-            }
+            // RequestRegistration is dispatched from the OTP view for the registration flow
           },
         ),
       ],

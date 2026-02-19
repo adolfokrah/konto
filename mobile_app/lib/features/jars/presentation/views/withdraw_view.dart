@@ -16,6 +16,7 @@ import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
+import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:go_router/go_router.dart';
 
 class WithdrawView extends StatefulWidget {
@@ -224,6 +225,13 @@ class _WithdrawViewState extends State<WithdrawView> {
       balance,
     );
     final double total = _systemSettings.calculateNetPayout(balance);
+
+    // Check KYC before allowing transfer
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated &&
+        authState.user.kycStatus != 'verified') {
+      return const KycView();
+    }
 
     return Scaffold(
       appBar: AppBar(

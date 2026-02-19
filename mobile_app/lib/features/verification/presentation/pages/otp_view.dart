@@ -24,7 +24,7 @@ class OtpView extends StatelessWidget {
     final email = args?['email'] as String?;
     final countryCode = args?['countryCode'] as String?;
     final skipInitialOtp = args?['skipInitialOtp'] as bool? ?? false;
-    final isRegistering = args?['isRegistering'] as bool? ?? true;
+    final isRegistering = args?['isRegistering'] as bool?;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
@@ -41,14 +41,14 @@ class _OtpViewContent extends StatefulWidget {
   final String? email;
   final String? countryCode;
   final bool skipInitialOtp;
-  final bool isRegistering;
+  final bool? isRegistering;
 
   const _OtpViewContent({
     this.phoneNumber,
     this.email,
     this.countryCode,
     this.skipInitialOtp = false,
-    this.isRegistering = true,
+    this.isRegistering,
   });
 
   @override
@@ -166,17 +166,32 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           BlocListener<VerificationBloc, VerificationState>(
             listener: (context, state) {
               if (state is VerificationSuccess) {
-                if (!widget.isRegistering) {
-                  // Login flow: dispatch RequestLogin directly from OTP view
+                final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
+                if (widget.isRegistering == false) {
+                  // Login flow: dispatch RequestLogin directly
                   context.read<AuthBloc>().add(
                     RequestLogin(
                       phoneNumber: widget.phoneNumber ?? '',
                       countryCode: widget.countryCode ?? '',
                     ),
                   );
+                } else if (widget.isRegistering == true) {
+                  // Registration flow: dispatch RequestRegistration directly
+                  context.read<AuthBloc>().add(
+                    RequestRegistration(
+                      phoneNumber: widget.phoneNumber ?? '',
+                      countryCode: widget.countryCode ?? '',
+                      country: args?['country'] ?? '',
+                      fullName: args?['fullName'] ?? '',
+                      username: args?['username'] ?? '',
+                      email: widget.email ?? '',
+                    ),
+                  );
                 } else {
-                  // Registration/other flow: pop back to caller
-                  context.pop();
+                  // Verification-only flow (change phone, withdrawal): pop back
+                  if (context.mounted) {
+                    context.pop();
+                  }
                 }
               } else if (state is VerificationFailure) {
                 AppSnackBar.showError(context, message: state.errorMessage);

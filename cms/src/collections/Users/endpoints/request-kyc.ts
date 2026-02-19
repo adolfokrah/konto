@@ -51,7 +51,7 @@ export const requestKYC = async (req: PayloadRequest) => {
       expectedDetails: {
         first_name: firstName,
         last_name: lastName,
-        country: user?.country.toLocaleLowerCase() == 'ghana' ? 'GHA' : 'NGN',
+        country: user?.country?.toLowerCase() === 'ghana' ? 'GHA' : 'GHA',
       },
     })
 
@@ -83,12 +83,11 @@ export const requestKYC = async (req: PayloadRequest) => {
       { status: 200 },
     )
   } catch (error) {
-    console.error('KYC session creation error:', error)
+    console.error('KYC session creation error:', error instanceof Error ? error.message : error)
     return Response.json(
       {
         success: false,
-        message: 'Failed to create KYC session',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : 'Failed to create KYC session',
       },
       { status: 500 },
     )
