@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     const imageForMeta = jarImageThumbnail?.url || imageUrl || null
 
     // Get creator name
-    const creatorName = typeof jar.creator === 'object' ? jar.creator.fullName : jar.creator
+    const creatorName = typeof jar.creator === 'object' ? `${jar.creator.firstName || ''} ${jar.creator.lastName || ''}`.trim() : jar.creator
 
     return {
       title: `Contribute to ${jar.name}`,
@@ -198,7 +198,7 @@ export default async function Page({
     // Get creator name, username, and initials
     const creatorName =
       typeof jarWithBalance?.creator === 'object'
-        ? jarWithBalance?.creator?.fullName
+        ? `${jarWithBalance?.creator?.firstName || ''} ${jarWithBalance?.creator?.lastName || ''}`.trim()
         : jarWithBalance?.creator
     const creatorUsername =
       typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.username : null
@@ -262,7 +262,7 @@ export default async function Page({
                 <div className="flex-1">
                   <p className="font-bold text-xl mb-1">
                     {typeof jarWithBalance?.creator === 'object'
-                      ? jarWithBalance?.creator?.fullName
+                      ? `${jarWithBalance?.creator?.firstName || ''} ${jarWithBalance?.creator?.lastName || ''}`.trim()
                       : jarWithBalance?.creator}
                   </p>
                   {creatorUsername && (

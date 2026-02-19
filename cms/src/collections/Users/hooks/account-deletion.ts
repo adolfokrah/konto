@@ -37,6 +37,9 @@ export const accountDeletion: CollectionBeforeDeleteHook = async ({ id, req }) =
 
   // send email to users about account deletion
   if (user?.email) {
-    await emailService.sendAccountDeletionEmail(user.email, user.fullName || 'User')
+    await emailService.sendAccountDeletionEmail(
+      user.email,
+      `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+    )
   }
 }

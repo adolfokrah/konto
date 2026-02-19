@@ -78,7 +78,9 @@ export const sendJarInviteReminder = async (req: PayloadRequest) => {
       // Get the jar creator's name for the notification message
       const creator = jar.creator
       const inviterName =
-        typeof creator === 'object' && creator?.fullName ? creator.fullName : 'Someone'
+        typeof creator === 'object' && creator?.firstName
+          ? `${creator.firstName || ''} ${creator.lastName || ''}`.trim()
+          : 'Someone'
 
       // Create new jar invite notification with consistent message format
       notification = await req.payload.create({
