@@ -1,5 +1,4 @@
 import { CollectionConfig } from 'payload'
-
 export const DailyActiveUsers: CollectionConfig = {
   slug: 'dailyActiveUsers',
   fields: [
