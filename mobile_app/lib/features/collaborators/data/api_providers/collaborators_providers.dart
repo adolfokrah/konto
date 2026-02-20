@@ -4,11 +4,10 @@ import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/core/services/base_api_provider.dart';
 
 class CollaboratorsProvider extends BaseApiProvider {
-  CollaboratorsProvider({required Dio dio, required UserStorageService userStorageService})
-    : super(
-        dio: dio,
-        userStorageService: userStorageService,
-      );
+  CollaboratorsProvider({
+    required Dio dio,
+    required UserStorageService userStorageService,
+  }) : super(dio: dio, userStorageService: userStorageService);
 
   /// Search users by email, phone number, or full name
   Future<List<Map<String, dynamic>>> searchUsers(String query) async {
@@ -55,11 +54,6 @@ class CollaboratorsProvider extends BaseApiProvider {
               final userId = user['id']?.toString();
               return userId != currentUserId;
             }).toList();
-
-        print('✅ Filtered users: ${filteredUsers.length} found');
-        for (var user in filteredUsers) {
-          print('  - ${user['fullName']} (${user['email']})');
-        }
 
         return filteredUsers;
       } else {

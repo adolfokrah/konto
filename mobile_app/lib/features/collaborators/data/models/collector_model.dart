@@ -54,7 +54,8 @@ class CollectorProfilePicture {
 class CollectorModel {
   final String id;
   final String email;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String phoneNumber;
   final String countryCode;
   final String country;
@@ -66,7 +67,8 @@ class CollectorModel {
   const CollectorModel({
     required this.id,
     required this.email,
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.phoneNumber,
     required this.countryCode,
     required this.country,
@@ -76,11 +78,14 @@ class CollectorModel {
     this.updatedAt,
   });
 
+  String get fullName => '$firstName $lastName'.trim();
+
   factory CollectorModel.fromJson(Map<String, dynamic> json) {
     return CollectorModel(
       id: json['id'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      fullName: json['fullName'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String? ?? '',
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String? ?? '',
@@ -104,7 +109,8 @@ class CollectorModel {
     return {
       'id': id,
       'email': email,
-      'fullName': fullName,
+      'firstName': firstName,
+      'lastName': lastName,
       'phoneNumber': phoneNumber,
       'countryCode': countryCode,
       'country': country,
@@ -138,7 +144,8 @@ class CollectorModel {
   CollectorModel copyWith({
     String? id,
     String? email,
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? phoneNumber,
     String? countryCode,
     String? country,
@@ -150,7 +157,8 @@ class CollectorModel {
     return CollectorModel(
       id: id ?? this.id,
       email: email ?? this.email,
-      fullName: fullName ?? this.fullName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       countryCode: countryCode ?? this.countryCode,
       country: country ?? this.country,
