@@ -159,6 +159,11 @@ class FCMService {
       }
     }
 
+    // Refresh user auth state when KYC status changes
+    if (messageData['type'] == 'kyc' && context != null) {
+      _triggerAutoLogin(context);
+    }
+
     // Show in-app notification banner
     _showInAppNotification(message);
   }

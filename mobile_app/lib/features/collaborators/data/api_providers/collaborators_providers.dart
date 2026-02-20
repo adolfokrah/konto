@@ -30,7 +30,10 @@ class CollaboratorsProvider extends BaseApiProvider {
               'email': {'contains': query},
             },
             {
-              'fullName': {'contains': query},
+              'firstName': {'contains': query},
+            },
+            {
+              'lastName': {'contains': query},
             },
           ],
         },

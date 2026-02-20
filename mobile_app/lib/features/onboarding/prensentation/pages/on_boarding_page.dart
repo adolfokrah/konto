@@ -32,8 +32,7 @@ class OnBoardingPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Auto-scrolling marquee - First row (faster, right to left)
-                  SizedBox(
-                    height: 200,
+                  Flexible(
                     child: Marqueer(
                       pps: 50, // Pixels per second (faster)
                       direction: MarqueerDirection.rtl,
@@ -72,8 +71,7 @@ class OnBoardingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   // Auto-scrolling marquee - Second row (slower, left to right)
-                  SizedBox(
-                    height: 200,
+                  Flexible(
                     child: Marqueer(
                       pps: 30, // Pixels per second (slower)
                       direction: MarqueerDirection.ltr,

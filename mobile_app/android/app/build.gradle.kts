@@ -17,6 +17,7 @@ android {
     ndkVersion = "28.2.13676358"
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -60,9 +61,8 @@ android {
         
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
-        // Remove any NDK abiFilters to avoid conflicts with splits configuration
-        // NDK ABI filtering is handled by the splits block above
+
+        resourceConfigurations += listOf("en", "fr", "es", "de", "pt", "ar", "zh", "ja", "ko", "hi", "sw")
     }
 
     // APK splitting disabled in Gradle - using Flutter's --split-per-abi flag instead
@@ -83,6 +83,10 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {
