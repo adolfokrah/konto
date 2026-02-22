@@ -10,8 +10,7 @@ import { cn } from '@/utilities/ui'
 import { kycStatusLabels } from '@/components/dashboard/table-constants'
 import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
 import { UserKycActions } from '@/components/dashboard/user-kyc-actions'
-import { DataTable } from '@/components/dashboard/data-table/data-table'
-import { transactionColumns } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -818,12 +817,7 @@ export default async function UserDetailPage({ params }: Props) {
               {transactions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No transactions found</p>
               ) : (
-                <DataTable
-                  columns={transactionColumns}
-                  data={transactions}
-                  readOnly
-                  emptyMessage="No transactions found"
-                />
+                <TransactionsDataTable transactions={transactions} />
               )}
             </CardContent>
           </Card>

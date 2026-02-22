@@ -24,8 +24,7 @@ import { cn } from '@/utilities/ui'
 import { JarActions } from '@/components/dashboard/jar-actions'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
-import { DataTable } from '@/components/dashboard/data-table/data-table'
-import { collectorColumns } from '@/components/dashboard/data-table/columns/collector-columns'
+import { CollectorsDataTable } from '@/components/dashboard/collectors-data-table'
 
 const statusStyles: Record<string, string> = {
   open: 'bg-green-100 text-green-800 border-green-200',
@@ -468,7 +467,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               No collectors invited yet
             </p>
           ) : (
-            <DataTable columns={collectorColumns} data={collectors} readOnly />
+            <CollectorsDataTable collectors={collectors} />
           )}
         </CardContent>
       </Card>
