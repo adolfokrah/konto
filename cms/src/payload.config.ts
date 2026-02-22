@@ -25,7 +25,6 @@ import { settleContributionsTask } from './tasks/settle-contributions'
 import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
 import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
 import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
-import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
@@ -164,11 +163,6 @@ export default buildConfig({
     ],
   },
   endpoints: [
-    {
-      path: '/recalculate-jar-totals',
-      method: 'post',
-      handler: recalculateJarTotals,
-    },
     {
       path: '/system-settings',
       method: 'get',

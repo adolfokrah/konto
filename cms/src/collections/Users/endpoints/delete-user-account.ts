@@ -73,34 +73,44 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
     }
 
     // Check if user has any jars with balance > 0
-    const jarsWithBalance = await req.payload.find({
+    const userJars = await req.payload.find({
       collection: 'jars',
       where: {
-        and: [
-          {
-            creator: {
-              equals: req.user.id,
-            },
-          },
-          {
-            totalContributions: {
-              greater_than: 0,
-            },
-          },
-        ],
+        creator: { equals: req.user.id },
       },
-      limit: 1, // We only need to know if at least one exists
+      pagination: false,
+      select: { name: true },
     })
 
-    if (jarsWithBalance.docs.length > 0) {
-      return Response.json(
-        {
-          success: false,
-          message:
-            'Cannot delete account. You have jars with remaining balance. Please withdraw all funds before deleting your account.',
+    if (userJars.docs.length > 0) {
+      const jarIds = userJars.docs.map((jar: any) => jar.id)
+      const contributions = await req.payload.find({
+        collection: 'transactions',
+        where: {
+          jar: { in: jarIds },
+          paymentStatus: { equals: 'completed' },
+          type: { equals: 'contribution' },
         },
-        { status: 400 },
+        pagination: false,
+        select: { amountContributed: true },
+        overrideAccess: true,
+      })
+
+      const totalBalance = contributions.docs.reduce(
+        (sum, tx: any) => sum + (tx.amountContributed || 0),
+        0,
       )
+
+      if (totalBalance > 0) {
+        return Response.json(
+          {
+            success: false,
+            message:
+              'Cannot delete account. You have jars with remaining balance. Please withdraw all funds before deleting your account.',
+          },
+          { status: 400 },
+        )
+      }
     }
 
     // Store deleted user account details in a separate collection

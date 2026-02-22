@@ -75,6 +75,17 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Check if jar is frozen (AML compliance)
+    if (jar.status === 'frozen') {
+      return Response.json(
+        {
+          success: false,
+          message: 'This jar is currently frozen and payouts are not allowed',
+        },
+        { status: 403 },
+      )
+    }
+
     // Verify the logged-in user is the jar creator
     const creatorId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
     if (creatorId !== user.id) {

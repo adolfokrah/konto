@@ -51,6 +51,17 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       )
     }
 
+    // Check if jar is frozen (AML compliance)
+    if (jar.status === 'frozen') {
+      return Response.json(
+        {
+          success: false,
+          message: 'This jar is currently frozen and cannot accept contributions',
+        },
+        { status: 403 },
+      )
+    }
+
     // Create the contribution record using admin access
     const contribution = await req.payload.create({
       collection: 'transactions',

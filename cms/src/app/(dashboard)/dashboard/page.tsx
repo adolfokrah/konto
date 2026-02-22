@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Users, Container as JarIcon, ArrowLeftRight, DollarSign, Receipt, Activity } from 'lucide-react'
+import { Users, Container as JarIcon, ArrowLeftRight, DollarSign, Receipt, Smartphone, Banknote } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
@@ -17,7 +17,8 @@ export default async function DashboardPage() {
     completedContributions,
     completedPayouts,
     revenueTransactions,
-    todayDAU,
+    momoContributionsResult,
+    cashContributionsResult,
     recentTransactions,
     last30DaysContributions,
     last30DaysPayouts,
@@ -79,14 +80,30 @@ export default async function DashboardPage() {
       overrideAccess: true,
     }),
 
-    // Today's active users
-    payload.count({
-      collection: 'dailyActiveUsers',
+    // Mobile money contributions total
+    payload.find({
+      collection: 'transactions',
       where: {
-        createdAt: {
-          greater_than_equal: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-        },
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'mobile-money' },
       },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Cash contributions total
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'cash' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
     }),
 
     // Recent 10 transactions
@@ -147,6 +164,18 @@ export default async function DashboardPage() {
 
   // Total payouts volume
   const totalPayouts = completedPayouts.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+
+  // Mobile money contributions volume
+  const totalMomoContributions = momoContributionsResult.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+
+  // Cash contributions volume
+  const totalCashContributions = cashContributionsResult.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
@@ -213,9 +242,16 @@ export default async function DashboardPage() {
           icon={Receipt}
         />
         <MetricCard
-          title="Active Users Today"
-          value={todayDAU.totalDocs.toLocaleString()}
-          icon={Activity}
+          title="MoMo Contributions"
+          value={`GHS ${totalMomoContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          description={`${momoContributionsResult.totalDocs} transactions`}
+          icon={Smartphone}
+        />
+        <MetricCard
+          title="Cash Contributions"
+          value={`GHS ${totalCashContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          description={`${cashContributionsResult.totalDocs} transactions`}
+          icon={Banknote}
         />
       </div>
 

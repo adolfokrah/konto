@@ -11,6 +11,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { TopBar } from '@/components/dashboard/top-bar'
+import { Toaster } from '@/components/ui/sonner'
 
 import '../(website)/globals.css'
 
@@ -55,6 +56,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
           </div>
         </div>
+        <Toaster />
       </body>
     </html>
   )

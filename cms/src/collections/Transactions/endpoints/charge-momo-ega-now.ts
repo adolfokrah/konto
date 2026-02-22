@@ -81,6 +81,17 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Check if jar is frozen (AML compliance)
+    if (jar.status === 'frozen') {
+      return Response.json(
+        {
+          success: false,
+          message: 'This jar is currently frozen and cannot accept contributions',
+        },
+        { status: 403 },
+      )
+    }
+
     // Validate mobile money specific fields
     if (!contribution.contributorPhoneNumber) {
       return Response.json(

@@ -21,13 +21,10 @@ export const checkEmptyJarsDailyTask = {
 
       console.log('🔍 Starting daily empty jar check...')
 
-      // Find all open jars with 0 contributions
-      const emptyJars = await payload.find({
+      // Find all open jars
+      const openJars = await payload.find({
         collection: 'jars',
         where: {
-          totalContributions: {
-            equals: 0,
-          },
           status: {
             equals: 'open',
           },
@@ -36,6 +33,34 @@ export const checkEmptyJarsDailyTask = {
         depth: 1,
         overrideAccess: true,
       })
+
+      // Find which of these jars have completed contributions
+      const openJarIds = openJars.docs.map((jar: any) => jar.id)
+      const jarsWithContributions = new Set<string>()
+
+      if (openJarIds.length > 0) {
+        const contributions = await payload.find({
+          collection: 'transactions',
+          where: {
+            jar: { in: openJarIds },
+            paymentStatus: { equals: 'completed' },
+            type: { equals: 'contribution' },
+          },
+          pagination: false,
+          select: { jar: true },
+          overrideAccess: true,
+        })
+
+        for (const tx of contributions.docs as any[]) {
+          const jarId = typeof tx.jar === 'string' ? tx.jar : tx.jar?.id
+          if (jarId) jarsWithContributions.add(jarId)
+        }
+      }
+
+      // Filter to jars with no contributions
+      const emptyJars = {
+        docs: openJars.docs.filter((jar: any) => !jarsWithContributions.has(jar.id)),
+      }
 
       console.log(`Found ${emptyJars.docs.length} empty jars`)
 

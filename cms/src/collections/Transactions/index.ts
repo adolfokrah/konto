@@ -8,7 +8,7 @@ import { verifyTransfer } from './endpoints/verify-transfer'
 import { payoutEganow } from './endpoints/payout-eganow'
 import { testPayoutEganow } from './endpoints/test-payout-eganow'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
-import { setPaymentStatus, updateJarTotalContributions } from './hooks'
+import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
@@ -348,7 +348,7 @@ export const Transactions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
-    afterChange: [sendContributionReceipt, updateJarTotalContributions],
+    afterChange: [sendContributionReceipt],
     beforeValidate: [validateJarCreatorAccount],
   },
 }

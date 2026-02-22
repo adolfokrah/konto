@@ -177,19 +177,24 @@ export const Jars: CollectionConfig = {
       defaultValue: 'open',
       options: [
         { label: 'Open', value: 'open' },
+        { label: 'Frozen', value: 'frozen' },
         { label: 'Broken', value: 'broken' },
         { label: 'Sealed', value: 'sealed' },
       ],
       required: true,
+      index: true,
       admin: {
         description: 'Current status of the jar',
       },
     },
     {
-      name: 'totalContributions',
-      type: 'number',
+      name: 'freezeReason',
+      type: 'textarea',
       required: false,
-      defaultValue: 0,
+      admin: {
+        description: 'Reason for freezing the jar (AML compliance)',
+        condition: (data) => data.status === 'frozen',
+      },
     },
     {
       name: 'allowAnonymousContributions',

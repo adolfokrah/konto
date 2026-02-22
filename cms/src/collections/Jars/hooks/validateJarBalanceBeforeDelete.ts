@@ -23,8 +23,28 @@ export const validateJarBalanceBeforeDelete: CollectionBeforeDeleteHook = async 
       throw new Error('Jar not found')
     }
 
-    // Check if jar has any balance
-    const totalContributions = jar.totalContributions || 0
+    // Check if jar is frozen (AML compliance)
+    if (jar.status === 'frozen') {
+      throw new Error('Cannot delete a frozen jar. Please unfreeze it first.')
+    }
+
+    // Check if jar has any completed contributions
+    const contributions = await payload.find({
+      collection: 'transactions',
+      where: {
+        jar: { equals: id },
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    })
+
+    const totalContributions = contributions.docs.reduce(
+      (sum, tx: any) => sum + (tx.amountContributed || 0),
+      0,
+    )
 
     if (totalContributions > 0) {
       throw new Error(

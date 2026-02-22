@@ -27,7 +27,6 @@ const navItems = [
     label: 'Jars',
     href: '/dashboard/jars',
     icon: Container,
-    disabled: true,
   },
   {
     label: 'Transactions',

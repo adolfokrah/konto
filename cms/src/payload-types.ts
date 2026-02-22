@@ -1471,8 +1471,11 @@ export interface Jar {
   /**
    * Current status of the jar
    */
-  status: 'open' | 'broken' | 'sealed';
-  totalContributions?: number | null;
+  status: 'open' | 'frozen' | 'broken' | 'sealed';
+  /**
+   * Reason for freezing the jar (AML compliance)
+   */
+  freezeReason?: string | null;
   /**
    * Allow contributions from users not logged in
    */
@@ -2470,7 +2473,7 @@ export interface JarsSelect<T extends boolean = true> {
       };
   thankYouMessage?: T;
   status?: T;
-  totalContributions?: T;
+  freezeReason?: T;
   allowAnonymousContributions?: T;
   updatedAt?: T;
   createdAt?: T;
