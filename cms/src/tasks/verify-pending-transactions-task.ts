@@ -1,4 +1,4 @@
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 /**
  * Verify Pending Transactions Task
@@ -82,9 +82,9 @@ export const verifyPendingTransactionsTask = {
 
         // Verify with Eganow
         try {
-          await eganow.getToken()
+          await getEganow().getToken()
 
-          const statusResult = await eganow.checkTransactionStatus({
+          const statusResult = await getEganow().checkTransactionStatus({
             transactionId: id,
             languageId: 'en',
           })

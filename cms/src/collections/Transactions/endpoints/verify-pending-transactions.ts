@@ -1,5 +1,5 @@
 import { PayloadRequest } from 'payload'
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 export const verifyPendingTransactions = async (req: PayloadRequest) => {
   try {
@@ -111,10 +111,10 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
 
       try {
         // Get token
-        await eganow.getToken()
+        await getEganow().getToken()
 
         // Check transaction status directly with Eganow
-        const statusResult = await eganow.checkTransactionStatus({
+        const statusResult = await getEganow().checkTransactionStatus({
           transactionId: id,
           languageId: 'en',
         })

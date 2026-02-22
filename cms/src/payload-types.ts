@@ -131,6 +131,7 @@ export interface Config {
       'settle-contributions': TaskSettleContributions;
       'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
       'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
+      'verify-pending-transactions': TaskVerifyPendingTransactions;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1109,41 +1110,23 @@ export interface PricingBlock {
      * Label for the amount input section
      */
     requestLabel?: string | null;
-    /**
-     * Label for fee payer selection
-     */
-    feePayerLabel?: string | null;
-    feePayerOptions?:
-      | {
-          label: string;
-          value: string;
-          id?: string | null;
-        }[]
-      | null;
     chargesBreakdownLabel?: string | null;
-    /**
-     * Label for the telco/paystack transaction fee
-     */
-    telcoFeeLabel?: string | null;
-    /**
-     * Label for the platform fee
-     */
-    platformFeeLabel?: string | null;
-    /**
-     * Label for the total amount contributor pays
-     */
     contributorPaysLabel?: string | null;
+    transferFeeLabel?: string | null;
     youReceiveLabel?: string | null;
   };
+  /**
+   * Fee percentages matching the CMS System Settings
+   */
   feeStructure?: {
     /**
-     * Telco transaction fee percentage
+     * Collection fee percentage (matches System Settings collectionFee)
      */
-    telcoTransactionFee?: number | null;
+    collectionFee?: number | null;
     /**
-     * Maximum platform fee percentage
+     * Transfer fee percentage (matches System Settings transferFeePercentage)
      */
-    platformFeeMax?: number | null;
+    transferFeePercentage?: number | null;
   };
   features?:
     | {
@@ -1664,6 +1647,7 @@ export interface PayloadJob {
           | 'settle-contributions'
           | 'check-empty-jars-daily'
           | 'check-withdrawal-balance-daily'
+          | 'verify-pending-transactions'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1703,6 +1687,7 @@ export interface PayloadJob {
         | 'settle-contributions'
         | 'check-empty-jars-daily'
         | 'check-withdrawal-balance-daily'
+        | 'verify-pending-transactions'
         | 'schedulePublish'
       )
     | null;
@@ -2107,25 +2092,16 @@ export interface PricingBlockSelect<T extends boolean = true> {
     | T
     | {
         requestLabel?: T;
-        feePayerLabel?: T;
-        feePayerOptions?:
-          | T
-          | {
-              label?: T;
-              value?: T;
-              id?: T;
-            };
         chargesBreakdownLabel?: T;
-        telcoFeeLabel?: T;
-        platformFeeLabel?: T;
         contributorPaysLabel?: T;
+        transferFeeLabel?: T;
         youReceiveLabel?: T;
       };
   feeStructure?:
     | T
     | {
-        telcoTransactionFee?: T;
-        platformFeeMax?: T;
+        collectionFee?: T;
+        transferFeePercentage?: T;
       };
   features?:
     | T
@@ -3038,6 +3014,14 @@ export interface TaskCheckEmptyJarsDaily {
  * via the `definition` "TaskCheck-withdrawal-balance-daily".
  */
 export interface TaskCheckWithdrawalBalanceDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-transactions".
+ */
+export interface TaskVerifyPendingTransactions {
   input?: unknown;
   output?: unknown;
 }

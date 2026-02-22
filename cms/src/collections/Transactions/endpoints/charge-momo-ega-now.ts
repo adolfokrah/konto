@@ -1,7 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 // Eganow mobile money response data structure based on documentation
 interface EganowChargeResponseData {
@@ -140,12 +140,12 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     }
 
     // Get token (automatically cached by Eganow class)
-    await eganow.getToken()
+    await getEganow().getToken()
 
     // Try to get account name from Eganow KYC
     let accountName = contribution.contributor || 'Anonymous'
     try {
-      const kycResult = await eganow.verifyKYC({
+      const kycResult = await getEganow().verifyKYC({
         paypartnerCode,
         accountNoOrCardNoOrMSISDN: phoneNumber,
         languageId: 'en',
@@ -175,7 +175,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     }
 
     // Initiate mobile money collection via Eganow
-    const collectionResult = await eganow.collectMobileMoney(collectionData)
+    const collectionResult = await getEganow().collectMobileMoney(collectionData)
 
     // Map Eganow transaction status to mobile app expected format
     const statusMap: { [key: string]: string } = {

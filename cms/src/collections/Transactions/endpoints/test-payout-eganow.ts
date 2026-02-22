@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 export const testPayoutEganow = async (req: PayloadRequest) => {
   try {
@@ -46,7 +46,7 @@ export const testPayoutEganow = async (req: PayloadRequest) => {
     }
 
     // Get token (automatically cached by Eganow class)
-    await eganow.getToken()
+    await getEganow().getToken()
 
     // Prepare payout request data
     const payoutData = {
@@ -67,7 +67,7 @@ export const testPayoutEganow = async (req: PayloadRequest) => {
     console.log('Test payout request data:', JSON.stringify(payoutData, null, 2))
 
     // Initiate payout via Eganow
-    const payoutResult = await eganow.payout(payoutData)
+    const payoutResult = await getEganow().payout(payoutData)
 
     // Return success response
     return Response.json({

@@ -1,7 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
@@ -58,10 +58,10 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
     }
 
     // Get token (automatically cached by Eganow class)
-    await eganow.getToken()
+    await getEganow().getToken()
 
     // Verify KYC using Eganow
-    const kycResponse = await eganow.verifyKYC({
+    const kycResponse = await getEganow().verifyKYC({
       paypartnerCode,
       accountNoOrCardNoOrMSISDN: formattedPhoneNumber,
       languageId: 'en',

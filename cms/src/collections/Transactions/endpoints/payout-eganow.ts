@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 
-import { eganow } from '@/utilities/initalise'
+import { getEganow } from '@/utilities/initalise'
 
 // In-memory lock to prevent concurrent payouts for the same jar
 const payoutLocks = new Set<string>()
@@ -200,7 +200,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
     }
 
     // Get token (automatically cached by Eganow class)
-    await eganow.getToken()
+    await getEganow().getToken()
 
     // Create payout transaction record first (negative amount)
     // Store the full amount sent to Eganow (they will deduct the fee on their end)
@@ -246,7 +246,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
     console.log('Payout request data:', JSON.stringify(payoutData, null, 2))
 
     // Initiate payout via Eganow
-    const payoutResult = await eganow.payout(payoutData)
+    const payoutResult = await getEganow().payout(payoutData)
 
     console.log(
       `Payout initiated - eganowReferenceNo: ${payoutResult.eganowReferenceNo}, transactionId: ${payoutData.transactionId}`,

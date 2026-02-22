@@ -1,4 +1,4 @@
-import { resend } from '@/utilities/initalise'
+import { getResend } from '@/utilities/initalise'
 import kycVerified from '@/components/emailTemplates/kycVerified'
 import Welcome from '@/components/emailTemplates/Welcome'
 import ContributionsReport from '@/components/emailTemplates/contributionReport'
@@ -46,7 +46,7 @@ class EmailService {
       emailData.attachments = options.attachments
     }
 
-    const data = await resend.emails.send(emailData)
+    const data = await getResend().emails.send(emailData)
     console.log(data)
     return data
   }
