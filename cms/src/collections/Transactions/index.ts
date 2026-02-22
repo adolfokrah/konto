@@ -132,6 +132,22 @@ export const Transactions: CollectionConfig = {
             readOnly: true,
           },
         },
+        {
+          name: 'eganowFees',
+          type: 'number',
+          admin: {
+            description: "Eganow's share of the fees",
+            readOnly: true,
+          },
+        },
+        {
+          name: 'hogapayRevenue',
+          type: 'number',
+          admin: {
+            description: "Hogapay's share of the fees (revenue)",
+            readOnly: true,
+          },
+        },
       ],
     },
     {

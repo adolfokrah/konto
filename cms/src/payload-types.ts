@@ -1364,6 +1364,14 @@ export interface Transaction {
      * Total amount paid by contributor (including all fees)
      */
     amountPaidByContributor?: number | null;
+    /**
+     * Eganow's share of the fees
+     */
+    eganowFees?: number | null;
+    /**
+     * Hogapay's share of the fees (revenue)
+     */
+    hogapayRevenue?: number | null;
   };
   paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
   type: 'payout' | 'contribution';
@@ -2416,6 +2424,8 @@ export interface TransactionsSelect<T extends boolean = true> {
     | {
         platformCharge?: T;
         amountPaidByContributor?: T;
+        eganowFees?: T;
+        hogapayRevenue?: T;
       };
   paymentStatus?: T;
   type?: T;
@@ -2864,19 +2874,27 @@ export interface Footer {
 export interface SystemSetting {
   id: string;
   /**
-   * Percentage fee charged on contributions/collections (e.g., 1.95 for 1.95%). This fee is added to the contribution amount and paid by the contributor.
+   * Total fee on contributions (e.g., 1.95%). Paid by the contributor.
    */
   collectionFee: number;
   /**
-   * Percentage fee charged on withdrawals/payouts (e.g., 1 for 1%). This fee is deducted from the payout amount.
+   * Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.
+   */
+  hogapayCollectionFeePercent: number;
+  /**
+   * Total fee on payouts (e.g., 1%). Deducted from the payout amount.
    */
   transferFeePercentage: number;
   /**
-   * Minimum amount (in base currency) required to process a payout. Users cannot withdraw if their balance is below this amount.
+   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   */
+  hogapayTransferFeePercent: number;
+  /**
+   * Minimum amount required to process a payout.
    */
   minimumPayoutAmount: number;
   /**
-   * Time delay in hours before completed contributions are automatically settled (e.g., 0.033 for ~2 minutes, 1 for 1 hour, 24 for 1 day)
+   * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
   updatedAt?: string | null;
@@ -2976,7 +2994,9 @@ export interface FooterSelect<T extends boolean = true> {
  */
 export interface SystemSettingsSelect<T extends boolean = true> {
   collectionFee?: T;
+  hogapayCollectionFeePercent?: T;
   transferFeePercentage?: T;
+  hogapayTransferFeePercent?: T;
   minimumPayoutAmount?: T;
   settlementDelayHours?: T;
   updatedAt?: T;

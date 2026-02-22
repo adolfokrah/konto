@@ -20,6 +20,11 @@ type Transaction = {
   createdAt: string
 }
 
+const typeStyles: Record<string, string> = {
+  contribution: 'bg-purple-100 text-purple-800 border-purple-200',
+  payout: 'bg-orange-100 text-orange-800 border-orange-200',
+}
+
 const statusStyles: Record<string, string> = {
   completed: 'bg-green-100 text-green-800 border-green-200',
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -75,7 +80,12 @@ export function RecentTransactionsTable({ transactions }: { transactions: Transa
               <TableCell className="font-medium">{tx.contributor || '—'}</TableCell>
               <TableCell className="max-w-[120px] truncate">{jarName}</TableCell>
               <TableCell>
-                <span className="capitalize">{tx.type}</span>
+                <Badge
+                  variant="outline"
+                  className={cn('capitalize', typeStyles[tx.type])}
+                >
+                  {tx.type}
+                </Badge>
               </TableCell>
               <TableCell>{tx.paymentMethod ? paymentMethodLabels[tx.paymentMethod] || tx.paymentMethod : '—'}</TableCell>
               <TableCell>

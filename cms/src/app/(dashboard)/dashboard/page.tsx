@@ -15,9 +15,12 @@ export default async function DashboardPage() {
     totalJarsResult,
     activeJarsResult,
     completedContributions,
+    completedPayouts,
+    revenueTransactions,
     todayDAU,
     recentTransactions,
     last30DaysContributions,
+    last30DaysPayouts,
   ] = await Promise.all([
     // Total users (non-admin)
     payload.count({
@@ -34,7 +37,7 @@ export default async function DashboardPage() {
       where: { status: { equals: 'open' } },
     }),
 
-    // All completed contributions (for revenue + fees)
+    // All completed contributions
     payload.find({
       collection: 'transactions',
       where: {
@@ -44,6 +47,33 @@ export default async function DashboardPage() {
       pagination: false,
       select: {
         amountContributed: true,
+      },
+      overrideAccess: true,
+    }),
+
+    // All completed payouts (for transfer fee revenue)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { in: ['completed', 'transferred'] },
+        type: { equals: 'payout' },
+      },
+      pagination: false,
+      select: {
+        amountContributed: true,
+      },
+      overrideAccess: true,
+    }),
+
+    // All completed/transferred mobile money transactions (for stored Hogapay revenue)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentMethod: { equals: 'mobile-money' },
+      },
+      pagination: false,
+      select: {
         chargesBreakdown: true,
       },
       overrideAccess: true,
@@ -51,7 +81,7 @@ export default async function DashboardPage() {
 
     // Today's active users
     payload.count({
-      collection: 'daily-active-users',
+      collection: 'dailyActiveUsers',
       where: {
         createdAt: {
           greater_than_equal: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
@@ -87,21 +117,51 @@ export default async function DashboardPage() {
       },
       overrideAccess: true,
     }),
+
+    // Last 30 days payouts (for chart)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { in: ['completed', 'transferred'] },
+        type: { equals: 'payout' },
+        createdAt: {
+          greater_than_equal: new Date(
+            Date.now() - 30 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        },
+      },
+      pagination: false,
+      select: {
+        amountContributed: true,
+        createdAt: true,
+      },
+      overrideAccess: true,
+    }),
   ])
 
-  // Calculate totals
-  const totalRevenue = completedContributions.docs.reduce(
+  // Total contributions volume
+  const totalContributions = completedContributions.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
 
-  const totalPlatformFees = completedContributions.docs.reduce(
-    (sum, tx: any) => sum + (tx.chargesBreakdown?.platformCharge || 0),
+  // Total payouts volume
+  const totalPayouts = completedPayouts.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
 
-  // Build 30-day chart data
-  const chartData = buildChartData(last30DaysContributions.docs as any[])
+  // Hogapay revenue from stored chargesBreakdown.hogapayRevenue
+  const platformRevenue = revenueTransactions.docs.reduce(
+    (sum, tx: any) => sum + (tx.chargesBreakdown?.hogapayRevenue || 0),
+    0,
+  )
+
+  // Build 30-day chart data with both series
+  const chartData = buildChartData(
+    last30DaysContributions.docs as any[],
+    last30DaysPayouts.docs as any[],
+  )
 
   // Format recent transactions for the table
   const transactions = recentTransactions.docs.map((tx: any) => ({
@@ -118,7 +178,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Users"
           value={totalUsersResult.totalDocs.toLocaleString()}
@@ -137,13 +197,19 @@ export default async function DashboardPage() {
           icon={ArrowLeftRight}
         />
         <MetricCard
-          title="Total Revenue"
-          value={`GHS ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          title="Total Contributions"
+          value={`GHS ${totalContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={DollarSign}
         />
         <MetricCard
-          title="Platform Fees"
-          value={`GHS ${totalPlatformFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          title="Total Payouts"
+          value={`GHS ${totalPayouts.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={ArrowLeftRight}
+        />
+        <MetricCard
+          title="Hogapay Revenue"
+          value={`GHS ${platformRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          description={`0.8% collections + 0.5% transfers`}
           icon={Receipt}
         />
         <MetricCard
@@ -170,26 +236,38 @@ export default async function DashboardPage() {
   )
 }
 
-function buildChartData(docs: { amountContributed: number; createdAt: string }[]) {
-  const dailyMap: Record<string, number> = {}
+function buildChartData(
+  contributionDocs: { amountContributed: number; createdAt: string }[],
+  payoutDocs: { amountContributed: number; createdAt: string }[],
+) {
+  const contributions: Record<string, number> = {}
+  const payouts: Record<string, number> = {}
 
   // Initialize last 30 days with 0
   for (let i = 29; i >= 0; i--) {
     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
     const key = date.toISOString().split('T')[0]
-    dailyMap[key] = 0
+    contributions[key] = 0
+    payouts[key] = 0
   }
 
-  // Sum contributions by day
-  for (const doc of docs) {
+  for (const doc of contributionDocs) {
     const key = new Date(doc.createdAt).toISOString().split('T')[0]
-    if (key in dailyMap) {
-      dailyMap[key] += doc.amountContributed || 0
+    if (key in contributions) {
+      contributions[key] += Math.abs(doc.amountContributed || 0)
     }
   }
 
-  return Object.entries(dailyMap).map(([date, amount]) => ({
+  for (const doc of payoutDocs) {
+    const key = new Date(doc.createdAt).toISOString().split('T')[0]
+    if (key in payouts) {
+      payouts[key] += Math.abs(doc.amountContributed || 0)
+    }
+  }
+
+  return Object.keys(contributions).map((date) => ({
     date,
-    amount: Number(amount.toFixed(2)),
+    contributions: Number(contributions[date].toFixed(2)),
+    payouts: -Number(payouts[date].toFixed(2)),
   }))
 }

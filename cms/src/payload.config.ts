@@ -36,6 +36,9 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     autoRefresh: true,
+    components: {
+      beforeDashboard: ['@/components/BeforeDashboard'],
+    },
     importMap: {
       baseDir: path.resolve(dirname),
     },

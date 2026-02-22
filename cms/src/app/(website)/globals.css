@@ -319,4 +319,35 @@
   body {
     @apply bg-background text-foreground min-h-screen flex flex-col;
   }
+
+  /* Dashboard dark theme — matches Hogapay mobile app colors */
+  .dashboard-dark {
+    --background: 213 25% 14%; /* #1B232E */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 213 25% 23%; /* #2D3849 */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 213 25% 20%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 78 88% 93%; /* #F4FDDF - secondary green */
+    --primary-foreground: 213 25% 14%; /* dark text on green */
+
+    --secondary: 213 25% 28%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 213 20% 20%;
+    --muted-foreground: 213 15% 65%;
+
+    --accent: 78 88% 93%;
+    --accent-foreground: 213 25% 14%;
+
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 20% 28%;
+    --input: 213 20% 25%;
+    --ring: 78 88% 93%;
+  }
 }

@@ -42,7 +42,9 @@ export async function generateMetadata({
   }
 }
 
-// Validate that the locale is supported
+// Only allow 'en' and 'fr' as valid locales — reject all other values
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'fr' }]
 }

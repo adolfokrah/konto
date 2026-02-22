@@ -29,6 +29,7 @@ function proxy(request: NextRequest) {
         '/Logo.svg',
         '/fonts/',
         '/next/',
+        '/dashboard', // Skip dashboard routes
         '/email',
         '/404',
         '/500',
@@ -102,6 +103,6 @@ export default proxy
 export const config = {
   matcher: [
     // Match root and language-specific paths, excluding API and static assets
-    '/((?!api|_next|admin|media|monitoring|pay|payload|verify|email|robots.txt|sitemap.xml|favicon.ico|Logo.svg|fonts).*)',
+    '/((?!api|_next|admin|dashboard|media|monitoring|pay|payload|verify|email|robots.txt|sitemap.xml|favicon.ico|Logo.svg|fonts).*)',
   ],
 }

@@ -11,58 +11,137 @@ export const SystemSettings: GlobalConfig = {
     },
   },
   fields: [
+    // ── Collection (Contributions) ──
     {
-      name: 'collectionFee',
-      label: 'Collection Fee Percentage',
-      type: 'number',
-      required: true,
-      defaultValue: 1.95,
-      min: 0,
-      max: 100,
+      type: 'collapsible',
+      label: 'Collection',
       admin: {
-        description:
-          'Percentage fee charged on contributions/collections (e.g., 1.95 for 1.95%). This fee is added to the contribution amount and paid by the contributor.',
-        step: 0.01,
+        initCollapsed: false,
+        description: 'Fees charged on contributions/collections.',
       },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'collectionFee',
+              label: 'Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1.95,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Total fee on contributions (e.g., 1.95%). Paid by the contributor.',
+                step: 0.01,
+                width: '50%',
+              },
+            },
+            {
+              name: 'hogapayCollectionFeePercent',
+              label: 'Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.8,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  "Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
     },
+
+    // ── Transfer (Payouts) ──
     {
-      name: 'transferFeePercentage',
-      label: 'Transfer Fee Percentage',
-      type: 'number',
-      required: true,
-      defaultValue: 1,
-      min: 0,
-      max: 100,
+      type: 'collapsible',
+      label: 'Transfer (Payout)',
       admin: {
-        description:
-          'Percentage fee charged on withdrawals/payouts (e.g., 1 for 1%). This fee is deducted from the payout amount.',
-        step: 0.1,
+        initCollapsed: false,
+        description: 'Fees charged on withdrawals/payouts.',
       },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'transferFeePercentage',
+              label: 'Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Total fee on payouts (e.g., 1%). Deducted from the payout amount.',
+                step: 0.1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'hogapayTransferFeePercent',
+              label: 'Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.5,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  "Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
     },
+
+    // ── Payout Settings ──
     {
-      name: 'minimumPayoutAmount',
-      label: 'Minimum Payout Amount',
-      type: 'number',
-      required: true,
-      defaultValue: 10,
-      min: 0,
+      type: 'collapsible',
+      label: 'Payout Settings',
       admin: {
-        description:
-          'Minimum amount (in base currency) required to process a payout. Users cannot withdraw if their balance is below this amount.',
+        initCollapsed: false,
       },
-    },
-    {
-      name: 'settlementDelayHours',
-      label: 'Settlement Delay (Hours)',
-      type: 'number',
-      required: true,
-      defaultValue: 0.033, // ~2 minutes (2/60 hours)
-      min: 0,
-      admin: {
-        description:
-          'Time delay in hours before completed contributions are automatically settled (e.g., 0.033 for ~2 minutes, 1 for 1 hour, 24 for 1 day)',
-        step: 0.001,
-      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'minimumPayoutAmount',
+              label: 'Minimum Payout Amount',
+              type: 'number',
+              required: true,
+              defaultValue: 10,
+              min: 0,
+              admin: {
+                description: 'Minimum amount required to process a payout.',
+                width: '50%',
+              },
+            },
+            {
+              name: 'settlementDelayHours',
+              label: 'Settlement Delay (Hours)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.033, // ~2 minutes (2/60 hours)
+              min: 0,
+              admin: {
+                description: 'Delay before contributions are settled (e.g., 0.033 = ~2 min).',
+                step: 0.001,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
     },
   ],
 }

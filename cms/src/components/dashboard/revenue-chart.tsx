@@ -7,16 +7,22 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart'
 
 type Props = {
-  data: { date: string; amount: number }[]
+  data: { date: string; contributions: number; payouts: number }[]
 }
 
 const chartConfig = {
-  amount: {
-    label: 'Revenue',
+  contributions: {
+    label: 'Contributions',
     color: 'hsl(var(--primary))',
+  },
+  payouts: {
+    label: 'Payouts',
+    color: 'hsl(var(--destructive))',
   },
 } satisfies ChartConfig
 
@@ -24,16 +30,20 @@ export function RevenueChart({ data }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenue</CardTitle>
-        <CardDescription>Completed contributions over the last 30 days</CardDescription>
+        <CardTitle>Transactions</CardTitle>
+        <CardDescription>Contributions and payouts over the last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="fillAmount" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-amount)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-amount)" stopOpacity={0} />
+              <linearGradient id="fillContributions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-contributions)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--color-contributions)" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="fillPayouts" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-payouts)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--color-payouts)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -47,7 +57,7 @@ export function RevenueChart({ data }: Props) {
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
               }}
             />
-            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `${value}`} />
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip
               content={
                 <ChartTooltipContent
@@ -58,15 +68,22 @@ export function RevenueChart({ data }: Props) {
                       year: 'numeric',
                     })
                   }}
-                  formatter={(value) => [`GHS ${Number(value).toFixed(2)}`, 'Revenue']}
                 />
               }
             />
+            <ChartLegend content={<ChartLegendContent />} />
             <Area
-              dataKey="amount"
+              dataKey="contributions"
               type="monotone"
-              fill="url(#fillAmount)"
-              stroke="var(--color-amount)"
+              fill="url(#fillContributions)"
+              stroke="var(--color-contributions)"
+              strokeWidth={2}
+            />
+            <Area
+              dataKey="payouts"
+              type="monotone"
+              fill="url(#fillPayouts)"
+              stroke="var(--color-payouts)"
               strokeWidth={2}
             />
           </AreaChart>

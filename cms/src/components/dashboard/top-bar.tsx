@@ -42,14 +42,14 @@ export function TopBar({ user }: Props) {
   }
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
+    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-64 border-r-border bg-card p-0">
           <Sidebar />
         </SheetContent>
       </Sheet>
