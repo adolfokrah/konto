@@ -21,7 +21,6 @@ const navItems = [
     label: 'Users',
     href: '/dashboard/users',
     icon: Users,
-    disabled: true,
   },
   {
     label: 'Jars',
@@ -32,13 +31,11 @@ const navItems = [
     label: 'Transactions',
     href: '/dashboard/transactions',
     icon: ArrowLeftRight,
-    disabled: true,
   },
   {
     label: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
-    disabled: true,
   },
 ]
 
@@ -59,20 +56,16 @@ export function Sidebar({ className }: { className?: string }) {
           return (
             <Link
               key={item.href}
-              href={item.disabled ? '#' : item.href}
+              href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                item.disabled && 'pointer-events-none opacity-40',
               )}
             >
               <item.icon className="h-4 w-4" />
               {item.label}
-              {item.disabled && (
-                <span className="ml-auto text-[10px] uppercase tracking-wider">Soon</span>
-              )}
             </Link>
           )
         })}

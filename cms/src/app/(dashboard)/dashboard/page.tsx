@@ -4,7 +4,8 @@ import { Users, Container as JarIcon, ArrowLeftRight, DollarSign, Receipt, Smart
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
-import { RecentTransactionsTable } from '@/components/dashboard/recent-transactions-table'
+import { DataTable } from '@/components/dashboard/data-table/data-table'
+import { transactionColumns, type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 
 export default async function DashboardPage() {
   const payload = await getPayload({ config: configPromise })
@@ -193,16 +194,39 @@ export default async function DashboardPage() {
   )
 
   // Format recent transactions for the table
-  const transactions = recentTransactions.docs.map((tx: any) => ({
-    id: tx.id,
-    contributor: tx.contributor,
-    amountContributed: tx.amountContributed,
-    paymentStatus: tx.paymentStatus,
-    paymentMethod: tx.paymentMethod,
-    type: tx.type,
-    jar: tx.jar,
-    createdAt: tx.createdAt,
-  }))
+  const transactions: TransactionRow[] = recentTransactions.docs.map((tx: any) => {
+    const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
+    const collectorObj = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
+
+    return {
+      id: tx.id,
+      contributor: tx.contributor || null,
+      contributorPhoneNumber: tx.contributorPhoneNumber || null,
+      jar: jarObj ? { id: jarObj.id, name: jarObj.name } : null,
+      paymentMethod: tx.paymentMethod || null,
+      mobileMoneyProvider: tx.mobileMoneyProvider || null,
+      accountNumber: tx.accountNumber || null,
+      amountContributed: tx.amountContributed || 0,
+      chargesBreakdown: tx.chargesBreakdown || null,
+      paymentStatus: tx.paymentStatus || 'pending',
+      type: tx.type,
+      isSettled: tx.isSettled ?? false,
+      payoutFeePercentage: tx.payoutFeePercentage ?? null,
+      payoutFeeAmount: tx.payoutFeeAmount ?? null,
+      payoutNetAmount: tx.payoutNetAmount ?? null,
+      transactionReference: tx.transactionReference || null,
+      collector: collectorObj
+        ? {
+            id: collectorObj.id,
+            firstName: collectorObj.firstName || '',
+            lastName: collectorObj.lastName || '',
+            email: collectorObj.email || '',
+          }
+        : null,
+      viaPaymentLink: tx.viaPaymentLink ?? false,
+      createdAt: tx.createdAt,
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -265,7 +289,7 @@ export default async function DashboardPage() {
           <CardDescription>The latest 10 transactions across all jars</CardDescription>
         </CardHeader>
         <CardContent>
-          <RecentTransactionsTable transactions={transactions} />
+          <DataTable columns={transactionColumns} data={transactions} readOnly />
         </CardContent>
       </Card>
     </div>

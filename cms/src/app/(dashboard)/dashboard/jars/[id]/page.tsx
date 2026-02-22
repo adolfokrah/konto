@@ -17,30 +17,21 @@ import {
   CheckCircle,
   AlertCircle,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { cn } from '@/utilities/ui'
 import { JarActions } from '@/components/dashboard/jar-actions'
+import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
+import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { DataTable } from '@/components/dashboard/data-table/data-table'
+import { collectorColumns } from '@/components/dashboard/data-table/columns/collector-columns'
 
 const statusStyles: Record<string, string> = {
   open: 'bg-green-100 text-green-800 border-green-200',
   frozen: 'bg-cyan-100 text-cyan-800 border-cyan-200',
   sealed: 'bg-blue-100 text-blue-800 border-blue-200',
   broken: 'bg-red-100 text-red-800 border-red-200',
-}
-
-const collectorStatusStyles: Record<string, string> = {
-  accepted: 'bg-green-100 text-green-800 border-green-200',
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
 }
 
 function formatDate(dateString: string) {
@@ -52,15 +43,6 @@ function formatDate(dateString: string) {
   })
 }
 
-function formatDateTime(dateString: string) {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
 
 function formatAmount(amount: number, currency: string) {
   return `${currency.toUpperCase()} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -86,12 +68,25 @@ function DetailRow({
   )
 }
 
+const TX_DEFAULT_LIMIT = 20
+
 type Props = {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function JarDetailPage({ params }: Props) {
+export default async function JarDetailPage({ params, searchParams }: Props) {
   const { id } = await params
+  const sp = await searchParams
+  const txPage = Number(sp.page) || 1
+  const txLimit = Number(sp.limit) || TX_DEFAULT_LIMIT
+  const txSearch = typeof sp.search === 'string' ? sp.search : ''
+  const txStatus = typeof sp.status === 'string' ? sp.status : ''
+  const txType = typeof sp.type === 'string' ? sp.type : ''
+  const txMethod = typeof sp.method === 'string' ? sp.method : ''
+  const txLink = typeof sp.link === 'string' ? sp.link : ''
+  const txSettled = typeof sp.settled === 'string' ? sp.settled : ''
+
   const payload = await getPayload({ config: configPromise })
 
   let jar: any
@@ -108,8 +103,29 @@ export default async function JarDetailPage({ params }: Props) {
 
   if (!jar) notFound()
 
-  // Compute contribution total and fetch recent transactions in parallel
-  const [contributionsResult, recentTransactions] = await Promise.all([
+  // Build transaction filter where clause (always scoped to this jar)
+  const txWhere: Record<string, any> = { jar: { equals: id } }
+  if (txSearch) {
+    txWhere.contributor = { like: txSearch }
+  }
+  if (txStatus && ['pending', 'completed', 'failed', 'transferred'].includes(txStatus)) {
+    txWhere.paymentStatus = { equals: txStatus }
+  }
+  if (txType && ['contribution', 'payout'].includes(txType)) {
+    txWhere.type = { equals: txType }
+  }
+  if (txMethod && ['mobile-money', 'cash', 'bank', 'card', 'apple-pay'].includes(txMethod)) {
+    txWhere.paymentMethod = { equals: txMethod }
+  }
+  if (txLink && ['yes', 'no'].includes(txLink)) {
+    txWhere.viaPaymentLink = { equals: txLink === 'yes' }
+  }
+  if (txSettled && ['yes', 'no'].includes(txSettled)) {
+    txWhere.isSettled = { equals: txSettled === 'yes' }
+  }
+
+  // Compute contribution total and fetch filtered transactions in parallel
+  const [contributionsResult, transactionsResult] = await Promise.all([
     payload.find({
       collection: 'transactions',
       where: {
@@ -123,11 +139,10 @@ export default async function JarDetailPage({ params }: Props) {
     }),
     payload.find({
       collection: 'transactions',
-      where: {
-        jar: { equals: id },
-      },
+      where: txWhere,
+      page: txPage,
+      limit: txLimit,
       sort: '-createdAt',
-      limit: 10,
       depth: 1,
       overrideAccess: true,
     }),
@@ -165,6 +180,41 @@ export default async function JarDetailPage({ params }: Props) {
 
   const acceptedCount = collectors.filter((c: any) => c.status === 'accepted').length
   const pendingCount = collectors.filter((c: any) => c.status === 'pending').length
+
+  // Map transactions to TransactionRow type
+  const transactions: TransactionRow[] = transactionsResult.docs.map((tx: any) => {
+    const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
+    const collectorObj = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
+
+    return {
+      id: tx.id,
+      contributor: tx.contributor || null,
+      contributorPhoneNumber: tx.contributorPhoneNumber || null,
+      jar: jarObj ? { id: jarObj.id, name: jarObj.name } : null,
+      paymentMethod: tx.paymentMethod || null,
+      mobileMoneyProvider: tx.mobileMoneyProvider || null,
+      accountNumber: tx.accountNumber || null,
+      amountContributed: tx.amountContributed || 0,
+      chargesBreakdown: tx.chargesBreakdown || null,
+      paymentStatus: tx.paymentStatus || 'pending',
+      type: tx.type,
+      isSettled: tx.isSettled ?? false,
+      payoutFeePercentage: tx.payoutFeePercentage ?? null,
+      payoutFeeAmount: tx.payoutFeeAmount ?? null,
+      payoutNetAmount: tx.payoutNetAmount ?? null,
+      transactionReference: tx.transactionReference || null,
+      collector: collectorObj
+        ? {
+            id: collectorObj.id,
+            firstName: collectorObj.firstName || '',
+            lastName: collectorObj.lastName || '',
+            email: collectorObj.email || '',
+          }
+        : null,
+      viaPaymentLink: tx.viaPaymentLink ?? false,
+      createdAt: tx.createdAt,
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -418,98 +468,24 @@ export default async function JarDetailPage({ params }: Props) {
               No collectors invited yet
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {collectors.map((collector: any) => (
-                  <TableRow key={collector.id}>
-                    <TableCell className="font-medium">{collector.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{collector.email}</TableCell>
-                    <TableCell className="text-muted-foreground">{collector.phone}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn('capitalize', collectorStatusStyles[collector.status])}
-                      >
-                        {collector.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable columns={collectorColumns} data={collectors} readOnly />
           )}
         </CardContent>
       </Card>
 
-      {/* Recent Transactions */}
+      {/* Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recent Transactions</CardTitle>
+          <CardTitle className="text-base">Transactions</CardTitle>
+          <CardDescription>
+            {transactionsResult.totalDocs} transaction{transactionsResult.totalDocs !== 1 ? 's' : ''} found
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {recentTransactions.docs.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              No transactions yet
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Contributor</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentTransactions.docs.map((tx: any) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="font-medium">
-                      {tx.contributor || '—'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {tx.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground capitalize">
-                      {tx.paymentMethod?.replace('-', ' ') || '—'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'capitalize',
-                          tx.paymentStatus === 'completed' && 'bg-green-100 text-green-800 border-green-200',
-                          tx.paymentStatus === 'pending' && 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                          tx.paymentStatus === 'failed' && 'bg-red-100 text-red-800 border-red-200',
-                          tx.paymentStatus === 'transferred' && 'bg-blue-100 text-blue-800 border-blue-200',
-                        )}
-                      >
-                        {tx.paymentStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatAmount(Math.abs(tx.amountContributed || 0), currency)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(tx.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <TransactionsDataTable
+            transactions={transactions}
+            pagination={{ currentPage: txPage, totalPages: transactionsResult.totalPages, totalRows: transactionsResult.totalDocs, rowsPerPage: txLimit }}
+          />
         </CardContent>
       </Card>
     </div>

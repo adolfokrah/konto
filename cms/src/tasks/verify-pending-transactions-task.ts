@@ -4,7 +4,7 @@ import { getEganow } from '@/utilities/initalise'
  * Verify Pending Transactions Task
  *
  * Scheduled every hour via Payload's autoRun.
- * Checks pending mobile-money transactions older than 30 minutes
+ * Checks pending mobile-money transactions older than 5 minutes
  * against the Eganow API and updates their status accordingly.
  */
 export const verifyPendingTransactionsTask = {
@@ -19,8 +19,8 @@ export const verifyPendingTransactionsTask = {
     try {
       const payload = args.req?.payload || args.payload
 
-      // 30 minutes ago
-      const cutoffTime = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+      // 5 minutes ago
+      const cutoffTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
       // Find pending mobile-money transactions older than 30 minutes
       const pendingTransactions = await payload.find({
@@ -45,7 +45,7 @@ export const verifyPendingTransactionsTask = {
       }
 
       console.log(
-        `[verify-pending-transactions] Found ${pendingTransactions.docs.length} pending transactions older than 30 minutes`,
+        `[verify-pending-transactions] Found ${pendingTransactions.docs.length} pending transactions older than 5 minutes`,
       )
 
       let processedCount = 0
@@ -96,7 +96,7 @@ export const verifyPendingTransactionsTask = {
             PENDING: 'pending',
           }
 
-          const newStatus = statusMap[statusResult.transStatus?.toUpperCase()] || 'failed'
+          const newStatus = statusMap[statusResult.transStatus?.toUpperCase()] || 'pending'
 
           await payload.update({
             collection: 'transactions',

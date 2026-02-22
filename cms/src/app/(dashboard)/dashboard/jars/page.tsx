@@ -3,11 +3,9 @@ import configPromise from '@payload-config'
 import { Container as JarIcon, CircleCheck, Lock, Hammer, Snowflake } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
-import { JarsTable } from '@/components/dashboard/jars-table'
-import { JarsFilters } from '@/components/dashboard/jars-filters'
-import { JarsPagination } from '@/components/dashboard/jars-pagination'
+import { JarsDataTable } from '@/components/dashboard/jars-data-table'
 
-const LIMIT = 20
+const DEFAULT_LIMIT = 20
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -16,6 +14,7 @@ type Props = {
 export default async function JarsPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page) || 1
+  const limit = Number(params.limit) || DEFAULT_LIMIT
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
 
@@ -41,7 +40,7 @@ export default async function JarsPage({ searchParams }: Props) {
       collection: 'jars',
       where,
       page,
-      limit: LIMIT,
+      limit,
       sort: '-createdAt',
       depth: 1,
       overrideAccess: true,
@@ -157,19 +156,16 @@ export default async function JarsPage({ searchParams }: Props) {
       {/* Jars Table */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>All Jars</CardTitle>
-              <CardDescription>
-                {jarsResult.totalDocs} jar{jarsResult.totalDocs !== 1 ? 's' : ''} found
-              </CardDescription>
-            </div>
-            <JarsFilters />
-          </div>
+          <CardTitle>All Jars</CardTitle>
+          <CardDescription>
+            {jarsResult.totalDocs} jar{jarsResult.totalDocs !== 1 ? 's' : ''} found
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <JarsTable jars={jars} />
-          <JarsPagination currentPage={page} totalPages={jarsResult.totalPages} />
+          <JarsDataTable
+            jars={jars}
+            pagination={{ currentPage: page, totalPages: jarsResult.totalPages, totalRows: jarsResult.totalDocs, rowsPerPage: limit }}
+          />
         </CardContent>
       </Card>
     </div>

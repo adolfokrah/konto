@@ -62,6 +62,170 @@ interface SessionStatus {
   verification_url?: string
 }
 
+// Full decision response from Didit v3 /session/{id}/decision/
+// Based on actual API response structure
+export interface DiditIdVerification {
+  status: string
+  document_type?: string
+  document_number?: string
+  personal_number?: string
+  portrait_image?: string
+  front_image?: string
+  front_video?: string
+  back_image?: string
+  back_video?: string
+  full_front_image?: string
+  full_back_image?: string
+  front_image_camera_front?: string
+  back_image_camera_front?: string
+  date_of_birth?: string
+  age?: number
+  expiration_date?: string
+  date_of_issue?: string
+  issuing_state?: string
+  issuing_state_name?: string
+  first_name?: string
+  last_name?: string
+  full_name?: string
+  gender?: string
+  address?: string
+  formatted_address?: string
+  place_of_birth?: string
+  marital_status?: string
+  nationality?: string
+  extra_fields?: Record<string, any>
+  parsed_address?: any
+  extra_files?: string[]
+  warnings?: DiditWarning[]
+  node_id?: string
+  matches?: Array<{
+    status: string
+    session_id: string
+    vendor_data?: string
+    user_details?: { name?: string; document_type?: string; document_number?: string }
+    is_blocklisted?: boolean
+    session_number?: number
+    front_image_url?: string
+    verification_date?: string
+  }>
+}
+
+export interface DiditLivenessCheck {
+  status: string
+  method?: string
+  score?: number
+  reference_image?: string
+  video_url?: string
+  age_estimation?: number
+  face_quality?: number
+  face_luminance?: number
+  matches?: Array<{
+    status: string
+    session_id: string
+    vendor_data?: string
+    similarity_percentage?: number
+    match_image_url?: string
+  }>
+  warnings?: DiditWarning[]
+  node_id?: string
+}
+
+export interface DiditFaceMatch {
+  status: string
+  score?: number
+  source_image_session_id?: string | null
+  source_image?: string
+  target_image?: string
+  warnings?: DiditWarning[]
+  node_id?: string
+}
+
+export interface DiditIpAnalysis {
+  status: string
+  device_brand?: string
+  device_model?: string
+  browser_family?: string
+  os_family?: string
+  platform?: string
+  ip_country?: string
+  ip_country_code?: string
+  ip_state?: string
+  ip_city?: string
+  latitude?: number
+  longitude?: number
+  ip_address?: string
+  isp?: string
+  organization?: string
+  is_vpn_or_tor?: boolean
+  is_data_center?: boolean
+  time_zone?: string
+  time_zone_offset?: string
+  warnings?: DiditWarning[]
+  node_id?: string
+}
+
+export interface DiditAmlScreening {
+  status: string
+  total_hits?: number
+  score?: number
+  hits?: Array<{
+    id?: string
+    match?: boolean
+    score?: number
+    caption?: string
+    datasets?: string[]
+    full_name?: string
+    properties?: Record<string, any>
+  }>
+  warnings?: DiditWarning[]
+  node_id?: string
+}
+
+export interface DiditWarning {
+  feature: string
+  risk: string
+  additional_data?: any
+  log_type: string
+  short_description: string
+  long_description: string
+}
+
+export interface DiditReview {
+  user: string
+  new_status: string
+  comment?: string | null
+  created_at: string
+}
+
+export interface DiditSessionDecision {
+  session_id: string
+  session_number?: number
+  session_url?: string
+  status: DiditSessionStatus
+  created_at: string
+  updated_at?: string
+  expires_at?: string
+  vendor_data: string
+  workflow_id?: string
+  callback?: string
+  features?: string[]
+  metadata?: any
+  id_verifications?: DiditIdVerification[] | null
+  nfc_verifications?: any[] | null
+  liveness_checks?: DiditLivenessCheck[] | null
+  face_matches?: DiditFaceMatch[] | null
+  poa_verifications?: any[] | null
+  phone_verifications?: any[] | null
+  email_verifications?: any[] | null
+  aml_screenings?: DiditAmlScreening[] | null
+  ip_analyses?: DiditIpAnalysis[] | null
+  database_validations?: any[] | null
+  questionnaire_responses?: any[] | null
+  reviews?: DiditReview[] | null
+  contact_details?: any
+  expected_details?: Record<string, any>
+}
+
 // Webhook payload interface
 export interface DiditWebhookPayload {
   session_id: string
@@ -269,6 +433,45 @@ export class DiditKYC {
         throw new Error(`Failed to get session status: ${error.message}`)
       }
       throw new Error('Failed to get session status: Unknown error')
+    }
+  }
+
+  /**
+   * Retrieve the full decision details of a KYC session including
+   * ID verifications, liveness checks, face matches, and AML screenings
+   */
+  async getSessionDecision(sessionId: string): Promise<DiditSessionDecision> {
+    if (!sessionId) {
+      throw new Error('Session ID is required')
+    }
+
+    try {
+      const url = `${this.baseUrl}/session/${sessionId}/decision/`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'x-api-key': this.apiKey,
+        },
+      })
+
+      if (!response.ok) {
+        const responseText = await response.text()
+        try {
+          const errorData: DiditError = JSON.parse(responseText)
+          throw new Error(`Didit API error (${errorData.status_code}): ${errorData.message}`)
+        } catch (parseError) {
+          throw new Error(`Didit API error (${response.status}): ${responseText}`)
+        }
+      }
+
+      const data: DiditSessionDecision = await response.json()
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to get session decision: ${error.message}`)
+      }
+      throw new Error('Failed to get session decision: Unknown error')
     }
   }
 

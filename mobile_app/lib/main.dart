@@ -56,45 +56,62 @@ void main() async {
   // Initialize dependency injection
   setupServiceLocator();
 
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint('Firebase init failed: $e');
+  }
 
   // Initialize local notifications for foreground push display
-  await LocalNotificationService.initialize();
+  try {
+    await LocalNotificationService.initialize();
+  } catch (e) {
+    debugPrint('Local notifications init failed: $e');
+  }
 
   // Initialize FCM listeners
-  FCMService.initialize();
+  try {
+    FCMService.initialize();
+  } catch (e) {
+    debugPrint('FCM init failed: $e');
+  }
 
   // Initialize Sentry only for production and staging environments
   if (!AppConfig.isDevelopment) {
-    await SentryFlutter.init((options) {
-      options.dsn = AppConfig.sentryDsn;
-      options.environment = AppConfig.flutterEnv;
+    try {
+      await SentryFlutter.init((options) {
+        options.dsn = AppConfig.sentryDsn;
+        options.environment = AppConfig.flutterEnv;
 
-      // Production vs Staging settings
-      if (AppConfig.isProduction) {
-        // Production: Optimized sampling rates
-        options.debug = false;
-        options.tracesSampleRate = 0.1; // Capture 10% of transactions
-        options.profilesSampleRate = 0.1;
-        options.replay.sessionSampleRate = 0.1; // Capture 10% of sessions
-        options.replay.onErrorSampleRate =
-            1.0; // Still capture all error sessions
-      } else {
-        // Staging: Higher sampling for testing
-        options.debug = true;
-        options.tracesSampleRate = 1.0; // Capture 100% for testing
-        options.profilesSampleRate = 1.0;
-        options.replay.sessionSampleRate =
-            1.0; // Capture all sessions in staging
-        options.replay.onErrorSampleRate = 1.0;
+        // Production vs Staging settings
+        if (AppConfig.isProduction) {
+          // Production: Optimized sampling rates
+          options.debug = false;
+          options.tracesSampleRate = 0.1; // Capture 10% of transactions
+          options.profilesSampleRate = 0.1;
+          options.replay.sessionSampleRate = 0.1; // Capture 10% of sessions
+          options.replay.onErrorSampleRate =
+              1.0; // Still capture all error sessions
+        } else {
+          // Staging: Higher sampling for testing
+          options.debug = true;
+          options.tracesSampleRate = 1.0; // Capture 100% for testing
+          options.profilesSampleRate = 1.0;
+          options.replay.sessionSampleRate =
+              1.0; // Capture all sessions in staging
+          options.replay.onErrorSampleRate = 1.0;
+          options.enableLogs = true;
+        }
+
+        // Common settings for production and staging
+        options.sendDefaultPii = true;
         options.enableLogs = true;
-      }
-
-      // Common settings for production and staging
-      options.sendDefaultPii = true;
-      options.enableLogs = true;
-    }, appRunner: () => runApp(SentryWidget(child: const MainApp())));
+      }, appRunner: () => runApp(SentryWidget(child: const MainApp())));
+    } catch (e) {
+      debugPrint('Sentry init failed: $e');
+      runApp(const MainApp());
+    }
   } else {
     // Development: No Sentry, just run the app normally
     runApp(const MainApp());

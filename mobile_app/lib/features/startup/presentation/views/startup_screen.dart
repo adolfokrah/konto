@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -12,12 +13,27 @@ class StartupScreen extends StatefulWidget {
 }
 
 class _StartupScreenState extends State<StartupScreen> {
+  Timer? _timeoutTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthBloc>().add(AutoLoginRequested());
+
+      // Safety timeout: if auth takes too long, go to onboarding
+      _timeoutTimer = Timer(const Duration(seconds: 10), () {
+        if (mounted) {
+          GoRouter.of(context).go(AppRoutes.onboarding);
+        }
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _timeoutTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -25,6 +41,7 @@ class _StartupScreenState extends State<StartupScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthInitial) {
+          _timeoutTimer?.cancel();
           GoRouter.of(context).go(AppRoutes.onboarding);
         }
       },
