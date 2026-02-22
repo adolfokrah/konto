@@ -6,7 +6,7 @@ import { cn } from '@/utilities/ui'
 import {
   LayoutDashboard,
   Users,
-  Jar,
+  Container,
   ArrowLeftRight,
   BarChart3,
 } from 'lucide-react'
@@ -26,7 +26,7 @@ const navItems = [
   {
     label: 'Jars',
     href: '/dashboard/jars',
-    icon: Jar,
+    icon: Container,
     disabled: true,
   },
   {
