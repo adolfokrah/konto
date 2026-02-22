@@ -24,6 +24,7 @@ import { Notifications } from './collections/Notifications'
 import { settleContributionsTask } from './tasks/settle-contributions'
 import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
 import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
+import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { recalculateJarTotals } from './endpoints/recalculate-jar-totals'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
@@ -138,6 +139,7 @@ export default buildConfig({
       settleContributionsTask as any,
       checkEmptyJarsDailyTask as any,
       checkWithdrawalBalanceDailyTask as any,
+      verifyPendingTransactionsTask as any,
     ],
     autoRun: [
       {
@@ -151,6 +153,10 @@ export default buildConfig({
       {
         cron: '0 10 * * *', // Every day at 10:00 AM
         queue: 'check-withdrawal-balance-daily',
+      },
+      {
+        cron: '0 * * * *', // Every hour
+        queue: 'verify-pending-transactions',
       },
     ],
   },

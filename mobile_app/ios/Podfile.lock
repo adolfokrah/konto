@@ -4,7 +4,7 @@ PODS:
   - didit_sdk (3.2.0):
     - DiditSDK (~> 3.2)
     - Flutter
-  - DiditSDK (3.2.0)
+  - DiditSDK (3.2.1)
   - Firebase/Analytics (10.25.0):
     - Firebase/Core
   - Firebase/Core (10.25.0):
@@ -249,7 +249,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   device_info_plus: 71ffc6ab7634ade6267c7a93088ed7e4f74e5896
   didit_sdk: 204e817bbaef942e52a69b6e2c5584f4469886ec
-  DiditSDK: b6b16201f140551e012605c0d4378472beed27da
+  DiditSDK: 9018a1d5818a2ea4906762c06185ffaf3aba8105
   Firebase: 0312a2352584f782ea56f66d91606891d4607f06
   firebase_analytics: e7280be84e7ff1c1e5859bd8e48de410b07e0b73
   firebase_core: 3b49a055ff54114cae400581c13671fe53936c36

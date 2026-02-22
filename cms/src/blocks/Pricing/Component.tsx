@@ -6,11 +6,6 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import Ring from '@/components/ui/ring'
 
-type FeePayerOption = {
-  label: string
-  value: string
-}
-
 type Feature = {
   feature: string
 }
@@ -22,17 +17,14 @@ type Props = {
   description?: any
   calculatorSection?: {
     requestLabel?: string
-    feePayerLabel?: string
-    feePayerOptions?: FeePayerOption[]
     chargesBreakdownLabel?: string
-    telcoFeeLabel?: string
-    platformFeeLabel?: string
     contributorPaysLabel?: string
+    transferFeeLabel?: string
     youReceiveLabel?: string
   }
   feeStructure?: {
-    telcoTransactionFee?: number
-    platformFeeMax?: number
+    collectionFee?: number
+    transferFeePercentage?: number
   }
   features?: Feature[]
   ctaButton?: {
@@ -57,7 +49,16 @@ export const PricingBlock: React.FC<Props> = ({
   poweredBy,
   anchor,
 }) => {
-  const [requestAmount, setRequestAmount] = useState<number>(50)
+  const [requestAmount, setRequestAmount] = useState<number>(200)
+
+  // Fee percentages from CMS system settings
+  const collectionFee = feeStructure?.collectionFee ?? 1.95
+  const transferFee = feeStructure?.transferFeePercentage ?? 1
+
+  // Calculations
+  const contributorPays = requestAmount + (requestAmount * collectionFee) / 100
+  const transferFeeAmount = (requestAmount * transferFee) / 100
+  const youReceive = requestAmount - transferFeeAmount
 
   // Ref for the input to focus on button click
   const amountInputRef = React.useRef<HTMLInputElement>(null)
@@ -135,12 +136,33 @@ export const PricingBlock: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* You Receive */}
-            <div className="pt-4">
+            {/* Charges Breakdown */}
+            <div className="pt-4 space-y-4">
+              <h3 className="text-lg font-medium">
+                {calculatorSection?.chargesBreakdownLabel || 'Charges break down'}
+              </h3>
+
+              {/* Contributor pays */}
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-medium">{calculatorSection?.youReceiveLabel}</span>
+                <span className="text-sm text-gray-300">
+                  {calculatorSection?.contributorPaysLabel || `Contributor pays`} + {collectionFee}% telco fees
+                </span>
+                <span className="text-sm font-medium">GHS {contributorPays.toFixed(2)}</span>
+              </div>
+
+              {/* Transfer fee */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-300">
+                  {calculatorSection?.transferFeeLabel || 'Transfer fee'} {transferFee}%
+                </span>
+                <span className="text-sm font-medium">GHS {transferFeeAmount.toFixed(2)}</span>
+              </div>
+
+              {/* You Receive */}
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-2xl font-medium">{calculatorSection?.youReceiveLabel || 'You receive'}</span>
                 <span className="text-2xl font-bold">
-                  GHS {requestAmount.toFixed(2)}
+                  GHS {youReceive.toFixed(2)}
                 </span>
               </div>
             </div>

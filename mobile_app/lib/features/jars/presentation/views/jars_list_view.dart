@@ -11,6 +11,7 @@ import 'package:Hoga/core/utils/category_translation_utils.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/searh_input.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:Hoga/core/di/service_locator.dart';
@@ -33,8 +34,8 @@ class JarsListView extends StatefulWidget {
       barrierColor: Colors.transparent,
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return BlocProvider(
-          create: (context) => getIt<JarListBloc>()..add(LoadJarList()),
+        return BlocProvider.value(
+          value: getIt<JarListBloc>()..add(LoadJarList()),
           child: const JarsListView(),
         );
       },
@@ -51,6 +52,8 @@ class JarsListView extends StatefulWidget {
 class _JarsListViewState extends State<JarsListView> {
   Set<String> expandedGroupIds = <String>{};
   late JarExpansionStateService _expansionService;
+  String _searchQuery = '';
+  bool _isSearchExpanded = false;
 
   @override
   void initState() {
@@ -131,14 +134,55 @@ class _JarsListViewState extends State<JarsListView> {
               // Close button positioned at top right
               const SizedBox(height: AppSpacing.spacingL),
               const SizedBox(height: AppSpacing.spacingM),
-              AppIconButton(
-                onPressed: () {
-                  HapticUtils.heavy();
-                  context.pop();
-                },
-                icon: Icons.close,
-                size: const Size(40, 40),
+              Row(
+                children: [
+                  AppIconButton(
+                    onPressed: () {
+                      HapticUtils.heavy();
+                      context.pop();
+                    },
+                    icon: Icons.close,
+                    size: const Size(40, 40),
+                  ),
+                  const Spacer(),
+                  AppIconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isSearchExpanded = !_isSearchExpanded;
+                        if (!_isSearchExpanded) {
+                          _searchQuery = '';
+                        }
+                      });
+                    },
+                    icon: _isSearchExpanded ? Icons.close : Icons.search,
+                    size: const Size(40, 40),
+                  ),
+                ],
               ),
+
+              // Animated search input
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 200),
+                crossFadeState: _isSearchExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: const SizedBox.shrink(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.spacingS,
+                  ),
+                  child: SearchInput(
+                    hintText: localizations.searchOptions,
+                    autofocus: true,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacingS),
 
               // Content area - jar list
               Expanded(
@@ -261,8 +305,39 @@ class _JarsListViewState extends State<JarsListView> {
       );
     }
 
+    // Filter groups by search query
+    final query = _searchQuery.toLowerCase();
+    final filteredGroups = query.isEmpty
+        ? jarList.groups
+        : jarList.groups
+            .map((group) {
+              final matchingJars = group.jars
+                  .where((jar) => jar.name.toLowerCase().contains(query))
+                  .toList();
+              if (matchingJars.isEmpty) return null;
+              return JarGroup(
+                id: group.id,
+                name: group.name,
+                description: group.description,
+                jars: matchingJars,
+                totalJars: matchingJars.length,
+                totalGoalAmount: group.totalGoalAmount,
+                totalContributions: group.totalContributions,
+                createdAt: group.createdAt,
+                updatedAt: group.updatedAt,
+              );
+            })
+            .whereType<JarGroup>()
+            .toList();
+
+    if (filteredGroups.isEmpty) {
+      return Center(
+        child: Text(localizations.noJarsFound),
+      );
+    }
+
     return ListView.builder(
-      itemCount: jarList.groups.length + 1, // +1 for the title
+      itemCount: filteredGroups.length + 1, // +1 for the title
       itemBuilder: (context, index) {
         // First item is the title
         if (index == 0) {
@@ -270,8 +345,8 @@ class _JarsListViewState extends State<JarsListView> {
         }
 
         // Adjust index for jar groups (subtract 1 because title takes index 0)
-        final jarGroup = jarList.groups[index - 1];
-        final isLastItem = index == jarList.groups.length;
+        final jarGroup = filteredGroups[index - 1];
+        final isLastItem = index == filteredGroups.length;
 
         return Padding(
           padding: EdgeInsets.only(

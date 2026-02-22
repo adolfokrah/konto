@@ -1,7 +1,6 @@
 import type { Block } from 'payload'
 
 import { anchorField } from '@/fields/anchor'
-import { link } from '@/fields/link'
 
 export const Pricing: Block = {
   slug: 'pricing',
@@ -56,68 +55,22 @@ export const Pricing: Block = {
           },
         },
         {
-          name: 'feePayerLabel',
-          type: 'text',
-          defaultValue: 'Who pays platform fees?',
-          localized: true,
-          admin: {
-            description: 'Label for fee payer selection',
-          },
-        },
-        {
-          name: 'feePayerOptions',
-          type: 'array',
-          minRows: 1,
-          defaultValue: [
-            { label: 'Organizer', value: 'organizer' },
-            { label: 'Contributor', value: 'contributor' },
-          ],
-          fields: [
-            {
-              name: 'label',
-              type: 'text',
-              required: true,
-              localized: true,
-            },
-            {
-              name: 'value',
-              type: 'text',
-              required: true,
-            },
-          ],
-        },
-        {
           name: 'chargesBreakdownLabel',
           type: 'text',
           defaultValue: 'Charges break down',
           localized: true,
         },
         {
-          name: 'telcoFeeLabel',
-          type: 'text',
-          defaultValue: 'Telco transaction fee',
-          localized: true,
-          admin: {
-            description: 'Label for the telco/paystack transaction fee',
-          },
-        },
-        {
-          name: 'platformFeeLabel',
-          type: 'text',
-          defaultValue: 'Platform fee',
-          localized: true,
-          admin: {
-            description: 'Label for the platform fee',
-          },
-        },
-        {
           name: 'contributorPaysLabel',
           type: 'text',
           defaultValue: 'Contributor pays',
           localized: true,
-          admin: {
-            description: 'Label for the total amount contributor pays',
-          },
+        },
+        {
+          name: 'transferFeeLabel',
+          type: 'text',
+          defaultValue: 'Transfer fee',
+          localized: true,
         },
         {
           name: 'youReceiveLabel',
@@ -130,23 +83,26 @@ export const Pricing: Block = {
     {
       name: 'feeStructure',
       type: 'group',
+      admin: {
+        description: 'Fee percentages matching the CMS System Settings',
+      },
       fields: [
         {
-          name: 'telcoTransactionFee',
+          name: 'collectionFee',
           type: 'number',
           defaultValue: 1.95,
           admin: {
-            description: 'Telco transaction fee percentage',
+            description: 'Collection fee percentage (matches System Settings collectionFee)',
             step: 0.01,
           },
         },
         {
-          name: 'platformFeeMax',
+          name: 'transferFeePercentage',
           type: 'number',
-          defaultValue: 2,
+          defaultValue: 1,
           admin: {
-            description: 'Maximum platform fee percentage',
-            step: 0.01,
+            description: 'Transfer fee percentage (matches System Settings transferFeePercentage)',
+            step: 0.1,
           },
         },
       ],
