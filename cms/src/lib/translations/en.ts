@@ -20,7 +20,7 @@ export const en = {
   password: 'Password',
 
   // App specific
-  welcome: 'Welcome to Konto',
+  welcome: 'Welcome to Hogapay',
   description: 'Your financial companion',
 
   // Add more translations as needed

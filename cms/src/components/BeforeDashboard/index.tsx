@@ -9,7 +9,7 @@ const BeforeDashboard: React.FC = () => {
   return (
     <div className={baseClass}>
       <Banner className={`${baseClass}__banner`} type="success">
-        <h4>Welcome to Konto Admin</h4>
+        <h4>Welcome to Hogapay Admin</h4>
       </Banner>
       <a
         href="/dashboard"
