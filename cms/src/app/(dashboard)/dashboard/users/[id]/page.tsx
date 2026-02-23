@@ -12,8 +12,11 @@ import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
 import { UserKycActions } from '@/components/dashboard/user-kyc-actions'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 
+const TX_DEFAULT_LIMIT = 20
+
 type Props = {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 function formatFullDate(dateString: string) {
@@ -41,8 +44,18 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-export default async function UserDetailPage({ params }: Props) {
+export default async function UserDetailPage({ params, searchParams }: Props) {
   const { id } = await params
+  const sp = await searchParams
+  const txPage = Number(sp.page) || 1
+  const txLimit = Number(sp.limit) || TX_DEFAULT_LIMIT
+  const txSearch = typeof sp.search === 'string' ? sp.search : ''
+  const txStatus = typeof sp.status === 'string' ? sp.status : ''
+  const txType = typeof sp.type === 'string' ? sp.type : ''
+  const txMethod = typeof sp.method === 'string' ? sp.method : ''
+  const txLink = typeof sp.link === 'string' ? sp.link : ''
+  const txSettled = typeof sp.settled === 'string' ? sp.settled : ''
+
   const payload = await getPayload({ config: configPromise })
 
   // Fetch user
@@ -92,19 +105,49 @@ export default async function UserDetailPage({ params }: Props) {
         createdAt: true,
       },
     }),
-    payload.find({
-      collection: 'transactions',
-      where: {
+    (() => {
+      // Build transaction filter where clause (always scoped to this user)
+      const txWhere: Record<string, any> = {
         or: [
           { collector: { equals: id } },
           { contributorPhoneNumber: { equals: user.phoneNumber } },
         ],
-      },
-      sort: '-createdAt',
-      limit: 20,
-      depth: 1,
-      overrideAccess: true,
-    }),
+      }
+      if (txSearch) txWhere.contributor = { like: txSearch }
+      if (txStatus) {
+        const valid = ['pending', 'completed', 'failed', 'transferred']
+        const values = txStatus.split(',').filter((v) => valid.includes(v))
+        if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
+        else if (values.length > 1) txWhere.paymentStatus = { in: values }
+      }
+      if (txType) {
+        const valid = ['contribution', 'payout']
+        const values = txType.split(',').filter((v) => valid.includes(v))
+        if (values.length === 1) txWhere.type = { equals: values[0] }
+        else if (values.length > 1) txWhere.type = { in: values }
+      }
+      if (txMethod) {
+        const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+        const values = txMethod.split(',').filter((v) => valid.includes(v))
+        if (values.length === 1) txWhere.paymentMethod = { equals: values[0] }
+        else if (values.length > 1) txWhere.paymentMethod = { in: values }
+      }
+      if (txLink && ['yes', 'no'].includes(txLink)) {
+        txWhere.viaPaymentLink = { equals: txLink === 'yes' }
+      }
+      if (txSettled && ['yes', 'no'].includes(txSettled)) {
+        txWhere.isSettled = { equals: txSettled === 'yes' }
+      }
+      return payload.find({
+        collection: 'transactions',
+        where: txWhere,
+        sort: '-createdAt',
+        page: txPage,
+        limit: txLimit,
+        depth: 1,
+        overrideAccess: true,
+      })
+    })(),
   ])
 
   // Fetch Didit KYC decision if session exists
@@ -807,17 +850,25 @@ export default async function UserDetailPage({ params }: Props) {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">
-                Recent Transactions ({transactionsResult.totalDocs})
+                Transactions ({transactionsResult.totalDocs})
               </CardTitle>
               <CardDescription>
-                Last 20 transactions involving this user
+                Transactions involving this user
               </CardDescription>
             </CardHeader>
             <CardContent>
               {transactions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No transactions found</p>
               ) : (
-                <TransactionsDataTable transactions={transactions} />
+                <TransactionsDataTable
+                  transactions={transactions}
+                  pagination={{
+                    currentPage: txPage,
+                    totalPages: transactionsResult.totalPages,
+                    totalRows: transactionsResult.totalDocs,
+                    rowsPerPage: txLimit,
+                  }}
+                />
               )}
             </CardContent>
           </Card>

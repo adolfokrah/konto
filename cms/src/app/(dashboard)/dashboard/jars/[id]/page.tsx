@@ -107,14 +107,23 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   if (txSearch) {
     txWhere.contributor = { like: txSearch }
   }
-  if (txStatus && ['pending', 'completed', 'failed', 'transferred'].includes(txStatus)) {
-    txWhere.paymentStatus = { equals: txStatus }
+  if (txStatus) {
+    const valid = ['pending', 'completed', 'failed', 'transferred']
+    const values = txStatus.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
+    else if (values.length > 1) txWhere.paymentStatus = { in: values }
   }
-  if (txType && ['contribution', 'payout'].includes(txType)) {
-    txWhere.type = { equals: txType }
+  if (txType) {
+    const valid = ['contribution', 'payout']
+    const values = txType.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) txWhere.type = { equals: values[0] }
+    else if (values.length > 1) txWhere.type = { in: values }
   }
-  if (txMethod && ['mobile-money', 'cash', 'bank', 'card', 'apple-pay'].includes(txMethod)) {
-    txWhere.paymentMethod = { equals: txMethod }
+  if (txMethod) {
+    const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+    const values = txMethod.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) txWhere.paymentMethod = { equals: values[0] }
+    else if (values.length > 1) txWhere.paymentMethod = { in: values }
   }
   if (txLink && ['yes', 'no'].includes(txLink)) {
     txWhere.viaPaymentLink = { equals: txLink === 'yes' }
