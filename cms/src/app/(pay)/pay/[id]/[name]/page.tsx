@@ -229,7 +229,7 @@ export default async function Page({
           <div>
             {/* Jar Image - Blurred background with centered overlay */}
             {imageUrl && (
-              <div className="relative w-full h-80 lg:h-100 overflow-hidden rounded-xl">
+              <div className="relative w-full h-80 lg:h-100 overflow-hidden rounded-none  md:rounded-xl">
                 {/* Blurred background */}
                 <Image
                   src={imageUrl}
