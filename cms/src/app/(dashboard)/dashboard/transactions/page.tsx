@@ -32,19 +32,28 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
   const payload = await getPayload({ config: configPromise })
 
-  // Build where clause from filters
+  // Build where clause from filters (supports comma-separated multi-select)
   const where: Record<string, any> = {}
   if (search) {
     where.contributor = { like: search }
   }
-  if (status && ['pending', 'completed', 'failed', 'transferred'].includes(status)) {
-    where.paymentStatus = { equals: status }
+  if (status) {
+    const valid = ['pending', 'completed', 'failed', 'transferred']
+    const values = status.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) where.paymentStatus = { equals: values[0] }
+    else if (values.length > 1) where.paymentStatus = { in: values }
   }
-  if (type && ['contribution', 'payout'].includes(type)) {
-    where.type = { equals: type }
+  if (type) {
+    const valid = ['contribution', 'payout']
+    const values = type.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) where.type = { equals: values[0] }
+    else if (values.length > 1) where.type = { in: values }
   }
-  if (method && ['mobile-money', 'cash', 'bank', 'card', 'apple-pay'].includes(method)) {
-    where.paymentMethod = { equals: method }
+  if (method) {
+    const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+    const values = method.split(',').filter((v) => valid.includes(v))
+    if (values.length === 1) where.paymentMethod = { equals: values[0] }
+    else if (values.length > 1) where.paymentMethod = { in: values }
   }
   if (link && ['yes', 'no'].includes(link)) {
     where.viaPaymentLink = { equals: link === 'yes' }

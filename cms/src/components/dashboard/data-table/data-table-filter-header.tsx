@@ -15,6 +15,7 @@ type Props<TData> = {
   readOnly?: boolean
   getParam: (key: string) => string
   updateParam: (key: string, value: string) => void
+  toggleParam: (key: string, value: string) => void
 }
 
 export function DataTableFilterHeader<TData>({
@@ -22,6 +23,7 @@ export function DataTableFilterHeader<TData>({
   readOnly,
   getParam,
   updateParam,
+  toggleParam,
 }: Props<TData>) {
   const meta = header.column.columnDef.meta as DataTableColumnMeta | undefined
   const filter = meta?.filter
@@ -35,9 +37,9 @@ export function DataTableFilterHeader<TData>({
     return <TableHead className={headerClassName}>{label}</TableHead>
   }
 
-  const currentValue =
-    filter.type === 'search' ? getParam(filter.paramKey) : getParam(filter.paramKey) || 'all'
-  const isActive = filter.type === 'search' ? !!currentValue : currentValue !== 'all'
+  const rawValue = getParam(filter.paramKey)
+  const isActive = filter.type === 'search' ? !!rawValue : !!rawValue && rawValue !== 'all'
+  const selectedValues = filter.type === 'select' && rawValue ? rawValue.split(',') : []
 
   return (
     <TableHead className={headerClassName}>
@@ -56,7 +58,7 @@ export function DataTableFilterHeader<TData>({
             <div className="p-1">
               <Input
                 placeholder={filter.placeholder || 'Search...'}
-                defaultValue={currentValue}
+                defaultValue={rawValue}
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -65,7 +67,7 @@ export function DataTableFilterHeader<TData>({
                 }}
                 className="h-8"
               />
-              {currentValue && (
+              {rawValue && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -79,8 +81,8 @@ export function DataTableFilterHeader<TData>({
           ) : (
             <DataTableOptionsList
               options={filter.options}
-              currentValue={currentValue}
-              onSelect={(v) => updateParam(filter.paramKey, v)}
+              selectedValues={selectedValues}
+              onToggle={(v) => toggleParam(filter.paramKey, v)}
             />
           )}
         </PopoverContent>

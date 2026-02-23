@@ -29,7 +29,7 @@ export function DataTable<TData>({
   renderRowActions,
   emptyMessage = 'No results found',
 }: DataTableProps<TData>) {
-  const { updateParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
+  const { updateParam, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
 
   const rowOffset = pagination ? (pagination.currentPage - 1) * pagination.rowsPerPage : 0
 
@@ -89,6 +89,7 @@ export function DataTable<TData>({
                   readOnly={readOnly}
                   getParam={getParam}
                   updateParam={updateParam}
+                  toggleParam={toggleParam}
                 />
               ))}
             </TableRow>
