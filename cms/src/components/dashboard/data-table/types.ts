@@ -19,6 +19,12 @@ export type ColumnFilterConfig =
       popoverWidth?: string
       displayMap?: Record<string, string>
     }
+  | {
+      type: 'dateRange'
+      fromParamKey: string
+      toParamKey: string
+      popoverWidth?: string
+    }
 
 export type DataTableColumnMeta = {
   filter?: ColumnFilterConfig

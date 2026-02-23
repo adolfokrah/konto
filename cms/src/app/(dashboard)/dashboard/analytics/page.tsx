@@ -1,6 +1,17 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Activity, TrendingUp, DollarSign, BarChart3 } from 'lucide-react'
+import {
+  Activity,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  Wallet,
+  Clock,
+  ArrowLeftRight,
+  CheckCircle2,
+  XCircle,
+  ArrowUpRight,
+} from 'lucide-react'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueTrendChart } from '@/components/dashboard/analytics/revenue-trend-chart'
 import { PaymentMethodChart } from '@/components/dashboard/analytics/payment-method-chart'
@@ -59,6 +70,16 @@ export default async function AnalyticsPage() {
     jarsFrozen,
     jarsBroken,
     jarsSealed,
+    // KPI: Payouts (for balance calculation)
+    completedPayouts,
+    // KPI: Unsettled mobile money contributions (upcoming balance)
+    unsettledMomoContributions,
+    // KPI: Total transaction count
+    totalTransactionCount,
+    // KPI: Contributions volume (completed)
+    contributionsVolume,
+    // KPI: Payouts volume (completed/transferred)
+    payoutsVolume,
   ] = await Promise.all([
     // DAU today
     payload.count({
@@ -84,7 +105,7 @@ export default async function AnalyticsPage() {
       where: { paymentStatus: { equals: 'transferred' } },
     }),
 
-    // Completed contributions for avg size
+    // Completed contributions for avg size + balance calculation
     payload.find({
       collection: 'transactions',
       where: {
@@ -92,7 +113,7 @@ export default async function AnalyticsPage() {
         type: { equals: 'contribution' },
       },
       pagination: false,
-      select: { amountContributed: true },
+      select: { amountContributed: true, isSettled: true },
       overrideAccess: true,
     }),
 
@@ -253,6 +274,59 @@ export default async function AnalyticsPage() {
       collection: 'jars',
       where: { status: { equals: 'sealed' } },
     }),
+
+    // Payouts (for total jar balance — amounts are stored as negative)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { in: ['pending', 'completed', 'transferred'] },
+        type: { equals: 'payout' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Unsettled mobile money contributions (upcoming balance)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'mobile-money' },
+        isSettled: { equals: false },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Total transaction count
+    payload.count({ collection: 'transactions', overrideAccess: true }),
+
+    // Contributions volume (completed)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Payouts volume (completed/transferred)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { in: ['completed', 'transferred'] },
+        type: { equals: 'payout' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
   ])
 
   // --- KPI calculations ---
@@ -269,6 +343,32 @@ export default async function AnalyticsPage() {
 
   const platformRevenue = revenueTransactions.docs.reduce(
     (sum, tx: any) => sum + (tx.chargesBreakdown?.hogapayRevenue || 0),
+    0,
+  )
+
+  const totalPayoutsAmount = completedPayouts.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+  // Balance = settled contributions + payouts (payouts are negative)
+  const totalSettledContributions = completedContributions.docs.reduce(
+    (sum, tx: any) => sum + (tx.isSettled ? (tx.amountContributed || 0) : 0),
+    0,
+  )
+  const totalJarBalances = totalSettledContributions + totalPayoutsAmount
+
+  const totalUpcomingBalances = unsettledMomoContributions.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+
+  const totalContributionsVolume = contributionsVolume.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+
+  const totalPayoutsVolume = payoutsVolume.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
 
@@ -325,7 +425,7 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-6">
       {/* KPI Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title="Daily Active Users"
           value={dauResult.totalDocs.toLocaleString()}
@@ -349,6 +449,54 @@ export default async function AnalyticsPage() {
           value={`GHS ${fmt(platformRevenue)}`}
           description="Total Hogapay revenue"
           icon={DollarSign}
+        />
+        <MetricCard
+          title="Total Jar Balances"
+          value={`GHS ${fmt(totalJarBalances)}`}
+          description="Across all jars"
+          icon={Wallet}
+        />
+        <MetricCard
+          title="Upcoming Balances"
+          value={`GHS ${fmt(totalUpcomingBalances)}`}
+          description="Unsettled mobile money"
+          icon={Clock}
+        />
+      </div>
+
+      {/* Transaction KPI Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <MetricCard
+          title="Total Transactions"
+          value={totalTransactionCount.totalDocs.toLocaleString()}
+          icon={ArrowLeftRight}
+        />
+        <MetricCard
+          title="Completed"
+          value={completedCount.totalDocs.toLocaleString()}
+          icon={CheckCircle2}
+        />
+        <MetricCard
+          title="Pending"
+          value={pendingCount.totalDocs.toLocaleString()}
+          icon={Clock}
+        />
+        <MetricCard
+          title="Failed"
+          value={failedCount.totalDocs.toLocaleString()}
+          icon={XCircle}
+        />
+        <MetricCard
+          title="Contributions"
+          value={`GHS ${fmt(totalContributionsVolume)}`}
+          description="Completed volume"
+          icon={DollarSign}
+        />
+        <MetricCard
+          title="Payouts"
+          value={`GHS ${fmt(Math.abs(totalPayoutsVolume))}`}
+          description="Transferred volume"
+          icon={ArrowUpRight}
         />
       </div>
 

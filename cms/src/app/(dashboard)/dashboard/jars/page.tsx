@@ -17,6 +17,8 @@ export default async function JarsPage({ searchParams }: Props) {
   const limit = Number(params.limit) || DEFAULT_LIMIT
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
+  const from = typeof params.from === 'string' ? params.from : ''
+  const to = typeof params.to === 'string' ? params.to : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -27,6 +29,14 @@ export default async function JarsPage({ searchParams }: Props) {
   }
   if (status && ['open', 'frozen', 'broken', 'sealed'].includes(status)) {
     where.status = { equals: status }
+  }
+  if (from) {
+    where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }
+  }
+  if (to) {
+    const toDate = new Date(to)
+    toDate.setHours(23, 59, 59, 999)
+    where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
 
   // Run metric counts and paginated query in parallel
@@ -65,27 +75,41 @@ export default async function JarsPage({ searchParams }: Props) {
     }),
   ])
 
-  // Compute actual contribution sums from transactions for each jar
+  // Compute contribution totals, balance, and upcoming balance from transactions
   const jarIds = jarsResult.docs.map((jar: any) => jar.id)
   const contributionTotals: Record<string, number> = {}
+  const settledTotals: Record<string, number> = {}
+  const payoutTotals: Record<string, number> = {}
+  const upcomingTotals: Record<string, number> = {}
 
   if (jarIds.length > 0) {
-    const contributions = await payload.find({
+    const allTransactions = await payload.find({
       collection: 'transactions',
       where: {
         jar: { in: jarIds },
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
+        paymentStatus: { in: ['completed', 'pending', 'transferred'] },
       },
       pagination: false,
-      select: { jar: true, amountContributed: true },
+      select: { jar: true, amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
       overrideAccess: true,
     })
 
-    for (const tx of contributions.docs as any[]) {
+    for (const tx of allTransactions.docs as any[]) {
       const jarId = typeof tx.jar === 'string' ? tx.jar : tx.jar?.id
-      if (jarId) {
+      if (!jarId) continue
+
+      if (tx.type === 'contribution' && tx.paymentStatus === 'completed') {
         contributionTotals[jarId] = (contributionTotals[jarId] || 0) + (tx.amountContributed || 0)
+        if (tx.isSettled) {
+          settledTotals[jarId] = (settledTotals[jarId] || 0) + (tx.amountContributed || 0)
+        }
+        // Upcoming: completed but unsettled mobile money contributions
+        if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
+          upcomingTotals[jarId] = (upcomingTotals[jarId] || 0) + (tx.amountContributed || 0)
+        }
+      } else if (tx.type === 'payout') {
+        // Payout amounts are stored as negative — include pending, completed, transferred
+        payoutTotals[jarId] = (payoutTotals[jarId] || 0) + (tx.amountContributed || 0)
       }
     }
   }
@@ -105,6 +129,8 @@ export default async function JarsPage({ searchParams }: Props) {
       status: jar.status as 'open' | 'frozen' | 'broken' | 'sealed',
       goalAmount: jar.goalAmount || 0,
       totalContributions: contributionTotals[jar.id] || 0,
+      balance: (settledTotals[jar.id] || 0) + (payoutTotals[jar.id] || 0),
+      upcomingBalance: upcomingTotals[jar.id] || 0,
       contributorsCount: jar.invitedCollectors?.length || 0,
       currency: jar.currency || 'GHS',
       createdAt: jar.createdAt,

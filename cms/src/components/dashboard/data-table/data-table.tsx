@@ -29,7 +29,7 @@ export function DataTable<TData>({
   renderRowActions,
   emptyMessage = 'No results found',
 }: DataTableProps<TData>) {
-  const { updateParam, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
+  const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
 
   const rowOffset = pagination ? (pagination.currentPage - 1) * pagination.rowsPerPage : 0
 
@@ -73,7 +73,11 @@ export function DataTable<TData>({
       {!readOnly && (
         <DataTableActiveFilters
           filters={activeFilters}
-          onRemove={(paramKey) => updateParam(paramKey, '')}
+          onRemove={(paramKey, extraParamKeys) => {
+            const updates = [{ key: paramKey, value: '' }]
+            extraParamKeys?.forEach((key) => updates.push({ key, value: '' }))
+            batchUpdateParams(updates)
+          }}
           onClearAll={clearAll}
         />
       )}
@@ -89,6 +93,7 @@ export function DataTable<TData>({
                   readOnly={readOnly}
                   getParam={getParam}
                   updateParam={updateParam}
+                  batchUpdateParams={batchUpdateParams}
                   toggleParam={toggleParam}
                 />
               ))}

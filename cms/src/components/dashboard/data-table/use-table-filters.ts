@@ -7,6 +7,7 @@ import { type DataTableColumnMeta } from './types'
 
 export type ActiveFilter = {
   paramKey: string
+  extraParamKeys?: string[]
   label: string
   displayValue: string
 }
@@ -23,6 +24,22 @@ export function useTableFilters<TData>(columns: ColumnDef<TData, any>[]) {
         params.set(key, value)
       } else {
         params.delete(key)
+      }
+      params.delete('page')
+      router.push(`${pathname}?${params.toString()}`)
+    },
+    [router, pathname, searchParams],
+  )
+
+  const batchUpdateParams = useCallback(
+    (updates: { key: string; value: string }[]) => {
+      const params = new URLSearchParams(searchParams.toString())
+      for (const { key, value } of updates) {
+        if (value && value !== 'all') {
+          params.set(key, value)
+        } else {
+          params.delete(key)
+        }
       }
       params.delete('page')
       router.push(`${pathname}?${params.toString()}`)
@@ -67,9 +84,23 @@ export function useTableFilters<TData>(columns: ColumnDef<TData, any>[]) {
       const meta = col.meta as DataTableColumnMeta | undefined
       if (!meta?.filter) continue
       const config = meta.filter
-      const rawValue = searchParams.get(config.paramKey) || ''
+      const rawValue = config.type === 'dateRange' ? '' : searchParams.get(config.paramKey) || ''
 
-      if (config.type === 'search' && rawValue) {
+      if (config.type === 'dateRange') {
+        const fromVal = searchParams.get(config.fromParamKey) || ''
+        const toVal = searchParams.get(config.toParamKey) || ''
+        if (fromVal || toVal) {
+          const parts = []
+          if (fromVal) parts.push(fromVal)
+          if (toVal) parts.push(toVal)
+          filters.push({
+            paramKey: config.fromParamKey,
+            extraParamKeys: [config.toParamKey],
+            label: meta.filterLabel || 'Date',
+            displayValue: parts.join(' → '),
+          })
+        }
+      } else if (config.type === 'search' && rawValue) {
         filters.push({
           paramKey: config.paramKey,
           label: meta.filterLabel || config.paramKey,
@@ -88,5 +119,5 @@ export function useTableFilters<TData>(columns: ColumnDef<TData, any>[]) {
     return filters
   }, [columns, searchParams])
 
-  return { updateParam, toggleParam, getParam, clearAll, activeFilters }
+  return { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters }
 }

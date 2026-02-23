@@ -44,6 +44,19 @@ function formatAmount(amount: number) {
 
 export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
+    accessorKey: 'transactionReference',
+    header: 'Transaction',
+    cell: ({ row }) => (
+      <span className="font-medium text-xs font-mono">
+        {row.original.transactionReference || '\u2014'}
+      </span>
+    ),
+    meta: {
+      filter: { type: 'search', paramKey: 'ref', placeholder: 'Search ref...' },
+      filterLabel: 'Transaction',
+    } satisfies DataTableColumnMeta,
+  },
+  {
     accessorKey: 'contributor',
     header: 'Contributor',
     cell: ({ row }) => (
@@ -213,5 +226,13 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     cell: ({ row }) => (
       <span className="text-muted-foreground">{formatShortDate(row.original.createdAt)}</span>
     ),
+    meta: {
+      filter: {
+        type: 'dateRange',
+        fromParamKey: 'from',
+        toParamKey: 'to',
+      },
+      filterLabel: 'Date',
+    } satisfies DataTableColumnMeta,
   },
 ]

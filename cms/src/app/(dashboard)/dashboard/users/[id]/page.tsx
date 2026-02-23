@@ -55,6 +55,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   const txMethod = typeof sp.method === 'string' ? sp.method : ''
   const txLink = typeof sp.link === 'string' ? sp.link : ''
   const txSettled = typeof sp.settled === 'string' ? sp.settled : ''
+  const txFrom = typeof sp.from === 'string' ? sp.from : ''
+  const txTo = typeof sp.to === 'string' ? sp.to : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -137,6 +139,14 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       }
       if (txSettled && ['yes', 'no'].includes(txSettled)) {
         txWhere.isSettled = { equals: txSettled === 'yes' }
+      }
+      if (txFrom) {
+        txWhere.createdAt = { ...txWhere.createdAt, greater_than_equal: new Date(txFrom).toISOString() }
+      }
+      if (txTo) {
+        const toDate = new Date(txTo)
+        toDate.setHours(23, 59, 59, 999)
+        txWhere.createdAt = { ...txWhere.createdAt, less_than_equal: toDate.toISOString() }
       }
       return payload.find({
         collection: 'transactions',

@@ -1,15 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import {
-  ArrowLeftRight,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  ArrowUpRight,
-  DollarSign,
-} from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MetricCard } from '@/components/dashboard/metric-card'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 
@@ -29,6 +20,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
   const method = typeof params.method === 'string' ? params.method : ''
   const link = typeof params.link === 'string' ? params.link : ''
   const settled = typeof params.settled === 'string' ? params.settled : ''
+  const ref = typeof params.ref === 'string' ? params.ref : ''
+  const from = typeof params.from === 'string' ? params.from : ''
+  const to = typeof params.to === 'string' ? params.to : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -61,79 +55,28 @@ export default async function TransactionsPage({ searchParams }: Props) {
   if (settled && ['yes', 'no'].includes(settled)) {
     where.isSettled = { equals: settled === 'yes' }
   }
+  if (ref) {
+    where.transactionReference = { like: ref }
+  }
+  if (from) {
+    where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }
+  }
+  if (to) {
+    // Set to end of day
+    const toDate = new Date(to)
+    toDate.setHours(23, 59, 59, 999)
+    where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
+  }
 
-  // Run all queries in parallel
-  const [
-    totalCount,
-    completedCount,
-    pendingCount,
-    failedCount,
-    transferredCount,
-    contributionsVolume,
-    payoutsVolume,
-    transactionsResult,
-  ] = await Promise.all([
-    payload.count({ collection: 'transactions', overrideAccess: true }),
-    payload.count({
-      collection: 'transactions',
-      overrideAccess: true,
-      where: { paymentStatus: { equals: 'completed' } },
-    }),
-    payload.count({
-      collection: 'transactions',
-      overrideAccess: true,
-      where: { paymentStatus: { equals: 'pending' } },
-    }),
-    payload.count({
-      collection: 'transactions',
-      overrideAccess: true,
-      where: { paymentStatus: { equals: 'failed' } },
-    }),
-    payload.count({
-      collection: 'transactions',
-      overrideAccess: true,
-      where: { paymentStatus: { equals: 'transferred' } },
-    }),
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
-      },
-      pagination: false,
-      select: { amountContributed: true },
-      overrideAccess: true,
-    }),
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
-        type: { equals: 'payout' },
-      },
-      pagination: false,
-      select: { amountContributed: true },
-      overrideAccess: true,
-    }),
-    payload.find({
-      collection: 'transactions',
-      where,
-      page,
-      limit,
-      sort: '-createdAt',
-      depth: 1,
-      overrideAccess: true,
-    }),
-  ])
-
-  const totalContributionsVolume = contributionsVolume.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
-
-  const totalPayoutsVolume = payoutsVolume.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
+  const transactionsResult = await payload.find({
+    collection: 'transactions',
+    where,
+    page,
+    limit,
+    sort: '-createdAt',
+    depth: 1,
+    overrideAccess: true,
+  })
 
   // Map to TransactionRow type
   const transactions: TransactionRow[] = transactionsResult.docs.map((tx: any) => {
@@ -170,47 +113,8 @@ export default async function TransactionsPage({ searchParams }: Props) {
     }
   })
 
-  const fmtAmount = (n: number) =>
-    `GHS ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-
   return (
     <div className="space-y-6">
-      {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          title="Total"
-          value={totalCount.totalDocs.toLocaleString()}
-          icon={ArrowLeftRight}
-        />
-        <MetricCard
-          title="Completed"
-          value={completedCount.totalDocs.toLocaleString()}
-          icon={CheckCircle2}
-        />
-        <MetricCard
-          title="Pending"
-          value={pendingCount.totalDocs.toLocaleString()}
-          icon={Clock}
-        />
-        <MetricCard
-          title="Failed"
-          value={failedCount.totalDocs.toLocaleString()}
-          icon={XCircle}
-        />
-        <MetricCard
-          title="Contributions"
-          value={fmtAmount(totalContributionsVolume)}
-          description="Completed volume"
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Payouts"
-          value={fmtAmount(totalPayoutsVolume)}
-          description="Transferred volume"
-          icon={ArrowUpRight}
-        />
-      </div>
-
       {/* Transactions Table */}
       <Card>
         <CardHeader>

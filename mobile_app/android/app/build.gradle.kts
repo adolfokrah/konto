@@ -30,6 +30,9 @@ android {
         resources {
             pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 
     // Load signing properties

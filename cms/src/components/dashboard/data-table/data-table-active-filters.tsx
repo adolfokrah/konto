@@ -5,7 +5,7 @@ import { type ActiveFilter } from './use-table-filters'
 
 type Props = {
   filters: ActiveFilter[]
-  onRemove: (paramKey: string) => void
+  onRemove: (paramKey: string, extraParamKeys?: string[]) => void
   onClearAll: () => void
 }
 
@@ -17,7 +17,7 @@ export function DataTableActiveFilters({ filters, onRemove, onClearAll }: Props)
       {filters.map((f) => (
         <button
           key={f.paramKey}
-          onClick={() => onRemove(f.paramKey)}
+          onClick={() => onRemove(f.paramKey, f.extraParamKeys)}
           className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted transition-colors cursor-pointer"
         >
           <span className="text-muted-foreground">{f.label}:</span>

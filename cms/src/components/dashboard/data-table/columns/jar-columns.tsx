@@ -13,6 +13,8 @@ export type JarRow = {
   status: 'open' | 'frozen' | 'broken' | 'sealed'
   goalAmount: number
   totalContributions: number
+  balance: number
+  upcomingBalance: number
   contributorsCount: number
   currency: string
   createdAt: string
@@ -115,6 +117,35 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
+    accessorKey: 'balance',
+    header: 'Balance',
+    cell: ({ row }) => (
+      <span className="font-medium">
+        {formatAmount(row.original.balance, row.original.currency)}
+      </span>
+    ),
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    accessorKey: 'upcomingBalance',
+    header: 'Upcoming',
+    cell: ({ row }) =>
+      row.original.upcomingBalance > 0 ? (
+        <span className="text-amber-600 font-medium">
+          {formatAmount(row.original.upcomingBalance, row.original.currency)}
+        </span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
     accessorKey: 'contributorsCount',
     header: 'Collectors',
     cell: ({ row }) => row.original.contributorsCount,
@@ -129,5 +160,13 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     cell: ({ row }) => (
       <span className="text-muted-foreground">{formatDate(row.original.createdAt)}</span>
     ),
+    meta: {
+      filter: {
+        type: 'dateRange',
+        fromParamKey: 'from',
+        toParamKey: 'to',
+      },
+      filterLabel: 'Created',
+    } satisfies DataTableColumnMeta,
   },
 ]

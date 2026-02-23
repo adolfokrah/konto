@@ -85,6 +85,8 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   const txMethod = typeof sp.method === 'string' ? sp.method : ''
   const txLink = typeof sp.link === 'string' ? sp.link : ''
   const txSettled = typeof sp.settled === 'string' ? sp.settled : ''
+  const txFrom = typeof sp.from === 'string' ? sp.from : ''
+  const txTo = typeof sp.to === 'string' ? sp.to : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -131,18 +133,25 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   if (txSettled && ['yes', 'no'].includes(txSettled)) {
     txWhere.isSettled = { equals: txSettled === 'yes' }
   }
+  if (txFrom) {
+    txWhere.createdAt = { ...txWhere.createdAt, greater_than_equal: new Date(txFrom).toISOString() }
+  }
+  if (txTo) {
+    const toDate = new Date(txTo)
+    toDate.setHours(23, 59, 59, 999)
+    txWhere.createdAt = { ...txWhere.createdAt, less_than_equal: toDate.toISOString() }
+  }
 
-  // Compute contribution total and fetch filtered transactions in parallel
-  const [contributionsResult, transactionsResult] = await Promise.all([
+  // Compute contribution total, balance, upcoming balance, and fetch filtered transactions in parallel
+  const [allJarTransactions, transactionsResult] = await Promise.all([
     payload.find({
       collection: 'transactions',
       where: {
         jar: { equals: id },
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
+        paymentStatus: { in: ['completed', 'pending', 'transferred'] },
       },
       pagination: false,
-      select: { amountContributed: true },
+      select: { amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
       overrideAccess: true,
     }),
     payload.find({
@@ -156,10 +165,26 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     }),
   ])
 
-  const totalContributions = contributionsResult.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
+  let totalContributions = 0
+  let settledContributions = 0
+  let totalPayouts = 0
+  let upcomingBalance = 0
+  for (const tx of allJarTransactions.docs as any[]) {
+    if (tx.type === 'contribution' && tx.paymentStatus === 'completed') {
+      totalContributions += tx.amountContributed || 0
+      if (tx.isSettled) {
+        settledContributions += tx.amountContributed || 0
+      }
+      if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
+        upcomingBalance += tx.amountContributed || 0
+      }
+    } else if (tx.type === 'payout') {
+      // Payout amounts are stored as negative — include pending, completed, transferred
+      totalPayouts += tx.amountContributed || 0
+    }
+  }
+  // Balance = settled contributions + payouts (payouts are negative)
+  const balance = settledContributions + totalPayouts
 
   const creatorObj = typeof jar.creator === 'object' && jar.creator ? jar.creator : null
   const creatorName = creatorObj
@@ -341,6 +366,26 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               value={formatAmount(totalContributions, currency)}
             />
             <Separator />
+            <DetailRow
+              label="Balance"
+              icon={DollarSign}
+              value={formatAmount(balance, currency)}
+            />
+            <Separator />
+            {upcomingBalance > 0 && (
+              <>
+                <DetailRow
+                  label="Upcoming Balance"
+                  icon={Clock}
+                  value={
+                    <span className="text-amber-600">
+                      {formatAmount(upcomingBalance, currency)}
+                    </span>
+                  }
+                />
+                <Separator />
+              </>
+            )}
             <DetailRow
               label="Goal Amount"
               icon={Target}
