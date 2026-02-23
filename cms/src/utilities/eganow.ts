@@ -80,8 +80,10 @@ interface EganowStatusRequest {
 interface EganowStatusResponse {
   isSuccess: boolean
   message: string
-  transStatus: string
+  transStatus?: string
+  transactionstatus?: string
   referenceNo: string
+  reason?: string | null
 }
 
 interface EganowPayoutRequest {
@@ -197,13 +199,21 @@ export default class Eganow {
     }
 
     const response = await fetch(url, fetchOptions)
+    const responseText = await response.text()
 
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Eganow API error: ${response.status} ${response.statusText} - ${errorText}`)
+      throw new Error(
+        `Eganow API error: ${response.status} ${response.statusText} - ${responseText}`,
+      )
     }
 
-    return response.json()
+    try {
+      return JSON.parse(responseText) as T
+    } catch {
+      throw new Error(
+        `Eganow API returned non-JSON response (${response.status}): ${responseText.slice(0, 200)}`,
+      )
+    }
   }
 
   // ------------------ Public API Methods ------------------

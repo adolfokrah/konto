@@ -11,7 +11,7 @@ export const verifyPendingTransactionsTask = {
   slug: 'verify-pending-transactions',
   schedule: [
     {
-      cron: '0 * * * *', // Every hour
+      cron: '*/2 * * * *', // Every 2 minutes (testing)
       queue: 'verify-pending-transactions',
     },
   ],
@@ -19,10 +19,12 @@ export const verifyPendingTransactionsTask = {
     try {
       const payload = args.req?.payload || args.payload
 
-      // 5 minutes ago
+      // 5 minutes ago — transactions must be at least 5 min old before we check
       const cutoffTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      // 1 hour ago — transactions older than this are auto-failed
+      const maxPendingTime = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-      // Find pending mobile-money transactions older than 30 minutes
+      // Find pending mobile-money transactions older than 5 minutes
       const pendingTransactions = await payload.find({
         collection: 'transactions',
         where: {
@@ -89,6 +91,37 @@ export const verifyPendingTransactionsTask = {
             languageId: 'en',
           })
 
+          console.log(
+            `[verify-pending-transactions] Eganow response for ${id}:`,
+            JSON.stringify(statusResult),
+          )
+
+          // If Eganow says transaction doesn't exist, mark as failed
+          if (!statusResult.isSuccess) {
+            await payload.update({
+              collection: 'transactions',
+              id,
+              data: {
+                paymentStatus: 'failed',
+                ...(jarId ? { jar: jarId } : {}),
+                ...(collectorId ? { collector: collectorId } : {}),
+              },
+              overrideAccess: true,
+            })
+            console.log(
+              `[verify-pending-transactions] Marked ${id} as failed: ${statusResult.message}`,
+            )
+            failedCount++
+            processedCount++
+            continue
+          }
+
+          const rawStatus = (
+            statusResult.transStatus ||
+            (statusResult as any).transactionstatus ||
+            ''
+          ).toUpperCase()
+
           const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
             SUCCESSFUL: 'completed',
             SUCCESS: 'completed',
@@ -96,7 +129,7 @@ export const verifyPendingTransactionsTask = {
             PENDING: 'pending',
           }
 
-          const newStatus = statusMap[statusResult.transStatus?.toUpperCase()] || 'pending'
+          const newStatus = statusMap[rawStatus] || 'pending'
 
           await payload.update({
             collection: 'transactions',
@@ -116,6 +149,32 @@ export const verifyPendingTransactionsTask = {
             `[verify-pending-transactions] Error verifying transaction ${id}:`,
             error.message,
           )
+
+          // Auto-fail transactions older than 1 hour that we can't verify
+          const createdAt = (transaction as any).createdAt
+          if (createdAt && createdAt < maxPendingTime) {
+            try {
+              await payload.update({
+                collection: 'transactions',
+                id,
+                data: {
+                  paymentStatus: 'failed',
+                  ...(jarId ? { jar: jarId } : {}),
+                  ...(collectorId ? { collector: collectorId } : {}),
+                },
+                overrideAccess: true,
+              })
+              console.log(
+                `[verify-pending-transactions] Auto-failed transaction ${id} (pending > 1 hour, Eganow error: ${error.message})`,
+              )
+              failedCount++
+            } catch (e: any) {
+              console.error(
+                `[verify-pending-transactions] Error auto-failing transaction ${id}:`,
+                e.message,
+              )
+            }
+          }
         }
       }
 
