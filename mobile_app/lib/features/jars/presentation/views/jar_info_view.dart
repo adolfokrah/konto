@@ -634,106 +634,118 @@ class _JarInfoViewState extends State<JarInfoView> {
 
                               const SizedBox(height: AppSpacing.spacingXs),
 
-                              AppCard(
-                                variant: CardVariant.secondary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.spacingM,
-                                ),
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      onTap: () {
-                                        final isCurrentlyClosed =
-                                            jarData.status == JarStatus.sealed;
-                                        AlertBottomSheet.show(
-                                          context: context,
-                                          title:
-                                              isCurrentlyClosed
-                                                  ? localizations.reopenJar
-                                                  : localizations.sealJar,
-                                          message:
-                                              isCurrentlyClosed
-                                                  ? localizations
-                                                      .reopenJarMessage
-                                                  : localizations
-                                                      .sealJarMessage,
-                                          confirmText:
-                                              isCurrentlyClosed
-                                                  ? localizations.reopen
-                                                  : localizations.seal,
-                                          onConfirm: () {
-                                            // Handle jar closing/reopening logic
-                                            final newStatus =
-                                                jarData.status ==
-                                                        JarStatus.sealed
-                                                    ? 'open'
-                                                    : 'sealed';
+                              Opacity(
+                                opacity: jarData.isJarFrozen ? 0.4 : 1.0,
+                                child: IgnorePointer(
+                                  ignoring: jarData.isJarFrozen,
+                                  child: AppCard(
+                                    variant: CardVariant.secondary,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.spacingM,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          onTap: () {
+                                            final isCurrentlyClosed =
+                                                jarData.status == JarStatus.sealed;
+                                            AlertBottomSheet.show(
+                                              context: context,
+                                              title:
+                                                  isCurrentlyClosed
+                                                      ? localizations.reopenJar
+                                                      : localizations.sealJar,
+                                              message:
+                                                  isCurrentlyClosed
+                                                      ? localizations
+                                                          .reopenJarMessage
+                                                      : localizations
+                                                          .sealJarMessage,
+                                              confirmText:
+                                                  isCurrentlyClosed
+                                                      ? localizations.reopen
+                                                      : localizations.seal,
+                                              onConfirm: () {
+                                                // Handle jar closing/reopening logic
+                                                final newStatus =
+                                                    jarData.status ==
+                                                            JarStatus.sealed
+                                                        ? 'open'
+                                                        : 'sealed';
 
-                                            context.read<UpdateJarBloc>().add(
-                                              UpdateJarRequested(
-                                                jarId: jarData.id,
-                                                updates: {'status': newStatus},
-                                              ),
+                                                context.read<UpdateJarBloc>().add(
+                                                  UpdateJarRequested(
+                                                    jarId: jarData.id,
+                                                    updates: {'status': newStatus},
+                                                  ),
+                                                );
+                                              },
                                             );
                                           },
-                                        );
-                                      },
-                                      contentPadding: EdgeInsets.zero,
-                                      dense: true,
-                                      title: Text(
-                                        jarData.status == JarStatus.sealed
-                                            ? localizations.reopenJar
-                                            : localizations.sealJar,
-                                        style: AppTextStyles.titleMediumS,
-                                      ),
-                                      trailing: Icon(Icons.chevron_right),
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          title: Text(
+                                            jarData.status == JarStatus.sealed
+                                                ? localizations.reopenJar
+                                                : localizations.sealJar,
+                                            style: AppTextStyles.titleMediumS,
+                                          ),
+                                          trailing: Icon(Icons.chevron_right),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
 
                               const SizedBox(height: AppSpacing.spacingXs),
 
-                              AppCard(
-                                variant: CardVariant.secondary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.spacingM,
-                                ),
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      onTap: () {
-                                        AlertBottomSheet.show(
-                                          context: context,
-                                          title: localizations.breakJar,
-                                          message:
-                                              localizations
-                                                  .breakJarConfirmationMessage,
-                                          confirmText:
-                                              localizations.breakButton,
-                                          onConfirm: () {
-                                            _isBreakingJar = true;
-                                            context.read<UpdateJarBloc>().add(
-                                              UpdateJarRequested(
-                                                jarId: jarData.id,
-                                                updates: {'status': 'broken'},
-                                              ),
+                              Opacity(
+                                opacity: jarData.isJarFrozen ? 0.4 : 1.0,
+                                child: IgnorePointer(
+                                  ignoring: jarData.isJarFrozen,
+                                  child: AppCard(
+                                    variant: CardVariant.secondary,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.spacingM,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          onTap: () {
+                                            AlertBottomSheet.show(
+                                              context: context,
+                                              title: localizations.breakJar,
+                                              message:
+                                                  localizations
+                                                      .breakJarConfirmationMessage,
+                                              confirmText:
+                                                  localizations.breakButton,
+                                              onConfirm: () {
+                                                _isBreakingJar = true;
+                                                context.read<UpdateJarBloc>().add(
+                                                  UpdateJarRequested(
+                                                    jarId: jarData.id,
+                                                    updates: {'status': 'broken'},
+                                                  ),
+                                                );
+                                              },
                                             );
                                           },
-                                        );
-                                      },
-                                      contentPadding: EdgeInsets.zero,
-                                      dense: true,
-                                      title: Text(
-                                        localizations.breakJar,
-                                        style: AppTextStyles.titleMediumS
-                                            .copyWith(
-                                              color: AppColors.errorRed,
-                                            ),
-                                      ),
-                                      trailing: Icon(Icons.chevron_right),
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          title: Text(
+                                            localizations.breakJar,
+                                            style: AppTextStyles.titleMediumS
+                                                .copyWith(
+                                                  color: AppColors.errorRed,
+                                                ),
+                                          ),
+                                          trailing: Icon(Icons.chevron_right),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -784,6 +796,8 @@ class _JarInfoViewState extends State<JarInfoView> {
     switch (status) {
       case JarStatus.open:
         return Colors.green;
+      case JarStatus.frozen:
+        return Colors.blue;
       case JarStatus.broken:
         return Colors.red;
       case JarStatus.sealed:

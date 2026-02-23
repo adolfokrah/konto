@@ -10,6 +10,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/animated_number_text.dart';
 import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/alert_banner.dart';
 import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/contribution_chart.dart';
 import 'package:Hoga/core/widgets/contribution_list_item.dart';
@@ -529,7 +530,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                             children: [
                               AppIconButton(
                                 key: const Key('contribute_button'),
-                                enabled: jarData.status != JarStatus.sealed,
+                                enabled:
+                                    jarData.status != JarStatus.sealed &&
+                                    jarData.status != JarStatus.frozen,
                                 onPressed: () {
                                   context.push(AppRoutes.addContribution);
                                 },
@@ -544,7 +547,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     context,
                                   ).textTheme.bodyLarge?.color?.withValues(
                                     alpha:
-                                        jarData.status == JarStatus.sealed
+                                        jarData.status == JarStatus.sealed ||
+                                                jarData.status ==
+                                                    JarStatus.frozen
                                             ? 0.4
                                             : 1.0,
                                   ),
@@ -566,7 +571,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 children: [
                                   AppIconButton(
                                     key: const Key('request_button'),
-                                    enabled: jarData.status != JarStatus.sealed,
+                                    enabled:
+                                        jarData.status != JarStatus.sealed &&
+                                        jarData.status != JarStatus.frozen,
                                     onPressed: () {
                                       // Check KYC verification before allowing request
                                       if (kycStatus != 'verified') {
@@ -627,6 +634,21 @@ class _JarDetailViewState extends State<JarDetailView> {
                       ],
                     ),
                   ),
+
+                  // Frozen jar banner
+                  if (jarData.isJarFrozen)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.spacingXs,
+                      ),
+                      child: Alert(
+                        message:
+                            jarData.freezeReason != null &&
+                                    jarData.freezeReason!.isNotEmpty
+                                ? 'This jar is frozen. ${jarData.freezeReason!} Contributions, transfers, and withdrawals are disabled.'
+                                : 'This jar is frozen. Contributions, transfers, and withdrawals are disabled.',
+                      ),
+                    ),
 
                   /// Dynamic CTA Banner Based on Missing Information
                   SizedBox(
@@ -701,7 +723,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   ],
                                 ),
                               ),
-                              if (hasFunds)
+                              if (hasFunds &&
+                                  jarData.status != JarStatus.frozen)
                                 SizedBox(
                                   child: AppButton.filled(
                                     key: const Key('withdraw_button'),
@@ -950,7 +973,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppButton.filled(
                                         text: localizations.contribute,
                                         onPressed: () {
-                                          context.push(AppRoutes.addContribution);
+                                          context.push(
+                                            AppRoutes.addContribution,
+                                          );
                                         },
                                       ),
                                     ],

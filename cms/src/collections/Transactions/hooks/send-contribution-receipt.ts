@@ -30,7 +30,28 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
         const receipt = `Your contribution of ${jar.currency} ${Number(amount).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
 
         if (data.contributorPhoneNumber) {
-          sendSMS([data.contributorPhoneNumber], receipt)
+          try {
+            const smsResult = await sendSMS([data.contributorPhoneNumber], receipt)
+            if (smsResult.success) {
+              console.log(
+                `[SMS] Contribution receipt sent to ${data.contributorPhoneNumber} for transaction ${doc?.id}`,
+              )
+            } else {
+              console.error(
+                `[SMS] Failed to send receipt to ${data.contributorPhoneNumber} for transaction ${doc?.id}: ${smsResult.message}`,
+                smsResult.errors,
+              )
+            }
+          } catch (smsError) {
+            console.error(
+              `[SMS] Error sending receipt to ${data.contributorPhoneNumber} for transaction ${doc?.id}:`,
+              smsError,
+            )
+          }
+        } else {
+          console.warn(
+            `[SMS] No contributorPhoneNumber on transaction ${doc?.id}, skipping SMS receipt`,
+          )
         }
         const creatorToken = typeof jar.creator === 'object' ? jar.creator?.fcmToken : null
 

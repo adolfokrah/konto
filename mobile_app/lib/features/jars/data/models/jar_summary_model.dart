@@ -29,6 +29,7 @@ enum ContributionType {
 /// Enum for jar status
 enum JarStatus {
   open,
+  frozen,
   broken,
   sealed;
 
@@ -37,6 +38,8 @@ enum JarStatus {
     switch (status.toLowerCase()) {
       case 'open':
         return JarStatus.open;
+      case 'frozen':
+        return JarStatus.frozen;
       case 'broken':
         return JarStatus.broken;
       case 'sealed':
@@ -204,7 +207,8 @@ class JarSummaryModel {
   final String currency; // 'GHS' | 'ngn'
   final bool isActive;
   final bool isFixedContribution;
-  final JarStatus status; // 'open' | 'broken' | 'sealed'
+  final JarStatus status; // 'open' | 'frozen' | 'broken' | 'sealed'
+  final String? freezeReason;
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
   final String? link;
@@ -234,6 +238,7 @@ class JarSummaryModel {
     required this.isActive,
     required this.isFixedContribution,
     required this.status,
+    this.freezeReason,
     required this.creator,
     this.invitedCollectors,
     this.link,
@@ -335,6 +340,9 @@ class JarSummaryModel {
   /// Check if jar is active
   bool get isJarActive => status == JarStatus.open;
 
+  /// Check if jar is frozen
+  bool get isJarFrozen => status == JarStatus.frozen;
+
   /// Check if jar is broken
   bool get isJarBroken => status == JarStatus.broken;
 
@@ -346,6 +354,8 @@ class JarSummaryModel {
     switch (status) {
       case JarStatus.open:
         return 'Open';
+      case JarStatus.frozen:
+        return 'Frozen';
       case JarStatus.broken:
         return 'Broken';
       case JarStatus.sealed:
@@ -366,6 +376,7 @@ class JarSummaryModel {
       isActive: json['isActive'] as bool,
       isFixedContribution: json['isFixedContribution'] as bool,
       status: JarStatus.fromString(json['status'] as String? ?? 'open'),
+      freezeReason: json['freezeReason'] as String?,
       creator: UserModel.fromJson(json['creator'] as Map<String, dynamic>),
       invitedCollectors:
           (json['invitedCollectors'] as List<dynamic>?)
