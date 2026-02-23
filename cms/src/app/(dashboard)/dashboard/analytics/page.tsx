@@ -111,7 +111,7 @@ export default async function AnalyticsPage() {
       overrideAccess: true,
     }),
 
-    // Platform revenue (hogapayRevenue from completed mobile-money)
+    // Platform revenue (hogapayRevenue from all completed mobile-money transactions)
     payload.find({
       collection: 'transactions',
       where: {
@@ -165,7 +165,7 @@ export default async function AnalyticsPage() {
       },
     }),
 
-    // Last 30 days revenue transactions
+    // Last 30 days revenue transactions (all mobile-money)
     payload.find({
       collection: 'transactions',
       where: {
@@ -337,7 +337,7 @@ export default async function AnalyticsPage() {
   const avgTransactionSize = totalCompleted > 0 ? totalContributedAmount / totalCompleted : 0
 
   const platformRevenue = revenueTransactions.docs.reduce(
-    (sum, tx: any) => sum + (tx.chargesBreakdown?.hogapayRevenue || 0),
+    (sum, tx: any) => sum + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0),
     0,
   )
 
@@ -548,7 +548,7 @@ function buildRevenueTrendData(docs: { chargesBreakdown?: { hogapayRevenue?: num
   for (const doc of docs) {
     const key = new Date(doc.createdAt).toISOString().split('T')[0]
     if (key in daily) {
-      daily[key] += doc.chargesBreakdown?.hogapayRevenue || 0
+      daily[key] += Math.abs(doc.chargesBreakdown?.hogapayRevenue || 0)
     }
   }
 

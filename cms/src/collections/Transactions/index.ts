@@ -14,6 +14,7 @@ import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
+import { recalculateCharges } from './endpoints/recalculate-charges'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -343,6 +344,11 @@ export const Transactions: CollectionConfig = {
       path: '/export-contributions',
       method: 'get',
       handler: exportContributions,
+    },
+    {
+      path: '/recalculate-charges',
+      method: 'post',
+      handler: recalculateCharges,
     },
   ],
   hooks: {

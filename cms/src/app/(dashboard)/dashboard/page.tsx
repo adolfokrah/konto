@@ -183,7 +183,7 @@ export default async function DashboardPage() {
 
   // Hogapay revenue from stored chargesBreakdown.hogapayRevenue
   const platformRevenue = revenueTransactions.docs.reduce(
-    (sum, tx: any) => sum + (tx.chargesBreakdown?.hogapayRevenue || 0),
+    (sum, tx: any) => sum + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0),
     0,
   )
 
