@@ -193,7 +193,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
         className={cn(
           'font-medium',
           row.original.paymentStatus === 'failed'
-            ? 'text-muted-foreground'
+            ? 'text-muted-foreground line-through'
             : row.original.type === 'contribution'
               ? 'text-green-400'
               : 'text-red-400',

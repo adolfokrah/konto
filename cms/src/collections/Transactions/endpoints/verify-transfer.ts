@@ -41,6 +41,19 @@ export const verifyTransfer = async (req: PayloadRequest) => {
 
     const contribution = foundContributionResult.docs[0]
 
+    // Check if jar is frozen
+    const jarId =
+      typeof contribution.jar === 'string' ? contribution.jar : (contribution.jar as any)?.id
+    if (jarId) {
+      const jarDoc = await req.payload.findByID({ collection: 'jars', id: jarId, depth: 0 })
+      if (jarDoc?.status === 'frozen') {
+        return Response.json(
+          { success: false, message: 'This jar is currently frozen and transfers are not allowed' },
+          { status: 403 },
+        )
+      }
+    }
+
     // Insert a payout record for this contribution
     const transfer = await req.payload.create({
       collection: 'transactions',
