@@ -128,7 +128,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
         )
       }
 
-      verifiedStatus = statusResponse.transStatus
+      verifiedStatus = statusResponse.transStatus || statusResponse.transactionstatus || ''
       console.log(`Verified transaction status from Eganow: ${verifiedStatus}`)
 
       // If transStatus is undefined, check for alternative field names

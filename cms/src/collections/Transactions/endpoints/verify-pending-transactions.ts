@@ -119,7 +119,40 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
           languageId: 'en',
         })
 
+        // Update contribution status
+        const collectorId = typeof collector === 'string' ? collector : collector?.id
+        const jarId = typeof jar === 'string' ? jar : jar?.id
+
+        // If Eganow says transaction doesn't exist, mark as failed
+        if (!statusResult.isSuccess) {
+          await req.payload.update({
+            collection: 'transactions',
+            id,
+            data: {
+              paymentStatus: 'failed',
+              ...(jarId ? { jar: jarId } : {}),
+              ...(collectorId ? { collector: collectorId } : {}),
+            },
+            overrideAccess: true,
+            req,
+          })
+          results.push({
+            id,
+            reference: transactionReference,
+            status: 'failed',
+            reason: statusResult.message,
+          })
+          errorCount++
+          continue
+        }
+
         // Map Eganow status to our payment status
+        const rawStatus = (
+          statusResult.transStatus ||
+          statusResult.transactionstatus ||
+          ''
+        ).toUpperCase()
+
         const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
           SUCCESSFUL: 'completed',
           SUCCESS: 'completed',
@@ -127,11 +160,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
           PENDING: 'pending',
         }
 
-        const newStatus = statusMap[statusResult.transStatus?.toUpperCase()] || 'pending'
-
-        // Update contribution status
-        const collectorId = typeof collector === 'string' ? collector : collector?.id
-        const jarId = typeof jar === 'string' ? jar : jar?.id
+        const newStatus = statusMap[rawStatus] || 'pending'
 
         await req.payload.update({
           collection: 'transactions',
