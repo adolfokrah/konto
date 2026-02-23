@@ -53,7 +53,7 @@ export const updateKYC = async (req: PayloadRequest) => {
 
       if (process.env.NODE_ENV !== 'test') {
         const message = `Hello ${fullName}, your KYC verification was successful, please restart the app to continue using it. Thank you!`
-        sendSMS([user.phoneNumber], message)
+        await sendSMS([user.phoneNumber], message)
       }
 
       await emailService.sendKycVerificationEmail(user.email, fullName)
