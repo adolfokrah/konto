@@ -9,13 +9,7 @@ import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import PaymentWaitingModal from './PaymentWaitingModal'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { ChevronDown } from 'lucide-react'
 
 interface ContributionInputProps {
   currency?: string
@@ -340,16 +334,18 @@ export default function ContributionInput({
           />
         </div>
 
-          <Select value={mobileMoneyProvider} onValueChange={(value: 'mtn' | 'airteltigo' | 'telecel') => setMobileMoneyProvider(value)}>
-            <SelectTrigger className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors">
-              <SelectValue placeholder="Select provider" />
-            </SelectTrigger>
-            <SelectContent className="bg-white text-black">
-              <SelectItem value="mtn" className="text-black">MTN Mobile Money</SelectItem>
-              <SelectItem value="airteltigo" className="text-black">AirtelTigo Money</SelectItem>
-              <SelectItem value="telecel" className="text-black">Telecel Cash</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <select
+              value={mobileMoneyProvider}
+              onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'airteltigo' | 'telecel')}
+              className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors px-4 pr-10 appearance-none outline-none focus:border-gray-400"
+            >
+              <option value="mtn">MTN Mobile Money</option>
+              <option value="airteltigo">AirtelTigo Money</option>
+              <option value="telecel">Telecel Cash</option>
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+          </div>
 
         {isAnonymous && (<div className='mb-2'>
           <small className="text-gray-500">We only use your phone number to process your payment. This information is not saved or shared.</small>
