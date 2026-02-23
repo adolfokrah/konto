@@ -135,7 +135,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     const amount = Math.abs(Number(tx.amountContributed || 0))
     const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
-    const platformCharge = isPayout ? 0 : Number(cb.platformCharge || 0)
+    const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))
     const hogapayRevenue = Math.abs(Number(cb.hogapayRevenue || 0))
 
@@ -165,7 +165,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
       status: tx.paymentStatus || '',
       contribution: isPayout ? null : amount,
       payout: isPayout ? -amount : null,
-      platformCharge: isPayout ? null : platformCharge || null,
+      platformCharge: platformCharge || null,
       eganowFees: eganowFees || null,
       hogapayRevenue: hogapayRevenue || null,
       settled: tx.isSettled ? 'Yes' : 'No',
@@ -447,7 +447,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
     const amount = Math.abs(Number(tx.amountContributed || 0))
     const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
-    const platformCharge = isPayout ? 0 : Number(cb.platformCharge || 0)
+    const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))
     const hogapayRevenue = Math.abs(Number(cb.hogapayRevenue || 0))
 
@@ -475,7 +475,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
       tx.paymentStatus || '—',
       isPayout ? '—' : fmtAmt(amount),
       isPayout ? `-${fmtAmt(amount)}` : '—',
-      isPayout ? '—' : fmtAmt(platformCharge || null),
+      fmtAmt(platformCharge || null),
       fmtAmt(eganowFees || null),
       fmtAmt(hogapayRevenue || null),
       fmtDate(tx.createdAt),

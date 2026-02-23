@@ -241,6 +241,45 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
+    id: 'platformCharge',
+    header: 'Plat. Charge',
+    cell: ({ row }) => {
+      const charge = row.original.chargesBreakdown?.platformCharge
+      if (!charge) return <span className="text-muted-foreground">—</span>
+      return <span className="text-muted-foreground">{formatAmount(Math.abs(charge))}</span>
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    id: 'eganowFees',
+    header: 'Eganow Fees',
+    cell: ({ row }) => {
+      const fees = row.original.chargesBreakdown?.eganowFees
+      if (!fees) return <span className="text-muted-foreground">—</span>
+      return <span className="text-muted-foreground">{formatAmount(Math.abs(fees))}</span>
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    id: 'hogapayRevenue',
+    header: 'Hogapay Rev',
+    cell: ({ row }) => {
+      const revenue = row.original.chargesBreakdown?.hogapayRevenue
+      if (!revenue) return <span className="text-muted-foreground">—</span>
+      return <span className="text-green-400">{formatAmount(Math.abs(revenue))}</span>
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
     accessorKey: 'createdAt',
     header: 'Date',
     cell: ({ row }) => (

@@ -74,7 +74,8 @@ export const recalculateCharges = async (req: PayloadRequest) => {
             payoutFeeAmount: feeAmount,
             payoutNetAmount: netAmount,
             chargesBreakdown: {
-              ...((tx.chargesBreakdown as any) || {}),
+              platformCharge: feeAmount,
+              amountPaidByContributor: amount,
               hogapayRevenue,
               eganowFees,
             },
@@ -85,7 +86,8 @@ export const recalculateCharges = async (req: PayloadRequest) => {
             payoutFeeAmount: feeAmount,
             payoutNetAmount: netAmount,
             chargesBreakdown: {
-              ...((tx.chargesBreakdown as any) || {}),
+              platformCharge: feeAmount,
+              amountPaidByContributor: amount,
               hogapayRevenue: 0,
               eganowFees: 0,
             },
