@@ -24,7 +24,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ArrowUpRight,
   Receipt,
   Container,
 } from 'lucide-react'
@@ -49,7 +48,12 @@ const statusIcons: Record<string, React.ReactNode> = {
   completed: <CheckCircle2 className="h-4 w-4 text-green-400" />,
   pending: <Clock className="h-4 w-4 text-yellow-400" />,
   failed: <XCircle className="h-4 w-4 text-red-400" />,
-  transferred: <ArrowUpRight className="h-4 w-4 text-blue-400" />,
+}
+
+const statusDisplayLabels: Record<string, string> = {
+  completed: 'Completed',
+  pending: 'Pending',
+  failed: 'Failed',
 }
 
 function DetailRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
@@ -96,11 +100,10 @@ export function TransactionDetailSheet({
                 selected.paymentStatus === 'completed' && 'border-green-700 bg-green-900/40 text-green-300',
                 selected.paymentStatus === 'pending' && 'border-yellow-700 bg-yellow-900/40 text-yellow-300',
                 selected.paymentStatus === 'failed' && 'border-red-700 bg-red-900/40 text-red-300',
-                selected.paymentStatus === 'transferred' && 'border-blue-700 bg-blue-900/40 text-blue-300',
               )}>
                 {statusIcons[selected.paymentStatus]}
                 <div>
-                  <p className="text-sm font-medium capitalize">{selected.paymentStatus}</p>
+                  <p className="text-sm font-medium">{statusDisplayLabels[selected.paymentStatus] || selected.paymentStatus}</p>
                   <p className="text-xs opacity-70">{formatFullDate(selected.createdAt)}</p>
                 </div>
                 <span className="ml-auto text-lg font-semibold">
@@ -132,9 +135,7 @@ export function TransactionDetailSheet({
                   value={selected.paymentMethod ? paymentMethodLabels[selected.paymentMethod] || selected.paymentMethod : null}
                   icon={<CreditCard className="h-3.5 w-3.5" />}
                 />
-                {selected.mobileMoneyProvider && (
-                  <DetailRow label="Provider" value={selected.mobileMoneyProvider} />
-                )}
+                <DetailRow label="Provider" value={selected.paymentMethod === 'mobile-money' ? (selected.mobileMoneyProvider || '—') : '—'} />
                 {selected.accountNumber && (
                   <DetailRow label="Account Number" value={selected.accountNumber} />
                 )}
@@ -153,31 +154,40 @@ export function TransactionDetailSheet({
               </div>
 
               {/* Charges Breakdown */}
-              {selected.chargesBreakdown && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Charges Breakdown</h4>
-                  <Separator className="mb-2" />
-                  <DetailRow
-                    label="Platform Charge"
-                    value={selected.chargesBreakdown.platformCharge != null ? formatAmount(selected.chargesBreakdown.platformCharge) : null}
-                  />
-                  <DetailRow
-                    label="Amount Paid by Contributor"
-                    value={selected.chargesBreakdown.amountPaidByContributor != null ? formatAmount(selected.chargesBreakdown.amountPaidByContributor) : null}
-                  />
-                  <DetailRow
-                    label="Eganow Fees"
-                    value={selected.chargesBreakdown.eganowFees != null ? formatAmount(selected.chargesBreakdown.eganowFees) : null}
-                  />
-                  <DetailRow
-                    label="Hogapay Revenue"
-                    value={selected.chargesBreakdown.hogapayRevenue != null ? (
-                      <span className="text-green-700 font-semibold">{formatAmount(selected.chargesBreakdown.hogapayRevenue)}</span>
-                    ) : null}
-                    icon={<Receipt className="h-3.5 w-3.5" />}
-                  />
-                </div>
-              )}
+              {selected.chargesBreakdown && (() => {
+                const cb = selected.chargesBreakdown
+                const isPayout = selected.type === 'payout'
+                const abs = (v: number | null) => v != null ? Math.abs(v) : null
+                return (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">Charges Breakdown</h4>
+                    <Separator className="mb-2" />
+                    {!isPayout && (
+                      <DetailRow
+                        label="Platform Charge"
+                        value={cb.platformCharge != null ? formatAmount(Math.abs(cb.platformCharge)) : null}
+                      />
+                    )}
+                    {!isPayout && (
+                      <DetailRow
+                        label="Amount Paid by Contributor"
+                        value={cb.amountPaidByContributor != null ? formatAmount(Math.abs(cb.amountPaidByContributor)) : null}
+                      />
+                    )}
+                    <DetailRow
+                      label="Eganow Fees"
+                      value={abs(cb.eganowFees) != null ? formatAmount(abs(cb.eganowFees)!) : null}
+                    />
+                    <DetailRow
+                      label="Hogapay Revenue"
+                      value={abs(cb.hogapayRevenue) != null ? (
+                        <span className="text-green-700 font-semibold">{formatAmount(abs(cb.hogapayRevenue)!)}</span>
+                      ) : null}
+                      icon={<Receipt className="h-3.5 w-3.5" />}
+                    />
+                  </div>
+                )
+              })()}
 
               {/* Payout Details */}
               {selected.type === 'payout' && (

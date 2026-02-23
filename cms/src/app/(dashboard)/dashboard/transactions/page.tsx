@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
+import { ExportTransactionsButton } from '@/components/dashboard/export-transactions-button'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 
 const DEFAULT_LIMIT = 20
@@ -32,7 +33,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     where.contributor = { like: search }
   }
   if (status) {
-    const valid = ['pending', 'completed', 'failed', 'transferred']
+    const valid = ['pending', 'completed', 'failed']
     const values = status.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) where.paymentStatus = { equals: values[0] }
     else if (values.length > 1) where.paymentStatus = { in: values }
@@ -118,10 +119,15 @@ export default async function TransactionsPage({ searchParams }: Props) {
       {/* Transactions Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Transactions</CardTitle>
-          <CardDescription>
-            {transactionsResult.totalDocs} transaction{transactionsResult.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>All Transactions</CardTitle>
+              <CardDescription>
+                {transactionsResult.totalDocs} transaction{transactionsResult.totalDocs !== 1 ? 's' : ''} found
+              </CardDescription>
+            </div>
+            <ExportTransactionsButton />
+          </div>
         </CardHeader>
         <CardContent>
           <TransactionsDataTable

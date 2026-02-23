@@ -48,4 +48,6 @@ export type DataTableProps<TData> = {
   onRowClick?: (row: TData) => void
   renderRowActions?: (row: TData) => React.ReactNode
   emptyMessage?: string
+  /** Viewport offset for scrollable table height, e.g. "20rem" or "32rem" */
+  scrollOffset?: string
 }

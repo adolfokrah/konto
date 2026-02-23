@@ -162,7 +162,6 @@ export const Transactions: CollectionConfig = {
         { label: 'Pending', value: 'pending' },
         { label: 'Completed', value: 'completed' },
         { label: 'Failed', value: 'failed' },
-        { label: 'Transferred', value: 'transferred' },
       ],
       defaultValue: 'pending',
     },

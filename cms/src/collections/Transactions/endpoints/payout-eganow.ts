@@ -136,14 +136,12 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
       .reduce((sum, tx) => sum + tx.amountContributed, 0)
 
-    // Sum payouts (negative amounts) - includes pending, completed, and transferred
+    // Sum payouts (negative amounts) - includes pending and completed
     const payoutsSum = allTransactions.docs
       .filter(
         (tx) =>
           tx.type === 'payout' &&
-          (tx.paymentStatus === 'pending' ||
-            tx.paymentStatus === 'completed' ||
-            tx.paymentStatus === 'transferred'),
+          (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
       )
       .reduce((sum, tx) => sum + tx.amountContributed, 0)
 

@@ -16,8 +16,6 @@ class PaymentStatusUtils {
         return localizations.paymentStatusCompleted;
       case 'failed':
         return localizations.paymentStatusFailed;
-      case 'transferred':
-        return localizations.paymentStatusTransferred;
       default:
         return localizations.unknown;
     }
@@ -34,8 +32,6 @@ class PaymentStatusUtils {
         return 'success';
       case 'failed':
         return 'error';
-      case 'transferred':
-        return 'info';
       default:
         return 'default';
     }
@@ -43,8 +39,7 @@ class PaymentStatusUtils {
 
   /// Check if payment status is successful
   static bool isSuccessfulStatus(String? paymentStatus) {
-    return paymentStatus?.toLowerCase() == 'completed' ||
-        paymentStatus?.toLowerCase() == 'transferred';
+    return paymentStatus?.toLowerCase() == 'completed';
   }
 
   /// Check if payment status is in progress

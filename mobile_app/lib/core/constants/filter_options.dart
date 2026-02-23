@@ -39,7 +39,6 @@ class FilterOptions {
     StatusOption('pending', 'statusPending'),
     StatusOption('completed', 'statusCompleted'),
     StatusOption('failed', 'statusFailed'),
-    StatusOption('transferred', 'statusTransferred'),
   ];
 
   /// Date filter options (using translation keys)

@@ -14,7 +14,6 @@ enum PaymentMethod {
 enum ContributionStatus {
   pending('pending'),
   failed('failed'),
-  transferred('transferred'),
   completed('completed');
 
   const ContributionStatus(this.value);

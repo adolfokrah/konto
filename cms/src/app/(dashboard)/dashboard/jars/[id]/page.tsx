@@ -110,7 +110,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     txWhere.contributor = { like: txSearch }
   }
   if (txStatus) {
-    const valid = ['pending', 'completed', 'failed', 'transferred']
+    const valid = ['pending', 'completed', 'failed']
     const values = txStatus.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
     else if (values.length > 1) txWhere.paymentStatus = { in: values }
@@ -148,7 +148,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       collection: 'transactions',
       where: {
         jar: { equals: id },
-        paymentStatus: { in: ['completed', 'pending', 'transferred'] },
+        paymentStatus: { in: ['completed', 'pending'] },
       },
       pagination: false,
       select: { amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
@@ -179,7 +179,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
         upcomingBalance += tx.amountContributed || 0
       }
     } else if (tx.type === 'payout') {
-      // Payout amounts are stored as negative — include pending, completed, transferred
+      // Payout amounts are stored as negative — include pending and completed
       totalPayouts += tx.amountContributed || 0
     }
   }

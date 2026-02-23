@@ -141,7 +141,7 @@ class FilterContributionsBloc
       'card',
       'apple-pay',
     ];
-    const allStatuses = ['pending', 'completed', 'failed', 'transferred'];
+    const allStatuses = ['pending', 'completed', 'failed'];
 
     final currentState = state;
     if (currentState is FilterContributionsLoaded) {

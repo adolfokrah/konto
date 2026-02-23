@@ -21,6 +21,9 @@ class ContributorAvatar extends StatelessWidget {
   /// Whether this contribution was via payment link
   final bool? viaPaymentLink;
 
+  /// Whether this is a payout transaction
+  final bool isPayout;
+
   /// Avatar radius (defaults to 20)
   final double radius;
 
@@ -37,6 +40,7 @@ class ContributorAvatar extends StatelessWidget {
     this.isAnonymous = false,
     this.paymentStatus,
     this.viaPaymentLink,
+    this.isPayout = false,
     this.radius = 20,
     this.showStatusOverlay = true,
     this.backgroundColor,
@@ -148,7 +152,7 @@ class ContributorAvatar extends StatelessWidget {
     if (viaPaymentLink == true) {
       return Icons.call_received;
     }
-    if (paymentStatus == 'transferred') {
+    if (isPayout) {
       return Icons.arrow_forward;
     }
     return Icons.add;
@@ -198,6 +202,7 @@ class ContributorAvatarSizes {
     bool isAnonymous = false,
     String? paymentStatus,
     bool? viaPaymentLink,
+    bool isPayout = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -207,6 +212,7 @@ class ContributorAvatarSizes {
       isAnonymous: isAnonymous,
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
+      isPayout: isPayout,
       radius: 15,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -220,6 +226,7 @@ class ContributorAvatarSizes {
     bool isAnonymous = false,
     String? paymentStatus,
     bool? viaPaymentLink,
+    bool isPayout = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -229,6 +236,7 @@ class ContributorAvatarSizes {
       isAnonymous: isAnonymous,
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
+      isPayout: isPayout,
       radius: 20,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -242,6 +250,7 @@ class ContributorAvatarSizes {
     bool isAnonymous = false,
     String? paymentStatus,
     bool? viaPaymentLink,
+    bool isPayout = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -251,6 +260,7 @@ class ContributorAvatarSizes {
       isAnonymous: isAnonymous,
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
+      isPayout: isPayout,
       radius: 30,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -264,6 +274,7 @@ class ContributorAvatarSizes {
     bool isAnonymous = false,
     String? paymentStatus,
     bool? viaPaymentLink,
+    bool isPayout = false,
     bool showStatusOverlay = false, // Usually no overlay for large avatars
     Color? backgroundColor,
   }) {
@@ -273,6 +284,7 @@ class ContributorAvatarSizes {
       isAnonymous: isAnonymous,
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
+      isPayout: isPayout,
       radius: 40,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,

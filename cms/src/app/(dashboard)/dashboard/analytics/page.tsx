@@ -39,7 +39,6 @@ export default async function AnalyticsPage() {
     completedCount,
     pendingCount,
     failedCount,
-    transferredCount,
     // KPI: Completed contributions (for avg transaction size)
     completedContributions,
     // KPI: Platform revenue
@@ -78,7 +77,7 @@ export default async function AnalyticsPage() {
     totalTransactionCount,
     // KPI: Contributions volume (completed)
     contributionsVolume,
-    // KPI: Payouts volume (completed/transferred)
+    // KPI: Payouts volume (completed)
     payoutsVolume,
   ] = await Promise.all([
     // DAU today
@@ -100,11 +99,6 @@ export default async function AnalyticsPage() {
       collection: 'transactions',
       where: { paymentStatus: { equals: 'failed' } },
     }),
-    payload.count({
-      collection: 'transactions',
-      where: { paymentStatus: { equals: 'transferred' } },
-    }),
-
     // Completed contributions for avg size + balance calculation
     payload.find({
       collection: 'transactions',
@@ -117,11 +111,11 @@ export default async function AnalyticsPage() {
       overrideAccess: true,
     }),
 
-    // Platform revenue (hogapayRevenue from completed/transferred mobile-money)
+    // Platform revenue (hogapayRevenue from completed mobile-money)
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         paymentMethod: { equals: 'mobile-money' },
       },
       pagination: false,
@@ -175,7 +169,7 @@ export default async function AnalyticsPage() {
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         paymentMethod: { equals: 'mobile-money' },
         createdAt: { greater_than_equal: thirtyDaysAgo },
       },
@@ -279,7 +273,7 @@ export default async function AnalyticsPage() {
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['pending', 'completed', 'transferred'] },
+        paymentStatus: { in: ['pending', 'completed'] },
         type: { equals: 'payout' },
       },
       pagination: false,
@@ -316,11 +310,11 @@ export default async function AnalyticsPage() {
       overrideAccess: true,
     }),
 
-    // Payouts volume (completed/transferred)
+    // Payouts volume (completed)
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         type: { equals: 'payout' },
       },
       pagination: false,
@@ -331,9 +325,10 @@ export default async function AnalyticsPage() {
 
   // --- KPI calculations ---
   const totalCompleted = completedContributions.totalDocs
+  const completedTotal = completedCount.totalDocs
   const totalTransactions =
-    completedCount.totalDocs + pendingCount.totalDocs + failedCount.totalDocs + transferredCount.totalDocs
-  const successRate = totalTransactions > 0 ? (completedCount.totalDocs / totalTransactions) * 100 : 0
+    completedTotal + pendingCount.totalDocs + failedCount.totalDocs
+  const successRate = totalTransactions > 0 ? (completedTotal / totalTransactions) * 100 : 0
 
   const totalContributedAmount = completedContributions.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
@@ -383,10 +378,9 @@ export default async function AnalyticsPage() {
 
   // --- Chart data: Transaction Status ---
   const transactionStatusData = [
-    { status: 'Completed', count: completedCount.totalDocs },
+    { status: 'Completed', count: completedTotal },
     { status: 'Pending', count: pendingCount.totalDocs },
     { status: 'Failed', count: failedCount.totalDocs },
-    { status: 'Transferred', count: transferredCount.totalDocs },
   ].filter((d) => d.count > 0)
 
   // --- Chart data: Revenue Trend ---
@@ -435,7 +429,7 @@ export default async function AnalyticsPage() {
         <MetricCard
           title="Success Rate"
           value={`${successRate.toFixed(1)}%`}
-          description={`${completedCount.totalDocs} of ${totalTransactions} transactions`}
+          description={`${completedTotal} of ${totalTransactions} transactions`}
           icon={TrendingUp}
         />
         <MetricCard
@@ -449,6 +443,7 @@ export default async function AnalyticsPage() {
           value={`GHS ${fmt(platformRevenue)}`}
           description="Total Hogapay revenue"
           icon={DollarSign}
+          valueClassName="text-green-400"
         />
         <MetricCard
           title="Total Jar Balances"
@@ -461,6 +456,7 @@ export default async function AnalyticsPage() {
           value={`GHS ${fmt(totalUpcomingBalances)}`}
           description="Unsettled mobile money"
           icon={Clock}
+          valueClassName="text-amber-600"
         />
       </div>
 
@@ -473,17 +469,20 @@ export default async function AnalyticsPage() {
         />
         <MetricCard
           title="Completed"
-          value={completedCount.totalDocs.toLocaleString()}
+          value={completedTotal.toLocaleString()}
+          description="Successful transactions"
           icon={CheckCircle2}
         />
         <MetricCard
           title="Pending"
           value={pendingCount.totalDocs.toLocaleString()}
+          description="Awaiting confirmation"
           icon={Clock}
         />
         <MetricCard
           title="Failed"
           value={failedCount.totalDocs.toLocaleString()}
+          description="Unsuccessful transactions"
           icon={XCircle}
         />
         <MetricCard
@@ -491,12 +490,14 @@ export default async function AnalyticsPage() {
           value={`GHS ${fmt(totalContributionsVolume)}`}
           description="Completed volume"
           icon={DollarSign}
+          valueClassName="text-primary"
         />
         <MetricCard
           title="Payouts"
-          value={`GHS ${fmt(Math.abs(totalPayoutsVolume))}`}
+          value={`-GHS ${fmt(Math.abs(totalPayoutsVolume))}`}
           description="Transferred volume"
           icon={ArrowUpRight}
+          valueClassName="text-red-400"
         />
       </div>
 

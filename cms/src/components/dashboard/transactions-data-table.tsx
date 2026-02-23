@@ -21,6 +21,7 @@ export function TransactionsDataTable({
         columns={transactionColumns}
         data={transactions}
         pagination={pagination}
+        scrollOffset="20rem"
         onRowClick={setSelected}
       />
       <TransactionDetailSheet selected={selected} onClose={() => setSelected(null)} />

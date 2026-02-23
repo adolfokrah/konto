@@ -117,7 +117,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       }
       if (txSearch) txWhere.contributor = { like: txSearch }
       if (txStatus) {
-        const valid = ['pending', 'completed', 'failed', 'transferred']
+        const valid = ['pending', 'completed', 'failed']
         const values = txStatus.split(',').filter((v) => valid.includes(v))
         if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
         else if (values.length > 1) txWhere.paymentStatus = { in: values }

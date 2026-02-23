@@ -6,6 +6,7 @@ import { cn } from '@/utilities/ui'
 import {
   typeStyles,
   statusStyles,
+  statusLabels,
   paymentMethodLabels,
   formatShortDate,
 } from '@/components/dashboard/table-constants'
@@ -26,7 +27,7 @@ export type TransactionRow = {
     eganowFees: number | null
     hogapayRevenue: number | null
   } | null
-  paymentStatus: 'pending' | 'completed' | 'failed' | 'transferred'
+  paymentStatus: 'pending' | 'completed' | 'failed'
   type: 'contribution' | 'payout'
   isSettled: boolean
   payoutFeePercentage: number | null
@@ -71,7 +72,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     accessorKey: 'jar',
     header: 'Jar',
     cell: ({ row }) => (
-      <span className="max-w-[120px] truncate block">{row.original.jar?.name || '\u2014'}</span>
+      <span className="truncate block">{row.original.jar?.name || '\u2014'}</span>
     ),
   },
   {
@@ -128,7 +129,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Status',
     cell: ({ row }) => (
       <Badge variant="outline" className={cn('capitalize', statusStyles[row.original.paymentStatus])}>
-        {row.original.paymentStatus}
+        {statusLabels[row.original.paymentStatus] || row.original.paymentStatus}
       </Badge>
     ),
     meta: {
@@ -140,7 +141,6 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
           { label: 'Pending', value: 'pending' },
           { label: 'Completed', value: 'completed' },
           { label: 'Failed', value: 'failed' },
-          { label: 'Transferred', value: 'transferred' },
         ],
       },
       filterLabel: 'Status',
@@ -199,22 +199,42 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
-    accessorKey: 'amountContributed',
-    header: 'Amount',
-    cell: ({ row }) => (
-      <span
-        className={cn(
-          'font-medium',
-          row.original.paymentStatus === 'failed'
-            ? 'text-muted-foreground line-through'
-            : row.original.type === 'contribution'
-              ? 'text-green-400'
-              : 'text-red-400',
-        )}
-      >
-        {formatAmount(row.original.amountContributed)}
-      </span>
-    ),
+    id: 'contribution',
+    header: 'Contribution',
+    cell: ({ row }) => {
+      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
+      return (
+        <span
+          className={cn(
+            'font-medium',
+            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-green-400',
+          )}
+        >
+          {formatAmount(Math.abs(row.original.amountContributed))}
+        </span>
+      )
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    id: 'payout',
+    header: 'Payout',
+    cell: ({ row }) => {
+      if (row.original.type !== 'payout') return <span className="text-muted-foreground">—</span>
+      return (
+        <span
+          className={cn(
+            'font-medium',
+            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400',
+          )}
+        >
+          {formatAmount(Math.abs(row.original.amountContributed))}
+        </span>
+      )
+    },
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',

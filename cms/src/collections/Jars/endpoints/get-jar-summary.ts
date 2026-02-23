@@ -313,9 +313,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
     .filter(
       (contribution) =>
         contribution.type === 'payout' &&
-        (contribution.paymentStatus === 'pending' ||
-          contribution.paymentStatus === 'completed' ||
-          contribution.paymentStatus === 'transferred'),
+        (contribution.paymentStatus === 'pending' || contribution.paymentStatus === 'completed'),
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 

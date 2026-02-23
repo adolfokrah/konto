@@ -79,6 +79,7 @@ class ContributionListItem extends StatelessWidget {
         isAnonymous: isAnonymous,
         paymentStatus: paymentStatus,
         viaPaymentLink: viaPaymentLink,
+        isPayout: isTransfer,
       ),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

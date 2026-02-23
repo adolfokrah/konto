@@ -206,7 +206,7 @@ class ContributionApiProvider extends BaseApiProvider {
   Future<Map<String, dynamic>> getContributions({
     String? jarId, // Filter contributions by jar ID
     List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank']
-    List<String>? statuses, // ['pending', 'failed', 'transferred', 'completed]
+    List<String>? statuses, // ['pending', 'failed', 'completed']
     List<String>? collectors, // List of collector user IDs
     DateTime? startDate, // Filter contributions from this date onwards
     DateTime? endDate, // Filter contributions up to this date
@@ -261,7 +261,6 @@ class ContributionApiProvider extends BaseApiProvider {
                   (status) => [
                     'pending',
                     'failed',
-                    'transferred',
                     'completed',
                   ].contains(status),
                 )

@@ -29,6 +29,7 @@ export function JarsDataTable({
       columns={jarColumns}
       data={jars}
       pagination={pagination}
+      scrollOffset="28rem"
       onRowClick={(jar) => router.push(`/dashboard/jars/${jar.id}`)}
       renderRowActions={(jar) => (
         <DropdownMenu>

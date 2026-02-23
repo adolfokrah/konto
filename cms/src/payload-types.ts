@@ -1373,7 +1373,7 @@ export interface Transaction {
      */
     hogapayRevenue?: number | null;
   };
-  paymentStatus?: ('pending' | 'completed' | 'failed' | 'transferred') | null;
+  paymentStatus?: ('pending' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
   /**
    * Whether this contribution has been settled

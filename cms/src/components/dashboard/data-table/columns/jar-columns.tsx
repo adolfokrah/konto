@@ -56,7 +56,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     accessorKey: 'name',
     header: 'Name',
     cell: ({ row }) => (
-      <span className="max-w-[200px] truncate block font-medium">{row.original.name}</span>
+      <span className="truncate block font-medium">{row.original.name}</span>
     ),
     meta: {
       filter: { type: 'search', paramKey: 'search', placeholder: 'Search jars...' },

@@ -57,7 +57,7 @@ export default async function DashboardPage() {
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         type: { equals: 'payout' },
       },
       pagination: false,
@@ -67,11 +67,11 @@ export default async function DashboardPage() {
       overrideAccess: true,
     }),
 
-    // All completed/transferred mobile money transactions (for stored Hogapay revenue)
+    // All completed mobile money transactions (for stored Hogapay revenue)
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         paymentMethod: { equals: 'mobile-money' },
       },
       pagination: false,
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['completed', 'transferred'] },
+        paymentStatus: { equals: 'completed' },
         type: { equals: 'payout' },
         createdAt: {
           greater_than_equal: new Date(

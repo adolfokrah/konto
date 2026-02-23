@@ -158,8 +158,8 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     }
 
     // Map Eganow status to our payment status (use verified status)
-    const statusMap: Record<string, 'transferred' | 'failed' | 'pending'> = {
-      SUCCESSFUL: 'transferred',
+    const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
+      SUCCESSFUL: 'completed',
       FAILED: 'failed',
       PENDING: 'pending',
       EXPIRED: 'failed',
@@ -207,7 +207,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
           ? Math.abs(Number(transferWithDetails.payoutNetAmount))
           : grossAmount - (grossAmount * feePercentage) / 100
 
-        if (newStatus === 'transferred') {
+        if (newStatus === 'completed') {
           // Success notification - show net amount user received
           const mobileMoneyProvider = transferWithDetails.mobileMoneyProvider || 'mobile money'
           const notificationMessage = `${jar.currency} ${netAmount.toFixed(2)} sent to your ${mobileMoneyProvider.toUpperCase()} account (${feePercentage}% fee deducted)`

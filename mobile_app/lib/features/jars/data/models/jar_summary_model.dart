@@ -780,7 +780,7 @@ class ContributionModel {
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
   final String
-  paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
+  paymentStatus; // 'pending' | 'completed' | 'failed'
   final UserModel? collector;
   final bool? viaPaymentLink;
   final ContributionType type; // contribution | payout

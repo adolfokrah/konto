@@ -39,10 +39,6 @@ void main() {
         equals('Failed'),
       );
       expect(
-        PaymentStatusUtils.getPaymentStatusLabel('transferred', localizations),
-        equals('Transferred'),
-      );
-      expect(
         PaymentStatusUtils.getPaymentStatusLabel(
           'unknown_status',
           localizations,
@@ -87,15 +83,10 @@ void main() {
         PaymentStatusUtils.getPaymentStatusLabel('failed', localizations),
         equals('Échoué'),
       );
-      expect(
-        PaymentStatusUtils.getPaymentStatusLabel('transferred', localizations),
-        equals('Transféré'),
-      );
     });
 
     test('should return correct status type checks', () {
       expect(PaymentStatusUtils.isSuccessfulStatus('completed'), isTrue);
-      expect(PaymentStatusUtils.isSuccessfulStatus('transferred'), isTrue);
       expect(PaymentStatusUtils.isSuccessfulStatus('pending'), isFalse);
       expect(PaymentStatusUtils.isSuccessfulStatus('failed'), isFalse);
 
@@ -118,10 +109,6 @@ void main() {
       expect(
         PaymentStatusUtils.getPaymentStatusColorClass('failed'),
         equals('error'),
-      );
-      expect(
-        PaymentStatusUtils.getPaymentStatusColorClass('transferred'),
-        equals('info'),
       );
       expect(
         PaymentStatusUtils.getPaymentStatusColorClass('unknown'),

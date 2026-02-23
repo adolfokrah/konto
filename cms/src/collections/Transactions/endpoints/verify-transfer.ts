@@ -60,7 +60,7 @@ export const verifyTransfer = async (req: PayloadRequest) => {
       data: {
         ...foundContributionResult.docs[0],
         type: 'payout',
-        paymentStatus: 'transferred',
+        paymentStatus: 'completed',
         transactionReference: `transfer-${reference}`,
         viaPaymentLink: false,
         amountContributed: -contribution.amountContributed,

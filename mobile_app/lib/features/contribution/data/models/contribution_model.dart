@@ -509,7 +509,7 @@ class ContributionModel {
   final double? charges; // Optional charges associated with the contribution
   final ChargesBreakdown? chargesBreakdown; // Detailed charges breakdown
   final String
-  paymentStatus; // 'pending' | 'completed' | 'failed' | 'transferred'
+  paymentStatus; // 'pending' | 'completed' | 'failed'
   final ContributionUser collector;
   final bool viaPaymentLink;
   final ContributionType type; // contribution | payout
@@ -679,7 +679,6 @@ class ContributionModel {
   bool get isPending => paymentStatus == 'pending';
   bool get isCompleted => paymentStatus == 'completed';
   bool get isFailed => paymentStatus == 'failed';
-  bool get isTransferred => paymentStatus == 'transferred';
 
   bool get isMobileMoney => paymentMethod == 'mobile-money';
   bool get isBankTransfer => paymentMethod == 'bank';

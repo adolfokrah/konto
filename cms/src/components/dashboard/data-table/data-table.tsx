@@ -28,6 +28,7 @@ export function DataTable<TData>({
   onRowClick,
   renderRowActions,
   emptyMessage = 'No results found',
+  scrollOffset,
 }: DataTableProps<TData>) {
   const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
 
@@ -82,7 +83,7 @@ export function DataTable<TData>({
         />
       )}
 
-      <Table>
+      <Table scrollOffset={scrollOffset}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

@@ -87,7 +87,7 @@ export default async function JarsPage({ searchParams }: Props) {
       collection: 'transactions',
       where: {
         jar: { in: jarIds },
-        paymentStatus: { in: ['completed', 'pending', 'transferred'] },
+        paymentStatus: { in: ['completed', 'pending'] },
       },
       pagination: false,
       select: { jar: true, amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
@@ -108,7 +108,7 @@ export default async function JarsPage({ searchParams }: Props) {
           upcomingTotals[jarId] = (upcomingTotals[jarId] || 0) + (tx.amountContributed || 0)
         }
       } else if (tx.type === 'payout') {
-        // Payout amounts are stored as negative — include pending, completed, transferred
+        // Payout amounts are stored as negative — include pending and completed
         payoutTotals[jarId] = (payoutTotals[jarId] || 0) + (tx.amountContributed || 0)
       }
     }
