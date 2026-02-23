@@ -1,6 +1,21 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
-export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
+export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req, context }) => {
+  if (context?.skipCharges) return data
+  if (data.paymentStatus === 'failed') {
+    data.chargesBreakdown = {
+      platformCharge: 0,
+      amountPaidByContributor: data.amountContributed || 0,
+      hogapayRevenue: 0,
+      eganowFees: 0,
+    }
+    if (data.type === 'payout') {
+      data.payoutFeePercentage = 0
+      data.payoutFeeAmount = 0
+      data.payoutNetAmount = data.amountContributed || 0
+    }
+    return data
+  }
   if (operation === 'create' || operation === 'update') {
     // Pull fee percentages from system settings
     const settings = await req.payload.findGlobal({
@@ -50,13 +65,15 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
         const eganowFees = feeAmount - hogapayRevenue
 
         data.chargesBreakdown = {
-          ...data.chargesBreakdown,
+          platformCharge: feeAmount,
+          amountPaidByContributor: data.amountContributed,
           hogapayRevenue: hogapayRevenue,
           eganowFees: eganowFees,
         }
       } else {
         data.chargesBreakdown = {
-          ...data.chargesBreakdown,
+          platformCharge: feeAmount,
+          amountPaidByContributor: data.amountContributed,
           hogapayRevenue: 0,
           eganowFees: 0,
         }

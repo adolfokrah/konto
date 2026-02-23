@@ -226,20 +226,32 @@ export default async function Page({
       <div className="min-h-screen bg-primary-light text-black">
         <div className="max-w-2xl mx-auto md:p-4 md:rounded-3xl m-5 bg-white">
           {/* Jar Details */}
-          <div className="p-6">
-            {/* Jar Image - Full Width */}
+          <div>
+            {/* Jar Image - Blurred background with centered overlay */}
             {imageUrl && (
-              <div className="w-full mb-6">
+              <div className="relative w-full h-80 lg:h-100 overflow-hidden rounded-xl">
+                {/* Blurred background */}
                 <Image
                   src={imageUrl}
-                  alt={jarWithBalance.name || 'Jar image'}
-                  width={500}
-                  height={500}
-                  className="w-full h-80 lg:h-100 object-cover rounded-2xl"
+                  alt=""
+                  fill
+                  className="object-cover scale-110 blur-lg brightness-75"
                   priority
                 />
+                {/* Centered overlay image */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Image
+                    src={imageUrl}
+                    alt={jarWithBalance.name || 'Jar image'}
+                    width={500}
+                    height={500}
+                    className="h-full w-auto object-contain"
+                    priority
+                  />
+                </div>
               </div>
             )}
+          <div className="p-6">
             <h1 className="font-bold mb-4 text-2xl lg:text-4xl">{jarWithBalance.name}</h1>
 
             {jarWithBalance.description && (
@@ -328,6 +340,7 @@ export default async function Page({
               <RecentContributions jarId={jarId} limit={5} />
             )}
           </div>
+        </div>
         </div>
       </div>
     )

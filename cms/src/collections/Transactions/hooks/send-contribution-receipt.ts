@@ -14,7 +14,8 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
       (data.paymentStatus === 'completed' &&
         data.type === 'contribution' &&
         data.paymentMethod != 'mobile-money' &&
-        data.paymentMethod != 'paystack') ||
+        data.paymentMethod != 'paystack' &&
+        (operation === 'create' || previousDoc?.paymentStatus !== 'completed')) ||
       (previousDoc?.paymentStatus == 'pending' &&
         data.paymentStatus === 'completed' &&
         data.type == 'contribution')
