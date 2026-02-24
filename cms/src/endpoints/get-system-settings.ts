@@ -33,7 +33,6 @@ export const getSystemSettings = async (req: PayloadRequest) => {
         data: {
           collectionFee: settings.collectionFee ?? 1.95,
           transferFeePercentage: settings.transferFeePercentage ?? 1,
-          minimumPayoutAmount: settings.minimumPayoutAmount ?? 10,
         },
       },
       { status: 200 },

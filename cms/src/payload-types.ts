@@ -2893,10 +2893,6 @@ export interface SystemSetting {
    */
   hogapayTransferFeePercent: number;
   /**
-   * Minimum amount required to process a payout.
-   */
-  minimumPayoutAmount: number;
-  /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
@@ -3000,7 +2996,6 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   hogapayCollectionFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
-  minimumPayoutAmount?: T;
   settlementDelayHours?: T;
   updatedAt?: T;
   createdAt?: T;
