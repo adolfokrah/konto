@@ -164,18 +164,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
     })
 
     const transferFeePercentage = systemSettings?.transferFeePercentage || 1
-    const minimumPayoutAmount = systemSettings?.minimumPayoutAmount || 10
-
-    // Check minimum payout amount
-    if (netBalance < minimumPayoutAmount) {
-      return Response.json(
-        {
-          success: false,
-          message: `Minimum payout amount is ${jar.currency || 'GHS'} ${minimumPayoutAmount}`,
-        },
-        { status: 400 },
-      )
-    }
 
     // Calculate transfer fee for display/transparency purposes only
     // Eganow will handle the actual fee deduction on their end

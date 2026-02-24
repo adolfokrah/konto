@@ -134,5 +134,10 @@
       "whatwg-url": "11.0.0",
       "require-in-the-middle": "8.0.1"
     }
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "ios_saf >= 14",
+    "safari >= 14"
+  ]
 }

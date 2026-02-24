@@ -112,34 +112,17 @@ export const SystemSettings: GlobalConfig = {
       },
       fields: [
         {
-          type: 'row',
-          fields: [
-            {
-              name: 'minimumPayoutAmount',
-              label: 'Minimum Payout Amount',
-              type: 'number',
-              required: true,
-              defaultValue: 10,
-              min: 0,
-              admin: {
-                description: 'Minimum amount required to process a payout.',
-                width: '50%',
-              },
-            },
-            {
-              name: 'settlementDelayHours',
-              label: 'Settlement Delay (Hours)',
-              type: 'number',
-              required: true,
-              defaultValue: 0.033, // ~2 minutes (2/60 hours)
-              min: 0,
-              admin: {
-                description: 'Delay before contributions are settled (e.g., 0.033 = ~2 min).',
-                step: 0.001,
-                width: '50%',
-              },
-            },
-          ],
+          name: 'settlementDelayHours',
+          label: 'Settlement Delay (Hours)',
+          type: 'number',
+          required: true,
+          defaultValue: 0.033, // ~2 minutes (2/60 hours)
+          min: 0,
+          admin: {
+            description: 'Delay before contributions are settled (e.g., 0.033 = ~2 min).',
+            step: 0.001,
+            width: '50%',
+          },
         },
       ],
     },

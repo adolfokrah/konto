@@ -1,13 +1,11 @@
 class SystemSettingsModel {
   final double collectionFee;
   final double transferFeePercentage;
-  final double minimumPayoutAmount;
   final String? payoutProcessingMessage;
 
   SystemSettingsModel({
     required this.collectionFee,
     required this.transferFeePercentage,
-    required this.minimumPayoutAmount,
     this.payoutProcessingMessage,
   });
 
@@ -15,7 +13,6 @@ class SystemSettingsModel {
     return SystemSettingsModel(
       collectionFee: (json['collectionFee'] as num?)?.toDouble() ?? 1.95,
       transferFeePercentage: (json['transferFeePercentage'] as num?)?.toDouble() ?? 1.0,
-      minimumPayoutAmount: (json['minimumPayoutAmount'] as num?)?.toDouble() ?? 10.0,
       payoutProcessingMessage: json['payoutProcessingMessage'] as String?,
     );
   }
@@ -24,7 +21,6 @@ class SystemSettingsModel {
     return {
       'collectionFee': collectionFee,
       'transferFeePercentage': transferFeePercentage,
-      'minimumPayoutAmount': minimumPayoutAmount,
       'payoutProcessingMessage': payoutProcessingMessage,
     };
   }
@@ -33,7 +29,6 @@ class SystemSettingsModel {
   static SystemSettingsModel get defaultSettings => SystemSettingsModel(
         collectionFee: 1.95,
         transferFeePercentage: 1.0,
-        minimumPayoutAmount: 10.0,
         payoutProcessingMessage: null,
       );
 
