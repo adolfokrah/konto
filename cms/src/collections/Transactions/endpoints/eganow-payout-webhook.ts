@@ -101,7 +101,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       return new Response(null, { status: 200 })
     }
 
-    // Verify transaction status with Eganow API before updating
+    // Verify transaction exists in Eganow (prevents spoofed webhooks)
     console.log(`Verifying transaction with Eganow: ${transactionId}`)
     const eganow = new Eganow({
       username: process.env.EGANOW_SECRET_USERNAME!,
@@ -109,7 +109,6 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       xAuth: process.env.EGANOW_X_AUTH_TOKEN!,
     })
 
-    let verifiedStatus: string
     try {
       const statusResponse = await eganow.checkTransactionStatus({
         transactionId: transactionId,
@@ -120,53 +119,49 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
 
       if (!statusResponse.isSuccess) {
         console.error(
-          `Eganow status verification failed for ${transactionId}: ${statusResponse.message}`,
+          `Eganow does not recognize transaction ${transactionId}: ${statusResponse.message}`,
         )
         return Response.json(
-          { error: 'Transaction verification failed', message: statusResponse.message },
+          { error: 'Transaction not found in Eganow', message: statusResponse.message },
           { status: 400 },
         )
       }
 
-      verifiedStatus = statusResponse.transStatus || statusResponse.transactionstatus || ''
-      console.log(`Verified transaction status from Eganow: ${verifiedStatus}`)
-
-      // If transStatus is undefined, check for alternative field names
-      if (!verifiedStatus) {
-        console.error('transStatus is undefined. Full response:', statusResponse)
-        // For now, trust the webhook status if we can't verify
-        console.warn('Using webhook status as fallback:', transactionStatus)
-        verifiedStatus = transactionStatus
-      }
-
-      // Check if webhook status matches verified status
-      if (
-        verifiedStatus &&
-        transactionStatus &&
-        verifiedStatus.toUpperCase() !== transactionStatus.toUpperCase()
-      ) {
-        console.warn(
-          `Status mismatch! Webhook: ${transactionStatus}, Eganow API: ${verifiedStatus}. Using verified status.`,
+      // Verify the reference number from API matches the webhook to prevent spoofing
+      const apiRef = statusResponse.referenceNo || ''
+      if (apiRef && eganowReferenceNo && apiRef !== eganowReferenceNo) {
+        console.error(
+          `Reference mismatch! Webhook: ${eganowReferenceNo}, Eganow API: ${apiRef}. Possible spoofed webhook.`,
         )
+        return Response.json({ error: 'Reference number mismatch' }, { status: 400 })
       }
+
+      const verifiedApiStatus = statusResponse.transStatus || statusResponse.transactionstatus || ''
+      console.log(`Eganow API status: ${verifiedApiStatus}, Webhook status: ${transactionStatus}`)
+
+      // Transaction is verified as real in Eganow.
+      // The API status often lags behind the webhook (e.g. API says INITIATED while webhook says SUCCESSFUL).
+      // Trust the webhook status for the final determination since it's the completion callback.
     } catch (error: any) {
       console.error(`Failed to verify transaction with Eganow: ${error.message}`)
+      // If we can't verify, reject the webhook to be safe
       return Response.json(
         { error: 'Failed to verify transaction', message: error.message },
         { status: 500 },
       )
     }
 
-    // Map Eganow status to our payment status (use verified status)
+    // Transaction verified as real — use the webhook status
     const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
       SUCCESSFUL: 'completed',
+      SUCCESS: 'completed',
       FAILED: 'failed',
       PENDING: 'pending',
       EXPIRED: 'failed',
       CANCELLED: 'failed',
     }
 
-    const newStatus = statusMap[verifiedStatus?.toUpperCase() || 'FAILED'] || 'failed'
+    const newStatus = statusMap[transactionStatus?.toUpperCase() || 'FAILED'] || 'failed'
 
     console.log(
       `Updating transfer ${transfer.id} to status: ${newStatus}${message ? ` (${message})` : ''}`,
