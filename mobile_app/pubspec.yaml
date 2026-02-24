@@ -1,7 +1,7 @@
 name: Hoga
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.15.110+8
+version: 0.15.110+9
 
 environment:
   sdk: ^3.7.0

@@ -231,7 +231,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
             row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400',
           )}
         >
-          {formatAmount(Math.abs(row.original.amountContributed))}
+          -{formatAmount(Math.abs(row.original.amountContributed))}
         </span>
       )
     },
