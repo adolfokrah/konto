@@ -42,13 +42,6 @@ export const requestKYC = async (req: PayloadRequest) => {
       },
     })
 
-    console.log(
-      'Didit v3 session created for user:',
-      user.id,
-      'response:',
-      JSON.stringify(session, null, 2),
-    )
-
     await req.payload.update({
       collection: 'users',
       id: user.id,
