@@ -1,9 +1,6 @@
 PODS:
   - device_info_plus (0.0.1):
     - Flutter
-  - didit_sdk (3.2.0):
-    - DiditSDK (~> 3.2)
-    - Flutter
   - DiditSDK (3.2.1)
   - Firebase/Analytics (10.25.0):
     - Firebase/Core
@@ -163,7 +160,6 @@ PODS:
 
 DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
-  - didit_sdk (from `.symlinks/plugins/didit_sdk/ios`)
   - DiditSDK (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/main/DiditSDK.podspec`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -203,8 +199,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
-  didit_sdk:
-    :path: ".symlinks/plugins/didit_sdk/ios"
   DiditSDK:
     :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/main/DiditSDK.podspec
   firebase_analytics:
@@ -248,7 +242,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   device_info_plus: 71ffc6ab7634ade6267c7a93088ed7e4f74e5896
-  didit_sdk: 204e817bbaef942e52a69b6e2c5584f4469886ec
   DiditSDK: 9018a1d5818a2ea4906762c06185ffaf3aba8105
   Firebase: 0312a2352584f782ea56f66d91606891d4607f06
   firebase_analytics: e7280be84e7ff1c1e5859bd8e48de410b07e0b73
