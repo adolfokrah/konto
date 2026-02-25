@@ -119,6 +119,53 @@ class MockInterceptor extends Interceptor {
       return;
     }
 
+    // Mock the refresh token endpoint
+    if (options.path.contains(BackendConfig.refreshToken) &&
+        options.method == 'POST') {
+      print('MockInterceptor: ✅ Mocking Refresh Token API response');
+      final now = DateTime.now();
+      final response = Response(
+        requestOptions: options,
+        data: {
+          'message': 'Token refresh successful',
+          'refreshedToken': 'test-refreshed-jwt-token-789',
+          'exp': now.add(Duration(days: 30)).millisecondsSinceEpoch ~/ 1000,
+          'user': {
+            'id': 'test-user-id',
+            'email': 'test@example.com',
+            'firstName': 'Test', 'lastName': 'User',
+            'phoneNumber': '+1234567890',
+            'countryCode': '+1',
+            'country': 'US',
+            'kycStatus': 'verified',
+            'createdAt': now.toIso8601String(),
+            'updatedAt': now.toIso8601String(),
+            'sessions': [
+              {
+                'id': 'test-session-id',
+                'createdAt': now.toIso8601String(),
+                'expiresAt': now.add(Duration(days: 30)).toIso8601String(),
+              },
+            ],
+            'appSettings': {
+              'language': 'en',
+              'darkMode': false,
+              'biometricAuthEnabled': false,
+              'notificationsSettings': {
+                'pushNotificationsEnabled': true,
+                'emailNotificationsEnabled': true,
+                'smsNotificationsEnabled': false,
+              },
+            },
+          },
+        },
+        statusCode: 200,
+      );
+
+      handler.resolve(response);
+      return;
+    }
+
     // Mock the loginWithPhoneEndpoint
     if (options.path.contains(BackendConfig.loginWithPhoneEndpoint) &&
         options.method == 'POST') {
