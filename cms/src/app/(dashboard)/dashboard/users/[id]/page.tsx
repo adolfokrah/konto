@@ -82,13 +82,14 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       where: { creator: { equals: id } },
       sort: '-createdAt',
       limit: 50,
-      depth: 0,
+      depth: 1,
       overrideAccess: true,
       select: {
         name: true,
         status: true,
         goalAmount: true,
         currency: true,
+        image: true,
         createdAt: true,
       },
     }),
@@ -97,13 +98,14 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       where: { 'invitedCollectors.collector': { equals: id } },
       sort: '-createdAt',
       limit: 50,
-      depth: 0,
+      depth: 1,
       overrideAccess: true,
       select: {
         name: true,
         status: true,
         goalAmount: true,
         currency: true,
+        image: true,
         createdAt: true,
       },
     }),
@@ -804,22 +806,35 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
                 <p className="text-sm text-muted-foreground">No jars created</p>
               ) : (
                 <div className="space-y-2">
-                  {createdJarsResult.docs.map((jar: any) => (
-                    <div
-                      key={jar.id}
-                      className="flex items-center justify-between rounded-md border p-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium">{jar.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
-                        {jar.status}
-                      </Badge>
-                    </div>
-                  ))}
+                  {createdJarsResult.docs.map((jar: any) => {
+                    const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
+                      ? jar.image.url
+                      : null
+                    return (
+                      <Link
+                        key={jar.id}
+                        href={`/dashboard/jars/${jar.id}`}
+                        className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
+                          {jarImageUrl ? (
+                            <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{jar.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
+                          {jar.status}
+                        </Badge>
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
@@ -835,22 +850,35 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {collectorJarsResult.docs.map((jar: any) => (
-                    <div
-                      key={jar.id}
-                      className="flex items-center justify-between rounded-md border p-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium">{jar.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
-                        {jar.status}
-                      </Badge>
-                    </div>
-                  ))}
+                  {collectorJarsResult.docs.map((jar: any) => {
+                    const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
+                      ? jar.image.url
+                      : null
+                    return (
+                      <Link
+                        key={jar.id}
+                        href={`/dashboard/jars/${jar.id}`}
+                        className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
+                          {jarImageUrl ? (
+                            <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{jar.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
+                          {jar.status}
+                        </Badge>
+                      </Link>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
