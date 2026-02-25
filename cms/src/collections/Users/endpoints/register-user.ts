@@ -7,8 +7,14 @@ export const registerUser = async (req: PayloadRequest) => {
     await addDataAndFileToRequest(req)
     const { phoneNumber, countryCode, country, firstName, lastName, username, email } =
       req.data || {}
+    // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
+    const formattedPhoneNumber =
+      phoneNumber?.startsWith('0') && phoneNumber.length > 1
+        ? phoneNumber.substring(1)
+        : phoneNumber
+
     // Validate required fields
-    if (!phoneNumber || !countryCode || !country || !firstName || !lastName || !username) {
+    if (!formattedPhoneNumber || !countryCode || !country || !firstName || !lastName || !username) {
       return Response.json(
         {
           success: false,
@@ -27,7 +33,7 @@ export const registerUser = async (req: PayloadRequest) => {
         and: [
           {
             phoneNumber: {
-              equals: phoneNumber,
+              equals: formattedPhoneNumber,
             },
           },
           {
@@ -84,7 +90,7 @@ export const registerUser = async (req: PayloadRequest) => {
     }
 
     // Create the new user - Include email and password for auth
-    const userEmail = email || `${phoneNumber.replace(/\+/g, '')}@konto.app` // Generate email if not provided
+    const userEmail = email || `${formattedPhoneNumber.replace(/\+/g, '')}@konto.app` // Generate email if not provided
     const defaultPassword = '123456' // Default password for all users
 
     const newUser = await req.payload.create({
@@ -92,7 +98,7 @@ export const registerUser = async (req: PayloadRequest) => {
       data: {
         email: userEmail,
         password: defaultPassword,
-        phoneNumber,
+        phoneNumber: formattedPhoneNumber,
         countryCode,
         country,
         firstName,

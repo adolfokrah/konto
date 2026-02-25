@@ -8,7 +8,13 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
 
     const { phoneNumber, countryCode } = req.data || {}
 
-    if (!phoneNumber) {
+    // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
+    const formattedPhoneNumber =
+      phoneNumber?.startsWith('0') && phoneNumber.length > 1
+        ? phoneNumber.substring(1)
+        : phoneNumber
+
+    if (!formattedPhoneNumber) {
       return Response.json(
         {
           success: false,
@@ -33,7 +39,7 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
       collection: 'users',
       where: {
         phoneNumber: {
-          equals: phoneNumber,
+          equals: formattedPhoneNumber,
         },
         countryCode: {
           equals: countryCode,

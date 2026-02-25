@@ -18,7 +18,13 @@ export const sendOTP = async (req: PayloadRequest) => {
     await addDataAndFileToRequest(req)
     const { countryCode, phoneNumber, email } = req.data || {}
 
-    if (!phoneNumber) {
+    // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
+    const formattedPhoneNumber =
+      phoneNumber?.startsWith('0') && phoneNumber.length > 1
+        ? phoneNumber.substring(1)
+        : phoneNumber
+
+    if (!formattedPhoneNumber) {
       return Response.json(
         {
           success: false,
@@ -44,7 +50,7 @@ export const sendOTP = async (req: PayloadRequest) => {
     const userResult = await req.payload.find({
       collection: 'users',
       where: {
-        phoneNumber: { equals: phoneNumber },
+        phoneNumber: { equals: formattedPhoneNumber },
         countryCode: { equals: countryCode },
       },
       limit: 1,
@@ -69,7 +75,7 @@ export const sendOTP = async (req: PayloadRequest) => {
       })
     } else {
       // Store OTP in memory for pre-registration users
-      const key = `${countryCode}${phoneNumber}`
+      const key = `${countryCode}${formattedPhoneNumber}`
       otpStore.set(key, { code, expiry, attempts: 0 })
     }
 
@@ -81,8 +87,8 @@ export const sendOTP = async (req: PayloadRequest) => {
       }
 
       // Send OTP via SMS
-      if (phoneNumber && countryCode) {
-        const fullPhoneNumber = `${countryCode}${phoneNumber}`
+      if (formattedPhoneNumber && countryCode) {
+        const fullPhoneNumber = `${countryCode}${formattedPhoneNumber}`
 
         await sendSMS(
           fullPhoneNumber,

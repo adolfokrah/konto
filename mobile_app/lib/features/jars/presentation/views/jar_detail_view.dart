@@ -612,22 +612,31 @@ class _JarDetailViewState extends State<JarDetailView> {
                           ),
                         ),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AppIconButton(
-                                key: const Key('info_button'),
-                                onPressed: () {
-                                  context.push(AppRoutes.jarInfo);
-                                },
-                                icon: Icons.info_outline,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              Text(
-                                localizations.info,
-                                style: TextStyles.titleMediumS,
-                              ),
-                            ],
+                          child: BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, authState) {
+                              final isCreator =
+                                  authState is AuthAuthenticated &&
+                                  jarData.creator.id == authState.user.id;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  AppIconButton(
+                                    key: const Key('info_button'),
+                                    onPressed: isCreator
+                                        ? () {
+                                            context.push(AppRoutes.jarInfo);
+                                          }
+                                        : null,
+                                    icon: Icons.info_outline,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  Text(
+                                    localizations.info,
+                                    style: TextStyles.titleMediumS,
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                         Expanded(child: JarMoreMenu(jarId: jarData.id)),

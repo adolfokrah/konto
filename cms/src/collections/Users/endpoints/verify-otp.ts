@@ -9,7 +9,13 @@ export const verifyOTP = async (req: PayloadRequest) => {
     await addDataAndFileToRequest(req)
     const { phoneNumber, countryCode, code } = req.data || {}
 
-    if (!phoneNumber || !countryCode || !code) {
+    // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
+    const formattedPhoneNumber =
+      phoneNumber?.startsWith('0') && phoneNumber.length > 1
+        ? phoneNumber.substring(1)
+        : phoneNumber
+
+    if (!formattedPhoneNumber || !countryCode || !code) {
       return Response.json(
         {
           success: false,
@@ -23,7 +29,7 @@ export const verifyOTP = async (req: PayloadRequest) => {
     const userResult = await req.payload.find({
       collection: 'users',
       where: {
-        phoneNumber: { equals: phoneNumber },
+        phoneNumber: { equals: formattedPhoneNumber },
         countryCode: { equals: countryCode },
       },
       limit: 1,
@@ -105,7 +111,7 @@ export const verifyOTP = async (req: PayloadRequest) => {
     }
 
     // Check in-memory store for pre-registration users
-    const key = `${countryCode}${phoneNumber}`
+    const key = `${countryCode}${formattedPhoneNumber}`
     const stored = otpStore.get(key)
 
     if (!stored) {

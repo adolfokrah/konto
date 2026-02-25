@@ -13,7 +13,7 @@ plugins {
 
 android {
     namespace = "com.hoganame.hogapay"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -57,10 +57,8 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         
-        // Updated to minSdk 24 to support integration_test plugin
-        minSdkVersion(24)
-        targetSdkVersion(35)
-        compileSdk = 36
+        minSdk = 24
+        targetSdk = 35
         
         versionCode = flutter.versionCode
         versionName = flutter.versionName

@@ -7,6 +7,7 @@ import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUs
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
 import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
 import { validateJarBalanceBeforeDelete } from './hooks/validateJarBalanceBeforeDelete'
+import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -206,6 +207,7 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeChange: [validateJarUpdatePermission],
     afterChange: [
       sendInviteNotificationToUser,
       deleteInviteNotification,
