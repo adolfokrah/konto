@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
@@ -6,20 +7,16 @@ import 'package:Hoga/features/authentication/data/models/user.dart';
 /// Dio interceptor that handles 401 responses by attempting token refresh.
 /// If refresh succeeds, the original request is retried with the new token.
 /// If refresh fails, the 401 propagates normally.
+///
+/// Dependencies are resolved lazily from GetIt to avoid circular dependency
+/// issues and to allow tests to replace services after setup.
 class AuthInterceptor extends Interceptor {
-  final UserStorageService _userStorageService;
-  final AuthApiProvider _authApiProvider;
-  final Dio _dio;
-
   bool _isRefreshing = false;
 
-  AuthInterceptor({
-    required UserStorageService userStorageService,
-    required AuthApiProvider authApiProvider,
-    required Dio dio,
-  })  : _userStorageService = userStorageService,
-        _authApiProvider = authApiProvider,
-        _dio = dio;
+  // Resolve lazily so tests can replace these after setup
+  UserStorageService get _userStorageService => GetIt.instance<UserStorageService>();
+  AuthApiProvider get _authApiProvider => GetIt.instance<AuthApiProvider>();
+  Dio get _dio => GetIt.instance<Dio>();
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {

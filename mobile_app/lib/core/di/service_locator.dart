@@ -52,17 +52,23 @@ final getIt = GetIt.instance;
 void setupServiceLocator() {
   // ── Core services ──
   getIt.registerLazySingleton<Dio>(
-    () => Dio(
-      BaseOptions(
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-        },
-      ),
-    ),
+    () {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 30),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      // Auth interceptor handles 401 with automatic token refresh.
+      // Dependencies resolved lazily from GetIt to avoid circular init.
+      dio.interceptors.add(AuthInterceptor());
+      return dio;
+    },
   );
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
   getIt.registerLazySingleton<UserStorageService>(
@@ -81,16 +87,6 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<AuthApiProvider>(
     () => AuthApiProvider(dio: getIt<Dio>()),
   );
-
-  // ── Auth interceptor (handles 401 with automatic token refresh) ──
-  getIt<Dio>().interceptors.add(
-    AuthInterceptor(
-      userStorageService: getIt<UserStorageService>(),
-      authApiProvider: getIt<AuthApiProvider>(),
-      dio: getIt<Dio>(),
-    ),
-  );
-
   getIt.registerLazySingleton<VerificationProvider>(
     () => VerificationProvider(
       dio: getIt<Dio>(),
