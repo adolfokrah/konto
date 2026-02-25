@@ -20,7 +20,7 @@ export default function VerificationCompletePage() {
         </h1>
 
         <p className="text-gray-600 font-supreme mb-6">
-          Your identity verification has been submitted successfully. You can now return to the Hoga
+          Your identity verification has been submitted successfully. You can now return to the Hogapay
           app.
         </p>
 
@@ -38,7 +38,7 @@ export default function VerificationCompletePage() {
 
         {/* Footer */}
         <p className="text-xs text-gray-500 font-supreme mt-6 leading-relaxed">
-          You can safely close this page and return to the Hoga app.
+          You can safely close this page and return to the Hogapay app.
         </p>
       </div>
     </div>
