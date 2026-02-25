@@ -31,7 +31,6 @@ target 'Runner' do
   use_frameworks!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  pod 'DiditSDK', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/main/DiditSDK.podspec'
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -49,17 +48,4 @@ post_install do |installer|
     end
   end
 
-  # Strip bitcode from DiditSDK vendored frameworks (Apple rejects bitcode since Xcode 16)
-  bitcode_strip_path = `xcrun --find bitcode_strip`.chomp
-  unless bitcode_strip_path.empty?
-    Dir.glob("#{installer.sandbox.root}/DiditSDK/**/*.xcframework/**/*.framework/*").each do |path|
-      next unless File.file?(path) && !File.symlink?(path)
-      next if path.end_with?('.plist', '.h', '.modulemap', '.swiftmodule')
-      file_output = `file "#{path}" 2>/dev/null`
-      if file_output.include?('Mach-O')
-        system("#{bitcode_strip_path} \"#{path}\" -r -o \"#{path}\"")
-        puts "Stripped bitcode from: #{path}"
-      end
-    end
-  end
 end
