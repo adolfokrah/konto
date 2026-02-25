@@ -32,16 +32,16 @@ class KycBloc extends Bloc<KycEvent, KycState> {
       }
 
       final sessionUrl = result['sessionUrl'] as String?;
-
-      // Try to open the verification URL in the browser
-      if (sessionUrl != null && sessionUrl.isNotEmpty) {
-        final uri = Uri.parse(sessionUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
+      if (sessionUrl == null || sessionUrl.isEmpty) {
+        emit(KycFailure('Verification URL not received. Please try again.'));
+        return;
       }
 
-      // Verification link is also sent via email and SMS
+      // Open verification in external browser (works on all Android devices)
+      final uri = Uri.parse(sessionUrl);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      // Browser opened - show in review status
       emit(KycInReview());
     } catch (e) {
       emit(KycFailure('Failed to start verification: ${e.toString()}'));

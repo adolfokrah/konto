@@ -35,19 +35,8 @@ class KycView extends StatelessWidget {
             );
             context.pop();
           } else if (state is KycInReview) {
-            // Reload user data to get updated KYC status
-            context.read<AuthBloc>().add(AutoLoginRequested());
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'A verification link has been sent to your email and phone. Please complete the verification.',
-                ),
-                backgroundColor: Colors.orange,
-                duration: Duration(seconds: 5),
-              ),
-            );
-            context.pop();
+            // Don't reload auth here - verification is still in progress.
+            // KYC status will update via webhook when verification completes.
           } else if (state is KycFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

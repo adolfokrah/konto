@@ -80,6 +80,38 @@ class AuthApiProvider {
     }
   }
 
+  /// Refresh authentication token using Payload CMS refresh endpoint
+  /// Requires a valid (non-expired) token to get a new one
+  Future<Map<String, dynamic>> refreshToken({
+    required String currentToken,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.refreshToken}',
+        options: Options(
+          headers: {
+            ...BackendConfig.defaultHeaders,
+            'Authorization': 'Bearer $currentToken',
+          },
+          extra: {'skipAuthRetry': true},
+        ),
+      );
+
+      return response.data;
+    } catch (e) {
+      if (e is DioException) {
+        return {
+          'success': false,
+          'message': 'Token refresh failed: ${e.message}',
+        };
+      }
+      return {
+        'success': false,
+        'message': 'Token refresh failed: ${e.toString()}',
+      };
+    }
+  }
+
   /// Register user (creates new user via Payload CMS)
   Future<Map<String, dynamic>> registerUser({
     required String phoneNumber,

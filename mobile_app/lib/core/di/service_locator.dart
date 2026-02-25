@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:Hoga/core/services/auth_interceptor.dart';
 import 'package:Hoga/core/services/local_storage_service.dart';
 import 'package:Hoga/core/services/translation_service.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
@@ -80,6 +81,16 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<AuthApiProvider>(
     () => AuthApiProvider(dio: getIt<Dio>()),
   );
+
+  // ── Auth interceptor (handles 401 with automatic token refresh) ──
+  getIt<Dio>().interceptors.add(
+    AuthInterceptor(
+      userStorageService: getIt<UserStorageService>(),
+      authApiProvider: getIt<AuthApiProvider>(),
+      dio: getIt<Dio>(),
+    ),
+  );
+
   getIt.registerLazySingleton<VerificationProvider>(
     () => VerificationProvider(
       dio: getIt<Dio>(),

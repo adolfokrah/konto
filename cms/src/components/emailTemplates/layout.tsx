@@ -110,7 +110,7 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
         {/* Logo with background for visibility in both themes */}
         <div className="mb-6">
            <Img
-              src="https://www.hogapay.com/logo.png"
+              src="https://hoga-production.up.railway.app/logo.png"
               alt="Hoga Logo"
               width="70"
               height="23"

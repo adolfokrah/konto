@@ -30,6 +30,7 @@ export const requestKYC = async (req: PayloadRequest) => {
     // Create a new KYC session for a user
     const session = await kycService.createSession(user.id, {
       callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
+      redirectUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/verification-complete`,
       language: 'en',
       contactDetails: {
         ...(userEmail && { email: userEmail }),

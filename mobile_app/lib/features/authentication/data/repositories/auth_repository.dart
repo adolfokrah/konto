@@ -158,17 +158,70 @@ class AuthRepository {
     }
   }
 
-  /// Auto login using stored user data - simply calls login endpoint
+  /// Refresh the authentication token using Payload CMS refresh endpoint.
+  /// Returns refreshed user data and token if successful.
+  Future<Map<String, dynamic>> refreshToken() async {
+    try {
+      final currentToken = await _userStorageService.getAuthToken();
+      if (currentToken == null) {
+        return {'success': false, 'message': 'No token to refresh'};
+      }
+
+      final response = await _authApiProvider.refreshToken(
+        currentToken: currentToken,
+      );
+
+      // Payload CMS returns refreshedToken, exp, and user
+      final newToken = response['refreshedToken'] as String?;
+      final exp = response['exp'];
+      final userData = response['user'];
+
+      if (newToken == null || userData == null) {
+        return {'success': false, 'message': 'Invalid refresh response'};
+      }
+
+      final user = User.fromJson(userData as Map<String, dynamic>);
+
+      await _userStorageService.saveUserData(
+        user: user,
+        token: newToken,
+        tokenExpiry: exp ?? 0,
+      );
+
+      return {
+        'success': true,
+        'message': 'Token refreshed',
+        'user': user,
+        'token': newToken,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Token refresh error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Auto login using stored user data.
+  /// Tries token refresh first (fast), falls back to full re-login.
   Future<Map<String, dynamic>> autoLogin() async {
     try {
-      // Get stored user data
       final user = await _userStorageService.getUserData();
 
       if (user == null) {
         return {'success': false, 'message': 'No user data found in storage'};
       }
 
-      // Use the existing login endpoint with stored phone number and country code
+      // Try token refresh first - much faster than full re-login
+      final refreshResult = await refreshToken();
+      if (refreshResult['success'] == true) {
+        print('✅ Auto-login via token refresh successful');
+        return refreshResult;
+      }
+
+      print('⚠️ Token refresh failed, falling back to full re-login');
+
+      // Fall back to full re-login with stored phone number
       final loginResponse = await loginWithPhoneNumber(
         phoneNumber: user.phoneNumber,
         countryCode: user.countryCode,
