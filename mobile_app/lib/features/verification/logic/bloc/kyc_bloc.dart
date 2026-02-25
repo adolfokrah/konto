@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:didit_sdk/sdk_flutter.dart';
 import 'package:meta/meta.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
 
 part 'kyc_event.dart';
@@ -24,37 +24,25 @@ class KycBloc extends Bloc<KycEvent, KycState> {
     try {
       // Request a KYC session from the backend
       final result =
-          await _verificationRepository
-              .requestKycVerification();
+          await _verificationRepository.requestKycVerification();
 
       if (result['success'] != true) {
         emit(KycFailure(result['message'] ?? 'Failed to create KYC session'));
         return;
       }
 
-      final sessionToken = result['sessionToken'] as String?;
-      if (sessionToken == null || sessionToken.isEmpty) {
-        emit(KycFailure('Session token not received from server'));
-        return;
+      final sessionUrl = result['sessionUrl'] as String?;
+
+      // Try to open the verification URL in the browser
+      if (sessionUrl != null && sessionUrl.isNotEmpty) {
+        final uri = Uri.parse(sessionUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       }
 
-      // Launch native Didit verification SDK
-      final sdkResult = await DiditSdk.startVerification(sessionToken);
-
-      switch (sdkResult) {
-        case VerificationCompleted(:final session):
-          if (session.status == VerificationStatus.approved) {
-            emit(KycSuccess());
-          } else if (session.status == VerificationStatus.pending) {
-            emit(KycInReview());
-          } else {
-            emit(KycFailure('Verification was declined'));
-          }
-        case VerificationCancelled():
-          emit(KycInitial());
-        case VerificationFailed(:final error):
-          emit(KycFailure(error.message ?? 'Verification failed'));
-      }
+      // Verification link is also sent via email and SMS
+      emit(KycInReview());
     } catch (e) {
       emit(KycFailure('Failed to start verification: ${e.toString()}'));
     }

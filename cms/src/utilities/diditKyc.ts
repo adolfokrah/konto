@@ -35,7 +35,7 @@ interface CreateSessionRequest {
 interface CreateSessionResponse {
   session_id: string
   session_token: string
-  verification_url: string
+  url: string
   status: string
 }
 

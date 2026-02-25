@@ -41,9 +41,10 @@ class KycView extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
-                  'Verification submitted. We\'ll notify you once it\'s reviewed.',
+                  'A verification link has been sent to your email and phone. Please complete the verification.',
                 ),
                 backgroundColor: Colors.orange,
+                duration: Duration(seconds: 5),
               ),
             );
             context.pop();
@@ -157,7 +158,7 @@ class KycView extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       Text(
-                        'Please tap the button below to start your account verification.',
+                        'Tap the button below to start. A verification link will be sent to your email and phone.',
                         style: TextStyles.titleRegularSm,
                         textAlign: TextAlign.center,
                       ),

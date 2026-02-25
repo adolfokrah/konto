@@ -1,4 +1,6 @@
 import { createDiditKYC } from '@/utilities/diditKyc'
+import { emailService } from '@/utilities/emailService'
+import { sendSMS } from '@/utilities/sms'
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
@@ -18,6 +20,10 @@ export const requestKYC = async (req: PayloadRequest) => {
       )
     }
 
+    const userEmail = user.email as string | undefined
+    const userPhone = user.phoneNumber as string | undefined
+    const countryCode = (user.countryCode as string) || '233'
+
     // Initialize the service
     const kycService = createDiditKYC()
 
@@ -25,6 +31,10 @@ export const requestKYC = async (req: PayloadRequest) => {
     const session = await kycService.createSession(user.id, {
       callbackUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/verify-kyc`,
       language: 'en',
+      contactDetails: {
+        ...(userEmail && { email: userEmail }),
+        ...(userPhone && { phone: `+${countryCode}${userPhone}` }),
+      },
       expectedDetails: {
         first_name: user.firstName || '',
         last_name: user.lastName || '',
@@ -44,15 +54,33 @@ export const requestKYC = async (req: PayloadRequest) => {
       id: user.id,
       data: {
         kycSessionId: session.session_id,
-        // kycStatus: 'pending',
       },
       overrideAccess: true,
     })
 
+    const verificationUrl = session.url
+
+    // Send verification link via email and SMS
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim()
+
+    if (userEmail) {
+      emailService
+        .sendKycEmail(userEmail, verificationUrl)
+        .catch((err) => console.error('Failed to send KYC email:', err))
+    }
+
+    if (userPhone) {
+      const phoneWithCode = `${countryCode}${userPhone}`
+      sendSMS(
+        [phoneWithCode],
+        `Hi ${fullName || 'there'}, please complete your Hoga identity verification here: ${verificationUrl}`,
+      ).catch((err) => console.error('Failed to send KYC SMS:', err))
+    }
+
     const data = {
       sessionId: session.session_id,
       sessionToken: session.session_token,
-      sessionUrl: session.verification_url,
+      sessionUrl: verificationUrl,
       status: session.status,
     }
 

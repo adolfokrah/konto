@@ -1,7 +1,7 @@
 name: Hoga
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.15.111+10
+version: 0.15.113+12
 
 environment:
   sdk: ^3.7.0
@@ -32,7 +32,6 @@ dependencies:
   package_info_plus: ^8.0.2
   pretty_qr_code: ^3.5.0
   path_provider: ^2.1.4
-  didit_sdk: ^3.2.0
   firebase_messaging: ^14.7.10
   flutter_local_notifications: ^18.0.1
   flutter_loading_overlay: ^1.0.3
