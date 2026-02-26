@@ -10,15 +10,25 @@ class TranslationService {
 
   AppLocalizations? _localizations;
 
+  /// Resolve a locale to a supported one, falling back to English
+  Locale _resolveToSupported(Locale locale) {
+    for (final supported in AppLocalizations.supportedLocales) {
+      if (supported.languageCode == locale.languageCode) {
+        return supported;
+      }
+    }
+    return const Locale('en');
+  }
+
   /// Initialize with current locale from system or app
   void initialize([Locale? locale]) {
     final currentLocale = locale ?? PlatformDispatcher.instance.locale;
-    _localizations = lookupAppLocalizations(currentLocale);
+    _localizations = lookupAppLocalizations(_resolveToSupported(currentLocale));
   }
 
   /// Update localizations when locale changes
   void updateLocale(Locale locale) {
-    _localizations = lookupAppLocalizations(locale);
+    _localizations = lookupAppLocalizations(_resolveToSupported(locale));
   }
 
   /// Get current localizations - throws if not initialized
