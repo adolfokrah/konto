@@ -10,8 +10,6 @@ import { requestKYC } from './endpoints/request-kyc'
 import { verifyKYC } from './endpoints/verify-kyc'
 import { diditWebhook } from './endpoints/didit-webhook'
 import { sendKYCReminder } from './endpoints/send-kyc-reminder'
-import { sendJarCreationReminder } from './endpoints/send-jar-creation-reminder'
-import { sendEmptyJarReminder } from './endpoints/send-empty-jar-reminder'
 import { getJobStatus } from './endpoints/get-job-status'
 import { accountDeletion } from './hooks/account-deletion'
 import { sendWelcomeEmail } from './hooks/send-welcome-email'
@@ -119,16 +117,6 @@ export const Users: CollectionConfig = {
       path: '/send-kyc-reminder',
       method: 'post',
       handler: sendKYCReminder,
-    },
-    {
-      path: '/send-jar-creation-reminder',
-      method: 'post',
-      handler: sendJarCreationReminder,
-    },
-    {
-      path: '/send-empty-jar-reminder',
-      method: 'post',
-      handler: sendEmptyJarReminder,
     },
     {
       path: '/job-status',
