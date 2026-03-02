@@ -9,7 +9,7 @@ export const accountDeletion: CollectionBeforeDeleteHook = async ({ id, req }) =
     id: userId,
   })
   // break all jars of this user
-
+  // (the delete-user-account endpoint already prevents deletion if any jar has balance > 0)
   await req.payload.update({
     collection: 'jars',
     where: {
