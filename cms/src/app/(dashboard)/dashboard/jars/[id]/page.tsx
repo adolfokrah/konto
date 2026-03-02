@@ -16,6 +16,10 @@ import {
   Settings,
   CheckCircle,
   AlertCircle,
+  Wallet,
+  ArrowDownToLine,
+  Banknote,
+  Smartphone,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -169,9 +173,16 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   let settledContributions = 0
   let totalPayouts = 0
   let upcomingBalance = 0
+  let cashContributions = 0
+  let mobileMoneyContributions = 0
   for (const tx of allJarTransactions.docs as any[]) {
     if (tx.type === 'contribution' && tx.paymentStatus === 'completed') {
       totalContributions += tx.amountContributed || 0
+      if (tx.paymentMethod === 'cash') {
+        cashContributions += tx.amountContributed || 0
+      } else if (tx.paymentMethod === 'mobile-money') {
+        mobileMoneyContributions += tx.amountContributed || 0
+      }
       if (tx.isSettled) {
         settledContributions += tx.amountContributed || 0
       }
@@ -185,6 +196,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   }
   // Balance = settled contributions + payouts (payouts are negative)
   const balance = settledContributions + totalPayouts
+  const totalWithdrawn = Math.abs(totalPayouts)
 
   const creatorObj = typeof jar.creator === 'object' && jar.creator ? jar.creator : null
   const creatorName = creatorObj
@@ -362,20 +374,15 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
           </CardHeader>
           <CardContent>
             <DetailRow
-              label="Total Contributions"
-              value={formatAmount(totalContributions, currency)}
-            />
-            <Separator />
-            <DetailRow
-              label="Balance"
-              icon={DollarSign}
+              label="Jar Balance"
+              icon={Wallet}
               value={formatAmount(balance, currency)}
             />
             <Separator />
             {upcomingBalance > 0 && (
               <>
                 <DetailRow
-                  label="Upcoming Balance"
+                  label="Upcoming"
                   icon={Clock}
                   value={
                     <span className="text-amber-600">
@@ -387,13 +394,40 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               </>
             )}
             <DetailRow
+              label="Total Withdrawn"
+              icon={ArrowDownToLine}
+              value={totalWithdrawn > 0
+                ? <span className="text-red-400">{formatAmount(totalWithdrawn, currency)}</span>
+                : formatAmount(0, currency)
+              }
+            />
+            <Separator />
+            <DetailRow
+              label="Total Contributions"
+              icon={DollarSign}
+              value={formatAmount(totalContributions, currency)}
+            />
+            <Separator />
+            <DetailRow
+              label="Mobile Money"
+              icon={Smartphone}
+              value={formatAmount(mobileMoneyContributions, currency)}
+            />
+            <Separator />
+            <DetailRow
+              label="Cash"
+              icon={Banknote}
+              value={formatAmount(cashContributions, currency)}
+            />
+            <Separator />
+            <DetailRow
               label="Goal Amount"
               icon={Target}
               value={goalAmount > 0 ? formatAmount(goalAmount, currency) : 'No goal set'}
             />
-            <Separator />
             {jar.isFixedContribution && (
               <>
+                <Separator />
                 <DetailRow
                   label="Fixed Amount"
                   value={
@@ -402,9 +436,9 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                       : '—'
                   }
                 />
-                <Separator />
               </>
             )}
+            <Separator />
             <DetailRow label="Currency" value={currency.toUpperCase()} />
           </CardContent>
         </Card>

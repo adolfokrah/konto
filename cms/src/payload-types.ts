@@ -132,6 +132,7 @@ export interface Config {
       'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
       'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
       'verify-pending-transactions': TaskVerifyPendingTransactions;
+      'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1659,6 +1660,7 @@ export interface PayloadJob {
           | 'check-empty-jars-daily'
           | 'check-withdrawal-balance-daily'
           | 'verify-pending-transactions'
+          | 'jar-creation-reminder-daily'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1699,6 +1701,7 @@ export interface PayloadJob {
         | 'check-empty-jars-daily'
         | 'check-withdrawal-balance-daily'
         | 'verify-pending-transactions'
+        | 'jar-creation-reminder-daily'
         | 'schedulePublish'
       )
     | null;
@@ -3040,6 +3043,14 @@ export interface TaskCheckWithdrawalBalanceDaily {
  * via the `definition` "TaskVerify-pending-transactions".
  */
 export interface TaskVerifyPendingTransactions {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskJar-creation-reminder-daily".
+ */
+export interface TaskJarCreationReminderDaily {
   input?: unknown;
   output?: unknown;
 }
