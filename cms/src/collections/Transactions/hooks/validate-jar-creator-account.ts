@@ -31,6 +31,14 @@ export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
     if (jar.status === 'frozen') {
       throw new APIError('This jar is currently frozen and cannot accept transactions', 403)
     }
+
+    if (jar.status === 'sealed') {
+      throw new APIError('This jar is currently sealed and cannot accept transactions', 403)
+    }
+
+    if (jar.status === 'broken') {
+      throw new APIError('This jar is currently broken and cannot accept transactions', 403)
+    }
   } catch (error) {
     // If it's our custom APIError, throw it as is
     if (error instanceof APIError) {
