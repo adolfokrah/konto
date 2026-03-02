@@ -133,6 +133,7 @@ export interface Config {
       'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
       'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
+      'process-payout': TaskProcessPayout;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1661,6 +1662,7 @@ export interface PayloadJob {
           | 'check-withdrawal-balance-daily'
           | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
+          | 'process-payout'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1702,6 +1704,7 @@ export interface PayloadJob {
         | 'check-withdrawal-balance-daily'
         | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
+        | 'process-payout'
         | 'schedulePublish'
       )
     | null;
@@ -3052,6 +3055,20 @@ export interface TaskVerifyPendingTransactions {
  */
 export interface TaskJarCreationReminderDaily {
   input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcess-payout".
+ */
+export interface TaskProcessPayout {
+  input: {
+    jarId: string;
+    userId: string;
+    userBank: string;
+    userAccountNumber: string;
+    userAccountHolder: string;
+  };
   output?: unknown;
 }
 /**

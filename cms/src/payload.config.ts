@@ -26,6 +26,7 @@ import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
 import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
 import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
+import { processPayoutTask } from './tasks/process-payout'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
@@ -144,6 +145,7 @@ export default buildConfig({
       checkWithdrawalBalanceDailyTask as any,
       verifyPendingTransactionsTask as any,
       jarCreationReminderDailyTask as any,
+      processPayoutTask as any,
     ],
     autoRun: [
       {
