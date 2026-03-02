@@ -510,8 +510,8 @@ describe('Payout Endpoint Integration Tests', () => {
 
       expect(payoutTx.payoutFeePercentage).toBe(feePercentage)
       // Fee amounts may be stored as negative (matching the negative payout direction)
-      expect(Math.abs(payoutTx.payoutFeeAmount)).toBe(expectedFee)
-      expect(Math.abs(payoutTx.payoutNetAmount)).toBe(expectedNetAmount)
+      expect(Math.abs(payoutTx.payoutFeeAmount as number)).toBe(expectedFee)
+      expect(Math.abs(payoutTx.payoutNetAmount as number)).toBe(expectedNetAmount)
     })
 
     it('should skip if a pending payout already exists', async () => {
