@@ -134,6 +134,7 @@ export interface Config {
       'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
       'process-payout': TaskProcessPayout;
+      'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1663,6 +1664,7 @@ export interface PayloadJob {
           | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
           | 'process-payout'
+          | 'check-eganow-payout-balance'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1705,6 +1707,7 @@ export interface PayloadJob {
         | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
         | 'process-payout'
+        | 'check-eganow-payout-balance'
         | 'schedulePublish'
       )
     | null;
@@ -3069,6 +3072,14 @@ export interface TaskProcessPayout {
     userAccountNumber: string;
     userAccountHolder: string;
   };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCheck-eganow-payout-balance".
+ */
+export interface TaskCheckEganowPayoutBalance {
+  input?: unknown;
   output?: unknown;
 }
 /**

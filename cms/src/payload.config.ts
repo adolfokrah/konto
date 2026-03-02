@@ -27,6 +27,7 @@ import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balanc
 import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
 import { processPayoutTask } from './tasks/process-payout'
+import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
@@ -146,6 +147,7 @@ export default buildConfig({
       verifyPendingTransactionsTask as any,
       jarCreationReminderDailyTask as any,
       processPayoutTask as any,
+      checkEganowPayoutBalanceTask as any,
     ],
     autoRun: [
       {
@@ -167,6 +169,10 @@ export default buildConfig({
       {
         cron: '0 11 * * *', // Every day at 11:00 AM
         queue: 'jar-creation-reminder-daily',
+      },
+      {
+        cron: '0 * * * *', // Every hour
+        queue: 'check-eganow-payout-balance',
       },
     ],
   },
