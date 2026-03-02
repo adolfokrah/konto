@@ -31,21 +31,6 @@ export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
     if (jar.status === 'frozen') {
       throw new APIError('This jar is currently frozen and cannot accept transactions', 403)
     }
-
-    // For mobile-money, check if creator has withdrawal account number
-    if (data?.paymentMethod === 'mobile-money') {
-      const creator =
-        typeof jar.creator === 'string'
-          ? await req.payload.findByID({
-              collection: 'users',
-              id: jar.creator,
-            })
-          : jar.creator
-
-      if (!creator?.accountNumber) {
-        throw new APIError("Mobile money contribution can't be made at this time", 400)
-      }
-    }
   } catch (error) {
     // If it's our custom APIError, throw it as is
     if (error instanceof APIError) {
