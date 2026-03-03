@@ -354,38 +354,22 @@ class _JarDetailViewState extends State<JarDetailView> {
                           actions: [
                             const NotificationIconButton(),
                             if (state is JarSummaryLoaded)
-                              BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, authState) {
-                                  String kycStatus = 'none';
-                                  if (authState is AuthAuthenticated) {
-                                    kycStatus = authState.user.kycStatus;
-                                  }
-
-                                  return AppIconButton(
-                                    key: const Key('request_button_qr_code'),
-                                    opacity: 0.8,
-                                    onPressed: () {
-                                      // Check KYC verification before allowing request
-                                      if (kycStatus != 'verified') {
-                                        context.push(AppRoutes.kycView);
-                                        return;
-                                      }
-
-                                      context.push(
-                                        AppRoutes.contributionRequest,
-                                        extra: {
-                                          'paymentLink': state.jarData.link,
-                                          'jarName': state.jarData.name,
-                                        },
-                                      );
+                              AppIconButton(
+                                key: const Key('request_button_qr_code'),
+                                opacity: 0.8,
+                                onPressed: () {
+                                  context.push(
+                                    AppRoutes.contributionRequest,
+                                    extra: {
+                                      'paymentLink': state.jarData.link,
+                                      'jarName': state.jarData.name,
                                     },
-                                    icon: Icons.qr_code,
-                                    enabled:
-                                        state.jarData.status !=
-                                        JarStatus.sealed,
-                                    size: const Size(40, 40),
                                   );
                                 },
+                                icon: Icons.qr_code,
+                                enabled:
+                                    state.jarData.status != JarStatus.sealed,
+                                size: const Size(40, 40),
                               ),
                             Padding(
                               padding: const EdgeInsets.only(
@@ -585,56 +569,41 @@ class _JarDetailViewState extends State<JarDetailView> {
                           ),
                         ),
                         Expanded(
-                          child: BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, authState) {
-                              String kycStatus = 'none';
-                              if (authState is AuthAuthenticated) {
-                                kycStatus = authState.user.kycStatus;
-                              }
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  AppIconButton(
-                                    key: const Key('request_button'),
-                                    enabled:
-                                        jarData.status != JarStatus.sealed &&
-                                        jarData.status != JarStatus.frozen,
-                                    onPressed: () {
-                                      // Check KYC verification before allowing request
-                                      if (kycStatus != 'verified') {
-                                        context.push(AppRoutes.kycView);
-                                        return;
-                                      }
-
-                                      context.push(
-                                        AppRoutes.contributionRequest,
-                                        extra: {
-                                          'paymentLink': state.jarData.link,
-                                          'jarName': state.jarData.name,
-                                        },
-                                      );
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AppIconButton(
+                                key: const Key('request_button'),
+                                enabled:
+                                    jarData.status != JarStatus.sealed &&
+                                    jarData.status != JarStatus.frozen,
+                                onPressed: () {
+                                  context.push(
+                                    AppRoutes.contributionRequest,
+                                    extra: {
+                                      'paymentLink': state.jarData.link,
+                                      'jarName': state.jarData.name,
                                     },
-                                    icon: Icons.call_received,
-                                    opacity: 0.8,
+                                  );
+                                },
+                                icon: Icons.call_received,
+                                opacity: 0.8,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingXs),
+                              Text(
+                                localizations.request,
+                                style: TextStyles.titleMediumS.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color?.withValues(
+                                    alpha:
+                                        jarData.status == JarStatus.sealed
+                                            ? 0.4
+                                            : 1.0,
                                   ),
-                                  const SizedBox(height: AppSpacing.spacingXs),
-                                  Text(
-                                    localizations.request,
-                                    style: TextStyles.titleMediumS.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge?.color?.withValues(
-                                        alpha:
-                                            jarData.status == JarStatus.sealed
-                                                ? 0.4
-                                                : 1.0,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Expanded(
