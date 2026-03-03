@@ -42,7 +42,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       if (jar) {
         const isCreator = jar.creator?.id === req.user!.id
         const isInvitedCollector = jar.invitedCollectors?.some(
-          (collector: { collector?: { id: string } }) => collector.collector?.id === req.user!.id,
+          (collector: { collector?: { id: string }; status?: string }) =>
+            collector.collector?.id === req.user!.id && collector.status === 'accepted',
         )
 
         // If user doesn't have access, fall back to getting their first jar
