@@ -50,7 +50,6 @@ class PaymentMethodUtils {
     return {
       'mtn': 'MTN Mobile Money',
       'telecel': 'Telecel Cash',
-      'atl': 'AirtelTigo Money',
     };
   }
 

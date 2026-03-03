@@ -127,7 +127,6 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     // Map mobile money provider to Eganow paypartner code
     const providerMap: Record<string, string> = {
       mtn: 'MTNGH',
-      airteltigo: 'ATGH',
       telecel: 'TCELGH',
     }
 

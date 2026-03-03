@@ -72,7 +72,6 @@ export const refundContribution = async (req: PayloadRequest) => {
     // Map provider early to fail fast
     const providerMap: Record<string, string> = {
       mtn: 'MTNGH',
-      airteltigo: 'ATGH',
       telecel: 'TCELGH',
     }
 

@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/notification_action_button.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/jar_invite_preview_sheet.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_report_sheet.dart';
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
 // Consider renaming to `NotificationsListView` across the project when convenient.
@@ -185,6 +186,22 @@ class BuildNotificationType extends StatelessWidget {
                         action: result!,
                       ),
                     );
+                  } else if (result == 'report') {
+                    if (!context.mounted) return;
+                    final jarId = notification.data?['jarId'] ?? '';
+                    if (jarId.isNotEmpty) {
+                      final reported = await JarReportSheet.show(
+                        context: context,
+                        jarId: jarId,
+                      );
+                      if (reported == true && context.mounted) {
+                        AppSnackBar.show(
+                          context,
+                          message: 'Report submitted successfully',
+                          type: SnackBarType.success,
+                        );
+                      }
+                    }
                   }
                 },
               ),

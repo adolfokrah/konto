@@ -86,7 +86,7 @@ class MomoChargeModel {
   bool get isPayOffline => status == 'pay_offline';
   bool get isSendOtp => status == 'send_otp';
 
-  /// Check if the charge requires offline authorization (MTN, ATL)
+  /// Check if the charge requires offline authorization (MTN)
   bool get requiresOfflineAuthorization => isPayOffline;
 
   /// Check if the charge requires OTP (Telecel)

@@ -47,7 +47,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   final List<String> _operators = [
     'MTN Mobile Money',
     'Telecel Cash',
-    'AirtelTigo Money',
   ];
 
   // System settings for collection fee

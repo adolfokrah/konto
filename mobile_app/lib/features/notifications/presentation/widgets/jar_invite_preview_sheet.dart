@@ -231,6 +231,50 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: AppSpacing.spacingM),
+
+                            // Safety notice
+                            Container(
+                              padding: const EdgeInsets.all(
+                                  AppSpacing.spacingS),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(
+                                    AppRadius.radiusM),
+                              ),
+                              child: Row(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 18,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Before accepting, make sure you know and trust the organizer of this jar.',
+                                      style: TextStyles.titleRegularSm
+                                          .copyWith(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color
+                                            ?.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -261,6 +305,26 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.spacingXs),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop('report'),
+                    child: Text(
+                      'Report this jar',
+                      style: TextStyles.titleRegularSm.copyWith(
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withValues(alpha: 0.4),
+                        decoration: TextDecoration.underline,
+                        decorationColor: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withValues(alpha: 0.4),
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.spacingM),

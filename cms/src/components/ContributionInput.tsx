@@ -43,7 +43,7 @@ export default function ContributionInput({
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
-  const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'airteltigo' | 'telecel'>('mtn')
+  const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const router = useRouter()
 
@@ -337,11 +337,10 @@ export default function ContributionInput({
           <div className="relative">
             <select
               value={mobileMoneyProvider}
-              onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'airteltigo' | 'telecel')}
+              onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'telecel')}
               className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors px-4 pr-10 appearance-none outline-none focus:border-gray-400"
             >
               <option value="mtn">MTN Mobile Money</option>
-              <option value="airteltigo">AirtelTigo Money</option>
               <option value="telecel">Telecel Cash</option>
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />

@@ -47,7 +47,6 @@ export const processRefundTask = {
       // Map provider
       const providerMap: Record<string, string> = {
         mtn: 'MTNGH',
-        airteltigo: 'ATGH',
         telecel: 'TCELGH',
       }
 

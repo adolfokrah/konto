@@ -47,7 +47,7 @@ export const Footer = () => {
           <br />
           Payments & Mobile Money. Card and mobile-money payments shown in the Hoga app are
           processed by licensed payment service providers (e.g., Paystack) and by telco e-money
-          issuers where applicable (e.g., MTN MoMo, AirtelTigo Money, Telecel Cash). Those providers
+          issuers where applicable (e.g., MTN MoMo, Telecel Cash). Those providers
           are regulated in their respective jurisdictions.
           <br />
           KYC. Organizer identity verification is performed via approved third-party providers

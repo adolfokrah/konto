@@ -104,7 +104,6 @@ export const processPayoutTask = {
       // Map provider
       const providerMap: Record<string, string> = {
         mtn: 'MTNGH',
-        airteltigo: 'ATGH',
         telecel: 'TCELGH',
       }
 
