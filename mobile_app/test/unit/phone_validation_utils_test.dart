@@ -18,6 +18,14 @@ void main() {
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0501234567'), true);
       });
 
+      test('should validate AirtelTigo numbers correctly', () {
+        // AirtelTigo prefixes: 26, 27, 56, 57
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0261234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0271234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0561234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0571234567'), true);
+      });
+
       test('should validate Glo numbers correctly', () {
         // Glo prefix: 23
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0231234567'), true);
@@ -166,6 +174,13 @@ void main() {
         expect(PhoneValidationUtils.getNetworkName('0501234567'), 'Vodafone');
       });
 
+      test('should identify AirtelTigo networks', () {
+        expect(PhoneValidationUtils.getNetworkName('0261234567'), 'AirtelTigo');
+        expect(PhoneValidationUtils.getNetworkName('0271234567'), 'AirtelTigo');
+        expect(PhoneValidationUtils.getNetworkName('0561234567'), 'AirtelTigo');
+        expect(PhoneValidationUtils.getNetworkName('0571234567'), 'AirtelTigo');
+      });
+
       test('should identify Glo networks', () {
         expect(PhoneValidationUtils.getNetworkName('0231234567'), 'Glo');
       });
@@ -173,7 +188,7 @@ void main() {
       test('should work with different formats', () {
         expect(PhoneValidationUtils.getNetworkName('+233241234567'), 'MTN');
         expect(PhoneValidationUtils.getNetworkName('233201234567'), 'Vodafone');
-        expect(PhoneValidationUtils.getNetworkName('231234567'), 'Glo');
+        expect(PhoneValidationUtils.getNetworkName('261234567'), 'AirtelTigo');
       });
 
       test('should return Unknown for invalid numbers', () {

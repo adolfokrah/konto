@@ -3,10 +3,11 @@ class PhoneValidationUtils {
   /// Valid Ghana mobile network prefixes (without the leading 0)
   /// MTN: 24, 54, 55, 59
   /// Vodafone: 20, 50
+  /// AirtelTigo: 26, 27, 56, 57
   /// Glo: 23
   static const List<String> _validGhanaPrefixes = [
-    '20', '23', '24', // First digit 2
-    '50', '54', '55', '59', // First digit 5
+    '20', '23', '24', '26', '27', // First digit 2
+    '50', '54', '55', '56', '57', '59', // First digit 5
   ];
 
   /// Validates a Ghana phone number
@@ -110,7 +111,7 @@ class PhoneValidationUtils {
 
   /// Gets the mobile network name from a Ghana phone number
   ///
-  /// Returns the network name (MTN, Vodafone, Glo) or 'Unknown'
+  /// Returns the network name (MTN, Vodafone, AirtelTigo, Glo) or 'Unknown'
   static String getNetworkName(String phoneNumber) {
     if (!isValidGhanaPhoneNumber(phoneNumber)) {
       return 'Unknown';
@@ -140,6 +141,11 @@ class PhoneValidationUtils {
       case '20':
       case '50':
         return 'Vodafone';
+      case '26':
+      case '27':
+      case '56':
+      case '57':
+        return 'AirtelTigo';
       case '23':
         return 'Glo';
       default:
@@ -185,7 +191,7 @@ class PhoneValidationUtils {
 
     String prefix = digitsOnly.substring(0, 2);
     if (!_validGhanaPrefixes.contains(prefix)) {
-      return 'Invalid network prefix. Must start with: 020, 023, 024, 050, 054, 055, or 059';
+      return 'Invalid network prefix. Must start with: 020, 023, 024, 026, 027, 050, 054, 055, 056, 057, or 059';
     }
 
     return 'Invalid phone number';
