@@ -5,13 +5,13 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
 export default function ReportJarButton({ jarId }: { jarId: string }) {
   const [open, setOpen] = useState(false)
@@ -49,17 +49,17 @@ export default function ReportJarButton({ jarId }: { jarId: string }) {
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <button className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors">
           Report this jar
         </button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader>
-          <SheetTitle>Report Jar</SheetTitle>
-          <SheetDescription>Tell us why you want to report this jar.</SheetDescription>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Report Jar</DialogTitle>
+          <DialogDescription>Tell us why you want to report this jar.</DialogDescription>
+        </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -76,7 +76,7 @@ export default function ReportJarButton({ jarId }: { jarId: string }) {
             {submitting ? 'Submitting...' : 'Submit Report'}
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
