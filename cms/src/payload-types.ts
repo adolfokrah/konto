@@ -1546,8 +1546,6 @@ export interface JarReport {
   jar: string | Jar;
   message: string;
   user?: (string | null) | User;
-  reporterName?: string | null;
-  status: 'pending' | 'reviewed' | 'dismissed';
   updatedAt: string;
   createdAt: string;
 }
@@ -2556,8 +2554,6 @@ export interface JarReportsSelect<T extends boolean = true> {
   jar?: T;
   message?: T;
   user?: T;
-  reporterName?: T;
-  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

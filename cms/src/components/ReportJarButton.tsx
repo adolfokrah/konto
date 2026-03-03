@@ -16,7 +16,6 @@ import {
 export default function ReportJarButton({ jarId }: { jarId: string }) {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
-  const [reporterName, setReporterName] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async () => {
@@ -30,11 +29,7 @@ export default function ReportJarButton({ jarId }: { jarId: string }) {
       const res = await fetch('/api/jar-reports/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jarId,
-          message: message.trim(),
-          ...(reporterName.trim() ? { reporterName: reporterName.trim() } : {}),
-        }),
+        body: JSON.stringify({ jarId, message: message.trim() }),
       })
 
       const data = await res.json()
@@ -42,7 +37,6 @@ export default function ReportJarButton({ jarId }: { jarId: string }) {
       if (data.success) {
         toast.success('Report submitted successfully')
         setMessage('')
-        setReporterName('')
         setOpen(false)
       } else {
         toast.error(data.message || 'Failed to submit report')
@@ -67,18 +61,6 @@ export default function ReportJarButton({ jarId }: { jarId: string }) {
           <SheetDescription>Tell us why you want to report this jar.</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Your name (optional)
-            </label>
-            <input
-              type="text"
-              value={reporterName}
-              onChange={(e) => setReporterName(e.target.value)}
-              placeholder="Enter your name"
-              className="flex h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            />
-          </div>
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">
               Reason for report

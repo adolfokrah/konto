@@ -3,7 +3,7 @@ import type { PayloadRequest } from 'payload'
 export const submitReport = async (req: PayloadRequest) => {
   try {
     const body = (req as any).data || {}
-    const { jarId, message, reporterName } = body
+    const { jarId, message } = body
 
     if (!jarId || typeof jarId !== 'string') {
       return Response.json({ success: false, message: 'jarId is required' }, { status: 400 })
@@ -26,11 +26,7 @@ export const submitReport = async (req: PayloadRequest) => {
     const reportData = {
       jar: jarId,
       message: message.trim(),
-      status: 'pending' as const,
       ...(req.user ? { user: req.user.id } : {}),
-      ...(reporterName && typeof reporterName === 'string'
-        ? { reporterName: reporterName.trim() }
-        : {}),
     }
 
     await req.payload.create({

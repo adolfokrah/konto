@@ -5,7 +5,7 @@ export const JarReports: CollectionConfig = {
   slug: 'jar-reports',
   admin: {
     useAsTitle: 'message',
-    defaultColumns: ['jar', 'message', 'user', 'reporterName', 'status', 'createdAt'],
+    defaultColumns: ['jar', 'message', 'user', 'createdAt'],
   },
   access: {
     create: () => true,
@@ -37,22 +37,6 @@ export const JarReports: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: false,
-    },
-    {
-      name: 'reporterName',
-      type: 'text',
-      required: false,
-    },
-    {
-      name: 'status',
-      type: 'select',
-      options: [
-        { label: 'Pending', value: 'pending' },
-        { label: 'Reviewed', value: 'reviewed' },
-        { label: 'Dismissed', value: 'dismissed' },
-      ],
-      defaultValue: 'pending',
-      required: true,
     },
   ],
 }
