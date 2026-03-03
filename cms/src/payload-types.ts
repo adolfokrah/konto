@@ -135,6 +135,7 @@ export interface Config {
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
       'process-payout': TaskProcessPayout;
       'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
+      'process-refund': TaskProcessRefund;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1377,7 +1378,7 @@ export interface Transaction {
     hogapayRevenue?: number | null;
   };
   paymentStatus?: ('pending' | 'completed' | 'failed') | null;
-  type: 'payout' | 'contribution';
+  type: 'payout' | 'contribution' | 'refund';
   /**
    * Whether this contribution has been settled
    */
@@ -1402,6 +1403,10 @@ export interface Transaction {
    * User who collected the contribution
    */
   collector?: (string | null) | User;
+  /**
+   * The original contribution that was refunded
+   */
+  refundedTransaction?: (string | null) | Transaction;
   /**
    * Check if this contribution was made via a payment link
    */
@@ -1665,6 +1670,7 @@ export interface PayloadJob {
           | 'jar-creation-reminder-daily'
           | 'process-payout'
           | 'check-eganow-payout-balance'
+          | 'process-refund'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1708,6 +1714,7 @@ export interface PayloadJob {
         | 'jar-creation-reminder-daily'
         | 'process-payout'
         | 'check-eganow-payout-balance'
+        | 'process-refund'
         | 'schedulePublish'
       )
     | null;
@@ -2447,6 +2454,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   collector?: T;
+  refundedTransaction?: T;
   viaPaymentLink?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3080,6 +3088,21 @@ export interface TaskProcessPayout {
  */
 export interface TaskCheckEganowPayoutBalance {
   input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcess-refund".
+ */
+export interface TaskProcessRefund {
+  input: {
+    originalTransactionId: string;
+    jarId: string;
+    contributorPhone: string;
+    contributorName: string;
+    mobileMoneyProvider: string;
+    amount: string;
+  };
   output?: unknown;
 }
 /**

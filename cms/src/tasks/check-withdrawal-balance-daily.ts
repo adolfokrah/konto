@@ -31,25 +31,59 @@ export const checkWithdrawalBalanceDailyTask = {
 
       console.log(`Using minimum payout amount: ${minimumPayoutAmount}`)
 
-      // Find all open jars with balance >= minimum payout amount
-      const jarsWithBalance = await payload.find({
+      // Find all open jars
+      const openJars = await payload.find({
         collection: 'jars',
         where: {
-          balance: {
-            greater_than_equal: minimumPayoutAmount,
-          },
-          status: {
-            equals: 'open',
-          },
+          status: { equals: 'open' },
         },
         pagination: false,
         depth: 1,
         overrideAccess: true,
       })
 
-      console.log(`Found ${jarsWithBalance.docs.length} jars with withdrawable balance`)
+      // Calculate balance for each jar from transactions
+      const jarsWithCalculatedBalance: Array<{
+        jar: any
+        balance: number
+      }> = []
 
-      if (jarsWithBalance.docs.length === 0) {
+      for (const jar of openJars.docs as any[]) {
+        const transactions = await payload.find({
+          collection: 'transactions',
+          where: { jar: { equals: jar.id } },
+          pagination: false,
+          select: { amountContributed: true, type: true, isSettled: true, paymentStatus: true },
+          overrideAccess: true,
+        })
+
+        const settledSum = transactions.docs
+          .filter(
+            (tx: any) =>
+              tx.type === 'contribution' &&
+              tx.paymentStatus === 'completed' &&
+              tx.isSettled === true,
+          )
+          .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
+
+        const payoutsSum = transactions.docs
+          .filter(
+            (tx: any) =>
+              (tx.type === 'payout' || tx.type === 'refund') &&
+              (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
+          )
+          .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
+
+        const balance = settledSum + payoutsSum
+
+        if (balance >= minimumPayoutAmount) {
+          jarsWithCalculatedBalance.push({ jar, balance })
+        }
+      }
+
+      console.log(`Found ${jarsWithCalculatedBalance.length} jars with withdrawable balance`)
+
+      if (jarsWithCalculatedBalance.length === 0) {
         return {
           output: {
             success: true,
@@ -65,7 +99,7 @@ export const checkWithdrawalBalanceDailyTask = {
       }
 
       // Group jars by user (creator) and collect jar details
-      const userJarBalances = jarsWithBalance.docs.reduce((acc: any, jar: any) => {
+      const userJarBalances = jarsWithCalculatedBalance.reduce((acc: any, { jar, balance }) => {
         const userId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
         const creator = typeof jar.creator === 'string' ? null : jar.creator
 
@@ -81,7 +115,7 @@ export const checkWithdrawalBalanceDailyTask = {
           acc[userId].jarsWithBalance.push({
             jarId: jar.id,
             jarName: jar.name,
-            balance: jar.balance,
+            balance,
             currency: jar.currency,
           })
         }
@@ -151,7 +185,7 @@ export const checkWithdrawalBalanceDailyTask = {
           success: true,
           message: `Daily withdrawal balance check completed. Sent ${successCount} notifications.`,
           stats: {
-            totalJarsWithBalance: jarsWithBalance.docs.length,
+            totalJarsWithBalance: jarsWithCalculatedBalance.length,
             usersNotified: successCount,
             notificationsSent: successCount,
             notificationsFailed: failureCount,
