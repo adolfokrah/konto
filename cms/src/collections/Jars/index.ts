@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { getJarSummary } from './endpoints/get-jar-summary'
 import { getUserJars } from './endpoints/get-user-jars'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
+import { leaveJar } from './endpoints/leave-jar'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
 import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
@@ -232,6 +233,11 @@ export const Jars: CollectionConfig = {
       method: 'post',
       path: '/accept-decline-invite',
       handler: acceptDeclineInvite,
+    },
+    {
+      method: 'post',
+      path: '/leave-jar',
+      handler: leaveJar,
     },
   ],
 }

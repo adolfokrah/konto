@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/notification_action_button.dart';
+import 'package:Hoga/features/notifications/presentation/widgets/jar_invite_preview_sheet.dart';
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
 // Consider renaming to `NotificationsListView` across the project when convenient.
@@ -168,33 +169,24 @@ class BuildNotificationType extends StatelessWidget {
           children: [
             content,
             if (notification.status == NotificationStatus.unread) ...[
-              Row(
-                children: [
-                  NotificationActionButton(
-                    label: 'Accept',
-                    onTap: () {
-                      context.read<JarInviteActionBloc>().add(
-                        AcceptDeclineJarInvite(
-                          jarId: notification.data?['jarId'] ?? '',
-                          action: 'accept',
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: AppSpacing.spacingM),
-                  NotificationActionButton(
-                    label: 'Decline',
-                    onTap: () {
-                      context.read<JarInviteActionBloc>().add(
-                        AcceptDeclineJarInvite(
-                          jarId: notification.data?['jarId'] ?? '',
-                          action: 'decline',
-                        ),
-                      );
-                    },
-                    textColor: Colors.red,
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.spacingS),
+              NotificationActionButton(
+                label: 'View',
+                onTap: () async {
+                  final result = await JarInvitePreviewSheet.show(
+                    context: context,
+                    notification: notification,
+                  );
+                  if (result == 'accept' || result == 'decline') {
+                    if (!context.mounted) return;
+                    context.read<JarInviteActionBloc>().add(
+                      AcceptDeclineJarInvite(
+                        jarId: notification.data?['jarId'] ?? '',
+                        action: result!,
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ],

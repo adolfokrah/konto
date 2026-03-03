@@ -203,4 +203,30 @@ class JarRepository {
       };
     }
   }
+
+  /// Leave a jar as a collector
+  Future<Map<String, dynamic>> leaveJar({required String jarId}) async {
+    try {
+      final response = await _jarApiProvider.leaveJar(jarId: jarId);
+
+      if (response['success'] == true) {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'You have left the jar',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': response['message'] ?? 'Failed to leave jar',
+          'error': response['error'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred while leaving jar',
+        'error': e.toString(),
+      };
+    }
+  }
 }

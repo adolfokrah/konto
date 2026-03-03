@@ -9,3 +9,9 @@ final class UpdateJarRequested extends UpdateJarEvent {
 
   UpdateJarRequested({required this.jarId, required this.updates});
 }
+
+final class LeaveJarRequested extends UpdateJarEvent {
+  final String jarId;
+
+  LeaveJarRequested({required this.jarId});
+}

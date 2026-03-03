@@ -38,11 +38,14 @@ export const sendInviteNotificationToUser: CollectionAfterChangeHook = async ({
       prevCollectors.map((c) => getCollectorId(c.collector)).filter(Boolean) as string[],
     )
 
+    // Only consider pending collectors that weren't in the previous version
     const newCollectors = currentCollectors.filter((c) => {
       const collectorId = getCollectorId(c.collector)
       if (!collectorId) return false
-      const isNew = !prevCollectorIds.has(collectorId)
-      return isNew
+      // Skip collectors that already existed or are already accepted
+      if (prevCollectorIds.has(collectorId)) return false
+      if (c.status === 'accepted') return false
+      return true
     })
 
     if (newCollectors.length === 0) return doc
@@ -58,20 +61,73 @@ export const sendInviteNotificationToUser: CollectionAfterChangeHook = async ({
 
     if (collectorIds.length === 0) return doc // nothing resolvable
 
+    const jarId = (doc as any)?.id
+
+    // Check for existing jar invite notifications to prevent duplicates
+    const existingNotifications = await req.payload.find({
+      collection: 'notifications',
+      where: {
+        type: { equals: 'jarInvite' },
+        'data.jarId': { equals: jarId },
+        user: { in: collectorIds },
+      },
+      pagination: false,
+      select: { user: true },
+    })
+
+    const alreadyNotifiedUserIds = new Set(
+      existingNotifications.docs.map((n: any) =>
+        typeof n.user === 'string' ? n.user : n.user?.id,
+      ),
+    )
+
+    // Only notify users who don't already have an invite notification for this jar
+    const usersToNotify = collectorIds.filter((id) => !alreadyNotifiedUserIds.has(id))
+
+    if (usersToNotify.length === 0) return doc
+
     // Query users by ID using 'in' operator
     const usersRes = await req.payload.find({
       collection: 'users',
       where: {
-        id: { in: collectorIds },
+        id: { in: usersToNotify },
       },
-      limit: collectorIds.length,
+      limit: usersToNotify.length,
     })
 
     if (!usersRes?.docs?.length) return doc
 
     const inviterName = (req.user as any)?.fullName || 'Someone'
     const jarName = (doc as any)?.name || 'a jar'
-    const jarId = (doc as any)?.id
+    const jarDescription = (doc as any)?.description || ''
+
+    // Resolve jar image URL
+    let jarImage: string | null = null
+    const docImage = (doc as any)?.image
+    if (docImage) {
+      if (typeof docImage === 'object' && docImage.url) {
+        jarImage = docImage.url
+      } else if (typeof docImage === 'string') {
+        try {
+          const media = await req.payload.findByID({ collection: 'media', id: docImage })
+          jarImage = (media as any)?.url || null
+        } catch {}
+      }
+    }
+
+    // Resolve creator photo URL (Users collection field is 'photo', not 'avatar')
+    let creatorAvatar: string | null = null
+    const userPhoto = (req.user as any)?.photo
+    if (userPhoto) {
+      if (typeof userPhoto === 'object' && userPhoto.url) {
+        creatorAvatar = userPhoto.url
+      } else if (typeof userPhoto === 'string') {
+        try {
+          const media = await req.payload.findByID({ collection: 'media', id: userPhoto })
+          creatorAvatar = (media as any)?.url || null
+        } catch {}
+      }
+    }
 
     // Prepare notification create promises
     const createPromises = usersRes.docs.map((user: any) =>
@@ -80,12 +136,15 @@ export const sendInviteNotificationToUser: CollectionAfterChangeHook = async ({
         data: {
           title: 'Jar Invitation',
           user: user.id,
-          // Consistent message referencing inviter & jar
-          message: `${inviterName} invited you to contribute to: ${jarName}`,
+          message: `${inviterName} invited you as a collector for ${jarName}`,
           type: 'jarInvite',
           status: 'unread',
           data: {
             jarId,
+            jarImage,
+            jarDescription,
+            creatorName: inviterName,
+            creatorAvatar,
           },
         },
       }),

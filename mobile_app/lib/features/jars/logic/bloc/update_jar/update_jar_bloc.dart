@@ -12,6 +12,20 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
     : _jarRepository = jarRepository,
       super(UpdateJarInitial()) {
     on<UpdateJarRequested>(_updateJarDynamic);
+    on<LeaveJarRequested>(_leaveJar);
+  }
+
+  Future<void> _leaveJar(
+    LeaveJarRequested event,
+    Emitter<UpdateJarState> emit,
+  ) async {
+    emit(UpdateJarInProgress());
+    final response = await _jarRepository.leaveJar(jarId: event.jarId);
+    if (response['success'] == true) {
+      emit(LeaveJarSuccess());
+    } else {
+      emit(LeaveJarFailure(response['message'] ?? 'Failed to leave jar'));
+    }
   }
 
   Future<void> _updateJarDynamic(

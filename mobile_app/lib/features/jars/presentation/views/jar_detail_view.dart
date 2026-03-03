@@ -31,6 +31,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_rel
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_balance_breakdown.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_info_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -237,6 +238,28 @@ class _JarDetailViewState extends State<JarDetailView> {
             context.read<JarSummaryReloadBloc>().add(
               ReloadJarSummaryRequested(),
             );
+          },
+        ),
+        BlocListener<UpdateJarBloc, UpdateJarState>(
+          listenWhen: (previous, current) =>
+              current is LeaveJarSuccess || current is LeaveJarFailure,
+          listener: (context, state) {
+            if (state is LeaveJarSuccess) {
+              AppSnackBar.show(
+                context,
+                message: 'You have left the jar',
+                type: SnackBarType.success,
+              );
+              // Refresh jar list and go back
+              context.read<JarListBloc>().add(LoadJarList());
+              context.go(AppRoutes.initial);
+            } else if (state is LeaveJarFailure) {
+              AppSnackBar.show(
+                context,
+                message: state.errorMessage,
+                type: SnackBarType.error,
+              );
+            }
           },
         ),
         BlocListener<OnboardingBloc, OnboardingState>(
@@ -626,7 +649,21 @@ class _JarDetailViewState extends State<JarDetailView> {
                                         ? () {
                                             context.push(AppRoutes.jarInfo);
                                           }
-                                        : null,
+                                        : () async {
+                                            final result =
+                                                await JarInfoSheet.show(
+                                              context: context,
+                                              jarData: jarData,
+                                            );
+                                            if (result == 'leave' &&
+                                                context.mounted) {
+                                              context
+                                                  .read<UpdateJarBloc>()
+                                                  .add(LeaveJarRequested(
+                                                    jarId: jarData.id,
+                                                  ));
+                                            }
+                                          },
                                     icon: Icons.info_outline,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingXs),

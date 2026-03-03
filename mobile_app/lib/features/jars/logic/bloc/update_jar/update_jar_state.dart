@@ -14,3 +14,11 @@ final class UpdateJarFailure extends UpdateJarState {
 
   UpdateJarFailure(this.errorMessage);
 }
+
+final class LeaveJarSuccess extends UpdateJarState {}
+
+final class LeaveJarFailure extends UpdateJarState {
+  final String errorMessage;
+
+  LeaveJarFailure(this.errorMessage);
+}

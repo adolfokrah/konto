@@ -280,4 +280,46 @@ class JarApiProvider extends BaseApiProvider {
       return handleApiError(e, 'updating jar');
     }
   }
+
+  /// Leave a jar as a collector
+  Future<Map<String, dynamic>> leaveJar({required String jarId}) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/leave-jar',
+        data: {'jarId': jarId},
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return handleApiError(e, 'leaving jar');
+    }
+  }
+
+  /// Get a lightweight jar preview (name, image, description, creator)
+  Future<Map<String, dynamic>> getJarPreview({required String jarId}) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      final response = await dio.get(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.jarsEndpoint}/$jarId',
+        queryParameters: {'depth': 1},
+        options: Options(headers: headers),
+      );
+
+      return {'success': true, 'data': response.data};
+    } catch (e) {
+      return handleApiError(e, 'fetching jar preview');
+    }
+  }
 }
