@@ -23,17 +23,14 @@ export const submitReport = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: 'Jar not found' }, { status: 404 })
     }
 
-    const reportData: Record<string, any> = {
+    const reportData = {
       jar: jarId,
       message: message.trim(),
-      status: 'pending',
-    }
-
-    // Attach user if authenticated, otherwise use reporterName
-    if (req.user) {
-      reportData.user = req.user.id
-    } else if (reporterName && typeof reporterName === 'string') {
-      reportData.reporterName = reporterName.trim()
+      status: 'pending' as const,
+      ...(req.user ? { user: req.user.id } : {}),
+      ...(reporterName && typeof reporterName === 'string'
+        ? { reporterName: reporterName.trim() }
+        : {}),
     }
 
     await req.payload.create({

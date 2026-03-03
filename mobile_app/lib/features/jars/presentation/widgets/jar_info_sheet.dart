@@ -174,7 +174,60 @@ class _JarInfoSheetState extends State<JarInfoSheet> {
                       width: double.infinity,
                       child: AppButton.outlined(
                         text: 'Leave Jar',
-                        onPressed: () => Navigator.of(context).pop('leave'),
+                        onPressed: () async {
+                          final confirmed = await showModalBottomSheet<bool>(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (ctx) => Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(ctx).colorScheme.surface,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(AppRadius.radiusM),
+                                  topRight: Radius.circular(AppRadius.radiusM),
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(AppSpacing.spacingL),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const DragHandle(),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  Text(
+                                    'Are you sure you want to leave this jar?',
+                                    style: TextStyles.titleBoldM,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingL),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: AppButton.outlined(
+                                          text: 'No',
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.spacingM),
+                                      Expanded(
+                                        child: AppButton.outlined(
+                                          text: 'Yes',
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          textColor: Colors.red,
+                                          borderColor: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                ],
+                              ),
+                            ),
+                          );
+                          if (confirmed == true && context.mounted) {
+                            Navigator.of(context).pop('leave');
+                          }
+                        },
                         textColor: Colors.red,
                         borderColor: Colors.red,
                       ),

@@ -77,6 +77,7 @@ export interface Config {
     notifications: Notification;
     deletedUserAccounts: DeletedUserAccount;
     dailyActiveUsers: DailyActiveUser;
+    'jar-reports': JarReport;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -98,6 +99,7 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     deletedUserAccounts: DeletedUserAccountsSelect<false> | DeletedUserAccountsSelect<true>;
     dailyActiveUsers: DailyActiveUsersSelect<false> | DailyActiveUsersSelect<true>;
+    'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1497,7 +1499,7 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc';
+  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen';
   title: string;
   message: string;
   data?:
@@ -1532,6 +1534,20 @@ export interface DeletedUserAccount {
 export interface DailyActiveUser {
   id: string;
   user: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jar-reports".
+ */
+export interface JarReport {
+  id: string;
+  jar: string | Jar;
+  message: string;
+  user?: (string | null) | User;
+  reporterName?: string | null;
+  status: 'pending' | 'reviewed' | 'dismissed';
   updatedAt: string;
   createdAt: string;
 }
@@ -1779,6 +1795,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'dailyActiveUsers';
         value: string | DailyActiveUser;
+      } | null)
+    | ({
+        relationTo: 'jar-reports';
+        value: string | JarReport;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2525,6 +2545,19 @@ export interface DeletedUserAccountsSelect<T extends boolean = true> {
  */
 export interface DailyActiveUsersSelect<T extends boolean = true> {
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jar-reports_select".
+ */
+export interface JarReportsSelect<T extends boolean = true> {
+  jar?: T;
+  message?: T;
+  user?: T;
+  reporterName?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
