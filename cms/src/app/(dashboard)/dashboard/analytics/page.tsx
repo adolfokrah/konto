@@ -274,7 +274,7 @@ export default async function AnalyticsPage() {
       collection: 'transactions',
       where: {
         paymentStatus: { in: ['pending', 'completed'] },
-        type: { equals: 'payout' },
+        type: { in: ['payout', 'refund'] },
       },
       pagination: false,
       select: { amountContributed: true },
@@ -315,7 +315,7 @@ export default async function AnalyticsPage() {
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
-        type: { equals: 'payout' },
+        type: { in: ['payout', 'refund'] },
       },
       pagination: false,
       select: { amountContributed: true },

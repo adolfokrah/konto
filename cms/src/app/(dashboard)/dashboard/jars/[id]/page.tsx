@@ -120,7 +120,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     else if (values.length > 1) txWhere.paymentStatus = { in: values }
   }
   if (txType) {
-    const valid = ['contribution', 'payout']
+    const valid = ['contribution', 'payout', 'refund']
     const values = txType.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) txWhere.type = { equals: values[0] }
     else if (values.length > 1) txWhere.type = { in: values }
@@ -189,8 +189,8 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
         upcomingBalance += tx.amountContributed || 0
       }
-    } else if (tx.type === 'payout') {
-      // Payout amounts are stored as negative — include pending and completed
+    } else if (tx.type === 'payout' || tx.type === 'refund') {
+      // Payout/refund amounts are stored as negative — include pending and completed
       totalPayouts += tx.amountContributed || 0
     }
   }

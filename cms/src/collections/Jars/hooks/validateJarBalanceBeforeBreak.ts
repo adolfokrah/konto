@@ -1,4 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
+import { APIError } from 'payload'
 
 /**
  * Prevents a jar from being set to 'broken' if it has a balance > 0.
@@ -36,7 +37,7 @@ export const validateJarBalanceBeforeBreak: CollectionBeforeChangeHook = async (
   const payoutsSum = allTransactions.docs
     .filter(
       (tx: any) =>
-        tx.type === 'payout' &&
+        (tx.type === 'payout' || tx.type === 'refund') &&
         (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
     )
     .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
@@ -44,8 +45,9 @@ export const validateJarBalanceBeforeBreak: CollectionBeforeChangeHook = async (
   const balance = settledSum + payoutsSum
 
   if (balance > 0) {
-    throw new Error(
+    throw new APIError(
       `Cannot break a jar with remaining balance of ${balance.toFixed(2)}. Please withdraw all funds first.`,
+      400,
     )
   }
 

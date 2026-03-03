@@ -107,8 +107,8 @@ export default async function JarsPage({ searchParams }: Props) {
         if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
           upcomingTotals[jarId] = (upcomingTotals[jarId] || 0) + (tx.amountContributed || 0)
         }
-      } else if (tx.type === 'payout') {
-        // Payout amounts are stored as negative — include pending and completed
+      } else if (tx.type === 'payout' || tx.type === 'refund') {
+        // Payout/refund amounts are stored as negative — include pending and completed
         payoutTotals[jarId] = (payoutTotals[jarId] || 0) + (tx.amountContributed || 0)
       }
     }

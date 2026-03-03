@@ -28,6 +28,7 @@ import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactio
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
 import { processPayoutTask } from './tasks/process-payout'
 import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
+import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
@@ -148,6 +149,7 @@ export default buildConfig({
       jarCreationReminderDailyTask as any,
       processPayoutTask as any,
       checkEganowPayoutBalanceTask as any,
+      processRefundTask as any,
     ],
     autoRun: [
       {

@@ -84,7 +84,7 @@ export const processPayoutTask = {
       const payoutsSum = allTransactions.docs
         .filter(
           (tx: any) =>
-            tx.type === 'payout' &&
+            (tx.type === 'payout' || tx.type === 'refund') &&
             (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
         )
         .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)

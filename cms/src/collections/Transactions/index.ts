@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
 
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
@@ -15,6 +16,7 @@ import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 import { recalculateCharges } from './endpoints/recalculate-charges'
+import { refundContribution } from './endpoints/refund-contribution'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -53,7 +55,7 @@ export const Transactions: CollectionConfig = {
           ({ data }) => {
             // Phone number is only required for mobile-money payments
             if (data?.paymentMethod === 'mobile-money' && !data?.contributorPhoneNumber) {
-              throw new Error('Phone number is required for mobile-money payments')
+              throw new APIError('Phone number is required for mobile-money payments', 400)
             }
           },
         ],
@@ -81,7 +83,7 @@ export const Transactions: CollectionConfig = {
           ({ data }) => {
             // Mobile money provider is required for mobile-money payments
             if (data?.paymentMethod === 'mobile-money' && !data?.mobileMoneyProvider) {
-              throw new Error('Mobile money provider is required for mobile-money payments')
+              throw new APIError('Mobile money provider is required for mobile-money payments', 400)
             }
           },
         ],
@@ -100,7 +102,7 @@ export const Transactions: CollectionConfig = {
           ({ data }) => {
             // Account number is only required for bank payments
             if (data?.paymentMethod === 'bank' && !data?.accountNumber) {
-              throw new Error('Account number is required for bank payments')
+              throw new APIError('Account number is required for bank payments', 400)
             }
           },
         ],
@@ -173,6 +175,7 @@ export const Transactions: CollectionConfig = {
       options: [
         { label: 'payout', value: 'payout' },
         { label: 'contribution', value: 'contribution' },
+        { label: 'refund', value: 'refund' },
       ],
     },
     {
@@ -191,7 +194,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Transfer fee percentage applied to this payout',
         readOnly: true,
-        condition: (data) => data?.type === 'payout',
+        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
       },
     },
     {
@@ -200,7 +203,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Transfer fee amount deducted from this payout',
         readOnly: true,
-        condition: (data) => data?.type === 'payout',
+        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
       },
     },
     {
@@ -209,7 +212,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Net amount transferred to user (after fee deduction)',
         readOnly: true,
-        condition: (data) => data?.type === 'payout',
+        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
       },
     },
     {
@@ -286,6 +289,18 @@ export const Transactions: CollectionConfig = {
       // },
     },
     {
+      name: 'refundedTransaction',
+      type: 'relationship',
+      relationTo: 'transactions',
+      hasMany: false,
+      required: false,
+      admin: {
+        description: 'The original contribution that was refunded',
+        condition: (data) => data?.type === 'refund',
+        readOnly: true,
+      },
+    },
+    {
       name: 'viaPaymentLink',
       type: 'checkbox',
       defaultValue: false,
@@ -349,6 +364,11 @@ export const Transactions: CollectionConfig = {
       path: '/recalculate-charges',
       method: 'post',
       handler: recalculateCharges,
+    },
+    {
+      path: '/refund-contribution',
+      method: 'post',
+      handler: refundContribution,
     },
   ],
   hooks: {

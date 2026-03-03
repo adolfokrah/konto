@@ -37,7 +37,7 @@ function buildWhere(params: URLSearchParams): Record<string, any> {
     else if (values.length > 1) where.paymentStatus = { in: values }
   }
   if (type) {
-    const valid = ['contribution', 'payout']
+    const valid = ['contribution', 'payout', 'refund']
     const values = type.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) where.type = { equals: values[0] }
     else if (values.length > 1) where.type = { in: values }
@@ -133,7 +133,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
   docs.forEach((tx, idx) => {
     const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
     const amount = Math.abs(Number(tx.amountContributed || 0))
-    const isPayout = tx.type === 'payout'
+    const isPayout = tx.type === 'payout' || tx.type === 'refund'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))
@@ -445,7 +445,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
   docs.forEach((tx, idx) => {
     const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
     const amount = Math.abs(Number(tx.amountContributed || 0))
-    const isPayout = tx.type === 'payout'
+    const isPayout = tx.type === 'payout' || tx.type === 'refund'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))

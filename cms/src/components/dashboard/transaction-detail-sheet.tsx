@@ -156,7 +156,7 @@ export function TransactionDetailSheet({
               {/* Charges Breakdown */}
               {selected.chargesBreakdown && (() => {
                 const cb = selected.chargesBreakdown
-                const isPayout = selected.type === 'payout'
+                const isPayout = selected.type === 'payout' || selected.type === 'refund'
                 const abs = (v: number | null) => v != null ? Math.abs(v) : null
                 return (
                   <div>
@@ -190,7 +190,7 @@ export function TransactionDetailSheet({
               })()}
 
               {/* Payout Details */}
-              {selected.type === 'payout' && (
+              {(selected.type === 'payout' || selected.type === 'refund') && (
                 <div>
                   <h4 className="text-sm font-semibold mb-1">Payout Details</h4>
                   <Separator className="mb-2" />

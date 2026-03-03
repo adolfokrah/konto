@@ -55,19 +55,19 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
           equals: eganowReferenceNo,
         },
         type: {
-          equals: 'payout',
+          in: ['payout', 'refund'],
         },
       },
       limit: 1,
     })
 
     // Fallback: If not found by eganowReferenceNo, search by transaction ID extracted from transactionId
-    // TransactionId format: "payout-{transactionId}"
+    // TransactionId format: "payout-{transactionId}" or "refund-{transactionId}"
     if (transferResult.docs.length === 0 && transactionId) {
-      const transactionIdMatch = transactionId.match(/^payout-([a-f0-9]+)$/)
+      const transactionIdMatch = transactionId.match(/^(payout|refund)-([a-f0-9]+)$/)
       if (transactionIdMatch) {
-        const extractedTransactionId = transactionIdMatch[1]
-        console.log(`Searching for payout by transaction ID: ${extractedTransactionId}`)
+        const extractedTransactionId = transactionIdMatch[2]
+        console.log(`Searching for payout/refund by transaction ID: ${extractedTransactionId}`)
 
         transferResult = await req.payload.find({
           collection: 'transactions',
@@ -76,7 +76,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
               equals: extractedTransactionId,
             },
             type: {
-              equals: 'payout',
+              in: ['payout', 'refund'],
             },
           },
           limit: 1,
@@ -225,6 +225,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       if (creatorToken) {
         const fcmNotifications = new FCMPushNotifications()
         const grossAmount = Math.abs(Number(transferWithDetails.amountContributed))
+        const isRefund = (transferWithDetails.type as string) === 'refund'
 
         // Get fee information from transaction
         const feePercentage = transferWithDetails.payoutFeePercentage || 1
@@ -232,26 +233,45 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
           ? Math.abs(Number(transferWithDetails.payoutNetAmount))
           : grossAmount - (grossAmount * feePercentage) / 100
 
-        if (newStatus === 'completed') {
-          // Success notification - show net amount user received
-          const mobileMoneyProvider = transferWithDetails.mobileMoneyProvider || 'mobile money'
-          const notificationMessage = `${jar.currency} ${netAmount.toFixed(2)} sent to your ${mobileMoneyProvider.toUpperCase()} account (${feePercentage}% fee deducted)`
-          const title = 'Payout Sent 💸'
-          await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
-            type: 'payout',
-            jarId: jar.id,
-            transactionId: transfer.id,
-          })
-        } else if (newStatus === 'failed') {
-          // Failure notification - show gross amount
+        if (isRefund) {
+          // Refund notifications
           const amount = `${jar.currency} ${grossAmount.toFixed(2)}`
-          const notificationMessage = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
-          const title = 'Transfer Failed ❌'
-          await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
-            type: 'payout-failed',
-            jarId: jar.id,
-            transactionId: transfer.id,
-          })
+          if (newStatus === 'completed') {
+            await fcmNotifications.sendNotification(
+              [creatorToken],
+              `Refund of ${amount} for "${jar.name}" was successfully sent to the contributor.`,
+              'Refund Processed',
+              { type: 'refund', jarId: jar.id, transactionId: transfer.id },
+            )
+          } else if (newStatus === 'failed') {
+            await fcmNotifications.sendNotification(
+              [creatorToken],
+              `Refund of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}.`,
+              'Refund Failed',
+              { type: 'refund-failed', jarId: jar.id, transactionId: transfer.id },
+            )
+          }
+        } else {
+          // Payout notifications
+          if (newStatus === 'completed') {
+            const mobileMoneyProvider = transferWithDetails.mobileMoneyProvider || 'mobile money'
+            const notificationMessage = `${jar.currency} ${netAmount.toFixed(2)} sent to your ${mobileMoneyProvider.toUpperCase()} account (${feePercentage}% fee deducted)`
+            const title = 'Payout Sent 💸'
+            await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
+              type: 'payout',
+              jarId: jar.id,
+              transactionId: transfer.id,
+            })
+          } else if (newStatus === 'failed') {
+            const amount = `${jar.currency} ${grossAmount.toFixed(2)}`
+            const notificationMessage = `Your transfer of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}. Please try again.`
+            const title = 'Transfer Failed ❌'
+            await fcmNotifications.sendNotification([creatorToken], notificationMessage, title, {
+              type: 'payout-failed',
+              jarId: jar.id,
+              transactionId: transfer.id,
+            })
+          }
         }
       }
     }

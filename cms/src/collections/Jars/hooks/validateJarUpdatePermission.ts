@@ -1,4 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
+import { APIError } from 'payload'
 
 /**
  * Hook to validate that only the jar creator or an admin can update jar details.
@@ -28,7 +29,7 @@ export const validateJarUpdatePermission: CollectionBeforeChangeHook = async ({
   if (!creatorId) return data
 
   if (user.id !== creatorId) {
-    throw new Error('Only the jar creator or an admin can update this jar.')
+    throw new APIError('Only the jar creator or an admin can update this jar.', 403)
   }
 
   return data

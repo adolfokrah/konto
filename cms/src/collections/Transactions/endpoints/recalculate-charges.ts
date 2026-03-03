@@ -7,7 +7,7 @@ export const recalculateCharges = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }
 
-    const cutoff = new Date('2026-02-14T00:00:00.000Z').toISOString()
+    const cutoff = new Date('2026-03-01T00:00:00.000Z').toISOString()
 
     const old = await req.payload.find({
       collection: 'transactions',
@@ -146,7 +146,7 @@ export const recalculateCharges = async (req: PayloadRequest) => {
 
     return Response.json({
       success: true,
-      message: `Reset ${updated} momo (before Feb 14), ${cashCount} cash, ${failedCount} failed to 0. Recalculated ${recalculated} momo (from Feb 14).`,
+      message: `Reset ${updated} momo (before Mar 1), ${cashCount} cash, ${failedCount} failed to 0. Recalculated ${recalculated} momo (from Mar 1).`,
       momoReset: updated,
       cashReset: cashCount,
       failedReset: failedCount,

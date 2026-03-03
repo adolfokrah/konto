@@ -1,4 +1,5 @@
 import type { CollectionBeforeDeleteHook } from 'payload'
+import { APIError } from 'payload'
 
 /**
  * Hook to validate that jar has no balance before deletion
@@ -20,12 +21,12 @@ export const validateJarBalanceBeforeDelete: CollectionBeforeDeleteHook = async 
     })
 
     if (!jar) {
-      throw new Error('Jar not found')
+      throw new APIError('Jar not found', 404)
     }
 
     // Check if jar is frozen (AML compliance)
     if (jar.status === 'frozen') {
-      throw new Error('Cannot delete a frozen jar. Please unfreeze it first.')
+      throw new APIError('Cannot delete a frozen jar. Please unfreeze it first.', 400)
     }
 
     // Check if jar has any completed contributions
@@ -47,8 +48,9 @@ export const validateJarBalanceBeforeDelete: CollectionBeforeDeleteHook = async 
     )
 
     if (totalContributions > 0) {
-      throw new Error(
+      throw new APIError(
         `Cannot delete jar with existing balance. Current balance: ${totalContributions}. Please withdraw all funds before deleting.`,
+        400,
       )
     }
 

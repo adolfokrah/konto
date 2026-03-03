@@ -45,7 +45,7 @@ export const checkEganowPayoutBalanceTask = {
             totalUpcoming += tx.amountContributed || 0
           }
         } else if (
-          tx.type === 'payout' &&
+          (tx.type === 'payout' || tx.type === 'refund') &&
           (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed')
         ) {
           totalPayouts += tx.amountContributed || 0 // Already negative
@@ -62,7 +62,18 @@ export const checkEganowPayoutBalanceTask = {
       // Get Eganow payout balance
       await getEganow().getToken()
       const balanceResponse = await getEganow().getPayoutBalance()
-      const eganowBalance = balanceResponse.balance
+
+      console.log('📦 Eganow balance response:', JSON.stringify(balanceResponse))
+
+      // Handle both possible response shapes: { balance } or { data: { balance } }
+      const eganowBalance =
+        balanceResponse.balance ??
+        (balanceResponse as any).data?.balance ??
+        (balanceResponse as any).availableBalance
+
+      if (typeof eganowBalance !== 'number') {
+        throw new Error(`Unexpected Eganow balance response: ${JSON.stringify(balanceResponse)}`)
+      }
 
       console.log(`💰 Eganow payout balance: ${eganowBalance.toFixed(2)}`)
 
