@@ -10,6 +10,7 @@ import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
 import { validateJarBalanceBeforeDelete } from './hooks/validateJarBalanceBeforeDelete'
 import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission'
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
+import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -214,6 +215,7 @@ export const Jars: CollectionConfig = {
       sendInviteNotificationToUser,
       deleteInviteNotification,
       deleteInviteNotifications,
+      sendFreezeNotificationToCreator,
     ],
     beforeRead: [],
     beforeDelete: [validateJarBalanceBeforeDelete],

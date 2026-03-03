@@ -25,6 +25,7 @@ export const Notifications: CollectionConfig = {
         { label: 'Jar Invitation', value: 'jarInvite' },
         { label: 'Info', value: 'info' },
         { label: 'KYC', value: 'kyc' },
+        { label: 'Jar Frozen', value: 'jarFrozen' },
       ],
       required: true,
     },

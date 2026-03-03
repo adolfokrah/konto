@@ -32,6 +32,7 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_balance_breakdown.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_info_sheet.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_report_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -655,13 +656,28 @@ class _JarDetailViewState extends State<JarDetailView> {
                                               context: context,
                                               jarData: jarData,
                                             );
-                                            if (result == 'leave' &&
-                                                context.mounted) {
+                                            if (!context.mounted) return;
+                                            if (result == 'leave') {
                                               context
                                                   .read<UpdateJarBloc>()
                                                   .add(LeaveJarRequested(
                                                     jarId: jarData.id,
                                                   ));
+                                            } else if (result == 'report') {
+                                              final reported =
+                                                  await JarReportSheet.show(
+                                                context: context,
+                                                jarId: jarData.id,
+                                              );
+                                              if (reported == true &&
+                                                  context.mounted) {
+                                                AppSnackBar.show(
+                                                  context,
+                                                  message:
+                                                      'Report submitted successfully',
+                                                  type: SnackBarType.success,
+                                                );
+                                              }
                                             }
                                           },
                                     icon: Icons.info_outline,

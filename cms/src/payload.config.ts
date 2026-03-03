@@ -32,6 +32,7 @@ import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
+import { JarReports } from './collections/JarReports'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -80,6 +81,7 @@ export default buildConfig({
     Notifications,
     DeletedUserAccounts,
     DailyActiveUsers,
+    JarReports,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SystemSettings],

@@ -302,6 +302,30 @@ class JarApiProvider extends BaseApiProvider {
     }
   }
 
+  /// Report a jar for suspicious activity
+  Future<Map<String, dynamic>> reportJar({
+    required String jarId,
+    required String message,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/jar-reports/submit',
+        data: {'jarId': jarId, 'message': message},
+        options: Options(headers: headers),
+      );
+
+      return response.data;
+    } catch (e) {
+      return handleApiError(e, 'reporting jar');
+    }
+  }
+
   /// Get a lightweight jar preview (name, image, description, creator)
   Future<Map<String, dynamic>> getJarPreview({required String jarId}) async {
     try {

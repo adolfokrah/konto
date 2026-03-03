@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
 import RecentContributions from '@/components/RecentContributions'
+import ReportJarButton from '@/components/ReportJarButton'
 import { Metadata } from 'next'
 
 export async function generateMetadata({ params }: any): Promise<Metadata> {
@@ -339,6 +340,11 @@ export default async function Page({
             {jarWithBalance.paymentPage?.showRecentContributions && (
               <RecentContributions jarId={jarId} limit={5} />
             )}
+
+            {/* Report Jar */}
+            <div className="flex justify-center py-4">
+              <ReportJarButton jarId={jarId} />
+            </div>
           </div>
         </div>
         </div>

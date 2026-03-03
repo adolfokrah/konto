@@ -6,6 +6,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/scrollable_background_image.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 
@@ -44,6 +45,7 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
   String? _jarDescription;
   String? _creatorName;
   String? _creatorPhoto;
+  double _scrollOffset = 0.0;
 
   @override
   void initState() {
@@ -119,151 +121,153 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
             topRight: Radius.circular(AppRadius.radiusM),
           ),
         ),
-        child: Column(
-          children: [
-            const Center(child: DragHandle()),
-            if (_isLoading)
-              Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(AppRadius.radiusM),
+            topRight: Radius.circular(AppRadius.radiusM),
+          ),
+          child: Stack(
+            children: [
+              // Background jar image (same style as jar detail view)
+              if (_jarImage != null)
+                ScrollableBackgroundImage(
+                  imageUrl: ImageUtils.constructImageUrl(_jarImage!),
+                  scrollOffset: _scrollOffset,
+                  height: 350,
+                  maxScrollForOpacity: 150,
+                  baseOpacity: 0.30,
                 ),
-              )
-            else
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingL,
-                  ),
-                  children: [
-                    const SizedBox(height: AppSpacing.spacingS),
 
-                    // Jar image
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadius.radiusM),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 250,
-                        child: _jarImage != null
-                            ? Image.network(
-                                ImageUtils.constructImageUrl(_jarImage!),
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    const _JarImagePlaceholder(),
-                              )
-                            : const _JarImagePlaceholder(),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    // Jar name (fetched) or fallback to notification message
-                    Text(
-                      _jarName ?? widget.notification.message,
-                      style: TextStyles.titleBoldLg,
-                    ),
-                    const SizedBox(height: AppSpacing.spacingXs),
-
-                    // Jar description
-                    if (_jarDescription != null &&
-                        _jarDescription!.isNotEmpty) ...[
-                      Text(
-                        _jarDescription!,
-                        style: TextStyles.titleRegularM.copyWith(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.color
-                              ?.withValues(alpha: 0.7),
+              // Content
+              Column(
+                children: [
+                  const Center(child: DragHandle()),
+                  if (_isLoading)
+                    Expanded(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.spacingS),
-                    ],
+                    )
+                  else
+                    Expanded(
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          if (notification is ScrollUpdateNotification) {
+                            setState(() {
+                              _scrollOffset = notification.metrics.pixels;
+                            });
+                          }
+                          return false;
+                        },
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.spacingL,
+                          ),
+                          children: [
+                            // Spacer to push content below the background image
+                            if (_jarImage != null)
+                              const SizedBox(height: 170),
 
-                    // Creator row
-                    Row(
+                            if (_jarImage == null)
+                              const SizedBox(height: AppSpacing.spacingS),
+
+                            // Jar name (fetched) or fallback to notification message
+                            Text(
+                              _jarName ?? widget.notification.message,
+                              style: TextStyles.titleBoldLg,
+                            ),
+                            const SizedBox(height: AppSpacing.spacingXs),
+
+                            // Jar description
+                            if (_jarDescription != null &&
+                                _jarDescription!.isNotEmpty) ...[
+                              Text(
+                                _jarDescription!,
+                                style: TextStyles.titleRegularM.copyWith(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.spacingS),
+                            ],
+
+                            // Creator row
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundImage: _creatorPhoto != null
+                                      ? NetworkImage(
+                                          ImageUtils.constructImageUrl(
+                                              _creatorPhoto!),
+                                        )
+                                      : null,
+                                  child: _creatorPhoto == null
+                                      ? Text(
+                                          (_creatorName ?? 'S')
+                                              .characters
+                                              .first
+                                              .toUpperCase(),
+                                          style: const TextStyle(fontSize: 14),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Invited by ${_creatorName ?? 'Someone'}',
+                                  style: TextStyles.titleRegularSm.copyWith(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Action buttons pinned at bottom
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.spacingL,
+                    ),
+                    child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundImage: _creatorPhoto != null
-                              ? NetworkImage(
-                                  ImageUtils.constructImageUrl(_creatorPhoto!),
-                                )
-                              : null,
-                          child: _creatorPhoto == null
-                              ? Text(
-                                  (_creatorName ?? 'S')
-                                      .characters
-                                      .first
-                                      .toUpperCase(),
-                                  style: const TextStyle(fontSize: 14),
-                                )
-                              : null,
+                        Expanded(
+                          child: AppButton.outlined(
+                            text: 'Decline',
+                            onPressed: () =>
+                                Navigator.of(context).pop('decline'),
+                            textColor: Colors.red,
+                            borderColor: Colors.red,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Invited by ${_creatorName ?? 'Someone'}',
-                          style: TextStyles.titleRegularSm.copyWith(
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.color
-                                ?.withValues(alpha: 0.6),
+                        const SizedBox(width: AppSpacing.spacingM),
+                        Expanded(
+                          child: AppButton(
+                            text: 'Accept',
+                            onPressed: () =>
+                                Navigator.of(context).pop('accept'),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-            // Action buttons pinned at bottom
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingL,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppButton.outlined(
-                      text: 'Decline',
-                      onPressed: () => Navigator.of(context).pop('decline'),
-                      textColor: Colors.red,
-                      borderColor: Colors.red,
-                    ),
                   ),
-                  const SizedBox(width: AppSpacing.spacingM),
-                  Expanded(
-                    child: AppButton(
-                      text: 'Accept',
-                      onPressed: () => Navigator.of(context).pop('accept'),
-                    ),
-                  ),
+                  const SizedBox(height: AppSpacing.spacingM),
                 ],
               ),
-            ),
-            const SizedBox(height: AppSpacing.spacingM),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _JarImagePlaceholder extends StatelessWidget {
-  const _JarImagePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
-      child: Center(
-        child: Icon(
-          Icons.wallet,
-          size: 48,
-          color:
-              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            ],
+          ),
         ),
       ),
     );
