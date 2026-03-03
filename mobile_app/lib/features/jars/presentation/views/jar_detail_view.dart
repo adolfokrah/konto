@@ -251,9 +251,11 @@ class _JarDetailViewState extends State<JarDetailView> {
                 message: 'You have left the jar',
                 type: SnackBarType.success,
               );
-              // Refresh jar list and go back
+              // Refresh jar list and jar details
               context.read<JarListBloc>().add(LoadJarList());
-              context.go(AppRoutes.initial);
+              context
+                  .read<JarSummaryReloadBloc>()
+                  .add(ReloadJarSummaryRequested());
             } else if (state is LeaveJarFailure) {
               AppSnackBar.show(
                 context,

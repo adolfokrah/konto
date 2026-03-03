@@ -1,4 +1,4 @@
-import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { addDataAndFileToRequest, type PayloadRequest } from 'payload'
 
 export const leaveJar = async (req: PayloadRequest) => {
   try {

@@ -1,9 +1,9 @@
-import type { PayloadRequest } from 'payload'
+import { addDataAndFileToRequest, type PayloadRequest } from 'payload'
 
 export const submitReport = async (req: PayloadRequest) => {
   try {
-    const body = (req as any).data || {}
-    const { jarId, message } = body
+    await addDataAndFileToRequest(req)
+    const { jarId, message } = req.data || {}
 
     if (!jarId || typeof jarId !== 'string') {
       return Response.json({ success: false, message: 'jarId is required' }, { status: 400 })
