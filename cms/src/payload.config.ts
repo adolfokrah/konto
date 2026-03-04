@@ -33,6 +33,9 @@ import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
 import { JarReports } from './collections/JarReports'
+import { PushCampaigns } from './collections/PushCampaigns'
+import { sendPushCampaignTask } from './tasks/send-push-campaign'
+import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -82,6 +85,7 @@ export default buildConfig({
     DeletedUserAccounts,
     DailyActiveUsers,
     JarReports,
+    PushCampaigns,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
@@ -152,6 +156,8 @@ export default buildConfig({
       processPayoutTask as any,
       checkEganowPayoutBalanceTask as any,
       processRefundTask as any,
+      sendPushCampaignTask as any,
+      sendScheduledCampaignsTask as any,
     ],
     autoRun: [
       {
@@ -177,6 +183,10 @@ export default buildConfig({
       {
         cron: '0 * * * *', // Every hour
         queue: 'check-eganow-payout-balance',
+      },
+      {
+        cron: '* * * * *', // Every minute
+        queue: 'send-scheduled-campaigns',
       },
     ],
   },

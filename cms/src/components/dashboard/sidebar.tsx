@@ -10,6 +10,7 @@ import {
   ArrowLeftRight,
   BarChart3,
   Flag,
+  Bell,
 } from 'lucide-react'
 
 const navItems = [
@@ -37,6 +38,11 @@ const navItems = [
     label: 'Jar Reports',
     href: '/dashboard/jar-reports',
     icon: Flag,
+  },
+  {
+    label: 'Push Notifications',
+    href: '/dashboard/push-notifications',
+    icon: Bell,
   },
   {
     label: 'Analytics',
