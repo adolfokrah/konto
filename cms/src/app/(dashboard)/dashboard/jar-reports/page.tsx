@@ -24,7 +24,10 @@ export default async function JarReportsPage({ searchParams }: Props) {
   // Build where clause
   const where: Record<string, any> = {}
   if (search) {
-    where.message = { like: search }
+    where.or = [
+      { message: { like: search } },
+      { 'jar.name': { like: search } },
+    ]
   }
   if (from) {
     where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }

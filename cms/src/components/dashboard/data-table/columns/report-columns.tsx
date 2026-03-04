@@ -28,7 +28,7 @@ export const reportColumns: ColumnDef<ReportRow, any>[] = [
       <span className="truncate block font-medium">{row.original.jarName}</span>
     ),
     meta: {
-      filter: { type: 'search', paramKey: 'search', placeholder: 'Search reports...' },
+      filter: { type: 'search', paramKey: 'search', placeholder: 'Search by jar name or message...' },
       filterLabel: 'Jar',
     } satisfies DataTableColumnMeta,
   },
