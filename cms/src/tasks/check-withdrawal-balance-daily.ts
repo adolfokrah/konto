@@ -1,10 +1,10 @@
-import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
-
 /**
  * Check Withdrawal Balance Daily Task
  *
  * Scheduled to run once per day at 10 AM.
- * Finds all users with jars that have available balance to withdraw and sends them reminder notifications.
+ * Finds all users with jars that have available balance to withdraw
+ * and creates notification records (push is sent automatically via the afterChange hook).
+ * Skips users who already have an unread withdrawal reminder to avoid duplicates.
  */
 export const checkWithdrawalBalanceDailyTask = {
   slug: 'check-withdrawal-balance-daily',
@@ -17,7 +17,6 @@ export const checkWithdrawalBalanceDailyTask = {
   handler: async (args: any) => {
     try {
       const payload = args.req?.payload || args.payload
-      const fcmNotifications = new FCMPushNotifications()
 
       console.log('🔍 Starting daily withdrawal balance check...')
 
@@ -135,18 +134,28 @@ export const checkWithdrawalBalanceDailyTask = {
 
       console.log(`Found ${usersWithBalance.length} users with withdrawable balance`)
 
-      // Send notifications directly to each user
       let successCount = 0
       let failureCount = 0
 
       for (const userWithBalance of usersWithBalance) {
         try {
-          const { user, jarsWithBalance } = userWithBalance
+          const { userId, jarsWithBalance } = userWithBalance
 
-          // Check if user has FCM token
-          if (!user.fcmToken) {
-            console.log(`⚠️ User ${user.id} has no FCM token, skipping`)
-            failureCount++
+          // Skip if user already has an unread withdrawal reminder
+          const existing = await payload.find({
+            collection: 'notifications',
+            where: {
+              user: { equals: userId },
+              type: { equals: 'info' },
+              status: { equals: 'unread' },
+              'data.kind': { equals: 'withdrawal-reminder' },
+            },
+            limit: 1,
+            overrideAccess: true,
+          })
+
+          if (existing.docs.length > 0) {
+            console.log(`⏭️ User ${userId} already has unread withdrawal reminder, skipping`)
             continue
           }
 
@@ -155,7 +164,6 @@ export const checkWithdrawalBalanceDailyTask = {
           const jarCount = jarsWithBalance.length
           const currency = jarsWithBalance[0]?.currency || 'GHS'
 
-          // Create message
           const message =
             jarCount === 1
               ? `You have ${currency} ${totalBalance.toFixed(2)} available to withdraw from "${jarsWithBalance[0].jarName}"`
@@ -163,19 +171,35 @@ export const checkWithdrawalBalanceDailyTask = {
 
           const title = 'Balance Available for Withdrawal 💰'
 
-          // Send notification
-          await fcmNotifications.sendNotification([user.fcmToken], message, title, {
-            type: 'withdrawal-reminder',
-            totalBalance: totalBalance.toString(),
-            jarCount: jarCount.toString(),
+          // Create notification record (push is sent automatically via afterChange hook)
+          await payload.create({
+            collection: 'notifications',
+            data: {
+              title,
+              message,
+              user: userId,
+              type: 'info',
+              status: 'unread',
+              data: {
+                kind: 'withdrawal-reminder',
+                totalBalance: totalBalance.toFixed(2),
+                jarCount,
+                currency,
+                jars: jarsWithBalance,
+              },
+            },
+            overrideAccess: true,
           })
 
           successCount++
           console.log(
-            `✅ Sent withdrawal reminder to user ${user.id} for ${jarCount} jar(s) with total ${currency} ${totalBalance.toFixed(2)}`,
+            `✅ Created withdrawal reminder for user ${userId} — ${jarCount} jar(s), ${currency} ${totalBalance.toFixed(2)}`,
           )
         } catch (error: any) {
-          console.error(`❌ Failed to send notification to user ${userWithBalance.userId}:`, error)
+          console.error(
+            `❌ Failed to create notification for user ${userWithBalance.userId}:`,
+            error,
+          )
           failureCount++
         }
       }
@@ -183,7 +207,7 @@ export const checkWithdrawalBalanceDailyTask = {
       return {
         output: {
           success: true,
-          message: `Daily withdrawal balance check completed. Sent ${successCount} notifications.`,
+          message: `Daily withdrawal balance check completed. Created ${successCount} notifications.`,
           stats: {
             totalJarsWithBalance: jarsWithCalculatedBalance.length,
             usersNotified: successCount,
