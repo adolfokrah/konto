@@ -39,6 +39,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
             pagination: pagination,
           ),
         );
+
       } else {
         emit(
           NotificationsError(

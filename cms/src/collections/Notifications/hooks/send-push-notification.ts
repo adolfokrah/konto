@@ -1,7 +1,9 @@
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 import type { CollectionAfterChangeHook } from 'payload'
 
-export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req }) => {
+export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req, operation }) => {
+  // Only send push notifications when a notification is first created, not on updates
+  if (operation !== 'create') return doc
   // Skip FCM when notifications are created by the campaign task (it handles FCM in batches)
   if (req.context?.skipPush) return doc
 

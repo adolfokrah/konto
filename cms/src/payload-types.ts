@@ -1503,7 +1503,7 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen' | 'campaign';
+  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen';
   title: string;
   message: string;
   data?:
