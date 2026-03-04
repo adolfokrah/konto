@@ -78,6 +78,7 @@ export interface Config {
     deletedUserAccounts: DeletedUserAccount;
     dailyActiveUsers: DailyActiveUser;
     'jar-reports': JarReport;
+    'push-campaigns': PushCampaign;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -100,6 +101,7 @@ export interface Config {
     deletedUserAccounts: DeletedUserAccountsSelect<false> | DeletedUserAccountsSelect<true>;
     dailyActiveUsers: DailyActiveUsersSelect<false> | DailyActiveUsersSelect<true>;
     'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
+    'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -138,6 +140,8 @@ export interface Config {
       'process-payout': TaskProcessPayout;
       'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
       'process-refund': TaskProcessRefund;
+      'send-push-campaign': TaskSendPushCampaign;
+      'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1551,6 +1555,39 @@ export interface JarReport {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-campaigns".
+ */
+export interface PushCampaign {
+  id: string;
+  title: string;
+  message: string;
+  /**
+   * Optional custom data payload (key-value pairs)
+   */
+  data?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  targetAudience: 'all';
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
+  /**
+   * When to send this campaign (leave empty for immediate send)
+   */
+  scheduledFor?: string | null;
+  sentAt?: string | null;
+  recipientCount?: number | null;
+  successCount?: number | null;
+  failureCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1685,6 +1722,8 @@ export interface PayloadJob {
           | 'process-payout'
           | 'check-eganow-payout-balance'
           | 'process-refund'
+          | 'send-push-campaign'
+          | 'send-scheduled-campaigns'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1729,6 +1768,8 @@ export interface PayloadJob {
         | 'process-payout'
         | 'check-eganow-payout-balance'
         | 'process-refund'
+        | 'send-push-campaign'
+        | 'send-scheduled-campaigns'
         | 'schedulePublish'
       )
     | null;
@@ -1797,6 +1838,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'jar-reports';
         value: string | JarReport;
+      } | null)
+    | ({
+        relationTo: 'push-campaigns';
+        value: string | PushCampaign;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2559,6 +2604,24 @@ export interface JarReportsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-campaigns_select".
+ */
+export interface PushCampaignsSelect<T extends boolean = true> {
+  title?: T;
+  message?: T;
+  data?: T;
+  targetAudience?: T;
+  status?: T;
+  scheduledFor?: T;
+  sentAt?: T;
+  recipientCount?: T;
+  successCount?: T;
+  failureCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3132,6 +3195,24 @@ export interface TaskProcessRefund {
     mobileMoneyProvider: string;
     amount: string;
   };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSend-push-campaign".
+ */
+export interface TaskSendPushCampaign {
+  input: {
+    campaignId: string;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSend-scheduled-campaigns".
+ */
+export interface TaskSendScheduledCampaigns {
+  input?: unknown;
   output?: unknown;
 }
 /**
