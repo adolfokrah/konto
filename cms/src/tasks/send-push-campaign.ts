@@ -146,7 +146,7 @@ export const sendPushCampaignTask = {
           await payload.create({
             collection: 'notifications',
             data: {
-              type: 'campaign',
+              type: 'info',
               title: campaign.title,
               message: campaign.message,
               data: campaign.data || undefined,

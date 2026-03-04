@@ -26,7 +26,6 @@ export const Notifications: CollectionConfig = {
         { label: 'Info', value: 'info' },
         { label: 'KYC', value: 'kyc' },
         { label: 'Jar Frozen', value: 'jarFrozen' },
-        { label: 'Campaign', value: 'campaign' },
       ],
       required: true,
     },
@@ -75,6 +74,15 @@ export const Notifications: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeChange: [
+      ({ data, operation }) => {
+        // Auto-mark info notifications as read on creation (no user action needed)
+        if (operation === 'create' && data?.type === 'info') {
+          data.status = 'read'
+        }
+        return data
+      },
+    ],
     afterChange: [sendPushNotification],
   },
 }

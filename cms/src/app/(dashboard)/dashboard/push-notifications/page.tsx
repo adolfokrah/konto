@@ -76,14 +76,12 @@ export default async function PushNotificationsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <MetricCard
-            title="Campaigns Sent"
-            value={totalSent.totalDocs.toLocaleString()}
-            icon={Bell}
-          />
-        </div>
+      <div className="flex items-start justify-between">
+        <MetricCard
+          title="Campaigns Sent"
+          value={totalSent.totalDocs.toLocaleString()}
+          icon={Bell}
+        />
         <Link href="/dashboard/push-notifications/compose">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
