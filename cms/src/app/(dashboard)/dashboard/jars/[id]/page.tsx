@@ -20,6 +20,7 @@ import {
   ArrowDownToLine,
   Banknote,
   Smartphone,
+  AlertTriangle,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -147,7 +148,12 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   }
 
   // Compute contribution total, balance, upcoming balance, and fetch filtered transactions in parallel
-  const [allJarTransactions, transactionsResult] = await Promise.all([
+  const [reportCount, allJarTransactions, transactionsResult] = await Promise.all([
+    payload.count({
+      collection: 'jar-reports',
+      where: { jar: { equals: id } },
+      overrideAccess: true,
+    }),
     payload.find({
       collection: 'transactions',
       where: {
@@ -293,6 +299,15 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                     >
                       {jar.status}
                     </Badge>
+                    {reportCount.totalDocs > 0 && (
+                      <Link
+                        href={`/dashboard/jar-reports?search=${encodeURIComponent(jar.name)}`}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
+                      >
+                        <AlertTriangle className="h-3 w-3" />
+                        {reportCount.totalDocs} {reportCount.totalDocs === 1 ? 'report' : 'reports'}
+                      </Link>
+                    )}
                   </div>
                   {jar.description && (
                     <p className="text-sm text-white/80 max-w-2xl">{jar.description}</p>
@@ -311,6 +326,15 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                   <Badge variant="outline" className={cn('capitalize', statusStyles[jar.status])}>
                     {jar.status}
                   </Badge>
+                  {reportCount.totalDocs > 0 && (
+                    <Link
+                      href={`/dashboard/jar-reports?search=${encodeURIComponent(jar.name)}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
+                    >
+                      <AlertTriangle className="h-3 w-3" />
+                      {reportCount.totalDocs} {reportCount.totalDocs === 1 ? 'report' : 'reports'}
+                    </Link>
+                  )}
                 </div>
                 {jar.description && (
                   <p className="text-sm text-muted-foreground max-w-2xl">{jar.description}</p>
