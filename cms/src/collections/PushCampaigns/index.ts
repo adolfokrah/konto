@@ -34,9 +34,22 @@ export const PushCampaigns: CollectionConfig = {
     {
       name: 'targetAudience',
       type: 'select',
-      options: [{ label: 'All Users', value: 'all' }],
+      options: [
+        { label: 'All Users', value: 'all' },
+        { label: 'Selected Users', value: 'selected' },
+      ],
       defaultValue: 'all',
       required: true,
+    },
+    {
+      name: 'recipients',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      required: false,
+      admin: {
+        description: 'Select specific users (only used when target audience is "Selected Users")',
+      },
     },
     {
       name: 'status',

@@ -38,34 +38,63 @@ export const sendPushCampaignTask = {
         overrideAccess: true,
       })
 
-      // Build user query based on target audience
-      const userWhere: Record<string, any> = {
-        fcmToken: { exists: true },
+      // Collect users based on target audience
+      let allUsers: { id: string; fcmToken: string }[] = []
+
+      if (
+        campaign.targetAudience === 'selected' &&
+        Array.isArray(campaign.recipients) &&
+        campaign.recipients.length > 0
+      ) {
+        // Selected users — resolve IDs (may be populated objects or plain IDs)
+        const recipientIds = campaign.recipients.map((r: any) => (typeof r === 'object' ? r.id : r))
+
+        let page = 1
+        let hasMore = true
+        while (hasMore) {
+          const usersResult = await payload.find({
+            collection: 'users',
+            where: {
+              id: { in: recipientIds },
+              fcmToken: { exists: true },
+            },
+            select: { fcmToken: true },
+            limit: BATCH_SIZE,
+            page,
+            overrideAccess: true,
+          })
+          for (const u of usersResult.docs as any[]) {
+            if (u.fcmToken && u.fcmToken.trim().length > 0) {
+              allUsers.push({ id: u.id, fcmToken: u.fcmToken })
+            }
+          }
+          hasMore = usersResult.hasNextPage
+          page++
+        }
+      } else {
+        // All users with FCM tokens
+        let page = 1
+        let hasMore = true
+        while (hasMore) {
+          const usersResult = await payload.find({
+            collection: 'users',
+            where: { fcmToken: { exists: true } },
+            select: { fcmToken: true },
+            limit: BATCH_SIZE,
+            page,
+            overrideAccess: true,
+          })
+          for (const u of usersResult.docs as any[]) {
+            if (u.fcmToken && u.fcmToken.trim().length > 0) {
+              allUsers.push({ id: u.id, fcmToken: u.fcmToken })
+            }
+          }
+          hasMore = usersResult.hasNextPage
+          page++
+        }
       }
 
-      // Fetch all users with FCM tokens in pages
-      let allTokens: string[] = []
-      let page = 1
-      let hasMore = true
-
-      while (hasMore) {
-        const usersResult = await payload.find({
-          collection: 'users',
-          where: userWhere,
-          select: { fcmToken: true },
-          limit: BATCH_SIZE,
-          page,
-          overrideAccess: true,
-        })
-
-        const tokens = usersResult.docs
-          .map((u: any) => u.fcmToken)
-          .filter((t: string) => t && t.trim().length > 0)
-
-        allTokens = allTokens.concat(tokens)
-        hasMore = usersResult.hasNextPage
-        page++
-      }
+      const allTokens = allUsers.map((u) => u.fcmToken)
 
       if (allTokens.length === 0) {
         await payload.update({
@@ -109,6 +138,28 @@ export const sendPushCampaignTask = {
         )
         totalSuccess += result.successCount
         totalFailure += result.failureCount
+      }
+
+      // Create Notification records for each recipient user
+      for (const user of allUsers) {
+        try {
+          await payload.create({
+            collection: 'notifications',
+            data: {
+              type: 'campaign',
+              title: campaign.title,
+              message: campaign.message,
+              data: campaign.data || undefined,
+              user: user.id,
+              status: 'unread',
+            },
+            context: { skipPush: true },
+            overrideAccess: true,
+          })
+        } catch (e) {
+          // Log but don't fail the campaign for notification record errors
+          console.error(`Failed to create notification for user ${user.id}:`, (e as Error).message)
+        }
       }
 
       // Update campaign with results

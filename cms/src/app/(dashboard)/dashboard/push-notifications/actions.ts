@@ -15,10 +15,43 @@ async function getAuthenticatedAdmin() {
   return { payload, error: null }
 }
 
+export async function searchUsers(query: string) {
+  const { payload, error } = await getAuthenticatedAdmin()
+  if (!payload) return []
+
+  if (!query || query.trim().length < 2) return []
+
+  try {
+    const result = await payload.find({
+      collection: 'users',
+      where: {
+        or: [
+          { firstName: { like: query } },
+          { lastName: { like: query } },
+          { email: { like: query } },
+        ],
+      },
+      select: { firstName: true, lastName: true, email: true },
+      limit: 20,
+      overrideAccess: true,
+    })
+
+    return result.docs.map((u: any) => ({
+      id: u.id,
+      name: `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+      email: u.email || '',
+    }))
+  } catch {
+    return []
+  }
+}
+
 export async function createAndSendCampaign(data: {
   title: string
   message: string
   data?: Record<string, string>
+  targetAudience?: 'all' | 'selected'
+  recipients?: string[]
 }) {
   const { payload, error } = await getAuthenticatedAdmin()
   if (!payload) return { success: false, message: error }
@@ -30,7 +63,8 @@ export async function createAndSendCampaign(data: {
         title: data.title,
         message: data.message,
         data: data.data || undefined,
-        targetAudience: 'all',
+        targetAudience: data.targetAudience || 'all',
+        recipients: data.targetAudience === 'selected' ? data.recipients : undefined,
         status: 'draft',
       },
       overrideAccess: true,
@@ -58,6 +92,8 @@ export async function createAndScheduleCampaign(data: {
   message: string
   scheduledFor: string
   data?: Record<string, string>
+  targetAudience?: 'all' | 'selected'
+  recipients?: string[]
 }) {
   const { payload, error } = await getAuthenticatedAdmin()
   if (!payload) return { success: false, message: error }
@@ -69,7 +105,8 @@ export async function createAndScheduleCampaign(data: {
         title: data.title,
         message: data.message,
         data: data.data || undefined,
-        targetAudience: 'all',
+        targetAudience: data.targetAudience || 'all',
+        recipients: data.targetAudience === 'selected' ? data.recipients : undefined,
         status: 'scheduled',
         scheduledFor: data.scheduledFor,
       },

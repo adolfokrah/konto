@@ -2,6 +2,9 @@ import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 import type { CollectionAfterChangeHook } from 'payload'
 
 export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req }) => {
+  // Skip FCM when notifications are created by the campaign task (it handles FCM in batches)
+  if (req.context?.skipPush) return doc
+
   try {
     // The relationship field `user` may be either an ID (string) or a populated object
     const rawUser = (doc as any)?.user

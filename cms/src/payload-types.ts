@@ -1503,7 +1503,7 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen';
+  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen' | 'campaign';
   title: string;
   message: string;
   data?:
@@ -1573,7 +1573,11 @@ export interface PushCampaign {
     | number
     | boolean
     | null;
-  targetAudience: 'all';
+  targetAudience: 'all' | 'selected';
+  /**
+   * Select specific users (only used when target audience is "Selected Users")
+   */
+  recipients?: (string | User)[] | null;
   status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
   /**
    * When to send this campaign (leave empty for immediate send)
@@ -2611,6 +2615,7 @@ export interface PushCampaignsSelect<T extends boolean = true> {
   message?: T;
   data?: T;
   targetAudience?: T;
+  recipients?: T;
   status?: T;
   scheduledFor?: T;
   sentAt?: T;

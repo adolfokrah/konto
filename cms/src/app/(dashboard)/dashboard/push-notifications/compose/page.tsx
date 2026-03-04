@@ -12,7 +12,13 @@ export default async function ComposePage({ searchParams }: Props) {
   const params = await searchParams
   const duplicateId = typeof params.duplicate === 'string' ? params.duplicate : null
 
-  let prefill: { title: string; message: string; data?: Record<string, string> } | null = null
+  let prefill: {
+    title: string
+    message: string
+    data?: Record<string, string>
+    targetAudience?: 'all' | 'selected'
+    recipients?: { id: string; name: string; email: string }[]
+  } | null = null
 
   if (duplicateId) {
     try {
@@ -20,13 +26,33 @@ export default async function ComposePage({ searchParams }: Props) {
       const campaign = await payload.findByID({
         collection: 'push-campaigns',
         id: duplicateId,
+        depth: 1,
         overrideAccess: true,
       })
       if (campaign) {
+        // Resolve recipients to { id, name, email } for the form tags
+        let recipients: { id: string; name: string; email: string }[] | undefined
+        if (
+          campaign.targetAudience === 'selected' &&
+          Array.isArray(campaign.recipients) &&
+          campaign.recipients.length > 0
+        ) {
+          recipients = (campaign.recipients as any[]).map((r: any) => {
+            const user = typeof r === 'object' ? r : null
+            return {
+              id: typeof r === 'object' ? r.id : r,
+              name: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '',
+              email: user?.email || '',
+            }
+          })
+        }
+
         prefill = {
           title: campaign.title as string,
           message: campaign.message as string,
           data: campaign.data as Record<string, string> | undefined,
+          targetAudience: campaign.targetAudience as 'all' | 'selected',
+          recipients,
         }
       }
     } catch {}
