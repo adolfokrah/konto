@@ -262,6 +262,16 @@ export default async function Page({
                 className="text-gray-700 mb-4 font-supreme text-base"
               />
             )}
+
+            {/* Safety tip */}
+            <Alert className="my-4 font-supreme bg-orange-50 border-orange-200 rounded-2xl [&>svg]:text-orange-500">
+              <TriangleAlert className="h-4 w-4" />
+              <AlertTitle className="text-orange-800">Stay safe</AlertTitle>
+              <AlertDescription className="text-orange-700">
+                Before contributing, make sure you know and trust the organizer. Check their username and look for the <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" /> verified badge.
+              </AlertDescription>
+            </Alert>
+
             <Separator className="my-6" />
 
             {/* Organizer Section */}
@@ -341,15 +351,6 @@ export default async function Page({
             {jarWithBalance.paymentPage?.showRecentContributions && (
               <RecentContributions jarId={jarId} limit={5} />
             )}
-
-            {/* Safety tip */}
-            <Alert className="my-6 font-supreme">
-              <TriangleAlert className="h-4 w-4" />
-              <AlertTitle>Stay safe</AlertTitle>
-              <AlertDescription>
-                Before contributing, make sure you know and trust the organizer. Check their username and look for the <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" /> verified badge.
-              </AlertDescription>
-            </Alert>
 
             {/* Report Jar */}
             <div className="flex justify-center py-4">
