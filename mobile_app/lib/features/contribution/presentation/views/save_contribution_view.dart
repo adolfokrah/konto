@@ -145,7 +145,10 @@ class _SaveContributionViewState extends State<SaveContributionView> {
             context.read<MomoPaymentBloc>().add(
               MomoPaymentRequested(state.contributionId),
             );
-            context.push(AppRoutes.awaitMomoPayment);
+            final provider = PaymentMethodUtils.getMobileMoneyOperatorMap(localizations).entries
+                .firstWhere((entry) => entry.value == _selectedOperator)
+                .key;
+            context.push('${AppRoutes.awaitMomoPayment}?provider=$provider');
           } else {
             context.go(AppRoutes.jarDetail);
           }

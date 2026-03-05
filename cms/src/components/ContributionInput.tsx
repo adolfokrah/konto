@@ -430,6 +430,7 @@ export default function ContributionInput({
           }
         }}
         phoneNumber={contributorPhoneNumber}
+        provider={mobileMoneyProvider}
       />
     </div>
   )

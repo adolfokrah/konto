@@ -160,7 +160,10 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: '/await_momo_payment',
-        builder: (context, state) => const AwaitMomoPaymentView(),
+        builder: (context, state) {
+          final provider = state.uri.queryParameters['provider'] ?? 'mtn';
+          return AwaitMomoPaymentView(provider: provider);
+        },
       ),
       GoRoute(
         path: '/contributions_list',

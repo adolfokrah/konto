@@ -6,12 +6,14 @@ interface PaymentWaitingModalProps {
   isOpen: boolean
   onClose: () => void
   phoneNumber: string
+  provider?: 'mtn' | 'telecel'
 }
 
 export default function PaymentWaitingModal({
   isOpen,
   onClose,
   phoneNumber,
+  provider = 'mtn',
 }: PaymentWaitingModalProps) {
   useEffect(() => {
     // Prevent body scroll when modal is open
@@ -70,21 +72,19 @@ export default function PaymentWaitingModal({
             <p className="text-xs text-gray-500 mb-3">
               Check your approvals manually:
             </p>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 flex-shrink-0" />
+            <div className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 flex-shrink-0" />
+              {provider === 'mtn' ? (
                 <p className="text-xs text-gray-700">
                   <span className="font-semibold">MTN MoMo:</span>{' '}
                   Dial *170# → My Wallet → My Approvals → Select the pending request → Enter PIN
                 </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 flex-shrink-0" />
+              ) : (
                 <p className="text-xs text-gray-700">
                   <span className="font-semibold">Telecel Cash:</span>{' '}
                   Dial *110# → Telecel Cash → Approvals → Select the request → Enter PIN
                 </p>
-              </div>
+              )}
             </div>
           </div>
         </div>

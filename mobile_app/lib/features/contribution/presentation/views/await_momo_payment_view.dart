@@ -15,7 +15,9 @@ import 'package:Hoga/route.dart';
 import 'package:go_router/go_router.dart';
 
 class AwaitMomoPaymentView extends StatefulWidget {
-  const AwaitMomoPaymentView({super.key});
+  final String provider;
+
+  const AwaitMomoPaymentView({super.key, this.provider = 'mtn'});
 
   @override
   State<AwaitMomoPaymentView> createState() => _AwaitMomoPaymentViewState();
@@ -149,6 +151,8 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
   }
 
   Widget _buildApprovalInstructions(bool isDark) {
+    final isMtn = widget.provider == 'mtn';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.spacingM),
@@ -180,57 +184,45 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
             ),
           ),
           const SizedBox(height: AppSpacing.spacingS),
-          _buildApprovalStep(
-            'MTN MoMo',
-            'Dial *170# \u2192 My Wallet \u2192 My Approvals \u2192 Select the pending request \u2192 Enter PIN',
-            isDark,
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
-          _buildApprovalStep(
-            'Telecel Cash',
-            'Dial *110# \u2192 Telecel Cash \u2192 Approvals \u2192 Select the request \u2192 Enter PIN',
-            isDark,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.only(top: 6, right: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white54 : Colors.grey.shade500,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: isMtn ? 'MTN MoMo: ' : 'Telecel Cash: ',
+                        style: AppTextStyles.titleMediumS.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      TextSpan(
+                        text: isMtn
+                            ? 'Dial *170# \u2192 My Wallet \u2192 My Approvals \u2192 Select the pending request \u2192 Enter PIN'
+                            : 'Dial *110# \u2192 Telecel Cash \u2192 Approvals \u2192 Select the request \u2192 Enter PIN',
+                        style: AppTextStyles.titleMediumS.copyWith(
+                          color: isDark ? Colors.white70 : Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildApprovalStep(String network, String steps, bool isDark) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          margin: const EdgeInsets.only(top: 6, right: 8),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white54 : Colors.grey.shade500,
-            shape: BoxShape.circle,
-          ),
-        ),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '$network: ',
-                  style: AppTextStyles.titleMediumS.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                TextSpan(
-                  text: steps,
-                  style: AppTextStyles.titleMediumS.copyWith(
-                    color: isDark ? Colors.white70 : Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
