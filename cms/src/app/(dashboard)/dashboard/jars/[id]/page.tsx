@@ -319,7 +319,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
           </div>
         ) : (
           <div className="p-6">
-            <div className="flex items-start justify-between">
+            <div className="flex items-end justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-2xl font-bold">{jar.name}</h1>
