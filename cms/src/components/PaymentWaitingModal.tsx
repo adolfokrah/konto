@@ -55,11 +55,37 @@ export default function PaymentWaitingModal({
           </p>
 
           {/* Instructions */}
-          <div className="bg-gray-50 rounded-2xl p-4 w-full">
+          <div className="bg-gray-50 rounded-2xl p-4 w-full mb-4">
             <p className="text-sm text-gray-700">
               Please check your phone and follow the prompt to complete the payment. This may take a
               few moments.
             </p>
+          </div>
+
+          {/* Approval Instructions */}
+          <div className="bg-gray-50 rounded-2xl p-4 w-full text-left">
+            <p className="text-sm font-semibold text-black mb-2">
+              Didn&apos;t get a prompt?
+            </p>
+            <p className="text-xs text-gray-500 mb-3">
+              Check your approvals manually:
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 flex-shrink-0" />
+                <p className="text-xs text-gray-700">
+                  <span className="font-semibold">MTN MoMo:</span>{' '}
+                  Dial *170# → My Wallet → My Approvals → Select the pending request → Enter PIN
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 flex-shrink-0" />
+                <p className="text-xs text-gray-700">
+                  <span className="font-semibold">Telecel Cash:</span>{' '}
+                  Dial *110# → Telecel Cash → Approvals → Select the request → Enter PIN
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
