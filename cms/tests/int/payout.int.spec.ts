@@ -19,7 +19,6 @@ describe('Payout Endpoint Integration Tests', () => {
   })
 
   beforeEach(async () => {
-    // Clean up
     const transactions = await payload.find({ collection: 'transactions' })
     for (const tx of transactions.docs) {
       await payload.delete({ collection: 'transactions', id: tx.id })
@@ -38,7 +37,6 @@ describe('Payout Endpoint Integration Tests', () => {
       await payload.delete({ collection: 'users', id: user.id })
     }
 
-    // Create jar creator with withdrawal account info
     creatorUser = await payload.create({
       collection: 'users',
       data: {
@@ -47,17 +45,16 @@ describe('Payout Endpoint Integration Tests', () => {
         firstName: 'Payout',
         lastName: 'Creator',
         username: `payoutcreator${Date.now()}`,
-        phoneNumber: '+233541234567',
+        phoneNumber: '+233000000001',
         country: 'gh' as const,
         kycStatus: 'verified',
         role: 'user',
-        accountNumber: '0241234567',
+        accountNumber: '0000000001',
         bank: 'mtn',
         accountHolder: 'Payout Creator',
       },
     })
 
-    // Create another user (not the jar creator)
     otherUser = await payload.create({
       collection: 'users',
       data: {
@@ -66,17 +63,16 @@ describe('Payout Endpoint Integration Tests', () => {
         firstName: 'Other',
         lastName: 'User',
         username: `payoutother${Date.now()}`,
-        phoneNumber: '+233541234568',
+        phoneNumber: '+233000000002',
         country: 'gh' as const,
         kycStatus: 'verified',
         role: 'user',
-        accountNumber: '0249876543',
+        accountNumber: '0000000002',
         bank: 'mtn',
         accountHolder: 'Other User',
       },
     })
 
-    // Create test jar
     testJar = await payload.create({
       collection: 'jars',
       data: {
@@ -89,16 +85,13 @@ describe('Payout Endpoint Integration Tests', () => {
     })
   })
 
-  // Helper: create a settled, completed contribution.
-  // Uses 'cash' payment method because the setPaymentStatus hook
-  // auto-sets paymentStatus to 'completed' for cash (but forces 'pending' for mobile-money).
   async function createSettledContribution(jarId: string, amount: number) {
     const tx = await payload.create({
       collection: 'transactions',
       data: {
         jar: jarId,
         contributor: 'Test Contributor',
-        contributorPhoneNumber: '+233541111111',
+        contributorPhoneNumber: '+233000000099',
         paymentMethod: 'cash' as const,
         amountContributed: amount,
         collector: creatorUser.id,
@@ -106,14 +99,12 @@ describe('Payout Endpoint Integration Tests', () => {
         isSettled: true,
       },
     })
-    // Verify our assumptions
     if (tx.paymentStatus !== 'completed') {
       throw new Error(`Expected paymentStatus 'completed' but got '${tx.paymentStatus}'`)
     }
     return tx
   }
 
-  // Helper to build a mock request compatible with addDataAndFileToRequest
   function buildMockRequest(overrides: Record<string, any> = {}) {
     const data = overrides.data ?? { jarId: testJar.id }
     return {
@@ -145,7 +136,7 @@ describe('Payout Endpoint Integration Tests', () => {
           firstName: 'No',
           lastName: 'Bank',
           username: `payoutnobank${Date.now()}`,
-          phoneNumber: '+233541234569',
+          phoneNumber: '+233000000003',
           country: 'gh' as const,
           kycStatus: 'verified',
           role: 'user',
@@ -198,13 +189,12 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should return 400 when a payout is already pending', async () => {
       await createSettledContribution(testJar.id, 500)
 
-      // Create a pending payout transaction (type: 'payout' bypasses setPaymentStatus hook)
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Payout Creator',
-          contributorPhoneNumber: '0241234567',
+          contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: -500,
@@ -236,13 +226,12 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should return 400 when balance is zero after payouts', async () => {
       await createSettledContribution(testJar.id, 300)
 
-      // Completed payout drains the balance (type: 'payout' bypasses hook)
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Payout Creator',
-          contributorPhoneNumber: '0241234567',
+          contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: -300,
@@ -264,7 +253,6 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should return 400 for unsupported mobile money provider', async () => {
       await createSettledContribution(testJar.id, 500)
 
-      // Create user with unsupported bank
       const unsupportedBankUser = await payload.create({
         collection: 'users',
         data: {
@@ -273,17 +261,16 @@ describe('Payout Endpoint Integration Tests', () => {
           firstName: 'Bad',
           lastName: 'Bank',
           username: `payoutbadbank${Date.now()}`,
-          phoneNumber: '+233541234570',
+          phoneNumber: '+233000000004',
           country: 'gh' as const,
           kycStatus: 'verified',
           role: 'user',
-          accountNumber: '0241234570',
+          accountNumber: '0000000004',
           bank: 'vodafone',
           accountHolder: 'Bad Bank User',
         },
       })
 
-      // Transfer jar ownership so the unsupported bank user is the creator
       await payload.update({
         collection: 'jars',
         id: testJar.id,
@@ -302,16 +289,14 @@ describe('Payout Endpoint Integration Tests', () => {
 
   describe('Balance Calculation', () => {
     it('should only count settled completed contributions in balance', async () => {
-      // Settled + completed = counts (cash auto-completes)
       await createSettledContribution(testJar.id, 500)
 
-      // Not settled = does NOT count
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Unsettled Contributor',
-          contributorPhoneNumber: '+233541222222',
+          contributorPhoneNumber: '+233000000088',
           paymentMethod: 'cash' as const,
           amountContributed: 1000,
           collector: creatorUser.id,
@@ -320,13 +305,12 @@ describe('Payout Endpoint Integration Tests', () => {
         },
       })
 
-      // Pending mobile-money = does NOT count (not completed + not settled)
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Pending Contributor',
-          contributorPhoneNumber: '+233541333333',
+          contributorPhoneNumber: '+233000000077',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: 2000,
@@ -368,13 +352,12 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should subtract completed and pending payouts from balance', async () => {
       await createSettledContribution(testJar.id, 1000)
 
-      // Completed payout (-400) — type: 'payout' bypasses setPaymentStatus hook
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Payout Creator',
-          contributorPhoneNumber: '0241234567',
+          contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: -400,
@@ -384,13 +367,12 @@ describe('Payout Endpoint Integration Tests', () => {
         },
       })
 
-      // Failed payout should NOT count (-200)
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Payout Creator',
-          contributorPhoneNumber: '0241234567',
+          contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: -200,
@@ -425,7 +407,7 @@ describe('Payout Endpoint Integration Tests', () => {
       const netBalance = settledSum + payoutsSum
 
       expect(settledSum).toBe(1000)
-      expect(payoutsSum).toBe(-400) // Only completed payout, not the failed one
+      expect(payoutsSum).toBe(-400)
       expect(netBalance).toBe(600)
     })
   })
@@ -436,21 +418,17 @@ describe('Payout Endpoint Integration Tests', () => {
 
       const { processPayoutTask } = await import('../../src/tasks/process-payout')
 
-      // The handler catches all errors internally and returns an output object.
-      // Eganow API will fail in test, but the transaction gets created first
-      // and then marked as 'failed'.
-      const result = await processPayoutTask.handler({
+      await processPayoutTask.handler({
         req: { payload },
         input: {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
 
-      // Check that a payout transaction was created (will be 'failed' since Eganow isn't available)
       const payoutTransactions = await payload.find({
         collection: 'transactions',
         where: {
@@ -460,18 +438,18 @@ describe('Payout Endpoint Integration Tests', () => {
         overrideAccess: true,
       })
 
-      expect(payoutTransactions.docs.length).toBeGreaterThanOrEqual(1)
+      expect(payoutTransactions.docs.length).toBe(1)
 
       const payoutTx = payoutTransactions.docs[0]
       expect(payoutTx.type).toBe('payout')
-      expect(payoutTx.amountContributed).toBe(-500) // Negative for payout
+      expect(payoutTx.amountContributed).toBe(-500)
       expect(payoutTx.paymentMethod).toBe('mobile-money')
       expect(payoutTx.mobileMoneyProvider).toBe('mtn')
       expect(payoutTx.payoutFeePercentage).toBeDefined()
       expect(payoutTx.payoutFeeAmount).toBeDefined()
       expect(payoutTx.payoutNetAmount).toBeDefined()
-      // Status is 'pending' (Eganow succeeded or webhook pending) or 'failed' (Eganow threw)
-      expect(['pending', 'failed']).toContain(payoutTx.paymentStatus)
+      expect(payoutTx.paymentStatus).toBe('pending')
+      expect(payoutTx.transactionReference).toBe('MOCK-REF-123')
     })
 
     it('should calculate fee correctly based on system settings', async () => {
@@ -488,7 +466,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
@@ -502,14 +480,13 @@ describe('Payout Endpoint Integration Tests', () => {
         overrideAccess: true,
       })
 
-      expect(payoutTransactions.docs.length).toBeGreaterThanOrEqual(1)
+      expect(payoutTransactions.docs.length).toBe(1)
 
       const payoutTx = payoutTransactions.docs[0]
       const expectedFee = (1000 * feePercentage) / 100
       const expectedNetAmount = 1000 - expectedFee
 
       expect(payoutTx.payoutFeePercentage).toBe(feePercentage)
-      // Fee amounts may be stored as negative (matching the negative payout direction)
       expect(Math.abs(payoutTx.payoutFeeAmount as number)).toBe(expectedFee)
       expect(Math.abs(payoutTx.payoutNetAmount as number)).toBe(expectedNetAmount)
     })
@@ -517,13 +494,12 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should skip if a pending payout already exists', async () => {
       await createSettledContribution(testJar.id, 500)
 
-      // Create an existing pending payout
       await payload.create({
         collection: 'transactions',
         data: {
           jar: testJar.id,
           contributor: 'Payout Creator',
-          contributorPhoneNumber: '0241234567',
+          contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
           amountContributed: -500,
@@ -541,7 +517,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
@@ -567,7 +543,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
@@ -587,7 +563,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: otherUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0249876543',
+          userAccountNumber: '0000000002',
           userAccountHolder: 'Other User',
         },
       })
@@ -605,7 +581,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'mtn',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
@@ -625,7 +601,7 @@ describe('Payout Endpoint Integration Tests', () => {
           jarId: testJar.id,
           userId: creatorUser.id,
           userBank: 'vodafone',
-          userAccountNumber: '0241234567',
+          userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
         },
       })
