@@ -108,9 +108,19 @@ abstract class BaseApiProvider {
           final statusCode = error.response?.statusCode ?? 500;
           final errorData = error.response?.data;
 
+          // Extract message: check top-level 'message' first,
+          // then Payload's 'errors' array format (e.g. from APIError hooks)
+          String? errorMessage = errorData?['message'];
+          if (errorMessage == null && errorData?['errors'] is List) {
+            final errors = errorData['errors'] as List;
+            if (errors.isNotEmpty && errors[0] is Map) {
+              errorMessage = errors[0]['message'];
+            }
+          }
+
           return {
             'success': false,
-            'message': errorData?['message'] ?? 'Server error while $operation',
+            'message': errorMessage ?? 'Server error while $operation',
             'error': errorData?['error'] ?? error.message ?? 'Bad response',
             'dioErrorType': error.type.toString(),
             'statusCode': statusCode,

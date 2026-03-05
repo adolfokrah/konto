@@ -3,7 +3,8 @@ import config from '@payload-config'
 import Image from 'next/image'
 import ExpandableDescription from '@/components/ExpandableDescription'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, TriangleAlert } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
@@ -340,6 +341,15 @@ export default async function Page({
             {jarWithBalance.paymentPage?.showRecentContributions && (
               <RecentContributions jarId={jarId} limit={5} />
             )}
+
+            {/* Safety tip */}
+            <Alert className="my-6 font-supreme">
+              <TriangleAlert className="h-4 w-4" />
+              <AlertTitle>Stay safe</AlertTitle>
+              <AlertDescription>
+                Before contributing, make sure you know and trust the organizer. Check their username and look for the <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" /> verified badge.
+              </AlertDescription>
+            </Alert>
 
             {/* Report Jar */}
             <div className="flex justify-center py-4">
