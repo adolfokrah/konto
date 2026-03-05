@@ -14,6 +14,9 @@ process.env.DIDIT_WORKFLOW_ID = 'test_workflow_id'
 
 const EGANOW_BASE = 'https://developer.deveganowapi.com'
 
+
+console.log('EGANOW_BASE', process.env.EGANOW_SECRET_PASSWORD)
+
 beforeAll(() => {
   nock.disableNetConnect()
   nock.enableNetConnect((host) => host.includes('127.0.0.1') || host.includes('localhost'))
