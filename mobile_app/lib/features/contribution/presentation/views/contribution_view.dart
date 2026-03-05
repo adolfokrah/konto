@@ -18,6 +18,7 @@ import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.da
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class ContributionView extends StatelessWidget {
   const ContributionView({super.key});
@@ -335,9 +336,6 @@ class ContributionView extends StatelessWidget {
                                                         >();
                                                 final collectorId =
                                                     contribution.collector.id;
-                                                final navigator = Navigator.of(
-                                                  context,
-                                                );
 
                                                 // Clear existing filters and set collector filter
                                                 filterBloc.add(
@@ -362,21 +360,13 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                                 );
 
-                                                // Debug: Check the filter state
-                                                final filterState =
-                                                    filterBloc.state;
-                                                if (filterState
-                                                    is FilterContributionsLoaded) {
-                                                  print(
-                                                    '🔍 Filter state after setting: collectors=${filterState.selectedCollectors}, hasFilters=${filterState.hasFilters}',
-                                                  );
-                                                }
+                                                if (!context.mounted) return;
 
                                                 // Close current modal
-                                                navigator.pop();
+                                                Navigator.of(context).pop();
 
                                                 // Navigate to contributions list
-                                                navigator.pushNamed(
+                                                context.push(
                                                   AppRoutes.contributionsList,
                                                 );
                                               } else {

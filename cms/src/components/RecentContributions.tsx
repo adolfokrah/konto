@@ -89,9 +89,6 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
         type: {
           equals: 'contribution',
         },
-        viaPaymentLink: {
-          equals: true,
-        },
       },
       limit,
       sort: '-createdAt',
