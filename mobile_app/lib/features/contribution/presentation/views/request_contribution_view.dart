@@ -229,7 +229,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
               currentUserId = authState.user.id;
             }
             final paymentLink =
-                "${AppConfig.nextProjectBaseUrl}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectionId=${currentUserId ?? ''}";
+                "${AppConfig.contributionPage}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectionId=${currentUserId ?? ''}";
             return SizedBox(
               width: double.infinity,
               child: SingleChildScrollView(

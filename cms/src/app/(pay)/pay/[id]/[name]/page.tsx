@@ -1,5 +1,3 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import Image from 'next/image'
 import ExpandableDescription from '@/components/ExpandableDescription'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,24 +13,14 @@ import { Metadata } from 'next'
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { id: jarId } = await params
 
-  const payload = await getPayload({ config })
-
   try {
-    // Get jar data for metadata
-    const res = await payload.find({
-      collection: 'jars',
-      where: {
-        id: {
-          equals: jarId,
-        },
-        status: {
-          equals: 'open',
-        },
-      },
-      depth: 2,
-    })
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
+    )
 
-    const jar = res?.docs?.[0]
+    const data = await res.json()
+
+    const jar = data?.data
 
     if (!jar) {
       return {
@@ -114,71 +102,18 @@ export default async function Page({
   const { id: jarId } = await params
   const resolvedSearchParams = await searchParams
 
-  const payload = await getPayload({ config })
-
   try {
-    // Get jar data directly using Payload (without status filter to check if jar exists)
-    const res = await payload.find({
-      collection: 'jars',
-      where: {
-        id: {
-          equals: jarId,
-        },
-      },
-      depth: 2, // Include related data like creator
-    })
+    // Get jar data, system settings, and contribution totals in one call
+    const jarRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
+    )
 
-    const jar = res?.docs?.[0]
-    if (!jar) {
+    const jarData = await jarRes.json()
+    const jarWithBalance = jarData?.data
+    const systemSettings = jarData?.systemSettings
+
+    if (!jarWithBalance) {
       throw new Error('Jar not found')
-    }
-
-    // Check if jar is open
-    if (jar.status !== 'open') {
-      return (
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center p-8">
-            <h1 className="text-title-bold-lg text-gray-700 mb-4">
-              {jar.status === 'sealed' ? 'Jar Sealed' : 'Jar Not Available'}
-            </h1>
-            <p className="text-title-regular-m text-gray-600">
-              This jar is no longer accepting contributions.
-            </p>
-          </div>
-        </div>
-      )
-    }
-
-    // Get system settings for transaction fee percentage
-    const systemSettings = await payload.findGlobal({
-      slug: 'system-settings',
-    })
-
-    // Get all contributions for this jar to calculate total
-    const allContributions = await payload.find({
-      collection: 'transactions',
-      where: {
-        jar: {
-          equals: jarId,
-        },
-      },
-      limit: 1000, // Get all contributions
-    })
-
-    // Calculate total contributed amount (same logic as jar summary endpoint)
-    const totalContributedAmount = allContributions.docs
-      .filter(
-        (contribution) =>
-          contribution.paymentStatus === 'completed' && contribution.type === 'contribution',
-      )
-      .reduce((sum, contribution) => sum + (contribution.amountContributed || 0), 0)
-
-    // Add balance breakdown to jar object
-    const jarWithBalance = {
-      ...jar,
-      balanceBreakDown: {
-        totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
-      },
     }
 
     // Get the image URL if it exists
