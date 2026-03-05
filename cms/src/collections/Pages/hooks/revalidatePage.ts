@@ -15,7 +15,10 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 
       payload.logger.info(`Revalidating page at path: ${path}`)
 
+      // Revalidate both with and without locale prefix
       revalidatePath(path)
+      revalidatePath(`/en${path}`)
+      revalidatePath(`/fr${path}`)
       revalidateTag('pages-sitemap', 'max')
     }
 
@@ -26,6 +29,8 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
       payload.logger.info(`Revalidating old page at path: ${oldPath}`)
 
       revalidatePath(oldPath)
+      revalidatePath(`/en${oldPath}`)
+      revalidatePath(`/fr${oldPath}`)
       revalidateTag('pages-sitemap', 'max')
     }
   }
