@@ -129,7 +129,7 @@ export function TransactionDetailSheet({
                 <DetailRow
                   label="Jar"
                   value={selected.jar ? (
-                    <Link href={`/dashboard/jars/${selected.jar.id}`} className="text-blue-600 hover:underline">
+                    <Link href={`/dashboard/jars/${selected.jar.id}`} className="hover:underline">
                       {selected.jar.name}
                     </Link>
                   ) : null}
@@ -244,7 +244,7 @@ export function TransactionDetailSheet({
                   <DetailRow
                     label="Name"
                     value={
-                      <Link href={`/dashboard/users/${selected.collector.id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/dashboard/users/${selected.collector.id}`} className="hover:underline">
                         {`${selected.collector.firstName || ''} ${selected.collector.lastName || ''}`.trim() || '—'}
                       </Link>
                     }

@@ -74,7 +74,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Jar',
     cell: ({ row }) =>
       row.original.jar ? (
-        <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block text-blue-600 hover:underline">
+        <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block hover:underline">
           {row.original.jar.name}
         </Link>
       ) : (

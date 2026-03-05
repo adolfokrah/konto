@@ -70,7 +70,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     header: 'Creator',
     cell: ({ row }) =>
       row.original.creatorId ? (
-        <Link href={`/dashboard/users/${row.original.creatorId}`} className="text-blue-600 hover:underline">
+        <Link href={`/dashboard/users/${row.original.creatorId}`} className="hover:underline">
           {row.original.creatorName}
         </Link>
       ) : (

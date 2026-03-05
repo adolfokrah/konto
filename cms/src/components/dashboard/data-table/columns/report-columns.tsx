@@ -28,7 +28,7 @@ export const reportColumns: ColumnDef<ReportRow, any>[] = [
     header: 'Jar',
     cell: ({ row }) =>
       row.original.jarId ? (
-        <Link href={`/dashboard/jars/${row.original.jarId}`} className="truncate block font-medium text-blue-600 hover:underline">
+        <Link href={`/dashboard/jars/${row.original.jarId}`} className="truncate block font-medium hover:underline">
           {row.original.jarName}
         </Link>
       ) : (
@@ -51,7 +51,7 @@ export const reportColumns: ColumnDef<ReportRow, any>[] = [
     header: 'Reporter',
     cell: ({ row }) =>
       row.original.reporterId ? (
-        <Link href={`/dashboard/users/${row.original.reporterId}`} className="text-blue-600 hover:underline">
+        <Link href={`/dashboard/users/${row.original.reporterId}`} className="hover:underline">
           {row.original.reporterName}
         </Link>
       ) : (

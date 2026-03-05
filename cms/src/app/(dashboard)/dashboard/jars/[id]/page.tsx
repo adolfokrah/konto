@@ -483,7 +483,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                 creatorObj ? (
                   <Link
                     href={`/dashboard/users/${creatorObj.id}`}
-                    className="text-blue-400 hover:underline"
+                    className="hover:underline"
                   >
                     {creatorName}
                   </Link>
