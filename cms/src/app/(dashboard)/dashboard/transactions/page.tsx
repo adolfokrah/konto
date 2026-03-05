@@ -22,6 +22,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
   const link = typeof params.link === 'string' ? params.link : ''
   const settled = typeof params.settled === 'string' ? params.settled : ''
   const ref = typeof params.ref === 'string' ? params.ref : ''
+  const jar = typeof params.jar === 'string' ? params.jar : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
 
@@ -58,6 +59,21 @@ export default async function TransactionsPage({ searchParams }: Props) {
   }
   if (ref) {
     where.transactionReference = { like: ref }
+  }
+  if (jar) {
+    const matchingJars = await payload.find({
+      collection: 'jars',
+      where: { name: { like: jar } },
+      select: { id: true },
+      pagination: false,
+      overrideAccess: true,
+    })
+    const jarIds = matchingJars.docs.map((j: any) => j.id)
+    if (jarIds.length > 0) {
+      where.jar = { in: jarIds }
+    } else {
+      where.jar = { equals: 'no-match' }
+    }
   }
   if (from) {
     where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }

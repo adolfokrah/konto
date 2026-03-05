@@ -109,7 +109,7 @@ export default async function Page({
   searchParams 
 }: { 
   params: Promise<{ id: string; name: string }>
-  searchParams: Promise<{ collectorId?: string; collectionId?: string }>
+  searchParams: Promise<{ collectorId?: string; collectionId?: string; cPage?: string }>
 }) {
   const { id: jarId } = await params
   const resolvedSearchParams = await searchParams
@@ -349,7 +349,7 @@ export default async function Page({
 
             {/* Recent Contributions */}
             {jarWithBalance.paymentPage?.showRecentContributions && (
-              <RecentContributions jarId={jarId} limit={5} />
+              <RecentContributions jarId={jarId} limit={5} page={Number(resolvedSearchParams.cPage) || 1} />
             )}
 
             {/* Report Jar */}

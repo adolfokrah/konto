@@ -476,7 +476,22 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DetailRow label="Name" icon={UserCircle} value={creatorName} />
+            <DetailRow
+              label="Name"
+              icon={UserCircle}
+              value={
+                creatorObj ? (
+                  <Link
+                    href={`/dashboard/users/${creatorObj.id}`}
+                    className="text-blue-400 hover:underline"
+                  >
+                    {creatorName}
+                  </Link>
+                ) : (
+                  creatorName
+                )
+              }
+            />
             <Separator />
             <DetailRow label="Email" icon={Mail} value={creatorEmail} />
             <Separator />

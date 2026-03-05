@@ -74,6 +74,10 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     cell: ({ row }) => (
       <span className="truncate block">{row.original.jar?.name || '\u2014'}</span>
     ),
+    meta: {
+      filter: { type: 'search', paramKey: 'jar', placeholder: 'Search jar...' },
+      filterLabel: 'Jar',
+    } satisfies DataTableColumnMeta,
   },
   {
     accessorKey: 'type',

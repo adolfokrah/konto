@@ -2,10 +2,13 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Transaction } from '@/payload-types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface RecentContributionsProps {
   jarId: string
   limit?: number
+  page?: number
 }
 
 interface ContributionWithRelations extends Omit<Transaction, 'jar' | 'collector'> {
@@ -60,11 +63,10 @@ function formatTimeAgo(dateString: string): string {
   return `${diffInMonths}mo ago`
 }
 
-export default async function RecentContributions({ jarId, limit = 10 }: RecentContributionsProps) {
+export default async function RecentContributions({ jarId, limit = 5, page = 1 }: RecentContributionsProps) {
   const payload = await getPayload({ config })
 
   try {
-    // First, get the jar to access its currency
     const jarResult = await payload.findByID({
       collection: 'jars',
       id: jarId,
@@ -91,16 +93,18 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
         },
       },
       limit,
+      page,
       sort: '-createdAt',
       depth: 2,
     })
 
     const contributionsWithRelations = contributions.docs as ContributionWithRelations[]
+    const { totalPages, totalDocs } = contributions
 
-    if (contributionsWithRelations.length === 0) {
+    if (contributionsWithRelations.length === 0 && page === 1) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 font-supreme">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Contributions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Contributions</h3>
           <div className="text-center py-8">
             <div className="text-gray-400 mb-2">
               <svg
@@ -125,7 +129,10 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
 
     return (
       <div className="bg-white font-supreme">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Contributions</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Contributions</h3>
+          <span className="text-sm text-gray-500">{totalDocs} total</span>
+        </div>
 
         <div className="space-y-4">
           {contributionsWithRelations.map((contribution) => {
@@ -139,16 +146,13 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
                 key={contribution.id}
                 className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
               >
-                {/* Left side - Avatar, Name, ID, Time */}
                 <div className="flex items-center space-x-3">
-                  {/* Avatar with initials */}
                   <Avatar className="w-10 h-10">
                     <AvatarFallback className="bg-primary-light font-medium">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
 
-                  {/* Contributor info */}
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-gray-900">{contributorName}</span>
@@ -157,9 +161,7 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
                   </div>
                 </div>
 
-                {/* Right side - Payment method and Amount */}
                 <div className="flex items-center space-x-4">
-                  {/* Amount */}
                   <div className="text-right">
                     <div className="text-sm font-semibold text-gray-900">
                       {formatAmount(amount, jarCurrency)}
@@ -170,6 +172,47 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
             )
           })}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 mt-2">
+            {page > 1 ? (
+              <Link
+                href={`?cPage=${page - 1}`}
+                scroll={false}
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-black transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Link>
+            ) : (
+              <span className="flex items-center gap-1 text-sm text-gray-300">
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </span>
+            )}
+
+            <span className="text-sm text-gray-500">
+              Page {page} of {totalPages}
+            </span>
+
+            {page < totalPages ? (
+              <Link
+                href={`?cPage=${page + 1}`}
+                scroll={false}
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-black transition-colors"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <span className="flex items-center gap-1 text-sm text-gray-300">
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </span>
+            )}
+          </div>
+        )}
       </div>
     )
   } catch (error) {
@@ -177,7 +220,7 @@ export default async function RecentContributions({ jarId, limit = 10 }: RecentC
 
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Contributions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contributions</h3>
         <div className="text-center py-8">
           <div className="text-red-400 mb-2">
             <svg
