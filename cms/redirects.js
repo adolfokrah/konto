@@ -12,7 +12,14 @@ const redirects = async () => {
     source: '/:path((?!ie-incompatible.html$).*)', // all pages except the incompatibility page
   }
 
-  const redirects = [internetExplorerRedirect]
+  // Payload CMS uses /home internally — redirect to /admin
+  const homeRedirect = {
+    source: '/home',
+    destination: '/admin',
+    permanent: false,
+  }
+
+  const redirects = [homeRedirect, internetExplorerRedirect]
 
   return redirects
 }
