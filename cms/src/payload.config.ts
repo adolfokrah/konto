@@ -87,7 +87,7 @@ export default buildConfig({
     JarReports,
     PushCampaigns,
   ],
-  cors: [getServerSideURL()].filter(Boolean),
+  cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
     url:
