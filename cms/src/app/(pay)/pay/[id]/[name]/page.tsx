@@ -264,10 +264,10 @@ export default async function Page({
             )}
 
             {/* Safety tip */}
-            <Alert className="my-4 font-supreme bg-orange-50 border-orange-200 rounded-2xl [&>svg]:text-orange-500">
+            <Alert className="my-4 font-supreme bg-[#FDF7EC] border-[#F5E6C8] rounded-2xl [&>svg]:text-orange-400">
               <TriangleAlert className="h-4 w-4" />
-              <AlertTitle className="text-orange-800">Stay safe</AlertTitle>
-              <AlertDescription className="text-orange-700">
+              <AlertTitle className="text-orange-900">Stay safe</AlertTitle>
+              <AlertDescription className="text-orange-800/80">
                 Before contributing, make sure you know and trust the organizer. Check their username and look for the <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" /> verified badge.
               </AlertDescription>
             </Alert>
