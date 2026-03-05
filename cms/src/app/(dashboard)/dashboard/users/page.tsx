@@ -31,11 +31,20 @@ export default async function UsersPage({ searchParams }: Props) {
   // Build where clause from filters
   const where: Record<string, any> = {}
   if (search) {
-    where.or = [
-      { firstName: { like: search } },
-      { lastName: { like: search } },
-      { phoneNumber: { like: search } },
-    ]
+    const parts = search.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      // Full name search: match first name + last name
+      where.and = [
+        { firstName: { like: parts[0] } },
+        { lastName: { like: parts.slice(1).join(' ') } },
+      ]
+    } else {
+      where.or = [
+        { firstName: { like: search } },
+        { lastName: { like: search } },
+        { phoneNumber: { like: search } },
+      ]
+    }
   }
   if (kyc && ['none', 'in_review', 'verified'].includes(kyc)) {
     where.kycStatus = { equals: kyc }
@@ -80,29 +89,33 @@ export default async function UsersPage({ searchParams }: Props) {
       page,
       limit,
       sort: '-createdAt',
-      depth: 0,
+      depth: 1,
       overrideAccess: true,
     }),
   ])
 
   // Map to UserRow type
-  const users: UserRow[] = usersResult.docs.map((u: any) => ({
-    id: u.id,
-    firstName: u.firstName || '',
-    lastName: u.lastName || '',
-    email: u.email || '',
-    phoneNumber: u.phoneNumber || '',
-    countryCode: u.countryCode || null,
-    country: u.country || '',
-    kycStatus: u.kycStatus || 'none',
-    kycSessionId: u.kycSessionId || null,
-    role: u.role || 'user',
-    demoUser: u.demoUser ?? false,
-    bank: u.bank || null,
-    accountNumber: u.accountNumber || null,
-    accountHolder: u.accountHolder || null,
-    createdAt: u.createdAt,
-  }))
+  const users: UserRow[] = usersResult.docs.map((u: any) => {
+    const photoObj = typeof u.photo === 'object' && u.photo ? u.photo : null
+    return {
+      id: u.id,
+      firstName: u.firstName || '',
+      lastName: u.lastName || '',
+      email: u.email || '',
+      phoneNumber: u.phoneNumber || '',
+      countryCode: u.countryCode || null,
+      country: u.country || '',
+      photoUrl: photoObj?.url || null,
+      kycStatus: u.kycStatus || 'none',
+      kycSessionId: u.kycSessionId || null,
+      role: u.role || 'user',
+      demoUser: u.demoUser ?? false,
+      bank: u.bank || null,
+      accountNumber: u.accountNumber || null,
+      accountHolder: u.accountHolder || null,
+      createdAt: u.createdAt,
+    }
+  })
 
   return (
     <div className="space-y-6">

@@ -9,6 +9,7 @@ import {
   roleLabels,
   formatShortDate,
 } from '@/components/dashboard/table-constants'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { type DataTableColumnMeta } from '../types'
 
 export type UserRow = {
@@ -19,6 +20,7 @@ export type UserRow = {
   phoneNumber: string
   countryCode: string | null
   country: string
+  photoUrl: string | null
   kycStatus: 'none' | 'in_review' | 'verified'
   kycSessionId: string | null
   role: 'user' | 'admin'
@@ -34,9 +36,17 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     accessorKey: 'firstName',
     header: 'Name',
     cell: ({ row }) => (
-      <span className="font-medium">
-        {row.original.firstName} {row.original.lastName}
-      </span>
+      <div className="flex items-center gap-2">
+        <Avatar className="h-8 w-8">
+          {row.original.photoUrl && <AvatarImage src={row.original.photoUrl} alt={row.original.firstName} />}
+          <AvatarFallback className="text-xs">
+            {row.original.firstName?.charAt(0)}{row.original.lastName?.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <span className="font-medium">
+          {row.original.firstName} {row.original.lastName}
+        </span>
+      </div>
     ),
     meta: {
       filter: { type: 'search', paramKey: 'search', placeholder: 'Search name or phone...' },

@@ -64,7 +64,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     const matchingJars = await payload.find({
       collection: 'jars',
       where: { name: { like: jar } },
-      select: { id: true },
+      select: { name: true },
       pagination: false,
       overrideAccess: true,
     })
