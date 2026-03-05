@@ -347,7 +347,7 @@ export default function ContributionInput({
           </div>
 
         {isAnonymous && (<div className='mb-2'>
-          <small className="text-gray-500">We only use your phone number to process your payment. This information is not saved or shared.</small>
+          <small className="text-gray-500">We only use your phone number to process your payment. This information is not shared with the organizer.</small>
         </div>)}
 
         <div>
