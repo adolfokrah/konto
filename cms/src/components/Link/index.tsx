@@ -1,7 +1,10 @@
+'use client'
+
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { cn } from '@/utilities/ui'
 import Link from 'next/link'
-import React from 'react'
+import { usePathname } from 'next/navigation'
+import React, { useCallback } from 'react'
 
 import type { Page, Post } from '@/payload-types'
 
@@ -35,12 +38,19 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     anchor,
   } = props
 
+  const pathname = usePathname()
+
   let href =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
           reference.value.slug
         }`
       : url
+
+  // Normalize home page slug to root
+  if (href === '/home') {
+    href = '/'
+  }
 
   // Append anchor if provided
   if (href && anchor) {
@@ -50,13 +60,39 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   if (!href) return null
 
+  // Handle same-page hash scrolling
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!anchor) return
+
+      const cleanAnchor = anchor.startsWith('#') ? anchor.slice(1) : anchor
+
+      // Check if we're already on the target page
+      const hrefWithoutHash = (href || '').split('#')[0] || '/'
+      const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/')
+      const normalizedPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale
+      const normalizedHref = hrefWithoutHash === '/' ? '/' : hrefWithoutHash
+
+      if (normalizedPath === normalizedHref) {
+        e.preventDefault()
+        const element = document.getElementById(cleanAnchor)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+          // Update URL hash without navigation
+          window.history.pushState(null, '', `#${cleanAnchor}`)
+        }
+      }
+    },
+    [anchor, href, pathname],
+  )
+
   const size = appearance === 'link' ? 'clear' : sizeFromProps
   const newTabProps = newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}
 
   /* Ensure we don't break any styles set by richText */
   if (appearance === 'inline') {
     return (
-      <Link className={cn(className)} href={href || url || ''} {...newTabProps}>
+      <Link className={cn(className)} href={href || url || ''} onClick={handleClick} {...newTabProps}>
         {label && label}
         {children && children}
       </Link>
@@ -65,7 +101,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   return (
     <Button asChild className={className} size={size} variant={appearance}>
-      <Link className={cn(className)} href={href || url || ''} {...newTabProps}>
+      <Link className={cn(className)} href={href || url || ''} onClick={handleClick} {...newTabProps}>
         {label && label}
         {children && children}
       </Link>

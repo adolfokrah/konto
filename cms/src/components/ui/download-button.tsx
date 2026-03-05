@@ -1,3 +1,5 @@
+'use client'
+
 import { cn } from '@/utilities/ui'
 import { Button } from './button'
 import { ArrowRight } from 'lucide-react'
@@ -11,9 +13,17 @@ export default function DownloadButton({
   className?: string
   title?: string
 }) {
+  const handleClick = () => {
+    const element = document.getElementById('cta')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <Button
       size={'sm'}
+      onClick={handleClick}
       className={cn('rounded-full flex items-center gap-2 text-black cursor-pointer', className, {
         'bg-white hover:bg-gray-100': variant == 'default',
         'bg-secondary-background hover:bg-secondary-dark': variant == 'invert',
