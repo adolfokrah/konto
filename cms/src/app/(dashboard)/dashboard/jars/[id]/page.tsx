@@ -289,7 +289,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-start justify-between">
+              <div className="flex items-end justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <h1 className="text-2xl font-bold text-white">{jar.name}</h1>
