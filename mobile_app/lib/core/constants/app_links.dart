@@ -6,7 +6,8 @@ class AppLinks {
   static const String about = 'https://hogapay.com/about';
   static const String privacy = 'https://www.hogapay.com/privacy-policy';
   static const String terms = 'https://www.hogapay.com/terms';
-  static const String contact = 'mailto:hello@hogapay.com';
+  static const String contact = 'https://hogapay.com/contact-us';
+  static const String support = 'https://hogapay.com/support';
 
   // Social media links
 

@@ -5,6 +5,7 @@ import { getUserJars } from './endpoints/get-user-jars'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { leaveJar } from './endpoints/leave-jar'
 import { getContributionPageJar } from './endpoints/get-contribution-page-jar'
+import { getRecentContributions } from './endpoints/get-recent-contributions'
 import { sendInviteNotificationToUser } from './hooks/sendInviteNotificationToUser'
 import { deleteInviteNotification } from './hooks/deleteInviteNotification'
 import { deleteInviteNotifications } from './hooks/dleteInviteNotifications'
@@ -246,6 +247,11 @@ export const Jars: CollectionConfig = {
       method: 'get',
       path: '/:id/contribution-page',
       handler: getContributionPageJar,
+    },
+    {
+      method: 'get',
+      path: '/:id/recent-contributions',
+      handler: getRecentContributions,
     },
   ],
 }

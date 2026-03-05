@@ -264,6 +264,7 @@ export interface Page {
     | MissionVisionValuesBlock
     | TestimonialsBlock
     | FAQBlock
+    | SupportBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1345,6 +1346,28 @@ export interface FAQBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SupportBlock".
+ */
+export interface SupportBlock {
+  heading?: string | null;
+  subheading?: string | null;
+  /**
+   * Phone number for calls (e.g. +233241234567)
+   */
+  phoneNumber: string;
+  /**
+   * WhatsApp number (e.g. +233241234567)
+   */
+  whatsappNumber: string;
+  email: string;
+  businessHours?: string | null;
+  closedDays?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'support';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
  */
 export interface Transaction {
@@ -1987,6 +2010,7 @@ export interface PagesSelect<T extends boolean = true> {
         missionVisionValues?: T | MissionVisionValuesBlockSelect<T>;
         testimonials?: T | TestimonialsBlockSelect<T>;
         faq?: T | FAQBlockSelect<T>;
+        support?: T | SupportBlockSelect<T>;
       };
   meta?:
     | T
@@ -2292,6 +2316,21 @@ export interface FAQBlockSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SupportBlock_select".
+ */
+export interface SupportBlockSelect<T extends boolean = true> {
+  heading?: T;
+  subheading?: T;
+  phoneNumber?: T;
+  whatsappNumber?: T;
+  email?: T;
+  businessHours?: T;
+  closedDays?: T;
   id?: T;
   blockName?: T;
 }

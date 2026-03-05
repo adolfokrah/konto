@@ -1,25 +1,11 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import type { Transaction } from '@/payload-types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Link from 'next/link'
 
 interface RecentContributionsProps {
   jarId: string
+  currency?: string
   limit?: number
   page?: number
-}
-
-interface ContributionWithRelations extends Omit<Transaction, 'jar' | 'collector'> {
-  jar: {
-    id: string
-    name: string
-  }
-  collector?: {
-    id: string
-    name?: string
-    email?: string
-  }
 }
 
 function getInitials(name: string): string {
@@ -62,49 +48,26 @@ function formatTimeAgo(dateString: string): string {
   return `${diffInMonths}mo ago`
 }
 
-export default async function RecentContributions({ jarId, limit = 5, page = 1 }: RecentContributionsProps) {
-  const payload = await getPayload({ config })
-
+export default async function RecentContributions({ jarId, currency, limit = 5, page = 1 }: RecentContributionsProps) {
   try {
-    const jarResult = await payload.findByID({
-      collection: 'jars',
-      id: jarId,
-      depth: 0,
-    })
-
-    if (!jarResult) {
-      throw new Error('Jar not found')
-    }
-
-    const jarCurrency = jarResult.currency || 'GHS'
-
-    // Load more: fetch all items up to current page
     const totalLimit = limit * page
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-    const contributions = await payload.find({
-      collection: 'transactions',
-      where: {
-        jar: {
-          equals: jarId,
-        },
-        paymentStatus: {
-          equals: 'completed',
-        },
-        type: {
-          equals: 'contribution',
-        },
-      },
-      limit: totalLimit,
-      page: 1,
-      sort: '-createdAt',
-      depth: 2,
-    })
+    const res = await fetch(
+      `${apiUrl}/jars/${jarId}/recent-contributions?limit=${totalLimit}&page=1`,
+      { next: { revalidate: 30 } },
+    )
 
-    const contributionsWithRelations = contributions.docs as ContributionWithRelations[]
-    const { totalDocs } = contributions
+    if (!res.ok) throw new Error('Failed to fetch contributions')
+
+    const data = await res.json()
+    const contributions = data.docs || []
+    const totalDocs = data.totalDocs || 0
     const hasMore = totalLimit < totalDocs
 
-    if (contributionsWithRelations.length === 0 && page === 1) {
+    const jarCurrency = currency || 'GHS'
+
+    if (contributions.length === 0 && page === 1) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 font-supreme">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Contributions</h3>
@@ -138,7 +101,7 @@ export default async function RecentContributions({ jarId, limit = 5, page = 1 }
         </div>
 
         <div className="space-y-4">
-          {contributionsWithRelations.map((contribution) => {
+          {contributions.map((contribution: any) => {
             const contributorName = contribution.contributor || 'Anonymous'
             const initials = getInitials(contributorName)
             const amount = contribution.amountContributed || 0

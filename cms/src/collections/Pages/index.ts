@@ -14,6 +14,7 @@ import { MissionVisionValues } from '../../blocks/MissionVisionValues/config'
 import { Pricing } from '../../blocks/Pricing/config'
 import { Testimonials } from '../../blocks/Testimonials/config'
 import { UseCasesSummary } from '../../blocks/UseCasesSummary/config'
+import { Support } from '../../blocks/Support/config'
 import { WhyChooseUs } from '../../blocks/WhyChooseUs/config'
 import { hero } from '@/heros/config'
 import { slugField } from '@/fields/slug'
@@ -97,6 +98,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 MissionVisionValues,
                 Testimonials,
                 FAQ,
+                Support,
               ],
               required: true,
               admin: {

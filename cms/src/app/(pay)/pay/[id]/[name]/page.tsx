@@ -97,7 +97,7 @@ export default async function Page({
   searchParams 
 }: { 
   params: Promise<{ id: string; name: string }>
-  searchParams: Promise<{ collectorId?: string; collectionId?: string; cPage?: string }>
+  searchParams: Promise<{ collectorId?: string; cPage?: string }>
 }) {
   const { id: jarId } = await params
   const resolvedSearchParams = await searchParams
@@ -152,7 +152,7 @@ export default async function Page({
 
     // Resolve collector id from query param or fallback to jar creator
     const collectorIdFromQuery =
-      (resolvedSearchParams?.collectorId as string) || (resolvedSearchParams?.collectionId as string) || null
+      (resolvedSearchParams?.collectorId as string) || null
     const creatorId =
       typeof jarWithBalance?.creator === 'object'
         ? jarWithBalance?.creator?.id
@@ -284,7 +284,7 @@ export default async function Page({
 
             {/* Recent Contributions */}
             {jarWithBalance.paymentPage?.showRecentContributions && (
-              <RecentContributions jarId={jarId} limit={5} page={Number(resolvedSearchParams.cPage) || 1} />
+              <RecentContributions jarId={jarId} currency={jarWithBalance.currency} limit={5} page={Number(resolvedSearchParams.cPage) || 1} />
             )}
 
             {/* Report Jar */}

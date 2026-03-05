@@ -14,6 +14,7 @@ import { MissionVisionValuesComponent } from '@/blocks/MissionVisionValues/Compo
 import { PricingBlock } from '@/blocks/Pricing/Component'
 import { TestimonialsBlock } from '@/blocks/Testimonials/Component'
 import { UseCasesSummaryBlock } from '@/blocks/UseCasesSummary/Component'
+import { SupportBlock } from '@/blocks/Support/Component'
 import { WhyChooseUsBlock } from '@/blocks/WhyChooseUs/Component'
 
 const blockComponents = {
@@ -29,6 +30,7 @@ const blockComponents = {
   pricing: PricingBlock,
   testimonials: TestimonialsBlock,
   useCasesSummary: UseCasesSummaryBlock,
+  support: SupportBlock,
   whyChooseUs: WhyChooseUsBlock,
 }
 

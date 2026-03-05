@@ -267,6 +267,10 @@ class UserAccountView extends StatelessWidget {
               onTap: () => UrlLauncherUtils.launch(AppLinks.contact),
             ),
             _buildExternalMenuItem(
+              title: localizations.help,
+              onTap: () => UrlLauncherUtils.launch(AppLinks.support),
+            ),
+            _buildExternalMenuItem(
               title: localizations.appRating,
               onTap: () => UrlLauncherUtils.launch(AppLinks.appStore),
             ),

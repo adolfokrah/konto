@@ -18,6 +18,8 @@ import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.da
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:Hoga/core/constants/app_links.dart';
 import 'package:go_router/go_router.dart';
 
 class ContributionView extends StatelessWidget {
@@ -436,6 +438,12 @@ class ContributionView extends StatelessWidget {
                                         ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           dense: true,
+                                          onTap: () {
+                                            launchUrl(
+                                              Uri.parse(AppLinks.support),
+                                              mode: LaunchMode.inAppBrowserView,
+                                            );
+                                          },
                                           title: Text(
                                             localizations.help,
                                             style: AppTextStyles.titleMediumS
