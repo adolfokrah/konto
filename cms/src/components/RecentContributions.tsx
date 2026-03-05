@@ -3,7 +3,6 @@ import config from '@payload-config'
 import type { Transaction } from '@/payload-types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface RecentContributionsProps {
   jarId: string
@@ -79,6 +78,9 @@ export default async function RecentContributions({ jarId, limit = 5, page = 1 }
 
     const jarCurrency = jarResult.currency || 'GHS'
 
+    // Load more: fetch all items up to current page
+    const totalLimit = limit * page
+
     const contributions = await payload.find({
       collection: 'transactions',
       where: {
@@ -92,14 +94,15 @@ export default async function RecentContributions({ jarId, limit = 5, page = 1 }
           equals: 'contribution',
         },
       },
-      limit,
-      page,
+      limit: totalLimit,
+      page: 1,
       sort: '-createdAt',
       depth: 2,
     })
 
     const contributionsWithRelations = contributions.docs as ContributionWithRelations[]
-    const { totalPages, totalDocs } = contributions
+    const { totalDocs } = contributions
+    const hasMore = totalLimit < totalDocs
 
     if (contributionsWithRelations.length === 0 && page === 1) {
       return (
@@ -173,44 +176,16 @@ export default async function RecentContributions({ jarId, limit = 5, page = 1 }
           })}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 mt-2">
-            {page > 1 ? (
-              <Link
-                href={`?cPage=${page - 1}`}
-                scroll={false}
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-black transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </Link>
-            ) : (
-              <span className="flex items-center gap-1 text-sm text-gray-300">
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </span>
-            )}
-
-            <span className="text-sm text-gray-500">
-              Page {page} of {totalPages}
-            </span>
-
-            {page < totalPages ? (
-              <Link
-                href={`?cPage=${page + 1}`}
-                scroll={false}
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-black transition-colors"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            ) : (
-              <span className="flex items-center gap-1 text-sm text-gray-300">
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </span>
-            )}
+        {/* Load More */}
+        {hasMore && (
+          <div className="flex justify-center pt-4 mt-2">
+            <Link
+              href={`?cPage=${page + 1}`}
+              scroll={false}
+              className="text-sm text-gray-600 hover:text-black transition-colors font-medium"
+            >
+              Load more
+            </Link>
           </div>
         )}
       </div>
