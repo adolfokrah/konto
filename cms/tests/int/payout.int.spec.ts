@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 
 import config from '@/payload.config'
 import { payoutEganow } from '../../src/collections/Transactions/endpoints/payout-eganow'
+import { processPayoutTask } from '@/tasks/process-payout'
 import { clearAllCollections } from 'tests/utils/testCleanup'
 
 let payload: Payload
@@ -416,8 +417,6 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should create a payout transaction with correct fields', async () => {
       await createSettledContribution(testJar.id, 500)
 
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
-
       await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -457,8 +456,6 @@ describe('Payout Endpoint Integration Tests', () => {
 
       const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
       const feePercentage = systemSettings?.transferFeePercentage || 1
-
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
 
       await processPayoutTask.handler({
         req: { payload },
@@ -509,8 +506,6 @@ describe('Payout Endpoint Integration Tests', () => {
         },
       })
 
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
-
       const result = await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -535,8 +530,6 @@ describe('Payout Endpoint Integration Tests', () => {
         data: { status: 'frozen' },
       })
 
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
-
       const result = await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -555,8 +548,6 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should return error when user is not the jar creator', async () => {
       await createSettledContribution(testJar.id, 500)
 
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
-
       const result = await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -573,8 +564,6 @@ describe('Payout Endpoint Integration Tests', () => {
     })
 
     it('should return error when balance is zero', async () => {
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
-
       const result = await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -592,8 +581,6 @@ describe('Payout Endpoint Integration Tests', () => {
 
     it('should return error for unsupported provider', async () => {
       await createSettledContribution(testJar.id, 500)
-
-      const { processPayoutTask } = await import('../../src/tasks/process-payout')
 
       const result = await processPayoutTask.handler({
         req: { payload },

@@ -54,12 +54,10 @@ export async function checkDiditKycStatus(
     // Send notifications if verified
     if (kycStatus === 'verified') {
       const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim()
-      if (process.env.NODE_ENV !== 'test') {
-        await sendSMS(
-          [user.phoneNumber],
-          `Hello ${fullName}, your KYC verification was successful, please restart the app to continue using it. Thank you!`,
-        )
-      }
+      await sendSMS(
+        [user.phoneNumber],
+        `Hello ${fullName}, your KYC verification was successful, please restart the app to continue using it. Thank you!`,
+      )
       await emailService.sendKycVerificationEmail(user.email, fullName)
     }
 
@@ -95,12 +93,10 @@ export async function updateUserKycStatus(
     // Send notifications if verified
     if (kycStatus === 'verified') {
       const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim()
-      if (process.env.NODE_ENV !== 'test') {
-        await sendSMS(
-          [user.phoneNumber],
-          `Hello ${fullName}, your KYC verification was successful, please restart the app to continue using it. Thank you!`,
-        )
-      }
+      await sendSMS(
+        [user.phoneNumber],
+        `Hello ${fullName}, your KYC verification was successful, please restart the app to continue using it. Thank you!`,
+      )
       await emailService.sendKycVerificationEmail(user.email, fullName)
     }
 

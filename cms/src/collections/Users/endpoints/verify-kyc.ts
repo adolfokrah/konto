@@ -87,9 +87,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
       const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim()
       const message = `${fullName}, Unfortunately, your KYC verification was not successful. Please try again or contact support for assistance.`
 
-      if (process.env.NODE_ENV !== 'test') {
-        await sendSMS(user.phoneNumber, message)
-      }
+      await sendSMS(user.phoneNumber, message)
 
       req.payload.create({
         collection: 'notifications',
@@ -109,8 +107,7 @@ export const verifyKYC = async (req: PayloadRequest) => {
 
     // Send notifications if KYC is verified
     if (newKycStatus === 'verified' && user.kycStatus !== 'verified') {
-      // Send SMS notification (skip in test mode)
-      if (user.phoneNumber && process.env.NODE_ENV !== 'test') {
+      if (user.phoneNumber) {
         await sendSMS(
           user.phoneNumber,
           `${`${user.firstName || ''} ${user.lastName || ''}`.trim()}, Congratulations! Your KYC verification has been approved. You can now access all features of your account.`,

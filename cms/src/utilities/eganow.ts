@@ -121,17 +121,8 @@ export default class Eganow {
     xAuth,
     baseUrl = 'https://developer.deveganowapi.com',
   }: EganowOptions) {
-    const isTest = process.env.NODE_ENV === 'test'
-
-    // Allow missing credentials in test mode
     if (!username || !password || !xAuth) {
-      if (isTest) {
-        username = 'test_username'
-        password = 'test_password'
-        xAuth = 'test_xauth'
-      } else {
-        throw new Error('username, password, and xAuth are required')
-      }
+      throw new Error('username, password, and xAuth are required')
     }
 
     this.username = username
@@ -165,14 +156,6 @@ export default class Eganow {
       useBasicAuth?: boolean
     } = {},
   ): Promise<T> {
-    // In test mode, short-circuit to avoid real HTTP calls
-    if (process.env.NODE_ENV === 'test' && this.username === 'test_username') {
-      return {
-        isSuccess: true,
-        message: 'Test mode: request skipped',
-      } as T
-    }
-
     const url = this.url(path, opts.query)
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

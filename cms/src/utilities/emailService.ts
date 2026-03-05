@@ -19,16 +19,7 @@ interface EmailOptions {
 }
 
 class EmailService {
-  private shouldSkipEmail(): boolean {
-    return process.env.NODE_ENV === 'test'
-  }
-
   private async sendEmail(options: EmailOptions) {
-    if (this.shouldSkipEmail()) {
-      console.log(`[EmailService] Skipping email in test mode: ${options.subject}`)
-      return
-    }
-
     const emailData: any = {
       from: this.getFromEmail(options.subject),
       to: Array.isArray(options.to) ? options.to : [options.to],

@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [tsconfigPaths(), react()],
   test: {
     environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ['./vitest.setup.ts', './vitest.nock.setup.ts'],
     include: ['tests/unit/**/*.unit.spec.ts', 'tests/int/**/*.int.spec.ts'],
     testTimeout: 60000, // ⏱ for individual tests
     hookTimeout: 60000, // ⏱ for beforeEach / afterEach / beforeAll

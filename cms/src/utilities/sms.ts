@@ -52,16 +52,9 @@ export class SMSClient {
   private readonly signal?: AbortSignal
 
   constructor(opts: SMSClientOptions = {}) {
-    const isTest = process.env.NODE_ENV === 'test'
-    let username = opts.username || process.env.SMS_USERNAME || ''
-    let password = opts.password || process.env.SMS_PASS || ''
-    let source = opts.source || process.env.SMS_SOURCE || ''
-
-    if (isTest) {
-      if (!username) username = 'test_username'
-      if (!password) password = 'test_password'
-      if (!source) source = 'TEST'
-    }
+    const username = opts.username || process.env.SMS_USERNAME || ''
+    const password = opts.password || process.env.SMS_PASS || ''
+    const source = opts.source || process.env.SMS_SOURCE || ''
 
     this.username = username
     this.password = password
@@ -120,16 +113,6 @@ export class SMSClient {
       source: this.source,
       message: message.trim(),
       destination: recipients.join(','), // Comma-separated recipients
-    }
-
-    if (process.env.NODE_ENV === 'test') {
-      return {
-        success: true,
-        message: 'Test mode: SMS send skipped',
-        recipients,
-        sent: recipients.length,
-        failed: 0,
-      }
     }
 
     try {
