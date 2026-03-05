@@ -60,6 +60,7 @@ export default async function JarReportsPage({ searchParams }: Props) {
       jarName: jarObj?.name || 'Unknown Jar',
       jarId: jarObj?.id || (typeof report.jar === 'string' ? report.jar : ''),
       message: report.message,
+      reporterId: userObj?.id || null,
       reporterName: userObj
         ? `${userObj.firstName || ''} ${userObj.lastName || ''}`.trim() || userObj.email || 'Unknown'
         : 'Anonymous',

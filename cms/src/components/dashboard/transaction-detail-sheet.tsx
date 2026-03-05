@@ -27,6 +27,7 @@ import {
   Receipt,
   Container,
 } from 'lucide-react'
+import Link from 'next/link'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
 
 function formatFullDate(dateString: string) {
@@ -127,7 +128,11 @@ export function TransactionDetailSheet({
                 />
                 <DetailRow
                   label="Jar"
-                  value={selected.jar?.name}
+                  value={selected.jar ? (
+                    <Link href={`/dashboard/jars/${selected.jar.id}`} className="text-blue-600 hover:underline">
+                      {selected.jar.name}
+                    </Link>
+                  ) : null}
                   icon={<Container className="h-3.5 w-3.5" />}
                 />
                 <DetailRow
@@ -238,7 +243,11 @@ export function TransactionDetailSheet({
                   <Separator className="mb-2" />
                   <DetailRow
                     label="Name"
-                    value={`${selected.collector.firstName || ''} ${selected.collector.lastName || ''}`.trim() || '—'}
+                    value={
+                      <Link href={`/dashboard/users/${selected.collector.id}`} className="text-blue-600 hover:underline">
+                        {`${selected.collector.firstName || ''} ${selected.collector.lastName || ''}`.trim() || '—'}
+                      </Link>
+                    }
                     icon={<User className="h-3.5 w-3.5" />}
                   />
                   <DetailRow label="Email" value={selected.collector.email} />

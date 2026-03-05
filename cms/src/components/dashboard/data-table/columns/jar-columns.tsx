@@ -3,11 +3,13 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utilities/ui'
+import Link from 'next/link'
 import { type DataTableColumnMeta } from '../types'
 
 export type JarRow = {
   id: string
   name: string
+  creatorId: string | null
   creatorName: string
   creatorEmail: string
   status: 'open' | 'frozen' | 'broken' | 'sealed'
@@ -66,7 +68,14 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
   {
     accessorKey: 'creatorName',
     header: 'Creator',
-    cell: ({ row }) => row.original.creatorName,
+    cell: ({ row }) =>
+      row.original.creatorId ? (
+        <Link href={`/dashboard/users/${row.original.creatorId}`} className="text-blue-600 hover:underline">
+          {row.original.creatorName}
+        </Link>
+      ) : (
+        row.original.creatorName
+      ),
   },
   {
     accessorKey: 'status',

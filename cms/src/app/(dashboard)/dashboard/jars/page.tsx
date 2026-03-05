@@ -124,6 +124,7 @@ export default async function JarsPage({ searchParams }: Props) {
     return {
       id: jar.id,
       name: jar.name,
+      creatorId: creatorObj?.id || null,
       creatorName,
       creatorEmail: creatorObj?.email || '—',
       status: jar.status as 'open' | 'frozen' | 'broken' | 'sealed',

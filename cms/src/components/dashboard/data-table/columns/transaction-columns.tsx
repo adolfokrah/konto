@@ -3,6 +3,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utilities/ui'
+import Link from 'next/link'
 import {
   typeStyles,
   statusStyles,
@@ -71,9 +72,14 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'jar',
     header: 'Jar',
-    cell: ({ row }) => (
-      <span className="truncate block">{row.original.jar?.name || '\u2014'}</span>
-    ),
+    cell: ({ row }) =>
+      row.original.jar ? (
+        <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block text-blue-600 hover:underline">
+          {row.original.jar.name}
+        </Link>
+      ) : (
+        <span className="truncate block">{'\u2014'}</span>
+      ),
     meta: {
       filter: { type: 'search', paramKey: 'jar', placeholder: 'Search jar...' },
       filterLabel: 'Jar',
