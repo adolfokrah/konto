@@ -10,7 +10,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -95,6 +94,7 @@ export function TransactionDetailSheet({
   onClose: () => void
 }) {
   const [refunded, setRefunded] = useState(false)
+  const [showRefundDialog, setShowRefundDialog] = useState(false)
 
   const { trigger: triggerRefund, isMutating: refunding } = useSWRMutation(
     '/api/transactions/refund-contribution',
@@ -130,6 +130,7 @@ export function TransactionDetailSheet({
   }
 
   return (
+    <>
     <Sheet open={!!selected} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="sm:max-w-lg overflow-y-auto">
         {selected && (
@@ -310,38 +311,19 @@ export function TransactionDetailSheet({
               {canRefund && (
                 <div>
                   <Separator className="mb-4" />
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        className="w-full"
-                        disabled={refunding}
-                      >
-                        {refunding ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <RotateCcw className="h-4 w-4 mr-2" />
-                        )}
-                        {refunding ? 'Processing Refund...' : 'Refund Contribution'}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to refund{' '}
-                          <span className="font-semibold">{formatAmount(selected.amountContributed)}</span>{' '}
-                          to {selected.contributor || 'the contributor'}? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleRefund}>
-                          Confirm Refund
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    disabled={refunding}
+                    onClick={() => setShowRefundDialog(true)}
+                  >
+                    {refunding ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    {refunding ? 'Processing Refund...' : 'Refund Contribution'}
+                  </Button>
                 </div>
               )}
             </div>
@@ -349,5 +331,25 @@ export function TransactionDetailSheet({
         )}
       </SheetContent>
     </Sheet>
+
+    <AlertDialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to refund{' '}
+            <span className="font-semibold">{selected ? formatAmount(selected.amountContributed) : ''}</span>{' '}
+            to {selected?.contributor || 'the contributor'}? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleRefund}>
+            Confirm Refund
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
