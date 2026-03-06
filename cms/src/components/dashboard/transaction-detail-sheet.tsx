@@ -42,6 +42,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import useSWRMutation from 'swr/mutation'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
@@ -93,6 +94,7 @@ export function TransactionDetailSheet({
   selected: TransactionRow | null
   onClose: () => void
 }) {
+  const router = useRouter()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
 
@@ -124,6 +126,7 @@ export function TransactionDetailSheet({
       await triggerRefund({ transactionId: selected.id })
       toast.success('Refund initiated successfully')
       setRefunded(true)
+      router.refresh()
     } catch (error: any) {
       toast.error(error.message || 'Failed to initiate refund')
     }
