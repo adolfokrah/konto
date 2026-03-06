@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 import { emailService } from '@/utilities/emailService'
-import { buildWhere } from './shared'
+import { buildWhere, parseList } from './shared'
 
 export const exportContributions = async (req: PayloadRequest) => {
   try {
