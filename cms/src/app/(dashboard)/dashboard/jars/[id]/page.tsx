@@ -195,8 +195,8 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
         upcomingBalance += tx.amountContributed || 0
       }
-    } else if (tx.type === 'payout' || tx.type === 'refund') {
-      // Payout/refund amounts are stored as negative — include pending and completed
+    } else if (tx.type === 'payout') {
+      // Payout amounts are stored as negative — include pending and completed
       totalPayouts += tx.amountContributed || 0
     }
   }

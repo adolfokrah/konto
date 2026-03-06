@@ -51,7 +51,8 @@ export const shareContributions = async (req: PayloadRequest) => {
     for (const c of docs) {
       const type = String(c.type || '').toLowerCase()
       const name = c.contributor || 'Anonymous'
-      const amount = Number(c.amountContributed || 0)
+      const isFailed = c.paymentStatus === 'failed'
+      const amount = isFailed ? 0 : Number(c.amountContributed || 0)
       const prefix = type === 'payout' ? '-' : ''
 
       lines.push(`${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}`)

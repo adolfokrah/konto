@@ -133,7 +133,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
   docs.forEach((tx, idx) => {
     const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
     const amount = Math.abs(Number(tx.amountContributed || 0))
-    const isPayout = tx.type === 'payout' || tx.type === 'refund'
+    const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))
@@ -445,7 +445,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
   docs.forEach((tx, idx) => {
     const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
     const amount = Math.abs(Number(tx.amountContributed || 0))
-    const isPayout = tx.type === 'payout' || tx.type === 'refund'
+    const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
     const eganowFees = Math.abs(Number(cb.eganowFees || 0))
