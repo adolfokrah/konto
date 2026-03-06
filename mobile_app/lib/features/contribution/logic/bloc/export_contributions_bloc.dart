@@ -27,6 +27,7 @@ class ExportContributionsBloc
           paymentMethods: event.paymentMethods,
           statuses: event.statuses,
           collectors: event.collectors,
+          transactionTypes: event.transactionTypes,
           startDate: event.startDate,
           endDate: event.endDate,
           contributor: event.contributor,

@@ -147,12 +147,14 @@ class ExportOptionsSheet extends StatelessWidget {
     List<String>? paymentMethods;
     List<String>? statuses;
     List<String>? collectors;
+    List<String>? transactionTypes;
     DateTime? startDate;
     DateTime? endDate;
     if (filtersState is FilterContributionsLoaded) {
       paymentMethods = filtersState.selectedPaymentMethods;
       statuses = filtersState.selectedStatuses;
       collectors = filtersState.selectedCollectors;
+      transactionTypes = filtersState.selectedTransactionTypes;
       startDate = filtersState.startDate;
       endDate = filtersState.endDate;
     }
@@ -163,6 +165,7 @@ class ExportOptionsSheet extends StatelessWidget {
         paymentMethods: paymentMethods,
         statuses: statuses,
         collectors: collectors,
+        transactionTypes: transactionTypes,
         startDate: startDate,
         endDate: endDate,
         contributor: listState.contributorSearch,

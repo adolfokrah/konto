@@ -44,6 +44,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
 
@@ -97,6 +98,16 @@ export function TransactionDetailSheet({
   const router = useRouter()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
+
+  // Fetch related refunds for contribution-type transactions
+  const { data: relatedRefunds } = useSWR<TransactionRow[]>(
+    selected?.type === 'contribution' ? `/api/transactions?where[linkedTransaction][equals]=${selected.id}&where[type][equals]=refund&depth=2` : null,
+    async (url: string) => {
+      const res = await fetch(url)
+      const data = await res.json()
+      return data.docs || []
+    },
+  )
 
   const { trigger: triggerRefund, isMutating: refunding } = useSWRMutation(
     '/api/transactions/refund-contribution',
@@ -307,6 +318,30 @@ export function TransactionDetailSheet({
                     icon={<User className="h-3.5 w-3.5" />}
                   />
                   <DetailRow label="Email" value={selected.collector.email} />
+                </div>
+              )}
+
+              {/* Related Refunds */}
+              {relatedRefunds && relatedRefunds.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Refunds</h4>
+                  <Separator className="mb-2" />
+                  <div className="space-y-2">
+                    {relatedRefunds.map((refund) => (
+                      <div key={refund.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div className="flex items-center gap-2">
+                          <RotateCcw className="h-3.5 w-3.5 text-orange-400" />
+                          <div>
+                            <p className="text-sm font-medium">{formatAmount(Math.abs(refund.amountContributed))}</p>
+                            <p className="text-xs text-muted-foreground">{formatFullDate(refund.createdAt)}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className={cn('capitalize', statusStyles[refund.paymentStatus])}>
+                          {statusDisplayLabels[refund.paymentStatus] || refund.paymentStatus}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

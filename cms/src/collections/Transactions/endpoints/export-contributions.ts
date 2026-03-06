@@ -24,8 +24,19 @@ export const exportContributions = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: error }, { status: 404 })
     }
 
-    // Always exclude refunds from exports
-    where.type = { not_equals: 'refund' }
+    // Apply transaction type filter, always excluding refunds
+    const { transactionTypes } = req.query as Record<string, string>
+    const typeList = parseList(transactionTypes)
+    if (typeList?.length) {
+      const filtered = typeList.filter((t) => t !== 'refund')
+      if (filtered.length) {
+        where.type = { in: filtered }
+      } else {
+        where.type = { not_equals: 'refund' }
+      }
+    } else {
+      where.type = { not_equals: 'refund' }
+    }
 
     // Fetch all matching contributions (pagination: false)
     const contributions = await req.payload.find({

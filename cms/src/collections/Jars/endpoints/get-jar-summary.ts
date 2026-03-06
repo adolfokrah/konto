@@ -121,6 +121,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
+      type: {
+        not_equals: 'refund',
+      },
       ...(isJarCreator
         ? {}
         : {

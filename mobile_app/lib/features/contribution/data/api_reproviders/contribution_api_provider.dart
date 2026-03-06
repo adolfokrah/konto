@@ -272,7 +272,7 @@ class ContributionApiProvider extends BaseApiProvider {
         }
       }
 
-      // Add transaction type filter
+      // Add transaction type filter (always exclude refunds unless explicitly requested)
       if (transactionTypes != null && transactionTypes.isNotEmpty) {
         final validTypes =
             transactionTypes
@@ -287,6 +287,9 @@ class ContributionApiProvider extends BaseApiProvider {
         if (validTypes.isNotEmpty) {
           queryParams['where[type][in]'] = validTypes.join(',');
         }
+      } else {
+        // Default: exclude refunds from list
+        queryParams['where[type][not_equals]'] = 'refund';
       }
 
       // Get current user
@@ -374,6 +377,7 @@ class ContributionApiProvider extends BaseApiProvider {
     List<String>? paymentMethods,
     List<String>? statuses,
     List<String>? collectors,
+    List<String>? transactionTypes,
     DateTime? startDate,
     DateTime? endDate,
     String? contributor,
@@ -393,6 +397,9 @@ class ContributionApiProvider extends BaseApiProvider {
       }
       if (collectors != null && collectors.isNotEmpty) {
         queryParams['collectors'] = collectors.join(',');
+      }
+      if (transactionTypes != null && transactionTypes.isNotEmpty) {
+        queryParams['transactionTypes'] = transactionTypes.join(',');
       }
       if (startDate != null) {
         queryParams['startDate'] = startDate.toIso8601String();

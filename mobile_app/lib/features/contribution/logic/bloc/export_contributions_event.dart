@@ -11,6 +11,7 @@ class TriggerExportContributions extends ExportContributionsEvent {
   final List<String>? paymentMethods;
   final List<String>? statuses;
   final List<String>? collectors;
+  final List<String>? transactionTypes;
   final DateTime? startDate;
   final DateTime? endDate;
   final String? contributor;
@@ -21,6 +22,7 @@ class TriggerExportContributions extends ExportContributionsEvent {
     this.paymentMethods,
     this.statuses,
     this.collectors,
+    this.transactionTypes,
     this.startDate,
     this.endDate,
     this.contributor,
@@ -33,6 +35,7 @@ class TriggerExportContributions extends ExportContributionsEvent {
     paymentMethods,
     statuses,
     collectors,
+    transactionTypes,
     startDate,
     endDate,
     contributor,
