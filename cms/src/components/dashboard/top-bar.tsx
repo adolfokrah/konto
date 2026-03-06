@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Sidebar } from './sidebar'
 import { LogOut, Menu, Settings, User as UserIcon } from 'lucide-react'
+import useSWRMutation from 'swr/mutation'
 
 type Props = {
   user: {
@@ -36,8 +37,13 @@ export function TopBar({ user }: Props) {
   const pageTitle = pageTitles[pathname] || 'Dashboard'
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'
 
+  const { trigger: logout } = useSWRMutation(
+    '/api/users/logout',
+    (url: string) => fetch(url, { method: 'POST', credentials: 'include' }),
+  )
+
   const handleLogout = async () => {
-    await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
+    await logout()
     router.push('/admin')
   }
 

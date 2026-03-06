@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import PaymentWaitingModal from './PaymentWaitingModal'
 import { ChevronDown } from 'lucide-react'
+import useSWRMutation from 'swr/mutation'
 
 interface ContributionInputProps {
   currency?: string
@@ -46,6 +47,34 @@ export default function ContributionInput({
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const router = useRouter()
+
+  const { trigger: createContribution } = useSWRMutation(
+    `${process.env.NEXT_PUBLIC_API_URL}/transactions/create-payment-link-contribution`,
+    async (url: string, { arg }: { arg: Record<string, any> }) => {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(arg),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Failed to create contribution')
+      return data
+    },
+  )
+
+  const { trigger: chargeMomo } = useSWRMutation(
+    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-momo-eganow`,
+    async (url: string, { arg }: { arg: { contributionId: string } }) => {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(arg),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Failed to initiate payment')
+      return data
+    },
+  )
 
   // Preset amounts based on currency
   const presetAmounts =
@@ -187,50 +216,20 @@ export default function ContributionInput({
 
     try {
       // Create contribution record using our custom endpoint with admin access
-      const contributionResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/transactions/create-payment-link-contribution`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            jarId,
-            contributorName: isAnonymous ? 'Anonymous' : contributorName,
-            amount: selectedAmount,
-            currency,
-            contributorPhoneNumber: contributorPhoneNumber,
-            mobileMoneyProvider: mobileMoneyProvider,
-            collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
-          }),
-        },
-      )
-
-      const contributionData = await contributionResponse.json()
-
-      if (!contributionResponse.ok) {
-        throw new Error(contributionData.message || 'Failed to create contribution')
-      }
+      const contributionData = await createContribution({
+        jarId,
+        contributorName: isAnonymous ? 'Anonymous' : contributorName,
+        amount: selectedAmount,
+        currency,
+        contributorPhoneNumber: contributorPhoneNumber,
+        mobileMoneyProvider: mobileMoneyProvider,
+        collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
+      })
 
       const contributionId = contributionData.data.id
 
       // Charge mobile money via Eganow
-      const chargeResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-momo-eganow`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contributionId: contributionId,
-        }),
-      })
-
-      const chargeData = await chargeResponse.json()
-
-      if (!chargeResponse.ok) {
-        throw new Error(chargeData.message || 'Failed to initiate payment')
-      }
-
+      const chargeData = await chargeMomo({ contributionId })
 
       // Get transaction reference from charge response
       const transactionReference = chargeData?.data?.reference

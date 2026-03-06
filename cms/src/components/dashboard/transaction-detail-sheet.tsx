@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -26,8 +28,12 @@ import {
   Clock,
   Receipt,
   Container,
+  RotateCcw,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import useSWRMutation from 'swr/mutation'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
 
 function formatFullDate(dateString: string) {
@@ -77,6 +83,42 @@ export function TransactionDetailSheet({
   selected: TransactionRow | null
   onClose: () => void
 }) {
+  const [refunded, setRefunded] = useState(false)
+
+  const { trigger: triggerRefund, isMutating: refunding } = useSWRMutation(
+    '/api/transactions/refund-contribution',
+    async (url: string, { arg }: { arg: { transactionId: string } }) => {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(arg),
+      })
+      const data = await res.json()
+      if (!data.success) throw new Error(data.message || 'Failed to initiate refund')
+      return data
+    },
+  )
+
+  const canRefund =
+    selected?.type === 'contribution' &&
+    selected?.paymentStatus === 'completed' &&
+    selected?.paymentMethod === 'mobile-money' &&
+    !selected?.isSettled &&
+    !refunded
+
+  const handleRefund = async () => {
+    if (!selected || !canRefund) return
+    if (!confirm(`Are you sure you want to refund ${formatAmount(selected.amountContributed)} to ${selected.contributor || 'the contributor'}?`)) return
+
+    try {
+      await triggerRefund({ transactionId: selected.id })
+      toast.success('Refund initiated successfully')
+      setRefunded(true)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to initiate refund')
+    }
+  }
+
   return (
     <Sheet open={!!selected} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="sm:max-w-lg overflow-y-auto">
@@ -251,6 +293,26 @@ export function TransactionDetailSheet({
                     icon={<User className="h-3.5 w-3.5" />}
                   />
                   <DetailRow label="Email" value={selected.collector.email} />
+                </div>
+              )}
+
+              {/* Refund Action */}
+              {canRefund && (
+                <div>
+                  <Separator className="mb-4" />
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={handleRefund}
+                    disabled={refunding}
+                  >
+                    {refunding ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    {refunding ? 'Processing Refund...' : 'Refund Contribution'}
+                  </Button>
                 </div>
               )}
             </div>
