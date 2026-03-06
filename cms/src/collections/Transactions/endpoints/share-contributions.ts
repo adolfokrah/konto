@@ -55,7 +55,11 @@ export const shareContributions = async (req: PayloadRequest) => {
       const amount = isFailed ? 0 : Number(c.amountContributed || 0)
       const prefix = type === 'payout' ? '-' : ''
 
-      lines.push(`${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}`)
+      if (isFailed) {
+        lines.push(`~${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}~`)
+      } else {
+        lines.push(`${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}`)
+      }
       total += amount
     }
 
