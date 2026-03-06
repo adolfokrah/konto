@@ -45,7 +45,7 @@ export const checkEganowPayoutBalanceTask = {
             totalUpcoming += tx.amountContributed || 0
           }
         } else if (
-          (tx.type === 'payout' || tx.type === 'refund') &&
+          tx.type === 'payout' &&
           (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed')
         ) {
           totalPayouts += tx.amountContributed || 0 // Already negative

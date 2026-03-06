@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
-        type: { in: ['payout', 'refund'] },
+        type: { equals: 'payout' },
       },
       pagination: false,
       select: {
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
-        type: { in: ['payout', 'refund'] },
+        type: { equals: 'payout' },
         createdAt: {
           greater_than_equal: new Date(
             Date.now() - 30 * 24 * 60 * 60 * 1000,
