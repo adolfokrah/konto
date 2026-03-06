@@ -22,7 +22,6 @@ class JarListBloc extends Bloc<JarListEvent, JarListState> {
     emit(JarListLoading());
 
     final response = await _jarRepository.getUserJars();
-    print(response);
     if (response['success']) {
       final jars = JarList.fromJson(response['data']);
       emit(JarListLoaded(jars));

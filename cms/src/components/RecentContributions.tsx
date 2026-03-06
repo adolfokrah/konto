@@ -106,6 +106,7 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
             const initials = getInitials(contributorName)
             const amount = contribution.amountContributed || 0
             const timeAgo = formatTimeAgo(contribution.createdAt)
+            const isRefund = contribution.type === 'refund'
 
             return (
               <div
@@ -114,14 +115,23 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
               >
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-primary-light font-medium">
-                      {initials}
+                    <AvatarFallback className={isRefund ? "bg-amber-100 font-medium text-amber-600" : "bg-primary-light font-medium"}>
+                      {isRefund ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4" />
+                        </svg>
+                      ) : initials}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900">{contributorName}</span>
+                      <span className={`font-medium ${isRefund ? 'text-amber-600' : 'text-gray-900'}`}>{contributorName}</span>
+                      {isRefund && (
+                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
+                          Refund
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs text-gray-500">{timeAgo}</span>
                   </div>
@@ -129,8 +139,8 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
 
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatAmount(amount, jarCurrency)}
+                    <div className={`text-sm font-semibold ${isRefund ? 'text-amber-600' : 'text-gray-900'}`}>
+                      {isRefund ? '-' : ''}{formatAmount(amount, jarCurrency)}
                     </div>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ final class FilterContributionsLoaded extends FilterContributionsState {
   final List<String>? selectedPaymentMethods;
   final List<String>? selectedStatuses;
   final List<String>? selectedCollectors;
+  final List<String>? selectedTransactionTypes;
   final String? selectedDate;
   final DateTime? startDate;
   final DateTime? endDate;
@@ -15,6 +16,7 @@ final class FilterContributionsLoaded extends FilterContributionsState {
     this.selectedPaymentMethods,
     this.selectedStatuses,
     this.selectedCollectors,
+    this.selectedTransactionTypes,
     this.selectedDate,
     this.startDate,
     this.endDate,
@@ -25,5 +27,6 @@ final class FilterContributionsLoaded extends FilterContributionsState {
       selectedPaymentMethods?.isNotEmpty == true ||
       selectedStatuses?.isNotEmpty == true ||
       selectedCollectors?.isNotEmpty == true ||
+      selectedTransactionTypes?.isNotEmpty == true ||
       (selectedDate != null && selectedDate != FilterOptions.defaultDateOption);
 }

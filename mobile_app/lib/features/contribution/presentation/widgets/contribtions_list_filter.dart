@@ -41,6 +41,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
   List<String> _pendingPaymentMethods = [];
   List<String> _pendingStatuses = [];
   List<String> _pendingCollectors = [];
+  List<String> _pendingTransactionTypes = [];
   String? _pendingDate;
   DateTime? _pendingStartDate;
   DateTime? _pendingEndDate;
@@ -53,6 +54,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
       _pendingPaymentMethods = List.from(st.selectedPaymentMethods ?? []);
       _pendingStatuses = List.from(st.selectedStatuses ?? []);
       _pendingCollectors = List.from(st.selectedCollectors ?? []);
+      _pendingTransactionTypes = List.from(st.selectedTransactionTypes ?? []);
       _pendingDate = st.selectedDate;
       _pendingStartDate = st.startDate;
       _pendingEndDate = st.endDate;
@@ -89,6 +91,16 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     });
   }
 
+  void _toggleTransactionType(String type) {
+    setState(() {
+      if (_pendingTransactionTypes.contains(type)) {
+        _pendingTransactionTypes.remove(type);
+      } else {
+        _pendingTransactionTypes.add(type);
+      }
+    });
+  }
+
   void _updateDate({required String dateKey, DateTime? start, DateTime? end}) {
     setState(() {
       _pendingDate = dateKey;
@@ -103,6 +115,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
         paymentMethods: _pendingPaymentMethods,
         statuses: _pendingStatuses,
         collectors: _pendingCollectors,
+        transactionTypes: _pendingTransactionTypes,
         selectedDate: _pendingDate,
         startDate: _pendingStartDate,
         endDate: _pendingEndDate,
@@ -116,6 +129,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
       _pendingPaymentMethods.clear();
       _pendingStatuses.clear();
       _pendingCollectors.clear();
+      _pendingTransactionTypes.clear();
       _pendingDate = null;
       _pendingStartDate = null;
       _pendingEndDate = null;
@@ -132,6 +146,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
         'apple-pay',
       ];
       _pendingStatuses = ['pending', 'completed', 'failed'];
+      _pendingTransactionTypes = ['contribution', 'payout', 'refund'];
       _pendingCollectors = List.from(allCollectorIds);
       _pendingDate = _pendingDate ?? FilterOptions.defaultDateOption;
     });
@@ -320,6 +335,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
                                   _pendingPaymentMethods.isNotEmpty ||
                                   _pendingStatuses.isNotEmpty ||
                                   _pendingCollectors.isNotEmpty ||
+                                  _pendingTransactionTypes.isNotEmpty ||
                                   _pendingDate != null ||
                                   _pendingStartDate != null ||
                                   _pendingEndDate != null;
@@ -333,6 +349,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
                               (_pendingPaymentMethods.isNotEmpty ||
                                       _pendingStatuses.isNotEmpty ||
                                       _pendingCollectors.isNotEmpty ||
+                                      _pendingTransactionTypes.isNotEmpty ||
                                       _pendingDate != null ||
                                       _pendingStartDate != null ||
                                       _pendingEndDate != null)
@@ -413,6 +430,41 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
                                   ),
                                 );
                               }),
+
+                              const SizedBox(height: AppSpacing.spacingM),
+
+                              // Transaction Type Section
+                              Text(
+                                localizations.transactionType,
+                                style: TextStyles.titleMedium,
+                              ),
+                              const SizedBox(height: AppSpacing.spacingS),
+
+                              // Transaction Type List
+                              ...List.generate(
+                                FilterOptions.transactionTypes.length,
+                                (index) {
+                                  final type =
+                                      FilterOptions.transactionTypes[index];
+                                  final isSelected =
+                                      _pendingTransactionTypes
+                                          .contains(type.value);
+                                  final isLast =
+                                      index ==
+                                      FilterOptions.transactionTypes.length - 1;
+
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: isLast ? 0 : AppSpacing.spacingS,
+                                    ),
+                                    child: _buildTransactionTypeCard(
+                                      context,
+                                      type,
+                                      isSelected,
+                                    ),
+                                  );
+                                },
+                              ),
 
                               // Collectors Section (only for jar creators)
                               BlocBuilder<AuthBloc, AuthState>(
@@ -647,6 +699,44 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
           ),
           title: Text(
             getTranslatedLabel(method.label),
+            style: TextStyles.titleMediumM,
+          ),
+          trailing: Icon(
+            isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+            size: 16,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionTypeCard(
+    BuildContext context,
+    TransactionTypeOption type,
+    bool isSelected,
+  ) {
+    final localizations = AppLocalizations.of(context)!;
+
+    String getTranslatedLabel(String labelKey) {
+      switch (labelKey) {
+        case 'typeContribution':
+          return localizations.typeContribution;
+        case 'typePayout':
+          return localizations.typePayout;
+        case 'typeRefund':
+          return localizations.typeRefund;
+        default:
+          return labelKey;
+      }
+    }
+
+    return GestureDetector(
+      onTap: () => _toggleTransactionType(type.value),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
+        child: ListTile(
+          title: Text(
+            getTranslatedLabel(type.label),
             style: TextStyles.titleMediumM,
           ),
           trailing: Icon(

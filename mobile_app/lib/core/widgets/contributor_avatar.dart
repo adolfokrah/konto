@@ -24,6 +24,9 @@ class ContributorAvatar extends StatelessWidget {
   /// Whether this is a payout transaction
   final bool isPayout;
 
+  /// Whether this is a refund transaction
+  final bool isRefund;
+
   /// Avatar radius (defaults to 20)
   final double radius;
 
@@ -41,6 +44,7 @@ class ContributorAvatar extends StatelessWidget {
     this.paymentStatus,
     this.viaPaymentLink,
     this.isPayout = false,
+    this.isRefund = false,
     this.radius = 20,
     this.showStatusOverlay = true,
     this.backgroundColor,
@@ -79,7 +83,7 @@ class ContributorAvatar extends StatelessWidget {
         ),
         // Status overlay icon
         if (showStatusOverlay &&
-            (paymentStatus != null || viaPaymentLink != null))
+            (paymentStatus != null || viaPaymentLink != null || isPayout || isRefund))
           Positioned(
             right: radius * 0.1, // Position with some padding from edge
             bottom: radius * 0.1, // Position with some padding from edge
@@ -88,11 +92,13 @@ class ContributorAvatar extends StatelessWidget {
               height: _getOverlaySize(),
               decoration: BoxDecoration(
                 color:
-                    paymentStatus?.toLowerCase() != 'failed'
-                        ? isDark
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.primary
-                        : AppColors.errorRed,
+                    paymentStatus?.toLowerCase() == 'failed'
+                        ? AppColors.errorRed
+                        : isRefund
+                            ? AppColors.warningOrange
+                            : isDark
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Theme.of(context).colorScheme.surface,
@@ -149,6 +155,9 @@ class ContributorAvatar extends StatelessWidget {
     if (paymentStatus == 'failed') {
       return Icons.close;
     }
+    if (isRefund) {
+      return Icons.undo;
+    }
     if (viaPaymentLink == true) {
       return Icons.call_received;
     }
@@ -203,6 +212,7 @@ class ContributorAvatarSizes {
     String? paymentStatus,
     bool? viaPaymentLink,
     bool isPayout = false,
+    bool isRefund = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -213,6 +223,7 @@ class ContributorAvatarSizes {
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
       isPayout: isPayout,
+      isRefund: isRefund,
       radius: 15,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -227,6 +238,7 @@ class ContributorAvatarSizes {
     String? paymentStatus,
     bool? viaPaymentLink,
     bool isPayout = false,
+    bool isRefund = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -237,6 +249,7 @@ class ContributorAvatarSizes {
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
       isPayout: isPayout,
+      isRefund: isRefund,
       radius: 20,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -251,6 +264,7 @@ class ContributorAvatarSizes {
     String? paymentStatus,
     bool? viaPaymentLink,
     bool isPayout = false,
+    bool isRefund = false,
     bool showStatusOverlay = true,
     Color? backgroundColor,
   }) {
@@ -261,6 +275,7 @@ class ContributorAvatarSizes {
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
       isPayout: isPayout,
+      isRefund: isRefund,
       radius: 30,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,
@@ -275,6 +290,7 @@ class ContributorAvatarSizes {
     String? paymentStatus,
     bool? viaPaymentLink,
     bool isPayout = false,
+    bool isRefund = false,
     bool showStatusOverlay = false, // Usually no overlay for large avatars
     Color? backgroundColor,
   }) {
@@ -285,6 +301,7 @@ class ContributorAvatarSizes {
       paymentStatus: paymentStatus,
       viaPaymentLink: viaPaymentLink,
       isPayout: isPayout,
+      isRefund: isRefund,
       radius: 40,
       showStatusOverlay: showStatusOverlay,
       backgroundColor: backgroundColor,

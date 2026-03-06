@@ -5,13 +5,17 @@ library;
 /// Enum representing the type of contribution
 enum ContributionType {
   contribution('contribution'),
-  payout('payout');
+  payout('payout'),
+  refund('refund');
 
   const ContributionType(this.value);
   final String value;
 
   /// Whether this type is a payout
   bool get isPayout => this == ContributionType.payout;
+
+  /// Whether this type is a refund
+  bool get isRefund => this == ContributionType.refund;
 
   static ContributionType fromString(String value) {
     switch (value) {
@@ -21,6 +25,8 @@ enum ContributionType {
         return ContributionType.payout;
       case 'transfer':
         return ContributionType.payout; // Backward compatibility
+      case 'refund':
+        return ContributionType.refund;
       default:
         return ContributionType.contribution; // Default fallback
     }
@@ -510,9 +516,9 @@ class ContributionModel {
   final ChargesBreakdown? chargesBreakdown; // Detailed charges breakdown
   final String
   paymentStatus; // 'pending' | 'completed' | 'failed'
-  final ContributionUser collector;
+  final ContributionUser? collector;
   final bool viaPaymentLink;
-  final ContributionType type; // contribution | payout
+  final ContributionType type; // contribution | payout | refund
   final bool isSettled;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -528,7 +534,7 @@ class ContributionModel {
     this.charges,
     this.chargesBreakdown,
     required this.paymentStatus,
-    required this.collector,
+    this.collector,
     required this.viaPaymentLink,
     required this.type,
     this.isSettled = false,
@@ -594,7 +600,7 @@ class ContributionModel {
                 )
                 : null,
         paymentStatus: json['paymentStatus'] as String? ?? 'pending',
-        collector: _parseCollector(json['collector']),
+        collector: json['collector'] != null ? _parseCollector(json['collector']) : null,
         viaPaymentLink: json['viaPaymentLink'] as bool? ?? false,
         type: ContributionType.fromString(
           json['type'] as String? ?? 'contribution',
@@ -626,7 +632,7 @@ class ContributionModel {
       if (chargesBreakdown != null)
         'chargesBreakdown': chargesBreakdown!.toJson(),
       'paymentStatus': paymentStatus,
-      'collector': collector.toJson(),
+      if (collector != null) 'collector': collector!.toJson(),
       'viaPaymentLink': viaPaymentLink,
       'type': type.value,
       'isSettled': isSettled,
@@ -647,7 +653,7 @@ class ContributionModel {
     double? charges,
     ChargesBreakdown? chargesBreakdown,
     String? paymentStatus,
-    ContributionUser? collector,
+    ContributionUser? Function()? collector,
     bool? viaPaymentLink,
     ContributionType? type,
     bool? isSettled,
@@ -666,7 +672,7 @@ class ContributionModel {
       charges: charges ?? this.charges,
       chargesBreakdown: chargesBreakdown ?? this.chargesBreakdown,
       paymentStatus: paymentStatus ?? this.paymentStatus,
-      collector: collector ?? this.collector,
+      collector: collector != null ? collector() : this.collector,
       viaPaymentLink: viaPaymentLink ?? this.viaPaymentLink,
       type: type ?? this.type,
       isSettled: isSettled ?? this.isSettled,
@@ -687,7 +693,8 @@ class ContributionModel {
   /// Helper getters for contribution type
   bool get isContribution => type == ContributionType.contribution;
   bool get isPayout => type == ContributionType.payout;
-  bool get isTransfer => isPayout; // Alias for backward compatibility
+  bool get isRefund => type == ContributionType.refund;
+  bool get isTransfer => isPayout || isRefund; // Payouts and refunds show negative amounts
 
   /// Get formatted amount with currency
   String get formattedAmount =>

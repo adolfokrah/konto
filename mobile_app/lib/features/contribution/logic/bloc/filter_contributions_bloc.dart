@@ -11,6 +11,7 @@ class FilterContributionsBloc
     on<TogglePaymentMethod>(_onTogglePaymentMethod);
     on<ToggleStatus>(_onToggleStatus);
     on<ToggleCollector>(_onToggleCollector);
+    on<ToggleTransactionType>(_onToggleTransactionType);
     on<UpdateDateRange>(_onUpdateDateRange);
     on<ClearAllFilters>(_onClearAllFilters);
     on<SelectAllFilters>(_onSelectAllFilters);
@@ -38,6 +39,7 @@ class FilterContributionsBloc
           selectedPaymentMethods: updatedMethods,
           selectedStatuses: currentState.selectedStatuses,
           selectedCollectors: currentState.selectedCollectors,
+          selectedTransactionTypes: currentState.selectedTransactionTypes,
           selectedDate: currentState.selectedDate,
           startDate: currentState.startDate,
           endDate: currentState.endDate,
@@ -67,6 +69,7 @@ class FilterContributionsBloc
           selectedPaymentMethods: currentState.selectedPaymentMethods,
           selectedStatuses: updatedStatuses,
           selectedCollectors: currentState.selectedCollectors,
+          selectedTransactionTypes: currentState.selectedTransactionTypes,
           selectedDate: currentState.selectedDate,
           startDate: currentState.startDate,
           endDate: currentState.endDate,
@@ -96,6 +99,37 @@ class FilterContributionsBloc
           selectedPaymentMethods: currentState.selectedPaymentMethods,
           selectedStatuses: currentState.selectedStatuses,
           selectedCollectors: updatedCollectors,
+          selectedTransactionTypes: currentState.selectedTransactionTypes,
+          selectedDate: currentState.selectedDate,
+          startDate: currentState.startDate,
+          endDate: currentState.endDate,
+        ),
+      );
+    }
+  }
+
+  void _onToggleTransactionType(
+    ToggleTransactionType event,
+    Emitter<FilterContributionsState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is FilterContributionsLoaded) {
+      final updatedTypes = List<String>.from(
+        currentState.selectedTransactionTypes ?? [],
+      );
+
+      if (updatedTypes.contains(event.transactionType)) {
+        updatedTypes.remove(event.transactionType);
+      } else {
+        updatedTypes.add(event.transactionType);
+      }
+
+      emit(
+        FilterContributionsLoaded(
+          selectedPaymentMethods: currentState.selectedPaymentMethods,
+          selectedStatuses: currentState.selectedStatuses,
+          selectedCollectors: currentState.selectedCollectors,
+          selectedTransactionTypes: updatedTypes,
           selectedDate: currentState.selectedDate,
           startDate: currentState.startDate,
           endDate: currentState.endDate,
@@ -115,6 +149,7 @@ class FilterContributionsBloc
           selectedPaymentMethods: currentState.selectedPaymentMethods,
           selectedStatuses: currentState.selectedStatuses,
           selectedCollectors: currentState.selectedCollectors,
+          selectedTransactionTypes: currentState.selectedTransactionTypes,
           selectedDate: event.selectedDate,
           startDate: event.startDate,
           endDate: event.endDate,
@@ -142,6 +177,7 @@ class FilterContributionsBloc
       'apple-pay',
     ];
     const allStatuses = ['pending', 'completed', 'failed'];
+    const allTransactionTypes = ['contribution', 'payout', 'refund'];
 
     final currentState = state;
     if (currentState is FilterContributionsLoaded) {
@@ -150,6 +186,7 @@ class FilterContributionsBloc
           selectedPaymentMethods: allPaymentMethods,
           selectedStatuses: allStatuses,
           selectedCollectors: event.allCollectorIds,
+          selectedTransactionTypes: allTransactionTypes,
           selectedDate: currentState.selectedDate ?? 'Any',
           startDate: currentState.startDate,
           endDate: currentState.endDate,
@@ -167,6 +204,7 @@ class FilterContributionsBloc
         selectedPaymentMethods: event.paymentMethods,
         selectedStatuses: event.statuses,
         selectedCollectors: event.collectors,
+        selectedTransactionTypes: event.transactionTypes,
         selectedDate: event.selectedDate,
         startDate: event.startDate,
         endDate: event.endDate,

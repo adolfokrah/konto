@@ -830,6 +830,42 @@ abstract class AppLocalizations {
   /// **'Transferred'**
   String get statusTransferred;
 
+  /// Transaction type filter section header
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Type'**
+  String get transactionType;
+
+  /// Contribution transaction type option
+  ///
+  /// In en, this message translates to:
+  /// **'Contribution'**
+  String get typeContribution;
+
+  /// Payout transaction type option
+  ///
+  /// In en, this message translates to:
+  /// **'Payout'**
+  String get typePayout;
+
+  /// Refund transaction type option
+  ///
+  /// In en, this message translates to:
+  /// **'Refund'**
+  String get typeRefund;
+
+  /// Export contributions to PDF via email option
+  ///
+  /// In en, this message translates to:
+  /// **'Email statement'**
+  String get exportToPdf;
+
+  /// Share contributions as a text list via WhatsApp or other apps
+  ///
+  /// In en, this message translates to:
+  /// **'Share to WhatsApp etc.'**
+  String get shareAsList;
+
   /// All dates filter option
   ///
   /// In en, this message translates to:

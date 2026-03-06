@@ -4,13 +4,17 @@ import 'package:Hoga/core/utils/currency_utils.dart';
 /// Enum representing the type of contribution
 enum ContributionType {
   contribution('contribution'),
-  payout('payout');
+  payout('payout'),
+  refund('refund');
 
   const ContributionType(this.value);
   final String value;
 
   /// Whether this type is a payout
   bool get isPayout => this == ContributionType.payout;
+
+  /// Whether this type is a refund
+  bool get isRefund => this == ContributionType.refund;
 
   static ContributionType fromString(String value) {
     switch (value) {
@@ -20,6 +24,8 @@ enum ContributionType {
         return ContributionType.payout;
       case 'transfer':
         return ContributionType.payout; // Backward compatibility
+      case 'refund':
+        return ContributionType.refund;
       default:
         return ContributionType.contribution; // Default fallback
     }
@@ -861,6 +867,7 @@ class ContributionModel {
   /// Helper getters for contribution type
   bool get isContribution => type == ContributionType.contribution;
   bool get isPayout => type == ContributionType.payout;
+  bool get isRefund => type == ContributionType.refund;
   bool get isTransfer => isPayout; // Alias for backward compatibility
 }
 

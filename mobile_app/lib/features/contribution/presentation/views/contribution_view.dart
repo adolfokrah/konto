@@ -3,6 +3,7 @@ import 'package:Hoga/route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
@@ -24,6 +25,20 @@ import 'package:go_router/go_router.dart';
 
 class ContributionView extends StatelessWidget {
   const ContributionView({super.key});
+
+  static String _getTransactionTypeLabel(
+    ContributionType type,
+    AppLocalizations localizations,
+  ) {
+    switch (type) {
+      case ContributionType.contribution:
+        return localizations.typeContribution;
+      case ContributionType.payout:
+        return localizations.typePayout;
+      case ContributionType.refund:
+        return localizations.typeRefund;
+    }
+  }
 
   static void show(BuildContext context, String contributionId) {
     context.read<FetchContributionBloc>().add(
@@ -108,6 +123,8 @@ class ContributionView extends StatelessWidget {
                                       paymentStatus: contribution.paymentStatus,
                                       viaPaymentLink:
                                           contribution.viaPaymentLink,
+                                      isPayout: contribution.isPayout,
+                                      isRefund: contribution.isRefund,
                                     ),
                                     title: Text(
                                       contribution.contributor ?? 'Konto',
@@ -130,6 +147,7 @@ class ContributionView extends StatelessWidget {
                                     trailing: Text(
                                       '${contribution.isTransfer ? '- ' : ''}${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.amountContributed.abs()}',
                                       style: AppTextStyles.titleBoldXl.copyWith(
+                                        color: contribution.isRefund ? AppColors.warningOrange : null,
                                         decoration:
                                             contribution.paymentStatus ==
                                                     'failed'
@@ -191,6 +209,32 @@ class ContributionView extends StatelessWidget {
                                               localizations,
                                             ),
                                             style: AppTextStyles.titleMediumS,
+                                          ),
+                                        ),
+                                        ListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          title: Text(
+                                            localizations.transactionType,
+                                            style: AppTextStyles.titleMediumS
+                                                .copyWith(
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall!
+                                                      .color
+                                                      ?.withValues(alpha: 0.5),
+                                                ),
+                                          ),
+                                          trailing: Text(
+                                            _getTransactionTypeLabel(
+                                              contribution.type,
+                                              localizations,
+                                            ),
+                                            style: AppTextStyles.titleMediumS.copyWith(
+                                              color: contribution.isRefund
+                                                  ? AppColors.warningOrange
+                                                  : null,
+                                            ),
                                           ),
                                         ),
                                         // Only show "Via Payment Link" when viaPaymentLink is true
@@ -324,12 +368,12 @@ class ContributionView extends StatelessWidget {
                                               // Check if collector has valid data (not "Unknown User")
                                               if (contribution
                                                           .collector
-                                                          .fullName !=
+                                                          ?.fullName !=
                                                       'Unknown User' &&
-                                                  contribution
+                                                  (contribution
                                                       .collector
-                                                      .id
-                                                      .isNotEmpty) {
+                                                      ?.id
+                                                      .isNotEmpty ?? false)) {
                                                 // Store references before popping context
                                                 final filterBloc =
                                                     context
@@ -337,7 +381,9 @@ class ContributionView extends StatelessWidget {
                                                           FilterContributionsBloc
                                                         >();
                                                 final collectorId =
-                                                    contribution.collector.id;
+                                                    contribution.collector?.id;
+
+                                                if (collectorId == null) return;
 
                                                 // Clear existing filters and set collector filter
                                                 filterBloc.add(
@@ -394,24 +440,24 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                             ),
                                             trailing: Text(
-                                              contribution
-                                                      .collector
-                                                      .fullName
-                                                      .isNotEmpty
+                                              (contribution
+                                                          .collector
+                                                          ?.fullName
+                                                          .isNotEmpty ?? false)
                                                   ? contribution
-                                                      .collector
+                                                      .collector!
                                                       .fullName
                                                   : localizations.unknown,
                                               style: AppTextStyles.titleMediumS.copyWith(
                                                 color:
                                                     contribution
                                                                     .collector
-                                                                    .fullName !=
+                                                                    ?.fullName !=
                                                                 'Unknown User' &&
-                                                            contribution
+                                                            (contribution
                                                                 .collector
-                                                                .id
-                                                                .isNotEmpty
+                                                                ?.id
+                                                                .isNotEmpty ?? false)
                                                         ? Colors.blueAccent
                                                         : Theme.of(context)
                                                             .textTheme

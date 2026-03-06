@@ -42,6 +42,7 @@ class ContributionsListBloc
       List<String>? paymentMethodStrings;
       List<String>? statusStrings;
       List<String>? collectors;
+      List<String>? transactionTypes;
       DateTime? startDate;
       DateTime? endDate;
 
@@ -57,6 +58,9 @@ class ContributionsListBloc
 
           // Use the collectors filter from FilterContributionsBloc
           collectors = filterState.selectedCollectors;
+
+          // Transaction types filter
+          transactionTypes = filterState.selectedTransactionTypes;
 
           // Convert date string to DateTime range if applicable
           if (filterState.selectedDate != null &&
@@ -127,6 +131,7 @@ class ContributionsListBloc
           (paymentMethodStrings?.isNotEmpty == true) ||
           (statusStrings?.isNotEmpty == true) ||
           (collectors?.isNotEmpty == true) ||
+          (transactionTypes?.isNotEmpty == true) ||
           (startDate != null) ||
           (endDate != null);
 
@@ -135,6 +140,7 @@ class ContributionsListBloc
         paymentMethods: paymentMethodStrings,
         statuses: statusStrings,
         collectors: collectors,
+        transactionTypes: transactionTypes,
         startDate: startDate,
         endDate: endDate,
         limit: event.limit,

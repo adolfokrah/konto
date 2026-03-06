@@ -173,19 +173,18 @@ export const exportContributions = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns (reordered): ID, Contributor, Collector, Payment, Status, Type, Amount, Date
-    // Amount moved to be immediately before Date per request; Date widened for full visibility.
-    // Fixed widths: generous ID column (15%) to prevent overflow
-    const columnPercents = [0.15, 0.14, 0.14, 0.11, 0.1, 0.09, 0.11, 0.16] // sums to 1.00
+    // Columns: Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Contribution, Payout, Date
+    const columnPercents = [0.13, 0.12, 0.12, 0.1, 0.08, 0.09, 0.11, 0.11, 0.14] // sums to 1.00
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
-      'ID',
+      'Transaction ID',
       'Contributor',
-      'Collector',
-      'Payment',
-      'Status',
+      'Initiated by',
+      'Payment Method',
       'Type',
-      'Amount',
+      'Status',
+      'Contribution',
+      'Payout',
       'Date',
     ]
 
@@ -427,8 +426,8 @@ export const exportContributions = async (req: PayloadRequest) => {
       cursorY -= thisRowHeight
     }
 
+    let totalPayout = 0
     docs.forEach((c, idx) => {
-      // Use full ID (no truncation) as requested
       const idShort = String(c.id)
       const contributor = String(c.contributor || c.contributorPhoneNumber || 'Anonymous')
       let collectorName = ''
@@ -436,16 +435,35 @@ export const exportContributions = async (req: PayloadRequest) => {
         collectorName = c.collector.fullName || c.collector.name || c.collector.email || ''
       }
       const amountNum = Number(c.amountContributed || 0)
-      const amount = `${currency} ${amountNum.toFixed(2)}`
       const payment = String(c.paymentMethod || '-')
       const statusVal = String(c.paymentStatus || '-')
       const type = String(c.type || '-')
+      const typeLower = type.toLowerCase()
       const dateStr = new Date(c.createdAt).toLocaleString()
-      if (showTotals && type.toLowerCase() !== 'payout' && statusVal === 'completed') {
-        total += amountNum
+
+      const contributionAmt =
+        typeLower === 'contribution' || typeLower === 'refund'
+          ? `${currency} ${amountNum.toFixed(2)}`
+          : '-'
+      const payoutAmt = typeLower === 'payout' ? `${currency} ${amountNum.toFixed(2)}` : '-'
+
+      if (showTotals && statusVal === 'completed') {
+        if (typeLower === 'contribution') total += amountNum
+        if (typeLower === 'payout') totalPayout += amountNum
+        if (typeLower === 'refund') total -= amountNum
       }
-      // New order matches headers: ID, Contributor, Collector, Payment, Status, Type, Amount, Date
-      const row = [idShort, contributor, collectorName, payment, statusVal, type, amount, dateStr]
+
+      const row = [
+        idShort,
+        contributor,
+        collectorName,
+        payment,
+        type,
+        statusVal,
+        contributionAmt,
+        payoutAmt,
+        dateStr,
+      ]
       drawRow(row, idx)
     })
 
@@ -464,10 +482,23 @@ export const exportContributions = async (req: PayloadRequest) => {
         color: colors.total,
       })
       cursorY -= 16
-      page.drawText(
-        `Total Amount (Completed, excluding transfers): ${currency} ${total.toFixed(2)}`,
-        { x: pageMargin, y: cursorY, size: 12, font, color: colors.total },
-      )
+      page.drawText(`Total Contributions: ${currency} ${total.toFixed(2)}`, {
+        x: pageMargin,
+        y: cursorY,
+        size: 12,
+        font,
+        color: colors.total,
+      })
+      if (totalPayout > 0) {
+        cursorY -= 16
+        page.drawText(`Total Payouts: ${currency} ${totalPayout.toFixed(2)}`, {
+          x: pageMargin,
+          y: cursorY,
+          size: 12,
+          font,
+          color: colors.total,
+        })
+      }
     }
 
     // (Logo already placed at top-left per page during page creation)

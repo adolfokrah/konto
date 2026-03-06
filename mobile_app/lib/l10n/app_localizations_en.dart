@@ -402,6 +402,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusTransferred => 'Transferred';
 
   @override
+  String get transactionType => 'Transaction Type';
+
+  @override
+  String get typeContribution => 'Contribution';
+
+  @override
+  String get typePayout => 'Payout';
+
+  @override
+  String get typeRefund => 'Refund';
+
+  @override
+  String get exportToPdf => 'Email statement';
+
+  @override
+  String get shareAsList => 'Share to WhatsApp etc.';
+
+  @override
   String get dateAll => 'All';
 
   @override

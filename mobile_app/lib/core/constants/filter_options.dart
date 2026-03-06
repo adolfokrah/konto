@@ -16,10 +16,24 @@ class StatusOption {
   const StatusOption(this.value, this.label);
 }
 
+class TransactionTypeOption {
+  final String value;
+  final String label;
+
+  const TransactionTypeOption(this.value, this.label);
+}
+
 /// Constants for filter options used in contributions
 class FilterOptions {
   // Private constructor to prevent instantiation
   FilterOptions._();
+
+  /// Transaction type options for contributions filter
+  static const List<TransactionTypeOption> transactionTypes = [
+    TransactionTypeOption('contribution', 'typeContribution'),
+    TransactionTypeOption('payout', 'typePayout'),
+    TransactionTypeOption('refund', 'typeRefund'),
+  ];
 
   /// Payment method options for contributions filter
   static const List<PaymentMethodOption> paymentMethods = [

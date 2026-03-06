@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
@@ -45,6 +46,9 @@ class ContributionListItem extends StatelessWidget {
   /// Whether this is a transfer type contribution
   final bool isTransfer;
 
+  /// Whether this is a refund transaction
+  final bool isRefund;
+
   const ContributionListItem({
     super.key,
     required this.contributorName,
@@ -59,6 +63,7 @@ class ContributionListItem extends StatelessWidget {
     this.onTap,
     required this.contributionId,
     this.isTransfer = false,
+    this.isRefund = false,
   });
 
   @override
@@ -80,6 +85,7 @@ class ContributionListItem extends StatelessWidget {
         paymentStatus: paymentStatus,
         viaPaymentLink: viaPaymentLink,
         isPayout: isTransfer,
+        isRefund: isRefund,
       ),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -92,8 +98,9 @@ class ContributionListItem extends StatelessWidget {
             ),
           ),
           Text(
-            '${isTransfer ? '- ' : ''}${CurrencyUtils.formatAmount(amount, currency)}',
+            '${(isTransfer || isRefund) ? '- ' : ''}${CurrencyUtils.formatAmount(amount, currency)}',
             style: TextStyles.titleBoldM.copyWith(
+              color: isRefund ? AppColors.warningOrange : null,
               decoration:
                   paymentStatus?.toLowerCase() == 'failed'
                       ? TextDecoration.lineThrough

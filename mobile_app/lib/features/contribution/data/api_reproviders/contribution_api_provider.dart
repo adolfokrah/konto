@@ -208,6 +208,7 @@ class ContributionApiProvider extends BaseApiProvider {
     List<String>? paymentMethods, // ['mobile-money', 'cash', 'bank']
     List<String>? statuses, // ['pending', 'failed', 'completed']
     List<String>? collectors, // List of collector user IDs
+    List<String>? transactionTypes, // ['contribution', 'payout', 'refund']
     DateTime? startDate, // Filter contributions from this date onwards
     DateTime? endDate, // Filter contributions up to this date
     int? limit, // Number of results per page (default: 10)
@@ -267,6 +268,23 @@ class ContributionApiProvider extends BaseApiProvider {
                 .toList();
         if (validStatuses.isNotEmpty) {
           queryParams['where[paymentStatus][in]'] = validStatuses.join(',');
+        }
+      }
+
+      // Add transaction type filter
+      if (transactionTypes != null && transactionTypes.isNotEmpty) {
+        final validTypes =
+            transactionTypes
+                .where(
+                  (type) => [
+                    'contribution',
+                    'payout',
+                    'refund',
+                  ].contains(type),
+                )
+                .toList();
+        if (validTypes.isNotEmpty) {
+          queryParams['where[type][in]'] = validTypes.join(',');
         }
       }
 

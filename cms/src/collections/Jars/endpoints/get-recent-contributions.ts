@@ -22,7 +22,7 @@ export const getRecentContributions = async (req: PayloadRequest) => {
       where: {
         jar: { equals: jarId },
         paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
+        type: { in: ['contribution', 'refund'] },
       },
       limit,
       page,
@@ -32,6 +32,7 @@ export const getRecentContributions = async (req: PayloadRequest) => {
         contributor: true,
         amountContributed: true,
         createdAt: true,
+        type: true,
       },
       overrideAccess: true,
     })

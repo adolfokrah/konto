@@ -40,9 +40,6 @@ class UserStorageService {
         LocalStorageTokens.tokenExpiry,
         tokenExpiry.toString(),
       );
-      print('💾 Token expiry saved');
-
-      print('✅ User data saved to local storage successfully');
       return true;
     } catch (e) {
       print('💥 Error saving user data: $e');

@@ -641,6 +641,35 @@
     "description": "Transferred status option"
   },
 
+  "transactionType": "Transaction Type",
+  "@transactionType": {
+    "description": "Transaction type filter section header"
+  },
+
+  "typeContribution": "Contribution",
+  "@typeContribution": {
+    "description": "Contribution transaction type option"
+  },
+
+  "typePayout": "Payout",
+  "@typePayout": {
+    "description": "Payout transaction type option"
+  },
+
+  "typeRefund": "Refund",
+  "@typeRefund": {
+    "description": "Refund transaction type option"
+  },
+
+  "exportToPdf": "Email statement",
+  "@exportToPdf": {
+    "description": "Export contributions to PDF via email option"
+  },
+  "shareAsList": "Share to WhatsApp etc.",
+  "@shareAsList": {
+    "description": "Share contributions as a text list via WhatsApp or other apps"
+  },
+
   "dateAll": "All",
   "@dateAll": {
     "description": "All dates filter option"

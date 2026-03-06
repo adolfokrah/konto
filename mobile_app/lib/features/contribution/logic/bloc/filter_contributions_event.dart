@@ -23,6 +23,12 @@ final class ToggleCollector extends FilterContributionsEvent {
   ToggleCollector(this.collectorId);
 }
 
+final class ToggleTransactionType extends FilterContributionsEvent {
+  final String transactionType;
+
+  ToggleTransactionType(this.transactionType);
+}
+
 final class UpdateDateRange extends FilterContributionsEvent {
   final String selectedDate;
   final DateTime? startDate;
@@ -43,6 +49,7 @@ final class ApplyFilters extends FilterContributionsEvent {
   final List<String> paymentMethods;
   final List<String> statuses;
   final List<String> collectors;
+  final List<String> transactionTypes;
   final String? selectedDate;
   final DateTime? startDate;
   final DateTime? endDate;
@@ -51,6 +58,7 @@ final class ApplyFilters extends FilterContributionsEvent {
     required this.paymentMethods,
     required this.statuses,
     required this.collectors,
+    required this.transactionTypes,
     this.selectedDate,
     this.startDate,
     this.endDate,

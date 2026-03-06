@@ -406,6 +406,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get statusTransferred => 'Transféré';
 
   @override
+  String get transactionType => 'Type de transaction';
+
+  @override
+  String get typeContribution => 'Contribution';
+
+  @override
+  String get typePayout => 'Paiement';
+
+  @override
+  String get typeRefund => 'Remboursement';
+
+  @override
+  String get exportToPdf => 'Envoyer le relevé par email';
+
+  @override
+  String get shareAsList => 'Partager via WhatsApp etc.';
+
+  @override
   String get dateAll => 'Tout';
 
   @override
