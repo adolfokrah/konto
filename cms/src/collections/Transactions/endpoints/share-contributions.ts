@@ -65,6 +65,7 @@ export const shareContributions = async (req: PayloadRequest) => {
         lines.push(`${counter + 1}. ${name}  ${prefix}${currency} - ${Math.abs(amount).toFixed(2)}`)
       }
       total += amount
+      counter++
     }
 
     lines.push('--------------------------------')
