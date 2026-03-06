@@ -83,7 +83,7 @@ class ContributionView extends StatelessWidget {
                 );
               } else if (state is FetchContributionLoaded) {
                 final contribution = state.contribution;
-                // Display contribution details here
+                final relatedRefunds = state.relatedRefunds;
                 return Column(
                   children: [
                     // Handle bar
@@ -468,6 +468,82 @@ class ContributionView extends StatelessWidget {
                                                             ),
                                               ),
                                               textAlign: TextAlign.end,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                  // Related Refunds
+                                  if (relatedRefunds.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.spacingM),
+                                    AppCard(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingM,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: AppSpacing.spacingS,
+                                            ),
+                                            child: Text(
+                                              localizations.typeRefund,
+                                              style: AppTextStyles.titleMediumS.copyWith(
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall!
+                                                    .color
+                                                    ?.withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                          ),
+                                          ...relatedRefunds.map(
+                                            (refund) => ListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              dense: true,
+                                              leading: ContributorAvatarSizes.small(
+                                                backgroundColor: AppColors.warningOrange,
+                                                contributorName: refund.contributor ?? 'Refund',
+                                                paymentStatus: refund.paymentStatus,
+                                                viaPaymentLink: false,
+                                                isPayout: false,
+                                                isRefund: true,
+                                              ),
+                                              title: Text(
+                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${refund.amountContributed.abs()}',
+                                                style: AppTextStyles.titleMediumS.copyWith(
+                                                  color: AppColors.warningOrange,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                AppDateUtils.formatTimestampSafe(
+                                                  refund.createdAt,
+                                                  localizations,
+                                                ),
+                                                style: AppTextStyles.titleMediumS.copyWith(
+                                                  fontSize: 12,
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall!
+                                                      .color
+                                                      ?.withValues(alpha: 0.5),
+                                                ),
+                                              ),
+                                              trailing: Text(
+                                                PaymentStatusUtils.getPaymentStatusLabel(
+                                                  refund.paymentStatus,
+                                                  localizations,
+                                                ),
+                                                style: AppTextStyles.titleMediumS.copyWith(
+                                                  color: refund.isCompleted
+                                                      ? Colors.green
+                                                      : refund.isFailed
+                                                          ? Colors.red
+                                                          : AppColors.warningOrange,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ],

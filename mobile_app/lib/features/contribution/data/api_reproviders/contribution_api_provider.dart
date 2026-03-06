@@ -335,6 +335,11 @@ class ContributionApiProvider extends BaseApiProvider {
         queryParams['where[contributor][contains]'] = contributor;
       }
 
+      // Filter by linked transaction (e.g. find refunds for a contribution)
+      if (linkedTransactionId != null && linkedTransactionId.isNotEmpty) {
+        queryParams['where[linkedTransaction][equals]'] = linkedTransactionId;
+      }
+
       // Add sorting and depth
       queryParams['sort'] = '-createdAt'; // Sort by newest first
       queryParams['depth'] = '2'; // Include related data
