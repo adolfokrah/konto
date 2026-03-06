@@ -70,7 +70,7 @@ export const shareContributions = async (req: PayloadRequest) => {
 
     lines.push('--------------------------------')
     const sign = total < 0 ? '-' : ''
-    lines.push(`Total: ${sign}${currency} ${Math.abs(total).toFixed(2)}`)
+    lines.push(`*Total: ${sign}${currency} ${Math.abs(total).toFixed(2)}*`)
 
     const text = lines.join('\n')
 
