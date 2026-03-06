@@ -48,6 +48,7 @@ export const shareContributions = async (req: PayloadRequest) => {
     lines.push('─────────────')
 
     let total = 0
+    let counter = 0
     for (const c of docs) {
       const type = String(c.type || '').toLowerCase()
       const name = c.contributor || 'Anonymous'
@@ -56,9 +57,11 @@ export const shareContributions = async (req: PayloadRequest) => {
       const prefix = type === 'payout' ? '-' : ''
 
       if (isFailed) {
-        lines.push(`~${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}~`)
+        lines.push(
+          `${counter + 1}. ~${name}  ${prefix}${currency} - ${Math.abs(amount).toFixed(2)}~`,
+        )
       } else {
-        lines.push(`${name}  ${prefix}${currency} ${Math.abs(amount).toFixed(2)}`)
+        lines.push(`${counter + 1}. ${name}  ${prefix}${currency} - ${Math.abs(amount).toFixed(2)}`)
       }
       total += amount
     }
