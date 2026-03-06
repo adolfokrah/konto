@@ -81,33 +81,6 @@ export const Pricing: Block = {
       ],
     },
     {
-      name: 'feeStructure',
-      type: 'group',
-      admin: {
-        description: 'Fee percentages matching the CMS System Settings',
-      },
-      fields: [
-        {
-          name: 'collectionFee',
-          type: 'number',
-          defaultValue: 1.95,
-          admin: {
-            description: 'Collection fee percentage (matches System Settings collectionFee)',
-            step: 0.01,
-          },
-        },
-        {
-          name: 'transferFeePercentage',
-          type: 'number',
-          defaultValue: 1,
-          admin: {
-            description: 'Transfer fee percentage (matches System Settings transferFeePercentage)',
-            step: 0.1,
-          },
-        },
-      ],
-    },
-    {
       name: 'features',
       type: 'array',
       minRows: 1,

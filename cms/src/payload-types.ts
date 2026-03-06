@@ -1126,19 +1126,6 @@ export interface PricingBlock {
     transferFeeLabel?: string | null;
     youReceiveLabel?: string | null;
   };
-  /**
-   * Fee percentages matching the CMS System Settings
-   */
-  feeStructure?: {
-    /**
-     * Collection fee percentage (matches System Settings collectionFee)
-     */
-    collectionFee?: number | null;
-    /**
-     * Transfer fee percentage (matches System Settings transferFeePercentage)
-     */
-    transferFeePercentage?: number | null;
-  };
   features?:
     | {
         /**
@@ -1433,9 +1420,9 @@ export interface Transaction {
    */
   collector?: (string | null) | User;
   /**
-   * The original contribution that was refunded
+   * The original contribution linked to this refund
    */
-  refundedTransaction?: (string | null) | Transaction;
+  linkedTransaction?: (string | null) | Transaction;
   /**
    * Check if this contribution was made via a payment link
    */
@@ -2215,12 +2202,6 @@ export interface PricingBlockSelect<T extends boolean = true> {
         transferFeeLabel?: T;
         youReceiveLabel?: T;
       };
-  feeStructure?:
-    | T
-    | {
-        collectionFee?: T;
-        transferFeePercentage?: T;
-      };
   features?:
     | T
     | {
@@ -2560,7 +2541,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   collector?: T;
-  refundedTransaction?: T;
+  linkedTransaction?: T;
   viaPaymentLink?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -206,6 +206,25 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       },
     })
 
+    // Mark original contribution as settled when refund is successful
+    if (
+      (transfer.type as string) === 'refund' &&
+      newStatus === 'completed' &&
+      transfer.linkedTransaction
+    ) {
+      const originalTxId =
+        typeof transfer.linkedTransaction === 'object'
+          ? (transfer.linkedTransaction as any).id
+          : transfer.linkedTransaction
+      await req.payload.update({
+        collection: 'transactions',
+        id: originalTxId,
+        data: { isSettled: true },
+        overrideAccess: true,
+        context: { skipCharges: true },
+      })
+    }
+
     // Send FCM notification to jar creator
     // Fetch the transfer with jar details for notification
     const transferWithDetails = await req.payload.findByID({

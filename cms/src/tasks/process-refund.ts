@@ -63,6 +63,28 @@ export const processRefundTask = {
         phoneNumber = '233' + phoneNumber
       }
 
+      // Re-check for existing refund before creating (guards against race condition from concurrent requests)
+      const existingRefund = await payload.find({
+        collection: 'transactions',
+        where: {
+          linkedTransaction: { equals: originalTransactionId },
+          type: { equals: 'refund' },
+          paymentStatus: { in: ['pending', 'completed'] },
+        },
+        limit: 1,
+        overrideAccess: true,
+      })
+
+      if (existingRefund.docs.length > 0) {
+        console.log(`⚠️ Refund already exists for ${originalTransactionId}, aborting`)
+        return {
+          output: {
+            success: false,
+            message: 'A refund has already been issued for this transaction',
+          },
+        }
+      }
+
       // Create refund transaction (negative amount, like payout)
       const transaction = await payload.create({
         collection: 'transactions',
@@ -76,21 +98,12 @@ export const processRefundTask = {
           contributor: contributorName,
           contributorPhoneNumber: contributorPhone,
           type: 'refund',
-          refundedTransaction: originalTransactionId,
+          linkedTransaction: originalTransactionId,
         },
         overrideAccess: true,
       })
 
       console.log(`✅ Refund transaction created: ${transaction.id}`)
-
-      // Mark the original contribution as settled to prevent double refund
-      await payload.update({
-        collection: 'transactions',
-        id: originalTransactionId,
-        data: { isSettled: true },
-        overrideAccess: true,
-        context: { skipCharges: true },
-      })
 
       try {
         // Get Eganow token and initiate payout to contributor
@@ -139,15 +152,6 @@ export const processRefundTask = {
           id: transaction.id,
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
-        })
-
-        // Revert: unsettle the original contribution so admin can retry
-        await payload.update({
-          collection: 'transactions',
-          id: originalTransactionId,
-          data: { isSettled: false },
-          overrideAccess: true,
-          context: { skipCharges: true },
         })
 
         console.error(`❌ Eganow refund failed for transaction ${transaction.id}:`, eganowError)

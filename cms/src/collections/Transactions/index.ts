@@ -289,13 +289,13 @@ export const Transactions: CollectionConfig = {
       // },
     },
     {
-      name: 'refundedTransaction',
+      name: 'linkedTransaction',
       type: 'relationship',
       relationTo: 'transactions',
       hasMany: false,
       required: false,
       admin: {
-        description: 'The original contribution that was refunded',
+        description: 'The original contribution linked to this refund',
         condition: (data) => data?.type === 'refund',
         readOnly: true,
       },

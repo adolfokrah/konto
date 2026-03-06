@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { cn } from '@/utilities/ui'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -43,17 +43,27 @@ export const PricingBlock: React.FC<Props> = ({
   title,
   description,
   calculatorSection,
-  feeStructure,
   features,
   ctaButton,
   poweredBy,
   anchor,
 }) => {
   const [requestAmount, setRequestAmount] = useState<number>(200)
+  const [collectionFee, setCollectionFee] = useState<number>(1.95)
+  const [transferFee, setTransferFee] = useState<number>(1)
 
-  // Fee percentages from CMS system settings
-  const collectionFee = feeStructure?.collectionFee ?? 1.95
-  const transferFee = feeStructure?.transferFeePercentage ?? 1
+  // Fetch fee percentages from System Settings
+  useEffect(() => {
+    fetch('/api/system-settings')
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          setCollectionFee(res.data.collectionFee ?? 1.95)
+          setTransferFee(res.data.transferFeePercentage ?? 1)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Calculations
   const contributorPays = requestAmount + (requestAmount * collectionFee) / 100

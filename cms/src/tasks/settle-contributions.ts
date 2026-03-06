@@ -64,10 +64,44 @@ export const settleContributionsTask = {
         }
       }
 
+      // Exclude contributions that have a pending refund
+      const contributionIds = unsettledContributions.docs.map((c: any) => c.id)
+      const pendingRefunds = await payload.find({
+        collection: 'transactions',
+        where: {
+          type: { equals: 'refund' },
+          paymentStatus: { equals: 'pending' },
+          linkedTransaction: { in: contributionIds },
+        },
+        limit: 500,
+        depth: 0,
+        overrideAccess: true,
+        select: { linkedTransaction: true },
+      })
+
+      const refundingIds = new Set(
+        pendingRefunds.docs.map((r: any) =>
+          typeof r.linkedTransaction === 'object' ? r.linkedTransaction?.id : r.linkedTransaction,
+        ),
+      )
+
+      const eligibleContributions = unsettledContributions.docs.filter(
+        (c: any) => !refundingIds.has(c.id),
+      )
+
+      if (eligibleContributions.length === 0) {
+        return {
+          output: {
+            settled: 0,
+            message: `No contributions to settle (${refundingIds.size} skipped due to pending refunds)`,
+          },
+        }
+      }
+
       // Group contributions by jar for notifications
       const contributionsByJar = new Map<string, any[]>()
 
-      for (const contribution of unsettledContributions.docs) {
+      for (const contribution of eligibleContributions) {
         if (typeof contribution.jar === 'object' && contribution.jar) {
           const jarId = contribution.jar.id
           if (!contributionsByJar.has(jarId)) {
@@ -79,7 +113,7 @@ export const settleContributionsTask = {
 
       // Update each contribution to settled
       let settledCount = 0
-      for (const contribution of unsettledContributions.docs) {
+      for (const contribution of eligibleContributions) {
         await payload.update({
           collection: 'transactions',
           id: contribution.id,

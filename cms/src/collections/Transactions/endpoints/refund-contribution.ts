@@ -86,7 +86,7 @@ export const refundContribution = async (req: PayloadRequest) => {
     const existingRefund = await req.payload.find({
       collection: 'transactions',
       where: {
-        refundedTransaction: { equals: transactionId },
+        linkedTransaction: { equals: transactionId },
         type: { equals: 'refund' },
         paymentStatus: { in: ['pending', 'completed'] },
       },
