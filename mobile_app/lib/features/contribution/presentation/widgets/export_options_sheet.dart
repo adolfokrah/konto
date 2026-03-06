@@ -6,10 +6,8 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/drag_handle.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
@@ -195,11 +193,6 @@ class ExportOptionsSheet extends StatelessWidget {
       endDate = filtersState.endDate;
     }
 
-    final jarId = jarState.jarData.id;
-    final jarName = jarState.jarData.name;
-    final currency = jarState.jarData.currency;
-    final contributorSearch = listState.contributorSearch;
-
     // Capture screen size for share position before popping
     final screenSize = MediaQuery.of(context).size;
     final shareOrigin = Rect.fromCenter(
@@ -211,69 +204,29 @@ class ExportOptionsSheet extends StatelessWidget {
     // Close the bottom sheet before fetching
     if (context.mounted) Navigator.pop(context);
 
-    // Fetch ALL contributions with current filters (limit: 0 returns all in Payload CMS)
     final repo = GetIt.I<ContributionRepository>();
-    final response = await repo.getContributions(
-      jarId: jarId,
+    final response = await repo.shareContributions(
+      jarId: jarState.jarData.id,
       paymentMethods: paymentMethods,
       statuses: statuses,
       collectors: collectors,
       transactionTypes: transactionTypes,
       startDate: startDate,
       endDate: endDate,
-      contributor: contributorSearch,
-      limit: 0,
-      isCurrentUserJarCreator: jarState.jarData.isCreator,
+      contributor: listState.contributorSearch,
     );
 
-    if (response['success'] != true || response['data']?['docs'] == null) {
+    if (response['success'] != true || response['data']?['text'] == null) {
       if (context.mounted) {
         AppSnackBar.showError(
           context,
-          message: response['message'] ?? 'Failed to fetch contributions',
+          message: response['message'] ?? 'Failed to generate share text',
         );
       }
       return;
     }
 
-    final docs =
-        (response['data']['docs'] as List<dynamic>)
-            .map((d) => ContributionModel.fromJson(d as Map<String, dynamic>))
-            .toList();
-
-    final text = _buildShareText(jarName, currency, docs);
-
+    final text = response['data']['text'] as String;
     Share.share(text, sharePositionOrigin: shareOrigin);
-  }
-
-  String _buildShareText(
-    String jarName,
-    String currency,
-    List<ContributionModel> contributions,
-  ) {
-    final buffer = StringBuffer();
-    buffer.writeln('*$jarName*');
-    buffer.writeln('─────────────');
-
-    double total = 0;
-    for (final c in contributions) {
-      final name = c.contributor ?? 'Anonymous';
-      final amount = c.amountContributed;
-      final isRefund = c.isRefund;
-      final prefix = (c.isTransfer || isRefund) ? '-' : '';
-      buffer.writeln(
-        '$name  $prefix${CurrencyUtils.formatAmount(amount, currency)}',
-      );
-      if (isRefund || c.isTransfer) {
-        total -= amount;
-      } else {
-        total += amount;
-      }
-    }
-
-    buffer.writeln('─────────────');
-    buffer.writeln('Total: ${CurrencyUtils.formatAmount(total, currency)}');
-
-    return buffer.toString();
   }
 }

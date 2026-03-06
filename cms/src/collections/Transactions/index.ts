@@ -17,6 +17,7 @@ import { verifyPendingTransactions } from './endpoints/verify-pending-transactio
 import { exportContributions } from './endpoints/export-contributions'
 import { recalculateCharges } from './endpoints/recalculate-charges'
 import { refundContribution } from './endpoints/refund-contribution'
+import { shareContributions } from './endpoints/share-contributions'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -369,6 +370,11 @@ export const Transactions: CollectionConfig = {
       path: '/refund-contribution',
       method: 'post',
       handler: refundContribution,
+    },
+    {
+      path: '/share-contributions',
+      method: 'get',
+      handler: shareContributions,
     },
   ],
   hooks: {

@@ -146,7 +146,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
         'apple-pay',
       ];
       _pendingStatuses = ['pending', 'completed', 'failed'];
-      _pendingTransactionTypes = ['contribution', 'payout', 'refund'];
+      _pendingTransactionTypes = ['contribution', 'payout'];
       _pendingCollectors = List.from(allCollectorIds);
       _pendingDate = _pendingDate ?? FilterOptions.defaultDateOption;
     });

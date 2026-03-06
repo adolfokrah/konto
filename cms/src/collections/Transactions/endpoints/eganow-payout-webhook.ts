@@ -206,7 +206,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       },
     })
 
-    // Mark original contribution as settled when refund is successful
+    // Mark the original contribution as failed when refund is successful
     if (
       (transfer.type as string) === 'refund' &&
       newStatus === 'completed' &&
@@ -219,7 +219,7 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       await req.payload.update({
         collection: 'transactions',
         id: originalTxId,
-        data: { isSettled: true },
+        data: { paymentStatus: 'failed' },
         overrideAccess: true,
         context: { skipCharges: true },
       })

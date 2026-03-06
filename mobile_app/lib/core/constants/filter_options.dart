@@ -32,7 +32,6 @@ class FilterOptions {
   static const List<TransactionTypeOption> transactionTypes = [
     TransactionTypeOption('contribution', 'typeContribution'),
     TransactionTypeOption('payout', 'typePayout'),
-    TransactionTypeOption('refund', 'typeRefund'),
   ];
 
   /// Payment method options for contributions filter

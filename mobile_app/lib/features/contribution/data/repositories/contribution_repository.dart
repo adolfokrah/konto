@@ -109,6 +109,7 @@ class ContributionRepository {
     String? contributor,
     bool? isCurrentUserJarCreator,
     bool? hasAnyFilters,
+    String? linkedTransactionId,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider.getContributions(
@@ -124,6 +125,7 @@ class ContributionRepository {
         contributor: contributor,
         isCurrentUserJarCreator: isCurrentUserJarCreator,
         hasAnyFilters: hasAnyFilters,
+        linkedTransactionId: linkedTransactionId,
       );
 
       if (apiResponse['docs'] != null) {
@@ -192,6 +194,47 @@ class ContributionRepository {
       return {
         'success': false,
         'message': 'An unexpected error occurred while exporting contributions',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Fetch formatted share text for contributions from backend
+  Future<Map<String, dynamic>> shareContributions({
+    required String jarId,
+    List<String>? paymentMethods,
+    List<String>? statuses,
+    List<String>? collectors,
+    List<String>? transactionTypes,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? contributor,
+  }) async {
+    try {
+      final apiResponse = await _contributionApiProvider.shareContributions(
+        jarId: jarId,
+        paymentMethods: paymentMethods,
+        statuses: statuses,
+        collectors: collectors,
+        transactionTypes: transactionTypes,
+        startDate: startDate,
+        endDate: endDate,
+        contributor: contributor,
+      );
+      if (apiResponse['success'] == true) {
+        return {
+          'success': true,
+          'data': apiResponse['data'],
+        };
+      }
+      return {
+        'success': false,
+        'message': apiResponse['message'] ?? 'Failed to fetch share text',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
         'error': e.toString(),
       };
     }

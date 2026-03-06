@@ -216,6 +216,7 @@ class ContributionApiProvider extends BaseApiProvider {
     String? contributor,
     bool? isCurrentUserJarCreator, // Whether current user created the jar
     bool? hasAnyFilters, // Whether any filters are applied
+    String? linkedTransactionId, // Filter refunds linked to a specific transaction
   }) async {
     try {
       // Get authenticated headers
@@ -416,6 +417,63 @@ class ContributionApiProvider extends BaseApiProvider {
       };
     } catch (e) {
       return handleApiError(e, 'exporting contributions');
+    }
+  }
+
+  /// Fetch formatted share text for contributions
+  Future<Map<String, dynamic>> shareContributions({
+    required String jarId,
+    List<String>? paymentMethods,
+    List<String>? statuses,
+    List<String>? collectors,
+    List<String>? transactionTypes,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? contributor,
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) return getUnauthenticatedError();
+
+      final queryParams = <String, dynamic>{'jarId': jarId};
+
+      if (paymentMethods != null && paymentMethods.isNotEmpty) {
+        queryParams['paymentMethods'] = paymentMethods.join(',');
+      }
+      if (statuses != null && statuses.isNotEmpty) {
+        queryParams['statuses'] = statuses.join(',');
+      }
+      if (collectors != null && collectors.isNotEmpty) {
+        queryParams['collectors'] = collectors.join(',');
+      }
+      if (transactionTypes != null && transactionTypes.isNotEmpty) {
+        queryParams['transactionTypes'] = transactionTypes.join(',');
+      }
+      if (startDate != null) {
+        queryParams['startDate'] = startDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
+      if (contributor != null && contributor.isNotEmpty) {
+        queryParams['contributor'] = contributor;
+      }
+
+      final response = await dio.get(
+        '${BackendConfig.apiBaseUrl}/transactions/share-contributions',
+        queryParameters: queryParams,
+        options: Options(headers: headers),
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {
+        'success': false,
+        'message': 'Unexpected response format',
+        'data': response.data,
+      };
+    } catch (e) {
+      return handleApiError(e, 'fetching share text');
     }
   }
 }

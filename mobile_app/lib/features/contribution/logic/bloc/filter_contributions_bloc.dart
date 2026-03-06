@@ -177,7 +177,7 @@ class FilterContributionsBloc
       'apple-pay',
     ];
     const allStatuses = ['pending', 'completed', 'failed'];
-    const allTransactionTypes = ['contribution', 'payout', 'refund'];
+    const allTransactionTypes = ['contribution', 'payout'];
 
     final currentState = state;
     if (currentState is FilterContributionsLoaded) {

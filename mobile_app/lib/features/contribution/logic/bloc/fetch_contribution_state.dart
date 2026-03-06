@@ -9,8 +9,9 @@ final class FetchContributionLoading extends FetchContributionState {}
 
 final class FetchContributionLoaded extends FetchContributionState {
   final ContributionModel contribution;
+  final List<ContributionModel> relatedRefunds;
 
-  FetchContributionLoaded(this.contribution);
+  FetchContributionLoaded(this.contribution, {this.relatedRefunds = const []});
 }
 
 final class FetchContributionError extends FetchContributionState {
