@@ -54,7 +54,7 @@ export const SupportBlock: React.FC<Props> = ({
             </div>
             <div>
               <p className="font-medium text-black">WhatsApp</p>
-              <p className="text-sm text-gray-500">Chat with us on WhatsApp</p>
+              <p className="text-sm text-gray-500">Chat with us on {whatsappNumber}</p>
             </div>
           </a>
         )}
