@@ -44,8 +44,9 @@ export const shareContributions = async (req: PayloadRequest) => {
     const jarName = jar?.name || 'Jar'
 
     const lines: string[] = []
+    lines.push('--------------------------------')
     lines.push(`*${jarName}*`)
-    lines.push('─────────────')
+    lines.push('--------------------------------')
 
     let total = 0
     let counter = 0
@@ -66,7 +67,7 @@ export const shareContributions = async (req: PayloadRequest) => {
       total += amount
     }
 
-    lines.push('─────────────')
+    lines.push('--------------------------------')
     const sign = total < 0 ? '-' : ''
     lines.push(`Total: ${sign}${currency} ${Math.abs(total).toFixed(2)}`)
 
