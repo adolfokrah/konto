@@ -1,6 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -108,7 +119,6 @@ export function TransactionDetailSheet({
 
   const handleRefund = async () => {
     if (!selected || !canRefund) return
-    if (!confirm(`Are you sure you want to refund ${formatAmount(selected.amountContributed)} to ${selected.contributor || 'the contributor'}?`)) return
 
     try {
       await triggerRefund({ transactionId: selected.id })
@@ -300,19 +310,38 @@ export function TransactionDetailSheet({
               {canRefund && (
                 <div>
                   <Separator className="mb-4" />
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={handleRefund}
-                    disabled={refunding}
-                  >
-                    {refunding ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                    )}
-                    {refunding ? 'Processing Refund...' : 'Refund Contribution'}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        disabled={refunding}
+                      >
+                        {refunding ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                        )}
+                        {refunding ? 'Processing Refund...' : 'Refund Contribution'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to refund{' '}
+                          <span className="font-semibold">{formatAmount(selected.amountContributed)}</span>{' '}
+                          to {selected.contributor || 'the contributor'}? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRefund}>
+                          Confirm Refund
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               )}
             </div>
