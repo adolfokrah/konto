@@ -54,10 +54,14 @@ export const verifyPendingTransactionsTask = {
       let failedCount = 0
 
       for (const transaction of pendingTransactions.docs) {
-        const { transactionReference, id, collector, jar } = transaction as any
+        const { transactionReference, id, collector, jar, type } = transaction as any
 
         const collectorId = typeof collector === 'string' ? collector : collector?.id
         const jarId = typeof jar === 'string' ? jar : jar?.id
+
+        // Reconstruct the transactionId we originally sent to Eganow
+        // Contributions use raw id, payouts use "payout-{id}"
+        const eganowTransactionId = type === 'payout' ? `payout-${id}` : id
 
         // No collector or no transaction reference → mark as failed
         if (!collector || !transactionReference) {
@@ -87,7 +91,7 @@ export const verifyPendingTransactionsTask = {
           await getEganow().getToken()
 
           const statusResult = await getEganow().checkTransactionStatus({
-            transactionId: transactionReference,
+            transactionId: eganowTransactionId,
             languageId: 'en',
           })
 

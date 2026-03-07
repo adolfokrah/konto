@@ -21,7 +21,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
     const results = []
 
     for (const transaction of pendingTransactions.docs) {
-      const { transactionReference, id, collector, jar } = transaction as any
+      const { transactionReference, id, collector, jar, type } = transaction as any
 
       // Validate collector presence (required field). If missing, skip to avoid validation error on update.
       // If collector is missing (violates required field) we still want to force-mark this record as failed.
@@ -113,9 +113,13 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
         // Get token
         await getEganow().getToken()
 
+        // Reconstruct the transactionId we originally sent to Eganow
+        // Contributions use raw id, payouts use "payout-{id}"
+        const eganowTransactionId = type === 'payout' ? `payout-${id}` : id
+
         // Check transaction status directly with Eganow
         const statusResult = await getEganow().checkTransactionStatus({
-          transactionId: id,
+          transactionId: eganowTransactionId,
           languageId: 'en',
         })
 
