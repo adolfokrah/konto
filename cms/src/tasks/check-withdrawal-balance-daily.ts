@@ -77,7 +77,7 @@ export const checkWithdrawalBalanceDailyTask = {
 
         const balance = settledSum + payoutsSum
 
-        if (balance >= minimumPayoutAmount) {
+        if (balance > 0 && balance >= minimumPayoutAmount) {
           jarsWithCalculatedBalance.push({ jar, balance })
         }
       }
