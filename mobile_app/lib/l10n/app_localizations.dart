@@ -824,6 +824,12 @@ abstract class AppLocalizations {
   /// **'Failed'**
   String get statusFailed;
 
+  /// Rejected status option
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get statusRejected;
+
   /// Transferred status option
   ///
   /// In en, this message translates to:
@@ -1051,6 +1057,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transferred'**
   String get paymentStatusTransferred;
+
+  /// Payment status: awaiting approval
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting Approval'**
+  String get paymentStatusAwaitingApproval;
+
+  /// Label for payout approvals section
+  ///
+  /// In en, this message translates to:
+  /// **'Payout Approvals'**
+  String get payoutApprovals;
 
   /// Message shown when mobile money payment is successful
   ///

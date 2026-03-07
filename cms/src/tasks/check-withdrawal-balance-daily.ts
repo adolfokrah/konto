@@ -69,7 +69,9 @@ export const checkWithdrawalBalanceDailyTask = {
           .filter(
             (tx: any) =>
               tx.type === 'payout' &&
-              (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
+              (tx.paymentStatus === 'pending' ||
+                tx.paymentStatus === 'completed' ||
+                tx.paymentStatus === 'awaiting-approval'),
           )
           .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
 

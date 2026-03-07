@@ -120,11 +120,12 @@ class ContributionsListBloc
         }
       }
 
-      // Determine if current user is jar creator
+      // Determine if current user has full access (jar creator or admin collector)
       final isCurrentUserJarCreator =
-          event.currentUserId != null &&
+          (event.currentUserId != null &&
           event.jarCreatorId != null &&
-          event.currentUserId == event.jarCreatorId;
+          event.currentUserId == event.jarCreatorId) ||
+          event.isAdminCollector;
 
       // Check if ANY filters are applied (excluding contributor search)
       final hasAnyFilters =

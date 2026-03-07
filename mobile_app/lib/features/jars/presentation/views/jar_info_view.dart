@@ -88,6 +88,8 @@ class _JarInfoViewState extends State<JarInfoView> {
         BlocListener<UpdateJarBloc, UpdateJarState>(
           listener: (context, state) {
             if (state is UpdateJarSuccess) {
+              // Refresh jar data
+              context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
               // If we were breaking a jar, show success modal and then navigate
               if (_isBreakingJar) {
                 _isBreakingJar = false;
@@ -631,6 +633,104 @@ class _JarInfoViewState extends State<JarInfoView> {
                                   ],
                                 ),
                               ),
+
+                              // Required Approvals — only show when jar has admin collectors
+                              if ((jarData.invitedCollectors ?? []).any(
+                                (ic) =>
+                                    ic.role == 'admin' &&
+                                    ic.status == 'accepted',
+                              )) ...[
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                AppCard(
+                                  variant: CardVariant.secondary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.spacingM,
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
+                                    title: Text(
+                                      'Required Approvals',
+                                      style: AppTextStyles.titleMediumS
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .color
+                                                ?.withValues(alpha: 0.5),
+                                          ),
+                                    ),
+                                    subtitle: Text(
+                                      'Number of admin approvals needed before a payout is processed',
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.remove_circle_outline),
+                                          onPressed:
+                                              jarData.requiredApprovals <= 1
+                                                  ? null
+                                                  : () {
+                                                    context
+                                                        .read<UpdateJarBloc>()
+                                                        .add(
+                                                          UpdateJarRequested(
+                                                            jarId: jarData.id,
+                                                            updates: {
+                                                              'requiredApprovals':
+                                                                  jarData.requiredApprovals -
+                                                                      1,
+                                                            },
+                                                          ),
+                                                        );
+                                                  },
+                                        ),
+                                        Text(
+                                          '${jarData.requiredApprovals}',
+                                          style: AppTextStyles.titleMediumS
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.add_circle_outline),
+                                          onPressed: () {
+                                            final adminCount =
+                                                (jarData.invitedCollectors ?? [])
+                                                    .where(
+                                                      (ic) =>
+                                                          ic.role == 'admin' &&
+                                                          ic.status ==
+                                                              'accepted',
+                                                    )
+                                                    .length;
+                                            if (jarData.requiredApprovals >=
+                                                adminCount) {
+                                              AppSnackBar.showError(
+                                                context,
+                                                message:
+                                                    'Cannot exceed $adminCount — you only have $adminCount admin collector${adminCount == 1 ? '' : 's'}',
+                                              );
+                                              return;
+                                            }
+                                            context.read<UpdateJarBloc>().add(
+                                              UpdateJarRequested(
+                                                jarId: jarData.id,
+                                                updates: {
+                                                  'requiredApprovals':
+                                                      jarData.requiredApprovals +
+                                                          1,
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
 
                               const SizedBox(height: AppSpacing.spacingXs),
 

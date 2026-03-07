@@ -97,6 +97,13 @@ class _ContributionsListViewState extends State<ContributionsListView> {
         currentUserId = authState.user.id;
       }
 
+      // Check if current user is an admin collector on this jar
+      final isAdminCollector = currentUserId != null &&
+          (jarSummaryState.jarData.invitedCollectors?.any((ic) =>
+              ic.collector.id == currentUserId &&
+              ic.role == 'admin' &&
+              ic.status == 'accepted') ?? false);
+
       context.read<ContributionsListBloc>().add(
         FetchContributions(
           jarId: jarSummaryState.jarData.id,
@@ -104,6 +111,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           contributor: contributor?.isNotEmpty == true ? contributor : null,
           currentUserId: currentUserId,
           jarCreatorId: jarSummaryState.jarData.creator.id,
+          isAdminCollector: isAdminCollector,
         ),
       );
     }

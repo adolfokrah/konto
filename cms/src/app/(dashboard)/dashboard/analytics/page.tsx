@@ -273,7 +273,7 @@ export default async function AnalyticsPage() {
     payload.find({
       collection: 'transactions',
       where: {
-        paymentStatus: { in: ['pending', 'completed'] },
+        paymentStatus: { in: ['pending', 'completed', 'awaiting-approval'] },
         type: { equals: 'payout' },
       },
       pagination: false,

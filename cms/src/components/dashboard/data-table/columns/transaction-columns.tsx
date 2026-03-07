@@ -28,7 +28,7 @@ export type TransactionRow = {
     eganowFees: number | null
     hogapayRevenue: number | null
   } | null
-  paymentStatus: 'pending' | 'completed' | 'failed'
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'awaiting-approval'
   type: 'contribution' | 'payout'
   isSettled: boolean
   payoutFeePercentage: number | null
@@ -151,6 +151,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
           { label: 'Pending', value: 'pending' },
           { label: 'Completed', value: 'completed' },
           { label: 'Failed', value: 'failed' },
+          { label: 'Awaiting Approval', value: 'awaiting-approval' },
         ],
       },
       filterLabel: 'Status',

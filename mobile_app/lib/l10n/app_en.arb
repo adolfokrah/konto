@@ -636,6 +636,11 @@
     "description": "Failed status option"
   },
 
+  "statusRejected": "Rejected",
+  "@statusRejected": {
+    "description": "Rejected status option"
+  },
+
   "statusTransferred": "Transferred",
   "@statusTransferred": {
     "description": "Transferred status option"
@@ -851,6 +856,16 @@
   "paymentStatusTransferred": "Transferred",
   "@paymentStatusTransferred": {
     "description": "Payment status: transferred"
+  },
+
+  "paymentStatusAwaitingApproval": "Awaiting Approval",
+  "@paymentStatusAwaitingApproval": {
+    "description": "Payment status: awaiting approval"
+  },
+
+  "payoutApprovals": "Payout Approvals",
+  "@payoutApprovals": {
+    "description": "Label for payout approvals section"
   },
 
   "momoPaymentSuccessful": "Payment Successful! ✅",

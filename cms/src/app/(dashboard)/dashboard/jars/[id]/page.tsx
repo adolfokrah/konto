@@ -158,7 +158,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       collection: 'transactions',
       where: {
         jar: { equals: id },
-        paymentStatus: { in: ['completed', 'pending'] },
+        paymentStatus: { in: ['completed', 'pending', 'awaiting-approval'] },
       },
       pagination: false,
       select: { amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
@@ -226,6 +226,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       email: user?.email || '—',
       phone: user?.phoneNumber || '—',
       status: ic.status || 'pending',
+      role: ic.role || 'member',
     }
   })
 

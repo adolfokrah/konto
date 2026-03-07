@@ -16,6 +16,8 @@ class PaymentStatusUtils {
         return localizations.paymentStatusCompleted;
       case 'failed':
         return localizations.paymentStatusFailed;
+      case 'awaiting-approval':
+        return localizations.paymentStatusAwaitingApproval;
       default:
         return localizations.unknown;
     }

@@ -187,6 +187,7 @@ class JarApiProvider extends BaseApiProvider {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    int? requiredApprovals,
   }) async {
     try {
       // Get authenticated headers
@@ -220,6 +221,12 @@ class JarApiProvider extends BaseApiProvider {
           final status = collector['status'] ?? 'pending';
           if (status is String) {
             processedCollector['status'] = status;
+          }
+
+          // Extract role safely
+          final role = collector['role'] ?? 'member';
+          if (role is String) {
+            processedCollector['role'] = role;
           }
 
           processedInvitedCollectors.add(processedCollector);
@@ -256,6 +263,9 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (allowAnonymousContributions != null) {
         jarData['allowAnonymousContributions'] = allowAnonymousContributions;
+      }
+      if (requiredApprovals != null) {
+        jarData['requiredApprovals'] = requiredApprovals;
       }
 
       // Handle paymentPage fields together to avoid overwriting

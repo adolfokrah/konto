@@ -176,6 +176,7 @@ class InvitedCollectorModel {
   final String? phoneNumber;
   final String? name;
   final CollectorStatus status;
+  final String role; // 'member' | 'admin'
   final String? id;
 
   const InvitedCollectorModel({
@@ -183,6 +184,7 @@ class InvitedCollectorModel {
     this.phoneNumber,
     this.name,
     required this.status,
+    this.role = 'member',
     this.id,
   });
 
@@ -199,6 +201,7 @@ class InvitedCollectorModel {
       status: CollectorStatus.fromString(
         json['status'] as String? ?? 'pending',
       ),
+      role: json['role'] as String? ?? 'member',
       id: json['id'] as String?,
     );
   }
@@ -209,6 +212,7 @@ class InvitedCollectorModel {
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
       if (name != null) 'name': name,
       'status': status.value,
+      'role': role,
       if (id != null) 'id': id,
     };
   }
@@ -240,11 +244,15 @@ class InvitedCollectorModel {
   bool get isRegistered => collector != null;
 
   /// Create a copy with updated values
+  /// Check if this collector is an admin
+  bool get isAdmin => role == 'admin';
+
   InvitedCollectorModel copyWith({
     CollectorModel? collector,
     String? phoneNumber,
     String? name,
     CollectorStatus? status,
+    String? role,
     String? id,
   }) {
     return InvitedCollectorModel(
@@ -252,6 +260,7 @@ class InvitedCollectorModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       name: name ?? this.name,
       status: status ?? this.status,
+      role: role ?? this.role,
       id: id ?? this.id,
     );
   }

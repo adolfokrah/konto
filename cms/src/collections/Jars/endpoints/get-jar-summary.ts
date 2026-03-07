@@ -112,8 +112,15 @@ export const getJarSummary = async (req: PayloadRequest) => {
     return jar
   }
 
-  // Check if user is the jar creator
+  // Check if user is the jar creator or an admin collector
   const isJarCreator = jar.creator?.id === req.user!.id
+  const isAdminCollector =
+    Array.isArray(jar?.invitedCollectors) &&
+    jar.invitedCollectors.some((ic: any) => {
+      const collectorId = typeof ic.collector === 'object' ? ic.collector?.id : ic.collector
+      return collectorId === req.user!.id && ic.role === 'admin' && ic.status === 'accepted'
+    })
+  const hasFullAccess = isJarCreator || isAdminCollector
 
   const recentJarContributions = await req.payload.find({
     collection: 'transactions',
@@ -124,7 +131,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       type: {
         not_equals: 'refund',
       },
-      ...(isJarCreator
+      ...(hasFullAccess
         ? {}
         : {
             collector: {
@@ -142,7 +149,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
-      ...(isJarCreator
+      ...(hasFullAccess
         ? {}
         : {
             collector: {
@@ -203,7 +210,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       paymentStatus: {
         equals: 'completed',
       },
-      ...(isJarCreator
+      ...(hasFullAccess
         ? {}
         : {
             collector: {
@@ -224,8 +231,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
       jar: {
         equals: jar.id,
       },
-      // If not creator, only show this user's transactions
-      ...(isJarCreator
+      // If not creator/admin collector, only show this user's transactions
+      ...(hasFullAccess
         ? {}
         : {
             collector: {
@@ -317,7 +324,9 @@ export const getJarSummary = async (req: PayloadRequest) => {
     .filter(
       (contribution) =>
         (contribution.type as string) === 'payout' &&
-        (contribution.paymentStatus === 'pending' || contribution.paymentStatus === 'completed'),
+        (contribution.paymentStatus === 'pending' ||
+          contribution.paymentStatus === 'completed' ||
+          contribution.paymentStatus === 'awaiting-approval'),
     )
     .reduce((sum: number, contribution: any) => sum + contribution.amountContributed, 0)
 

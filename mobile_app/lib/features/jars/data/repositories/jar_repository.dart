@@ -156,6 +156,7 @@ class JarRepository {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    int? requiredApprovals,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -177,6 +178,7 @@ class JarRepository {
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
         allowAnonymousContributions: allowAnonymousContributions,
+        requiredApprovals: requiredApprovals,
       );
 
       if (apiResponse['doc'] != null) {

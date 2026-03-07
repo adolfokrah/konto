@@ -80,6 +80,7 @@ export interface Config {
     'jar-reports': JarReport;
     'push-campaigns': PushCampaign;
     refunds: Refund;
+    'payout-approvals': PayoutApproval;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -104,6 +105,7 @@ export interface Config {
     'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
     refunds: RefundsSelect<false> | RefundsSelect<true>;
+    'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1483,9 +1485,17 @@ export interface Jar {
          */
         collector: string | User;
         status: 'accepted' | 'pending';
+        /**
+         * Admin collectors have elevated privileges in this jar
+         */
+        role: 'member' | 'admin';
         id?: string | null;
       }[]
     | null;
+  /**
+   * Number of admin approvals needed before a payout is processed
+   */
+  requiredApprovals?: number | null;
   paymentPage?: {
     showGoal?: boolean | null;
     showRecentContributions?: boolean | null;
@@ -1512,7 +1522,7 @@ export interface Jar {
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen';
+  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen' | 'payout-approval';
   title: string;
   message: string;
   data?:
@@ -1650,6 +1660,32 @@ export interface Refund {
    */
   updatedBy?: (string | null) | User;
   status: 'pending' | 'in-progress' | 'failed' | 'completed';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payout-approvals".
+ */
+export interface PayoutApproval {
+  id: string;
+  /**
+   * The jar this payout approval belongs to
+   */
+  jar: string | Jar;
+  /**
+   * The payout transaction linked to this approval
+   */
+  linkedTransaction?: (string | null) | Transaction;
+  status: 'approved' | 'rejected';
+  /**
+   * User who requested the payout
+   */
+  requestedBy?: (string | null) | User;
+  /**
+   * Admin who approved or rejected the payout
+   */
+  actionBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1915,6 +1951,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'refunds';
         value: string | Refund;
+      } | null)
+    | ({
+        relationTo: 'payout-approvals';
+        value: string | PayoutApproval;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2625,8 +2665,10 @@ export interface JarsSelect<T extends boolean = true> {
     | {
         collector?: T;
         status?: T;
+        role?: T;
         id?: T;
       };
+  requiredApprovals?: T;
   paymentPage?:
     | T
     | {
@@ -2720,6 +2762,19 @@ export interface RefundsSelect<T extends boolean = true> {
   transactionReference?: T;
   updatedBy?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payout-approvals_select".
+ */
+export interface PayoutApprovalsSelect<T extends boolean = true> {
+  jar?: T;
+  linkedTransaction?: T;
+  status?: T;
+  requestedBy?: T;
+  actionBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3274,6 +3329,7 @@ export interface TaskProcessPayout {
     userBank: string;
     userAccountNumber: string;
     userAccountHolder: string;
+    existingTransactionId?: string | null;
   };
   output?: unknown;
 }

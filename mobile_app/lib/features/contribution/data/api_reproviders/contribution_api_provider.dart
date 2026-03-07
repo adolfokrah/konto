@@ -488,4 +488,36 @@ class ContributionApiProvider extends BaseApiProvider {
       return handleApiError(e, 'fetching share text');
     }
   }
+
+  /// Approve or reject a payout transaction
+  Future<Map<String, dynamic>> approveRejectPayout({
+    required String transactionId,
+    required String action, // 'approved' | 'rejected'
+  }) async {
+    try {
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) {
+        return getUnauthenticatedError();
+      }
+
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/transactions/approve-reject-payout',
+        data: {
+          'transactionId': transactionId,
+          'action': action,
+        },
+        options: Options(headers: headers),
+      );
+
+      if (response.data != null && response.data is Map) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {
+        'success': false,
+        'message': 'Unexpected response format',
+      };
+    } catch (e) {
+      return handleApiError(e, 'processing payout approval');
+    }
+  }
 }

@@ -37,8 +37,17 @@ class FetchContributionBloc
                 .toList() ??
             [];
 
+        // Extract payout approvals from the response
+        final List<Map<String, dynamic>> approvalDocs =
+            (data['approvals'] as List<dynamic>?)
+                ?.map((a) => a as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        final int requiredApprovals = (data['requiredApprovals'] as int?) ?? 1;
+
         emit(
-          FetchContributionLoaded(contribution, refundDocs: refundDocs),
+          FetchContributionLoaded(contribution, refundDocs: refundDocs, approvalDocs: approvalDocs, requiredApprovals: requiredApprovals),
         );
       } else {
         print(

@@ -13,6 +13,7 @@ import { validateJarBalanceBeforeDelete } from './hooks/validateJarBalanceBefore
 import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission'
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
+import { capRequiredApprovals } from './hooks/capRequiredApprovals'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -155,7 +156,29 @@ export const Jars: CollectionConfig = {
           required: true,
           defaultValue: 'pending',
         },
+        {
+          name: 'role',
+          type: 'select',
+          options: [
+            { label: 'Member', value: 'member' },
+            { label: 'Admin', value: 'admin' },
+          ],
+          required: true,
+          defaultValue: 'member',
+          admin: {
+            description: 'Admin collectors have elevated privileges in this jar',
+          },
+        },
       ],
+    },
+    {
+      name: 'requiredApprovals',
+      type: 'number',
+      defaultValue: 1,
+      min: 1,
+      admin: {
+        description: 'Number of admin approvals needed before a payout is processed',
+      },
     },
     {
       name: 'paymentPage',
@@ -212,7 +235,11 @@ export const Jars: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [validateJarUpdatePermission, validateJarBalanceBeforeBreak],
+    beforeChange: [
+      validateJarUpdatePermission,
+      validateJarBalanceBeforeBreak,
+      capRequiredApprovals,
+    ],
     afterChange: [
       sendInviteNotificationToUser,
       deleteInviteNotification,

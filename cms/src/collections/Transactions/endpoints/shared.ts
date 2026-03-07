@@ -33,12 +33,22 @@ export const buildWhere = async (req: PayloadRequest) => {
 
   const isJarCreator = jar?.creator === req.user?.id || jar?.creator?.id === req.user?.id
 
+  // Check if user is an accepted admin collector on this jar
+  const isAdminCollector =
+    Array.isArray(jar?.invitedCollectors) &&
+    jar.invitedCollectors.some((ic: any) => {
+      const collectorId = typeof ic.collector === 'object' ? ic.collector?.id : ic.collector
+      return collectorId === req.user?.id && ic.role === 'admin' && ic.status === 'accepted'
+    })
+
+  const hasFullAccess = isJarCreator || isAdminCollector
+
   const where: any = {
     jar: { equals: jar.id },
   }
 
-  // Restrict non-creators to their own collected contributions
-  if (!isJarCreator) {
+  // Restrict non-creators and non-admin collectors to their own collected contributions
+  if (!hasFullAccess) {
     where.collector = { equals: req.user!.id }
   }
 
@@ -64,7 +74,7 @@ export const buildWhere = async (req: PayloadRequest) => {
   // - If user is NOT the jar creator, force collector = current user (ignore any supplied collectors filter for security)
   // - If user IS the jar creator, allow optional collectors filter list
   const collectorList = parseList(collectors)
-  if (isJarCreator) {
+  if (hasFullAccess) {
     if (collectorList?.length) {
       where.collector = { in: collectorList }
     }

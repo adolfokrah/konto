@@ -11,6 +11,7 @@ import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/notification_action_button.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/jar_invite_preview_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_report_sheet.dart';
+import 'package:Hoga/core/services/navigation_service.dart';
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
 // Consider renaming to `NotificationsListView` across the project when convenient.
@@ -226,6 +227,32 @@ class BuildNotificationType extends StatelessWidget {
                 },
               ),
             ],
+          ],
+        );
+      case NotificationType.payoutApproval:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            content,
+            const SizedBox(height: AppSpacing.spacingS),
+            NotificationActionButton(
+              label: 'View',
+              onTap: () {
+                context.read<NotificationsBloc>().add(
+                  MarkjarInviteAsRead(notificationId: notification.id),
+                );
+                final jarId = notification.data?['jarId'] as String?;
+                final transactionId = (notification.data?['contributionId'] ??
+                    notification.data?['transactionId']) as String?;
+                if (jarId != null && transactionId != null) {
+                  NavigationService.navigateToContribution(
+                    context: context,
+                    jarId: jarId,
+                    contributionId: transactionId,
+                  );
+                }
+              },
+            ),
           ],
         );
       case NotificationType.info:

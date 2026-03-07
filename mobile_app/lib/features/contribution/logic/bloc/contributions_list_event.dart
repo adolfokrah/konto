@@ -30,6 +30,7 @@ final class FetchContributions extends ContributionsListEvent {
   final int limit;
   final String? currentUserId; // Current user ID
   final String? jarCreatorId; // Jar creator ID
+  final bool isAdminCollector; // Whether user is an admin collector on this jar
 
   FetchContributions({
     required this.jarId,
@@ -38,5 +39,6 @@ final class FetchContributions extends ContributionsListEvent {
     this.contributor,
     this.currentUserId,
     this.jarCreatorId,
+    this.isAdminCollector = false,
   });
 }

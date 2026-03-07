@@ -7,12 +7,14 @@ export const statusStyles: Record<string, string> = {
   completed: 'bg-green-100 text-green-800 border-green-200',
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   failed: 'bg-red-100 text-red-800 border-red-200',
+  'awaiting-approval': 'bg-blue-100 text-blue-800 border-blue-200',
 }
 
 export const statusLabels: Record<string, string> = {
   completed: 'Completed',
   pending: 'Pending',
   failed: 'Failed',
+  'awaiting-approval': 'Awaiting Approval',
 }
 
 export const paymentMethodLabels: Record<string, string> = {

@@ -217,6 +217,7 @@ class JarSummaryModel {
   final String? freezeReason;
   final UserModel creator;
   final List<InvitedCollectorModel>? invitedCollectors;
+  final int requiredApprovals;
   final String? link;
   final bool? showGoal;
   final bool? showRecentContributions;
@@ -247,6 +248,7 @@ class JarSummaryModel {
     this.freezeReason,
     required this.creator,
     this.invitedCollectors,
+    this.requiredApprovals = 1,
     this.link,
     this.showGoal,
     this.showRecentContributions,
@@ -384,6 +386,7 @@ class JarSummaryModel {
       status: JarStatus.fromString(json['status'] as String? ?? 'open'),
       freezeReason: json['freezeReason'] as String?,
       creator: UserModel.fromJson(json['creator'] as Map<String, dynamic>),
+      requiredApprovals: (json['requiredApprovals'] as num?)?.toInt() ?? 1,
       invitedCollectors:
           (json['invitedCollectors'] as List<dynamic>?)
               ?.map(
@@ -491,6 +494,7 @@ class JarSummaryModel {
       'isFixedContribution': isFixedContribution,
       'status': status.toString(),
       'creator': creator.toJson(),
+      'requiredApprovals': requiredApprovals,
       'invitedCollectors':
           invitedCollectors
               ?.map((invitedCollector) => invitedCollector.toJson())
@@ -621,18 +625,24 @@ class UserModel {
 class InvitedCollectorModel {
   final UserModel collector;
   final String status; // 'accepted' | 'pending'
+  final String role; // 'member' | 'admin'
 
-  const InvitedCollectorModel({required this.collector, required this.status});
+  const InvitedCollectorModel({
+    required this.collector,
+    required this.status,
+    this.role = 'member',
+  });
 
   factory InvitedCollectorModel.fromJson(Map<String, dynamic> json) {
     return InvitedCollectorModel(
       collector: UserModel.fromJson(json['collector'] as Map<String, dynamic>),
       status: json['status'] as String,
+      role: json['role'] as String? ?? 'member',
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'collector': collector.toJson(), 'status': status};
+    return {'collector': collector.toJson(), 'status': status, 'role': role};
   }
 }
 

@@ -20,6 +20,7 @@ import { recalculateCharges } from './endpoints/recalculate-charges'
 import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
+import { approveRejectPayout } from './endpoints/approve-reject-payout'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -335,6 +336,11 @@ export const Transactions: CollectionConfig = {
       path: '/test-payout-eganow',
       method: 'post',
       handler: testPayoutEganow,
+    },
+    {
+      path: '/approve-reject-payout',
+      method: 'post',
+      handler: approveRejectPayout,
     },
     {
       path: '/verify-transfer',

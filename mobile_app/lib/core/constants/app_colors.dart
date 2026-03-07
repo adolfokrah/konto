@@ -9,6 +9,7 @@ class AppColors {
   static const Color surfaceWhite = Color(0xFFFFFFFF);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF59E0B);
+  static const Color infoBlue = Color(0xFF3B82F6);
   static const Color onPrimaryWhite = Color(0xFFFFFFFF);
   static const Color onSurfaceDark = Color(0xFF1B232E);
   static const Color label = Color(0xFF747373);

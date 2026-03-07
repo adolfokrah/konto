@@ -52,7 +52,9 @@ export const checkEganowPayoutBalanceTask = {
           }
         } else if (
           tx.type === 'payout' &&
-          (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed')
+          (tx.paymentStatus === 'pending' ||
+            tx.paymentStatus === 'completed' ||
+            tx.paymentStatus === 'awaiting-approval')
         ) {
           totalPayouts += tx.amountContributed || 0 // Already negative
         }

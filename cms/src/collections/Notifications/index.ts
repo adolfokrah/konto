@@ -26,6 +26,7 @@ export const Notifications: CollectionConfig = {
         { label: 'Info', value: 'info' },
         { label: 'KYC', value: 'kyc' },
         { label: 'Jar Frozen', value: 'jarFrozen' },
+        { label: 'Payout Approval', value: 'payout-approval' },
       ],
       required: true,
     },

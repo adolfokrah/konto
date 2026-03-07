@@ -63,6 +63,27 @@ export const leaveJar = async (req: PayloadRequest) => {
       },
     })
 
+    // Notify the jar creator that a collector has left
+    const creatorId = typeof jar.creator === 'object' ? (jar.creator as any)?.id : jar.creator
+    if (creatorId) {
+      const userName = (req.user as any).fullName || 'A collector'
+      await req.payload.create({
+        collection: 'notifications',
+        data: {
+          type: 'info',
+          status: 'unread',
+          title: 'Collector Left',
+          message: `${userName} has left your jar "${(jar as any).name || 'a jar'}".`,
+          user: creatorId,
+          data: {
+            jarId,
+            type: 'collector-left',
+          },
+        },
+        overrideAccess: true,
+      })
+    }
+
     return Response.json({ success: true, message: 'You have left the jar' }, { status: 200 })
   } catch (error) {
     return Response.json(

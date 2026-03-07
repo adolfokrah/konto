@@ -57,9 +57,63 @@ export const getTransaction = async (req: PayloadRequest) => {
       createdAt: refund.createdAt,
     }))
 
+    // Fetch payout approvals and jar info for payout transactions
+    let approvals: any[] = []
+    let requiredApprovals = 1
+    if ((transaction as any).type === 'payout') {
+      const jarId =
+        typeof (transaction as any).jar === 'object'
+          ? (transaction as any).jar?.id
+          : (transaction as any).jar
+
+      const [approvalsResult, jar] = await Promise.all([
+        req.payload.find({
+          collection: 'payout-approvals' as any,
+          where: {
+            linkedTransaction: { equals: transactionId },
+          },
+          depth: 1,
+          overrideAccess: true,
+        }),
+        jarId
+          ? req.payload.findByID({
+              collection: 'jars',
+              id: jarId,
+              depth: 0,
+              overrideAccess: true,
+            })
+          : null,
+      ])
+
+      requiredApprovals = (jar as any)?.requiredApprovals || 1
+
+      approvals = approvalsResult.docs.map((approval: any) => ({
+        id: approval.id,
+        status: approval.status,
+        requestedBy:
+          typeof approval.requestedBy === 'object'
+            ? {
+                id: approval.requestedBy?.id,
+                fullName: approval.requestedBy?.fullName || 'Unknown',
+              }
+            : approval.requestedBy,
+        actionBy:
+          typeof approval.actionBy === 'object'
+            ? {
+                id: approval.actionBy?.id,
+                fullName: approval.actionBy?.fullName || 'Unknown',
+              }
+            : approval.actionBy,
+        createdAt: approval.createdAt,
+        updatedAt: approval.updatedAt,
+      }))
+    }
+
     return Response.json({
       ...transaction,
       refunds,
+      approvals,
+      requiredApprovals,
     })
   } catch (error: any) {
     console.error('[get-transaction] Error:', error.message)

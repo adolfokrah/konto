@@ -5,7 +5,8 @@
 enum NotificationType {
   jarInvite('jarInvite'),
   info('info'),
-  kyc('kyc');
+  kyc('kyc'),
+  payoutApproval('payout-approval');
 
   const NotificationType(this.value);
   final String value;
@@ -18,6 +19,8 @@ enum NotificationType {
         return NotificationType.info;
       case 'kyc':
         return NotificationType.kyc;
+      case 'payout-approval':
+        return NotificationType.payoutApproval;
       default:
         return NotificationType.info; // fallback
     }
@@ -67,7 +70,14 @@ class NotificationModel {
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'] as String? ?? json['_id'] as String? ?? '',
-      type: NotificationType.fromString(json['type'] as String?),
+      type: NotificationType.fromString(
+        // Fallback: if top-level type is 'info' but data.type is more specific, use data.type
+        (json['type'] == 'info' &&
+                json['data'] is Map<String, dynamic> &&
+                (json['data'] as Map<String, dynamic>)['type'] != null)
+            ? (json['data'] as Map<String, dynamic>)['type'] as String
+            : json['type'] as String?,
+      ),
       message: json['message'] as String? ?? '',
       data:
           (json['data'] is Map<String, dynamic>)

@@ -61,7 +61,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
         where: {
           jar: { equals: jarId },
           type: { equals: 'payout' },
-          paymentStatus: { equals: 'pending' },
+          paymentStatus: { in: ['pending', 'awaiting-approval'] },
         },
         limit: 1,
         overrideAccess: true,
@@ -94,7 +94,9 @@ export const payoutEganow = async (req: PayloadRequest) => {
       .filter(
         (tx: any) =>
           tx.type === 'payout' &&
-          (tx.paymentStatus === 'pending' || tx.paymentStatus === 'completed'),
+          (tx.paymentStatus === 'pending' ||
+            tx.paymentStatus === 'completed' ||
+            tx.paymentStatus === 'awaiting-approval'),
       )
       .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)
 
@@ -120,7 +122,90 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    // All validations passed — queue the payout job
+    // Find all accepted admin collectors in the jar
+    const adminCollectors = ((jar.invitedCollectors as any[]) || []).filter(
+      (ic: any) => ic.role === 'admin' && ic.status === 'accepted',
+    )
+
+    if (adminCollectors.length > 0) {
+      // Cap requiredApprovals to the number of admin collectors
+      const requiredApprovals = Math.min(
+        (jar as any).requiredApprovals || 1,
+        adminCollectors.length,
+      )
+      if (requiredApprovals !== ((jar as any).requiredApprovals || 1)) {
+        await req.payload.update({
+          collection: 'jars',
+          id: jarId,
+          data: { requiredApprovals } as any,
+          overrideAccess: true,
+        })
+      }
+
+      // Jar has admin collectors — create transaction as awaiting-approval and skip Eganow
+      const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
+      const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
+      const transferFee = (netBalance * transferFeePercentage) / 100
+      const expectedNetAmount = netBalance - transferFee
+
+      const transaction = await req.payload.create({
+        collection: 'transactions',
+        data: {
+          paymentStatus: 'awaiting-approval',
+          paymentMethod: 'mobile-money',
+          transactionReference: '',
+          jar: jarId,
+          mobileMoneyProvider: user.bank,
+          amountContributed: -netBalance,
+          collector: user.id,
+          contributorPhoneNumber: user.accountNumber,
+          contributor: user.accountHolder,
+          type: 'payout',
+          payoutFeePercentage: transferFeePercentage,
+          payoutFeeAmount: transferFee,
+          payoutNetAmount: expectedNetAmount,
+        },
+        overrideAccess: true,
+      })
+
+      // Send notification to each admin collector (no approval records created yet)
+      const amount = Math.abs(netBalance).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+
+      await Promise.all(
+        adminCollectors.map(async (ic: any) => {
+          const collectorId = typeof ic.collector === 'object' ? ic.collector?.id : ic.collector
+          if (collectorId) {
+            await req.payload.create({
+              collection: 'notifications',
+              data: {
+                type: 'payout-approval',
+                status: 'unread',
+                title: 'Payout Approval Requested',
+                message: `A payout of GHS ${amount} from ${jar.name || 'a jar'} requires your approval.`,
+                user: collectorId,
+                data: {
+                  jarId,
+                  transactionId: transaction.id,
+                  amount: netBalance,
+                  type: 'payout-approval',
+                },
+              },
+              overrideAccess: true,
+            })
+          }
+        }),
+      )
+
+      return Response.json({
+        success: true,
+        message: 'Payout request submitted for approval',
+      })
+    }
+
+    // No collector admin — queue the payout job immediately
     // The queue processes sequentially, preventing double payouts
     await req.payload.jobs.queue({
       task: 'process-payout' as any,

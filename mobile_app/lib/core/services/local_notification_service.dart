@@ -86,9 +86,9 @@ class LocalNotificationService {
       final context = rootNavigatorKey.currentContext;
       if (context == null) return;
 
-      if (type == 'contribution') {
+      if (type == 'contribution' || type == 'payout-approval') {
         final jarId = data['jarId'] as String?;
-        final contributionId = data['contributionId'] as String?;
+        final contributionId = (data['contributionId'] ?? data['transactionId']) as String?;
         if (jarId != null && contributionId != null) {
           NavigationService.navigateToContribution(
             context: context,

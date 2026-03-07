@@ -241,4 +241,28 @@ class ContributionRepository {
       };
     }
   }
+
+  /// Approve or reject a payout transaction
+  Future<Map<String, dynamic>> approveRejectPayout({
+    required String transactionId,
+    required String action,
+  }) async {
+    try {
+      final apiResponse = await _contributionApiProvider.approveRejectPayout(
+        transactionId: transactionId,
+        action: action,
+      );
+
+      return {
+        'success': apiResponse['success'] == true,
+        'message': apiResponse['message'] ?? 'Unknown response',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
+      };
+    }
+  }
 }

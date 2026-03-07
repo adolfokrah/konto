@@ -13,7 +13,6 @@ import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
-import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 
 class CollectorsView extends StatefulWidget {
   const CollectorsView({super.key});
@@ -69,54 +68,82 @@ class _CollectorsViewState extends State<CollectorsView> {
               topRight: Radius.circular(AppRadius.radiusM),
             ),
           ),
-          child: BlocListener<UpdateJarBloc, UpdateJarState>(
+          child: BlocConsumer<UpdateJarBloc, UpdateJarState>(
             listener: (context, state) {
               if (state is UpdateJarSuccess && _pendingNewCollectors != null) {
-                // Clear pending collectors
                 _pendingNewCollectors = null;
               }
-
-              if (state is UpdateJarInProgress) {
-                startLoading();
-              } else {
-                stopLoading();
-              }
             },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with close button
-                _buildHeader(context),
+            builder: (context, updateState) {
+              return Stack(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with close button
+                      _buildHeader(context),
 
-                // Main content
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title and Invite button
-                          _buildTitleSection(localizations, context, jarData),
-                          const SizedBox(height: 26),
+                      // Main content
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title and Invite button
+                                _buildTitleSection(localizations, context, jarData),
+                                const SizedBox(height: 26),
 
-                          // Active section
-                          _buildActiveSection(context, localizations, jarData),
-                          const SizedBox(height: 26),
+                                // Active section
+                                _buildActiveSection(context, localizations, jarData),
+                                const SizedBox(height: 26),
 
-                          // Pending section
-                          _buildPendingSection(context, localizations, jarData),
-                        ],
+                                // Pending section
+                                _buildPendingSection(context, localizations, jarData),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (updateState is UpdateJarInProgress)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         );
       },
     );
+  }
+
+  /// Count admin collectors in a list of collector maps
+  int _countAdmins(List<Map<String, dynamic>> collectors) {
+    return collectors.where((c) => c['role'] == 'admin' && c['status'] == 'accepted').length;
+  }
+
+  /// Auto-cap requiredApprovals if it exceeds the new admin count
+  Map<String, dynamic> _buildUpdates(
+    JarSummaryModel jarData,
+    List<Map<String, dynamic>> updatedCollectors,
+  ) {
+    final updates = <String, dynamic>{'invitedCollectors': updatedCollectors};
+    final newAdminCount = _countAdmins(updatedCollectors);
+    if (jarData.requiredApprovals > newAdminCount && newAdminCount >= 1) {
+      updates['requiredApprovals'] = newAdminCount;
+    }
+    return updates;
   }
 
   /// Remove an invited collector from the jar
@@ -125,27 +152,55 @@ class _CollectorsViewState extends State<CollectorsView> {
     JarSummaryModel jarData,
     InvitedCollectorModel collectorToRemove,
   ) {
-    // Filter out the collector to be removed
     final updatedCollectors =
         jarData.invitedCollectors
             ?.where((collector) {
-              // Remove by matching collector ID
               return collector.collector.id != collectorToRemove.collector.id;
             })
             .map(
               (collector) => {
                 'collector': collector.collector.id,
                 'status': collector.status,
+                'role': collector.role,
               },
             )
             .toList() ??
         [];
 
-    // Update the jar with the filtered list
     context.read<UpdateJarBloc>().add(
       UpdateJarRequested(
         jarId: jarData.id,
-        updates: {'invitedCollectors': updatedCollectors},
+        updates: _buildUpdates(jarData, updatedCollectors),
+      ),
+    );
+  }
+
+  /// Toggle a collector's role between 'member' and 'admin'
+  void _toggleCollectorRole(
+    BuildContext context,
+    JarSummaryModel jarData,
+    InvitedCollectorModel collectorToUpdate,
+  ) {
+    final newRole = collectorToUpdate.role == 'admin' ? 'member' : 'admin';
+    final updatedCollectors =
+        jarData.invitedCollectors
+            ?.map(
+              (collector) => {
+                'collector': collector.collector.id,
+                'status': collector.status,
+                'role':
+                    collector.collector.id == collectorToUpdate.collector.id
+                        ? newRole
+                        : collector.role,
+              },
+            )
+            .toList() ??
+        [];
+
+    context.read<UpdateJarBloc>().add(
+      UpdateJarRequested(
+        jarId: jarData.id,
+        updates: _buildUpdates(jarData, updatedCollectors),
       ),
     );
   }
@@ -186,6 +241,7 @@ class _CollectorsViewState extends State<CollectorsView> {
                           (collector) => {
                             'collector': collector.id,
                             'status': 'pending',
+                            'role': 'member',
                           },
                         )
                         .toList();
@@ -197,6 +253,7 @@ class _CollectorsViewState extends State<CollectorsView> {
                           (collector) => {
                             'collector': collector.collector.id,
                             'status': collector.status,
+                            'role': collector.role,
                           },
                         )
                         .toList() ??
@@ -291,6 +348,10 @@ class _CollectorsViewState extends State<CollectorsView> {
                         onCancel: () {
                           _removeInvitedCollector(context, jarData, collector);
                         },
+                        onRoleChange: () {
+                          _toggleCollectorRole(context, jarData, collector);
+                        },
+                        role: collector.role,
                         isNew: false,
                         backgroundColor:
                             isDark

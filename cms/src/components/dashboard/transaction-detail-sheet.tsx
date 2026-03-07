@@ -74,6 +74,18 @@ const statusDisplayLabels: Record<string, string> = {
   failed: 'Failed',
 }
 
+const approvalStatusStyles: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  approved: 'bg-green-100 text-green-800 border-green-200',
+  rejected: 'bg-red-100 text-red-800 border-red-200',
+}
+
+const approvalStatusLabels: Record<string, string> = {
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Rejected',
+}
+
 const refundStatusStyles: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -111,6 +123,16 @@ export function TransactionDetailSheet({
   const router = useRouter()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
+
+  // Fetch payout approvals for payout transactions
+  const { data: payoutApprovals } = useSWR<any[]>(
+    selected?.type === 'payout' ? `/api/payout-approvals?where[linkedTransaction][equals]=${selected.id}&depth=1&sort=-createdAt` : null,
+    async (url: string) => {
+      const res = await fetch(url)
+      const data = await res.json()
+      return data.docs || []
+    },
+  )
 
   // Fetch related refunds from the refunds collection
   const { data: relatedRefunds } = useSWR<any[]>(
@@ -359,6 +381,35 @@ export function TransactionDetailSheet({
                         </Badge>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payout Approvals */}
+              {payoutApprovals && payoutApprovals.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Approvals</h4>
+                  <Separator className="mb-2" />
+                  <div className="space-y-2">
+                    {payoutApprovals.map((approval: any) => {
+                      const requestedBy = typeof approval.requestedBy === 'object' && approval.requestedBy
+                        ? `${approval.requestedBy.firstName || ''} ${approval.requestedBy.lastName || ''}`.trim() || approval.requestedBy.email || '—'
+                        : '—'
+                      const actionBy = typeof approval.actionBy === 'object' && approval.actionBy
+                        ? `${approval.actionBy.firstName || ''} ${approval.actionBy.lastName || ''}`.trim() || approval.actionBy.email || null
+                        : null
+                      return (
+                        <div key={approval.id} className="rounded-lg border p-3 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">{formatFullDate(approval.createdAt)}</span>
+                            <Badge variant="outline" className={cn('capitalize', approvalStatusStyles[approval.status] || '')}>
+                              {approvalStatusLabels[approval.status] || approval.status}
+                            </Badge>
+                          </div>
+                          <DetailRow label={actionBy ? 'Action By' : 'Requested By'} value={actionBy || requestedBy} icon={<User className="h-3.5 w-3.5" />} />
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}

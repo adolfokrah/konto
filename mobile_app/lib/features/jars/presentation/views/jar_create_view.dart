@@ -176,6 +176,7 @@ class _JarCreateViewState extends State<JarCreateView> {
               (contributor) => {
                 'collector': contributor.collector!.id,
                 'status': 'pending',
+                'role': 'member',
               },
             )
             .toList();

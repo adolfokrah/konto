@@ -94,11 +94,13 @@ class ContributorAvatar extends StatelessWidget {
                 color:
                     paymentStatus?.toLowerCase() == 'failed'
                         ? AppColors.errorRed
-                        : isRefund
+                        : paymentStatus?.toLowerCase() == 'awaiting-approval'
                             ? AppColors.warningOrange
-                            : isDark
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.primary,
+                            : isRefund
+                                ? AppColors.warningOrange
+                                : isDark
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Theme.of(context).colorScheme.surface,

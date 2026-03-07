@@ -293,12 +293,14 @@ class JarInvitedCollector {
   final String? phoneNumber;
   final String? name;
   final String status; // 'accepted' | 'pending'
+  final String role; // 'member' | 'admin'
 
   const JarInvitedCollector({
     this.collector,
     this.phoneNumber,
     this.name,
     required this.status,
+    this.role = 'member',
   });
 
   factory JarInvitedCollector.fromJson(Map<String, dynamic> json) {
@@ -310,6 +312,7 @@ class JarInvitedCollector {
       phoneNumber: json['phoneNumber'] as String?,
       name: json['name'] as String?,
       status: json['status'] as String,
+      role: json['role'] as String? ?? 'member',
     );
   }
 
@@ -319,6 +322,7 @@ class JarInvitedCollector {
       'phoneNumber': phoneNumber,
       'name': name,
       'status': status,
+      'role': role,
     };
   }
 }

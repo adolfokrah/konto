@@ -399,6 +399,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusFailed => 'Failed';
 
   @override
+  String get statusRejected => 'Rejected';
+
+  @override
   String get statusTransferred => 'Transferred';
 
   @override
@@ -521,6 +524,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentStatusTransferred => 'Transferred';
+
+  @override
+  String get paymentStatusAwaitingApproval => 'Awaiting Approval';
+
+  @override
+  String get payoutApprovals => 'Payout Approvals';
 
   @override
   String get momoPaymentSuccessful => 'Payment Successful! ✅';

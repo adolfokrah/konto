@@ -35,6 +35,7 @@ import { DailyActiveUsers } from './collections/DailyActiveUsers'
 import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
 import { Refunds } from './collections/Refunds'
+import { PayoutApprovals } from './collections/PayoutApprovals'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
@@ -89,6 +90,7 @@ export default buildConfig({
     JarReports,
     PushCampaigns,
     Refunds,
+    PayoutApprovals,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],

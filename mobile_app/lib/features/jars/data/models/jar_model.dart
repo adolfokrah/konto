@@ -7,6 +7,7 @@ class InvitedCollector {
   final String? phoneNumber;
   final String? name;
   final String status; // 'accepted' | 'pending'
+  final String role; // 'member' | 'admin'
   final String? photo;
 
   const InvitedCollector({
@@ -14,6 +15,7 @@ class InvitedCollector {
     this.phoneNumber,
     this.name,
     required this.status,
+    this.role = 'member',
     this.photo,
   });
 
@@ -26,6 +28,7 @@ class InvitedCollector {
       phoneNumber: json['phoneNumber'] as String?,
       name: json['name'] as String?,
       status: json['status'] as String? ?? 'pending',
+      role: json['role'] as String? ?? 'member',
       photo: json['photo'] as String?,
     );
   }
@@ -37,11 +40,13 @@ class InvitedCollector {
       if (photo != null) 'photo': photo,
       if (name != null) 'name': name,
       'status': status,
+      'role': role,
     };
   }
 
   bool get isAccepted => status == 'accepted';
   bool get isPending => status == 'pending';
+  bool get isAdmin => role == 'admin';
 }
 
 class JarModel {
@@ -60,6 +65,7 @@ class JarModel {
   final List<InvitedCollector> invitedCollectors;
   final String? paymentLink;
   final bool acceptAnonymousContributions;
+  final int requiredApprovals;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -84,6 +90,7 @@ class JarModel {
     required this.invitedCollectors,
     this.paymentLink,
     required this.acceptAnonymousContributions,
+    this.requiredApprovals = 1,
     required this.createdAt,
     required this.updatedAt,
     required this.totalContributions,
@@ -129,6 +136,7 @@ class JarModel {
       paymentLink: json['paymentLink'] as String?,
       acceptAnonymousContributions:
           json['acceptAnonymousContributions'] as bool? ?? false,
+      requiredApprovals: (json['requiredApprovals'] as num?)?.toInt() ?? 1,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       totalContributions: totalContributions,
@@ -160,6 +168,7 @@ class JarModel {
               .toList(),
       'paymentLink': paymentLink,
       'acceptAnonymousContributions': acceptAnonymousContributions,
+      'requiredApprovals': requiredApprovals,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'totalContributions': totalContributions,
@@ -185,6 +194,7 @@ class JarModel {
     List<InvitedCollector>? invitedCollectors,
     String? paymentLink,
     bool? acceptAnonymousContributions,
+    int? requiredApprovals,
     DateTime? createdAt,
     DateTime? updatedAt,
     double? totalContributions,
@@ -209,6 +219,7 @@ class JarModel {
       paymentLink: paymentLink ?? this.paymentLink,
       acceptAnonymousContributions:
           acceptAnonymousContributions ?? this.acceptAnonymousContributions,
+      requiredApprovals: requiredApprovals ?? this.requiredApprovals,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalContributions: totalContributions ?? this.totalContributions,

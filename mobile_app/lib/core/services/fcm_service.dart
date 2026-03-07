@@ -84,10 +84,10 @@ class FCMService {
       final type = messageData['type'];
       final path = messageData['path'];
 
-      if (type == 'contribution') {
+      if (type == 'contribution' || type == 'payout-approval') {
         // Special handling: multi-step jar loading + contribution bottom sheet
         final jarId = messageData['jarId'];
-        final contributionId = messageData['contributionId'];
+        final contributionId = messageData['contributionId'] ?? messageData['transactionId'];
         if (jarId != null && contributionId != null) {
           final BuildContext? context = rootNavigatorKey.currentContext;
           if (context != null) {
@@ -175,8 +175,8 @@ class FCMService {
     final type = messageData['type'];
     final BuildContext? context = rootNavigatorKey.currentContext;
 
-    // Skip notification for contribution on the currently selected jar
-    if (type == 'contribution' && context != null) {
+    // Skip notification for contribution/payout-approval on the currently selected jar
+    if ((type == 'contribution' || type == 'payout-approval') && context != null) {
       final jarId = messageData['jarId'];
       try {
         final state = context.read<JarSummaryBloc>().state;

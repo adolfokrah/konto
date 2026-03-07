@@ -403,6 +403,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get statusFailed => 'Échoué';
 
   @override
+  String get statusRejected => 'Rejeté';
+
+  @override
   String get statusTransferred => 'Transféré';
 
   @override
@@ -529,6 +532,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get paymentStatusTransferred => 'Transféré';
+
+  @override
+  String get paymentStatusAwaitingApproval => 'En attente d\'approbation';
+
+  @override
+  String get payoutApprovals => 'Approbations de paiement';
 
   @override
   String get momoPaymentSuccessful => 'Paiement réussi ! ✅';
