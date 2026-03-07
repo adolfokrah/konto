@@ -6,6 +6,7 @@ import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
 import sendKyc from '@/components/emailTemplates/sendKyc'
 import EganowBalanceAlert from '@/components/emailTemplates/EganowBalanceAlert'
+import TransactionNotification from '@/components/emailTemplates/transactionNotification'
 
 interface EmailOptions {
   to: string | string[]
@@ -154,6 +155,39 @@ class EmailService {
         eganowBalance: fmt(params.eganowBalance),
         shortfall: fmt(params.shortfall),
         currency: params.currency,
+      }),
+    })
+  }
+
+  // Transaction / Refund Notification Email (internal)
+  async sendTransactionNotificationEmail(params: {
+    to: string
+    subject: string
+    type: 'contribution' | 'payout' | 'refund'
+    status: string
+    contributor: string
+    amount: string
+    currency?: string
+    jarName: string
+    reference: string
+    date: string
+    phone?: string
+    provider?: string
+  }) {
+    return this.sendEmail({
+      to: params.to,
+      subject: params.subject,
+      react: TransactionNotification({
+        type: params.type,
+        status: params.status,
+        contributor: params.contributor,
+        amount: params.amount,
+        currency: params.currency,
+        jarName: params.jarName,
+        reference: params.reference,
+        date: params.date,
+        phone: params.phone,
+        provider: params.provider,
       }),
     })
   }

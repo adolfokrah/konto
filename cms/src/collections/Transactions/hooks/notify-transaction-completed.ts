@@ -30,20 +30,16 @@ export const notifyTransactionCompleted = async ({
   const jarName = typeof doc.jar === 'object' ? doc.jar?.name : doc.jar || 'Unknown jar'
 
   try {
-    await emailService.sendCustomEmail({
+    await emailService.sendTransactionNotificationEmail({
       to: NOTIFY_EMAIL,
       subject: `Transaction Completed — ${type === 'payout' ? 'Payout' : 'Contribution'} of GHS ${amount}`,
-      html: `
-        <h2>Transaction Completed</h2>
-        <table style="border-collapse:collapse;font-family:sans-serif;">
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Type</td><td style="padding:4px 0;font-weight:600;">${type}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Contributor</td><td style="padding:4px 0;">${contributor}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Amount</td><td style="padding:4px 0;font-weight:600;">GHS ${amount}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Jar</td><td style="padding:4px 0;">${jarName}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Reference</td><td style="padding:4px 0;font-family:monospace;">${doc.transactionReference || '—'}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Date</td><td style="padding:4px 0;">${new Date(doc.createdAt).toLocaleString()}</td></tr>
-        </table>
-      `,
+      type,
+      status: 'completed',
+      contributor,
+      amount,
+      jarName,
+      reference: doc.transactionReference || '—',
+      date: new Date(doc.createdAt).toLocaleString(),
     })
   } catch (err: any) {
     console.error(`[notify-transaction-completed] Failed to send email:`, err.message)

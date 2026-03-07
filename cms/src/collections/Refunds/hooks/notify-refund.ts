@@ -27,28 +27,24 @@ export const notifyRefund = async ({
   })
   const status = doc.status || 'pending'
   const contributor = doc.accountName || 'Unknown'
-  const phone = doc.accountNumber || '—'
 
   const subject = isNew
     ? `New Refund Requested — GHS ${amount}`
     : `Refund Completed — GHS ${amount} to ${contributor}`
 
   try {
-    await emailService.sendCustomEmail({
+    await emailService.sendTransactionNotificationEmail({
       to: NOTIFY_EMAIL,
       subject,
-      html: `
-        <h2>${isNew ? 'New Refund Requested' : 'Refund Completed'}</h2>
-        <table style="border-collapse:collapse;font-family:sans-serif;">
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Status</td><td style="padding:4px 0;font-weight:600;">${status}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Contributor</td><td style="padding:4px 0;">${contributor}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Phone</td><td style="padding:4px 0;">${phone}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Amount</td><td style="padding:4px 0;font-weight:600;">GHS ${amount}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Provider</td><td style="padding:4px 0;">${doc.mobileMoneyProvider || '—'}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Reference</td><td style="padding:4px 0;font-family:monospace;">${doc.transactionReference || '—'}</td></tr>
-          <tr><td style="padding:4px 12px 4px 0;color:#666;">Date</td><td style="padding:4px 0;">${new Date(doc.createdAt).toLocaleString()}</td></tr>
-        </table>
-      `,
+      type: 'refund',
+      status,
+      contributor,
+      amount,
+      jarName: typeof doc.jar === 'object' ? doc.jar?.name : doc.jar || 'Unknown jar',
+      reference: doc.transactionReference || '—',
+      date: new Date(doc.createdAt).toLocaleString(),
+      phone: doc.accountNumber || undefined,
+      provider: doc.mobileMoneyProvider || undefined,
     })
   } catch (err: any) {
     console.error(`[notify-refund] Failed to send email:`, err.message)
