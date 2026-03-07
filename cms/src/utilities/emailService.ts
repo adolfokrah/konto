@@ -173,6 +173,7 @@ class EmailService {
     date: string
     phone?: string
     provider?: string
+    paymentMethod?: string
   }) {
     return this.sendEmail({
       to: params.to,
@@ -188,6 +189,7 @@ class EmailService {
         date: params.date,
         phone: params.phone,
         provider: params.provider,
+        paymentMethod: params.paymentMethod,
       }),
     })
   }

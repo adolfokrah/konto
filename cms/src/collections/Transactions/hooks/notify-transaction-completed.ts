@@ -40,6 +40,8 @@ export const notifyTransactionCompleted = async ({
       jarName,
       reference: doc.transactionReference || '—',
       date: new Date(doc.createdAt).toLocaleString(),
+      provider: doc.mobileMoneyProvider || undefined,
+      paymentMethod: doc.paymentMethod || undefined,
     })
   } catch (err: any) {
     console.error(`[notify-transaction-completed] Failed to send email:`, err.message)

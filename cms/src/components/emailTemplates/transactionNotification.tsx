@@ -12,6 +12,7 @@ interface TransactionNotificationProps {
   date: string
   phone?: string
   provider?: string
+  paymentMethod?: string
 }
 
 function getTitle(type: string, status: string): string {
@@ -66,6 +67,7 @@ export default function TransactionNotification({
   date,
   phone,
   provider,
+  paymentMethod,
 }: TransactionNotificationProps) {
   const title = getTitle(type, status)
   const statusColor = getStatusColor(status)
@@ -107,6 +109,12 @@ export default function TransactionNotification({
               <td style={labelStyle}>Jar</td>
               <td style={valueStyle}>{jarName}</td>
             </tr>
+            {paymentMethod && (
+              <tr style={rowStyle}>
+                <td style={labelStyle}>Payment Method</td>
+                <td style={{ ...valueStyle, textTransform: 'capitalize' }}>{paymentMethod}</td>
+              </tr>
+            )}
             {phone && (
               <tr style={rowStyle}>
                 <td style={labelStyle}>Phone</td>
