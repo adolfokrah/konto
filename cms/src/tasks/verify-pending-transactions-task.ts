@@ -87,7 +87,7 @@ export const verifyPendingTransactionsTask = {
           await getEganow().getToken()
 
           const statusResult = await getEganow().checkTransactionStatus({
-            transactionId: id,
+            transactionId: transactionReference,
             languageId: 'en',
           })
 
