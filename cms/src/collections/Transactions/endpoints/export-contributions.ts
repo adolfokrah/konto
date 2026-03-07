@@ -55,6 +55,33 @@ export const exportContributions = async (req: PayloadRequest) => {
       )
     }
 
+    // Fetch refunds linked to these transactions to populate the "Reason" column
+    const docIds = docs.map((d: any) => d.id)
+    const refundsResult = await req.payload.find({
+      collection: 'refunds' as any,
+      where: { linkedTransaction: { in: docIds } },
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const refundsByTransaction = new Map<string, string>()
+    for (const r of refundsResult.docs as any[]) {
+      const txId =
+        typeof r.linkedTransaction === 'string' ? r.linkedTransaction : r.linkedTransaction?.id
+      if (!txId) continue
+      const statusLabel =
+        r.status === 'pending'
+          ? 'Refund Initiated'
+          : r.status === 'in-progress'
+            ? 'Refund In Progress'
+            : r.status === 'completed'
+              ? 'Refunded'
+              : r.status === 'failed'
+                ? 'Refund Failed'
+                : ''
+      if (statusLabel) refundsByTransaction.set(txId, statusLabel)
+    }
+
     // Gather jar details if possible
     let currency = 'GHS'
     let jarName: string | undefined
@@ -88,8 +115,8 @@ export const exportContributions = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Contribution, Payout, Date
-    const columnPercents = [0.13, 0.12, 0.12, 0.1, 0.08, 0.09, 0.11, 0.11, 0.14] // sums to 1.00
+    // Columns: Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, Date
+    const columnPercents = [0.12, 0.11, 0.11, 0.09, 0.07, 0.08, 0.1, 0.1, 0.1, 0.12] // sums to 1.00
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
       'Transaction ID',
@@ -98,6 +125,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       'Payment Method',
       'Type',
       'Status',
+      'Reason',
       'Contribution',
       'Payout',
       'Date',
@@ -221,9 +249,6 @@ export const exportContributions = async (req: PayloadRequest) => {
     headerDrawn = true
 
     let total = 0
-    // Determine if we should display totals: only when user explicitly filtered status to exactly 'completed'
-    const statusFilterList = parseList((req.query as any).statuses)
-    const showTotals = statusFilterList?.length === 1 && statusFilterList[0] === 'completed'
     // Simple text wrapping utility
     const wrapText = (text: string, maxWidth: number, size: number): string[] => {
       if (!text) return ['']
@@ -357,16 +382,13 @@ export const exportContributions = async (req: PayloadRequest) => {
       const dateStr = new Date(c.createdAt).toLocaleString()
 
       const contributionAmt =
-        typeLower === 'contribution' || typeLower === 'refund'
-          ? `${currency} ${amountNum.toFixed(2)}`
-          : '-'
+        typeLower === 'contribution' ? `${currency} ${amountNum.toFixed(2)}` : '-'
       const payoutAmt = typeLower === 'payout' ? `${currency} ${amountNum.toFixed(2)}` : '-'
 
-      if (showTotals && statusVal === 'completed') {
-        if (typeLower === 'contribution') total += amountNum
-        if (typeLower === 'payout') totalPayout += amountNum
-        if (typeLower === 'refund') total -= amountNum
-      }
+      if (typeLower === 'contribution') total += amountNum
+      if (typeLower === 'payout') totalPayout += amountNum
+
+      const reason = refundsByTransaction.get(String(c.id)) || '-'
 
       const row = [
         idShort,
@@ -375,6 +397,7 @@ export const exportContributions = async (req: PayloadRequest) => {
         payment,
         type,
         statusVal,
+        reason,
         contributionAmt,
         payoutAmt,
         dateStr,
@@ -382,38 +405,35 @@ export const exportContributions = async (req: PayloadRequest) => {
       drawRow(row, idx)
     })
 
-    if (showTotals) {
-      // Totals footer
-      if (cursorY - rowHeight * 3 < pageMargin + topSafeArea) {
-        addNewPage()
-      }
-      // Add extra breathing space before totals block (increase margin)
-      cursorY -= 24
-      page.drawText(`Total Records: ${docs.length}`, {
-        x: pageMargin,
-        y: cursorY,
-        size: 10,
-        font,
-        color: colors.total,
-      })
+    // Totals footer
+    if (cursorY - rowHeight * 3 < pageMargin + topSafeArea) {
+      addNewPage()
+    }
+    cursorY -= 24
+    page.drawText(`Total Records: ${docs.length}`, {
+      x: pageMargin,
+      y: cursorY,
+      size: 10,
+      font,
+      color: colors.total,
+    })
+    cursorY -= 16
+    page.drawText(`Total Contributions: ${currency} ${total.toFixed(2)}`, {
+      x: pageMargin,
+      y: cursorY,
+      size: 12,
+      font,
+      color: colors.total,
+    })
+    if (totalPayout > 0) {
       cursorY -= 16
-      page.drawText(`Total Contributions: ${currency} ${total.toFixed(2)}`, {
+      page.drawText(`Total Payouts: ${currency} ${totalPayout.toFixed(2)}`, {
         x: pageMargin,
         y: cursorY,
         size: 12,
         font,
         color: colors.total,
       })
-      if (totalPayout > 0) {
-        cursorY -= 16
-        page.drawText(`Total Payouts: ${currency} ${totalPayout.toFixed(2)}`, {
-          x: pageMargin,
-          y: cursorY,
-          size: 12,
-          font,
-          color: colors.total,
-        })
-      }
     }
 
     // (Logo already placed at top-left per page during page creation)

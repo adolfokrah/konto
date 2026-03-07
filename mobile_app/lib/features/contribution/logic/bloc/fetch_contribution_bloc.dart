@@ -27,28 +27,18 @@ class FetchContributionBloc
           .getContributionById(contributionId: event.contributionId);
 
       if (response['success']) {
-        final contribution = ContributionModel.fromJson(response['data']);
+        final data = response['data'] as Map<String, dynamic>;
+        final contribution = ContributionModel.fromJson(data);
 
-        // Fetch related refunds if this is a contribution
-        List<ContributionModel> relatedRefunds = [];
-        if (contribution.isContribution) {
-          final refundsResponse = await _contributionRepository.getContributions(
-            jarId: contribution.jar.id,
-            transactionTypes: ['refund'],
-            linkedTransactionId: contribution.id,
-          );
-          if (refundsResponse['success'] == true) {
-            final docs = refundsResponse['data']?['docs'] as List<dynamic>? ??
-                refundsResponse['docs'] as List<dynamic>? ??
-                [];
-            relatedRefunds = docs
-                .map((doc) => ContributionModel.fromJson(doc as Map<String, dynamic>))
-                .toList();
-          }
-        }
+        // Extract related refunds from the response (returned by get-transaction endpoint)
+        final List<Map<String, dynamic>> refundDocs =
+            (data['refunds'] as List<dynamic>?)
+                ?.map((r) => r as Map<String, dynamic>)
+                .toList() ??
+            [];
 
         emit(
-          FetchContributionLoaded(contribution, relatedRefunds: relatedRefunds),
+          FetchContributionLoaded(contribution, refundDocs: refundDocs),
         );
       } else {
         print(

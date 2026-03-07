@@ -83,7 +83,7 @@ class ContributionView extends StatelessWidget {
                 );
               } else if (state is FetchContributionLoaded) {
                 final contribution = state.contribution;
-                final relatedRefunds = state.relatedRefunds;
+                final relatedRefunds = state.refundDocs;
                 return Column(
                   children: [
                     // Handle bar
@@ -500,51 +500,63 @@ class ContributionView extends StatelessWidget {
                                             ),
                                           ),
                                           ...relatedRefunds.map(
-                                            (refund) => ListTile(
-                                              contentPadding: EdgeInsets.zero,
-                                              dense: true,
-                                              leading: ContributorAvatarSizes.small(
-                                                backgroundColor: AppColors.warningOrange,
-                                                contributorName: refund.contributor ?? 'Refund',
-                                                paymentStatus: refund.paymentStatus,
-                                                viaPaymentLink: false,
-                                                isPayout: false,
-                                                isRefund: true,
-                                              ),
-                                              title: Text(
-                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${refund.amountContributed.abs()}',
-                                                style: AppTextStyles.titleMediumS.copyWith(
-                                                  color: AppColors.warningOrange,
+                                            (refund) {
+                                              final refundStatus = refund['status'] as String? ?? 'pending';
+                                              final refundAmount = (refund['amount'] as num?)?.abs() ?? 0;
+                                              final refundName = refund['accountName'] as String? ?? 'Refund';
+                                              final refundDate = refund['createdAt'] as String?;
+
+                                              // Map refund status to payment status labels
+                                              final statusLabel = switch (refundStatus) {
+                                                'pending' => localizations.statusPending,
+                                                'in-progress' => localizations.statusPending,
+                                                'completed' => localizations.statusCompleted,
+                                                'failed' => localizations.statusFailed,
+                                                _ => refundStatus,
+                                              };
+
+                                              return ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                dense: true,
+                                                leading: ContributorAvatarSizes.small(
+                                                  backgroundColor: AppColors.warningOrange,
+                                                  contributorName: refundName,
+                                                  paymentStatus: refundStatus == 'completed' ? 'completed' : refundStatus == 'failed' ? 'failed' : 'pending',
+                                                  viaPaymentLink: false,
+                                                  isPayout: false,
+                                                  isRefund: true,
                                                 ),
-                                              ),
-                                              subtitle: Text(
-                                                AppDateUtils.formatTimestampSafe(
-                                                  refund.createdAt,
-                                                  localizations,
+                                                title: Text(
+                                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} $refundAmount',
+                                                  style: AppTextStyles.titleMediumS.copyWith(
+                                                    color: AppColors.warningOrange,
+                                                  ),
                                                 ),
-                                                style: AppTextStyles.titleMediumS.copyWith(
-                                                  fontSize: 12,
-                                                  color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .color
-                                                      ?.withValues(alpha: 0.5),
+                                                subtitle: Text(
+                                                  refundDate != null
+                                                      ? AppDateUtils.formatTimestampSafe(DateTime.tryParse(refundDate), localizations)
+                                                      : '',
+                                                  style: AppTextStyles.titleMediumS.copyWith(
+                                                    fontSize: 12,
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(alpha: 0.5),
+                                                  ),
                                                 ),
-                                              ),
-                                              trailing: Text(
-                                                PaymentStatusUtils.getPaymentStatusLabel(
-                                                  refund.paymentStatus,
-                                                  localizations,
+                                                trailing: Text(
+                                                  statusLabel,
+                                                  style: AppTextStyles.titleMediumS.copyWith(
+                                                    color: refundStatus == 'completed'
+                                                        ? Colors.green
+                                                        : refundStatus == 'failed'
+                                                            ? Colors.red
+                                                            : AppColors.warningOrange,
+                                                  ),
                                                 ),
-                                                style: AppTextStyles.titleMediumS.copyWith(
-                                                  color: refund.isCompleted
-                                                      ? Colors.green
-                                                      : refund.isFailed
-                                                          ? Colors.red
-                                                          : AppColors.warningOrange,
-                                                ),
-                                              ),
-                                            ),
+                                              );
+                                            },
                                           ),
                                         ],
                                       ),

@@ -9,7 +9,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       hogapayRevenue: 0,
       eganowFees: 0,
     }
-    if (data.type === 'payout' || data.type === 'refund') {
+    if (data.type === 'payout') {
       data.payoutFeePercentage = 0
       data.payoutFeeAmount = 0
       data.payoutNetAmount = data.amountContributed || 0
@@ -51,7 +51,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       }
     }
 
-    if (data.type === 'payout' || data.type === 'refund') {
+    if (data.type === 'payout') {
       const transferFee = (settings.transferFeePercentage ?? 0) / 100
       const feeAmount = data.amountContributed * transferFee
       const netAmount = data.amountContributed - feeAmount

@@ -64,13 +64,12 @@ export const settleContributionsTask = {
         }
       }
 
-      // Exclude contributions that have a pending refund
+      // Exclude contributions that have a pending or in-progress refund
       const contributionIds = unsettledContributions.docs.map((c: any) => c.id)
       const pendingRefunds = await payload.find({
-        collection: 'transactions',
+        collection: 'refunds' as any,
         where: {
-          type: { equals: 'refund' },
-          paymentStatus: { equals: 'pending' },
+          status: { in: ['pending', 'in-progress'] },
           linkedTransaction: { in: contributionIds },
         },
         limit: 500,

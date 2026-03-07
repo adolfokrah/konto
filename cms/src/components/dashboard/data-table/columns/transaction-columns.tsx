@@ -29,7 +29,7 @@ export type TransactionRow = {
     hogapayRevenue: number | null
   } | null
   paymentStatus: 'pending' | 'completed' | 'failed'
-  type: 'contribution' | 'payout' | 'refund'
+  type: 'contribution' | 'payout'
   isSettled: boolean
   payoutFeePercentage: number | null
   payoutFeeAmount: number | null
@@ -101,7 +101,6 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
           { label: 'All', value: 'all' },
           { label: 'Contribution', value: 'contribution' },
           { label: 'Payout', value: 'payout' },
-          { label: 'Refund', value: 'refund' },
         ],
       },
       filterLabel: 'Type',
@@ -234,7 +233,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     id: 'payout',
     header: 'Payout',
     cell: ({ row }) => {
-      if (row.original.type !== 'payout' && row.original.type !== 'refund')
+      if (row.original.type !== 'payout')
         return <span className="text-muted-foreground">—</span>
       return (
         <span

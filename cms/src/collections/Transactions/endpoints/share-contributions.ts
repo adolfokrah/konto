@@ -44,7 +44,6 @@ export const shareContributions = async (req: PayloadRequest) => {
     const jarName = jar?.name || 'Jar'
 
     const lines: string[] = []
-    lines.push('--------------------------------')
     lines.push(`*${jarName}*`)
     lines.push('--------------------------------')
 
@@ -69,8 +68,19 @@ export const shareContributions = async (req: PayloadRequest) => {
     }
 
     lines.push('--------------------------------')
-    const sign = total < 0 ? '-' : ''
-    lines.push(`*Total: ${sign}${currency} ${Math.abs(total).toFixed(2)}*`)
+
+    // Only show total when filtered to contribution + completed
+    const statusFilterList = parseList((req.query as any).statuses)
+    const showTotals =
+      statusFilterList?.length === 1 &&
+      statusFilterList[0] === 'completed' &&
+      typeList?.length === 1 &&
+      typeList[0] === 'contribution'
+
+    if (showTotals) {
+      const sign = total < 0 ? '-' : ''
+      lines.push(`*Total: ${sign}${currency} ${Math.abs(total).toFixed(2)}*`)
+    }
 
     const text = lines.join('\n')
 

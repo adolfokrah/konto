@@ -10,11 +10,6 @@ export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
     return
   }
 
-  // Skip validation for refund transactions (refunds should always be allowed)
-  if (data?.type === 'refund') {
-    return
-  }
-
   // Check if jar is provided
   if (!data?.jar) {
     return

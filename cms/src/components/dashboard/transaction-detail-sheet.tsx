@@ -24,7 +24,6 @@ import {
 import { cn } from '@/utilities/ui'
 import {
   typeStyles,
-  statusStyles,
   paymentMethodLabels,
 } from '@/components/dashboard/table-constants'
 import {
@@ -75,6 +74,20 @@ const statusDisplayLabels: Record<string, string> = {
   failed: 'Failed',
 }
 
+const refundStatusStyles: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
+  completed: 'bg-green-100 text-green-800 border-green-200',
+  failed: 'bg-red-100 text-red-800 border-red-200',
+}
+
+const refundStatusLabels: Record<string, string> = {
+  pending: 'Awaiting Approval',
+  'in-progress': 'In Progress',
+  completed: 'Completed',
+  failed: 'Failed',
+}
+
 function DetailRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
   if (!value && value !== 0) return null
   return (
@@ -99,9 +112,9 @@ export function TransactionDetailSheet({
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
 
-  // Fetch related refunds for contribution-type transactions
-  const { data: relatedRefunds } = useSWR<TransactionRow[]>(
-    selected?.type === 'contribution' ? `/api/transactions?where[linkedTransaction][equals]=${selected.id}&where[type][equals]=refund&depth=2` : null,
+  // Fetch related refunds from the refunds collection
+  const { data: relatedRefunds } = useSWR<any[]>(
+    selected?.type === 'contribution' ? `/api/refunds?where[linkedTransaction][equals]=${selected.id}&depth=1` : null,
     async (url: string) => {
       const res = await fetch(url)
       const data = await res.json()
@@ -123,19 +136,24 @@ export function TransactionDetailSheet({
     },
   )
 
+  const hasActiveRefund = relatedRefunds?.some(
+    (r: any) => r.status === 'pending' || r.status === 'in-progress' || r.status === 'completed',
+  )
+
   const canRefund =
     selected?.type === 'contribution' &&
     selected?.paymentStatus === 'completed' &&
     selected?.paymentMethod === 'mobile-money' &&
     !selected?.isSettled &&
-    !refunded
+    !refunded &&
+    !hasActiveRefund
 
   const handleRefund = async () => {
     if (!selected || !canRefund) return
 
     try {
       await triggerRefund({ transactionId: selected.id })
-      toast.success('Refund initiated successfully')
+      toast.success('Refund requested successfully')
       setRefunded(true)
       router.refresh()
     } catch (error: any) {
@@ -228,7 +246,7 @@ export function TransactionDetailSheet({
               {/* Charges Breakdown */}
               {selected.chargesBreakdown && (() => {
                 const cb = selected.chargesBreakdown
-                const isPayout = selected.type === 'payout' || selected.type === 'refund'
+                const isPayout = selected.type === 'payout'
                 const abs = (v: number | null) => v != null ? Math.abs(v) : null
                 return (
                   <div>
@@ -262,7 +280,7 @@ export function TransactionDetailSheet({
               })()}
 
               {/* Payout Details */}
-              {(selected.type === 'payout' || selected.type === 'refund') && (
+              {selected.type === 'payout' && (
                 <div>
                   <h4 className="text-sm font-semibold mb-1">Payout Details</h4>
                   <Separator className="mb-2" />
@@ -327,17 +345,17 @@ export function TransactionDetailSheet({
                   <h4 className="text-sm font-semibold mb-1">Refunds</h4>
                   <Separator className="mb-2" />
                   <div className="space-y-2">
-                    {relatedRefunds.map((refund) => (
+                    {relatedRefunds.map((refund: any) => (
                       <div key={refund.id} className="flex items-center justify-between rounded-lg border p-3">
                         <div className="flex items-center gap-2">
                           <RotateCcw className="h-3.5 w-3.5 text-orange-400" />
                           <div>
-                            <p className="text-sm font-medium">{formatAmount(Math.abs(refund.amountContributed))}</p>
+                            <p className="text-sm font-medium">{formatAmount(refund.amount)}</p>
                             <p className="text-xs text-muted-foreground">{formatFullDate(refund.createdAt)}</p>
                           </div>
                         </div>
-                        <Badge variant="outline" className={cn('capitalize', statusStyles[refund.paymentStatus])}>
-                          {statusDisplayLabels[refund.paymentStatus] || refund.paymentStatus}
+                        <Badge variant="outline" className={cn('capitalize', refundStatusStyles[refund.status] || '')}>
+                          {refundStatusLabels[refund.status] || refund.status}
                         </Badge>
                       </div>
                     ))}
@@ -360,7 +378,7 @@ export function TransactionDetailSheet({
                     ) : (
                       <RotateCcw className="h-4 w-4 mr-2" />
                     )}
-                    {refunding ? 'Processing Refund...' : 'Refund Contribution'}
+                    {refunding ? 'Requesting Refund...' : 'Request Refund'}
                   </Button>
                 </div>
               )}
@@ -373,7 +391,7 @@ export function TransactionDetailSheet({
     <AlertDialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
+          <AlertDialogTitle>Confirm Request</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to refund{' '}
             <span className="font-semibold">{selected ? formatAmount(selected.amountContributed) : ''}</span>{' '}
@@ -383,7 +401,7 @@ export function TransactionDetailSheet({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleRefund}>
-            Confirm Refund
+            Confirm Request
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

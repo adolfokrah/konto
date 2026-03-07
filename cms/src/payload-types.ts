@@ -79,6 +79,7 @@ export interface Config {
     dailyActiveUsers: DailyActiveUser;
     'jar-reports': JarReport;
     'push-campaigns': PushCampaign;
+    refunds: Refund;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -102,6 +103,7 @@ export interface Config {
     dailyActiveUsers: DailyActiveUsersSelect<false> | DailyActiveUsersSelect<true>;
     'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
+    refunds: RefundsSelect<false> | RefundsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -142,6 +144,7 @@ export interface Config {
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
+      'verify-pending-refunds': TaskVerifyPendingRefunds;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1393,8 +1396,8 @@ export interface Transaction {
      */
     hogapayRevenue?: number | null;
   };
-  paymentStatus?: ('pending' | 'completed' | 'failed') | null;
-  type: 'payout' | 'contribution' | 'refund';
+  paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
+  type: 'payout' | 'contribution';
   /**
    * Whether this contribution has been settled
    */
@@ -1419,10 +1422,6 @@ export interface Transaction {
    * User who collected the contribution
    */
   collector?: (string | null) | User;
-  /**
-   * The original contribution linked to this refund
-   */
-  linkedTransaction?: (string | null) | Transaction;
   /**
    * Check if this contribution was made via a payment link
    */
@@ -1602,6 +1601,60 @@ export interface PushCampaign {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refunds".
+ */
+export interface Refund {
+  id: string;
+  /**
+   * User who initiated the refund
+   */
+  initiatedBy: string | User;
+  /**
+   * Refund amount (positive value)
+   */
+  amount: number;
+  /**
+   * Contributor phone number or account number
+   */
+  accountNumber: string;
+  /**
+   * Contributor name
+   */
+  accountName: string;
+  /**
+   * Mobile money provider (e.g. mtn, telecel)
+   */
+  mobileMoneyProvider: string;
+  /**
+   * The jar this refund belongs to
+   */
+  jar: string | Jar;
+  /**
+   * The original contribution being refunded
+   */
+  linkedTransaction: string | Transaction;
+  /**
+   * Eganow's fees for this refund
+   */
+  eganowFees?: number | null;
+  /**
+   * Hogapay's revenue from this refund
+   */
+  hogapayRevenue?: number | null;
+  /**
+   * Eganow transaction reference number
+   */
+  transactionReference?: string | null;
+  /**
+   * Admin who last updated (approved/rejected) this refund
+   */
+  updatedBy?: (string | null) | User;
+  status: 'pending' | 'in-progress' | 'failed' | 'completed';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1738,6 +1791,7 @@ export interface PayloadJob {
           | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
+          | 'verify-pending-refunds'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1784,6 +1838,7 @@ export interface PayloadJob {
         | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
+        | 'verify-pending-refunds'
         | 'schedulePublish'
       )
     | null;
@@ -1856,6 +1911,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'push-campaigns';
         value: string | PushCampaign;
+      } | null)
+    | ({
+        relationTo: 'refunds';
+        value: string | Refund;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2541,7 +2600,6 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   collector?: T;
-  linkedTransaction?: T;
   viaPaymentLink?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2642,6 +2700,26 @@ export interface PushCampaignsSelect<T extends boolean = true> {
   recipientCount?: T;
   successCount?: T;
   failureCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refunds_select".
+ */
+export interface RefundsSelect<T extends boolean = true> {
+  initiatedBy?: T;
+  amount?: T;
+  accountNumber?: T;
+  accountName?: T;
+  mobileMoneyProvider?: T;
+  jar?: T;
+  linkedTransaction?: T;
+  eganowFees?: T;
+  hogapayRevenue?: T;
+  transactionReference?: T;
+  updatedBy?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3213,12 +3291,7 @@ export interface TaskCheckEganowPayoutBalance {
  */
 export interface TaskProcessRefund {
   input: {
-    originalTransactionId: string;
-    jarId: string;
-    contributorPhone: string;
-    contributorName: string;
-    mobileMoneyProvider: string;
-    amount: string;
+    refundId: string;
   };
   output?: unknown;
 }
@@ -3237,6 +3310,14 @@ export interface TaskSendPushCampaign {
  * via the `definition` "TaskSend-scheduled-campaigns".
  */
 export interface TaskSendScheduledCampaigns {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-refunds".
+ */
+export interface TaskVerifyPendingRefunds {
   input?: unknown;
   output?: unknown;
 }

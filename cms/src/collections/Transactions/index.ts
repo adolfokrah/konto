@@ -13,11 +13,13 @@ import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
+import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 import { recalculateCharges } from './endpoints/recalculate-charges'
 import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
+import { getTransaction } from './endpoints/get-transaction'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -164,6 +166,7 @@ export const Transactions: CollectionConfig = {
       },
       options: [
         { label: 'Pending', value: 'pending' },
+        { label: 'Awaiting Approval', value: 'awaiting-approval' },
         { label: 'Completed', value: 'completed' },
         { label: 'Failed', value: 'failed' },
       ],
@@ -176,7 +179,6 @@ export const Transactions: CollectionConfig = {
       options: [
         { label: 'payout', value: 'payout' },
         { label: 'contribution', value: 'contribution' },
-        { label: 'refund', value: 'refund' },
       ],
     },
     {
@@ -195,7 +197,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Transfer fee percentage applied to this payout',
         readOnly: true,
-        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
+        condition: (data) => data?.type === 'payout',
       },
     },
     {
@@ -204,7 +206,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Transfer fee amount deducted from this payout',
         readOnly: true,
-        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
+        condition: (data) => data?.type === 'payout',
       },
     },
     {
@@ -213,7 +215,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Net amount transferred to user (after fee deduction)',
         readOnly: true,
-        condition: (data) => data?.type === 'payout' || data?.type === 'refund',
+        condition: (data) => data?.type === 'payout',
       },
     },
     {
@@ -290,18 +292,6 @@ export const Transactions: CollectionConfig = {
       // },
     },
     {
-      name: 'linkedTransaction',
-      type: 'relationship',
-      relationTo: 'transactions',
-      hasMany: false,
-      required: false,
-      admin: {
-        description: 'The original contribution linked to this refund',
-        condition: (data) => data?.type === 'refund',
-        readOnly: true,
-      },
-    },
-    {
       name: 'viaPaymentLink',
       type: 'checkbox',
       defaultValue: false,
@@ -376,10 +366,15 @@ export const Transactions: CollectionConfig = {
       method: 'get',
       handler: shareContributions,
     },
+    {
+      path: '/get-transaction',
+      method: 'get',
+      handler: getTransaction,
+    },
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
-    afterChange: [sendContributionReceipt],
+    afterChange: [sendContributionReceipt, notifyTransactionCompleted],
     beforeValidate: [validateJarCreatorAccount],
   },
 }

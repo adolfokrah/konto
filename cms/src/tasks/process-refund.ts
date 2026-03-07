@@ -3,34 +3,47 @@ import { getEganow } from '@/utilities/initalise'
 /**
  * Process Refund Task
  *
- * Queued by the refund-contribution endpoint. Sends money back to the
+ * Queued by the approve-refund endpoint. Sends money back to the
  * contributor's phone number via Eganow payout API.
+ * Works with the 'refunds' collection.
  */
 export const processRefundTask = {
   slug: 'process-refund',
-  inputSchema: [
-    { name: 'originalTransactionId', type: 'text', required: true },
-    { name: 'jarId', type: 'text', required: true },
-    { name: 'contributorPhone', type: 'text', required: true },
-    { name: 'contributorName', type: 'text', required: true },
-    { name: 'mobileMoneyProvider', type: 'text', required: true },
-    { name: 'amount', type: 'text', required: true },
-  ],
+  inputSchema: [{ name: 'refundId', type: 'text', required: true }],
   handler: async (args: any) => {
     const payload = args.req?.payload || args.payload
-    const {
-      originalTransactionId,
-      jarId,
-      contributorPhone,
-      contributorName,
-      mobileMoneyProvider,
-      amount,
-    } = args.input
+    const { refundId } = args.input
 
     try {
-      console.log(`🔄 Processing refund for transaction ${originalTransactionId}...`)
+      console.log(`🔄 Processing refund ${refundId}...`)
 
-      const refundAmount = parseFloat(amount)
+      // Fetch the refund record
+      const refund = await payload.findByID({
+        collection: 'refunds' as any,
+        id: refundId,
+        depth: 0,
+        overrideAccess: true,
+      })
+
+      if (!refund) {
+        return { output: { success: false, message: 'Refund not found' } }
+      }
+
+      if (refund.status !== 'in-progress') {
+        return {
+          output: {
+            success: false,
+            message: `Refund status is ${refund.status}, expected in-progress`,
+          },
+        }
+      }
+
+      const refundAmount = Math.abs(Number(refund.amount))
+      const jarId = typeof refund.jar === 'string' ? refund.jar : (refund.jar as any)?.id
+      const linkedTransactionId =
+        typeof refund.linkedTransaction === 'string'
+          ? refund.linkedTransaction
+          : (refund.linkedTransaction as any)?.id
 
       // Fetch the jar for currency info
       const jar = await payload.findByID({
@@ -41,6 +54,12 @@ export const processRefundTask = {
       })
 
       if (!jar) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
         return { output: { success: false, message: 'Jar not found' } }
       }
 
@@ -50,60 +69,47 @@ export const processRefundTask = {
         telecel: 'TCELGH',
       }
 
-      const paypartner = providerMap[mobileMoneyProvider.toLowerCase()]
+      const paypartner = providerMap[refund.mobileMoneyProvider.toLowerCase()]
       if (!paypartner) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
         return { output: { success: false, message: 'Unsupported mobile money provider' } }
       }
 
       // Format phone number
-      let phoneNumber = contributorPhone.replace(/\s+/g, '')
+      let phoneNumber = refund.accountNumber.replace(/\s+/g, '')
       if (phoneNumber.startsWith('0')) {
         phoneNumber = '233' + phoneNumber.substring(1)
       } else if (!phoneNumber.startsWith('233')) {
         phoneNumber = '233' + phoneNumber
       }
 
-      // Re-check for existing refund before creating (guards against race condition from concurrent requests)
-      const existingRefund = await payload.find({
-        collection: 'transactions',
-        where: {
-          linkedTransaction: { equals: originalTransactionId },
-          type: { equals: 'refund' },
-          paymentStatus: { in: ['pending', 'completed'] },
-        },
-        limit: 1,
+      // Calculate fees
+      const settings = await payload.findGlobal({
+        slug: 'system-settings',
         overrideAccess: true,
       })
 
-      if (existingRefund.docs.length > 0) {
-        console.log(`⚠️ Refund already exists for ${originalTransactionId}, aborting`)
-        return {
-          output: {
-            success: false,
-            message: 'A refund has already been issued for this transaction',
-          },
-        }
-      }
+      const transferFeePercent = (settings.transferFeePercentage ?? 0) / 100
+      const hogapayTransferFeePercent = settings.hogapayTransferFeePercent ?? 0.5
+      const feeAmount = refundAmount * transferFeePercent
+      const hogapayRevenue = (refundAmount * hogapayTransferFeePercent) / 100
+      const eganowFees = feeAmount - hogapayRevenue
 
-      // Create refund transaction (negative amount, like payout)
-      const transaction = await payload.create({
-        collection: 'transactions',
+      // Update refund with calculated fees
+      await payload.update({
+        collection: 'refunds' as any,
+        id: refundId,
         data: {
-          paymentStatus: 'pending',
-          paymentMethod: 'mobile-money',
-          transactionReference: '',
-          jar: jarId,
-          mobileMoneyProvider: mobileMoneyProvider,
-          amountContributed: -refundAmount,
-          contributor: contributorName,
-          contributorPhoneNumber: contributorPhone,
-          type: 'refund',
-          linkedTransaction: originalTransactionId,
+          eganowFees,
+          hogapayRevenue,
         },
         overrideAccess: true,
       })
-
-      console.log(`✅ Refund transaction created: ${transaction.id}`)
 
       try {
         // Get Eganow token and initiate payout to contributor
@@ -113,8 +119,8 @@ export const processRefundTask = {
           paypartnerCode: paypartner,
           amount: String(refundAmount.toFixed(2)),
           accountNoOrCardNoOrMSISDN: phoneNumber,
-          accountName: contributorName,
-          transactionId: `refund-${transaction.id}`,
+          accountName: refund.accountName,
+          transactionId: `refund-${refundId}`,
           narration: `Refund for contribution to ${jar.name}`,
           transCurrencyIso: jar.currency || 'GHS',
           expiryDateMonth: 0,
@@ -128,8 +134,8 @@ export const processRefundTask = {
 
         // Update with Eganow reference
         await payload.update({
-          collection: 'transactions',
-          id: transaction.id,
+          collection: 'refunds' as any,
+          id: refundId,
           data: { transactionReference: payoutResult.eganowReferenceNo },
           overrideAccess: true,
         })
@@ -140,7 +146,7 @@ export const processRefundTask = {
           output: {
             success: true,
             message: 'Refund initiated successfully',
-            transactionId: transaction.id,
+            refundId,
             eganowReferenceNo: payoutResult.eganowReferenceNo,
             amount: refundAmount,
           },
@@ -148,17 +154,17 @@ export const processRefundTask = {
       } catch (eganowError: any) {
         // Eganow call failed — mark refund as failed
         await payload.update({
-          collection: 'transactions',
-          id: transaction.id,
-          data: { paymentStatus: 'failed' },
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
           overrideAccess: true,
         })
 
-        console.error(`❌ Eganow refund failed for transaction ${transaction.id}:`, eganowError)
+        console.error(`❌ Eganow refund failed for refund ${refundId}:`, eganowError)
         throw eganowError
       }
     } catch (error: any) {
-      console.error(`❌ Refund task error for transaction ${originalTransactionId}:`, error)
+      console.error(`❌ Refund task error for refund ${refundId}:`, error)
       return {
         output: {
           success: false,

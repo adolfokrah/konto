@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import useSWR from 'swr'
 import { cn } from '@/utilities/ui'
+import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
   Users,
@@ -11,7 +13,10 @@ import {
   BarChart3,
   Flag,
   Bell,
+  RotateCcw,
 } from 'lucide-react'
+
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json())
 
 const navItems = [
   {
@@ -35,6 +40,11 @@ const navItems = [
     icon: ArrowLeftRight,
   },
   {
+    label: 'Refunds',
+    href: '/dashboard/refunds',
+    icon: RotateCcw,
+  },
+  {
     label: 'Jar Reports',
     href: '/dashboard/jar-reports',
     icon: Flag,
@@ -54,6 +64,13 @@ const navItems = [
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname()
 
+  const { data: pendingRefunds } = useSWR(
+    '/api/refunds?where[status][equals]=pending&limit=0',
+    fetcher,
+    { refreshInterval: 30000 },
+  )
+  const pendingCount = pendingRefunds?.totalDocs ?? 0
+
   return (
     <aside className={cn('flex h-full flex-col border-r bg-card', className)}>
       <div className="flex h-14 items-center border-b px-4">
@@ -65,6 +82,7 @@ export function Sidebar({ className }: { className?: string }) {
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
           const isActive = pathname === item.href
+          const badge = item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount : null
           return (
             <Link
               key={item.href}
@@ -78,6 +96,11 @@ export function Sidebar({ className }: { className?: string }) {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {badge !== null && (
+                <Badge className="ml-auto bg-orange-500 text-white hover:bg-orange-500 border-0 h-5 min-w-5 justify-center px-1.5 text-[11px] ">
+                  {badge}
+                </Badge>
+              )}
             </Link>
           )
         })}

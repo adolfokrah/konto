@@ -34,8 +34,10 @@ import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
 import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
+import { Refunds } from './collections/Refunds'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
+import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -86,6 +88,7 @@ export default buildConfig({
     DailyActiveUsers,
     JarReports,
     PushCampaigns,
+    Refunds,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
@@ -135,6 +138,13 @@ export default buildConfig({
     apiKey: process.env.RESEND_API_KEY || '',
   }),
   jobs: {
+    jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
+      ...defaultJobsCollection,
+      admin: {
+        ...defaultJobsCollection.admin,
+        hidden: false,
+      },
+    }),
     access: {
       run: ({ req }) => {
         // Allow logged in users to execute this endpoint (default)
@@ -158,6 +168,7 @@ export default buildConfig({
       processRefundTask as any,
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
+      verifyPendingRefundsTask as any,
     ],
     autoRun: [
       {
@@ -187,6 +198,10 @@ export default buildConfig({
       {
         cron: '* * * * *', // Every minute
         queue: 'send-scheduled-campaigns',
+      },
+      {
+        cron: '*/6 * * * *', // Every 6 minutes
+        queue: 'verify-pending-refunds',
       },
     ],
   },

@@ -82,13 +82,12 @@ export const refundContribution = async (req: PayloadRequest) => {
       )
     }
 
-    // Check for existing pending/completed refund on this transaction
+    // Check for existing pending/in-progress/completed refund on this transaction
     const existingRefund = await req.payload.find({
-      collection: 'transactions',
+      collection: 'refunds' as any,
       where: {
         linkedTransaction: { equals: transactionId },
-        type: { equals: 'refund' },
-        paymentStatus: { in: ['pending', 'completed'] },
+        status: { in: ['pending', 'in-progress', 'completed'] },
       },
       limit: 1,
       overrideAccess: true,
@@ -101,35 +100,35 @@ export const refundContribution = async (req: PayloadRequest) => {
       )
     }
 
-    // Queue the refund task
+    // Get jar ID
     const jarId = typeof originalTx.jar === 'string' ? originalTx.jar : (originalTx.jar as any)?.id
 
-    await req.payload.jobs.queue({
-      task: 'process-refund' as any,
-      input: {
-        originalTransactionId: transactionId,
-        jarId,
-        contributorPhone: originalTx.contributorPhoneNumber,
-        contributorName: originalTx.contributor || 'Contributor',
+    // Create refund record with pending status (awaiting approval)
+    await req.payload.create({
+      collection: 'refunds' as any,
+      data: {
+        initiatedBy: req.user.id,
+        amount: originalTx.amountContributed,
+        accountNumber: originalTx.contributorPhoneNumber,
+        accountName: originalTx.contributor || 'Contributor',
         mobileMoneyProvider: originalTx.mobileMoneyProvider,
-        amount: String(originalTx.amountContributed),
+        jar: jarId,
+        linkedTransaction: transactionId,
+        status: 'pending',
       },
-      queue: 'refund',
+      overrideAccess: true,
     })
-
-    // Process the queue immediately
-    await req.payload.jobs.run({ queue: 'refund' })
 
     return Response.json({
       success: true,
-      message: 'Refund request is being processed',
+      message: 'Refund request created and awaiting approval',
     })
   } catch (error: any) {
     console.error('Refund endpoint error:', error)
     return Response.json(
       {
         success: false,
-        message: 'Failed to process refund request',
+        message: 'Failed to create refund request',
         error: error.message || 'Unknown error',
       },
       { status: 500 },

@@ -8,6 +8,12 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
  */
 export const jarCreationReminderDailyTask = {
   slug: 'jar-creation-reminder-daily',
+  schedule: [
+    {
+      cron: '0 11 * * *',
+      queue: 'jar-creation-reminder-daily',
+    },
+  ],
   handler: async (args: any) => {
     try {
       const payload = args.req?.payload || args.payload

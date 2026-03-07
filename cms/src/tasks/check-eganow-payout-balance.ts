@@ -11,6 +11,12 @@ import { emailService } from '@/utilities/emailService'
  */
 export const checkEganowPayoutBalanceTask = {
   slug: 'check-eganow-payout-balance',
+  schedule: [
+    {
+      cron: '0 * * * *',
+      queue: 'check-eganow-payout-balance',
+    },
+  ],
   handler: async (args: any) => {
     try {
       const payload = args.req?.payload || args.payload

@@ -121,9 +121,9 @@ class ContributionApiProvider extends BaseApiProvider {
       }
 
       final response = await dio.get(
-        '${BackendConfig.apiBaseUrl}/transactions/$contributionId',
+        '${BackendConfig.apiBaseUrl}/transactions/get-transaction',
         queryParameters: {
-          'depth': '2', // Include related data (collector, jar, etc.)
+          'id': contributionId,
         },
         options: Options(headers: headers),
       );
