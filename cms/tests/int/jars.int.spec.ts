@@ -125,6 +125,7 @@ describe('Jars Collection Integration Tests', () => {
           {
             collector: secondUser.id,
             status: 'accepted' as const,
+            role: 'member' as const,
           },
         ],
       }

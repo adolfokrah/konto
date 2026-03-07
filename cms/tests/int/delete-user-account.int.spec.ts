@@ -91,10 +91,12 @@ describe('Delete User Account Integration Tests', () => {
           {
             collector: testUser.id,
             status: 'pending',
+            role: 'member' as const,
           },
           {
             collector: anotherCollector.id,
             status: 'accepted',
+            role: 'member' as const,
           },
         ],
       },
@@ -242,6 +244,7 @@ describe('Delete User Account Integration Tests', () => {
             {
               collector: testUser.id,
               status: 'accepted',
+              role: 'member' as const,
             },
           ],
         },

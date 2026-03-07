@@ -85,6 +85,7 @@ describe('Contributions Collection Integration Tests', () => {
           {
             collector: collectorUser.id,
             status: 'accepted' as const,
+            role: 'member' as const,
           },
         ],
         isActive: true,
