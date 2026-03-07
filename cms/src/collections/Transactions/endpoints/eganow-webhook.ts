@@ -7,7 +7,12 @@ import { PayloadRequest } from 'payload'
 function normalizeWebhookPayload(data: Record<string, any>) {
   return {
     transactionId: data['TransactionId'] || data['transactionId'] || '',
-    eganowReferenceNo: data['EganowReferenceNo'] || data['eganowReferenceNo'] || '',
+    eganowReferenceNo:
+      data['EganowReferenceNo'] ||
+      data['eganowReferenceNo'] ||
+      data['EganowTransRefNo'] ||
+      data['eganowTransRefNo'] ||
+      '',
     transactionStatus: data['TransactionStatus'] || data['transactionStatus'] || '',
     payPartnerTransactionId:
       data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
@@ -43,6 +48,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
         },
       },
       limit: 1,
+      overrideAccess: true,
     })
 
     if (contributionResult.docs.length === 0) {
@@ -83,6 +89,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
         paymentStatus: newStatus,
         // Keep the original transactionReference - don't change it
       },
+      overrideAccess: true,
     })
 
     console.log(`Successfully updated contribution ${transactionId} to ${newStatus}`)

@@ -15,7 +15,12 @@ function normalizeWebhookPayload(data: Record<string, any>) {
 
   return {
     transactionId: data['TransactionId'] || data['transactionId'] || '',
-    eganowReferenceNo: data['EganowReferenceNo'] || data['eganowReferenceNo'] || '',
+    eganowReferenceNo:
+      data['EganowReferenceNo'] ||
+      data['eganowReferenceNo'] ||
+      data['EganowTransRefNo'] ||
+      data['eganowTransRefNo'] ||
+      '',
     transactionStatus,
     payPartnerTransactionId:
       data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
@@ -150,6 +155,7 @@ async function handlePayoutWebhook(
       type: { equals: 'payout' },
     },
     limit: 1,
+    overrideAccess: true,
   })
 
   // Fallback: search by transaction ID extracted from "payout-{transactionId}"
@@ -165,6 +171,7 @@ async function handlePayoutWebhook(
           type: { equals: 'payout' },
         },
         limit: 1,
+        overrideAccess: true,
       })
     }
   }
@@ -198,6 +205,7 @@ async function handlePayoutWebhook(
     collection: 'transactions',
     id: transfer.id,
     data: { paymentStatus: newStatus },
+    overrideAccess: true,
   })
 
   // Send FCM notification for payout
