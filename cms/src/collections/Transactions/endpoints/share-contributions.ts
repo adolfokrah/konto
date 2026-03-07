@@ -54,14 +54,12 @@ export const shareContributions = async (req: PayloadRequest) => {
       const name = c.contributor || 'Anonymous'
       const isFailed = c.paymentStatus === 'failed'
       const amount = isFailed ? 0 : Number(c.amountContributed || 0)
-      const prefix = type === 'payout' ? '-' : ''
+      const prefix = type === 'payout' ? '-' : '-'
 
       if (isFailed) {
-        lines.push(
-          `${counter + 1}. ~${name}  ${prefix}${currency} - ${Math.abs(amount).toFixed(2)}~`,
-        )
+        lines.push(`${counter + 1}. ~${name} ${prefix} ${currency} ${Math.abs(amount).toFixed(2)}~`)
       } else {
-        lines.push(`${counter + 1}. ${name}  ${prefix}${currency} - ${Math.abs(amount).toFixed(2)}`)
+        lines.push(`${counter + 1}. ${name} ${prefix} ${currency} ${Math.abs(amount).toFixed(2)}`)
       }
       total += amount
       counter++

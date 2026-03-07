@@ -147,7 +147,10 @@ class ContributionView extends StatelessWidget {
                             color: Colors.green,
                           ),
                         ),
-                        title: Text('Approve', style: AppTextStyles.titleMediumS),
+                        title: Text(
+                          'Approve',
+                          style: AppTextStyles.titleMediumS,
+                        ),
                         onTap: () async {
                           setState(() => isLoading = true);
                           final result = await repo.approveRejectPayout(
@@ -182,7 +185,10 @@ class ContributionView extends StatelessWidget {
                             color: Theme.of(context).colorScheme.error,
                           ),
                         ),
-                        title: Text('Reject', style: AppTextStyles.titleMediumS),
+                        title: Text(
+                          'Reject',
+                          style: AppTextStyles.titleMediumS,
+                        ),
                         onTap: () async {
                           setState(() => isLoading = true);
                           final result = await repo.approveRejectPayout(
@@ -391,7 +397,9 @@ class ContributionView extends StatelessWidget {
                                               contribution.paymentStatus,
                                               localizations,
                                             ),
-                                            _getStatusColor(contribution.paymentStatus),
+                                            _getStatusColor(
+                                              contribution.paymentStatus,
+                                            ),
                                           ),
                                         ),
                                         ListTile(
@@ -417,12 +425,15 @@ class ContributionView extends StatelessWidget {
                                             contribution.isPayout
                                                 ? AppColors.infoBlue
                                                 : contribution.isRefund
-                                                    ? AppColors.warningOrange
-                                                    : Theme.of(context).colorScheme.primary,
+                                                ? AppColors.warningOrange
+                                                : Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
                                           ),
                                         ),
                                         // Only show "Via Payment Link" when viaPaymentLink is true
-                                        if (contribution.viaPaymentLink == true) ...[
+                                        if (contribution.viaPaymentLink ==
+                                            true) ...[
                                           ListTile(
                                             contentPadding: EdgeInsets.zero,
                                             dense: true,
@@ -434,11 +445,14 @@ class ContributionView extends StatelessWidget {
                                                         .textTheme
                                                         .bodySmall!
                                                         .color
-                                                        ?.withValues(alpha: 0.5),
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
                                                   ),
                                             ),
                                             trailing: CustomCupertinoSwitch(
-                                              value: contribution.viaPaymentLink,
+                                              value:
+                                                  contribution.viaPaymentLink,
                                               onChanged: (value) {},
                                             ),
                                           ),
@@ -792,8 +806,9 @@ class ContributionView extends StatelessWidget {
                                   ],
                                   // Payout Approvals
                                   if (contribution.isPayout &&
-                                      (contribution.paymentStatus == 'awaiting-approval' ||
-                                       approvalDocs.isNotEmpty)) ...[
+                                      (contribution.paymentStatus ==
+                                              'awaiting-approval' ||
+                                          approvalDocs.isNotEmpty)) ...[
                                     const SizedBox(height: AppSpacing.spacingM),
                                     AppCard(
                                       padding: const EdgeInsets.symmetric(
@@ -813,51 +828,74 @@ class ContributionView extends StatelessWidget {
                                                         .textTheme
                                                         .bodySmall!
                                                         .color
-                                                        ?.withValues(alpha: 0.5),
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
                                                   ),
                                             ),
-                                            trailing: contribution.paymentStatus == 'awaiting-approval'
-                                                ? _buildTag(
-                                                    context,
-                                                    '${approvalDocs.where((a) => a['status'] == 'approved').length} of $requiredApprovals',
-                                                    AppColors.warningOrange,
-                                                  )
-                                                : null,
+                                            trailing:
+                                                contribution.paymentStatus ==
+                                                        'awaiting-approval'
+                                                    ? _buildTag(
+                                                      context,
+                                                      '${approvalDocs.where((a) => a['status'] == 'approved').length} of $requiredApprovals',
+                                                      AppColors.warningOrange,
+                                                    )
+                                                    : null,
                                           ),
                                           // Existing approval records
                                           ...approvalDocs.map((approval) {
                                             final approvalStatus =
-                                                approval['status'] as String? ?? 'approved';
-                                            final actionBy = approval['actionBy'];
-                                            final actionByName = actionBy is Map
-                                                ? actionBy['fullName'] as String? ?? 'Unknown'
-                                                : 'Unknown';
+                                                approval['status'] as String? ??
+                                                'approved';
+                                            final actionBy =
+                                                approval['actionBy'];
+                                            final actionByName =
+                                                actionBy is Map
+                                                    ? actionBy['fullName']
+                                                            as String? ??
+                                                        'Unknown'
+                                                    : 'Unknown';
 
-                                            final statusColor = switch (approvalStatus) {
-                                              'approved' => Colors.green,
-                                              'rejected' => Colors.red,
-                                              _ => AppColors.warningOrange,
-                                            };
+                                            final statusColor =
+                                                switch (approvalStatus) {
+                                                  'approved' => Colors.green,
+                                                  'rejected' => Colors.red,
+                                                  _ => AppColors.warningOrange,
+                                                };
 
-                                            final statusLabel = switch (approvalStatus) {
-                                              'approved' => localizations.statusCompleted,
-                                              'rejected' => localizations.statusRejected,
-                                              _ => approvalStatus,
-                                            };
+                                            final statusLabel =
+                                                switch (approvalStatus) {
+                                                  'approved' =>
+                                                    localizations
+                                                        .statusCompleted,
+                                                  'rejected' =>
+                                                    localizations
+                                                        .statusRejected,
+                                                  _ => approvalStatus,
+                                                };
 
                                             return ListTile(
                                               contentPadding: EdgeInsets.zero,
                                               dense: true,
-                                              leading: ContributorAvatarSizes.small(
-                                                backgroundColor: statusColor,
-                                                contributorName: actionByName,
-                                                showStatusOverlay: false,
-                                              ),
+                                              leading:
+                                                  ContributorAvatarSizes.small(
+                                                    backgroundColor:
+                                                        statusColor,
+                                                    contributorName:
+                                                        actionByName,
+                                                    showStatusOverlay: false,
+                                                  ),
                                               title: Text(
                                                 actionByName,
-                                                style: AppTextStyles.titleMediumS,
+                                                style:
+                                                    AppTextStyles.titleMediumS,
                                               ),
-                                              trailing: _buildTag(context, statusLabel, statusColor),
+                                              trailing: _buildTag(
+                                                context,
+                                                statusLabel,
+                                                statusColor,
+                                              ),
                                             );
                                           }),
                                         ],
@@ -900,16 +938,22 @@ class ContributionView extends StatelessWidget {
                                   ),
                                   // Approve/Reject action buttons
                                   if (contribution.isPayout &&
-                                      contribution.paymentStatus == 'awaiting-approval' &&
+                                      contribution.paymentStatus ==
+                                          'awaiting-approval' &&
                                       currentUserId != null &&
                                       jarData.invitedCollectors != null &&
-                                      jarData.invitedCollectors!.any((ic) =>
-                                          ic.collector.id == currentUserId &&
-                                          ic.role == 'admin' &&
-                                          ic.status == 'accepted') &&
+                                      jarData.invitedCollectors!.any(
+                                        (ic) =>
+                                            ic.collector.id == currentUserId &&
+                                            ic.role == 'admin' &&
+                                            ic.status == 'accepted',
+                                      ) &&
                                       !approvalDocs.any((a) {
                                         final actionBy = a['actionBy'];
-                                        final actionById = actionBy is Map ? actionBy['id'] : actionBy;
+                                        final actionById =
+                                            actionBy is Map
+                                                ? actionBy['id']
+                                                : actionBy;
                                         return actionById == currentUserId;
                                       })) ...[
                                     const SizedBox(height: AppSpacing.spacingM),
@@ -917,22 +961,30 @@ class ContributionView extends StatelessWidget {
                                       children: [
                                         Expanded(
                                           child: GestureDetector(
-                                            onTap: () => _showApprovalSheet(
-                                              context,
-                                              contribution.id,
-                                              contribution.jar.name,
-                                            ),
+                                            onTap:
+                                                () => _showApprovalSheet(
+                                                  context,
+                                                  contribution.id,
+                                                  contribution.jar.name,
+                                                ),
                                             child: AppCard(
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: AppSpacing.spacingS,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical:
+                                                        AppSpacing.spacingS,
+                                                  ),
                                               child: Center(
                                                 child: Text(
                                                   'Approve / Reject',
-                                                  style: AppTextStyles.titleMediumS.copyWith(
-                                                    color: AppColors.warningOrange,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
+                                                  style: AppTextStyles
+                                                      .titleMediumS
+                                                      .copyWith(
+                                                        color:
+                                                            AppColors
+                                                                .warningOrange,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                 ),
                                               ),
                                             ),

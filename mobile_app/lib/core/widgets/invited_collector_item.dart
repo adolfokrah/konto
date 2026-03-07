@@ -95,51 +95,50 @@ class InvitedCollectorItem extends StatelessWidget {
               ],
 
               // Change role option - only for accepted collectors
-              if (invitedCollector.status == 'accepted' &&
-                  onRoleChange != null) ...[
-                AppCard(
-                  variant: CardVariant.secondary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingXs,
-                    vertical: AppSpacing.spacingXs,
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(0),
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      child: Icon(
-                        role == 'admin'
-                            ? Icons.person_outline
-                            : Icons.admin_panel_settings_outlined,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    title: Text(
-                      role == 'admin' ? 'Make Member' : 'Make Admin',
-                      style: TextStyles.titleMedium,
-                    ),
-                    subtitle: Text(
-                      role == 'admin'
-                          ? 'Remove admin privileges'
-                          : 'Grant payout approval rights',
-                      style: TextStyles.titleRegularSm.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodySmall!
-                            .color
-                            ?.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onRoleChange?.call();
-                    },
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.spacingS),
-              ],
-
+              // if (invitedCollector.status == 'accepted' &&
+              //     onRoleChange != null) ...[
+              //   AppCard(
+              //     variant: CardVariant.secondary,
+              //     padding: const EdgeInsets.symmetric(
+              //       horizontal: AppSpacing.spacingXs,
+              //       vertical: AppSpacing.spacingXs,
+              //     ),
+              //     child: ListTile(
+              //       contentPadding: const EdgeInsets.all(0),
+              //       leading: CircleAvatar(
+              //         radius: 25,
+              //         backgroundColor: Theme.of(context).colorScheme.surface,
+              //         child: Icon(
+              //           role == 'admin'
+              //               ? Icons.person_outline
+              //               : Icons.admin_panel_settings_outlined,
+              //           color: Theme.of(context).colorScheme.onSurface,
+              //         ),
+              //       ),
+              //       title: Text(
+              //         role == 'admin' ? 'Make Member' : 'Make Admin',
+              //         style: TextStyles.titleMedium,
+              //       ),
+              //       subtitle: Text(
+              //         role == 'admin'
+              //             ? 'Remove admin privileges'
+              //             : 'Grant payout approval rights',
+              //         style: TextStyles.titleRegularSm.copyWith(
+              //           color: Theme.of(context)
+              //               .textTheme
+              //               .bodySmall!
+              //               .color
+              //               ?.withValues(alpha: 0.5),
+              //         ),
+              //       ),
+              //       onTap: () {
+              //         Navigator.pop(context);
+              //         onRoleChange?.call();
+              //       },
+              //     ),
+              //   ),
+              //   const SizedBox(height: AppSpacing.spacingS),
+              // ],
               AppCard(
                 variant: CardVariant.secondary,
                 padding: const EdgeInsets.symmetric(
@@ -214,30 +213,30 @@ class InvitedCollectorItem extends StatelessWidget {
                 child: const Text("Remind", style: TextStyles.titleMediumS),
               )
               : role != null
-                  ? Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (role == 'admin'
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).textTheme.bodySmall!.color ?? Colors.grey)
-                          .withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      role == 'admin' ? 'Admin' : 'Member',
-                      style: TextStyles.titleMediumS.copyWith(
-                        fontSize: 11,
-                        color: role == 'admin'
+              ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (role == 'admin'
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).textTheme.bodySmall!.color ??
+                              Colors.grey)
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  role == 'admin' ? 'Admin' : 'Member',
+                  style: TextStyles.titleMediumS.copyWith(
+                    fontSize: 11,
+                    color:
+                        role == 'admin'
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).textTheme.bodySmall!.color?.withValues(alpha: 0.7),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                  : const SizedBox.shrink(),
+                            : Theme.of(context).textTheme.bodySmall!.color
+                                ?.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+              : const SizedBox.shrink(),
     );
   }
 }
