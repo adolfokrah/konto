@@ -16,6 +16,7 @@ export function UsersDataTable({
 
   return (
     <DataTable
+      tableId="users"
       columns={userColumns}
       data={users}
       pagination={pagination}

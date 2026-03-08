@@ -18,6 +18,7 @@ export function TransactionsDataTable({
   return (
     <>
       <DataTable
+        tableId="transactions"
         columns={transactionColumns}
         data={transactions}
         pagination={pagination}

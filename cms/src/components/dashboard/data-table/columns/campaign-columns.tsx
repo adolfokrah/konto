@@ -41,10 +41,11 @@ export const campaignColumns: ColumnDef<CampaignRow, any>[] = [
   {
     accessorKey: 'title',
     header: 'Title',
+    size: 400,
     cell: ({ row }) => (
-      <div className="min-w-[200px]">
+      <div>
         <span className="truncate block font-medium">{row.original.title}</span>
-        <span className="truncate block text-xs text-muted-foreground max-w-[300px]">
+        <span className="truncate block text-xs text-muted-foreground">
           {row.original.message}
         </span>
       </div>

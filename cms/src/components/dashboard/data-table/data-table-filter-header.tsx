@@ -121,8 +121,25 @@ export function DataTableFilterHeader<TData>({
     ? null
     : flexRender(header.column.columnDef.header, header.getContext())
 
+  const canResize = header.column.getCanResize()
+  const resizeHandle = canResize ? (
+    <div
+      onMouseDown={header.getResizeHandler()}
+      onTouchStart={header.getResizeHandler()}
+      className={cn(
+        'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary/50',
+        header.column.getIsResizing() && 'bg-primary',
+      )}
+    />
+  ) : null
+
   if (!filter || readOnly) {
-    return <TableHead className={headerClassName}>{label}</TableHead>
+    return (
+      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize() }}>
+        {label}
+        {resizeHandle}
+      </TableHead>
+    )
   }
 
   const isDateRange = filter.type === 'dateRange'
@@ -135,7 +152,7 @@ export function DataTableFilterHeader<TData>({
   const selectedValues = filter.type === 'select' && rawValue ? rawValue.split(',') : []
 
   return (
-    <TableHead className={headerClassName}>
+    <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize() }}>
       <Popover>
         <PopoverTrigger asChild>
           <button className={cn(
@@ -200,6 +217,7 @@ export function DataTableFilterHeader<TData>({
           )}
         </PopoverContent>
       </Popover>
+      {resizeHandle}
     </TableHead>
   )
 }

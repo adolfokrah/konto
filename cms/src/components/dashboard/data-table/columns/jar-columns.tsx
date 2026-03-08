@@ -57,6 +57,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
+    size: 200,
     cell: ({ row }) => (
       <span className="truncate block font-medium">{row.original.name}</span>
     ),

@@ -20,6 +20,7 @@ export function RefundsDataTable({
   return (
     <>
       <DataTable
+        tableId="refunds"
         columns={refundColumns}
         data={refunds}
         pagination={pagination}

@@ -26,6 +26,7 @@ export function ReportsDataTable({
 
   return (
     <DataTable
+      tableId="reports"
       columns={reportColumns}
       data={reports}
       pagination={pagination}

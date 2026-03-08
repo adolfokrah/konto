@@ -26,6 +26,7 @@ export function JarsDataTable({
 
   return (
     <DataTable
+      tableId="jars"
       columns={jarColumns}
       data={jars}
       pagination={pagination}

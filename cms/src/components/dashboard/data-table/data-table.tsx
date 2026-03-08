@@ -1,10 +1,12 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   type ColumnDef,
+  type ColumnSizingState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -20,6 +22,20 @@ import { DataTablePagination } from './data-table-pagination'
 import { useTableFilters } from './use-table-filters'
 import { type DataTableProps, type DataTableColumnMeta } from './types'
 
+function getStorageKey(tableId: string) {
+  return `dt-col-sizes:${tableId}`
+}
+
+function loadColumnSizing(tableId?: string): ColumnSizingState {
+  if (!tableId) return {}
+  try {
+    const raw = localStorage.getItem(getStorageKey(tableId))
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
 export function DataTable<TData>({
   columns,
   data,
@@ -29,8 +45,25 @@ export function DataTable<TData>({
   renderRowActions,
   emptyMessage = 'No results found',
   scrollOffset,
+  tableId,
 }: DataTableProps<TData>) {
   const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => loadColumnSizing(tableId))
+
+  const handleColumnSizingChange = useCallback(
+    (updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
+      setColumnSizing((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        if (tableId) {
+          try {
+            localStorage.setItem(getStorageKey(tableId), JSON.stringify(next))
+          } catch { /* ignore quota errors */ }
+        }
+        return next
+      })
+    },
+    [tableId],
+  )
 
   const rowOffset = pagination ? (pagination.currentPage - 1) * pagination.rowsPerPage : 0
 
@@ -40,6 +73,8 @@ export function DataTable<TData>({
     cell: ({ row }) => (
       <span className="text-muted-foreground text-xs">{rowOffset + row.index + 1}</span>
     ),
+    size: 50,
+    enableResizing: false,
     meta: { headerClassName: 'w-[50px]', cellClassName: 'w-[50px]' } satisfies DataTableColumnMeta,
   }
 
@@ -52,6 +87,8 @@ export function DataTable<TData>({
             id: '_actions',
             header: '',
             cell: ({ row }: { row: any }) => renderRowActions(row.original),
+            size: 50,
+            enableResizing: false,
             meta: { headerClassName: 'w-[50px]' } satisfies DataTableColumnMeta,
           } as ColumnDef<TData, any>,
         ]
@@ -65,6 +102,12 @@ export function DataTable<TData>({
     manualFiltering: true,
     manualSorting: true,
     manualPagination: true,
+    columnResizeMode: 'onChange',
+    enableColumnResizing: true,
+    onColumnSizingChange: handleColumnSizingChange,
+    state: {
+      columnSizing,
+    },
   })
 
   const totalColumns = allColumns.length
@@ -83,7 +126,7 @@ export function DataTable<TData>({
         />
       )}
 
-      <Table scrollOffset={scrollOffset}>
+      <Table scrollOffset={scrollOffset} className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -118,7 +161,11 @@ export function DataTable<TData>({
                 {row.getVisibleCells().map((cell) => {
                   const cellMeta = cell.column.columnDef.meta as DataTableColumnMeta | undefined
                   return (
-                    <TableCell key={cell.id} className={cellMeta?.cellClassName}>
+                    <TableCell
+                      key={cell.id}
+                      className={cellMeta?.cellClassName}
+                      style={{ width: cell.column.getSize() }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   )

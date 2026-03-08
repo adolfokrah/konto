@@ -26,6 +26,7 @@ export function CampaignsDataTable({
 
   return (
     <DataTable
+      tableId="campaigns"
       columns={campaignColumns}
       data={campaigns}
       pagination={pagination}

@@ -42,8 +42,9 @@ export const reportColumns: ColumnDef<ReportRow, any>[] = [
   {
     accessorKey: 'message',
     header: 'Message',
+    size: 250,
     cell: ({ row }) => (
-      <span className="truncate block max-w-[300px]">{row.original.message}</span>
+      <span className="truncate block">{row.original.message}</span>
     ),
   },
   {

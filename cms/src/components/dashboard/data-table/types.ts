@@ -31,6 +31,9 @@ export type DataTableColumnMeta = {
   filterLabel?: string
   headerClassName?: string
   cellClassName?: string
+  size?: number
+  minSize?: number
+  maxSize?: number
 }
 
 export type PaginationProps = {
@@ -50,4 +53,6 @@ export type DataTableProps<TData> = {
   emptyMessage?: string
   /** Viewport offset for scrollable table height, e.g. "20rem" or "32rem" */
   scrollOffset?: string
+  /** Stable ID for persisting column sizes to localStorage */
+  tableId?: string
 }

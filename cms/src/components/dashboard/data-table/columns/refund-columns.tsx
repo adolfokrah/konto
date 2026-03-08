@@ -63,6 +63,7 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
   {
     accessorKey: 'jar',
     header: 'Jar',
+    size: 150,
     cell: ({ row }) =>
       row.original.jar ? (
         <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block hover:underline">

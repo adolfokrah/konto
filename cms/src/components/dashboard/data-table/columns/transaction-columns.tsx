@@ -48,8 +48,9 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'transactionReference',
     header: 'Transaction',
+    size: 220,
     cell: ({ row }) => (
-      <span className="font-medium text-xs font-mono">
+      <span className="font-medium text-xs font-mono truncate block">
         {row.original.transactionReference || '\u2014'}
       </span>
     ),
@@ -61,8 +62,9 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'contributor',
     header: 'Contributor',
+    size: 150,
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.contributor || '\u2014'}</span>
+      <span className="font-medium truncate block">{row.original.contributor || '\u2014'}</span>
     ),
     meta: {
       filter: { type: 'search', paramKey: 'search', placeholder: 'Search...' },
@@ -72,6 +74,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'jar',
     header: 'Jar',
+    size: 160,
     cell: ({ row }) =>
       row.original.jar ? (
         <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block hover:underline">
@@ -88,6 +91,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
+    size: 100,
     cell: ({ row }) => (
       <Badge variant="outline" className={cn('capitalize', typeStyles[row.original.type])}>
         {row.original.type}
@@ -109,6 +113,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'paymentMethod',
     header: 'Method',
+    size: 120,
     cell: ({ row }) => (
       <span>
         {row.original.paymentMethod
@@ -137,6 +142,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'paymentStatus',
     header: 'Status',
+    size: 110,
     cell: ({ row }) => (
       <Badge variant="outline" className={cn('capitalize', statusStyles[row.original.paymentStatus])}>
         {statusLabels[row.original.paymentStatus] || row.original.paymentStatus}
@@ -160,6 +166,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'viaPaymentLink',
     header: 'Via Link',
+    size: 80,
     cell: ({ row }) =>
       row.original.viaPaymentLink ? (
         <Badge variant="outline" className="bg-indigo-900/40 text-indigo-300 border-indigo-700">
@@ -186,6 +193,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'isSettled',
     header: 'Settled',
+    size: 80,
     cell: ({ row }) =>
       row.original.isSettled ? (
         <Badge variant="outline" className="bg-green-900/40 text-green-300 border-green-700">
@@ -212,6 +220,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     id: 'contribution',
     header: 'Contribution',
+    size: 130,
     cell: ({ row }) => {
       if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
       return (
@@ -233,6 +242,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     id: 'payout',
     header: 'Payout',
+    size: 130,
     cell: ({ row }) => {
       if (row.original.type !== 'payout')
         return <span className="text-muted-foreground">—</span>
@@ -255,6 +265,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     id: 'platformCharge',
     header: 'Plat. Charge',
+    size: 120,
     cell: ({ row }) => {
       const charge = row.original.chargesBreakdown?.platformCharge
       if (!charge) return <span className="text-muted-foreground">—</span>
@@ -268,6 +279,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     id: 'eganowFees',
     header: 'Eganow Fees',
+    size: 120,
     cell: ({ row }) => {
       const fees = row.original.chargesBreakdown?.eganowFees
       if (!fees) return <span className="text-muted-foreground">—</span>
@@ -281,6 +293,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     id: 'hogapayRevenue',
     header: 'Hogapay Rev',
+    size: 120,
     cell: ({ row }) => {
       const revenue = row.original.chargesBreakdown?.hogapayRevenue
       if (!revenue) return <span className="text-muted-foreground">—</span>
@@ -294,6 +307,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'createdAt',
     header: 'Date',
+    size: 140,
     cell: ({ row }) => (
       <span className="text-muted-foreground">{formatShortDate(row.original.createdAt)}</span>
     ),
