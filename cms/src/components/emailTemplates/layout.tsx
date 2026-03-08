@@ -28,24 +28,22 @@ export const Footer = () => {
       </div>
 
       {/* Copyright */}
-      <p className="text-sm text-gray-400 mb-6">© {new Date().getFullYear()} Hoga Ltd.</p>
+      <p className="text-sm text-gray-400 mb-6">© {new Date().getFullYear()} Hoganam Ltd.</p>
 
       {/* Legal Text */}
       <div className="text-xs text-gray-400" style={{ lineHeight: 2.4 }}>
         <p>
-          Hoga Ltd. is a private company limited by shares incorporated in Ghana under the Companies
+          Hoganam Ltd. is a private company limited by shares incorporated in Ghana under the Companies
           Act, 2019 (Act 992) and registered with the Registrar-General&apos;s Department.
-          <br /> Registered office: [Insert registered address]. Company No.: [Insert registration
-          number].
+          <br /> Certificate No.: C006636678X.
           <br />
           Data protection: Subject to the Ghana Data Protection Act, 2012 (Act 843) and, where
-          applicable, foreign data-protection laws. Data Controller registration: [Insert DPC
-          registration / ref].
+          applicable, foreign data-protection laws.
           <br />
-          Not a bank. Hoga is a technology platform. We do not take deposits, pay interest, or
+          Not a bank. Hoganam is a technology platform. We do not take deposits, pay interest, or
           provide investment services.
           <br />
-          Payments & Mobile Money. Card and mobile-money payments shown in the Hoga app are
+          Payments & Mobile Money. Card and mobile-money payments shown in the Hoganam app are
           processed by licensed payment service providers (e.g., Paystack) and by telco e-money
           issuers where applicable (e.g., MTN MoMo, Telecel Cash). Those providers
           are regulated in their respective jurisdictions.
@@ -57,7 +55,7 @@ export const Footer = () => {
           chargebacks are handled according to the organizer&apos;s policy, card network rules,
           mobile-money rules, and our Terms.
           <br />
-          No investment advice. Contributions made via Hoga are not investments and may not be
+          No investment advice. Contributions made via Hoganam are not investments and may not be
           refundable. Review the event/jar details before contributing.
           <br />
           For more information, see:{' '}
@@ -78,7 +76,7 @@ export const Signature = () => {
   return (
     <p>
       With gratitude, <br />
-      <b>The Hoga Team</b>
+      <b>The Hoganam Team</b>
       <br />
       <span className="text-xs text-gray-500">
         Contributions made simple, transparent, and accountable.
@@ -111,7 +109,7 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
         <div className="mb-6">
            <Img
               src="https://hoga-production.up.railway.app/logo.png"
-              alt="Hoga Logo"
+              alt="Hoganam Logo"
               width="70"
               height="23"
             />

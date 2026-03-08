@@ -54,6 +54,13 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
+    accessorKey: 'email',
+    header: 'Email',
+    cell: ({ row }) => (
+      <span className="truncate block text-sm">{row.original.email || '\u2014'}</span>
+    ),
+  },
+  {
     accessorKey: 'phoneNumber',
     header: 'Phone',
     cell: ({ row }) => (

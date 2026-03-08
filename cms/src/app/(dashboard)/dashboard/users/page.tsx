@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { UsersDataTable } from '@/components/dashboard/users-data-table'
+import { ExportUsersButton } from '@/components/dashboard/export-users-button'
 import { type UserRow } from '@/components/dashboard/data-table/columns/user-columns'
 
 const DEFAULT_LIMIT = 20
@@ -153,11 +154,14 @@ export default async function UsersPage({ searchParams }: Props) {
 
       {/* Users Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>All Users</CardTitle>
-          <CardDescription>
-            {usersResult.totalDocs} user{usersResult.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>All Users</CardTitle>
+            <CardDescription>
+              {usersResult.totalDocs} user{usersResult.totalDocs !== 1 ? 's' : ''} found
+            </CardDescription>
+          </div>
+          <ExportUsersButton />
         </CardHeader>
         <CardContent>
           <UsersDataTable
