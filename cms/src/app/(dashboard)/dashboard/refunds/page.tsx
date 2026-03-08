@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { headers as getHeaders } from 'next/headers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RefundsDataTable } from '@/components/dashboard/refunds-data-table'
 import { ExportRefundsButton } from '@/components/dashboard/export-refunds-button'
@@ -21,6 +22,9 @@ export default async function RefundsPage({ searchParams }: Props) {
   const to = typeof params.to === 'string' ? params.to : ''
 
   const payload = await getPayload({ config: configPromise })
+  const requestHeaders = await getHeaders()
+  const { user } = await payload.auth({ headers: requestHeaders })
+  const currentUserId = user?.id || ''
 
   const where: Record<string, any> = {}
   if (search) {
@@ -98,6 +102,7 @@ export default async function RefundsPage({ searchParams }: Props) {
         </CardHeader>
         <CardContent>
           <RefundsDataTable
+            currentUserId={currentUserId}
             refunds={refunds}
             pagination={{
               currentPage: page,

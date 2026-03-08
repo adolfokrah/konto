@@ -1,8 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import {
-  Activity,
-  TrendingUp,
   DollarSign,
   BarChart3,
   Wallet,
@@ -11,6 +9,9 @@ import {
   CheckCircle2,
   XCircle,
   ArrowUpRight,
+  Receipt,
+  Smartphone,
+  Banknote,
 } from 'lucide-react'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueTrendChart } from '@/components/dashboard/analytics/revenue-trend-chart'
@@ -30,11 +31,8 @@ export default async function AnalyticsPage() {
   const payload = await getPayload({ config: configPromise })
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  const todayStart = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
 
   const [
-    // KPI: Daily Active Users (today)
-    dauResult,
     // KPI + chart: Transaction status counts
     completedCount,
     pendingCount,
@@ -75,17 +73,15 @@ export default async function AnalyticsPage() {
     unsettledMomoContributions,
     // KPI: Total transaction count
     totalTransactionCount,
-    // KPI: Contributions volume (completed)
-    contributionsVolume,
     // KPI: Payouts volume (completed)
     payoutsVolume,
+    // KPI: Refund revenue
+    refundRevenueResult,
+    // Chart: Refund revenue (last 30 days)
+    last30DaysRefundRevenue,
+    momoContributionsResult,
+    cashContributionsResult,
   ] = await Promise.all([
-    // DAU today
-    payload.count({
-      collection: 'dailyActiveUsers',
-      where: { createdAt: { greater_than_equal: todayStart } },
-    }),
-
     // Transaction counts by status
     payload.count({
       collection: 'transactions',
@@ -247,7 +243,7 @@ export default async function AnalyticsPage() {
         type: { equals: 'contribution' },
       },
       pagination: false,
-      select: { amountContributed: true, contributor: true },
+      select: { amountContributed: true, contributor: true, contributorPhoneNumber: true },
       overrideAccess: true,
     }),
 
@@ -298,24 +294,61 @@ export default async function AnalyticsPage() {
     // Total transaction count
     payload.count({ collection: 'transactions', overrideAccess: true }),
 
-    // Contributions volume (completed)
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
-      },
-      pagination: false,
-      select: { amountContributed: true },
-      overrideAccess: true,
-    }),
-
     // Payouts volume (completed)
     payload.find({
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'payout' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Refund hogapay revenue (completed refunds)
+    payload.find({
+      collection: 'refunds' as any,
+      where: {
+        status: { equals: 'completed' },
+      },
+      pagination: false,
+      select: { hogapayRevenue: true },
+      overrideAccess: true,
+    }),
+
+    // Refund hogapay revenue (last 30 days, for revenue trend chart)
+    payload.find({
+      collection: 'refunds' as any,
+      where: {
+        status: { equals: 'completed' },
+        createdAt: { greater_than_equal: thirtyDaysAgo },
+      },
+      pagination: false,
+      select: { hogapayRevenue: true, createdAt: true },
+      overrideAccess: true,
+    }),
+
+    // Mobile money contributions (amounts)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'mobile-money' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Cash contributions (amounts)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'cash' },
       },
       pagination: false,
       select: { amountContributed: true },
@@ -336,10 +369,15 @@ export default async function AnalyticsPage() {
   )
   const avgTransactionSize = totalCompleted > 0 ? totalContributedAmount / totalCompleted : 0
 
-  const platformRevenue = revenueTransactions.docs.reduce(
+  const transactionRevenue = revenueTransactions.docs.reduce(
     (sum, tx: any) => sum + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0),
     0,
   )
+  const refundRevenue = refundRevenueResult.docs.reduce(
+    (sum, r: any) => sum + Math.abs(r.hogapayRevenue || 0),
+    0,
+  )
+  const platformRevenue = transactionRevenue + refundRevenue
 
   const totalPayoutsAmount = completedPayouts.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
@@ -357,12 +395,17 @@ export default async function AnalyticsPage() {
     0,
   )
 
-  const totalContributionsVolume = contributionsVolume.docs.reduce(
+  const totalPayoutsVolume = payoutsVolume.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
 
-  const totalPayoutsVolume = payoutsVolume.docs.reduce(
+  const totalMomoContributions = momoContributionsResult.docs.reduce(
+    (sum, tx: any) => sum + (tx.amountContributed || 0),
+    0,
+  )
+
+  const totalCashContributions = cashContributionsResult.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
     0,
   )
@@ -384,7 +427,10 @@ export default async function AnalyticsPage() {
   ].filter((d) => d.count > 0)
 
   // --- Chart data: Revenue Trend ---
-  const revenueTrendData = buildRevenueTrendData(last30DaysRevenue.docs as any[])
+  const revenueTrendData = buildRevenueTrendData(
+    last30DaysRevenue.docs as any[],
+    last30DaysRefundRevenue.docs as any[],
+  )
 
   // --- Chart data: User Growth ---
   const userGrowthData = buildUserGrowthData(
@@ -418,31 +464,41 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* KPI Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Volume & Revenue */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Daily Active Users"
-          value={dauResult.totalDocs.toLocaleString()}
-          description="Active today"
-          icon={Activity}
-        />
-        <MetricCard
-          title="Success Rate"
-          value={`${successRate.toFixed(1)}%`}
-          description={`${completedTotal} of ${totalTransactions} transactions`}
-          icon={TrendingUp}
-        />
-        <MetricCard
-          title="Avg Transaction Size"
-          value={`GHS ${fmt(avgTransactionSize)}`}
-          description={`Across ${totalCompleted} contributions`}
-          icon={BarChart3}
-        />
-        <MetricCard
-          title="Platform Revenue"
-          value={`GHS ${fmt(platformRevenue)}`}
-          description="Total Hogapay revenue"
+          title="Total Contributions"
+          value={`GHS ${fmt(totalContributedAmount)}`}
+          description={`${completedContributions.totalDocs} completed`}
           icon={DollarSign}
+        />
+        <MetricCard
+          title="Total Payouts"
+          value={`-GHS ${fmt(Math.abs(totalPayoutsVolume))}`}
+          icon={ArrowUpRight}
+          valueClassName="text-red-400"
+        />
+        <MetricCard
+          title="MoMo Contributions"
+          value={`GHS ${fmt(totalMomoContributions)}`}
+          description={`${momoContributionsResult.totalDocs} transactions`}
+          icon={Smartphone}
+        />
+        <MetricCard
+          title="Cash Contributions"
+          value={`GHS ${fmt(totalCashContributions)}`}
+          description={`${cashContributionsResult.totalDocs} transactions`}
+          icon={Banknote}
+        />
+      </div>
+
+      {/* Revenue & Balances */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Hogapay Revenue"
+          value={`GHS ${fmt(platformRevenue)}`}
+          description="0.8% collections + 0.5% transfers + refunds"
+          icon={Receipt}
           valueClassName="text-green-400"
         />
         <MetricCard
@@ -458,10 +514,16 @@ export default async function AnalyticsPage() {
           icon={Clock}
           valueClassName="text-amber-600"
         />
+        <MetricCard
+          title="Avg Transaction Size"
+          value={`GHS ${fmt(avgTransactionSize)}`}
+          description={`Across ${totalCompleted} contributions`}
+          icon={BarChart3}
+        />
       </div>
 
-      {/* Transaction KPI Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Transaction Status */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Transactions"
           value={totalTransactionCount.totalDocs.toLocaleString()}
@@ -470,7 +532,7 @@ export default async function AnalyticsPage() {
         <MetricCard
           title="Completed"
           value={completedTotal.toLocaleString()}
-          description="Successful transactions"
+          description={`${successRate.toFixed(1)}% success rate`}
           icon={CheckCircle2}
         />
         <MetricCard
@@ -484,20 +546,6 @@ export default async function AnalyticsPage() {
           value={failedCount.totalDocs.toLocaleString()}
           description="Unsuccessful transactions"
           icon={XCircle}
-        />
-        <MetricCard
-          title="Contributions"
-          value={`GHS ${fmt(totalContributionsVolume)}`}
-          description="Completed volume"
-          icon={DollarSign}
-          valueClassName="text-primary"
-        />
-        <MetricCard
-          title="Payouts"
-          value={`-GHS ${fmt(Math.abs(totalPayoutsVolume))}`}
-          description="Transferred volume"
-          icon={ArrowUpRight}
-          valueClassName="text-red-400"
         />
       </div>
 
@@ -537,7 +585,10 @@ export default async function AnalyticsPage() {
 
 // --- Helper functions ---
 
-function buildRevenueTrendData(docs: { chargesBreakdown?: { hogapayRevenue?: number }; createdAt: string }[]) {
+function buildRevenueTrendData(
+  docs: { chargesBreakdown?: { hogapayRevenue?: number }; createdAt: string }[],
+  refundDocs: { hogapayRevenue?: number; createdAt: string }[],
+) {
   const daily: Record<string, number> = {}
 
   for (let i = 29; i >= 0; i--) {
@@ -549,6 +600,13 @@ function buildRevenueTrendData(docs: { chargesBreakdown?: { hogapayRevenue?: num
     const key = new Date(doc.createdAt).toISOString().split('T')[0]
     if (key in daily) {
       daily[key] += Math.abs(doc.chargesBreakdown?.hogapayRevenue || 0)
+    }
+  }
+
+  for (const doc of refundDocs) {
+    const key = new Date(doc.createdAt).toISOString().split('T')[0]
+    if (key in daily) {
+      daily[key] += Math.abs(doc.hogapayRevenue || 0)
     }
   }
 
@@ -605,25 +663,31 @@ function buildContributionVolumeData(docs: { amountContributed?: number; created
   }))
 }
 
-function buildTopContributorsData(docs: { amountContributed?: number; contributor?: string }[]) {
-  const totals: Record<string, number> = {}
+function buildTopContributorsData(docs: { amountContributed?: number; contributor?: string; contributorPhoneNumber?: string }[]) {
+  const totals: Record<string, { name: string; amount: number }> = {}
 
   for (const doc of docs) {
     const name = doc.contributor || 'Anonymous'
-    totals[name] = (totals[name] || 0) + (doc.amountContributed || 0)
+    const phone = doc.contributorPhoneNumber || ''
+    const key = phone || name
+    if (!totals[key]) {
+      const label = phone ? `${name} (${phone})` : name
+      totals[key] = { name: label, amount: 0 }
+    }
+    totals[key].amount += doc.amountContributed || 0
   }
 
-  return Object.entries(totals)
-    .sort(([, a], [, b]) => b - a)
+  return Object.values(totals)
+    .sort((a, b) => b.amount - a.amount)
     .slice(0, 10)
-    .map(([name, amount]) => ({
-      name: name.length > 20 ? name.slice(0, 20) + '…' : name,
-      amount: Number(amount.toFixed(2)),
+    .map((entry) => ({
+      name: entry.name.length > 25 ? entry.name.slice(0, 25) + '…' : entry.name,
+      amount: Number(entry.amount.toFixed(2)),
     }))
 }
 
 function buildTopJarsData(docs: { amountContributed?: number; jar?: any }[]) {
-  const jarTotals: Record<string, { name: string; amount: number }> = {}
+  const jarTotals: Record<string, { id: string; name: string; amount: number }> = {}
 
   for (const doc of docs) {
     const jarObj = typeof doc.jar === 'object' && doc.jar ? doc.jar : null
@@ -631,7 +695,7 @@ function buildTopJarsData(docs: { amountContributed?: number; jar?: any }[]) {
     const jarId = jarObj.id as string
     if (!jarTotals[jarId]) {
       const name = (jarObj.name as string) || 'Unknown'
-      jarTotals[jarId] = { name: name.length > 20 ? name.slice(0, 20) + '…' : name, amount: 0 }
+      jarTotals[jarId] = { id: jarId, name: name.length > 20 ? name.slice(0, 20) + '…' : name, amount: 0 }
     }
     jarTotals[jarId].amount += doc.amountContributed || 0
   }
@@ -639,5 +703,5 @@ function buildTopJarsData(docs: { amountContributed?: number; jar?: any }[]) {
   return Object.values(jarTotals)
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 10)
-    .map((j) => ({ name: j.name, amount: Number(j.amount.toFixed(2)) }))
+    .map((j) => ({ id: j.id, name: j.name, amount: Number(j.amount.toFixed(2)) }))
 }

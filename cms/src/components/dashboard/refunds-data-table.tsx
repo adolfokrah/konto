@@ -7,9 +7,11 @@ import { RefundDetailSheet } from './refund-detail-sheet'
 import { type PaginationProps } from './data-table/types'
 
 export function RefundsDataTable({
+  currentUserId,
   refunds,
   pagination,
 }: {
+  currentUserId: string
   refunds: RefundRow[]
   pagination?: PaginationProps
 }) {
@@ -24,7 +26,7 @@ export function RefundsDataTable({
         scrollOffset="20rem"
         onRowClick={setSelected}
       />
-      <RefundDetailSheet selected={selected} onClose={() => setSelected(null)} />
+      <RefundDetailSheet selected={selected} currentUserId={currentUserId} onClose={() => setSelected(null)} />
     </>
   )
 }

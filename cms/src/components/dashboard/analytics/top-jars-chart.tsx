@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/chart'
 
 type Props = {
-  data: { name: string; amount: number }[]
+  data: { id: string; name: string; amount: number }[]
 }
 
 const chartConfig = {
@@ -21,6 +22,8 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function TopJarsChart({ data }: Props) {
+  const router = useRouter()
+
   return (
     <Card>
       <CardHeader>
@@ -41,7 +44,16 @@ export function TopJarsChart({ data }: Props) {
             />
             <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="amount" fill="var(--color-amount)" radius={[0, 4, 4, 0]} />
+            <Bar
+              dataKey="amount"
+              fill="var(--color-amount)"
+              radius={[0, 4, 4, 0]}
+              className="cursor-pointer"
+              onClick={(_, index) => {
+                const jar = data[index]
+                if (jar?.id) router.push(`/dashboard/jars/${jar.id}`)
+              }}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>

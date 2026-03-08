@@ -1,25 +1,22 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Users, Container as JarIcon, ArrowLeftRight, DollarSign, Receipt, Smartphone, Banknote } from 'lucide-react'
+import { Users, Container as JarIcon, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
-import { DataTable } from '@/components/dashboard/data-table/data-table'
-import { transactionColumns, type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
+import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 
 export default async function DashboardPage() {
   const payload = await getPayload({ config: configPromise })
 
-  // Run all queries in parallel
+  const todayStart = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+
   const [
     totalUsersResult,
     totalJarsResult,
     activeJarsResult,
-    completedContributions,
-    completedPayouts,
-    revenueTransactions,
-    momoContributionsResult,
-    cashContributionsResult,
+    dauResult,
     recentTransactions,
     last30DaysContributions,
     last30DaysPayouts,
@@ -39,72 +36,10 @@ export default async function DashboardPage() {
       where: { status: { equals: 'open' } },
     }),
 
-    // All completed contributions
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
-      },
-      pagination: false,
-      select: {
-        amountContributed: true,
-      },
-      overrideAccess: true,
-    }),
-
-    // All completed payouts (for transfer fee revenue)
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'payout' },
-      },
-      pagination: false,
-      select: {
-        amountContributed: true,
-      },
-      overrideAccess: true,
-    }),
-
-    // All completed mobile money transactions (for stored Hogapay revenue)
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        paymentMethod: { equals: 'mobile-money' },
-      },
-      pagination: false,
-      select: {
-        chargesBreakdown: true,
-      },
-      overrideAccess: true,
-    }),
-
-    // Mobile money contributions total
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
-        paymentMethod: { equals: 'mobile-money' },
-      },
-      pagination: false,
-      select: { amountContributed: true },
-      overrideAccess: true,
-    }),
-
-    // Cash contributions total
-    payload.find({
-      collection: 'transactions',
-      where: {
-        paymentStatus: { equals: 'completed' },
-        type: { equals: 'contribution' },
-        paymentMethod: { equals: 'cash' },
-      },
-      pagination: false,
-      select: { amountContributed: true },
-      overrideAccess: true,
+    // DAU today
+    payload.count({
+      collection: 'dailyActiveUsers',
+      where: { createdAt: { greater_than_equal: todayStart } },
     }),
 
     // Recent 10 transactions
@@ -157,36 +92,6 @@ export default async function DashboardPage() {
     }),
   ])
 
-  // Total contributions volume
-  const totalContributions = completedContributions.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
-
-  // Total payouts volume
-  const totalPayouts = completedPayouts.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
-
-  // Mobile money contributions volume
-  const totalMomoContributions = momoContributionsResult.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
-
-  // Cash contributions volume
-  const totalCashContributions = cashContributionsResult.docs.reduce(
-    (sum, tx: any) => sum + (tx.amountContributed || 0),
-    0,
-  )
-
-  // Hogapay revenue from stored chargesBreakdown.hogapayRevenue
-  const platformRevenue = revenueTransactions.docs.reduce(
-    (sum, tx: any) => sum + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0),
-    0,
-  )
-
   // Build 30-day chart data with both series
   const chartData = buildChartData(
     last30DaysContributions.docs as any[],
@@ -230,8 +135,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Overview Metrics */}
+      <div className="grid gap-4 md:grid-cols-3">
         <MetricCard
           title="Total Users"
           value={totalUsersResult.totalDocs.toLocaleString()}
@@ -244,38 +149,10 @@ export default async function DashboardPage() {
           icon={JarIcon}
         />
         <MetricCard
-          title="Total Transactions"
-          value={completedContributions.totalDocs.toLocaleString()}
-          description="Completed contributions"
-          icon={ArrowLeftRight}
-        />
-        <MetricCard
-          title="Total Contributions"
-          value={`GHS ${totalContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Total Payouts"
-          value={`GHS ${totalPayouts.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={ArrowLeftRight}
-        />
-        <MetricCard
-          title="Hogapay Revenue"
-          value={`GHS ${platformRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          description={`0.8% collections + 0.5% transfers`}
-          icon={Receipt}
-        />
-        <MetricCard
-          title="MoMo Contributions"
-          value={`GHS ${totalMomoContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          description={`${momoContributionsResult.totalDocs} transactions`}
-          icon={Smartphone}
-        />
-        <MetricCard
-          title="Cash Contributions"
-          value={`GHS ${totalCashContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          description={`${cashContributionsResult.totalDocs} transactions`}
-          icon={Banknote}
+          title="Daily Active Users"
+          value={dauResult.totalDocs.toLocaleString()}
+          description="Active today"
+          icon={Activity}
         />
       </div>
 
@@ -289,7 +166,7 @@ export default async function DashboardPage() {
           <CardDescription>The latest 10 transactions across all jars</CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable columns={transactionColumns} data={transactions} readOnly />
+          <TransactionsDataTable transactions={transactions} />
         </CardContent>
       </Card>
     </div>

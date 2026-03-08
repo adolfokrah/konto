@@ -82,9 +82,11 @@ function DetailRow({ label, value, icon }: { label: string; value: React.ReactNo
 
 export function RefundDetailSheet({
   selected,
+  currentUserId,
   onClose,
 }: {
   selected: RefundRow | null
+  currentUserId: string
   onClose: () => void
 }) {
   const router = useRouter()
@@ -119,7 +121,8 @@ export function RefundDetailSheet({
     },
   )
 
-  const canApprove = selected?.status === 'pending'
+  const isInitiator = selected?.initiatedBy?.id === currentUserId
+  const canApprove = selected?.status === 'pending' && !isInitiator
   const isActioning = approving || rejecting
 
   const handleApprove = async () => {
