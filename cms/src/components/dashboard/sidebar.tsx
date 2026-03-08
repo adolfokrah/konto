@@ -14,6 +14,7 @@ import {
   Flag,
   Bell,
   RotateCcw,
+  Wallet,
 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json())
@@ -58,6 +59,11 @@ const navItems = [
     label: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
+  },
+  {
+    label: 'Ledger',
+    href: '/dashboard/ledger',
+    icon: Wallet,
   },
 ]
 

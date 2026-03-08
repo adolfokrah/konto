@@ -81,6 +81,7 @@ export interface Config {
     'push-campaigns': PushCampaign;
     refunds: Refund;
     'payout-approvals': PayoutApproval;
+    'ledger-topups': LedgerTopup;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -106,6 +107,7 @@ export interface Config {
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
+    'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -147,6 +149,7 @@ export interface Config {
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'verify-pending-refunds': TaskVerifyPendingRefunds;
+      'verify-pending-topups': TaskVerifyPendingTopups;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1691,6 +1694,40 @@ export interface PayoutApproval {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ledger-topups".
+ */
+export interface LedgerTopup {
+  id: string;
+  /**
+   * Top-up amount in GHS
+   */
+  amount: number;
+  /**
+   * Mobile money phone number used for top-up
+   */
+  phoneNumber: string;
+  /**
+   * Account holder name from KYC lookup
+   */
+  accountName?: string | null;
+  /**
+   * Mobile money provider
+   */
+  provider: 'mtn' | 'telecel';
+  status: 'pending' | 'completed' | 'failed';
+  /**
+   * Eganow transaction reference
+   */
+  transactionReference?: string | null;
+  /**
+   * Admin who initiated this top-up
+   */
+  initiatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1828,6 +1865,7 @@ export interface PayloadJob {
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
           | 'verify-pending-refunds'
+          | 'verify-pending-topups'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -1875,6 +1913,7 @@ export interface PayloadJob {
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
         | 'verify-pending-refunds'
+        | 'verify-pending-topups'
         | 'schedulePublish'
       )
     | null;
@@ -1955,6 +1994,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payout-approvals';
         value: string | PayoutApproval;
+      } | null)
+    | ({
+        relationTo: 'ledger-topups';
+        value: string | LedgerTopup;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2780,6 +2823,21 @@ export interface PayoutApprovalsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ledger-topups_select".
+ */
+export interface LedgerTopupsSelect<T extends boolean = true> {
+  amount?: T;
+  phoneNumber?: T;
+  accountName?: T;
+  provider?: T;
+  status?: T;
+  transactionReference?: T;
+  initiatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3374,6 +3432,14 @@ export interface TaskSendScheduledCampaigns {
  * via the `definition` "TaskVerify-pending-refunds".
  */
 export interface TaskVerifyPendingRefunds {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-topups".
+ */
+export interface TaskVerifyPendingTopups {
   input?: unknown;
   output?: unknown;
 }

@@ -36,9 +36,11 @@ import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
 import { Refunds } from './collections/Refunds'
 import { PayoutApprovals } from './collections/PayoutApprovals'
+import { LedgerTopups } from './collections/LedgerTopups'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
+import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -91,6 +93,7 @@ export default buildConfig({
     PushCampaigns,
     Refunds,
     PayoutApprovals,
+    LedgerTopups,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
@@ -171,6 +174,7 @@ export default buildConfig({
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
       verifyPendingRefundsTask as any,
+      verifyPendingTopupsTask as any,
     ],
     autoRun: [
       {
@@ -204,6 +208,10 @@ export default buildConfig({
       {
         cron: '*/6 * * * *', // Every 6 minutes
         queue: 'verify-pending-refunds',
+      },
+      {
+        cron: '*/8 * * * *', // Every 5 minutes
+        queue: 'verify-pending-topups',
       },
     ],
   },
