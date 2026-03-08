@@ -366,7 +366,7 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
               Top Up
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
             {renderDialogContent()}
           </DialogContent>
         </Dialog>
