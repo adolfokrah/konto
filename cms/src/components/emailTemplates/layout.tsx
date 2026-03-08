@@ -33,7 +33,7 @@ export const Footer = () => {
       {/* Legal Text */}
       <div className="text-xs text-gray-400" style={{ lineHeight: 2.4 }}>
         <p>
-          Hoganam Ltd. is a private company limited by shares incorporated in Ghana under the Companies
+          Hogapay by Hoganam Ltd. is a private company limited by shares incorporated in Ghana under the Companies
           Act, 2019 (Act 992) and registered with the Registrar-General&apos;s Department.
           <br /> Certificate No.: C006636678X.
           <br />
