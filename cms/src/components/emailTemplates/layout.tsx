@@ -44,7 +44,7 @@ export const Footer = () => {
           provide investment services.
           <br />
           Payments & Mobile Money. Card and mobile-money payments shown in the Hoganam app are
-          processed by licensed payment service providers (e.g., Paystack) and by telco e-money
+          processed by licensed payment service providers (e.g., Teksol Eganow) and by telco e-money
           issuers where applicable (e.g., MTN MoMo, Telecel Cash). Those providers
           are regulated in their respective jurisdictions.
           <br />

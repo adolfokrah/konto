@@ -9,7 +9,7 @@ export default function AccountDeletion({ fullname = 'John Doe' }: EmailTemplate
   return (
     <Layout title={` We’ll miss you, ${fullname}! 😔`}>
       <div>
-        Hi {fullname}, This note is to confirm that your Hoga account has been deleted. Thank you
+        Hi {fullname}, This note is to confirm that your Hogapay account has been deleted. Thank you
         for being part of our community — every contribution, every receipt, every moment of trust
         matters to us.
         <p>A few important notes:</p>

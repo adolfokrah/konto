@@ -1,6 +1,6 @@
 # hoga
 
-A modern contribution and donation platform built with PayloadCMS and Next.js. hoga allows users to create donation "jars" and manage contributions with integrated payment processing.
+A modern contribution and donation platform built with PayloadCMS and Next.js. Hogapayallows users to create donation "jars" and manage contributions with integrated payment processing.
 
 ## 🚀 Features
 

@@ -52,7 +52,7 @@ const fmtDate = (d: string) => {
 
 async function generateExcel(docs: any[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Hoga Platform'
+  workbook.creator = 'HogapayPlatform'
   workbook.created = new Date()
 
   const sheet = workbook.addWorksheet('Users', {

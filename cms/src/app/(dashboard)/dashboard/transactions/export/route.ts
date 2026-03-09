@@ -89,7 +89,7 @@ const fmtDate = (d: string) => {
 
 async function generateExcel(docs: any[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Hoga Platform'
+  workbook.creator = 'HogapayPlatform'
   workbook.created = new Date()
 
   const sheet = workbook.addWorksheet('Transactions', {
@@ -221,7 +221,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   pdfDoc.setTitle('Transactions Report')
   pdfDoc.setAuthor('Hoga')
-  pdfDoc.setCreator('Hoga Platform')
+  pdfDoc.setCreator('HogapayPlatform')
   pdfDoc.setCreationDate(new Date())
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)

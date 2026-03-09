@@ -20,7 +20,7 @@ export const Testimonials: Block = {
       name: 'subheading',
       type: 'text',
       localized: true,
-      defaultValue: 'Discover how Hoga is transforming the way people give and receive support',
+      defaultValue: 'Discover how Hogapayis transforming the way people give and receive support',
       admin: {
         description: 'Subtitle or description below the main heading',
       },
@@ -33,7 +33,7 @@ export const Testimonials: Block = {
       defaultValue: [
         {
           quote:
-            "Hoga made it so easy to manage contributions for my mother's funeral. Every donation was tracked, and the transparency gave my family peace of mind.",
+            "Hogapaymade it so easy to manage contributions for my mother's funeral. Every donation was tracked, and the transparency gave my family peace of mind.",
           authorName: 'Ama Ofori',
           authorTitle: 'Event Organizer',
         },
@@ -45,25 +45,25 @@ export const Testimonials: Block = {
         },
         {
           quote:
-            "I contributed to my church's project through Hoga and received a digital receipt right away. It feels safe and transparent compared to the old paper lists.",
+            "I contributed to my church's project through Hogapayand received a digital receipt right away. It feels safe and transparent compared to the old paper lists.",
           authorName: 'Akosua Boateng',
           authorTitle: 'Contributor',
         },
         {
           quote:
-            "Managing our school's fundraising campaign became effortless with Hoga. Parents could see exactly where their contributions were going, and we raised 40% more than expected.",
+            "Managing our school's fundraising campaign became effortless with HogapayParents could see exactly where their contributions were going, and we raised 40% more than expected.",
           authorName: 'Samuel Asante',
           authorTitle: 'School Administrator',
         },
         {
           quote:
-            'The SMS notifications and digital receipts from Hoga have completely transformed how we handle church offerings. Our members love the transparency and convenience.',
+            'The SMS notifications and digital receipts from Hogapayhave completely transformed how we handle church offerings. Our members love the transparency and convenience.',
           authorName: 'Grace Osei',
           authorTitle: 'Church Treasurer',
         },
         {
           quote:
-            'When my friend started using Hoga for his wedding contributions, I was amazed at how organized everything was. I knew exactly when my money was received and how it was being used.',
+            'When my friend started using Hogapayfor his wedding contributions, I was amazed at how organized everything was. I knew exactly when my money was received and how it was being used.',
           authorName: 'Kofi Darko',
           authorTitle: 'Wedding Contributor',
         },

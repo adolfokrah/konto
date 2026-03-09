@@ -13,8 +13,8 @@ export default function Welcome({ fullname = 'John Doe' }: EmailTemplateProps) {
         <p>My name is Kelvin - I’m the founder and CEO of Hoga.</p>
 
         <p>
-          We started Hoga because we wanted to make traditional contributions simple, transparent,
-          and traceable. Whether you’re organizing an event or supporting one, Hoga makes every cedi
+          We started Hogapaybecause we wanted to make traditional contributions simple, transparent,
+          and traceable. Whether you’re organizing an event or supporting one, Hogapaymakes every cedi
           count (and every contribution comes with a digital receipt).
         </p>
         <p>What you get with Hoga</p>

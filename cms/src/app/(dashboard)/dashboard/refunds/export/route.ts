@@ -62,7 +62,7 @@ function buildWhere(params: URLSearchParams): Record<string, any> {
 
 async function generateExcel(docs: any[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Hoga Platform'
+  workbook.creator = 'HogapayPlatform'
   workbook.created = new Date()
 
   const sheet = workbook.addWorksheet('Refunds', {
@@ -175,7 +175,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   pdfDoc.setTitle('Refunds Report')
   pdfDoc.setAuthor('Hoga')
-  pdfDoc.setCreator('Hoga Platform')
+  pdfDoc.setCreator('HogapayPlatform')
   pdfDoc.setCreationDate(new Date())
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)

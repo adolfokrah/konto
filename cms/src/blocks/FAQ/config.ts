@@ -15,7 +15,7 @@ export const FAQ: Block = {
     {
       name: 'subheading',
       type: 'text',
-      defaultValue: 'Simple explanations to help you get started with Hoga with confidence',
+      defaultValue: 'Simple explanations to help you get started with Hogapaywith confidence',
     },
     {
       name: 'faqs',
@@ -23,14 +23,14 @@ export const FAQ: Block = {
       minRows: 1,
       defaultValue: [
         {
-          question: 'Is hoga a bank?',
+          question: 'Is Hogapaya bank?',
           answer:
-            'No, Hoga is not a bank. We are a financial technology platform that helps organize and track contributions for various causes and projects.',
+            'No, Hogapayis not a bank. We are a financial technology platform that helps organize and track contributions for various causes and projects.',
         },
         {
-          question: 'How does hoga work?',
+          question: 'How does Hogapaywork?',
           answer:
-            'Hoga simplifies fundraising by creating digital "jars" for your causes. Contributors can donate online through secure payment methods like mobile money or cards, while collectors can also record offline cash donations directly in the app. Every contribution is automatically tracked with donor details and appears instantly in your jar\'s transparent records. Organizers get real-time updates and can monitor progress, download reports, and manage funds all in one place, making fundraising efficient and completely transparent.',
+            'Hogapaysimplifies fundraising by creating digital "jars" for your causes. Contributors can donate online through secure payment methods like mobile money or cards, while collectors can also record offline cash donations directly in the app. Every contribution is automatically tracked with donor details and appears instantly in your jar\'s transparent records. Organizers get real-time updates and can monitor progress, download reports, and manage funds all in one place, making fundraising efficient and completely transparent.',
         },
         {
           question: 'Can I collect cash contributions?',
@@ -43,9 +43,9 @@ export const FAQ: Block = {
             'We use industry-standard security measures and encryption to protect all transactions. All payments are processed through secure, certified payment gateways.',
         },
         {
-          question: 'What fees does Hoga charge?',
+          question: 'What fees does Hogapaycharge?',
           answer:
-            'Hoga operates on a transparent fee structure. We charge a small processing fee on successful transactions to maintain our platform and ensure secure, reliable service for all users.',
+            'Hogapayoperates on a transparent fee structure. We charge a small processing fee on successful transactions to maintain our platform and ensure secure, reliable service for all users.',
         },
         {
           question: 'Can I withdraw funds from my jar at any time?',
@@ -55,7 +55,7 @@ export const FAQ: Block = {
         {
           question: 'How do I know if someone has contributed to my jar?',
           answer:
-            "You'll receive real-time notifications via email and SMS whenever someone contributes to your jar. You can also check the live updates in your Hoga dashboard to see all contributions and track your progress.",
+            "You'll receive real-time notifications via email and SMS whenever someone contributes to your jar. You can also check the live updates in your Hogapay dashboard to see all contributions and track your progress.",
         },
       ],
       fields: [

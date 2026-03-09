@@ -26,7 +26,7 @@ type Props = {
 export const FAQBlock: React.FC<Props> = ({
   disableInnerContainer = false,
   heading = 'Your Questions Answered',
-  subheading = 'Simple explanations to help you get started with Hoga with confidence',
+  subheading = 'Simple explanations to help you get started with Hogapaywith confidence',
   faqs = [],
   anchor,
 }) => {

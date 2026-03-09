@@ -25,7 +25,7 @@ type Props = {
 export const TestimonialsBlock: React.FC<Props> = ({
   disableInnerContainer = false,
   heading = 'Building Trust One Contribution at a Time',
-  subheading = 'Discover how Hoga is transforming the way people give and receive support',
+  subheading = 'Discover how Hogapayis transforming the way people give and receive support',
   testimonials = [],
   showNavigation = true,
   anchor,

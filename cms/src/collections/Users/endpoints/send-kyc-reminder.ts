@@ -63,7 +63,7 @@ export const sendKYCReminder = async (req: PayloadRequest) => {
     // Send push notifications to all unverified users
     const pushResult = await fcmNotifications.sendNotification(
       fcmTokens,
-      'Please complete your KYC verification to access all features of your Hoga account. This is required to create jars and contribute securely.',
+      'Please complete your KYC verification to access all features of your Hogapay account. This is required to create jars and contribute securely.',
       'Complete KYC Verification',
       {
         type: 'kyc_reminder',

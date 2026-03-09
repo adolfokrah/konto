@@ -120,7 +120,7 @@ class EmailService {
   async sendOTPEmail(userEmail: string, code: string) {
     return this.sendEmail({
       to: userEmail,
-      subject: `Your Hoga OTP Code`,
+      subject: `your Hogapay OTP Code`,
       react: Otp({ otpCode: code }),
     })
   }
@@ -129,7 +129,7 @@ class EmailService {
   async sendKycEmail(userEmail: string, link: string) {
     return this.sendEmail({
       to: userEmail,
-      subject: `Your Hoga KYC Verification`,
+      subject: `your Hogapay KYC Verification`,
       react: sendKyc({ link }),
     })
   }

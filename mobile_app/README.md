@@ -1,4 +1,4 @@
-# Hoga Mobile App
+# HogapayMobile App
 
 A Flutter mobile application.
 

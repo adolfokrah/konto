@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
         creatorName || '',
         jar.currency || 'GHS',
       ].filter(Boolean),
-      authors: [{ name: creatorName || 'Hoga User' }],
+      authors: [{ name: creatorName || 'HogapayUser' }],
       openGraph: {
         title: `Contribute to ${jar.name}`,
         description: jar.description || `Support ${jar.name} by making a contribution.`,

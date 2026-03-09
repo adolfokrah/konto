@@ -17,7 +17,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
   return doc?.title
     ? `${doc.title} `
-    : 'Hoga  Simple, Secure, and Transparent Contribution Platform'
+    : 'HogapaySimple, Secure, and Transparent Contribution Platform'
 }
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {

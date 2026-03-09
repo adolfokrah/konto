@@ -66,7 +66,7 @@ export const requestKYC = async (req: PayloadRequest) => {
       const phoneWithCode = `${countryCode}${userPhone}`
       sendSMS(
         [phoneWithCode],
-        `Hi ${fullName || 'there'}, please complete your Hoga identity verification here: ${verificationUrl}`,
+        `Hi ${fullName || 'there'}, please complete your Hogapay identity verification here: ${verificationUrl}`,
       ).catch((err) => console.error('Failed to send KYC SMS:', err))
     }
 

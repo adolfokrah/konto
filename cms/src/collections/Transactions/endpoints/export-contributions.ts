@@ -101,8 +101,8 @@ export const exportContributions = async (req: PayloadRequest) => {
     pdfDoc.setTitle('Contributions Report')
     pdfDoc.setAuthor('Hoga')
     pdfDoc.setSubject('Contributions Export')
-    pdfDoc.setCreator('Hoga Platform')
-    pdfDoc.setProducer('Hoga PDF Generator')
+    pdfDoc.setCreator('HogapayPlatform')
+    pdfDoc.setProducer('HogapayPDF Generator')
     pdfDoc.setCreationDate(new Date())
     pdfDoc.setModificationDate(new Date())
 
@@ -149,7 +149,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       total: rgb(0.15, 0.15, 0.15),
     }
 
-    // Attempt to embed Hoga logo (PNG) for letterhead footer
+    // Attempt to embed Hogapaylogo (PNG) for letterhead footer
     let logoImage: any = null
     try {
       const logoPath = path.join(process.cwd(), 'public', 'logo.png')

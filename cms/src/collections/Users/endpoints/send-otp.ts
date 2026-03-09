@@ -92,7 +92,7 @@ export const sendOTP = async (req: PayloadRequest) => {
 
         await sendSMS(
           fullPhoneNumber,
-          `Your hoga verification code is: ${code}. Do not share this code with anyone.`,
+          `your Hogapay verification code is: ${code}. Do not share this code with anyone.`,
         )
       }
     }

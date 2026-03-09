@@ -603,7 +603,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                 children: [
                   {
                     type: 'text',
-                    text: 'Join Hoga and give your community the transparency and trust it deserves',
+                    text: 'Join Hogapayand give your community the transparency and trust it deserves',
                     version: 1,
                   },
                 ],
