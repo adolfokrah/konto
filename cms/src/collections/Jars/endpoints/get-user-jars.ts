@@ -90,8 +90,8 @@ export const getUserJars = async (req: PayloadRequest) => {
               },
             },
             {
-              collector: {
-                equals: req.user,
+              type: {
+                equals: 'contribution',
               },
             },
           ],
