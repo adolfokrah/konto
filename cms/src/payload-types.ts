@@ -1152,7 +1152,7 @@ export interface PricingBlock {
   poweredBy?: {
     text?: string | null;
     /**
-     * Payment provider logo (e.g., Paystack)
+     * Payment provider logo (e.g., Eganow)
      */
     logo?: (string | null) | Media;
   };
