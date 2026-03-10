@@ -28,10 +28,7 @@ export const validateJarBalanceBeforeBreak: CollectionBeforeChangeHook = async (
   })
 
   const settledSum = allTransactions.docs
-    .filter(
-      (tx: any) =>
-        tx.type === 'contribution' && tx.paymentStatus === 'completed' && tx.isSettled === true,
-    )
+    .filter((tx: any) => tx.type === 'contribution' && tx.paymentStatus === 'completed')
     .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
 
   const payoutsSum = allTransactions.docs
