@@ -10,6 +10,7 @@ import { type DataTableColumnMeta } from '../types'
 export type ReferralBonusRow = {
   id: string
   user: { id: string; firstName: string; lastName: string; email: string } | null
+  transaction: { id: string } | null
   bonusType: 'first_contribution' | 'fee_share'
   amount: number
   status: 'paid' | 'pending' | 'failed' | 'cancelled'
@@ -58,6 +59,19 @@ export const referralBonusColumns: ColumnDef<ReferralBonusRow, any>[] = [
       filter: { type: 'search', paramKey: 'search', placeholder: 'Search user...' },
       filterLabel: 'User',
     } satisfies DataTableColumnMeta,
+  },
+  {
+    accessorKey: 'transaction',
+    header: 'Transaction',
+    cell: ({ row }) => {
+      const tx = row.original.transaction
+      if (!tx) return <span className="text-muted-foreground">—</span>
+      return (
+        <Link href={`/dashboard/transactions?highlight=${tx.id}`} className="font-mono text-xs hover:underline">
+          {tx.id.slice(0, 8)}…
+        </Link>
+      )
+    },
   },
   {
     accessorKey: 'bonusType',

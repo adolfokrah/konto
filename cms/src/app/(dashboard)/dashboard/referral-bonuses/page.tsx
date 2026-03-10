@@ -56,6 +56,7 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
 
   const bonuses: ReferralBonusRow[] = (result.docs as any[]).map((r: any) => {
     const userObj = typeof r.user === 'object' && r.user ? r.user : null
+    const txObj = typeof r.transaction === 'object' && r.transaction ? r.transaction : null
 
     return {
       id: r.id,
@@ -67,6 +68,7 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
             email: userObj.email || '',
           }
         : null,
+      transaction: txObj ? { id: txObj.id } : null,
       bonusType: r.bonusType || 'first_contribution',
       amount: r.amount || 0,
       status: r.status || 'pending',
