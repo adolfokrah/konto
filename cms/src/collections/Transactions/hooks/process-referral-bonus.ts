@@ -143,7 +143,7 @@ export const processReferralBonus = async ({
 
     // ── Bonus type 2: Fee share on payout ─────────────────────────────────────
     if (doc.type === 'payout') {
-      const payoutFeeAmount = doc.payoutFeeAmount ?? 0
+      const payoutFeeAmount = Math.abs(doc.payoutFeeAmount ?? 0)
       if (payoutFeeAmount <= 0) return
 
       // Only reward fee share from the referred user's FIRST jar

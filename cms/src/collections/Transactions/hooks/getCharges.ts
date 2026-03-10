@@ -51,7 +51,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       }
     }
 
-    if (data.type === 'payout' && data.amountContributed != null) {
+    if (data.type === 'payout') {
       const transferFee = (settings.transferFeePercentage ?? 0) / 100
       const feeAmount = data.amountContributed * transferFee
       const netAmount = data.amountContributed - feeAmount
