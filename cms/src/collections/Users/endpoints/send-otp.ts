@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { generateAndSendOtp, generateOTPCode } from '@/utilities/otp'
+import { emailService } from '@/utilities/emailService'
+import { sendSMS } from '@/utilities/sms'
 
 // In-memory OTP store for pre-registration users (keyed by countryCode+phoneNumber)
 // For existing users, OTP is stored on the user document
@@ -61,11 +63,18 @@ export const sendOTP = async (req: PayloadRequest) => {
         isDemoUser,
       })
     } else {
-      // Pre-registration user — store OTP in memory only (no account to send to)
+      // Pre-registration user — store OTP in memory and send via SMS
       const code = generateOTPCode()
       const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
       const key = `${countryCode}${formattedPhoneNumber}`
       otpStore.set(key, { code, expiry, attempts: 0 })
+      await sendSMS(
+        `${countryCode}${formattedPhoneNumber}`,
+        `Your Hogapay verification code is: ${code}. Do not share this with anyone.`,
+      )
+      if (email) {
+        await emailService.sendOTPEmail(email, code)
+      }
     }
 
     return Response.json(
