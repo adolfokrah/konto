@@ -12,6 +12,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/core/services/rating_service.dart';
 import 'package:Hoga/route.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
@@ -242,6 +243,7 @@ class _JarCreateViewState extends State<JarCreateView> {
 
               // 4. Replace the entire navigation stack with the jar detail view
               context.go(AppRoutes.jarDetail);
+              RatingService.instance.maybeRequestReview();
             } else if (state is JarCreateFailure) {
               AppSnackBar.showError(
                 context,
