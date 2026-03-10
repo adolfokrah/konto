@@ -186,6 +186,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                       lastName: args?['lastName'] ?? '',
                       username: args?['username'] ?? '',
                       email: widget.email ?? '',
+                      referralCode: args?['referralCode'] as String?,
                     ),
                   );
                 } else {

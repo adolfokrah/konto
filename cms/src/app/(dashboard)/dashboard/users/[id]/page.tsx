@@ -281,6 +281,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
               />
               <InfoRow label="Country" value={user.country} />
               <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
+              <InfoRow label="Referral Code" value={user.referralCode ? <span className="font-mono text-xs tracking-widest">{user.referralCode}</span> : <span className="text-muted-foreground text-xs">Not generated</span>} />
               <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
             </CardContent>
           </Card>

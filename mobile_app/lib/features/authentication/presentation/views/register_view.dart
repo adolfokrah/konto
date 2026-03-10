@@ -30,6 +30,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _referralCodeController = TextEditingController();
   String _phoneNumber = '';
   String _countryCode = '+233'; // Default to Ghana
   String _selectedPhoneCountry = 'Ghana';
@@ -148,6 +149,7 @@ class _RegisterViewState extends State<RegisterView> {
     _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
+    _referralCodeController.dispose();
     super.dispose();
   }
 
@@ -185,6 +187,7 @@ class _RegisterViewState extends State<RegisterView> {
                   'firstName': _firstNameController.text.trim(),
                   'lastName': _lastNameController.text.trim(),
                   'username': _usernameController.text.trim(),
+                  'referralCode': _referralCodeController.text.trim(),
                 },
               );
             } else if (state is PhoneNumberNotAvailable) {
@@ -295,6 +298,21 @@ class _RegisterViewState extends State<RegisterView> {
                   setState(() {
                     _phoneNumber = phoneNumber;
                   });
+                },
+              ),
+              const SizedBox(height: AppSpacing.spacingS),
+              AppTextInput(
+                key: const Key('referralCode'),
+                label: 'Referral code (optional)',
+                keyboardType: TextInputType.text,
+                controller: _referralCodeController,
+                onChanged: (value) {
+                  final upper = value.toUpperCase();
+                  final cursor = _referralCodeController.selection.baseOffset;
+                  _referralCodeController.value = TextEditingValue(
+                    text: upper,
+                    selection: TextSelection.collapsed(offset: cursor),
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.spacingL),

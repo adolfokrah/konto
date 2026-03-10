@@ -356,7 +356,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                                     ],
                                   ),
                                   const SizedBox(height: AppSpacing.spacingXs),
-                                  // Transaction Fee
+                                  // Processing Fee
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,

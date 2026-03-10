@@ -190,6 +190,11 @@ class UserAccountView extends StatelessWidget {
                 context.push(AppRoutes.changePhoneNumber);
               },
             ),
+            _buildMenuItem(
+              context: context,
+              title: 'Referral',
+              onTap: () => context.push(AppRoutes.referral),
+            ),
           ]),
 
           const SizedBox(height: AppSpacing.spacingXs),

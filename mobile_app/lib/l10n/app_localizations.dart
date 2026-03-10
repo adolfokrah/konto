@@ -1085,8 +1085,20 @@ abstract class AppLocalizations {
   /// Default message asking user to complete mobile money authorization
   ///
   /// In en, this message translates to:
-  /// **'Please complete authorization process on your mobile phone'**
+  /// **'Waiting for payment from contributor.'**
   String get momoCompleteAuthorization;
+
+  /// Heading asking if contributor didn't receive a MoMo prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Contributor didn\'t get a prompt?'**
+  String get momoContributorNoPrompt;
+
+  /// Subtitle asking contributor to complete authorization manually
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the contributor to complete the authorization process'**
+  String get momoAskContributorAuthorize;
 
   /// Warning message to keep the page open during mobile money payment
   ///
@@ -2465,7 +2477,7 @@ abstract class AppLocalizations {
   /// Label for transfer charges in withdraw page
   ///
   /// In en, this message translates to:
-  /// **'Transfer charges'**
+  /// **'Processing fee'**
   String get transferCharges;
 
   /// Label for total amount in withdraw page

@@ -550,6 +550,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Veuillez terminer le processus d\'autorisation sur votre téléphone mobile';
 
   @override
+  String get momoContributorNoPrompt => 'Contributor didn\'t get a prompt?';
+
+  @override
+  String get momoAskContributorAuthorize =>
+      'Ask the contributor to complete the authorization process';
+
+  @override
   String get momoDontClosePage => 'Veuillez ne pas fermer cette page.';
 
   @override

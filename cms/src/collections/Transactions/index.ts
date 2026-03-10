@@ -21,6 +21,7 @@ import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
+import { processReferralBonus } from './hooks/process-referral-bonus'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -380,7 +381,7 @@ export const Transactions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
-    afterChange: [sendContributionReceipt, notifyTransactionCompleted],
+    afterChange: [sendContributionReceipt, notifyTransactionCompleted, processReferralBonus],
     beforeValidate: [validateJarCreatorAccount],
   },
 }

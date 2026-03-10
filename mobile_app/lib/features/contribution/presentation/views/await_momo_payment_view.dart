@@ -151,34 +151,35 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
   }
 
   Widget _buildApprovalInstructions(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
     final isMtn = widget.provider == 'mtn';
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.spacingM),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.grey.shade50,
+        color:
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.grey.shade200,
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.grey.shade200,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Didn't get a prompt?",
+            localizations.momoContributorNoPrompt,
             style: AppTextStyles.titleMediumS.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: AppSpacing.spacingS),
           Text(
-            'Check your approvals manually:',
+            localizations.momoAskContributorAuthorize,
             style: AppTextStyles.titleMediumS.copyWith(
               color: isDark ? Colors.white70 : Colors.grey.shade600,
             ),
@@ -208,9 +209,10 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
                         ),
                       ),
                       TextSpan(
-                        text: isMtn
-                            ? 'Dial *170# \u2192 My Wallet \u2192 My Approvals \u2192 Select the pending request \u2192 Enter PIN'
-                            : 'Dial *110# \u2192 Telecel Cash \u2192 Approvals \u2192 Select the request \u2192 Enter PIN',
+                        text:
+                            isMtn
+                                ? 'Dial *170# \u2192 My Wallet \u2192 My Approvals \u2192 Select the pending request \u2192 Enter PIN'
+                                : 'Dial *110# \u2192 Telecel Cash \u2192 Approvals \u2192 Select the request \u2192 Enter PIN',
                         style: AppTextStyles.titleMediumS.copyWith(
                           color: isDark ? Colors.white70 : Colors.grey.shade600,
                         ),
@@ -254,8 +256,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
                 ),
                 const SizedBox(height: AppSpacing.spacingM),
                 Text(
-                  charge.displayText ??
-                      localizations.momoCompleteAuthorization,
+                  charge.displayText ?? localizations.momoCompleteAuthorization,
                   style: AppTextStyles.titleMediumLg,
                   textAlign: TextAlign.center,
                 ),

@@ -19,6 +19,7 @@ import { sendOTP } from './endpoints/send-otp'
 import { verifyOTP } from './endpoints/verify-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
 import { testPushNotification } from './endpoints/test-push-notification'
+import { backfillReferralCodes } from './endpoints/backfill-referral-codes'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -132,6 +133,11 @@ export const Users: CollectionConfig = {
       path: '/test-push-notification',
       method: 'post',
       handler: testPushNotification,
+    },
+    {
+      path: '/backfill-referral-codes',
+      method: 'post',
+      handler: backfillReferralCodes,
     },
   ],
   fields: [
@@ -279,6 +285,16 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'referralCode',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'Auto-generated referral code for this user',
+      },
+    },
+    {
       name: 'demoUser',
       type: 'checkbox',
       defaultValue: false,
@@ -422,7 +438,31 @@ export const Users: CollectionConfig = {
         }
       },
     ],
-    beforeChange: [],
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        if ((operation === 'create' || operation === 'update') && !data.referralCode) {
+          const username = (data.username || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+          const base = username.slice(0, 5).padEnd(5, '0')
+
+          let code = base
+          let suffix = 1
+          while (suffix <= 99) {
+            const existing = await req.payload.find({
+              collection: 'users',
+              where: { referralCode: { equals: code } },
+              limit: 1,
+              pagination: false,
+            })
+            if (existing.totalDocs === 0) break
+            code = base.slice(0, 4) + suffix
+            suffix++
+          }
+
+          data.referralCode = code
+        }
+        return data
+      },
+    ],
     afterChange: [sendWelcomeEmail],
     beforeDelete: [accountDeletion],
     afterRead: [

@@ -126,5 +126,51 @@ export const SystemSettings: GlobalConfig = {
         },
       ],
     },
+
+    // ── Referral Bonus ──
+    {
+      type: 'collapsible',
+      label: 'Referral Bonus',
+      admin: {
+        initCollapsed: false,
+        description: 'Rewards paid to referrers when their referred users are active.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'referralFirstContributionBonus',
+              label: 'First Contribution Bonus (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 5,
+              min: 0,
+              admin: {
+                description:
+                  "Flat GHS amount paid to the referrer when a referred user's jar receives its first contribution.",
+                step: 0.5,
+                width: '50%',
+              },
+            },
+            {
+              name: 'referralFeeSharePercent',
+              label: 'Fee Share (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 20,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  "Percentage of Hogapay's transfer fee revenue (hogapayTransferFeePercent) shared with the referrer on each withdrawal from a referred user's jar.",
+                step: 1,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 }

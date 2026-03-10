@@ -30,4 +30,5 @@ class AppRoutes {
   static const String walkthrough = '/walkthrough';
   static const String withdraw = '/withdraw';
   static const String requestContribution = '/request_contribution';
+  static const String referral = '/referral';
 }

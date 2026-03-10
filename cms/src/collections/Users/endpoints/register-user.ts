@@ -5,8 +5,16 @@ export const registerUser = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    const { phoneNumber, countryCode, country, firstName, lastName, username, email } =
-      req.data || {}
+    const {
+      phoneNumber,
+      countryCode,
+      country,
+      firstName,
+      lastName,
+      username,
+      email,
+      referralCode,
+    } = req.data || {}
     // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
     const formattedPhoneNumber =
       phoneNumber?.startsWith('0') && phoneNumber.length > 1
@@ -117,6 +125,29 @@ export const registerUser = async (req: PayloadRequest) => {
         },
       } as any, // Use any to bypass type checking for now
     })
+
+    // If a referral code was provided, create a referral record
+    if (referralCode) {
+      const referrerResult = await req.payload.find({
+        collection: 'users',
+        where: { referralCode: { equals: referralCode.toUpperCase() } },
+        limit: 1,
+        pagination: false,
+      })
+
+      if (referrerResult.docs.length > 0) {
+        const referrer = referrerResult.docs[0]
+        await req.payload.create({
+          collection: 'referrals',
+          data: {
+            referralCode: referralCode.toUpperCase(),
+            referredBy: referrer.id,
+            referral: newUser.id,
+          },
+          overrideAccess: true,
+        })
+      }
+    }
 
     // Return success response with user data (without token for testing)
     return Response.json(

@@ -127,6 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         lastName: event.lastName,
         username: event.username,
         email: event.email,
+        referralCode: event.referralCode,
       );
 
       if (result['success'] == true) {

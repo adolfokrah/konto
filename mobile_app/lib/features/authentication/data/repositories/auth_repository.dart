@@ -122,6 +122,7 @@ class AuthRepository {
     required String lastName,
     required String username,
     required String email,
+    String? referralCode,
   }) async {
     try {
       final apiResponse = await _authApiProvider.registerUser(
@@ -132,6 +133,7 @@ class AuthRepository {
         lastName: lastName,
         username: username,
         email: email,
+        referralCode: referralCode,
       );
 
       if (apiResponse['success'] == true) {

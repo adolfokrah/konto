@@ -31,6 +31,7 @@ import 'package:Hoga/features/user_account/presentation/views/theme_settings_vie
 import 'package:Hoga/features/user_account/presentation/views/language_settings_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
+import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
 
 /// Global navigator key for deep navigation (FCM, FlutterLoadingOverlay)
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -188,6 +189,10 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/withdraw',
         builder: (context, state) => const WithdrawView(),
+      ),
+      GoRoute(
+        path: '/referral',
+        builder: (context, state) => const ReferralView(),
       ),
     ],
   );

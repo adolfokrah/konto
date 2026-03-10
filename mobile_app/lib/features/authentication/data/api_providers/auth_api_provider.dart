@@ -121,6 +121,7 @@ class AuthApiProvider {
     required String lastName,
     required String username,
     required String email,
+    String? referralCode,
   }) async {
     try {
       final requestData = {
@@ -132,6 +133,8 @@ class AuthApiProvider {
         'phoneNumber': phoneNumber,
         'countryCode': countryCode,
         'country': country,
+        if (referralCode != null && referralCode.isNotEmpty)
+          'referralCode': referralCode,
         'isKYCVerified': true,
         'appSettings': {
           'language': 'en',

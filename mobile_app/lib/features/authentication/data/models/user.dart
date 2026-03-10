@@ -26,6 +26,7 @@ class User {
   /// Rich media document for the user's profile photo (can include size variants)
   final MediaModel? photo;
   final String? paystackSubAccountCode;
+  final String? referralCode;
   final String? collection; // e.g., 'users'
   final String? strategy; // _strategy in JSON
 
@@ -48,6 +49,7 @@ class User {
     this.bank,
     this.photo,
     this.paystackSubAccountCode,
+    this.referralCode,
     this.collection,
     this.strategy,
   });
@@ -81,6 +83,7 @@ class User {
       bank: json['bank'] as String?,
       photo: _parsePhoto(json['photo']),
       paystackSubAccountCode: json['paystackSubAccountCode'] as String?,
+      referralCode: json['referralCode'] as String?,
       collection: json['collection'] as String?,
       strategy: json['_strategy'] as String?,
     );
@@ -120,6 +123,7 @@ class User {
       if (photo != null) 'photo': photo!.toJson(),
       if (paystackSubAccountCode != null)
         'paystackSubAccountCode': paystackSubAccountCode,
+      if (referralCode != null) 'referralCode': referralCode,
       if (collection != null) 'collection': collection,
       if (strategy != null) '_strategy': strategy,
     };
@@ -144,6 +148,7 @@ class User {
     String? bank,
     MediaModel? photo,
     String? paystackSubAccountCode,
+    String? referralCode,
     String? collection,
     String? strategy,
   }) {
@@ -167,6 +172,7 @@ class User {
       photo: photo ?? this.photo,
       paystackSubAccountCode:
           paystackSubAccountCode ?? this.paystackSubAccountCode,
+      referralCode: referralCode ?? this.referralCode,
       collection: collection ?? this.collection,
       strategy: strategy ?? this.strategy,
     );

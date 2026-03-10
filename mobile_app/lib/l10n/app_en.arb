@@ -878,9 +878,19 @@
     "description": "Message shown when mobile money payment fails"
   },
 
-  "momoCompleteAuthorization": "Please complete authorization process on your mobile phone",
+  "momoCompleteAuthorization": "Waiting for payment from contributor.",
   "@momoCompleteAuthorization": {
     "description": "Default message asking user to complete mobile money authorization"
+  },
+
+  "momoContributorNoPrompt": "Contributor didn't get a prompt?",
+  "@momoContributorNoPrompt": {
+    "description": "Heading asking if contributor didn't receive a MoMo prompt"
+  },
+
+  "momoAskContributorAuthorize": "Ask the contributor to complete the authorization process",
+  "@momoAskContributorAuthorize": {
+    "description": "Subtitle asking contributor to complete authorization manually"
   },
 
   "momoDontClosePage": "Please don't close this page.",
@@ -2210,7 +2220,7 @@
     "description": "Label for payout balance in withdraw page"
   },
 
-  "transferCharges": "Transfer charges",
+  "transferCharges": "Processing fee",
   "@transferCharges": {
     "description": "Label for transfer charges in withdraw page"
   },

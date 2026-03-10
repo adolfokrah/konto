@@ -82,6 +82,8 @@ export interface Config {
     refunds: Refund;
     'payout-approvals': PayoutApproval;
     'ledger-topups': LedgerTopup;
+    referrals: Referral;
+    'referral-bonuses': ReferralBonus;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -108,6 +110,8 @@ export interface Config {
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
     'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
+    referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -487,6 +491,10 @@ export interface User {
    * User role - only admin users can access the CMS
    */
   role: 'user' | 'admin';
+  /**
+   * Auto-generated referral code for this user
+   */
+  referralCode?: string | null;
   /**
    * Demo users always use OTP 123456 and skip SMS/email sending
    */
@@ -1728,6 +1736,58 @@ export interface LedgerTopup {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals".
+ */
+export interface Referral {
+  id: string;
+  /**
+   * The referral code that was entered at registration
+   */
+  referralCode: string;
+  /**
+   * The user who owns/shared this referral code
+   */
+  referredBy: string | User;
+  /**
+   * The new user who used the referral code
+   */
+  referral: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-bonuses".
+ */
+export interface ReferralBonus {
+  id: string;
+  /**
+   * The user who earns this bonus
+   */
+  user: string | User;
+  /**
+   * The referral event that triggered this bonus
+   */
+  referral: string | Referral;
+  /**
+   * The transaction that triggered this bonus (for fee_share bonuses)
+   */
+  transaction?: (string | null) | Transaction;
+  /**
+   * GHS 5 flat for first contribution, or 20% of fee for each subsequent contribution
+   */
+  bonusType: 'first_contribution' | 'fee_share';
+  /**
+   * Bonus amount in GHS
+   */
+  amount: number;
+  status: 'pending' | 'paid' | 'cancelled';
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1998,6 +2058,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ledger-topups';
         value: string | LedgerTopup;
+      } | null)
+    | ({
+        relationTo: 'referrals';
+        value: string | Referral;
+      } | null)
+    | ({
+        relationTo: 'referral-bonuses';
+        value: string | ReferralBonus;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2620,6 +2688,7 @@ export interface UsersSelect<T extends boolean = true> {
   otpAttempts?: T;
   kycStatus?: T;
   role?: T;
+  referralCode?: T;
   demoUser?: T;
   bank?: T;
   accountNumber?: T;
@@ -2833,6 +2902,32 @@ export interface LedgerTopupsSelect<T extends boolean = true> {
   status?: T;
   transactionReference?: T;
   initiatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals_select".
+ */
+export interface ReferralsSelect<T extends boolean = true> {
+  referralCode?: T;
+  referredBy?: T;
+  referral?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-bonuses_select".
+ */
+export interface ReferralBonusesSelect<T extends boolean = true> {
+  user?: T;
+  referral?: T;
+  transaction?: T;
+  bonusType?: T;
+  amount?: T;
+  status?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3221,6 +3316,14 @@ export interface SystemSetting {
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
+  /**
+   * Flat GHS amount paid to the referrer when a referred user's jar receives its first contribution.
+   */
+  referralFirstContributionBonus: number;
+  /**
+   * Percentage of Hogapay's transfer fee revenue (hogapayTransferFeePercent) shared with the referrer on each withdrawal from a referred user's jar.
+   */
+  referralFeeSharePercent: number;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3322,6 +3425,8 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
   settlementDelayHours?: T;
+  referralFirstContributionBonus?: T;
+  referralFeeSharePercent?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

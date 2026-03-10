@@ -5,14 +5,14 @@ import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
+import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
+import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
-import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
@@ -36,7 +36,6 @@ class _WithdrawViewState extends State<WithdrawView> {
   double? payoutBalance;
   String? currency;
 
-  // System settings for transfer fee calculation
   SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
 
   @override
@@ -45,21 +44,6 @@ class _WithdrawViewState extends State<WithdrawView> {
     _loadSystemSettings();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final arguments =
-        GoRouterState.of(context).extra as Map<String, dynamic>?;
-
-    if (arguments != null) {
-      jarId = arguments['jarId'] as String?;
-      payoutBalance = arguments['payoutBalance'] as double?;
-      currency = arguments['currency'] as String?;
-    }
-  }
-
-  /// Load system settings to get transfer fee percentage
   Future<void> _loadSystemSettings() async {
     try {
       final apiProvider = SystemSettingsApiProvider(
@@ -79,6 +63,20 @@ class _WithdrawViewState extends State<WithdrawView> {
           _isLoadingSettings = false;
         });
       }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final arguments =
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
+
+    if (arguments != null) {
+      jarId = arguments['jarId'] as String?;
+      payoutBalance = arguments['payoutBalance'] as double?;
+      currency = arguments['currency'] as String?;
     }
   }
 
@@ -219,11 +217,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     final localizations = AppLocalizations.of(context)!;
     final balance = payoutBalance ?? 0.0;
     final cur = currency ?? 'GHS';
-
-    // Calculate transfer fee using system settings
-    final double transferCharges = _systemSettings.calculateTransferFee(
-      balance,
-    );
+    final double transferCharges = _systemSettings.calculateTransferFee(balance);
     final double total = _systemSettings.calculateNetPayout(balance);
 
     // Check KYC before allowing transfer
@@ -242,10 +236,9 @@ class _WithdrawViewState extends State<WithdrawView> {
         ),
         centerTitle: true,
       ),
-      body:
-          _isLoadingSettings
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
+      body: _isLoadingSettings
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.spacingM,
                 ),
@@ -262,9 +255,9 @@ class _WithdrawViewState extends State<WithdrawView> {
                     ),
                     const SizedBox(height: AppSpacing.spacingM),
 
-                    // Transfer charges row with percentage
+                    // Processing fee row
                     _buildBreakdownRow(
-                      '${localizations.transferCharges} (${_systemSettings.transferFeePercentage}%)',
+                      localizations.transferCharges,
                       '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
                       context,
                     ),

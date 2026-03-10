@@ -539,7 +539,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get momoCompleteAuthorization =>
-      'Please complete authorization process on your mobile phone';
+      'Waiting for payment from contributor.';
+
+  @override
+  String get momoContributorNoPrompt => 'Contributor didn\'t get a prompt?';
+
+  @override
+  String get momoAskContributorAuthorize =>
+      'Ask the contributor to complete the authorization process';
 
   @override
   String get momoDontClosePage => 'Please don\'t close this page.';
@@ -1302,7 +1309,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payoutBalance => 'Payout balance';
 
   @override
-  String get transferCharges => 'Transfer charges';
+  String get transferCharges => 'Processing fee';
 
   @override
   String get total => 'Total';

@@ -124,6 +124,16 @@ export function TransactionDetailSheet({
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
 
+  // Fetch referral bonus linked to this transaction (fee_share for payouts)
+  const { data: referralBonus } = useSWR<any>(
+    selected?.type === 'payout' ? `/api/referral-bonuses?where[transaction][equals]=${selected.id}&depth=1&limit=1` : null,
+    async (url: string) => {
+      const res = await fetch(url)
+      const data = await res.json()
+      return data.docs?.[0] || null
+    },
+  )
+
   // Fetch payout approvals for payout transactions
   const { data: payoutApprovals } = useSWR<any[]>(
     selected?.type === 'payout' ? `/api/payout-approvals?where[linkedTransaction][equals]=${selected.id}&depth=1&sort=-createdAt` : null,
@@ -319,6 +329,55 @@ export function TransactionDetailSheet({
                     value={selected.payoutNetAmount != null ? (
                       <span className="font-semibold">{formatAmount(selected.payoutNetAmount)}</span>
                     ) : null}
+                  />
+                </div>
+              )}
+
+              {/* Referral Fee Share */}
+              {referralBonus && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Referral Fee Share</h4>
+                  <Separator className="mb-2" />
+                  <DetailRow
+                    label="Referrer"
+                    value={
+                      referralBonus.user ? (
+                        <Link
+                          href={`/dashboard/users/${typeof referralBonus.user === 'object' ? referralBonus.user.id : referralBonus.user}`}
+                          className="hover:underline"
+                        >
+                          {typeof referralBonus.user === 'object'
+                            ? `${referralBonus.user.firstName || ''} ${referralBonus.user.lastName || ''}`.trim() || referralBonus.user.email
+                            : referralBonus.user}
+                        </Link>
+                      ) : null
+                    }
+                    icon={<User className="h-3.5 w-3.5" />}
+                  />
+                  <DetailRow
+                    label="Fee Shared"
+                    value={
+                      <span className="text-green-400 font-semibold">
+                        +{formatAmount(referralBonus.amount)}
+                      </span>
+                    }
+                    icon={<Receipt className="h-3.5 w-3.5" />}
+                  />
+                  <DetailRow
+                    label="Status"
+                    value={
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'capitalize',
+                          referralBonus.status === 'paid' && 'bg-green-900/40 text-green-300 border-green-700',
+                          referralBonus.status === 'pending' && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                          referralBonus.status === 'cancelled' && 'bg-red-900/40 text-red-300 border-red-700',
+                        )}
+                      >
+                        {referralBonus.status}
+                      </Badge>
+                    }
                   />
                 </div>
               )}
