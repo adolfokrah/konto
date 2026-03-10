@@ -25,93 +25,83 @@ class OnBoardingPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
         child: Column(
           children: [
-            const SizedBox(height: AppSpacing.spacingL),
-            // Test: Simple row to see if images load first
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Auto-scrolling marquee - First row (faster, right to left)
-                  Flexible(
-                    child: Marqueer(
-                      pps: 50, // Pixels per second (faster)
-                      direction: MarqueerDirection.rtl,
-                      interaction: false,
-                      child: Row(
-                        children: List.generate(10, (index) {
-                          final imageIndex = (index % 5) + 1;
-                          return Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/images/onboarding/image$imageIndex.png',
-                                width: 150,
-                                height: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 150,
-                                    height: 200,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                    ),
-                                  );
-                                },
+            const Spacer(),
+            // Auto-scrolling marquee - First row (faster, right to left)
+            SizedBox(
+              height: 200,
+              child: Marqueer(
+                pps: 50,
+                direction: MarqueerDirection.rtl,
+                interaction: false,
+                child: Row(
+                  children: List.generate(10, (index) {
+                    final imageIndex = (index % 5) + 1;
+                    return Container(
+                      margin: const EdgeInsets.only(right: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/onboarding/image$imageIndex.png',
+                          width: 150,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 150,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                          );
-                        }),
+                              child: const Icon(Icons.image_not_supported),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Auto-scrolling marquee - Second row (slower, left to right)
-                  Flexible(
-                    child: Marqueer(
-                      pps: 30, // Pixels per second (slower)
-                      direction: MarqueerDirection.ltr,
-                      interaction: false,
-                      child: Row(
-                        children: List.generate(10, (index) {
-                          final imageIndex = (index % 5) + 6;
-                          return Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/images/onboarding/image$imageIndex.png',
-                                width: 150,
-                                height: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 150,
-                                    height: 200,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                ],
+                    );
+                  }),
+                ),
               ),
             ),
-            const SizedBox(height: AppSpacing.spacingXs),
+            const SizedBox(height: 8),
+            // Auto-scrolling marquee - Second row (slower, left to right)
+            SizedBox(
+              height: 200,
+              child: Marqueer(
+                pps: 30,
+                direction: MarqueerDirection.ltr,
+                interaction: false,
+                child: Row(
+                  children: List.generate(10, (index) {
+                    final imageIndex = (index % 5) + 6;
+                    return Container(
+                      margin: const EdgeInsets.only(right: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/onboarding/image$imageIndex.png',
+                          width: 150,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 150,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.image_not_supported),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.spacingL,

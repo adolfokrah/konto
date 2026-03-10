@@ -1781,7 +1781,7 @@ export interface ReferralBonus {
    * Bonus amount in GHS
    */
   amount: number;
-  status: 'pending' | 'withdrawal-requested' | 'paid' | 'cancelled';
+  status: 'pending' | 'paid' | 'failed';
   description?: string | null;
   updatedAt: string;
   createdAt: string;

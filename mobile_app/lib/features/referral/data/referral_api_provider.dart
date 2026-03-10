@@ -20,18 +20,34 @@ class ReferralApiProvider extends BaseApiProvider {
     }
   }
 
-  Future<Map<String, dynamic>> requestWithdrawal() async {
+  Future<Map<String, dynamic>> initiateWithdrawal() async {
     final headers = await getAuthenticatedHeaders();
     if (headers == null) return getUnauthenticatedError();
 
     try {
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}${BackendConfig.referralBonusesRequestWithdrawal}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.referralBonusesInitiateWithdrawal}',
         options: Options(headers: headers),
       );
       return Map<String, dynamic>.from(response.data);
     } catch (e) {
-      return handleApiError(e, 'requesting referral bonus withdrawal');
+      return handleApiError(e, 'initiating withdrawal');
+    }
+  }
+
+  Future<Map<String, dynamic>> confirmWithdrawal(String otp) async {
+    final headers = await getAuthenticatedHeaders();
+    if (headers == null) return getUnauthenticatedError();
+
+    try {
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}${BackendConfig.referralBonusesConfirmWithdrawal}',
+        data: {'code': otp},
+        options: Options(headers: headers),
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      return handleApiError(e, 'confirming withdrawal');
     }
   }
 }

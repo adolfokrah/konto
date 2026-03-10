@@ -29,7 +29,8 @@ class BackendConfig {
 
   // Referral bonus endpoints
   static const String referralBonusesMyBonuses = '/referral-bonuses/my-bonuses';
-  static const String referralBonusesRequestWithdrawal = '/referral-bonuses/request-withdrawal';
+  static const String referralBonusesInitiateWithdrawal = '/referral-bonuses/initiate-withdrawal';
+  static const String referralBonusesConfirmWithdrawal = '/referral-bonuses/confirm-withdrawal';
   // Notifications endpoint
   static const String notificationsEndpoint = '/notifications';
   static const String sendReminderEndpoint = '/notifications/send-jar-reminder';

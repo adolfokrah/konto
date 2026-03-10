@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { myBonuses } from './endpoints/my-bonuses'
-import { requestWithdrawal } from './endpoints/request-withdrawal'
+import { initiateWithdrawal } from './endpoints/initiate-withdrawal'
+import { confirmWithdrawal } from './endpoints/confirm-withdrawal'
 
 export const ReferralBonuses: CollectionConfig = {
   slug: 'referral-bonuses',
@@ -98,9 +99,14 @@ export const ReferralBonuses: CollectionConfig = {
       handler: myBonuses,
     },
     {
-      path: '/request-withdrawal',
+      path: '/initiate-withdrawal',
       method: 'post',
-      handler: requestWithdrawal,
+      handler: initiateWithdrawal,
+    },
+    {
+      path: '/confirm-withdrawal',
+      method: 'post',
+      handler: confirmWithdrawal,
     },
   ],
 }

@@ -56,7 +56,7 @@ export const processReferralBonus = async ({
     const settings = await req.payload.findGlobal({ slug: 'system-settings' })
 
     // ── Bonus type 1: First contribution ──────────────────────────────────────
-    if (doc.type === 'contribution') {
+    if (doc.type === 'contribution' && doc.paymentMethod === 'mobile-money') {
       // Count previous completed contributions to this jar (excluding current doc)
       const previousContributions = await req.payload.find({
         collection: 'transactions',

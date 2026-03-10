@@ -27,6 +27,7 @@ import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balanc
 import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
 import { processPayoutTask } from './tasks/process-payout'
+import { processReferralWithdrawalTask } from './tasks/process-referral-withdrawal'
 import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
 import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
@@ -173,6 +174,7 @@ export default buildConfig({
       verifyPendingTransactionsTask as any,
       jarCreationReminderDailyTask as any,
       processPayoutTask as any,
+      processReferralWithdrawalTask as any,
       checkEganowPayoutBalanceTask as any,
       processRefundTask as any,
       sendPushCampaignTask as any,

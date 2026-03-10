@@ -464,6 +464,23 @@ export const Users: CollectionConfig = {
       },
     ],
     afterChange: [sendWelcomeEmail],
+    afterLogout: [
+      async ({ req }) => {
+        const userId = req.user?.id
+        if (!userId) return
+        try {
+          await req.payload.update({
+            collection: 'users',
+            id: userId,
+            data: { fcmToken: '' },
+            overrideAccess: true,
+          })
+        } catch (e) {
+          // Non-fatal — don't block logout
+          console.error('[afterLogout] Failed to clear fcmToken:', e)
+        }
+      },
+    ],
     beforeDelete: [accountDeletion],
     afterRead: [
       ({ doc }) => {

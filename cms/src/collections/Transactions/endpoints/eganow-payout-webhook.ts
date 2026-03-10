@@ -49,11 +49,22 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       return Response.json({ error: 'Invalid webhook data' }, { status: 400 })
     }
 
-    // Determine if this is a refund or payout based on transactionId format
+    // Determine if this is a refund, referral withdrawal, or payout based on transactionId format
     const isRefund = transactionId.startsWith('refund-')
+    const isReferralWithdrawal = transactionId.startsWith('referral-withdrawal-')
 
     if (isRefund) {
       return handleRefundWebhook(req, transactionId, eganowReferenceNo, transactionStatus, message)
+    }
+
+    if (isReferralWithdrawal) {
+      return handleReferralWithdrawalWebhook(
+        req,
+        transactionId,
+        eganowReferenceNo,
+        transactionStatus,
+        message,
+      )
     }
 
     return handlePayoutWebhook(req, transactionId, eganowReferenceNo, transactionStatus, message)
@@ -136,6 +147,96 @@ async function handleRefundWebhook(
 
   // Send FCM notification
   await sendRefundNotification(req, refund, mappedStatus, message)
+
+  return new Response(null, { status: 200 })
+}
+
+async function handleReferralWithdrawalWebhook(
+  req: PayloadRequest,
+  transactionId: string,
+  eganowReferenceNo: string,
+  transactionStatus: string,
+  message: string,
+) {
+  // Extract the bonus record ID from "referral-withdrawal-{id}"
+  const match = transactionId.match(/^referral-withdrawal-(.+)$/)
+  if (!match) {
+    console.error(`Invalid referral-withdrawal transactionId format: ${transactionId}`)
+    return Response.json({ error: 'Invalid transaction ID format' }, { status: 400 })
+  }
+
+  const bonusRecordId = match[1]
+
+  let bonusRecord: any
+  try {
+    bonusRecord = await req.payload.findByID({
+      collection: 'referral-bonuses',
+      id: bonusRecordId,
+      depth: 1,
+      overrideAccess: true,
+    })
+  } catch {
+    bonusRecord = null
+  }
+
+  if (!bonusRecord) {
+    console.error(`Referral withdrawal bonus record not found: ${bonusRecordId}`)
+    return Response.json({ error: 'Referral withdrawal record not found' }, { status: 404 })
+  }
+
+  // Verify with Eganow API
+  const newStatus = await verifyWithEganow(transactionId, eganowReferenceNo, transactionStatus)
+
+  const mappedStatus = newStatus === 'completed' ? 'paid' : newStatus === 'failed' ? 'failed' : null
+  if (!mappedStatus || bonusRecord.status === mappedStatus) {
+    console.log(
+      `Referral withdrawal ${bonusRecordId} already at status ${bonusRecord.status}, skipping.`,
+    )
+    return new Response(null, { status: 200 })
+  }
+
+  await req.payload.update({
+    collection: 'referral-bonuses',
+    id: bonusRecordId,
+    data: { status: mappedStatus },
+    overrideAccess: true,
+  })
+
+  console.log(`Referral withdrawal ${bonusRecordId} updated to ${mappedStatus}`)
+
+  // Send FCM notification to the user
+  try {
+    const userId = typeof bonusRecord.user === 'string' ? bonusRecord.user : bonusRecord.user?.id
+    if (userId) {
+      const user = await req.payload.findByID({
+        collection: 'users',
+        id: userId,
+        overrideAccess: true,
+      })
+      const fcmToken = (user as any)?.fcmToken
+      if (fcmToken) {
+        const fcm = new FCMPushNotifications()
+        const amount = `GHS ${Math.abs(Number(bonusRecord.amount)).toFixed(2)}`
+        if (mappedStatus === 'paid') {
+          await fcm.sendNotification(
+            [fcmToken],
+            `Your referral bonus withdrawal of ${amount} has been sent to your account.`,
+            'Withdrawal Successful',
+            { type: 'referral-withdrawal', bonusRecordId },
+          )
+        } else {
+          await fcm.sendNotification(
+            [fcmToken],
+            `Your referral bonus withdrawal of ${amount} failed${message ? `: ${message}` : ''}. Please contact support.`,
+            'Withdrawal Failed',
+            { type: 'referral-withdrawal-failed', bonusRecordId },
+          )
+        }
+      }
+    }
+  } catch (notifError: any) {
+    console.error('Failed to send referral withdrawal notification:', notifError.message)
+  }
 
   return new Response(null, { status: 200 })
 }
