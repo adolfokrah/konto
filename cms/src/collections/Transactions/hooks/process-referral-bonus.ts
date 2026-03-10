@@ -153,7 +153,7 @@ export const processReferralBonus = async ({
         limit: 100,
         pagination: false,
       })
-      const jarIds = userJars.docs.map((j) => j.id)
+      const jarIds = userJars.docs.map((j: any) => j.id)
 
       const firstContribResult = await req.payload.find({
         collection: 'transactions',

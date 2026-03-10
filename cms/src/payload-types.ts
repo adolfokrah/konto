@@ -3327,6 +3327,14 @@ export interface SystemSetting {
    * Percentage of Hogapay's transfer fee revenue (hogapayTransferFeePercent) shared with the referrer on each withdrawal from a referred user's jar.
    */
   referralFeeSharePercent: number;
+  /**
+   * Minimum referral bonus balance required to initiate a withdrawal.
+   */
+  referralMinWithdrawalAmount: number;
+  /**
+   * Maximum referral bonus amount that can be withdrawn at once. Set to 0 for no limit.
+   */
+  referralMaxWithdrawalAmount: number;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3430,6 +3438,8 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;
+  referralMinWithdrawalAmount?: T;
+  referralMaxWithdrawalAmount?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
