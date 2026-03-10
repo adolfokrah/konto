@@ -78,11 +78,11 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
         {/* Marketing — convert donors to jar creators */}
         <div className="mt-8 border-t border-gray-100 pt-8">
           <p className="text-sm font-supreme font-semibold text-black mb-1">
-            Want to collect money too?
+            Do you also need to collect money?
           </p>
           <p className="text-xs text-gray-500 font-supreme mb-5 leading-relaxed">
-            Create your own savings jar on Hogapay and let friends &amp; family contribute to your
-            goals — just like you did today.
+            Download Hogapay, create your jar, share the link — and your people will send money
+            straight to you.
           </p>
 
           {/* App Store buttons */}
