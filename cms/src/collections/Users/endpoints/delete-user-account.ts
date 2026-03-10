@@ -84,22 +84,29 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
 
     if (userJars.docs.length > 0) {
       const jarIds = userJars.docs.map((jar: any) => jar.id)
-      const contributions = await req.payload.find({
+      const allTransactions = await req.payload.find({
         collection: 'transactions',
-        where: {
-          jar: { in: jarIds },
-          paymentStatus: { equals: 'completed' },
-          type: { equals: 'contribution' },
-        },
+        where: { jar: { in: jarIds } },
         pagination: false,
-        select: { amountContributed: true },
+        select: { amountContributed: true, type: true, paymentStatus: true },
         overrideAccess: true,
       })
 
-      const totalBalance = contributions.docs.reduce(
-        (sum, tx: any) => sum + (tx.amountContributed || 0),
-        0,
-      )
+      const contributionsSum = allTransactions.docs
+        .filter((tx: any) => tx.type === 'contribution' && tx.paymentStatus === 'completed')
+        .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
+
+      const payoutsSum = allTransactions.docs
+        .filter(
+          (tx: any) =>
+            tx.type === 'payout' &&
+            (tx.paymentStatus === 'pending' ||
+              tx.paymentStatus === 'completed' ||
+              tx.paymentStatus === 'awaiting-approval'),
+        )
+        .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
+
+      const totalBalance = contributionsSum + payoutsSum
 
       if (totalBalance > 0) {
         return Response.json(
