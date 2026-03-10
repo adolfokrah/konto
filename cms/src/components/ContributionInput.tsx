@@ -377,7 +377,7 @@ export default function ContributionInput({
 
         {/* Transaction Fee */}
         <div className="flex justify-between text-gray-700">
-          <span>Transaction fee ({transactionFeePercentage}%)</span>
+          <span>Processing fee</span>
           <span>
             {currency} {formatAmount(transactionFee)}
           </span>

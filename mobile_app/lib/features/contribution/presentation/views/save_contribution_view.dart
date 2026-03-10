@@ -305,7 +305,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           Builder(builder: (context) {
                             final contributionAmount = double.tryParse(amount!) ?? 0.0;
                             final isMobileMoney = _selectedPaymentMethod == 'mobile-money';
-                            final feePercentage = isMobileMoney ? _systemSettings.collectionFee : 0.0;
                             final feeAmount = isMobileMoney ? _systemSettings.calculateCollectionFee(contributionAmount) : 0.0;
                             final totalAmount = contributionAmount + feeAmount;
 
@@ -363,7 +362,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Transaction fee ($feePercentage%)',
+                                        'Processing fee',
                                         style: TextStyles.titleRegularSm.copyWith(
                                           color: Theme.of(context)
                                               .colorScheme
