@@ -108,8 +108,8 @@ class _ReferralContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.spacingXs),
             _StepTile(
               number: '3',
-              title: 'You both earn',
-              subtitle: 'Rewards are added automatically once they\'re active.',
+              title: 'You earn',
+              subtitle: 'Your rewards are added automatically once your friend is active.',
               isDark: isDark,
             ),
 
