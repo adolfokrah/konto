@@ -25,6 +25,7 @@ class OtpView extends StatelessWidget {
     final countryCode = args?['countryCode'] as String?;
     final skipInitialOtp = args?['skipInitialOtp'] as bool? ?? false;
     final isRegistering = args?['isRegistering'] as bool?;
+    final onConfirm = args?['onConfirm'] as Future<bool> Function(String)?;
 
     return _OtpViewContent(
       phoneNumber: phoneNumber,
@@ -32,6 +33,7 @@ class OtpView extends StatelessWidget {
       countryCode: countryCode,
       skipInitialOtp: skipInitialOtp,
       isRegistering: isRegistering,
+      onConfirm: onConfirm,
     );
   }
 }
@@ -42,6 +44,7 @@ class _OtpViewContent extends StatefulWidget {
   final String? countryCode;
   final bool skipInitialOtp;
   final bool? isRegistering;
+  final Future<bool> Function(String)? onConfirm;
 
   const _OtpViewContent({
     this.phoneNumber,
@@ -49,6 +52,7 @@ class _OtpViewContent extends StatefulWidget {
     this.countryCode,
     this.skipInitialOtp = false,
     this.isRegistering,
+    this.onConfirm,
   });
 
   @override
@@ -59,6 +63,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   Timer? _timer;
   int _resendCountdown = 30;
   bool _canResend = false;
+  bool _confirming = false;
 
   @override
   void initState() {
@@ -135,7 +140,17 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     }
   }
 
-  void _handleOtpCompleted(String otp) {
+  Future<void> _handleOtpCompleted(String otp) async {
+    // Custom confirm handler (e.g. referral withdrawal)
+    if (widget.onConfirm != null) {
+      setState(() => _confirming = true);
+      final success = await widget.onConfirm!(otp);
+      if (!mounted) return;
+      setState(() => _confirming = false);
+      if (success) context.pop();
+      return;
+    }
+
     final state = context.read<VerificationBloc>().state;
 
     // Allow verification from both VerificationCodeSent and VerificationFailure states
@@ -241,6 +256,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                     return AppOtpInput(
                       length: 6,
                       hasError: false,
+                      enabled: !_confirming,
                       onCompleted: _handleOtpCompleted,
                     );
                   },

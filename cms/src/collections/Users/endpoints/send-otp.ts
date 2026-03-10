@@ -1,15 +1,10 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
-import { emailService } from '@/utilities/emailService'
-import { sendSMS } from '@/utilities/sms'
+import { generateAndSendOtp, generateOTPCode } from '@/utilities/otp'
 
 // In-memory OTP store for pre-registration users (keyed by countryCode+phoneNumber)
 // For existing users, OTP is stored on the user document
 export const otpStore = new Map<string, { code: string; expiry: Date; attempts: number }>()
-
-function generateOTPCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
-}
 
 const OTP_VALIDITY_MINUTES = 5
 
@@ -58,43 +53,19 @@ export const sendOTP = async (req: PayloadRequest) => {
 
     const isDemoUser = userResult.docs.length > 0 && userResult.docs[0].demoUser === true
 
-    // Demo users always get 123456; real users get a random code
-    const code = isDemoUser ? '123456' : generateOTPCode()
-    const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
-
     if (userResult.docs.length > 0) {
-      // Store OTP on existing user document
-      await req.payload.update({
-        collection: 'users',
-        id: userResult.docs[0].id,
-        data: {
-          otpCode: code,
-          otpExpiry: expiry.toISOString(),
-          otpAttempts: 0,
-        },
+      // Existing user — store OTP on document and send via shared utility
+      await generateAndSendOtp(req.payload, userResult.docs[0].id, {
+        phone: `${countryCode}${formattedPhoneNumber}`,
+        email,
+        isDemoUser,
       })
     } else {
-      // Store OTP in memory for pre-registration users
+      // Pre-registration user — store OTP in memory only (no account to send to)
+      const code = generateOTPCode()
+      const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
       const key = `${countryCode}${formattedPhoneNumber}`
       otpStore.set(key, { code, expiry, attempts: 0 })
-    }
-
-    // Skip SMS/email for demo users
-    if (!isDemoUser) {
-      // Send OTP via email
-      if (email) {
-        await emailService.sendOTPEmail(email, code)
-      }
-
-      // Send OTP via SMS
-      if (formattedPhoneNumber && countryCode) {
-        const fullPhoneNumber = `${countryCode}${formattedPhoneNumber}`
-
-        await sendSMS(
-          fullPhoneNumber,
-          `your Hogapay verification code is: ${code}. Do not share this code with anyone.`,
-        )
-      }
     }
 
     return Response.json(

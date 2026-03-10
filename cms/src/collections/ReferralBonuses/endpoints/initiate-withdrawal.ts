@@ -1,11 +1,5 @@
 import type { PayloadHandler } from 'payload'
-import { sendSMS } from '@/utilities/sms'
-
-const OTP_VALIDITY_MINUTES = 5
-
-function generateOTPCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
-}
+import { generateAndSendOtp } from '@/utilities/otp'
 
 export const initiateWithdrawal: PayloadHandler = async (req) => {
   const user = req.user
@@ -99,22 +93,14 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     )
   }
 
-  // Generate and store OTP on the user document
-  const code = fullUser.demoUser ? '123456' : generateOTPCode()
-  const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
-
-  await req.payload.update({
-    collection: 'users',
-    id: user.id,
-    data: { otpCode: code, otpExpiry: expiry.toISOString(), otpAttempts: 0 },
-    overrideAccess: true,
+  // Generate OTP and send via SMS + email
+  const phone = `${fullUser.countryCode}${fullUser.phoneNumber}`
+  await generateAndSendOtp(req.payload, user.id, {
+    phone,
+    email: fullUser.email,
+    isDemoUser: fullUser.demoUser ?? false,
+    message: `Your Hogapay withdrawal code is: {code}. Do not share this with anyone.`,
   })
-
-  // Send OTP via SMS
-  if (!fullUser.demoUser) {
-    const phone = `${fullUser.countryCode}${fullUser.phoneNumber}`
-    await sendSMS(phone, `Your Hogapay withdrawal code is: ${code}. Do not share this with anyone.`)
-  }
 
   // Mask phone for display
   const rawPhone = fullUser.phoneNumber ?? ''

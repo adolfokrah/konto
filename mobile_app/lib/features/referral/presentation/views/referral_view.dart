@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/core/widgets/otp_input.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
+import 'package:Hoga/route.dart';
 
 class ReferralView extends StatelessWidget {
   const ReferralView({super.key});
@@ -389,16 +390,34 @@ class _EarningsSectionState extends State<_EarningsSection> {
       return;
     }
 
-    // Show OTP bottom sheet
-    final confirmed = await _WithdrawalOtpSheet.show(
-      context,
-      amount: (init['amount'] as num).toDouble(),
-      maskedPhone: init['maskedPhone'] as String,
-      bank: init['bank'] as String,
-      accountNumber: init['accountNumber'] as String,
+    // Navigate to shared OTP view with a custom confirm handler
+    await context.push(
+      AppRoutes.otp,
+      extra: {
+        'skipInitialOtp': true,
+        'onConfirm': (String otp) async {
+          final result = await getIt<ReferralApiProvider>().confirmWithdrawal(otp);
+          if (!mounted) return false;
+          if (result['success'] == true) {
+            AppSnackBar.show(
+              context,
+              message: result['message'] ?? 'Withdrawal submitted!',
+              type: SnackBarType.success,
+            );
+            return true;
+          } else {
+            AppSnackBar.show(
+              context,
+              message: result['message'] ?? 'Invalid OTP',
+              type: SnackBarType.error,
+            );
+            return false;
+          }
+        },
+      },
     );
 
-    if (confirmed == true) _reload();
+    if (mounted) _reload();
   }
 
   @override
@@ -438,188 +457,6 @@ class _EarningsSectionState extends State<_EarningsSection> {
   }
 }
 
-// ── Withdrawal OTP bottom sheet ─────────────────────────────────────────────
-
-class _WithdrawalOtpSheet extends StatefulWidget {
-  final double amount;
-  final String maskedPhone;
-  final String bank;
-  final String accountNumber;
-
-  const _WithdrawalOtpSheet({
-    required this.amount,
-    required this.maskedPhone,
-    required this.bank,
-    required this.accountNumber,
-  });
-
-  static Future<bool?> show(
-    BuildContext context, {
-    required double amount,
-    required String maskedPhone,
-    required String bank,
-    required String accountNumber,
-  }) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _WithdrawalOtpSheet(
-        amount: amount,
-        maskedPhone: maskedPhone,
-        bank: bank,
-        accountNumber: accountNumber,
-      ),
-    );
-  }
-
-  @override
-  State<_WithdrawalOtpSheet> createState() => _WithdrawalOtpSheetState();
-}
-
-class _WithdrawalOtpSheetState extends State<_WithdrawalOtpSheet> {
-  String _otp = '';
-  bool _confirming = false;
-  bool _hasError = false;
-
-  Future<void> _confirm() async {
-    if (_otp.length < 6) return;
-    setState(() { _confirming = true; _hasError = false; });
-
-    final result = await getIt<ReferralApiProvider>().confirmWithdrawal(_otp);
-    setState(() => _confirming = false);
-
-    if (!mounted) return;
-
-    if (result['success'] == true) {
-      Navigator.of(context).pop(true);
-      AppSnackBar.show(
-        context,
-        message: result['message'] ?? 'Withdrawal submitted!',
-        type: SnackBarType.success,
-      );
-    } else {
-      setState(() => _hasError = true);
-      AppSnackBar.show(
-        context,
-        message: result['message'] ?? 'Invalid OTP',
-        type: SnackBarType.error,
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark
-        ? Theme.of(context).colorScheme.surface
-        : Colors.white;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            Text('Confirm withdrawal', style: AppTextStyles.titleBoldLg),
-            const SizedBox(height: 8),
-
-            // Summary
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.spacingM),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.black.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SummaryRow(label: 'Amount', value: 'GHS ${widget.amount.toStringAsFixed(2)}'),
-                  const SizedBox(height: 6),
-                  _SummaryRow(label: 'To', value: '${widget.bank} ${widget.accountNumber}'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            Text(
-              'Enter the 6-digit code sent to ${widget.maskedPhone}',
-              style: AppTextStyles.titleRegularXs.copyWith(
-                color: isDark ? Colors.white60 : Colors.black54,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-
-            AppOtpInput(
-              length: 6,
-              hasError: _hasError,
-              enabled: !_confirming,
-              onChanged: (v) => setState(() { _otp = v; _hasError = false; }),
-              onCompleted: (_) => _confirm(),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: FilledButton(
-                onPressed: (_otp.length == 6 && !_confirming) ? _confirm : null,
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-                child: _confirming
-                    ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Confirm'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _SummaryRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTextStyles.titleRegularXs.copyWith(color: Colors.grey)),
-        Text(value, style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
-      ],
-    );
-  }
-}
 
 class _EarningsCard extends StatelessWidget {
   final double balance;
