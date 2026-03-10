@@ -148,6 +148,7 @@ export interface Config {
       'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
       'process-payout': TaskProcessPayout;
+      'process-referral-withdrawal': TaskProcessReferralWithdrawal;
       'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
@@ -1920,6 +1921,7 @@ export interface PayloadJob {
           | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
           | 'process-payout'
+          | 'process-referral-withdrawal'
           | 'check-eganow-payout-balance'
           | 'process-refund'
           | 'send-push-campaign'
@@ -1968,6 +1970,7 @@ export interface PayloadJob {
         | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
         | 'process-payout'
+        | 'process-referral-withdrawal'
         | 'check-eganow-payout-balance'
         | 'process-refund'
         | 'send-push-campaign'
@@ -3493,6 +3496,21 @@ export interface TaskProcessPayout {
     userAccountNumber: string;
     userAccountHolder: string;
     existingTransactionId?: string | null;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcess-referral-withdrawal".
+ */
+export interface TaskProcessReferralWithdrawal {
+  input: {
+    withdrawalRecordId: string;
+    userId: string;
+    bank: string;
+    accountNumber: string;
+    accountHolder: string;
+    amount: string;
   };
   output?: unknown;
 }

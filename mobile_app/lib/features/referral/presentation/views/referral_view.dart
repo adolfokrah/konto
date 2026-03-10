@@ -355,7 +355,7 @@ class _EarningsSectionState extends State<_EarningsSection> {
     if (authState is! AuthAuthenticated) return;
     final user = authState.user;
 
-    if (user.kycStatus != 'approved') {
+    if (user.kycStatus != 'verified') {
       AppSnackBar.show(
         context,
         message: 'Complete your KYC verification first.',

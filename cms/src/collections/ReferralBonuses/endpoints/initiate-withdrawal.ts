@@ -18,8 +18,8 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     overrideAccess: true,
   })
 
-  // Guard: KYC must be approved
-  if (fullUser.kycStatus !== 'approved') {
+  // Guard: KYC must be verified
+  if (fullUser.kycStatus !== 'verified') {
     return Response.json(
       {
         success: false,
