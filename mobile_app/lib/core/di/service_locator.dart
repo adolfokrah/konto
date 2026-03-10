@@ -24,6 +24,7 @@ import 'package:Hoga/features/notifications/data/api_proivders/notifications_pro
 import 'package:Hoga/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:Hoga/features/collaborators/data/api_providers/collaborators_providers.dart';
 import 'package:Hoga/features/collaborators/data/repositories/collaborators_repository.dart';
+import 'package:Hoga/features/referral/data/referral_api_provider.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -131,6 +132,12 @@ void setupServiceLocator() {
   );
   getIt.registerLazySingleton<CollaboratorsProvider>(
     () => CollaboratorsProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<ReferralApiProvider>(
+    () => ReferralApiProvider(
       dio: getIt<Dio>(),
       userStorageService: getIt<UserStorageService>(),
     ),

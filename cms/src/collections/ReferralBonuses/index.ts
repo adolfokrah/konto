@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { myBonuses } from './endpoints/my-bonuses'
+import { requestWithdrawal } from './endpoints/request-withdrawal'
 
 export const ReferralBonuses: CollectionConfig = {
   slug: 'referral-bonuses',
@@ -79,6 +81,7 @@ export const ReferralBonuses: CollectionConfig = {
       defaultValue: 'pending',
       options: [
         { label: 'Pending', value: 'pending' },
+        { label: 'Withdrawal Requested', value: 'withdrawal-requested' },
         { label: 'Paid', value: 'paid' },
         { label: 'Cancelled', value: 'cancelled' },
       ],
@@ -87,6 +90,18 @@ export const ReferralBonuses: CollectionConfig = {
       name: 'description',
       type: 'text',
       required: false,
+    },
+  ],
+  endpoints: [
+    {
+      path: '/my-bonuses',
+      method: 'get',
+      handler: myBonuses,
+    },
+    {
+      path: '/request-withdrawal',
+      method: 'post',
+      handler: requestWithdrawal,
     },
   ],
 }

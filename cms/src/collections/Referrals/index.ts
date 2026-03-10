@@ -16,8 +16,11 @@ export const Referrals: CollectionConfig = {
       if ((user as any)?.role === 'admin') return true
       if (user) {
         return {
-          or: [{ referredBy: { equals: user.id } }, { referral: { equals: user.id } }],
-        }
+          or: [
+            { referredBy: { equals: user.id } } as Record<string, unknown>,
+            { referral: { equals: user.id } } as Record<string, unknown>,
+          ],
+        } as any
       }
       return false
     },

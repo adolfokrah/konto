@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/referral/data/referral_api_provider.dart';
 
 class ReferralView extends StatelessWidget {
   const ReferralView({super.key});
@@ -70,6 +72,11 @@ class _ReferralContent extends StatelessWidget {
 
             // ── Share button ──────────────────────────────────────────────
             _ShareButton(onTap: () => _shareCode(code, name)),
+
+            const SizedBox(height: AppSpacing.spacingL),
+
+            // ── Earnings ──────────────────────────────────────────────────
+            _EarningsSection(isDark: isDark),
 
             const SizedBox(height: AppSpacing.spacingL),
 
@@ -301,6 +308,244 @@ class _StepTile extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Earnings section ───────────────────────────────────────────────────────────
+
+class _EarningsSection extends StatefulWidget {
+  final bool isDark;
+  const _EarningsSection({required this.isDark});
+
+  @override
+  State<_EarningsSection> createState() => _EarningsSectionState();
+}
+
+class _EarningsSectionState extends State<_EarningsSection> {
+  late Future<Map<String, dynamic>> _bonusesFuture;
+  bool _withdrawing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
+  }
+
+  void _reload() {
+    setState(() {
+      _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
+    });
+  }
+
+  Future<void> _requestWithdrawal() async {
+    setState(() => _withdrawing = true);
+    final result = await getIt<ReferralApiProvider>().requestWithdrawal();
+    setState(() => _withdrawing = false);
+
+    if (!mounted) return;
+    if (result['success'] == true) {
+      AppSnackBar.show(context, message: result['message'] ?? 'Withdrawal requested!', type: SnackBarType.success);
+      _reload();
+    } else {
+      AppSnackBar.show(context, message: result['message'] ?? 'Something went wrong', type: SnackBarType.error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Your earnings', style: AppTextStyles.titleBoldLg),
+        const SizedBox(height: AppSpacing.spacingS),
+        FutureBuilder<Map<String, dynamic>>(
+          future: _bonusesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ));
+            }
+
+            final summary = snapshot.data?['summary'] as Map<String, dynamic>? ?? {};
+            final pending = (summary['pending'] as num?)?.toDouble() ?? 0.0;
+            final paid = (summary['paid'] as num?)?.toDouble() ?? 0.0;
+            final requested = (summary['withdrawalRequested'] as num?)?.toDouble() ?? 0.0;
+
+            return _EarningsCard(
+              pending: pending,
+              paid: paid,
+              withdrawalRequested: requested,
+              isDark: widget.isDark,
+              withdrawing: _withdrawing,
+              onWithdraw: pending > 0 ? _requestWithdrawal : null,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _EarningsCard extends StatelessWidget {
+  final double pending;
+  final double paid;
+  final double withdrawalRequested;
+  final bool isDark;
+  final bool withdrawing;
+  final VoidCallback? onWithdraw;
+
+  const _EarningsCard({
+    required this.pending,
+    required this.paid,
+    required this.withdrawalRequested,
+    required this.isDark,
+    required this.withdrawing,
+    required this.onWithdraw,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final hasRequested = withdrawalRequested > 0;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.spacingM),
+      decoration: BoxDecoration(
+        color: isDark ? primary : const Color(0xFFFDF7EC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Balance row ──
+          Row(
+            children: [
+              Expanded(
+                child: _BalancePill(
+                  label: 'Pending',
+                  amount: pending,
+                  color: const Color(0xFFF59E0B),
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.spacingS),
+              Expanded(
+                child: _BalancePill(
+                  label: 'Paid out',
+                  amount: paid,
+                  color: const Color(0xFF10B981),
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+
+          if (hasRequested) ...[
+            const SizedBox(height: AppSpacing.spacingS),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.hourglass_top_rounded, size: 14,
+                      color: isDark ? Colors.white60 : Colors.black45),
+                  const SizedBox(width: 6),
+                  Text(
+                    'GHS ${withdrawalRequested.toStringAsFixed(2)} withdrawal in progress',
+                    style: AppTextStyles.titleRegularXs.copyWith(
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (pending > 0) ...[
+            const SizedBox(height: AppSpacing.spacingM),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: FilledButton(
+                onPressed: withdrawing ? null : onWithdraw,
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  backgroundColor: isDark ? Colors.white : Colors.black87,
+                  foregroundColor: isDark ? Colors.black : Colors.white,
+                ),
+                child: withdrawing
+                    ? const SizedBox(width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text('Withdraw GHS ${pending.toStringAsFixed(2)}',
+                        style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+
+          if (pending == 0 && !hasRequested) ...[
+            const SizedBox(height: AppSpacing.spacingS),
+            Text(
+              'Refer friends to start earning bonuses.',
+              style: AppTextStyles.titleRegularXs.copyWith(
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BalancePill extends StatelessWidget {
+  final String label;
+  final double amount;
+  final Color color;
+  final bool isDark;
+
+  const _BalancePill({
+    required this.label,
+    required this.amount,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.titleRegularXs.copyWith(
+            color: isDark ? Colors.white54 : Colors.black45,
+          )),
+          const SizedBox(height: 4),
+          Text(
+            'GHS ${amount.toStringAsFixed(2)}',
+            style: AppTextStyles.titleMediumS.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
           ),
         ],
