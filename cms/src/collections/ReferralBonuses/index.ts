@@ -81,9 +81,8 @@ export const ReferralBonuses: CollectionConfig = {
       defaultValue: 'pending',
       options: [
         { label: 'Pending', value: 'pending' },
-        { label: 'Withdrawal Requested', value: 'withdrawal-requested' },
         { label: 'Paid', value: 'paid' },
-        { label: 'Cancelled', value: 'cancelled' },
+        { label: 'Failed', value: 'failed' },
       ],
     },
     {

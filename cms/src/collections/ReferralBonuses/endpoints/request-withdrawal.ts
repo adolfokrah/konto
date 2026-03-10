@@ -21,22 +21,38 @@ export const requestWithdrawal: PayloadHandler = async (req) => {
     )
   }
 
+  const totalAmount = result.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
+  const netAmount = parseFloat(totalAmount.toFixed(4))
+
+  // Mark all pending bonuses as paid
   await Promise.all(
     result.docs.map((bonus) =>
       req.payload.update({
         collection: 'referral-bonuses',
         id: bonus.id,
-        data: { status: 'withdrawal-requested' },
+        data: { status: 'paid' },
         overrideAccess: true,
       }),
     ),
   )
 
-  const totalAmount = result.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
+  // Create a negative withdrawal record so the ledger balances to zero
+  await req.payload.create({
+    collection: 'referral-bonuses',
+    data: {
+      user: user.id,
+      referral: result.docs[0].referral as string,
+      bonusType: result.docs[0].bonusType,
+      amount: -netAmount,
+      status: 'paid',
+      description: `Withdrawal of GHS ${netAmount.toFixed(2)}`,
+    },
+    overrideAccess: true,
+  })
 
   return Response.json({
     success: true,
-    message: `Withdrawal request of GHS ${totalAmount.toFixed(2)} submitted successfully`,
-    amount: parseFloat(totalAmount.toFixed(4)),
+    message: `GHS ${netAmount.toFixed(2)} withdrawal submitted. Our team will process it shortly.`,
+    amount: netAmount,
   })
 }

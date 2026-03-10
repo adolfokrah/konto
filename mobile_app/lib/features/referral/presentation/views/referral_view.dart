@@ -374,17 +374,15 @@ class _EarningsSectionState extends State<_EarningsSection> {
             }
 
             final summary = snapshot.data?['summary'] as Map<String, dynamic>? ?? {};
-            final pending = (summary['pending'] as num?)?.toDouble() ?? 0.0;
-            final paid = (summary['paid'] as num?)?.toDouble() ?? 0.0;
-            final requested = (summary['withdrawalRequested'] as num?)?.toDouble() ?? 0.0;
+            final balance = (summary['balance'] as num?)?.toDouble() ?? 0.0;
+            final totalEarned = (summary['totalEarned'] as num?)?.toDouble() ?? 0.0;
 
             return _EarningsCard(
-              pending: pending,
-              paid: paid,
-              withdrawalRequested: requested,
+              balance: balance,
+              totalEarned: totalEarned,
               isDark: widget.isDark,
               withdrawing: _withdrawing,
-              onWithdraw: pending > 0 ? _requestWithdrawal : null,
+              onWithdraw: balance > 0 ? _requestWithdrawal : null,
             );
           },
         ),
@@ -394,17 +392,15 @@ class _EarningsSectionState extends State<_EarningsSection> {
 }
 
 class _EarningsCard extends StatelessWidget {
-  final double pending;
-  final double paid;
-  final double withdrawalRequested;
+  final double balance;
+  final double totalEarned;
   final bool isDark;
   final bool withdrawing;
   final VoidCallback? onWithdraw;
 
   const _EarningsCard({
-    required this.pending,
-    required this.paid,
-    required this.withdrawalRequested,
+    required this.balance,
+    required this.totalEarned,
     required this.isDark,
     required this.withdrawing,
     required this.onWithdraw,
@@ -413,7 +409,6 @@ class _EarningsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    final hasRequested = withdrawalRequested > 0;
 
     return Container(
       width: double.infinity,
@@ -435,8 +430,8 @@ class _EarningsCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _BalancePill(
-                  label: 'Pending',
-                  amount: pending,
+                  label: 'Balance',
+                  amount: balance,
                   color: const Color(0xFFF59E0B),
                   isDark: isDark,
                 ),
@@ -444,8 +439,8 @@ class _EarningsCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.spacingS),
               Expanded(
                 child: _BalancePill(
-                  label: 'Paid out',
-                  amount: paid,
+                  label: 'Total earned',
+                  amount: totalEarned,
                   color: const Color(0xFF10B981),
                   isDark: isDark,
                 ),
@@ -453,31 +448,7 @@ class _EarningsCard extends StatelessWidget {
             ],
           ),
 
-          if (hasRequested) ...[
-            const SizedBox(height: AppSpacing.spacingS),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.hourglass_top_rounded, size: 14,
-                      color: isDark ? Colors.white60 : Colors.black45),
-                  const SizedBox(width: 6),
-                  Text(
-                    'GHS ${withdrawalRequested.toStringAsFixed(2)} withdrawal in progress',
-                    style: AppTextStyles.titleRegularXs.copyWith(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          if (pending > 0) ...[
+          if (balance > 0) ...[
             const SizedBox(height: AppSpacing.spacingM),
             SizedBox(
               width: double.infinity,
@@ -492,13 +463,13 @@ class _EarningsCard extends StatelessWidget {
                 child: withdrawing
                     ? const SizedBox(width: 18, height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text('Withdraw GHS ${pending.toStringAsFixed(2)}',
+                    : Text('Withdraw GHS ${balance.toStringAsFixed(2)}',
                         style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
               ),
             ),
           ],
 
-          if (pending == 0 && !hasRequested) ...[
+          if (balance == 0) ...[
             const SizedBox(height: AppSpacing.spacingS),
             Text(
               'Refer friends to start earning bonuses.',

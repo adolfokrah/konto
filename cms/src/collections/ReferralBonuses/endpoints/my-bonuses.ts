@@ -13,24 +13,18 @@ export const myBonuses: PayloadHandler = async (req) => {
     overrideAccess: true,
   })
 
-  const pending = result.docs
-    .filter((b) => b.status === 'pending')
-    .reduce((sum, b) => sum + (b.amount ?? 0), 0)
+  // Ledger: positives = earned, negatives = withdrawals paid out
+  const balance = result.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
 
-  const paid = result.docs
-    .filter((b) => b.status === 'paid')
-    .reduce((sum, b) => sum + (b.amount ?? 0), 0)
-
-  const withdrawalRequested = result.docs
-    .filter((b) => b.status === 'withdrawal-requested')
+  const totalEarned = result.docs
+    .filter((b) => (b.amount ?? 0) > 0)
     .reduce((sum, b) => sum + (b.amount ?? 0), 0)
 
   return Response.json({
     success: true,
     summary: {
-      pending: parseFloat(pending.toFixed(4)),
-      paid: parseFloat(paid.toFixed(4)),
-      withdrawalRequested: parseFloat(withdrawalRequested.toFixed(4)),
+      balance: parseFloat(balance.toFixed(4)),
+      totalEarned: parseFloat(totalEarned.toFixed(4)),
     },
     bonuses: result.docs,
   })
