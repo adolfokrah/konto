@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/rating_service.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
@@ -404,6 +405,7 @@ class _EarningsSectionState extends State<_EarningsSection> {
               message: result['message'] ?? 'Withdrawal submitted!',
               type: SnackBarType.success,
             );
+            RatingService.instance.maybeRequestReview();
             return true;
           } else {
             AppSnackBar.show(

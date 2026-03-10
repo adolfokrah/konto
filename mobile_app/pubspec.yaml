@@ -40,7 +40,7 @@ dependencies:
   story_view: ^0.16.6
   flutter_native_splash: ^2.4.7
   get_it: ^9.2.0
-  
+  in_app_review: ^2.0.10
 
 dev_dependencies:
   sentry_dart_plugin: ^3.1.1

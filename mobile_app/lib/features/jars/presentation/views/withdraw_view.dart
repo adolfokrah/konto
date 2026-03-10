@@ -11,6 +11,7 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/services/rating_service.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -189,6 +190,7 @@ class _WithdrawViewState extends State<WithdrawView> {
         // Refresh jar summary to reflect updated balance
         context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
         context.pop();
+        RatingService.instance.maybeRequestReview();
       } else {
         AppSnackBar.show(
           context,
