@@ -170,6 +170,38 @@ export const SystemSettings: GlobalConfig = {
             },
           ],
         },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'referralMinWithdrawalAmount',
+              label: 'Min Withdrawal (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 20,
+              min: 0,
+              admin: {
+                description: 'Minimum referral bonus balance required to initiate a withdrawal.',
+                step: 1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'referralMaxWithdrawalAmount',
+              label: 'Max Withdrawal (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 500,
+              min: 0,
+              admin: {
+                description:
+                  'Maximum referral bonus amount that can be withdrawn at once. Set to 0 for no limit.',
+                step: 10,
+                width: '50%',
+              },
+            },
+          ],
+        },
       ],
     },
   ],

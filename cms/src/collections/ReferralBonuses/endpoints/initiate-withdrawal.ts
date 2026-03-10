@@ -2,7 +2,6 @@ import type { PayloadHandler } from 'payload'
 import { sendSMS } from '@/utilities/sms'
 
 const OTP_VALIDITY_MINUTES = 5
-const MINIMUM_WITHDRAWAL_AMOUNT = 20
 
 function generateOTPCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -75,11 +74,26 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
   }
 
-  if (amount < MINIMUM_WITHDRAWAL_AMOUNT) {
+  // Fetch withdrawal limits from system settings
+  const settings = await req.payload.findGlobal({ slug: 'system-settings' })
+  const minWithdrawal = settings?.referralMinWithdrawalAmount ?? 20
+  const maxWithdrawal = settings?.referralMaxWithdrawalAmount ?? 500
+
+  if (amount < minWithdrawal) {
     return Response.json(
       {
         success: false,
-        message: `Minimum withdrawal amount is GHS ${MINIMUM_WITHDRAWAL_AMOUNT.toFixed(2)}. Your current balance is GHS ${amount.toFixed(2)}.`,
+        message: `Minimum withdrawal amount is GHS ${minWithdrawal.toFixed(2)}. Your current balance is GHS ${amount.toFixed(2)}.`,
+      },
+      { status: 400 },
+    )
+  }
+
+  if (maxWithdrawal > 0 && amount > maxWithdrawal) {
+    return Response.json(
+      {
+        success: false,
+        message: `Maximum withdrawal amount is GHS ${maxWithdrawal.toFixed(2)}.`,
       },
       { status: 400 },
     )

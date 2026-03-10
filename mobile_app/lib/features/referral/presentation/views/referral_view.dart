@@ -119,9 +119,9 @@ class _ReferralContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.spacingS),
             _BenefitCard(
               icon: Icons.savings_outlined,
-              title: 'GHS 5 welcome bonus',
+              title: 'GHS 5 first contribution bonus',
               subtitle:
-                  'Earn GHS 5 when your friend\'s jar receives its very first contribution.',
+                  'Earn GHS 5 when your referred friend\'s jar receives its very first contribution.',
               isDark: isDark,
             ),
             const SizedBox(height: AppSpacing.spacingXs),
