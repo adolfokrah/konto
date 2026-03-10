@@ -73,49 +73,36 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
     overrideAccess: true,
   })
 
-  // Fetch pending bonuses
-  const bonuses = await req.payload.find({
+  // Compute available balance from all records
+  const allBonuses = await req.payload.find({
     collection: 'referral-bonuses',
-    where: {
-      and: [{ user: { equals: user.id } }, { status: { equals: 'pending' } }],
-    },
-    limit: 100,
+    where: { user: { equals: user.id } },
+    limit: 1000,
     pagination: false,
     overrideAccess: true,
   })
 
-  if (bonuses.totalDocs === 0) {
-    return Response.json(
-      { success: false, message: 'No pending balance to withdraw' },
-      { status: 400 },
-    )
+  const totalAmount = allBonuses.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
+  const netAmount = parseFloat(totalAmount.toFixed(4))
+
+  if (netAmount <= 0) {
+    return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
   }
 
-  const totalAmount = bonuses.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
-  const netAmount = parseFloat(totalAmount.toFixed(4))
   const accountSuffix = (fullUser.accountNumber ?? '').slice(-4)
   const bankName = fullUser.bank ?? ''
   const isMoMo = MOMO_PROVIDERS.has(bankName.toLowerCase())
 
-  // Mark all pending bonuses as paid
-  await Promise.all(
-    bonuses.docs.map((bonus) =>
-      req.payload.update({
-        collection: 'referral-bonuses',
-        id: bonus.id,
-        data: { status: 'paid' },
-        overrideAccess: true,
-      }),
-    ),
-  )
+  // Get a referral reference from the most recent earned bonus
+  const earnedBonus = allBonuses.docs.find((b) => (b.amount ?? 0) > 0)
 
   // Create negative withdrawal ledger entry (pending until payout confirms)
   const withdrawalRecord = await req.payload.create({
     collection: 'referral-bonuses',
     data: {
       user: user.id,
-      referral: bonuses.docs[0].referral as string,
-      bonusType: bonuses.docs[0].bonusType,
+      referral: earnedBonus?.referral as string,
+      bonusType: earnedBonus?.bonusType ?? 'fee_share',
       amount: -netAmount,
       status: 'pending',
       description: `Withdrawal of GHS ${netAmount.toFixed(2)} → ${bankName} ****${accountSuffix}`,

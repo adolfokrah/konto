@@ -42,25 +42,38 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     )
   }
 
-  // Guard: must have pending balance
-  const bonuses = await req.payload.find({
+  // Guard: no withdrawal already in progress
+  const inProgress = await req.payload.find({
     collection: 'referral-bonuses',
     where: {
       and: [{ user: { equals: user.id } }, { status: { equals: 'pending' } }],
     },
-    limit: 100,
+    limit: 1,
     pagination: false,
     overrideAccess: true,
   })
 
-  if (bonuses.totalDocs === 0) {
+  if (inProgress.totalDocs > 0) {
     return Response.json(
-      { success: false, message: 'No pending balance to withdraw' },
+      { success: false, message: 'A withdrawal is already being processed. Please wait.' },
       { status: 400 },
     )
   }
 
+  // Compute available balance from all records
+  const bonuses = await req.payload.find({
+    collection: 'referral-bonuses',
+    where: { user: { equals: user.id } },
+    limit: 1000,
+    pagination: false,
+    overrideAccess: true,
+  })
+
   const amount = parseFloat(bonuses.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0).toFixed(4))
+
+  if (amount <= 0) {
+    return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
+  }
 
   if (amount < MINIMUM_WITHDRAWAL_AMOUNT) {
     return Response.json(

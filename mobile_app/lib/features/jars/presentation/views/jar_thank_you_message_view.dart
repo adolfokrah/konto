@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
@@ -8,6 +9,25 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+
+const int _maxWords = 100;
+
+int _wordCount(String text) {
+  final trimmed = text.trim();
+  if (trimmed.isEmpty) return 0;
+  return trimmed.split(RegExp(r'\s+')).length;
+}
+
+class _WordLimitFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (_wordCount(newValue.text) <= _maxWords) return newValue;
+    return oldValue;
+  }
+}
 
 class JarThankYouMessageEditView extends StatefulWidget {
   const JarThankYouMessageEditView({super.key});
@@ -22,12 +42,16 @@ class _JarThankYouMessageEditViewState
   late final TextEditingController _textController;
   late final FocusNode _focusNode;
   bool _isInitialized = false;
+  int _words = 0;
 
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController();
     _focusNode = FocusNode();
+    _textController.addListener(() {
+      setState(() => _words = _wordCount(_textController.text));
+    });
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
     );
@@ -63,15 +87,29 @@ class _JarThankYouMessageEditViewState
                 final jarData = state.jarData;
                 if (!_isInitialized) {
                   _textController.text = jarData.thankYouMessage ?? '';
+                  _words = _wordCount(_textController.text);
                   _isInitialized = true;
                 }
 
                 return Column(
                   children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '$_words / $_maxWords words',
+                        style: AppTextStyles.titleMediumS.copyWith(
+                          color: _words >= _maxWords
+                              ? Colors.red
+                              : Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacingXs),
                     Expanded(
                       child: TextField(
                         controller: _textController,
                         focusNode: _focusNode,
+                        inputFormatters: [_WordLimitFormatter()],
                         cursorColor:
                             Theme.of(context).brightness == Brightness.dark
                                 ? Colors.white
