@@ -129,7 +129,7 @@ class _ReferralContent extends StatelessWidget {
               icon: Icons.percent_rounded,
               title: '20% fee share — forever',
               subtitle:
-                  'Earn 20% of Hogapay\'s cut every time your friend withdraws from a jar.',
+                  'Earn 20% of Hogapay\'s revenue each time your friend withdraws from their first jar.',
               isDark: isDark,
             ),
 

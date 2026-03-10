@@ -1,3 +1,5 @@
+import { fcmNotifications } from '@/utilities/fcmPushNotifications'
+
 /**
  * afterChange hook: processes referral bonuses when a transaction completes.
  *
@@ -8,6 +10,28 @@
  * 2. fee_share — percentage of Hogapay's withdrawal revenue paid to the referrer
  *    on every completed payout from a referred user's jar.
  */
+async function notifyReferrer(
+  payload: any,
+  referrerId: string,
+  title: string,
+  body: string,
+  data: Record<string, string>,
+) {
+  try {
+    const referrer = await payload.findByID({
+      collection: 'users',
+      id: referrerId,
+      overrideAccess: true,
+    })
+    const fcmToken = referrer?.fcmToken
+    if (fcmToken) {
+      await fcmNotifications.sendNotification([fcmToken], body, title, data)
+    }
+  } catch (err: any) {
+    console.error('[process-referral-bonus] Failed to send push notification:', err.message)
+  }
+}
+
 export const processReferralBonus = async ({
   doc,
   previousDoc,
@@ -106,12 +130,54 @@ export const processReferralBonus = async ({
       console.log(
         `[process-referral-bonus] first_contribution bonus created for referrer ${referrerId}`,
       )
+
+      await notifyReferrer(
+        req.payload,
+        referrerId,
+        'Referral Bonus Earned 🎉',
+        `You earned GHS ${bonusAmount.toFixed(2)}! Your referred friend just made their first contribution.`,
+        { type: 'referral_bonus', bonusType: 'first_contribution' },
+      )
     }
 
     // ── Bonus type 2: Fee share on payout ─────────────────────────────────────
     if (doc.type === 'payout') {
       const payoutFeeAmount = doc.payoutFeeAmount ?? 0
       if (payoutFeeAmount <= 0) return
+
+      // Only reward fee share from the referred user's FIRST jar
+      // (the jar that received their first completed mobile-money contribution)
+      const userJars = await req.payload.find({
+        collection: 'jars',
+        where: { creator: { equals: creatorId } },
+        limit: 100,
+        pagination: false,
+      })
+      const jarIds = userJars.docs.map((j) => j.id)
+
+      const firstContribResult = await req.payload.find({
+        collection: 'transactions',
+        where: {
+          and: [
+            { jar: { in: jarIds } },
+            { type: { equals: 'contribution' } },
+            { paymentStatus: { equals: 'completed' } },
+            { paymentMethod: { equals: 'mobile-money' } },
+          ],
+        },
+        sort: 'createdAt',
+        limit: 1,
+        pagination: false,
+      })
+
+      if (firstContribResult.totalDocs === 0) return
+
+      const firstJarId =
+        typeof firstContribResult.docs[0].jar === 'object'
+          ? firstContribResult.docs[0].jar?.id
+          : firstContribResult.docs[0].jar
+
+      if (jarId !== firstJarId) return
 
       const transferFeePercentage = settings?.transferFeePercentage ?? 1
       const hogapayTransferFeePercent = settings?.hogapayTransferFeePercent ?? 0.5
@@ -142,6 +208,14 @@ export const processReferralBonus = async ({
 
       console.log(
         `[process-referral-bonus] fee_share bonus of GHS ${bonusAmount} created for referrer ${referrerId}`,
+      )
+
+      await notifyReferrer(
+        req.payload,
+        referrerId,
+        'Referral Bonus Earned',
+        `You earned GHS ${bonusAmount.toFixed(2)} from your referred friend's withdrawal.`,
+        { type: 'referral_bonus', bonusType: 'fee_share' },
       )
     }
   } catch (err: any) {
