@@ -119,6 +119,7 @@ export const processReferralBonus = async ({
         data: {
           user: referrerId,
           referral: referral.id,
+          transaction: doc.id,
           bonusType: 'first_contribution',
           amount: bonusAmount,
           status: 'paid',

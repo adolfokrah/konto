@@ -15,6 +15,8 @@ import {
   Bell,
   RotateCcw,
   Wallet,
+  Gift,
+  Share2,
 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json())
@@ -64,6 +66,16 @@ const navItems = [
     label: 'Ledger',
     href: '/dashboard/ledger',
     icon: Wallet,
+  },
+  {
+    label: 'Referrals',
+    href: '/dashboard/referrals',
+    icon: Share2,
+  },
+  {
+    label: 'Referral Bonuses',
+    href: '/dashboard/referral-bonuses',
+    icon: Gift,
   },
 ]
 

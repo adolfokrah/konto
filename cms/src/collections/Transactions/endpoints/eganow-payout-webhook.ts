@@ -218,9 +218,11 @@ async function handleReferralWithdrawalWebhook(
         const fcm = new FCMPushNotifications()
         const amount = `GHS ${Math.abs(Number(bonusRecord.amount)).toFixed(2)}`
         if (mappedStatus === 'paid') {
+          const settings = await req.payload.findGlobal({ slug: 'system-settings' })
+          const feePercent = settings?.transferFeePercentage ?? 1
           await fcm.sendNotification(
             [fcmToken],
-            `Your referral bonus withdrawal of ${amount} has been sent to your account.`,
+            `Your referral bonus withdrawal of ${amount} has been sent to your account (${feePercent}% processing fee deducted).`,
             'Withdrawal Successful',
             { type: 'referral-withdrawal', bonusRecordId },
           )

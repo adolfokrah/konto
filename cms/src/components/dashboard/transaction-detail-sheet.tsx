@@ -124,9 +124,9 @@ export function TransactionDetailSheet({
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
 
-  // Fetch referral bonus linked to this transaction (fee_share for payouts)
+  // Fetch referral bonus linked to this transaction (first_contribution for contributions, fee_share for payouts)
   const { data: referralBonus } = useSWR<any>(
-    selected?.type === 'payout' ? `/api/referral-bonuses?where[transaction][equals]=${selected.id}&depth=1&limit=1` : null,
+    (selected?.type === 'payout' || selected?.type === 'contribution') ? `/api/referral-bonuses?where[transaction][equals]=${selected.id}&depth=1&limit=1` : null,
     async (url: string) => {
       const res = await fetch(url)
       const data = await res.json()
@@ -333,11 +333,17 @@ export function TransactionDetailSheet({
                 </div>
               )}
 
-              {/* Referral Fee Share */}
+              {/* Referral Bonus */}
               {referralBonus && (
                 <div>
-                  <h4 className="text-sm font-semibold mb-1">Referral Fee Share</h4>
+                  <h4 className="text-sm font-semibold mb-1">
+                    {referralBonus.bonusType === 'first_contribution' ? 'Referral First Contribution Bonus' : 'Referral Fee Share'}
+                  </h4>
                   <Separator className="mb-2" />
+                  <DetailRow
+                    label="Bonus Type"
+                    value={referralBonus.bonusType === 'first_contribution' ? 'First Contribution' : 'Fee Share'}
+                  />
                   <DetailRow
                     label="Referrer"
                     value={

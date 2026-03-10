@@ -192,7 +192,7 @@ class UserAccountView extends StatelessWidget {
             ),
             _buildMenuItem(
               context: context,
-              title: 'Referral',
+              title: 'Refer & Earn',
               onTap: () => context.push(AppRoutes.referral),
             ),
           ]),
