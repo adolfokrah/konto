@@ -15,6 +15,12 @@ export const sendOTP = async (req: PayloadRequest) => {
     await addDataAndFileToRequest(req)
     const { countryCode, phoneNumber, email } = req.data || {}
 
+    console.log('Send OTP Called', {
+      countryCode,
+      phoneNumber,
+      email,
+    })
+
     // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
     const formattedPhoneNumber =
       phoneNumber?.startsWith('0') && phoneNumber.length > 1
