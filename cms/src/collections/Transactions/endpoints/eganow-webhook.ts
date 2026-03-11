@@ -1,4 +1,57 @@
 import { PayloadRequest } from 'payload'
+import Eganow from '@/utilities/eganow'
+
+const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
+  SUCCESSFUL: 'completed',
+  FAILED: 'failed',
+  PENDING: 'pending',
+  AUTHENTICATION_IN_PROGRESS: 'pending',
+  EXPIRED: 'failed',
+  CANCELLED: 'failed',
+}
+
+async function verifyCollectionWithEganow(
+  transactionId: string,
+  webhookStatus: string,
+): Promise<'completed' | 'failed' | 'pending'> {
+  try {
+    const eganow = new Eganow({
+      username: process.env.EGANOW_SECRET_USERNAME!,
+      password: process.env.EGANOW_SECRET_PASSWORD!,
+      xAuth: process.env.EGANOW_X_AUTH_TOKEN!,
+    })
+
+    const statusResponse = await eganow.checkTransactionStatus({
+      transactionId,
+      languageId: 'en',
+    })
+
+    console.log(`Eganow API verification for ${transactionId}:`, JSON.stringify(statusResponse))
+
+    if (!statusResponse.isSuccess) {
+      console.warn(
+        `Eganow API did not recognise transaction ${transactionId}, falling back to webhook status`,
+      )
+      return statusMap[webhookStatus.toUpperCase()] ?? 'failed'
+    }
+
+    const apiStatus = statusResponse.transStatus || statusResponse.transactionstatus || ''
+    const mapped = statusMap[apiStatus.toUpperCase()]
+
+    if (!mapped || mapped === 'pending') {
+      // API still shows pending — trust the webhook if it says completed/failed
+      console.warn(`API status "${apiStatus}" is pending; using webhook status "${webhookStatus}"`)
+      return statusMap[webhookStatus.toUpperCase()] ?? 'failed'
+    }
+
+    return mapped
+  } catch (err: any) {
+    console.error(
+      `Eganow API verification failed for ${transactionId}: ${err.message}. Falling back to webhook status.`,
+    )
+    return statusMap[webhookStatus.toUpperCase()] ?? 'failed'
+  }
+}
 
 /**
  * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
@@ -66,17 +119,8 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       return new Response(null, { status: 200 })
     }
 
-    // Map Eganow status to our payment status
-    const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
-      SUCCESSFUL: 'completed',
-      FAILED: 'failed',
-      PENDING: 'pending',
-      AUTHENTICATION_IN_PROGRESS: 'pending',
-      EXPIRED: 'failed',
-      CANCELLED: 'failed',
-    }
-
-    const newStatus = statusMap[transactionStatus.toUpperCase()] || 'failed'
+    // Verify with Eganow API before trusting webhook status
+    const newStatus = await verifyCollectionWithEganow(transactionId, transactionStatus)
 
     console.log(`Updating contribution ${transactionId} to status: ${newStatus}`)
 
