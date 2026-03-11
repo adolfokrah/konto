@@ -38,6 +38,12 @@ function proxy(request: NextRequest) {
       pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|js|css|woff|woff2|ttf)$/i)
 
     if (shouldSkip) {
+      // Inject pathname header for dashboard routes so the layout can use it for redirects
+      if (pathname.startsWith('/dashboard')) {
+        const response = NextResponse.next()
+        response.headers.set('x-pathname', pathname)
+        return response
+      }
       return NextResponse.next()
     }
 
@@ -102,7 +108,7 @@ export default proxy
 
 export const config = {
   matcher: [
-    // Match root and language-specific paths, excluding API and static assets
-    '/((?!api|_next|admin|dashboard|media|monitoring|pay|payload|verify|email|robots.txt|sitemap.xml|favicon.ico|Logo.svg|fonts).*)',
+    // Match root, language-specific paths, and dashboard routes, excluding API and static assets
+    '/((?!api|_next|admin|media|monitoring|pay|payload|verify|email|robots.txt|sitemap.xml|favicon.ico|Logo.svg|fonts).*)',
   ],
 }

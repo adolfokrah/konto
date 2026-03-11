@@ -10,7 +10,7 @@ export default async function ProfilePage() {
   const requestHeaders = await getHeaders()
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user) redirect('/login?redirect=/dashboard/profile')
+  if (!user) redirect('/admin?redirect=%2Fdashboard%2Fprofile')
 
   return (
     <div className="mx-auto max-w-xl space-y-6">

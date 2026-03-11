@@ -56,7 +56,7 @@ export function TopBar({ user }: Props) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-52 border-r-border bg-card p-0">
-          <Sidebar />
+          <Sidebar user={user} />
         </SheetContent>
       </Sheet>
 

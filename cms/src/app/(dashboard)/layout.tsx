@@ -29,7 +29,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // Redirect if not authenticated or not admin
   if (!user || user.role !== 'admin') {
-    redirect('/admin')
+    const pathname = requestHeaders.get('x-pathname') ?? '/dashboard'
+    redirect(`/admin?redirect=${encodeURIComponent(pathname)}`)
   }
 
   return (
