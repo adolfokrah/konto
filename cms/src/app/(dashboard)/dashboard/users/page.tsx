@@ -6,6 +6,7 @@ import {
   ShieldAlert,
   Clock,
   ShieldX,
+  Activity,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
@@ -54,6 +55,9 @@ export default async function UsersPage({ searchParams }: Props) {
     where.role = { equals: role }
   }
 
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+
   // Run all queries in parallel
   const [
     totalCount,
@@ -61,6 +65,7 @@ export default async function UsersPage({ searchParams }: Props) {
     kycInReviewCount,
     kycVerifiedCount,
     adminCount,
+    dauCount,
     usersResult,
   ] = await Promise.all([
     payload.count({ collection: 'users', overrideAccess: true }),
@@ -83,6 +88,11 @@ export default async function UsersPage({ searchParams }: Props) {
       collection: 'users',
       overrideAccess: true,
       where: { role: { equals: 'admin' } },
+    }),
+    payload.count({
+      collection: 'dailyActiveUsers',
+      overrideAccess: true,
+      where: { createdAt: { greater_than_equal: startOfToday.toISOString() } },
     }),
     payload.find({
       collection: 'users',
@@ -149,6 +159,12 @@ export default async function UsersPage({ searchParams }: Props) {
           title="Admins"
           value={adminCount.totalDocs.toLocaleString()}
           icon={ShieldAlert}
+        />
+        <MetricCard
+          title="Daily Active Users"
+          value={dauCount.totalDocs.toLocaleString()}
+          description="Active today"
+          icon={Activity}
         />
       </div>
 

@@ -40,9 +40,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <body className="min-h-screen bg-background">
         <div className="flex min-h-screen">
           {/* Sidebar - hidden on mobile, sticky on lg+ */}
-          <div className="hidden w-64 lg:block">
+          <div className="hidden w-52 lg:block">
             <div className="sticky top-0 h-screen">
-              <Sidebar />
+              <Sidebar user={{ firstName: user.firstName, lastName: user.lastName, email: user.email }} />
             </div>
           </div>
 

@@ -21,6 +21,7 @@ import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
+import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
 
 export const Transactions: CollectionConfig = {
@@ -395,6 +396,11 @@ export const Transactions: CollectionConfig = {
       path: '/get-transaction',
       method: 'get',
       handler: getTransaction,
+    },
+    {
+      path: '/reconcile-momo-status',
+      method: 'get',
+      handler: reconcileMomoStatus,
     },
   ],
   hooks: {

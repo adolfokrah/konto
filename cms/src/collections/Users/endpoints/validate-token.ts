@@ -17,6 +17,35 @@ export const validateToken = async (req: PayloadRequest) => {
       )
     }
 
+    // Track daily active user (fire-and-forget)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    ;(async () => {
+      try {
+        const existing = await req.payload.find({
+          collection: 'dailyActiveUsers',
+          where: {
+            user: { equals: user.id },
+            createdAt: {
+              greater_than_equal: today.toISOString(),
+              less_than: tomorrow.toISOString(),
+            },
+          },
+          limit: 1,
+          overrideAccess: true,
+        })
+        if (existing.docs.length === 0) {
+          await req.payload.create({
+            collection: 'dailyActiveUsers',
+            data: { user: user.id },
+            overrideAccess: true,
+          })
+        }
+      } catch {}
+    })()
+
     // Return success with user data
     return Response.json({
       success: true,

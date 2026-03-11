@@ -303,6 +303,15 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'lastActiveAt',
+      type: 'date',
+      required: false,
+      admin: {
+        description: 'Last time the user made an authenticated request (used for DAU tracking)',
+        readOnly: true,
+      },
+    },
+    {
       label: 'Withdrawal Account',
       type: 'group',
       fields: [

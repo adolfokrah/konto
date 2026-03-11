@@ -55,7 +55,7 @@ export function TopBar({ user }: Props) {
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 border-r-border bg-card p-0">
+        <SheetContent side="left" className="w-52 border-r-border bg-card p-0">
           <Sidebar />
         </SheetContent>
       </Sheet>

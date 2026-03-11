@@ -500,6 +500,10 @@ export interface User {
    * Demo users always use OTP 123456 and skip SMS/email sending
    */
   demoUser?: boolean | null;
+  /**
+   * Last time the user made an authenticated request (used for DAU tracking)
+   */
+  lastActiveAt?: string | null;
   bank?: string | null;
   accountNumber?: string | null;
   accountHolder?: string | null;
@@ -2733,6 +2737,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   referralCode?: T;
   demoUser?: T;
+  lastActiveAt?: T;
   bank?: T;
   accountNumber?: T;
   accountHolder?: T;
