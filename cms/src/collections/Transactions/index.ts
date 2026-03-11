@@ -230,6 +230,15 @@ export const Transactions: CollectionConfig = {
       },
     },
     {
+      name: 'eganowPayPartnerTransactionId',
+      type: 'text',
+      required: false,
+      admin: {
+        description: "Eganow's PayPartnerTransactionId received in webhook callback",
+        readOnly: true,
+      },
+    },
+    {
       name: 'collector',
       type: 'relationship',
       relationTo: 'users',

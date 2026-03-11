@@ -109,8 +109,15 @@ class _ReferralContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.spacingXs),
             _StepTile(
               number: '3',
-              title: 'You earn',
-              subtitle: 'Your rewards are added automatically once your friend is active.',
+              title: 'Both complete KYC',
+              subtitle: 'You and your friend must verify your identities before any bonus is awarded.',
+              isDark: isDark,
+            ),
+            const SizedBox(height: AppSpacing.spacingXs),
+            _StepTile(
+              number: '4',
+              title: 'Friend makes a contribution',
+              subtitle: 'Once both are verified, your bonus is added automatically when your friend contributes.',
               isDark: isDark,
             ),
 

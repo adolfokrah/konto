@@ -81,23 +81,6 @@ export const processReferralBonus = async ({
 
     // ── Bonus type 1: First contribution ──────────────────────────────────────
     if (doc.type === 'contribution' && doc.paymentMethod === 'mobile-money') {
-      // Count previous completed contributions to this jar (excluding current doc)
-      const previousContributions = await req.payload.find({
-        collection: 'transactions',
-        where: {
-          and: [
-            { jar: { equals: jarId } },
-            { type: { equals: 'contribution' } },
-            { paymentStatus: { equals: 'completed' } },
-            { id: { not_equals: doc.id } },
-          ],
-        },
-        limit: 1,
-        pagination: false,
-      })
-
-      if (previousContributions.totalDocs > 0) return // Not the first contribution
-
       // Guard: don't create duplicate first_contribution bonus for this referral
       const existingBonus = await req.payload.find({
         collection: 'referral-bonuses',
@@ -111,6 +94,24 @@ export const processReferralBonus = async ({
         pagination: false,
       })
       if (existingBonus.totalDocs > 0) return
+
+      // Both the referrer and the jar creator must have completed KYC
+      const [referrer, creator] = await Promise.all([
+        req.payload.findByID({ collection: 'users', id: referrerId, overrideAccess: true }),
+        req.payload.findByID({ collection: 'users', id: creatorId, overrideAccess: true }),
+      ])
+      if (referrer?.kycStatus !== 'verified') {
+        console.log(
+          `[process-referral-bonus] Referrer ${referrerId} has not completed KYC (status: ${referrer?.kycStatus}). Skipping first_contribution bonus.`,
+        )
+        return
+      }
+      if (creator?.kycStatus !== 'verified') {
+        console.log(
+          `[process-referral-bonus] Jar creator ${creatorId} has not completed KYC (status: ${creator?.kycStatus}). Skipping first_contribution bonus.`,
+        )
+        return
+      }
 
       const bonusAmount = settings?.referralFirstContributionBonus ?? 5
 

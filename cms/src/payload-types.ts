@@ -1433,6 +1433,10 @@ export interface Transaction {
    */
   transactionReference?: string | null;
   /**
+   * Eganow's PayPartnerTransactionId received in webhook callback
+   */
+  eganowPayPartnerTransactionId?: string | null;
+  /**
    * User who collected the contribution
    */
   collector?: (string | null) | User;
@@ -2790,6 +2794,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutFeeAmount?: T;
   payoutNetAmount?: T;
   transactionReference?: T;
+  eganowPayPartnerTransactionId?: T;
   collector?: T;
   viaPaymentLink?: T;
   webhookResponse?: T;

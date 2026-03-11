@@ -84,7 +84,8 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     console.log('Eganow Webhook Received:', webhookData)
 
-    const { transactionId, transactionStatus } = normalizeWebhookPayload(webhookData)
+    const { transactionId, transactionStatus, payPartnerTransactionId } =
+      normalizeWebhookPayload(webhookData)
 
     // Validate required fields
     if (!transactionId || !transactionStatus) {
@@ -132,6 +133,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       data: {
         paymentStatus: newStatus,
         webhookResponse: webhookData,
+        ...(payPartnerTransactionId && { eganowPayPartnerTransactionId: payPartnerTransactionId }),
       },
       overrideAccess: true,
     })
