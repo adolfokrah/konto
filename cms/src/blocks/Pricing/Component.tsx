@@ -155,7 +155,7 @@ export const PricingBlock: React.FC<Props> = ({
               {/* Contributor pays */}
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-300">
-                  {calculatorSection?.contributorPaysLabel || `Contributor pays`} + {collectionFee}% telco fees
+                  {calculatorSection?.contributorPaysLabel || `Contributor pays`} + Processing fee
                 </span>
                 <span className="text-sm font-medium">GHS {contributorPays.toFixed(2)}</span>
               </div>
@@ -163,7 +163,7 @@ export const PricingBlock: React.FC<Props> = ({
               {/* Transfer fee */}
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-300">
-                  {calculatorSection?.transferFeeLabel || 'Transfer fee'} {transferFee}%
+                  {calculatorSection?.transferFeeLabel || 'Transfer Processing fee'}
                 </span>
                 <span className="text-sm font-medium">GHS {transferFeeAmount.toFixed(2)}</span>
               </div>
