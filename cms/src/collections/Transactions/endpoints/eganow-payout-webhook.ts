@@ -54,7 +54,14 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
     const isReferralWithdrawal = transactionId.startsWith('referral-withdrawal-')
 
     if (isRefund) {
-      return handleRefundWebhook(req, transactionId, eganowReferenceNo, transactionStatus, message)
+      return handleRefundWebhook(
+        req,
+        transactionId,
+        eganowReferenceNo,
+        transactionStatus,
+        message,
+        webhookData,
+      )
     }
 
     if (isReferralWithdrawal) {
@@ -64,10 +71,18 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
         eganowReferenceNo,
         transactionStatus,
         message,
+        webhookData,
       )
     }
 
-    return handlePayoutWebhook(req, transactionId, eganowReferenceNo, transactionStatus, message)
+    return handlePayoutWebhook(
+      req,
+      transactionId,
+      eganowReferenceNo,
+      transactionStatus,
+      message,
+      webhookData,
+    )
   } catch (error: any) {
     console.error('Eganow payout webhook error:', error)
     return Response.json(
@@ -86,6 +101,7 @@ async function handleRefundWebhook(
   eganowReferenceNo: string,
   transactionStatus: string,
   message: string,
+  webhookData: Record<string, any>,
 ) {
   // Look up refund by Eganow reference number
   let refundResult = await req.payload.find({
@@ -141,7 +157,7 @@ async function handleRefundWebhook(
   await req.payload.update({
     collection: 'refunds' as any,
     id: refund.id,
-    data: { status: mappedStatus },
+    data: { status: mappedStatus, webhookResponse: webhookData },
     overrideAccess: true,
   })
 
@@ -157,6 +173,7 @@ async function handleReferralWithdrawalWebhook(
   eganowReferenceNo: string,
   transactionStatus: string,
   message: string,
+  webhookData: Record<string, any>,
 ) {
   // Extract the bonus record ID from "referral-withdrawal-{id}"
   const match = transactionId.match(/^referral-withdrawal-(.+)$/)
@@ -198,7 +215,7 @@ async function handleReferralWithdrawalWebhook(
   await req.payload.update({
     collection: 'referral-bonuses',
     id: bonusRecordId,
-    data: { status: mappedStatus },
+    data: { status: mappedStatus, webhookResponse: webhookData },
     overrideAccess: true,
   })
 
@@ -249,6 +266,7 @@ async function handlePayoutWebhook(
   eganowReferenceNo: string,
   transactionStatus: string,
   message: string,
+  webhookData: Record<string, any>,
 ) {
   // Find the payout record by Eganow reference number
   let transferResult = await req.payload.find({
@@ -307,7 +325,7 @@ async function handlePayoutWebhook(
   await req.payload.update({
     collection: 'transactions',
     id: transfer.id,
-    data: { paymentStatus: newStatus },
+    data: { paymentStatus: newStatus, webhookResponse: webhookData },
     overrideAccess: true,
   })
 

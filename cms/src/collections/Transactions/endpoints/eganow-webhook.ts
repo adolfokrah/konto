@@ -131,7 +131,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       id: contribution.id,
       data: {
         paymentStatus: newStatus,
-        // Keep the original transactionReference - don't change it
+        webhookResponse: webhookData,
       },
       overrideAccess: true,
     })

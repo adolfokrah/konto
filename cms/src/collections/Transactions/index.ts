@@ -301,6 +301,15 @@ export const Transactions: CollectionConfig = {
         description: 'Check if this contribution was made via a payment link',
       },
     },
+    {
+      name: 'webhookResponse',
+      type: 'json',
+      required: false,
+      admin: {
+        description: 'Raw webhook payload received from the payment provider',
+        readOnly: true,
+      },
+    },
   ],
   endpoints: [
     {

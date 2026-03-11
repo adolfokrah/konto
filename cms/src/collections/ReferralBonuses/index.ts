@@ -91,6 +91,15 @@ export const ReferralBonuses: CollectionConfig = {
       type: 'text',
       required: false,
     },
+    {
+      name: 'webhookResponse',
+      type: 'json',
+      required: false,
+      admin: {
+        description: 'Raw webhook payload received from the payment provider',
+        readOnly: true,
+      },
+    },
   ],
   endpoints: [
     {

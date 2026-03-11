@@ -1440,6 +1440,18 @@ export interface Transaction {
    * Check if this contribution was made via a payment link
    */
   viaPaymentLink?: boolean | null;
+  /**
+   * Raw webhook payload received from the payment provider
+   */
+  webhookResponse?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1672,6 +1684,18 @@ export interface Refund {
    */
   updatedBy?: (string | null) | User;
   status: 'pending' | 'in-progress' | 'failed' | 'completed';
+  /**
+   * Raw webhook payload received from the payment provider
+   */
+  webhookResponse?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1784,6 +1808,18 @@ export interface ReferralBonus {
   amount: number;
   status: 'pending' | 'paid' | 'failed';
   description?: string | null;
+  /**
+   * Raw webhook payload received from the payment provider
+   */
+  webhookResponse?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2756,6 +2792,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   transactionReference?: T;
   collector?: T;
   viaPaymentLink?: T;
+  webhookResponse?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2877,6 +2914,7 @@ export interface RefundsSelect<T extends boolean = true> {
   transactionReference?: T;
   updatedBy?: T;
   status?: T;
+  webhookResponse?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2931,6 +2969,7 @@ export interface ReferralBonusesSelect<T extends boolean = true> {
   amount?: T;
   status?: T;
   description?: T;
+  webhookResponse?: T;
   updatedAt?: T;
   createdAt?: T;
 }

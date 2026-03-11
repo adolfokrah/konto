@@ -139,6 +139,15 @@ export const Refunds: CollectionConfig = {
         { label: 'Completed', value: 'completed' },
       ],
     },
+    {
+      name: 'webhookResponse',
+      type: 'json',
+      required: false,
+      admin: {
+        description: 'Raw webhook payload received from the payment provider',
+        readOnly: true,
+      },
+    },
   ],
   endpoints: [
     {

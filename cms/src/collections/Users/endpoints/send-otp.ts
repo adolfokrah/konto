@@ -74,12 +74,15 @@ export const sendOTP = async (req: PayloadRequest) => {
       const expiry = new Date(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000)
       const key = `${countryCode}${formattedPhoneNumber}`
       otpStore.set(key, { code, expiry, attempts: 0 })
-      await sendSMS(
+      // Fire-and-forget — don't block the response on external SMS/email APIs
+      sendSMS(
         `${countryCode}${formattedPhoneNumber}`,
         `Your Hogapay verification code is: ${code}. Do not share this with anyone.`,
-      )
+      ).catch((err) => console.error('OTP SMS error:', err))
       if (email) {
-        await emailService.sendOTPEmail(email, code)
+        emailService
+          .sendOTPEmail(email, code)
+          .catch((err) => console.error('OTP email error:', err))
       }
     }
 
