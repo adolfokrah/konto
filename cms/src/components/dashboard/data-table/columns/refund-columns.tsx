@@ -43,6 +43,14 @@ function formatAmount(amount: number, currency = 'GHS') {
 
 export const refundColumns: ColumnDef<RefundRow, any>[] = [
   {
+    accessorKey: 'id',
+    header: 'ID',
+    size: 110,
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">{row.original.id.slice(0, 8)}…</span>
+    ),
+  },
+  {
     accessorKey: 'accountName',
     header: 'Contributor',
     cell: ({ row }) => (
@@ -72,6 +80,10 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
       ) : (
         <span>{'\u2014'}</span>
       ),
+    meta: {
+      filter: { type: 'search', paramKey: 'jar', placeholder: 'Search jar...' },
+      filterLabel: 'Jar',
+    } satisfies DataTableColumnMeta,
   },
   {
     id: 'amount',

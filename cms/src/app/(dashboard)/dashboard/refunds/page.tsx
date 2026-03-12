@@ -18,6 +18,7 @@ export default async function RefundsPage({ searchParams }: Props) {
   const limit = Number(params.limit) || DEFAULT_LIMIT
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
+  const jar = typeof params.jar === 'string' ? params.jar : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
 
@@ -29,6 +30,17 @@ export default async function RefundsPage({ searchParams }: Props) {
   const where: Record<string, any> = {}
   if (search) {
     where.accountName = { like: search }
+  }
+  if (jar) {
+    const matchingJars = await payload.find({
+      collection: 'jars',
+      where: { name: { like: jar } },
+      select: { name: true },
+      pagination: false,
+      overrideAccess: true,
+    })
+    const jarIds = matchingJars.docs.map((j: any) => j.id)
+    where.jar = jarIds.length > 0 ? { in: jarIds } : { equals: 'no-match' }
   }
   if (status) {
     const valid = ['pending', 'in-progress', 'completed', 'failed']

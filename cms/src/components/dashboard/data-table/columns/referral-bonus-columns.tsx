@@ -43,6 +43,14 @@ function formatAmount(amount: number) {
 
 export const referralBonusColumns: ColumnDef<ReferralBonusRow, any>[] = [
   {
+    accessorKey: 'id',
+    header: 'ID',
+    size: 110,
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">{row.original.id.slice(0, 8)}…</span>
+    ),
+  },
+  {
     accessorKey: 'user',
     header: 'User',
     cell: ({ row }) => {

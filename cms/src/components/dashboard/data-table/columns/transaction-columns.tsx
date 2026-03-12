@@ -46,6 +46,14 @@ function formatAmount(amount: number) {
 
 export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
+    accessorKey: 'id',
+    header: 'ID',
+    size: 110,
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">{row.original.id.slice(0, 8)}…</span>
+    ),
+  },
+  {
     accessorKey: 'transactionReference',
     header: 'Transaction',
     size: 220,
