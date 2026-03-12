@@ -19,6 +19,13 @@ export default async function JarsPage({ searchParams }: Props) {
   const status = typeof params.status === 'string' ? params.status : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
+  const sortBy = typeof params.sortBy === 'string' ? params.sortBy : 'createdAt'
+  const order = typeof params.order === 'string' ? params.order : 'desc'
+  const dbSortKeys = ['createdAt', 'goalAmount']
+  const computedSortKeys = ['totalContributions', 'balance']
+  const isComputedSort = computedSortKeys.includes(sortBy)
+  const sortField = dbSortKeys.includes(sortBy) ? sortBy : 'createdAt'
+  const sort = order === 'asc' ? sortField : `-${sortField}`
 
   const payload = await getPayload({ config: configPromise })
 
@@ -49,9 +56,9 @@ export default async function JarsPage({ searchParams }: Props) {
     payload.find({
       collection: 'jars',
       where,
-      page,
-      limit,
-      sort: '-createdAt',
+      // When sorting by a computed field, fetch all and paginate in memory
+      ...(isComputedSort ? { pagination: false } : { page, limit }),
+      sort,
       depth: 1,
       overrideAccess: true,
       select: {
@@ -147,6 +154,23 @@ export default async function JarsPage({ searchParams }: Props) {
     }
   })
 
+  // For computed sort fields, sort all rows in memory then paginate
+  let displayJars = jars
+  let totalRows = jarsResult.totalDocs
+  let totalPages = jarsResult.totalPages
+
+  if (isComputedSort) {
+    displayJars = [...jars].sort((a, b) => {
+      const aVal = a[sortBy as 'balance' | 'totalContributions'] ?? 0
+      const bVal = b[sortBy as 'balance' | 'totalContributions'] ?? 0
+      return order === 'asc' ? aVal - bVal : bVal - aVal
+    })
+    totalRows = displayJars.length
+    totalPages = Math.max(1, Math.ceil(totalRows / limit))
+    const start = (page - 1) * limit
+    displayJars = displayJars.slice(start, start + limit)
+  }
+
   return (
     <div className="space-y-6">
       {/* Metric Cards */}
@@ -185,13 +209,13 @@ export default async function JarsPage({ searchParams }: Props) {
         <CardHeader>
           <CardTitle>All Jars</CardTitle>
           <CardDescription>
-            {jarsResult.totalDocs} jar{jarsResult.totalDocs !== 1 ? 's' : ''} found
+            {totalRows} jar{totalRows !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
         <CardContent>
           <JarsDataTable
-            jars={jars}
-            pagination={{ currentPage: page, totalPages: jarsResult.totalPages, totalRows: jarsResult.totalDocs, rowsPerPage: limit }}
+            jars={displayJars}
+            pagination={{ currentPage: page, totalPages, totalRows, rowsPerPage: limit }}
           />
         </CardContent>
       </Card>

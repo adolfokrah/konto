@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -47,8 +47,14 @@ export function DataTable<TData>({
   scrollOffset,
   tableId,
 }: DataTableProps<TData>) {
-  const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters } = useTableFilters(columns)
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => loadColumnSizing(tableId))
+  const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters, sortBy, sortOrder, updateSort } = useTableFilters(columns)
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
+
+  // Load persisted sizes after mount to avoid SSR/hydration mismatch
+  useEffect(() => {
+    const saved = loadColumnSizing(tableId)
+    if (Object.keys(saved).length > 0) setColumnSizing(saved)
+  }, [tableId])
 
   const handleColumnSizingChange = useCallback(
     (updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
@@ -139,6 +145,9 @@ export function DataTable<TData>({
                   updateParam={updateParam}
                   batchUpdateParams={batchUpdateParams}
                   toggleParam={toggleParam}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  updateSort={updateSort}
                 />
               ))}
             </TableRow>

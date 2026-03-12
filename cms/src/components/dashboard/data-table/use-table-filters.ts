@@ -74,6 +74,30 @@ export function useTableFilters<TData>(columns: ColumnDef<TData, any>[]) {
 
   const getParam = useCallback((key: string) => searchParams.get(key) || '', [searchParams])
 
+  const sortBy = searchParams.get('sortBy') || ''
+  const sortOrder = (searchParams.get('order') || 'desc') as 'asc' | 'desc'
+
+  const updateSort = useCallback(
+    (key: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      const current = params.get('sortBy')
+      const currentOrder = params.get('order') || 'desc'
+      if (current === key) {
+        if (currentOrder === 'desc') {
+          params.set('order', 'asc')
+        } else {
+          params.delete('sortBy')
+          params.delete('order')
+        }
+      } else {
+        params.set('sortBy', key)
+        params.set('order', 'desc')
+      }
+      router.push(`${pathname}?${params.toString()}`)
+    },
+    [router, pathname, searchParams],
+  )
+
   const clearAll = useCallback(() => {
     router.push(pathname)
   }, [router, pathname])
@@ -119,5 +143,15 @@ export function useTableFilters<TData>(columns: ColumnDef<TData, any>[]) {
     return filters
   }, [columns, searchParams])
 
-  return { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters }
+  return {
+    updateParam,
+    batchUpdateParams,
+    toggleParam,
+    getParam,
+    clearAll,
+    activeFilters,
+    sortBy,
+    sortOrder,
+    updateSort,
+  }
 }

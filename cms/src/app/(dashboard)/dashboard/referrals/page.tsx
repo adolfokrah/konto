@@ -17,6 +17,9 @@ export default async function ReferralsPage({ searchParams }: Props) {
   const search = typeof params.search === 'string' ? params.search : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
+  const sortBy = typeof params.sortBy === 'string' ? params.sortBy : 'createdAt'
+  const order = typeof params.order === 'string' ? params.order : 'desc'
+  const sort = order === 'asc' ? 'createdAt' : '-createdAt'
 
   const payload = await getPayload({ config: configPromise })
 
@@ -38,7 +41,7 @@ export default async function ReferralsPage({ searchParams }: Props) {
     where,
     page,
     limit,
-    sort: '-createdAt',
+    sort,
     depth: 2,
     overrideAccess: true,
   })

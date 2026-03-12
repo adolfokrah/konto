@@ -111,6 +111,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',
+      sortKey: 'goalAmount',
     } satisfies DataTableColumnMeta,
   },
   {
@@ -124,6 +125,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',
+      sortKey: 'totalContributions',
     } satisfies DataTableColumnMeta,
   },
   {
@@ -137,6 +139,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',
+      sortKey: 'balance',
     } satisfies DataTableColumnMeta,
   },
   {
@@ -177,6 +180,7 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
         toParamKey: 'to',
       },
       filterLabel: 'Created',
+      sortKey: 'createdAt',
     } satisfies DataTableColumnMeta,
   },
 ]

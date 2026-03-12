@@ -64,6 +64,7 @@ export const referralColumns: ColumnDef<ReferralRow, any>[] = [
     meta: {
       filter: { type: 'dateRange', fromParamKey: 'from', toParamKey: 'to' },
       filterLabel: 'Date',
+      sortKey: 'createdAt',
     } satisfies DataTableColumnMeta,
   },
 ]

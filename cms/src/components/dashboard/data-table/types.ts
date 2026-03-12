@@ -34,6 +34,8 @@ export type DataTableColumnMeta = {
   size?: number
   minSize?: number
   maxSize?: number
+  /** Payload field name for server-side sorting. If set, the column header becomes sortable. */
+  sortKey?: string
 }
 
 export type PaginationProps = {

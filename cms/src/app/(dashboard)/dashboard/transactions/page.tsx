@@ -22,9 +22,15 @@ export default async function TransactionsPage({ searchParams }: Props) {
   const link = typeof params.link === 'string' ? params.link : ''
   const settled = typeof params.settled === 'string' ? params.settled : ''
   const ref = typeof params.ref === 'string' ? params.ref : ''
+  const id = typeof params.id === 'string' ? params.id : ''
   const jar = typeof params.jar === 'string' ? params.jar : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
+  const sortBy = typeof params.sortBy === 'string' ? params.sortBy : 'createdAt'
+  const order = typeof params.order === 'string' ? params.order : 'desc'
+  const validSortKeys = ['createdAt', 'amountContributed']
+  const sortField = validSortKeys.includes(sortBy) ? sortBy : 'createdAt'
+  const sort = order === 'asc' ? sortField : `-${sortField}`
 
   const payload = await getPayload({ config: configPromise })
 
@@ -60,6 +66,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
   if (ref) {
     where.transactionReference = { like: ref }
   }
+  if (id) {
+    where.id = { equals: id }
+  }
   if (jar) {
     const matchingJars = await payload.find({
       collection: 'jars',
@@ -90,7 +99,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     where,
     page,
     limit,
-    sort: '-createdAt',
+    sort,
     depth: 1,
     overrideAccess: true,
   })

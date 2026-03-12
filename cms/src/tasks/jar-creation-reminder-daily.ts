@@ -26,7 +26,7 @@ export const jarCreationReminderDailyTask = {
         collection: 'users',
         where: {
           and: [
-            { isKYCVerified: { equals: true } },
+            { kycStatus: { equals: 'verified' } },
             { role: { equals: 'user' } },
             { fcmToken: { exists: true } },
           ],

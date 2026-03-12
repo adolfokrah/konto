@@ -4,6 +4,8 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utilities/ui'
 import Link from 'next/link'
+import { Copy, Check } from 'lucide-react'
+import { useState } from 'react'
 import {
   typeStyles,
   statusStyles,
@@ -12,6 +14,32 @@ import {
   formatShortDate,
 } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
+
+function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigator.clipboard.writeText(prefix ? `${prefix}${id}` : id)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <span className="group flex items-center gap-1">
+      <span className="font-mono text-xs text-muted-foreground">
+        {prefix && <span className="opacity-50">{prefix}</span>}{id}
+      </span>
+      <button
+        onClick={handleCopy}
+        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+      >
+        {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </span>
+  )
+}
 
 export type TransactionRow = {
   id: string
@@ -48,10 +76,17 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
-    size: 110,
+    size: 220,
     cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">{row.original.id.slice(0, 8)}…</span>
+      <CopyableId
+        id={row.original.id}
+        prefix={row.original.type === 'payout' ? 'payout-' : undefined}
+      />
     ),
+    meta: {
+      filter: { type: 'search', paramKey: 'id', placeholder: 'Search by ID...' },
+      filterLabel: 'ID',
+    } satisfies DataTableColumnMeta,
   },
   {
     accessorKey: 'transactionReference',
@@ -245,6 +280,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',
+      sortKey: 'amountContributed',
     } satisfies DataTableColumnMeta,
   },
   {
@@ -326,6 +362,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
         toParamKey: 'to',
       },
       filterLabel: 'Date',
+      sortKey: 'createdAt',
     } satisfies DataTableColumnMeta,
   },
 ]

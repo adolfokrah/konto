@@ -14,15 +14,24 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page) || 1
   const limit = Number(params.limit) || DEFAULT_LIMIT
+  const id = typeof params.id === 'string' ? params.id : ''
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
   const bonusType = typeof params.bonusType === 'string' ? params.bonusType : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
+  const sortBy = typeof params.sortBy === 'string' ? params.sortBy : 'createdAt'
+  const order = typeof params.order === 'string' ? params.order : 'desc'
+  const validSortKeys = ['createdAt', 'amount']
+  const sortField = validSortKeys.includes(sortBy) ? sortBy : 'createdAt'
+  const sort = order === 'asc' ? sortField : `-${sortField}`
 
   const payload = await getPayload({ config: configPromise })
 
   const where: Record<string, any> = {}
+  if (id) {
+    where.id = { equals: id }
+  }
   if (search) {
     where['user.firstName'] = { like: search }
   }
@@ -49,7 +58,7 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
     where,
     page,
     limit,
-    sort: '-createdAt',
+    sort,
     depth: 2,
     overrideAccess: true,
   })
