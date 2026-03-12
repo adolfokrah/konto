@@ -39,8 +39,7 @@ class EmailService {
       emailData.attachments = options.attachments
     }
 
-    // const data = await getResend().emails.send(emailData)
-    // console.log(data)
+    const data = await getResend().emails.send(emailData)
     return true
   }
 
