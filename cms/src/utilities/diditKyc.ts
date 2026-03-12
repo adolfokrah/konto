@@ -43,10 +43,13 @@ interface CreateSessionResponse {
 export type DiditSessionStatus =
   | 'Not Started'
   | 'In Progress'
+  | 'Resubmitted'
   | 'In Review'
   | 'Approved'
   | 'Declined'
   | 'Abandoned'
+  | 'Expired'
+  | 'Kyc Expired'
 
 // Didit webhook event types
 export type DiditWebhookType = 'status.updated' | 'data.updated'
@@ -577,7 +580,12 @@ export function isSessionCompleted(status: SessionStatus['status']): boolean {
  * @returns True if session has failed, declined, or abandoned
  */
 export function isSessionFailed(status: SessionStatus['status']): boolean {
-  return status === 'Declined' || status === 'Abandoned'
+  return (
+    status === 'Declined' ||
+    status === 'Abandoned' ||
+    status === 'Expired' ||
+    status === 'Kyc Expired'
+  )
 }
 
 /**
@@ -587,5 +595,10 @@ export function isSessionFailed(status: SessionStatus['status']): boolean {
  * @returns True if session is still pending/in-progress
  */
 export function isSessionPending(status: SessionStatus['status']): boolean {
-  return status === 'Not Started' || status === 'In Progress' || status === 'In Review'
+  return (
+    status === 'Not Started' ||
+    status === 'In Progress' ||
+    status === 'Resubmitted' ||
+    status === 'In Review'
+  )
 }

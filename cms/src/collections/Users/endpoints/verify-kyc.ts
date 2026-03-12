@@ -64,7 +64,11 @@ export const verifyKYC = async (req: PayloadRequest) => {
     const user = users.docs[0]
 
     // Ignore non-actionable statuses — user hasn't completed KYC yet
-    if (sessionStatus.status === 'Not Started' || sessionStatus.status === 'In Progress') {
+    if (
+      sessionStatus.status === 'Not Started' ||
+      sessionStatus.status === 'In Progress' ||
+      sessionStatus.status === 'Resubmitted'
+    ) {
       return Response.json(
         {
           success: true,
