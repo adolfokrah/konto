@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, User, ArrowLeftRight, FileText, ShieldAlert, Container, CreditCard } from 'lucide-react'
+import { Loader2, User, ArrowLeftRight, FileText, ShieldAlert, Container, CreditCard, History } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/utilities/ui'
 import { type DisputeRow } from './data-table/columns/dispute-columns'
@@ -70,7 +70,7 @@ export function DisputeDetailSheet({
 }) {
   const router = useRouter()
   const [newStatus, setNewStatus] = useState<string>('')
-  const [resolutionNote, setResolutionNote] = useState('')
+  const [statusChangeReason, setStatusChangeReason] = useState('')
   const [saving, setSaving] = useState(false)
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
@@ -82,16 +82,19 @@ export function DisputeDetailSheet({
 
   const handleOpen = () => {
     setNewStatus('')
-    setResolutionNote('')
+    setStatusChangeReason('')
   }
 
   const handleSave = async () => {
-    if (!selected || !newStatus) return
+    if (!selected || !newStatus || !statusChangeReason.trim()) return
     setSaving(true)
     try {
-      const body: Record<string, any> = { status: newStatus }
-      if (['resolved', 'rejected'].includes(newStatus) && resolutionNote.trim()) {
-        body.resolutionNote = resolutionNote.trim()
+      const body: Record<string, any> = {
+        status: newStatus,
+        _statusChangeReason: statusChangeReason.trim(),
+      }
+      if (['resolved', 'rejected'].includes(newStatus)) {
+        body.resolutionNote = statusChangeReason.trim()
       }
       const res = await fetch(`/api/disputes/${selected.id}`, {
         method: 'PATCH',
@@ -112,7 +115,7 @@ export function DisputeDetailSheet({
 
   const currentStatus = detail?.status ?? selected?.status ?? ''
   const canChangeStatus = !['resolved', 'rejected'].includes(currentStatus)
-  const needsNote = ['resolved', 'rejected'].includes(newStatus)
+  const statusHistory: any[] = detail?.statusHistory ?? []
 
   const evidence: any[] = detail?.evidence ?? []
   const raisedBy = typeof detail?.raisedBy === 'object' ? detail.raisedBy : null
@@ -329,6 +332,45 @@ export function DisputeDetailSheet({
                   </div>
                 )}
 
+                {/* Status History */}
+                {statusHistory.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1 flex items-center gap-2">
+                      <History className="h-3.5 w-3.5" />
+                      Status History
+                    </h4>
+                    <Separator className="mb-2" />
+                    <div className="space-y-2">
+                      {statusHistory.map((entry: any, i: number) => {
+                        const admin = typeof entry.changedBy === 'object' ? entry.changedBy : null
+                        const adminName = admin
+                          ? [admin.firstName, admin.lastName].filter(Boolean).join(' ') || admin.email
+                          : '—'
+                        return (
+                          <div key={i} className="rounded-md border border-border bg-muted/20 px-3 py-2 text-sm">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1.5">
+                                <Badge variant="outline" className={cn('text-xs', statusStyles[entry.from])}>
+                                  {statusLabel[entry.from] ?? entry.from}
+                                </Badge>
+                                <span className="text-muted-foreground text-xs">→</span>
+                                <Badge variant="outline" className={cn('text-xs', statusStyles[entry.to])}>
+                                  {statusLabel[entry.to] ?? entry.to}
+                                </Badge>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {entry.changedAt ? new Date(entry.changedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground italic">"{entry.reason}"</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">by {adminName}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Update Status */}
                 {canChangeStatus && (
                   <div>
@@ -348,18 +390,18 @@ export function DisputeDetailSheet({
                         </SelectContent>
                       </Select>
 
-                      {needsNote && (
+                      {newStatus && (
                         <Textarea
-                          placeholder="Add a resolution note (optional)…"
-                          value={resolutionNote}
-                          onChange={(e) => setResolutionNote(e.target.value)}
+                          placeholder="Reason for this status change (required)…"
+                          value={statusChangeReason}
+                          onChange={(e) => setStatusChangeReason(e.target.value)}
                           rows={3}
                         />
                       )}
 
                       <Button
                         className="w-full"
-                        disabled={!newStatus || saving}
+                        disabled={!newStatus || !statusChangeReason.trim() || saving}
                         onClick={handleSave}
                       >
                         {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

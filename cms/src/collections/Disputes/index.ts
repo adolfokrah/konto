@@ -99,15 +99,89 @@ export const Disputes: CollectionConfig = {
         condition: (data) => ['resolved', 'rejected'].includes(data?.status),
       },
     },
+    {
+      name: 'statusHistory',
+      type: 'array',
+      label: 'Status Change Log',
+      admin: {
+        description: 'Automatic log of all status changes with reasons',
+        readOnly: true,
+      },
+      fields: [
+        {
+          name: 'from',
+          type: 'select',
+          options: [
+            { label: 'Open', value: 'open' },
+            { label: 'Under Review', value: 'under-review' },
+            { label: 'Resolved', value: 'resolved' },
+            { label: 'Rejected', value: 'rejected' },
+          ],
+        },
+        {
+          name: 'to',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Open', value: 'open' },
+            { label: 'Under Review', value: 'under-review' },
+            { label: 'Resolved', value: 'resolved' },
+            { label: 'Rejected', value: 'rejected' },
+          ],
+        },
+        {
+          name: 'reason',
+          type: 'textarea',
+          required: true,
+        },
+        {
+          name: 'changedBy',
+          type: 'relationship',
+          relationTo: 'users',
+          hasMany: false,
+        },
+        {
+          name: 'changedAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+      ],
+    },
   ],
   hooks: {
     beforeChange: [
-      ({ data, operation, req }) => {
+      ({ data, operation, req, originalDoc }) => {
         if (operation === 'create' && req.user) {
           data.raisedBy = req.user.id
         }
-        if (operation === 'update' && req.user && ['resolved', 'rejected'].includes(data?.status)) {
-          data.resolvedBy = req.user.id
+        if (operation === 'update' && req.user && data?.status) {
+          const previousStatus = originalDoc?.status
+          if (previousStatus && data.status !== previousStatus) {
+            // Set resolvedBy for terminal statuses
+            if (['resolved', 'rejected'].includes(data.status)) {
+              data.resolvedBy = req.user.id
+            }
+            // Append to status history
+            const existing = Array.isArray(originalDoc?.statusHistory)
+              ? originalDoc.statusHistory
+              : []
+            data.statusHistory = [
+              ...existing,
+              {
+                from: previousStatus,
+                to: data.status,
+                reason: data._statusChangeReason ?? '',
+                changedBy: req.user.id,
+                changedAt: new Date().toISOString(),
+              },
+            ]
+          }
+          // Remove the temp field
+          delete data._statusChangeReason
         }
         return data
       },
