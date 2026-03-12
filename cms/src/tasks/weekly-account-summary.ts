@@ -129,8 +129,7 @@ export const weeklyAccountSummaryTask = {
               0,
             )
             const withdrawn = payouts.docs.reduce(
-              (sum: number, tx: any) =>
-                sum + Math.abs(tx.payoutNetAmount || tx.amountContributed || 0),
+              (sum: number, tx: any) => sum + Math.abs(tx.amountContributed || 0),
               0,
             )
 
