@@ -120,11 +120,22 @@ export const deleteUserAccount = async (req: PayloadRequest) => {
       }
     }
 
+    // Fetch full user to get phone number
+    const fullUser = await req.payload.findByID({
+      collection: 'users',
+      id: req.user.id,
+      overrideAccess: true,
+    })
+
     // Store deleted user account details in a separate collection
     await req.payload.create({
       collection: 'deletedUserAccounts',
       data: {
         email: req.user.email,
+        phoneNumber:
+          fullUser.countryCode && fullUser.phoneNumber
+            ? `${fullUser.countryCode}${fullUser.phoneNumber}`
+            : (fullUser.phoneNumber ?? undefined),
         deletionReason: reason,
       },
     })

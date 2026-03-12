@@ -1578,6 +1578,7 @@ export interface Notification {
 export interface DeletedUserAccount {
   id: string;
   email: string;
+  phoneNumber?: string | null;
   deletionReason?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -2864,6 +2865,7 @@ export interface NotificationsSelect<T extends boolean = true> {
  */
 export interface DeletedUserAccountsSelect<T extends boolean = true> {
   email?: T;
+  phoneNumber?: T;
   deletionReason?: T;
   updatedAt?: T;
   createdAt?: T;

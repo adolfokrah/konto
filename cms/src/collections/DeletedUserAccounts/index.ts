@@ -9,6 +9,11 @@ export const DeletedUserAccounts: CollectionConfig = {
       required: true,
     },
     {
+      name: 'phoneNumber',
+      type: 'text',
+      required: false,
+    },
+    {
       name: 'deletionReason',
       type: 'text',
       required: false,
