@@ -229,6 +229,17 @@ class _WithdrawViewState extends State<WithdrawView> {
       return const KycView();
     }
 
+    final accountHolder =
+        authState is AuthAuthenticated
+            ? authState.user.accountHolder
+            : null;
+    final accountNumber =
+        authState is AuthAuthenticated
+            ? authState.user.accountNumber
+            : null;
+    final bank =
+        authState is AuthAuthenticated ? authState.user.bank : null;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -276,6 +287,43 @@ class _WithdrawViewState extends State<WithdrawView> {
                       isBold: true,
                     ),
 
+                    if (accountNumber != null || accountHolder != null) ...[
+                      const SizedBox(height: AppSpacing.spacingL),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppSpacing.spacingM),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Payout destination',
+                              style: TextStyles.titleMediumS.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.spacingM),
+                            if (accountHolder != null) ...[
+                              _buildAccountDetailRow('Account name', accountHolder, context),
+                              const SizedBox(height: AppSpacing.spacingS),
+                            ],
+                            if (accountNumber != null) ...[
+                              _buildAccountDetailRow('Account number', accountNumber, context),
+                              const SizedBox(height: AppSpacing.spacingS),
+                            ],
+                            if (bank != null)
+                              _buildAccountDetailRow('Bank / Network', bank.toUpperCase(), context),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     const Spacer(),
 
                     // Withdraw button
@@ -291,6 +339,20 @@ class _WithdrawViewState extends State<WithdrawView> {
                   ],
                 ),
               ),
+    );
+  }
+
+  Widget _buildAccountDetailRow(String label, String value, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyles.titleRegularSm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        const SizedBox(width: AppSpacing.spacingM),
+        Flexible(
+          child: Text(value, style: TextStyles.titleMediumS, textAlign: TextAlign.end),
+        ),
+      ],
     );
   }
 

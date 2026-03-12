@@ -384,6 +384,7 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Account</TableHead>
@@ -396,13 +397,14 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
             <TableBody>
               {topups.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     No top-up records yet
                   </TableCell>
                 </TableRow>
               ) : (
                 topups.map((t) => (
                   <TableRow key={t.id}>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{t.id}</TableCell>
                     <TableCell className="font-medium">
                       GHS {t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </TableCell>

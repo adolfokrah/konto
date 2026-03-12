@@ -42,9 +42,15 @@ export async function generateAndSendOtp(
       message ?? `Your Hogapay verification code is: {code}. Do not share this with anyone.`
     const smsText = smsTemplate.replace('{code}', code)
     // Fire-and-forget — don't block the response on external SMS/email APIs
-    sendSMS(phone, smsText).catch((err) => console.error('OTP SMS error:', err))
+    try {
+      await sendSMS(phone, smsText)
+    } catch (err) {
+      console.error('OTP SMS error:', err)
+    }
     if (email) {
-      emailService.sendOTPEmail(email, code).catch((err) => console.error('OTP email error:', err))
+      await emailService
+        .sendOTPEmail(email, code)
+        .catch((err) => console.error('OTP email error:', err))
     }
   }
 
