@@ -20,6 +20,7 @@ import { verifyOTP } from './endpoints/verify-otp'
 import { deleteUserAccount } from './endpoints/delete-user-account'
 import { testPushNotification } from './endpoints/test-push-notification'
 import { backfillReferralCodes } from './endpoints/backfill-referral-codes'
+import { changePassword } from './endpoints/change-password'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -138,6 +139,11 @@ export const Users: CollectionConfig = {
       path: '/backfill-referral-codes',
       method: 'post',
       handler: backfillReferralCodes,
+    },
+    {
+      path: '/change-password',
+      method: 'post',
+      handler: changePassword,
     },
   ],
   fields: [

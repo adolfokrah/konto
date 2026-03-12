@@ -6,7 +6,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
+
+function PasswordInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative">
+      <Input
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="pr-10"
+      />
+      <button
+        type="button"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        onClick={() => setShow((s) => !s)}
+        tabIndex={-1}
+        aria-label={show ? 'Hide password' : 'Show password'}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  )
+}
 
 type Props = {
   user: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null }
@@ -112,15 +135,15 @@ export function ProfileForm({ user }: Props) {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>Current Password</Label>
-            <Input type="password" value={password.current} onChange={(e) => setPassword((p) => ({ ...p, current: e.target.value }))} />
+            <PasswordInput value={password.current} onChange={(v) => setPassword((p) => ({ ...p, current: v }))} />
           </div>
           <div className="space-y-1.5">
             <Label>New Password</Label>
-            <Input type="password" value={password.next} onChange={(e) => setPassword((p) => ({ ...p, next: e.target.value }))} />
+            <PasswordInput value={password.next} onChange={(v) => setPassword((p) => ({ ...p, next: v }))} />
           </div>
           <div className="space-y-1.5">
             <Label>Confirm New Password</Label>
-            <Input type="password" value={password.confirm} onChange={(e) => setPassword((p) => ({ ...p, confirm: e.target.value }))} />
+            <PasswordInput value={password.confirm} onChange={(v) => setPassword((p) => ({ ...p, confirm: v }))} />
           </div>
           <div className="flex justify-end">
             <Button onClick={handleChangePassword} disabled={savingPassword}>
