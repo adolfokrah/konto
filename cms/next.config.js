@@ -94,11 +94,12 @@ const nextConfig = {
     }
 
     // Ignore CSS and SCSS imports in server-side builds for PayloadCMS
+    // NOTE: test must include the full path (not just extension) to avoid triggering
+    // Next.js's hasUserCssConfig check which disables all built-in CSS processing.
     if (isServer) {
       webpackConfig.module.rules.push({
-        test: /\.(css|scss|sass)$/,
+        test: /node_modules\/@payloadcms\/.*\.(css|scss|sass)$/,
         use: 'null-loader',
-        include: /node_modules\/@payloadcms/,
       })
     }
 

@@ -14,6 +14,14 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import {
   Sheet,
   SheetContent,
@@ -39,7 +47,9 @@ import {
   Container,
   RotateCcw,
   Loader2,
+  ShieldAlert,
 } from 'lucide-react'
+import { ImageDropZone } from '@/components/ui/image-drop-zone'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -123,7 +133,10 @@ export function TransactionDetailSheet({
   const router = useRouter()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
-
+  const [showDisputeDialog, setShowDisputeDialog] = useState(false)
+  const [disputeDescription, setDisputeDescription] = useState('')
+  const [disputeFiles, setDisputeFiles] = useState<File[]>([])
+  const [submittingDispute, setSubmittingDispute] = useState(false)
   // Fetch referral bonus linked to this transaction (first_contribution for contributions, fee_share for payouts)
   const { data: referralBonus } = useSWR<any>(
     (selected?.type === 'payout' || selected?.type === 'contribution') ? `/api/referral-bonuses?where[transaction][equals]=${selected.id}&depth=1&limit=1` : null,
@@ -167,6 +180,43 @@ export function TransactionDetailSheet({
       return data
     },
   )
+
+  const handleDisputeSubmit = async () => {
+    if (!selected || !disputeDescription.trim()) return
+    setSubmittingDispute(true)
+    try {
+      // Upload evidence images first
+      const mediaIds: string[] = []
+      for (const file of disputeFiles) {
+        const form = new FormData()
+        form.append('file', file)
+        const res = await fetch('/api/media', { method: 'POST', body: form, credentials: 'include' })
+        const data = await res.json()
+        if (data.doc?.id) mediaIds.push(data.doc.id)
+      }
+
+      await fetch('/api/disputes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          transaction: selected.id,
+          description: disputeDescription.trim(),
+          evidence: mediaIds.map((id) => ({ image: id })),
+        }),
+      })
+
+      toast.success('Dispute submitted successfully')
+      setShowDisputeDialog(false)
+      setDisputeDescription('')
+      setDisputeFiles([])
+      router.refresh()
+    } catch {
+      toast.error('Failed to submit dispute')
+    } finally {
+      setSubmittingDispute(false)
+    }
+  }
 
   const hasActiveRefund = relatedRefunds?.some(
     (r: any) => r.status === 'pending' || r.status === 'in-progress' || r.status === 'completed',
@@ -498,11 +548,60 @@ export function TransactionDetailSheet({
                   </Button>
                 </div>
               )}
+
+              {/* Flag Dispute */}
+              <div>
+                <Separator className="mb-4" />
+                <Button
+                  variant="outline"
+                  className="w-full border-orange-700 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300"
+                  onClick={() => setShowDisputeDialog(true)}
+                >
+                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  Flag as Dispute
+                </Button>
+              </div>
             </div>
           </>
         )}
       </SheetContent>
     </Sheet>
+
+    <Dialog open={showDisputeDialog} onOpenChange={(open) => { if (!open) { setShowDisputeDialog(false); setDisputeDescription(''); setDisputeFiles([]) } }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-orange-400" />
+            Flag as Dispute
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">Description</label>
+            <Textarea
+              placeholder="Describe the issue with this transaction..."
+              value={disputeDescription}
+              onChange={(e) => setDisputeDescription(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">Evidence (optional)</label>
+            <ImageDropZone value={disputeFiles} onChange={setDisputeFiles} maxFiles={5} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setShowDisputeDialog(false)}>Cancel</Button>
+          <Button
+            disabled={!disputeDescription.trim() || submittingDispute}
+            onClick={handleDisputeSubmit}
+          >
+            {submittingDispute ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            {submittingDispute ? 'Submitting...' : 'Submit Dispute'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <AlertDialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
       <AlertDialogContent>

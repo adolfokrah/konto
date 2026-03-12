@@ -84,6 +84,7 @@ export interface Config {
     'ledger-topups': LedgerTopup;
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
+    disputes: Dispute;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -112,6 +113,7 @@ export interface Config {
     'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
+    disputes: DisputesSelect<false> | DisputesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1835,6 +1837,45 @@ export interface ReferralBonus {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes".
+ */
+export interface Dispute {
+  id: string;
+  /**
+   * The transaction being disputed
+   */
+  transaction: string | Transaction;
+  /**
+   * User who raised the dispute
+   */
+  raisedBy: string | User;
+  /**
+   * Describe the issue with this transaction
+   */
+  description: string;
+  /**
+   * Upload supporting photos or screenshots (max 5)
+   */
+  evidence?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  status: 'open' | 'under-review' | 'resolved' | 'rejected';
+  /**
+   * Admin who resolved or rejected this dispute
+   */
+  resolvedBy?: (string | null) | User;
+  /**
+   * Admin note on the outcome of this dispute
+   */
+  resolutionNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2117,6 +2158,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'referral-bonuses';
         value: string | ReferralBonus;
+      } | null)
+    | ({
+        relationTo: 'disputes';
+        value: string | Dispute;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2985,6 +3030,26 @@ export interface ReferralBonusesSelect<T extends boolean = true> {
   status?: T;
   description?: T;
   webhookResponse?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes_select".
+ */
+export interface DisputesSelect<T extends boolean = true> {
+  transaction?: T;
+  raisedBy?: T;
+  description?: T;
+  evidence?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  status?: T;
+  resolvedBy?: T;
+  resolutionNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }

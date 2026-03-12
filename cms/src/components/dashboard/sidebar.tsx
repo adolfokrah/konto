@@ -20,6 +20,7 @@ import {
   Settings,
   LogOut,
   ChevronUp,
+  ShieldAlert,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -45,6 +46,7 @@ const navGroups = [
     label: 'Manage',
     items: [
       { label: 'Refunds', href: '/dashboard/refunds', icon: RotateCcw },
+      { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
       { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
       { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
     ],
@@ -76,6 +78,13 @@ export function Sidebar({ className, user }: { className?: string; user: User })
     { refreshInterval: 30000 },
   )
   const pendingCount = pendingRefunds?.totalDocs ?? 0
+
+  const { data: openDisputes } = useSWR(
+    '/api/disputes?where[or][0][status][equals]=open&where[or][1][status][equals]=under-review&limit=0',
+    fetcher,
+    { refreshInterval: 30000 },
+  )
+  const openDisputesCount = openDisputes?.totalDocs ?? 0
 
   const { trigger: logout } = useSWRMutation(
     '/api/users/logout',
@@ -113,7 +122,9 @@ export function Sidebar({ className, user }: { className?: string; user: User })
               {group.items.map((item) => {
                 const isActive = pathname === item.href
                 const count =
-                  item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount : null
+                  item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount :
+                  item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
+                  null
 
                 return (
                   <Link
@@ -129,7 +140,7 @@ export function Sidebar({ className, user }: { className?: string; user: User })
                     <item.icon className="h-3.5 w-3.5 shrink-0" />
                     <span className="flex-1 truncate">{item.label}</span>
                     {count !== null && (
-                      <span className="ml-auto rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
+                      <span className="ml-auto rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
                         {count}
                       </span>
                     )}

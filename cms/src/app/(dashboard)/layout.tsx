@@ -13,7 +13,7 @@ import { Sidebar } from '@/components/dashboard/sidebar'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { Toaster } from '@/components/ui/sonner'
 
-import '../(website)/globals.css'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Hogapay Dashboard',

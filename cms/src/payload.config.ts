@@ -40,6 +40,7 @@ import { PayoutApprovals } from './collections/PayoutApprovals'
 import { LedgerTopups } from './collections/LedgerTopups'
 import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
+import { Disputes } from './collections/Disputes'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
@@ -100,6 +101,7 @@ export default buildConfig({
     LedgerTopups,
     Referrals,
     ReferralBonuses,
+    Disputes,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],

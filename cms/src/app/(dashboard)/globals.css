@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+@config '../../../tailwind.config.mjs';
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: unset;
+    font-weight: unset;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 240 5% 96%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 6% 80%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.2rem;
+
+    --success: 196 52% 74%;
+    --warning: 34 89% 85%;
+    --error: 10 100% 86%;
+
+    --chart-1: 221 83% 53%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground min-h-screen flex flex-col;
+  }
+
+  /* Dashboard dark theme — matches Hogapay mobile app colors */
+  .dashboard-dark {
+    --background: 213 25% 14%; /* #1B232E */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 213 25% 23%; /* #2D3849 */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 213 25% 20%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 78 88% 93%; /* #F4FDDF - secondary green */
+    --primary-foreground: 213 25% 14%; /* dark text on green */
+
+    --secondary: 213 25% 28%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 213 20% 20%;
+    --muted-foreground: 213 15% 65%;
+
+    --accent: 78 88% 93%;
+    --accent-foreground: 213 25% 14%;
+
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 20% 28%;
+    --input: 213 20% 25%;
+    --ring: 78 88% 93%;
+
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
