@@ -7,6 +7,9 @@ import Otp from '@/components/emailTemplates/otp'
 import sendKyc from '@/components/emailTemplates/sendKyc'
 import EganowBalanceAlert from '@/components/emailTemplates/EganowBalanceAlert'
 import TransactionNotification from '@/components/emailTemplates/transactionNotification'
+import WeeklyAccountSummary, {
+  type JarSummaryRow,
+} from '@/components/emailTemplates/weeklyAccountSummary'
 
 interface EmailOptions {
   to: string | string[]
@@ -189,6 +192,26 @@ class EmailService {
         phone: params.phone,
         provider: params.provider,
         paymentMethod: params.paymentMethod,
+      }),
+    })
+  }
+
+  // Weekly Account Summary Email
+  async sendWeeklyAccountSummaryEmail(params: {
+    to: string
+    firstName: string
+    weekStart: string
+    weekEnd: string
+    jars: JarSummaryRow[]
+  }) {
+    return this.sendEmail({
+      to: params.to,
+      subject: `Your weekly jars summary — ${params.weekStart} to ${params.weekEnd}`,
+      react: WeeklyAccountSummary({
+        firstName: params.firstName,
+        weekStart: params.weekStart,
+        weekEnd: params.weekEnd,
+        jars: params.jars,
       }),
     })
   }

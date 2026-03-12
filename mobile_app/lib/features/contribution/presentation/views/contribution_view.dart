@@ -2,6 +2,7 @@ import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
@@ -431,6 +432,51 @@ class ContributionView extends StatelessWidget {
                                                 ).colorScheme.primary,
                                           ),
                                         ),
+                                        // Only show transaction reference when available
+                                        if (contribution.transactionReference !=
+                                            null) ...[
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            dense: true,
+                                            title: Text(
+                                              'Transaction Ref',
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
+                                                  ),
+                                            ),
+                                            trailing: GestureDetector(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: contribution.transactionReference!));
+                                                AppSnackBar.showSuccess(context, message: 'Reference copied!');
+                                              },
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    contribution.transactionReference!,
+                                                    style: AppTextStyles.titleMediumS.copyWith(
+                                                      fontFamily: 'monospace',
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    CupertinoIcons.doc_on_doc,
+                                                    size: 14,
+                                                    color: Theme.of(context).textTheme.bodySmall!.color?.withValues(alpha: 0.4),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                         // Only show "Via Payment Link" when viaPaymentLink is true
                                         if (contribution.viaPaymentLink ==
                                             true) ...[

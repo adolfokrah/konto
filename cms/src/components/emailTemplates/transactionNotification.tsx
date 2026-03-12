@@ -57,14 +57,14 @@ const valueStyle: React.CSSProperties = {
 }
 
 export default function TransactionNotification({
-  type,
-  status,
-  contributor,
-  amount,
+  type = 'contribution',
+  status = 'completed',
+  contributor = 'John Doe',
+  amount = '100.00',
   currency = 'GHS',
-  jarName,
-  reference,
-  date,
+  jarName = 'Birthday Fund',
+  reference = 'TXN-000000',
+  date = new Date().toLocaleDateString(),
   phone,
   provider,
   paymentMethod,

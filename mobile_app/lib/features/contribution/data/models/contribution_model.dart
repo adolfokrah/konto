@@ -520,6 +520,7 @@ class ContributionModel {
   final bool viaPaymentLink;
   final ContributionType type; // contribution | payout | refund
   final bool isSettled;
+  final String? transactionReference;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -538,6 +539,7 @@ class ContributionModel {
     required this.viaPaymentLink,
     required this.type,
     this.isSettled = false,
+    this.transactionReference,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -606,6 +608,7 @@ class ContributionModel {
           json['type'] as String? ?? 'contribution',
         ),
         isSettled: json['isSettled'] as bool? ?? false,
+        transactionReference: json['transactionReference'] as String?,
         createdAt: DateTime.parse(
           json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         ),
@@ -636,6 +639,7 @@ class ContributionModel {
       'viaPaymentLink': viaPaymentLink,
       'type': type.value,
       'isSettled': isSettled,
+      if (transactionReference != null) 'transactionReference': transactionReference,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -657,6 +661,7 @@ class ContributionModel {
     bool? viaPaymentLink,
     ContributionType? type,
     bool? isSettled,
+    String? transactionReference,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -676,6 +681,7 @@ class ContributionModel {
       viaPaymentLink: viaPaymentLink ?? this.viaPaymentLink,
       type: type ?? this.type,
       isSettled: isSettled ?? this.isSettled,
+      transactionReference: transactionReference ?? this.transactionReference,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -44,6 +44,7 @@ import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
 import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
+import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -181,6 +182,7 @@ export default buildConfig({
       sendScheduledCampaignsTask as any,
       verifyPendingRefundsTask as any,
       verifyPendingTopupsTask as any,
+      weeklyAccountSummaryTask as any,
     ],
     autoRun: [
       {

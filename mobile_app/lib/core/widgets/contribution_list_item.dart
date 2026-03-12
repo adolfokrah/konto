@@ -118,7 +118,7 @@ class ContributionListItem extends StatelessWidget {
             AppDateUtils.formatTimestamp(timestamp, localizations),
             style: TextStyles.titleRegularXs,
           ),
-          if (paymentMethod != null)
+          if (paymentMethod != null && paymentMethod != 'cash')
             Container(
               padding: const EdgeInsets.symmetric(vertical: 2),
               decoration: BoxDecoration(
