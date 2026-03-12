@@ -63,6 +63,19 @@ export const verifyKYC = async (req: PayloadRequest) => {
 
     const user = users.docs[0]
 
+    // Ignore non-actionable statuses — user hasn't completed KYC yet
+    if (sessionStatus.status === 'Not Started' || sessionStatus.status === 'In Progress') {
+      return Response.json(
+        {
+          success: true,
+          message: 'KYC session is still in progress',
+          kycStatus: user.kycStatus,
+          sessionStatus,
+        },
+        { status: 200 },
+      )
+    }
+
     // Update user's KYC status based on session status using helper functions
     let newKycStatus: 'none' | 'in_review' | 'verified' = 'in_review'
 
@@ -72,6 +85,15 @@ export const verifyKYC = async (req: PayloadRequest) => {
       newKycStatus = 'none'
     } else if (isSessionPending(sessionStatus.status)) {
       newKycStatus = 'in_review'
+    }
+
+    // Update user in database if status moved to in_review (webhook may have missed it)
+    if (sessionStatus.status === 'In Review' && user.kycStatus !== 'in_review') {
+      await req.payload.update({
+        collection: 'users',
+        id: user.id,
+        data: { kycStatus: 'in_review' },
+      })
     }
 
     // Update user in database if status is failed/declined
