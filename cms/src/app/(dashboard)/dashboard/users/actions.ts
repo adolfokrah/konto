@@ -2,7 +2,12 @@
 
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
+import {
+  createDiditKYC,
+  isSessionCompleted,
+  isSessionFailed,
+  type DiditSessionDecision,
+} from '@/utilities/diditKyc'
 import { sendSMS } from '@/utilities/sms'
 import { emailService } from '@/utilities/emailService'
 
@@ -29,18 +34,21 @@ export async function checkDiditKycStatus(
     const didit = createDiditKYC()
     const session = await didit.getSessionStatus(sessionId)
 
-    // Map Didit status to our kycStatus
+    // Map Didit status to our kycStatus — only act on terminal statuses
     let kycStatus: 'none' | 'in_review' | 'verified'
-    switch (session.status) {
-      case 'Approved':
-        kycStatus = 'verified'
-        break
-      case 'Declined':
-      case 'Abandoned':
-        kycStatus = 'none'
-        break
-      default:
-        kycStatus = 'in_review'
+    if (isSessionCompleted(session.status)) {
+      kycStatus = 'verified'
+    } else if (isSessionFailed(session.status)) {
+      kycStatus = 'none'
+    } else if (session.status === 'In Review') {
+      kycStatus = 'in_review'
+    } else {
+      // Not Started, In Progress, Resubmitted — no DB update
+      return {
+        success: true,
+        message: `Didit status: ${session.status}. No update needed.`,
+        kycStatus: undefined,
+      }
     }
 
     const payload = await getPayload({ config: configPromise })
