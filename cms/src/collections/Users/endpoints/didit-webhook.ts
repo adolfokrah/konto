@@ -156,6 +156,15 @@ export const diditWebhook = async (req: PayloadRequest) => {
       has_decision: !!payload.decision,
     })
 
+    // Ignore non-actionable statuses — user hasn't completed KYC yet
+    if (payload.status === 'Not Started' || payload.status === 'In Progress') {
+      console.log(`ℹ️ Ignoring webhook with status: ${payload.status}`)
+      return Response.json(
+        { message: 'Status noted, no action needed', session_id: payload.session_id },
+        { status: 200 },
+      )
+    }
+
     // Handle specific statuses that should set KYC status to in_review
     if (payload.status === 'In Review') {
       console.log(`🔄 Status is ${payload.status}, updating user KYC status to in_review`)
