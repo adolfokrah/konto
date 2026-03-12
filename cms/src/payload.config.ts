@@ -221,6 +221,10 @@ export default buildConfig({
         cron: '*/8 * * * *', // Every 5 minutes
         queue: 'verify-pending-topups',
       },
+      {
+        cron: '0 8 * * 0', // Every Sunday at 8 AM
+        queue: 'weekly-account-summary',
+      },
     ],
   },
   endpoints: [

@@ -155,6 +155,7 @@ export interface Config {
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'verify-pending-refunds': TaskVerifyPendingRefunds;
       'verify-pending-topups': TaskVerifyPendingTopups;
+      'weekly-account-summary': TaskWeeklyAccountSummary;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1973,6 +1974,7 @@ export interface PayloadJob {
           | 'send-scheduled-campaigns'
           | 'verify-pending-refunds'
           | 'verify-pending-topups'
+          | 'weekly-account-summary'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2022,6 +2024,7 @@ export interface PayloadJob {
         | 'send-scheduled-campaigns'
         | 'verify-pending-refunds'
         | 'verify-pending-topups'
+        | 'weekly-account-summary'
         | 'schedulePublish'
       )
     | null;
@@ -3624,6 +3627,14 @@ export interface TaskVerifyPendingRefunds {
  * via the `definition` "TaskVerify-pending-topups".
  */
 export interface TaskVerifyPendingTopups {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskWeekly-account-summary".
+ */
+export interface TaskWeeklyAccountSummary {
   input?: unknown;
   output?: unknown;
 }

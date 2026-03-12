@@ -435,45 +435,47 @@ class ContributionView extends StatelessWidget {
                                         // Only show transaction reference when available
                                         if (contribution.transactionReference !=
                                             null) ...[
-                                          ListTile(
-                                            contentPadding: EdgeInsets.zero,
-                                            dense: true,
-                                            title: Text(
-                                              'Transaction Ref',
-                                              style: AppTextStyles.titleMediumS
-                                                  .copyWith(
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 8),
+                                            child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Transaction Ref',
+                                                  style: AppTextStyles.titleMediumS.copyWith(
                                                     color: Theme.of(context)
                                                         .textTheme
                                                         .bodySmall!
                                                         .color
-                                                        ?.withValues(
-                                                          alpha: 0.5,
-                                                        ),
+                                                        ?.withValues(alpha: 0.5),
                                                   ),
-                                            ),
-                                            trailing: GestureDetector(
-                                              onTap: () {
-                                                Clipboard.setData(ClipboardData(text: contribution.transactionReference!));
-                                                AppSnackBar.showSuccess(context, message: 'Reference copied!');
-                                              },
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
                                                     contribution.transactionReference!,
                                                     style: AppTextStyles.titleMediumS.copyWith(
                                                       fontFamily: 'monospace',
                                                       fontSize: 12,
                                                     ),
+                                                    textAlign: TextAlign.end,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
                                                   ),
-                                                  const SizedBox(width: 4),
-                                                  Icon(
-                                                    CupertinoIcons.doc_on_doc,
-                                                    size: 14,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Clipboard.setData(ClipboardData(text: contribution.transactionReference!));
+                                                    AppSnackBar.showSuccess(context, message: 'Reference copied!');
+                                                  },
+                                                  child: Icon(
+                                                    Icons.copy_outlined,
+                                                    size: 16,
                                                     color: Theme.of(context).textTheme.bodySmall!.color?.withValues(alpha: 0.4),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],

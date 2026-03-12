@@ -3,10 +3,10 @@ import { Layout } from './layout'
 
 export interface JarSummaryRow {
   name: string
-  contributionCount: number
-  collected: number      // cash + momo contributions
+  contributionCount: number  // cash + momo combined
+  cashCollected: number
+  momoCollected: number
   withdrawn: number      // momo payouts only
-  balance: number        // momo contributions - withdrawn
   currency: string
 }
 
@@ -57,9 +57,9 @@ const totalTdNumStyle: React.CSSProperties = {
 }
 
 const defaultJars: JarSummaryRow[] = [
-  { name: 'Birthday Fund', contributionCount: 12, collected: 450, withdrawn: 0, balance: 300, currency: 'GHS' },
-  { name: 'Trip to Accra', contributionCount: 5, collected: 200, withdrawn: 150, balance: 50, currency: 'GHS' },
-  { name: 'Office Party', contributionCount: 3, collected: 75, withdrawn: 75, balance: 0, currency: 'GHS' },
+  { name: 'Birthday Fund', contributionCount: 12, cashCollected: 250, momoCollected: 200, withdrawn: 0, currency: 'GHS' },
+  { name: 'Trip to Accra', contributionCount: 5, cashCollected: 80, momoCollected: 120, withdrawn: 150, currency: 'GHS' },
+  { name: 'Office Party', contributionCount: 3, cashCollected: 30, momoCollected: 45, withdrawn: 75, currency: 'GHS' },
 ]
 
 export default function WeeklyAccountSummary({
@@ -76,18 +76,18 @@ export default function WeeklyAccountSummary({
   const totals = jars.reduce(
     (acc, j) => ({
       contributionCount: acc.contributionCount + j.contributionCount,
-      collected: acc.collected + j.collected,
+      cashCollected: acc.cashCollected + j.cashCollected,
+      momoCollected: acc.momoCollected + j.momoCollected,
       withdrawn: acc.withdrawn + j.withdrawn,
-      balance: acc.balance + j.balance,
     }),
-    { contributionCount: 0, collected: 0, withdrawn: 0, balance: 0 },
+    { contributionCount: 0, cashCollected: 0, momoCollected: 0, withdrawn: 0 },
   )
 
   return (
     <Layout title="Your weekly jars summary">
       <p>Hi {firstName},</p>
       <p>
-        Here&apos;s how your jars performed from <strong>{weekStart}</strong> to{' '}
+        Here&apos;s a summary of your jars activity from <strong>{weekStart}</strong> to{' '}
         <strong>{weekEnd}</strong>.
       </p>
 
@@ -95,35 +95,44 @@ export default function WeeklyAccountSummary({
         <table style={{ width: '100%', borderCollapse: 'collapse', margin: '20px 0' }}>
           <thead>
             <tr>
-              <th style={thStyle}>Jar</th>
-              <th style={thNumStyle}>Contributions</th>
-              <th style={{ ...thNumStyle }}>
-                Collected
-                <div style={{ fontWeight: 400, fontSize: '11px', color: '#9CA3AF' }}>Cash + MoMo</div>
+              <th style={{ ...thStyle, borderBottom: '1px solid #E5E7EB' }} rowSpan={2}>Jar</th>
+              <th
+                colSpan={3}
+                style={{
+                  ...thNumStyle,
+                  textAlign: 'center',
+                  borderBottom: '1px solid #E5E7EB',
+                  borderLeft: '1px solid #E5E7EB',
+                }}
+              >
+                Contributions
               </th>
-              <th style={{ ...thNumStyle }}>
+              <th style={{ ...thNumStyle, borderBottom: '1px solid #E5E7EB', borderLeft: '1px solid #E5E7EB' }} rowSpan={2}>
                 Withdrawn
                 <div style={{ fontWeight: 400, fontSize: '11px', color: '#9CA3AF' }}>MoMo only</div>
               </th>
-              <th style={{ ...thNumStyle }}>
-                Balance
-                <div style={{ fontWeight: 400, fontSize: '11px', color: '#9CA3AF' }}>MoMo only</div>
-              </th>
+            </tr>
+            <tr>
+              <th style={{ ...thNumStyle, borderLeft: '1px solid #E5E7EB' }}>Count</th>
+              <th style={{ ...thNumStyle, borderLeft: '1px solid #E5E7EB' }}>Cash</th>
+              <th style={{ ...thNumStyle, borderLeft: '1px solid #E5E7EB' }}>MoMo</th>
             </tr>
           </thead>
           <tbody>
             {jars.map((jar, i) => (
               <tr key={i}>
                 <td style={{ ...tdStyle, fontWeight: 500 }}>{jar.name}</td>
-                <td style={tdNumStyle}>{jar.contributionCount}</td>
-                <td style={{ ...tdNumStyle, color: '#16A34A' }}>
-                  {fmt(jar.collected, jar.currency)}
+                <td style={{ ...tdNumStyle, borderLeft: '1px solid #E5E7EB' }}>
+                  {jar.contributionCount}
                 </td>
-                <td style={{ ...tdNumStyle, color: jar.withdrawn > 0 ? '#DC2626' : '#9CA3AF' }}>
-                  {jar.withdrawn > 0 ? `- ${fmt(jar.withdrawn, jar.currency)}` : '—'}
+                <td style={{ ...tdNumStyle, color: '#16A34A', borderLeft: '1px solid #E5E7EB' }}>
+                  {fmt(jar.cashCollected, jar.currency)}
                 </td>
-                <td style={{ ...tdNumStyle, fontWeight: 600 }}>
-                  {fmt(jar.balance, jar.currency)}
+                <td style={{ ...tdNumStyle, color: '#16A34A', borderLeft: '1px solid #E5E7EB' }}>
+                  {fmt(jar.momoCollected, jar.currency)}
+                </td>
+                <td style={{ ...tdNumStyle, color: '#DC2626', borderLeft: '1px solid #E5E7EB' }}>
+                  {`- ${fmt(jar.withdrawn, jar.currency)}`}
                 </td>
               </tr>
             ))}
@@ -131,21 +140,25 @@ export default function WeeklyAccountSummary({
             {/* Totals row */}
             <tr>
               <td style={totalTdStyle}>Total</td>
-              <td style={totalTdNumStyle}>{totals.contributionCount}</td>
-              <td style={{ ...totalTdNumStyle, color: '#16A34A' }}>
-                {fmt(totals.collected, currency)}
+              <td style={{ ...totalTdNumStyle, borderLeft: '1px solid #E5E7EB' }}>
+                {totals.contributionCount}
               </td>
-              <td style={{ ...totalTdNumStyle, color: totals.withdrawn > 0 ? '#DC2626' : '#9CA3AF' }}>
-                {totals.withdrawn > 0 ? `- ${fmt(totals.withdrawn, currency)}` : '—'}
+              <td style={{ ...totalTdNumStyle, color: '#16A34A', borderLeft: '1px solid #E5E7EB' }}>
+                {fmt(totals.cashCollected, currency)}
               </td>
-              <td style={{ ...totalTdNumStyle }}>{fmt(totals.balance, currency)}</td>
+              <td style={{ ...totalTdNumStyle, color: '#16A34A', borderLeft: '1px solid #E5E7EB' }}>
+                {fmt(totals.momoCollected, currency)}
+              </td>
+              <td style={{ ...totalTdNumStyle, color: '#DC2626', borderLeft: '1px solid #E5E7EB' }}>
+                {`- ${fmt(totals.withdrawn, currency)}`}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <p style={{ color: '#6B7280', fontSize: '13px', marginTop: '8px' }}>
-        <em>Collected includes both cash and MoMo contributions. Balance and withdrawals reflect MoMo only.</em>
+        <em>Withdrawals reflect MoMo payouts only.</em>
       </p>
 
       <p>Keep sharing your jar links to keep the momentum going!</p>

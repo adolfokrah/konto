@@ -12,7 +12,7 @@ export const weeklyAccountSummaryTask = {
   slug: 'weekly-account-summary',
   schedule: [
     {
-      cron: '0 8 * * 0',
+      cron: '0 8 * * 0', // Every Sunday at 8 AM
       queue: 'weekly-account-summary',
     },
   ],
@@ -38,11 +38,11 @@ export const weeklyAccountSummaryTask = {
 
       console.log(`📧 Starting weekly account summary (${weekStartStr} – ${weekEndStr})`)
 
-      // Find all KYC-verified users with an email
+      // Find all users with an email
       const users = await payload.find({
         collection: 'users',
         where: {
-          and: [{ kycStatus: { equals: 'verified' } }, { role: { equals: 'user' } }],
+          role: { equals: 'user' },
         },
         pagination: false,
         overrideAccess: true,
@@ -113,29 +113,33 @@ export const weeklyAccountSummaryTask = {
             // Skip jars with no activity this week
             if (!contributions.docs.length && !payouts.docs.length) continue
 
-            const collected = contributions.docs.reduce(
+            const cashTxs = contributions.docs.filter(
+              (tx: any) => tx.paymentMethod !== 'mobile-money',
+            )
+            const momoTxs = contributions.docs.filter(
+              (tx: any) => tx.paymentMethod === 'mobile-money',
+            )
+
+            const cashCollected = cashTxs.reduce(
               (sum: number, tx: any) => sum + (tx.amountContributed || 0),
               0,
             )
-
+            const momoCollected = momoTxs.reduce(
+              (sum: number, tx: any) => sum + (tx.amountContributed || 0),
+              0,
+            )
             const withdrawn = payouts.docs.reduce(
-              (sum: number, tx: any) => sum + (tx.amountContributed || 0),
+              (sum: number, tx: any) =>
+                sum + Math.abs(tx.payoutNetAmount || tx.amountContributed || 0),
               0,
             )
-
-            // Balance = momo contributions - payouts
-            const momoContributions = contributions.docs
-              .filter((tx: any) => tx.paymentMethod === 'mobile-money')
-              .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
-
-            const balance = momoContributions - withdrawn
 
             jarRows.push({
               name: jar.name,
               contributionCount: contributions.docs.length,
-              collected,
+              cashCollected,
+              momoCollected,
               withdrawn,
-              balance,
               currency: jar.currency || 'GHS',
             })
           }
