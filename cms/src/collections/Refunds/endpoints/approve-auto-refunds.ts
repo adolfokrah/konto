@@ -24,7 +24,7 @@ export const approveAutoRefunds = async (req: PayloadRequest) => {
         ],
       },
       pagination: false,
-      select: { id: true },
+      depth: 0,
       overrideAccess: true,
     })
 

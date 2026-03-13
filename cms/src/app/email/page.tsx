@@ -23,7 +23,7 @@ export default function Email() {
       {/* <WithdrawalReminder reminderDay={7} /> */}
       {/* <WithdrawalReminder reminderDay={10} /> */}
       {/* <WithdrawalReminder reminderDay={12} /> */}
-      <AutoRefundNotice />
+      {/* <AutoRefundNotice firstName="Adolphus" jarName="Test Jar" totalAmount={50} currency="GHS" contributorsCount={3} /> */}
     </div>
   )
 }
