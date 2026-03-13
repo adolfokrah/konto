@@ -15,17 +15,25 @@ const BYPASS_PREFIXES = [
   '/media',
   '/robots',
   '/sitemap',
+  '/fonts',
+  '/icons',
+  '/images',
 ]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Skip static files (anything with a file extension)
+  if (/\.[^/]+$/.test(pathname)) {
+    return NextResponse.next()
+  }
 
   // Skip if already locale-prefixed
   if (LOCALES.some((locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`))) {
     return NextResponse.next()
   }
 
-  // Skip bypass prefixes and static files
+  // Skip bypass prefixes
   if (BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return NextResponse.next()
   }
@@ -37,5 +45,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|_next/webpack-hmr).*)'],
 }
