@@ -1,7 +1,5 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Settings } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SystemSettingsForm } from '@/components/dashboard/system-settings-form'
 
 export default async function SettingsPage() {
@@ -13,13 +11,10 @@ export default async function SettingsPage() {
   })
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Settings className="h-5 w-5 text-muted-foreground" />
-        <div>
-          <h1 className="text-xl font-semibold">System Settings</h1>
-          <p className="text-sm text-muted-foreground">Manage fees, referral bonuses, and payout settings</p>
-        </div>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div>
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage fees, referral bonuses, and payout settings</p>
       </div>
 
       <SystemSettingsForm settings={settings as any} />

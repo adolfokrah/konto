@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   if (!user) redirect('/admin?redirect=%2Fdashboard%2Fprofile')
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <UserCircle className="h-5 w-5 text-muted-foreground" />
         <div>

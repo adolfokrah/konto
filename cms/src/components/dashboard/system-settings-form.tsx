@@ -4,13 +4,6 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 import { Loader2, Percent, Clock, Gift, ArrowRightLeft } from 'lucide-react'
 
 interface Settings {
@@ -25,48 +18,49 @@ interface Settings {
   referralMaxWithdrawalAmount: number
 }
 
-function NumberField({
+function SettingRow({
   label,
   description,
-  name,
-  value,
-  step,
-  onChange,
+  children,
 }: {
   label: string
   description?: string
-  name: string
-  value: number
-  step?: number
-  onChange: (name: string, value: number) => void
+  children: React.ReactNode
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={name} className="text-sm font-medium">
-        {label}
-      </Label>
-      <Input
-        id={name}
-        type="number"
-        step={step ?? 0.01}
-        value={value}
-        onChange={(e) => onChange(name, parseFloat(e.target.value) || 0)}
-        className="h-9"
-      />
-      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+    <div className="flex items-center justify-between gap-6 py-4 border-b border-border/50 last:border-0">
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{label}</p>
+        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+      </div>
+      <div className="shrink-0 w-36">{children}</div>
     </div>
   )
 }
 
-function SectionSummary({ items }: { items: { label: string; value: string }[] }) {
+function SettingsCard({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1">
-      {items.map((item) => (
-        <span key={item.label} className="text-xs text-muted-foreground">
-          {item.label}:{' '}
-          <span className="font-semibold text-foreground">{item.value}</span>
-        </span>
-      ))}
+    <div className="rounded-xl border bg-card shadow-sm">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <div className="px-5">{children}</div>
     </div>
   )
 }
@@ -85,9 +79,8 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
   })
   const [saving, setSaving] = useState(false)
 
-  const handleChange = (name: string, value: number) => {
+  const set = (name: keyof Settings, value: number) =>
     setValues((prev) => ({ ...prev, [name]: value }))
-  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -98,12 +91,10 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
         credentials: 'include',
         body: JSON.stringify(values),
       })
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.errors?.[0]?.message ?? `Save failed (${res.status})`)
       }
-
       toast.success('Settings saved')
     } catch (err: any) {
       toast.error(err.message ?? 'Failed to save settings')
@@ -112,203 +103,67 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
     }
   }
 
+  const numInput = (name: keyof Settings, step = 0.01) => (
+    <Input
+      type="number"
+      step={step}
+      value={values[name]}
+      onChange={(e) => set(name, parseFloat(e.target.value) || 0)}
+      className="h-9 text-right"
+    />
+  )
+
   const settlementLabel =
     values.settlementDelayHours < 1
       ? `${Math.round(values.settlementDelayHours * 60)} min`
       : `${values.settlementDelayHours}h`
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <Accordion type="multiple" defaultValue={['collection', 'transfer', 'payout', 'referral']} className="space-y-3">
-        {/* Collection */}
-        <AccordionItem
-          value="collection"
-          className="rounded-xl border bg-card px-5 shadow-sm"
-        >
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex items-center gap-3 text-left">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Percent className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-sm font-semibold leading-none">Collection</p>
-                <SectionSummary
-                  items={[
-                    { label: 'Fee', value: `${values.collectionFee}%` },
-                    { label: 'Hogapay split', value: `${values.hogapayCollectionFeePercent}%` },
-                  ]}
-                />
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pb-5">
-            <p className="mb-4 text-xs text-muted-foreground">Fees charged on contributions</p>
-            <div className="grid grid-cols-2 gap-4">
-              <NumberField
-                label="Fee (%)"
-                description="Total fee paid by the contributor"
-                name="collectionFee"
-                value={values.collectionFee}
-                step={0.01}
-                onChange={handleChange}
-              />
-              <NumberField
-                label="Hogapay Split (%)"
-                description="Hogapay's share of the collection fee"
-                name="hogapayCollectionFeePercent"
-                value={values.hogapayCollectionFeePercent}
-                step={0.01}
-                onChange={handleChange}
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+    <div className="space-y-4">
+      <SettingsCard icon={Percent} title="Collection" description="Fees charged on contributions">
+        <SettingRow label="Fee (%)" description="Total fee paid by the contributor">
+          {numInput('collectionFee', 0.01)}
+        </SettingRow>
+        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the collection fee">
+          {numInput('hogapayCollectionFeePercent', 0.01)}
+        </SettingRow>
+      </SettingsCard>
 
-        {/* Transfer */}
-        <AccordionItem
-          value="transfer"
-          className="rounded-xl border bg-card px-5 shadow-sm"
-        >
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex items-center gap-3 text-left">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <ArrowRightLeft className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-sm font-semibold leading-none">Transfer (Payout)</p>
-                <SectionSummary
-                  items={[
-                    { label: 'Fee', value: `${values.transferFeePercentage}%` },
-                    { label: 'Hogapay split', value: `${values.hogapayTransferFeePercent}%` },
-                  ]}
-                />
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pb-5">
-            <p className="mb-4 text-xs text-muted-foreground">Fees charged on withdrawals</p>
-            <div className="grid grid-cols-2 gap-4">
-              <NumberField
-                label="Fee (%)"
-                description="Deducted from payout amount"
-                name="transferFeePercentage"
-                value={values.transferFeePercentage}
-                step={0.1}
-                onChange={handleChange}
-              />
-              <NumberField
-                label="Hogapay Split (%)"
-                description="Hogapay's share of the transfer fee"
-                name="hogapayTransferFeePercent"
-                value={values.hogapayTransferFeePercent}
-                step={0.01}
-                onChange={handleChange}
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+      <SettingsCard icon={ArrowRightLeft} title="Transfer (Payout)" description="Fees charged on withdrawals">
+        <SettingRow label="Fee (%)" description="Deducted from payout amount">
+          {numInput('transferFeePercentage', 0.1)}
+        </SettingRow>
+        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the transfer fee">
+          {numInput('hogapayTransferFeePercent', 0.01)}
+        </SettingRow>
+      </SettingsCard>
 
-        {/* Payout Settings */}
-        <AccordionItem
-          value="payout"
-          className="rounded-xl border bg-card px-5 shadow-sm"
+      <SettingsCard icon={Clock} title="Payout Settings" description="Timing for contribution settlement">
+        <SettingRow
+          label="Settlement Delay (hours)"
+          description={`Current: ${settlementLabel} — 0.033 ≈ 2 min`}
         >
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex items-center gap-3 text-left">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Clock className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-sm font-semibold leading-none">Payout Settings</p>
-                <SectionSummary
-                  items={[{ label: 'Settlement delay', value: settlementLabel }]}
-                />
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pb-5">
-            <p className="mb-4 text-xs text-muted-foreground">Timing for contribution settlement</p>
-            <div className="max-w-xs">
-              <NumberField
-                label="Settlement Delay (hours)"
-                description="0.033 ≈ 2 min"
-                name="settlementDelayHours"
-                value={values.settlementDelayHours}
-                step={0.001}
-                onChange={handleChange}
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+          {numInput('settlementDelayHours', 0.001)}
+        </SettingRow>
+      </SettingsCard>
 
-        {/* Referral Bonus */}
-        <AccordionItem
-          value="referral"
-          className="rounded-xl border bg-card px-5 shadow-sm"
+      <SettingsCard icon={Gift} title="Referral Bonus" description="Rewards paid to referrers">
+        <SettingRow
+          label="First Contribution Bonus (GHS)"
+          description="Paid when referred user's jar gets its first contribution"
         >
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex items-center gap-3 text-left">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Gift className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-sm font-semibold leading-none">Referral Bonus</p>
-                <SectionSummary
-                  items={[
-                    { label: 'Bonus', value: `GHS ${values.referralFirstContributionBonus}` },
-                    { label: 'Fee share', value: `${values.referralFeeSharePercent}%` },
-                    { label: 'Min withdrawal', value: `GHS ${values.referralMinWithdrawalAmount}` },
-                    {
-                      label: 'Max withdrawal',
-                      value:
-                        values.referralMaxWithdrawalAmount === 0
-                          ? 'No limit'
-                          : `GHS ${values.referralMaxWithdrawalAmount}`,
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pb-5">
-            <p className="mb-4 text-xs text-muted-foreground">Rewards paid to referrers</p>
-            <div className="grid grid-cols-2 gap-4">
-              <NumberField
-                label="First Contribution Bonus (GHS)"
-                description="Paid when referred user's jar gets its first contribution"
-                name="referralFirstContributionBonus"
-                value={values.referralFirstContributionBonus}
-                step={0.5}
-                onChange={handleChange}
-              />
-              <NumberField
-                label="Fee Share (%)"
-                description="% of Hogapay's transfer fee shared with referrer"
-                name="referralFeeSharePercent"
-                value={values.referralFeeSharePercent}
-                step={1}
-                onChange={handleChange}
-              />
-              <NumberField
-                label="Min Withdrawal (GHS)"
-                description="Minimum balance to initiate a withdrawal"
-                name="referralMinWithdrawalAmount"
-                value={values.referralMinWithdrawalAmount}
-                step={1}
-                onChange={handleChange}
-              />
-              <NumberField
-                label="Max Withdrawal (GHS)"
-                description="Max per withdrawal (0 = no limit)"
-                name="referralMaxWithdrawalAmount"
-                value={values.referralMaxWithdrawalAmount}
-                step={10}
-                onChange={handleChange}
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+          {numInput('referralFirstContributionBonus', 0.5)}
+        </SettingRow>
+        <SettingRow label="Fee Share (%)" description="% of Hogapay's transfer fee shared with referrer">
+          {numInput('referralFeeSharePercent', 1)}
+        </SettingRow>
+        <SettingRow label="Min Withdrawal (GHS)" description="Minimum balance to initiate a withdrawal">
+          {numInput('referralMinWithdrawalAmount', 1)}
+        </SettingRow>
+        <SettingRow label="Max Withdrawal (GHS)" description="Max per withdrawal (0 = no limit)">
+          {numInput('referralMaxWithdrawalAmount', 10)}
+        </SettingRow>
+      </SettingsCard>
 
       <div className="flex justify-end pt-2">
         <Button onClick={handleSave} disabled={saving} className="min-w-28">
