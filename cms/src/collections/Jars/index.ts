@@ -226,6 +226,16 @@ export const Jars: CollectionConfig = {
       },
     },
     {
+      name: 'lastActivityAt',
+      type: 'date',
+      required: false,
+      index: true,
+      admin: {
+        description:
+          'Date of the most recent completed contribution. Used for idle-day calculations.',
+      },
+    },
+    {
       name: 'allowAnonymousContributions',
       type: 'checkbox',
       defaultValue: false,

@@ -15,6 +15,9 @@ export const notifyRefund = async ({
   previousDoc?: any
   operation: 'create' | 'update'
 }) => {
+  // Auto refunds are bulk system-generated — skip to avoid email spam
+  if (doc.refundType === 'auto') return
+
   const isNew = operation === 'create'
   const isNewlyCompleted =
     operation === 'update' && doc.status === 'completed' && previousDoc?.status !== 'completed'

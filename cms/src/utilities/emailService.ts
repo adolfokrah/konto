@@ -10,6 +10,8 @@ import TransactionNotification from '@/components/emailTemplates/transactionNoti
 import WeeklyAccountSummary, {
   type JarSummaryRow,
 } from '@/components/emailTemplates/weeklyAccountSummary'
+import WithdrawalReminder from '@/components/emailTemplates/withdrawalReminder'
+import AutoRefundNotice from '@/components/emailTemplates/autoRefundNotice'
 
 interface EmailOptions {
   to: string | string[]
@@ -212,6 +214,52 @@ class EmailService {
         weekStart: params.weekStart,
         weekEnd: params.weekEnd,
         jars: params.jars,
+      }),
+    })
+  }
+
+  // Withdrawal Reminder Email
+  async sendWithdrawalReminderEmail(params: {
+    to: string
+    firstName: string
+    reminderDay: number
+    jars: { name: string; balance: number; currency: string; lastTransactionDate: string }[]
+  }) {
+    const subjectByDay: Record<number, string> = {
+      7: 'Reminder: withdraw your jar balance',
+      10: '2nd reminder: your jar balance is still unclaimed',
+      12: 'Final warning: withdraw now or auto-refund begins',
+    }
+    const subject = subjectByDay[params.reminderDay] ?? 'Action required: withdraw your jar balance'
+    return this.sendEmail({
+      to: params.to,
+      subject,
+      react: WithdrawalReminder({
+        firstName: params.firstName,
+        reminderDay: params.reminderDay,
+        jars: params.jars,
+      }),
+    })
+  }
+
+  // Auto Refund Notice Email (sent to jar creator when jar is frozen on Day 14)
+  async sendAutoRefundNoticeEmail(params: {
+    to: string
+    firstName: string
+    jarName: string
+    totalAmount: number
+    currency: string
+    contributorsCount: number
+  }) {
+    return this.sendEmail({
+      to: params.to,
+      subject: `Your jar "${params.jarName}" has been frozen — auto-refund initiated`,
+      react: AutoRefundNotice({
+        firstName: params.firstName,
+        jarName: params.jarName,
+        totalAmount: params.totalAmount,
+        currency: params.currency,
+        contributorsCount: params.contributorsCount,
       }),
     })
   }

@@ -47,6 +47,8 @@ import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
 import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
+import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
+import { autoRefundDailyTask } from './tasks/auto-refund-daily'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -187,30 +189,32 @@ export default buildConfig({
       verifyPendingRefundsTask as any,
       verifyPendingTopupsTask as any,
       weeklyAccountSummaryTask as any,
+      withdrawReminderDailyTask as any,
+      autoRefundDailyTask as any,
     ],
     autoRun: [
       {
-        cron: '*/5 * * * *', // Every 5 minutes
+        cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *', // 2 mins after schedule (*/5)
         queue: 'settle-contributions',
       },
       {
-        cron: '0 9 * * *', // Every day at 9:00 AM
+        cron: '2 9 * * *', // Every day at 9:02 AM
         queue: 'check-empty-jars-daily',
       },
       {
-        cron: '0 10 * * *', // Every day at 10:00 AM
+        cron: '2 10 * * *', // Every day at 10:02 AM
         queue: 'check-withdrawal-balance-daily',
       },
       {
-        cron: '*/2 * * * *', // Every 2 minutes (testing)
+        cron: '2-58/2 * * * *', // 2 mins after schedule (*/2)
         queue: 'verify-pending-transactions',
       },
       {
-        cron: '0 11 * * *', // Every day at 11:00 AM
+        cron: '2 11 * * *', // Every day at 11:02 AM
         queue: 'jar-creation-reminder-daily',
       },
       {
-        cron: '0 * * * *', // Every hour
+        cron: '2 * * * *', // 2 mins after schedule (0 * * * *)
         queue: 'check-eganow-payout-balance',
       },
       {
@@ -218,16 +222,24 @@ export default buildConfig({
         queue: 'send-scheduled-campaigns',
       },
       {
-        cron: '*/6 * * * *', // Every 6 minutes
+        cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *', // 2 mins after schedule (*/5)
         queue: 'verify-pending-refunds',
       },
       {
-        cron: '*/8 * * * *', // Every 5 minutes
+        cron: '2,9,16,23,30,37,44,51,58 * * * *', // 2 mins after schedule (*/7)
         queue: 'verify-pending-topups',
       },
       {
-        cron: '0 8 * * 0', // Every Sunday at 8 AM
+        cron: '2 8 * * 0', // Every Sunday at 8:02 AM
         queue: 'weekly-account-summary',
+      },
+      {
+        cron: '2 9 * * *', // Every day at 9:02 AM
+        queue: 'withdraw-reminder-daily',
+      },
+      {
+        cron: '2 9 * * *',
+        queue: 'auto-refund-daily',
       },
     ],
   },

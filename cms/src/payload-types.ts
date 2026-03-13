@@ -160,6 +160,8 @@ export interface Config {
       'verify-pending-refunds': TaskVerifyPendingRefunds;
       'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
+      'withdraw-reminder-daily': TaskWithdrawReminderDaily;
+      'auto-refund-daily': TaskAutoRefundDaily;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1547,6 +1549,10 @@ export interface Jar {
    */
   freezeReason?: string | null;
   /**
+   * Date of the most recent completed contribution. Used for idle-day calculations.
+   */
+  lastActivityAt?: string | null;
+  /**
    * Allow contributions from users not logged in
    */
   allowAnonymousContributions?: boolean | null;
@@ -1653,54 +1659,38 @@ export interface PushCampaign {
  */
 export interface Refund {
   id: string;
+  refundType: 'manual' | 'auto';
+  jar: string | Jar;
   /**
-   * User who initiated the refund
+   * Admin who initiated the refund. Null when triggered by the system.
    */
-  initiatedBy: string | User;
+  initiatedBy?: (string | null) | User;
   /**
-   * Refund amount (positive value)
+   * Refund amount (stored as negative)
    */
   amount: number;
   /**
-   * Contributor phone number or account number
+   * Contributor phone number
    */
   accountNumber: string;
   /**
    * Contributor name
    */
-  accountName: string;
+  accountName?: string | null;
   /**
-   * Mobile money provider (e.g. mtn, telecel)
+   * e.g. mtn, telecel
    */
   mobileMoneyProvider: string;
-  /**
-   * The jar this refund belongs to
-   */
-  jar: string | Jar;
   /**
    * The original contribution being refunded
    */
   linkedTransaction: string | Transaction;
-  /**
-   * Eganow's fees for this refund
-   */
   eganowFees?: number | null;
-  /**
-   * Hogapay's revenue from this refund
-   */
   hogapayRevenue?: number | null;
   /**
-   * Eganow transaction reference number
+   * Eganow transaction reference
    */
   transactionReference?: string | null;
-  /**
-   * Admin who last updated (approved/rejected) this refund
-   */
-  updatedBy?: (string | null) | User;
-  status: 'pending' | 'in-progress' | 'failed' | 'completed';
-  /**
-   * Raw webhook payload received from the payment provider
-   */
   webhookResponse?:
     | {
         [k: string]: unknown;
@@ -1710,6 +1700,17 @@ export interface Refund {
     | number
     | boolean
     | null;
+  /**
+   * When the cron job created this auto refund
+   */
+  triggeredAt?: string | null;
+  /**
+   * Admin who approved or rejected this auto refund
+   */
+  reviewedBy?: (string | null) | User;
+  reviewedAt?: string | null;
+  updatedBy?: (string | null) | User;
+  status: 'awaiting_approval' | 'pending' | 'in-progress' | 'completed' | 'failed' | 'rejected';
   updatedAt: string;
   createdAt: string;
 }
@@ -2087,6 +2088,8 @@ export interface PayloadJob {
           | 'verify-pending-refunds'
           | 'verify-pending-topups'
           | 'weekly-account-summary'
+          | 'withdraw-reminder-daily'
+          | 'auto-refund-daily'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2137,6 +2140,8 @@ export interface PayloadJob {
         | 'verify-pending-refunds'
         | 'verify-pending-topups'
         | 'weekly-account-summary'
+        | 'withdraw-reminder-daily'
+        | 'auto-refund-daily'
         | 'schedulePublish'
       )
     | null;
@@ -2964,6 +2969,7 @@ export interface JarsSelect<T extends boolean = true> {
   thankYouMessage?: T;
   status?: T;
   freezeReason?: T;
+  lastActivityAt?: T;
   allowAnonymousContributions?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3037,19 +3043,23 @@ export interface PushCampaignsSelect<T extends boolean = true> {
  * via the `definition` "refunds_select".
  */
 export interface RefundsSelect<T extends boolean = true> {
+  refundType?: T;
+  jar?: T;
   initiatedBy?: T;
   amount?: T;
   accountNumber?: T;
   accountName?: T;
   mobileMoneyProvider?: T;
-  jar?: T;
   linkedTransaction?: T;
   eganowFees?: T;
   hogapayRevenue?: T;
   transactionReference?: T;
+  webhookResponse?: T;
+  triggeredAt?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
   updatedBy?: T;
   status?: T;
-  webhookResponse?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3818,6 +3828,22 @@ export interface TaskVerifyPendingTopups {
  * via the `definition` "TaskWeekly-account-summary".
  */
 export interface TaskWeeklyAccountSummary {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskWithdraw-reminder-daily".
+ */
+export interface TaskWithdrawReminderDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAuto-refund-daily".
+ */
+export interface TaskAutoRefundDaily {
   input?: unknown;
   output?: unknown;
 }

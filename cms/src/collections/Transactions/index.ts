@@ -23,6 +23,7 @@ import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
 import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
+import { updateJarLastActivity } from './hooks/update-jar-last-activity'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -405,7 +406,12 @@ export const Transactions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
-    afterChange: [sendContributionReceipt, notifyTransactionCompleted, processReferralBonus],
+    afterChange: [
+      sendContributionReceipt,
+      notifyTransactionCompleted,
+      processReferralBonus,
+      updateJarLastActivity,
+    ],
     beforeValidate: [validateJarCreatorAccount],
   },
 }

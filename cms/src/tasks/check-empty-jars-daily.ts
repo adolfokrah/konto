@@ -1,10 +1,13 @@
 import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
 
 /**
- * Check Empty Jars Daily Task
+ * Check Inactive Jars Daily Task
  *
  * Scheduled to run once per day at 9 AM.
- * Finds all users with empty jars and sends them reminder notifications directly.
+ * For each open jar with no completed contribution in the last 3 days, sends
+ * a notification to the jar creator mentioning the specific jar name.
+ * Differentiates between jars that have never received a contribution and
+ * jars that had activity but have gone quiet.
  */
 export const checkEmptyJarsDailyTask = {
   slug: 'check-empty-jars-daily',
@@ -19,124 +22,73 @@ export const checkEmptyJarsDailyTask = {
       const payload = args.req?.payload || args.payload
       const fcmNotifications = new FCMPushNotifications()
 
-      console.log('🔍 Starting daily empty jar check...')
+      console.log('🔍 Starting daily inactive jar check...')
 
-      // Find all open jars
-      const openJars = await payload.find({
+      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+
+      // Fetch only open jars idle for 3+ days using lastActivityAt index.
+      // Jars with no lastActivityAt (never had a contribution) are also included.
+      const inactiveJarsResult = await payload.find({
         collection: 'jars',
         where: {
-          status: {
-            equals: 'open',
-          },
+          and: [
+            { status: { equals: 'open' } },
+            { lastActivityAt: { exists: true } },
+            { lastActivityAt: { less_than: threeDaysAgo } },
+          ],
         },
         pagination: false,
         depth: 1,
         overrideAccess: true,
       })
 
-      // Find which of these jars have completed contributions
-      const openJarIds = openJars.docs.map((jar: any) => jar.id)
-      const jarsWithContributions = new Set<string>()
+      const inactiveJars = inactiveJarsResult.docs
 
-      if (openJarIds.length > 0) {
-        const contributions = await payload.find({
-          collection: 'transactions',
-          where: {
-            jar: { in: openJarIds },
-            paymentStatus: { equals: 'completed' },
-            type: { equals: 'contribution' },
-          },
-          pagination: false,
-          select: { jar: true },
-          overrideAccess: true,
-        })
+      console.log(`Found ${inactiveJars.length} jars inactive for 3+ days`)
 
-        for (const tx of contributions.docs as any[]) {
-          const jarId = typeof tx.jar === 'string' ? tx.jar : tx.jar?.id
-          if (jarId) jarsWithContributions.add(jarId)
-        }
-      }
-
-      // Filter to jars with no contributions
-      const emptyJars = {
-        docs: openJars.docs.filter((jar: any) => !jarsWithContributions.has(jar.id)),
-      }
-
-      console.log(`Found ${emptyJars.docs.length} empty jars`)
-
-      if (emptyJars.docs.length === 0) {
+      if (inactiveJars.length === 0) {
         return {
           output: {
             success: true,
-            message: 'No empty jars found',
-            stats: {
-              totalEmptyJars: 0,
-              usersNotified: 0,
-              notificationsSent: 0,
-              notificationsFailed: 0,
-            },
+            message: 'All open jars have recent activity',
+            stats: { totalInactiveJars: 0, notificationsSent: 0, notificationsFailed: 0 },
           },
         }
       }
 
-      // Group jars by user and get user details
-      const userEmptyJarCounts = emptyJars.docs.reduce((acc: any, jar: any) => {
-        const userId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
-        const creator = typeof jar.creator === 'string' ? null : jar.creator
-
-        if (userId && creator) {
-          if (!acc[userId]) {
-            acc[userId] = {
-              userId,
-              user: creator,
-              emptyJarCounts: 0,
-            }
-          }
-          acc[userId].emptyJarCounts++
-        }
-        return acc
-      }, {})
-
-      const usersWithEmptyJars = Object.values(userEmptyJarCounts) as Array<{
-        userId: string
-        user: any
-        emptyJarCounts: number
-      }>
-
-      console.log(`Found ${usersWithEmptyJars.length} users with empty jars`)
-
-      // Send notifications directly to each user
       let successCount = 0
       let failureCount = 0
 
-      for (const userWithEmptyJars of usersWithEmptyJars) {
+      for (const jar of inactiveJars) {
         try {
-          const { user, emptyJarCounts } = userWithEmptyJars
-
-          // Check if user has FCM token
-          if (!user.fcmToken) {
-            console.log(`⚠️ User ${user.id} has no FCM token, skipping`)
+          const creator = typeof jar.creator === 'string' ? null : jar.creator
+          if (!creator?.fcmToken) {
             failureCount++
             continue
           }
 
-          // Create message
-          const message = `You have ${emptyJarCounts} jar${emptyJarCounts > 1 ? 's' : ''} with no contributions yet!`
-          const title = "Don't forget your empty jars! 🫙"
+          const jarName = jar.name ?? jar.title ?? 'Your jar'
+          const hasEverReceived = !!jar.lastActivityAt
 
-          // Send notification
-          await fcmNotifications.sendNotification([user.fcmToken], message, title, {
-            type: 'empty-jar-reminder',
-            emptyJarCounts: emptyJarCounts.toString(),
+          const { title, message } = hasEverReceived
+            ? {
+                title: `${jarName} has gone quiet 🫙`,
+                message: `"${jarName}" hasn't received any new contributions in the last 3 days. Share your link to keep the momentum going!`,
+              }
+            : {
+                title: `${jarName} is still empty 🫙`,
+                message: `"${jarName}" hasn't received any contributions yet. Share your link to get started!`,
+              }
+
+          await fcmNotifications.sendNotification([creator.fcmToken], message, title, {
+            type: 'inactive-jar-reminder',
+            jarId: jar.id,
           })
 
           successCount++
-          console.log(`✅ Sent empty jar reminder to user ${user.id} for ${emptyJarCounts} jar(s)`)
+          console.log(`✅ Notified creator ${creator.id} about jar "${jarName}"`)
         } catch (error: any) {
-          console.error(
-            `❌ Failed to send notification to user ${userWithEmptyJars.userId}:`,
-            error,
-          )
+          console.error(`❌ Failed to notify for jar ${jar.id}:`, error)
           failureCount++
         }
       }
@@ -144,22 +96,18 @@ export const checkEmptyJarsDailyTask = {
       return {
         output: {
           success: true,
-          message: `Daily empty jar check completed. Sent ${successCount} notifications.`,
+          message: `Inactive jar check completed. Sent ${successCount} notifications.`,
           stats: {
-            totalEmptyJars: emptyJars.docs.length,
-            usersNotified: successCount,
+            totalInactiveJars: inactiveJars.length,
             notificationsSent: successCount,
             notificationsFailed: failureCount,
           },
         },
       }
     } catch (error: any) {
-      console.error('❌ Error in daily empty jar check:', error)
+      console.error('❌ Error in inactive jar check:', error)
       return {
-        output: {
-          success: false,
-          message: `Error: ${error.message}`,
-        },
+        output: { success: false, message: `Error: ${error.message}` },
       }
     }
   },

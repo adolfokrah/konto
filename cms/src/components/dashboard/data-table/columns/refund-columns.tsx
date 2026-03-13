@@ -1,9 +1,8 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/utilities/ui'
 import Link from 'next/link'
+import { RefundStatusBadge } from '@/components/dashboard/refund-status-badge'
 import { formatShortDate } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
 import { Copy, Check } from 'lucide-react'
@@ -39,23 +38,10 @@ export type RefundRow = {
   eganowFees: number
   hogapayRevenue: number
   transactionReference: string | null
-  status: 'pending' | 'in-progress' | 'failed' | 'completed'
+  status: 'pending' | 'awaiting_approval' | 'in-progress' | 'failed' | 'completed' | 'rejected'
   createdAt: string
 }
 
-const refundStatusStyles: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  failed: 'bg-red-100 text-red-800 border-red-200',
-}
-
-const refundStatusLabels: Record<string, string> = {
-  pending: 'Awaiting Approval',
-  'in-progress': 'In Progress',
-  completed: 'Completed',
-  failed: 'Failed',
-}
 
 function formatAmount(amount: number, currency = 'GHS') {
   return `${currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -151,21 +137,19 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => (
-      <Badge variant="outline" className={cn('capitalize', refundStatusStyles[row.original.status])}>
-        {refundStatusLabels[row.original.status] || row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => <RefundStatusBadge status={row.original.status} />,
     meta: {
       filter: {
         type: 'select',
         paramKey: 'status',
         options: [
           { label: 'All', value: 'all' },
-          { label: 'Awaiting Approval', value: 'pending' },
+          { label: 'Awaiting Approval', value: 'awaiting_approval' },
+          { label: 'Pending', value: 'pending' },
           { label: 'In Progress', value: 'in-progress' },
           { label: 'Completed', value: 'completed' },
           { label: 'Failed', value: 'failed' },
+          { label: 'Rejected', value: 'rejected' },
         ],
       },
       filterLabel: 'Status',

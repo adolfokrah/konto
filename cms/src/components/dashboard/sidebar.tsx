@@ -22,6 +22,7 @@ import {
   ChevronUp,
   ShieldAlert,
   Mail,
+  RefreshCcwDot,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -47,6 +48,7 @@ const navGroups = [
     label: 'Manage',
     items: [
       { label: 'Refunds', href: '/dashboard/refunds', icon: RotateCcw },
+      { label: 'Auto Refunds', href: '/dashboard/auto-refunds', icon: RefreshCcwDot },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
       { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
       { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
@@ -87,6 +89,15 @@ export function Sidebar({ className, user }: { className?: string; user: User })
     { refreshInterval: 30000 },
   )
   const openDisputesCount = openDisputes?.totalDocs ?? 0
+
+  const { data: pendingAutoRefunds } = useSWR(
+    '/api/refunds?where[refundType][equals]=auto&where[status][equals]=awaiting_approval&limit=100&depth=0',
+    fetcher,
+    { refreshInterval: 30000 },
+  )
+  const pendingAutoRefundsCount = pendingAutoRefunds?.docs
+    ? new Set(pendingAutoRefunds.docs.map((r: any) => r.jar)).size
+    : 0
 
   const { data: unreadEmails } = useSWR(
     '/api/emails?where[direction][equals]=inbound&where[isRead][equals]=false&limit=0',
@@ -134,6 +145,7 @@ export function Sidebar({ className, user }: { className?: string; user: User })
                   item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount :
                   item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
                   item.href === '/dashboard/emails' && unreadEmailsCount > 0 ? unreadEmailsCount :
+                  item.href === '/dashboard/auto-refunds' && pendingAutoRefundsCount > 0 ? pendingAutoRefundsCount :
                   null
 
                 return (

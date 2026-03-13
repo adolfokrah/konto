@@ -1,9 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { approveRefund } from './endpoints/approve-refund'
 import { rejectRefund } from './endpoints/reject-refund'
+import { approveAutoRefunds } from './endpoints/approve-auto-refunds'
+import { rejectAutoRefunds } from './endpoints/reject-auto-refunds'
 import { notifyRefund } from './hooks/notify-refund'
 import { syncLinkedTransaction } from './hooks/sync-linked-transaction'
 import { notifyJarCreator } from './hooks/notify-jar-creator'
+import { checkAutoRefundCompletion } from './hooks/check-auto-refund-completion'
 
 export const Refunds: CollectionConfig = {
   slug: 'refunds',
@@ -13,7 +16,7 @@ export const Refunds: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'accountName',
-    defaultColumns: ['accountName', 'amount', 'status', 'createdAt'],
+    defaultColumns: ['refundType', 'accountName', 'amount', 'status', 'createdAt'],
   },
   access: {
     create: ({ req: { user } }) => (user as any)?.role === 'admin',
@@ -27,47 +30,14 @@ export const Refunds: CollectionConfig = {
   },
   fields: [
     {
-      name: 'initiatedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      hasMany: false,
+      name: 'refundType',
+      type: 'select',
       required: true,
-      admin: {
-        description: 'User who initiated the refund',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'amount',
-      type: 'number',
-      required: true,
-      admin: {
-        description: 'Refund amount (positive value)',
-      },
-    },
-    {
-      name: 'accountNumber',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Contributor phone number or account number',
-      },
-    },
-    {
-      name: 'accountName',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Contributor name',
-      },
-    },
-    {
-      name: 'mobileMoneyProvider',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Mobile money provider (e.g. mtn, telecel)',
-      },
+      defaultValue: 'manual',
+      options: [
+        { label: 'Manual', value: 'manual' },
+        { label: 'Auto (System)', value: 'auto' },
+      ],
     },
     {
       name: 'jar',
@@ -75,9 +45,41 @@ export const Refunds: CollectionConfig = {
       relationTo: 'jars',
       required: true,
       hasMany: false,
+    },
+    {
+      name: 'initiatedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      required: false,
       admin: {
-        description: 'The jar this refund belongs to',
+        description: 'Admin who initiated the refund. Null when triggered by the system.',
+        readOnly: true,
       },
+    },
+    {
+      name: 'amount',
+      type: 'number',
+      required: true,
+      admin: { description: 'Refund amount (stored as negative)' },
+    },
+    {
+      name: 'accountNumber',
+      type: 'text',
+      required: true,
+      admin: { description: 'Contributor phone number' },
+    },
+    {
+      name: 'accountName',
+      type: 'text',
+      required: false,
+      admin: { description: 'Contributor name' },
+    },
+    {
+      name: 'mobileMoneyProvider',
+      type: 'text',
+      required: true,
+      admin: { description: 'e.g. mtn, telecel' },
     },
     {
       name: 'linkedTransaction',
@@ -94,38 +96,59 @@ export const Refunds: CollectionConfig = {
       name: 'eganowFees',
       type: 'number',
       defaultValue: 0,
-      admin: {
-        description: "Eganow's fees for this refund",
-        readOnly: true,
-      },
+      admin: { readOnly: true },
     },
     {
       name: 'hogapayRevenue',
       type: 'number',
       defaultValue: 0,
-      admin: {
-        description: "Hogapay's revenue from this refund",
-        readOnly: true,
-      },
+      admin: { readOnly: true },
     },
     {
       name: 'transactionReference',
       type: 'text',
       required: false,
+      admin: { description: 'Eganow transaction reference', readOnly: true },
+    },
+    {
+      name: 'webhookResponse',
+      type: 'json',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'triggeredAt',
+      type: 'date',
+      required: false,
       admin: {
-        description: 'Eganow transaction reference number',
         readOnly: true,
+        description: 'When the cron job created this auto refund',
+        condition: (data) => data?.refundType === 'auto',
       },
+    },
+    {
+      name: 'reviewedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'Admin who approved or rejected this auto refund',
+      },
+    },
+    {
+      name: 'reviewedAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
     },
     {
       name: 'updatedBy',
       type: 'relationship',
       relationTo: 'users',
       hasMany: false,
-      admin: {
-        description: 'Admin who last updated (approved/rejected) this refund',
-        readOnly: true,
-      },
+      admin: { readOnly: true },
     },
     {
       name: 'status',
@@ -133,33 +156,20 @@ export const Refunds: CollectionConfig = {
       required: true,
       defaultValue: 'pending',
       options: [
-        { label: 'Pending (Awaiting Approval)', value: 'pending' },
+        { label: 'Awaiting Approval', value: 'awaiting_approval' },
+        { label: 'Pending (Awaiting Processing)', value: 'pending' },
         { label: 'In Progress', value: 'in-progress' },
-        { label: 'Failed', value: 'failed' },
         { label: 'Completed', value: 'completed' },
+        { label: 'Failed', value: 'failed' },
+        { label: 'Rejected', value: 'rejected' },
       ],
-    },
-    {
-      name: 'webhookResponse',
-      type: 'json',
-      required: false,
-      admin: {
-        description: 'Raw webhook payload received from the payment provider',
-        readOnly: true,
-      },
     },
   ],
   endpoints: [
-    {
-      path: '/approve-refund',
-      method: 'post',
-      handler: approveRefund,
-    },
-    {
-      path: '/reject-refund',
-      method: 'post',
-      handler: rejectRefund,
-    },
+    { path: '/approve-refund', method: 'post', handler: approveRefund },
+    { path: '/reject-refund', method: 'post', handler: rejectRefund },
+    { path: '/approve-auto-refunds', method: 'post', handler: approveAutoRefunds },
+    { path: '/reject-auto-refunds', method: 'post', handler: rejectAutoRefunds },
   ],
   hooks: {
     beforeChange: [
@@ -170,13 +180,12 @@ export const Refunds: CollectionConfig = {
         if (operation === 'update' && req.user) {
           data.updatedBy = req.user.id
         }
-        // Always store amount as negative
         if (data.amount != null && data.amount > 0) {
           data.amount = -Math.abs(data.amount)
         }
         return data
       },
     ],
-    afterChange: [notifyRefund, syncLinkedTransaction, notifyJarCreator],
+    afterChange: [notifyRefund, syncLinkedTransaction, notifyJarCreator, checkAutoRefundCompletion],
   },
 }

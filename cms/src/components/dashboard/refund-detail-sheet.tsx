@@ -54,17 +54,21 @@ function formatAmount(amount: number, currency = 'GHS') {
 }
 
 const statusStyles: Record<string, string> = {
-  pending: 'border-yellow-700 bg-yellow-900/40 text-yellow-300',
-  'in-progress': 'border-blue-700 bg-blue-900/40 text-blue-300',
+  awaiting_approval: 'border-yellow-700 bg-yellow-900/40 text-yellow-300',
+  pending: 'border-blue-700 bg-blue-900/40 text-blue-300',
+  'in-progress': 'border-purple-700 bg-purple-900/40 text-purple-300',
   completed: 'border-green-700 bg-green-900/40 text-green-300',
   failed: 'border-red-700 bg-red-900/40 text-red-300',
+  rejected: 'border-gray-700 bg-gray-900/40 text-gray-300',
 }
 
 const statusLabels: Record<string, string> = {
-  pending: 'Awaiting Approval',
+  awaiting_approval: 'Awaiting Approval',
+  pending: 'Pending',
   'in-progress': 'In Progress',
   completed: 'Completed',
   failed: 'Failed',
+  rejected: 'Rejected',
 }
 
 function DetailRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
