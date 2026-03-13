@@ -25,7 +25,7 @@ type JarGroup = {
   totalAmount: number
   contributors: number
   triggeredAt: string | null
-  status: 'awaiting_approval' | 'processing' | 'completed' | 'mixed'
+  status: 'awaiting_approval' | 'in-progress' | 'pending' | 'completed' | 'failed' | 'rejected' | 'mixed'
 }
 
 
@@ -75,7 +75,7 @@ export default async function AutoRefundsPage() {
 
   const groups = Object.values(jarMap)
   const pendingCount = groups.filter((g) => g.status === 'awaiting_approval').length
-  const processingCount = groups.filter((g) => g.status === 'processing').length
+  const processingCount = groups.filter((g) => g.status === 'in-progress').length
   const completedCount = groups.filter((g) => g.status === 'completed').length
 
   return (
