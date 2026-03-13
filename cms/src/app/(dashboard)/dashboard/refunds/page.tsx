@@ -83,6 +83,7 @@ export default async function RefundsPage({ searchParams }: Props) {
 
     return {
       id: r.id,
+      refundType: r.refundType || 'manual',
       initiatedBy: initiatedByObj
         ? {
             id: initiatedByObj.id,
@@ -99,6 +100,10 @@ export default async function RefundsPage({ searchParams }: Props) {
       linkedTransaction: linkedTxObj
         ? { id: linkedTxObj.id, contributor: linkedTxObj.contributor || '' }
         : null,
+      reviewedBy: (() => {
+        const u = typeof r.reviewedBy === 'object' && r.reviewedBy ? r.reviewedBy : null
+        return u ? { id: u.id, firstName: u.firstName || '', lastName: u.lastName || '', email: u.email || '' } : null
+      })(),
       eganowFees: r.eganowFees || 0,
       hogapayRevenue: r.hogapayRevenue || 0,
       transactionReference: r.transactionReference || null,

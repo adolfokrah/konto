@@ -14,7 +14,7 @@ export const autoRefundDailyTask = {
   slug: 'auto-refund-daily',
   schedule: [
     {
-      cron: '0 9 * * *',
+      cron: '0 9 * * *', // Every day at 9:00 AM
       queue: 'auto-refund-daily',
     },
   ],
@@ -62,14 +62,7 @@ export const autoRefundDailyTask = {
               ],
             },
             pagination: false,
-            depth: 1,
-            select: {
-              amountContributed: true,
-              createdAt: true,
-              contributor: true,
-              contributorPhoneNumber: true,
-              mobileMoneyProvider: true,
-            },
+            depth: 0,
             overrideAccess: true,
           })
 
@@ -153,16 +146,16 @@ export const autoRefundDailyTask = {
               and: [
                 { jar: { equals: jar.id } },
                 { refundType: { equals: 'auto' } },
-                { status: { equals: 'awaiting_approval' } },
+                { status: { in: ['awaiting_approval', 'pending', 'in-progress'] } },
               ],
             },
             pagination: false,
             limit: 1,
-            select: { id: true },
+            depth: 0,
             overrideAccess: true,
           })
 
-          // 2l. Skip if already pending admin review
+          // 2l. Skip if already being processed or awaiting review
           if (existingPending.docs.length > 0) {
             jarsSkipped++
             continue
@@ -178,11 +171,7 @@ export const autoRefundDailyTask = {
                 jar: jar.id,
                 amount: Math.abs(tx.amountContributed ?? 0),
                 accountNumber: tx.contributorPhoneNumber || '',
-                accountName:
-                  typeof tx.contributor === 'object'
-                    ? `${tx.contributor?.firstName ?? ''} ${tx.contributor?.lastName ?? ''}`.trim() ||
-                      ''
-                    : '',
+                accountName: tx.contributor || '',
                 mobileMoneyProvider: tx.mobileMoneyProvider || '',
                 linkedTransaction: tx.id,
                 status: 'awaiting_approval',

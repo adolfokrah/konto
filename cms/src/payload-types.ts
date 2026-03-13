@@ -1391,7 +1391,7 @@ export interface Transaction {
    * Select the jar to contribute to
    */
   jar: string | Jar;
-  contributor?: string | null;
+  contributor: string;
   /**
    * Phone number of the contributor
    */

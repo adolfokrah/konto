@@ -28,6 +28,7 @@ function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
 
 export type RefundRow = {
   id: string
+  refundType: 'manual' | 'auto'
   initiatedBy: { id: string; firstName: string; lastName: string; email: string } | null
   amount: number
   accountNumber: string
@@ -37,6 +38,7 @@ export type RefundRow = {
   linkedTransaction: { id: string; contributor: string } | null
   eganowFees: number
   hogapayRevenue: number
+  reviewedBy: { id: string; firstName: string; lastName: string; email: string } | null
   transactionReference: string | null
   status: 'pending' | 'awaiting_approval' | 'in-progress' | 'failed' | 'completed' | 'rejected'
   createdAt: string
@@ -98,8 +100,9 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     header: 'Amount',
     cell: ({ row }) => {
       const currency = row.original.jar?.currency || 'GHS'
+      const cancelled = row.original.status === 'failed' || row.original.status === 'rejected'
       return (
-        <span className="font-medium text-red-400">
+        <span className={`font-medium text-red-400 ${cancelled ? 'line-through opacity-50' : ''}`}>
           {formatAmount(Math.abs(row.original.amount), currency)}
         </span>
       )
@@ -114,7 +117,8 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     id: 'eganowFees',
     header: 'Eganow Fees',
     cell: ({ row }) => {
-      if (!row.original.eganowFees) return <span className="text-muted-foreground">{'\u2014'}</span>
+      if (row.original.status !== 'completed' || !row.original.eganowFees)
+        return <span className="text-muted-foreground">{'\u2014'}</span>
       return <span className="text-muted-foreground">{formatAmount(Math.abs(row.original.eganowFees))}</span>
     },
     meta: {
@@ -126,7 +130,8 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     id: 'hogapayRevenue',
     header: 'Hogapay Rev',
     cell: ({ row }) => {
-      if (!row.original.hogapayRevenue) return <span className="text-muted-foreground">{'\u2014'}</span>
+      if (row.original.status !== 'completed' || !row.original.hogapayRevenue)
+        return <span className="text-muted-foreground">{'\u2014'}</span>
       return <span className="text-green-400">{formatAmount(Math.abs(row.original.hogapayRevenue))}</span>
     },
     meta: {
@@ -160,6 +165,20 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     header: 'Initiated By',
     cell: ({ row }) => {
       const user = row.original.initiatedBy
+      if (!user) {
+        if (row.original.refundType === 'auto')
+          return <span className="text-muted-foreground text-xs">System</span>
+        return <span className="text-muted-foreground">{'\u2014'}</span>
+      }
+      const name = `${user.firstName || ''} ${user.lastName || ''}`.trim()
+      return <span>{name || user.email || '\u2014'}</span>
+    },
+  },
+  {
+    id: 'reviewedBy',
+    header: 'Reviewed By',
+    cell: ({ row }) => {
+      const user = row.original.reviewedBy
       if (!user) return <span className="text-muted-foreground">{'\u2014'}</span>
       const name = `${user.firstName || ''} ${user.lastName || ''}`.trim()
       return <span>{name || user.email || '\u2014'}</span>

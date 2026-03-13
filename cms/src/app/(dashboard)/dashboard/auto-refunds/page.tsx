@@ -1,33 +1,18 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AutoRefundActions } from '@/components/dashboard/auto-refund-actions'
-import { RefundStatusBadge } from '@/components/dashboard/refund-status-badge'
-
-function formatAmount(amount: number, currency = 'GHS') {
-  return `${currency} ${amount.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-function formatDate(date: string | null | undefined) {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-type JarGroup = {
+import { AutoRefundsDataTable } from '@/components/dashboard/auto-refunds-data-table'
+type AutoRefundRow = {
   jarId: string
   jarName: string
   currency: string
   totalAmount: number
   contributors: number
   triggeredAt: string | null
-  status: 'awaiting_approval' | 'in-progress' | 'pending' | 'completed' | 'failed' | 'rejected' | 'mixed'
+  status: 'awaiting_approval' | 'in-progress' | 'pending' | 'completed' | 'failed' | 'rejected'
 }
 
+const STATUS_PRIORITY = ['awaiting_approval', 'in-progress', 'pending', 'failed', 'rejected', 'completed']
 
 export default async function AutoRefundsPage() {
   const payload = await getPayload({ config: configPromise })
@@ -44,7 +29,7 @@ export default async function AutoRefundsPage() {
   const refunds: any[] = result.docs
 
   // Group by jar
-  const jarMap: Record<string, JarGroup> = {}
+  const jarMap: Record<string, AutoRefundRow & { linkedTransactions: Set<string> }> = {}
   for (const r of refunds) {
     const jar = typeof r.jar === 'object' ? r.jar : null
     const jarId = jar?.id || r.jar
@@ -59,21 +44,33 @@ export default async function AutoRefundsPage() {
         currency,
         totalAmount: 0,
         contributors: 0,
+        linkedTransactions: new Set(),
         triggeredAt: r.triggeredAt || null,
         status: r.status,
       }
     }
-    jarMap[jarId].totalAmount += amount
-    jarMap[jarId].contributors += 1
 
-    // Compute group status
+    const linkedTxId =
+      typeof r.linkedTransaction === 'object' ? r.linkedTransaction?.id : r.linkedTransaction
+    if (linkedTxId && !jarMap[jarId].linkedTransactions.has(linkedTxId)) {
+      jarMap[jarId].linkedTransactions.add(linkedTxId)
+      jarMap[jarId].totalAmount += amount
+      jarMap[jarId].contributors += 1
+    }
+
+    // Compute group status — show the most active status by priority
     const prev = jarMap[jarId].status
     if (prev !== r.status) {
-      jarMap[jarId].status = 'mixed'
+      const prevPriority = STATUS_PRIORITY.indexOf(prev)
+      const curPriority = STATUS_PRIORITY.indexOf(r.status)
+      if (curPriority !== -1 && (prevPriority === -1 || curPriority < prevPriority)) {
+        jarMap[jarId].status = r.status
+      }
     }
   }
 
-  const groups = Object.values(jarMap)
+  const groups: AutoRefundRow[] = Object.values(jarMap).map(({ linkedTransactions, ...rest }) => rest)
+
   const pendingCount = groups.filter((g) => g.status === 'awaiting_approval').length
   const processingCount = groups.filter((g) => g.status === 'in-progress').length
   const completedCount = groups.filter((g) => g.status === 'completed').length
@@ -104,57 +101,12 @@ export default async function AutoRefundsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Auto Refunds</CardTitle>
-          <CardDescription>{groups.length} jar{groups.length !== 1 ? 's' : ''} with auto refunds</CardDescription>
+          <CardDescription>
+            {groups.length} jar{groups.length !== 1 ? 's' : ''} with auto refunds
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {groups.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">No auto refunds found.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Jar</th>
-                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Total Amount</th>
-                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Contributors</th>
-                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Triggered</th>
-                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Status</th>
-                    <th className="pb-3 font-medium text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {groups.map((group) => {
-                    return (
-                      <tr key={group.jarId}>
-                        <td className="py-3 pr-4 font-medium">
-                          <Link href={`/dashboard/jars/${group.jarId}`} className="hover:underline">
-                            {group.jarName}
-                          </Link>
-                        </td>
-                        <td className="py-3 pr-4 tabular-nums">
-                          {formatAmount(group.totalAmount, group.currency)}
-                        </td>
-                        <td className="py-3 pr-4 tabular-nums">{group.contributors}</td>
-                        <td className="py-3 pr-4 text-muted-foreground">
-                          {formatDate(group.triggeredAt)}
-                        </td>
-                        <td className="py-3 pr-4">
-                          <RefundStatusBadge status={group.status} />
-                        </td>
-                        <td className="py-3">
-                          {group.status === 'awaiting_approval' ? (
-                            <AutoRefundActions jarId={group.jarId} />
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <AutoRefundsDataTable data={groups} />
         </CardContent>
       </Card>
     </div>

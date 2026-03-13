@@ -48,7 +48,7 @@ export const Transactions: CollectionConfig = {
     {
       name: 'contributor',
       type: 'text',
-      required: false,
+      required: true,
     },
     {
       name: 'contributorPhoneNumber',

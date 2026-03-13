@@ -238,8 +238,12 @@ export default buildConfig({
         queue: 'withdraw-reminder-daily',
       },
       {
-        cron: '2 9 * * *',
+        cron: '2 9 * * *', // Every day at 9:02 AM
         queue: 'auto-refund-daily',
+      },
+      {
+        cron: '* * * * *', // Every minute
+        queue: 'refund',
       },
     ],
   },

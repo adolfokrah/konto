@@ -57,8 +57,6 @@ export const approveAutoRefunds = async (req: PayloadRequest) => {
       })
     }
 
-    await req.payload.jobs.run({ queue: 'refund' })
-
     return Response.json({
       success: true,
       message: `${pending.docs.length} refund(s) approved and queued for processing.`,

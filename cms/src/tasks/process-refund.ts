@@ -130,7 +130,33 @@ export const processRefundTask = {
           callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
         }
 
+        console.log(payoutData)
+
         const payoutResult = await getEganow().payout(payoutData)
+        console.log(
+          `[process-refund] Eganow payout response for refund ${refundId}:`,
+          JSON.stringify(payoutResult),
+        )
+
+        // Handle immediate failure from Eganow
+        if (payoutResult.transactionStatus === 'FAILED') {
+          await payload.update({
+            collection: 'refunds' as any,
+            id: refundId,
+            data: { status: 'failed' },
+            overrideAccess: true,
+          })
+          console.error(
+            `❌ Eganow immediately rejected refund ${refundId}: ${payoutResult.message}`,
+          )
+          return {
+            output: {
+              success: false,
+              message: `Eganow rejected: ${payoutResult.message}`,
+              refundId,
+            },
+          }
+        }
 
         // Update with Eganow reference
         await payload.update({
