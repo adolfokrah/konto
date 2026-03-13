@@ -85,6 +85,7 @@ export interface Config {
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
+    emails: Email;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -114,6 +115,7 @@ export interface Config {
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
+    emails: EmailsSelect<false> | EmailsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1889,6 +1891,48 @@ export interface Dispute {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emails".
+ */
+export interface Email {
+  id: string;
+  direction: 'inbound' | 'outbound';
+  from: string;
+  to: {
+    email: string;
+    id?: string | null;
+  }[];
+  subject: string;
+  /**
+   * HTML body of the email
+   */
+  bodyHtml?: string | null;
+  /**
+   * Plain text body of the email
+   */
+  bodyText?: string | null;
+  /**
+   * The Resend email ID (for tracking sent/received emails)
+   */
+  resendEmailId?: string | null;
+  status: 'received' | 'sent' | 'sending' | 'failed' | 'draft';
+  /**
+   * Platform user linked to this email (auto-matched by email address)
+   */
+  linkedUser?: (string | null) | User;
+  /**
+   * Whether this email has been read in the admin dashboard
+   */
+  isRead?: boolean | null;
+  /**
+   * Thread ID for grouping related reply chains
+   */
+  threadId?: string | null;
+  sentAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2175,6 +2219,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'disputes';
         value: string | Dispute;
+      } | null)
+    | ({
+        relationTo: 'emails';
+        value: string | Email;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -3073,6 +3121,31 @@ export interface DisputesSelect<T extends boolean = true> {
         changedAt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emails_select".
+ */
+export interface EmailsSelect<T extends boolean = true> {
+  direction?: T;
+  from?: T;
+  to?:
+    | T
+    | {
+        email?: T;
+        id?: T;
+      };
+  subject?: T;
+  bodyHtml?: T;
+  bodyText?: T;
+  resendEmailId?: T;
+  status?: T;
+  linkedUser?: T;
+  isRead?: T;
+  threadId?: T;
+  sentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
