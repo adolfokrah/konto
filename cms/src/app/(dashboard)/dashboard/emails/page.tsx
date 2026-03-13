@@ -1,12 +1,36 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { Inbox, Send, Plus, Search } from 'lucide-react'
+import { Inbox, Send, Plus, Search, ExternalLink } from 'lucide-react'
 import { EmailsDataTable, type EmailRow } from '@/components/dashboard/emails-data-table'
 import { ComposeWindow } from '@/components/dashboard/compose-window'
 import { SyncEmailsButton } from '@/components/dashboard/sync-emails-button'
+import { EmailThreadView, type ThreadMessage } from '@/components/dashboard/email-thread-view'
+import { buildColorMap, extractBareEmail, AVATAR_COLORS } from '@/utilities/avatarColors'
+import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
+import { cn } from '@/utilities/ui'
 
 const DEFAULT_LIMIT = 50
+
+function extractName(addr: string): string {
+  const m = addr.match(/^([^<]+)</)
+  const raw = m ? m[1].trim() : addr.split('@')[0]
+  return raw.replace(/[._-]/g, ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+}
+
+function getInitials(addr: string): string {
+  const name = extractName(addr)
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+
+function avatarColor(addr: string, colorMap?: Map<string, string>): string {
+  if (colorMap) return colorMap.get(extractBareEmail(addr)) ?? AVATAR_COLORS[0]
+  let h = 0
+  for (let i = 0; i < addr.length; i++) h = addr.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+}
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -18,8 +42,8 @@ export default async function EmailsPage({ searchParams }: Props) {
   const limit = Number(params.limit) || DEFAULT_LIMIT
   const tab = typeof params.tab === 'string' ? params.tab : 'inbox'
   const search = typeof params.search === 'string' ? params.search : ''
+  const emailId = typeof params.emailId === 'string' ? params.emailId : null
 
-  // Compose window params
   const composeOpen = params.compose === '1'
   const composeTo = typeof params.composeTo === 'string' ? params.composeTo : ''
   const composeSubject = typeof params.composeSubject === 'string' ? params.composeSubject : ''
@@ -77,15 +101,67 @@ export default async function EmailsPage({ searchParams }: Props) {
       participants: [...new Set(emails.flatMap((m: any) => [m.from, ...(m.to ?? []).map((t: any) => t.email)]))],
     }))
 
+  // Fetch selected email + its thread
+  let selectedEmail: any = null
+  let threadMessages: ThreadMessage[] = []
+  if (emailId) {
+    try {
+      selectedEmail = await payload.findByID({ collection: 'emails', id: emailId, depth: 1, overrideAccess: true })
+      const threadRootId: string = selectedEmail.threadId || selectedEmail.id
+      const threadResult = await payload.find({
+        collection: 'emails',
+        where: { or: [{ id: { equals: threadRootId } }, { threadId: { equals: threadRootId } }] },
+        sort: 'createdAt',
+        limit: 100,
+        depth: 1,
+        overrideAccess: true,
+      })
+      // Mark all unread inbound messages in the thread as read
+      await Promise.all(
+        threadResult.docs
+          .filter((e: any) => e.direction === 'inbound' && !e.isRead)
+          .map((e: any) => payload.update({ collection: 'emails', id: e.id, data: { isRead: true }, overrideAccess: true }).catch(() => {}))
+      )
+      threadMessages = threadResult.docs.map((e: any) => ({
+        id: e.id,
+        direction: e.direction,
+        from: e.from,
+        to: e.to ?? [],
+        subject: e.subject,
+        bodyHtml: e.bodyHtml ?? null,
+        bodyText: e.bodyText ?? null,
+        status: e.status,
+        isRead: e.isRead ?? false,
+        createdAt: e.createdAt,
+        linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
+          ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
+          : null,
+      }))
+    } catch {}
+  }
+
   const folders = [
     { id: 'inbox', label: 'Inbox', icon: Inbox, count: inboxCount.totalDocs, unread: unreadCount.totalDocs },
     { id: 'sent', label: 'Sent', icon: Send, count: sentCount.totalDocs, unread: 0 },
   ]
 
+  const primaryAddr = selectedEmail
+    ? (selectedEmail.direction === 'inbound' ? selectedEmail.from : (selectedEmail.to?.[0]?.email ?? ''))
+    : ''
+  const replyTo = primaryAddr
+  const linkedUser = selectedEmail?.linkedUser && typeof selectedEmail.linkedUser === 'object'
+    ? selectedEmail.linkedUser : null
+  const allAddresses = selectedEmail
+    ? [...new Set(threadMessages.flatMap(m => [m.from, ...m.to.map(t => t.email)]))] as string[]
+    : []
+  const threadRootId = selectedEmail ? (selectedEmail.threadId || selectedEmail.id) : ''
+  const threadColorMap = threadMessages.length > 0 ? buildColorMap(threadMessages) : undefined
+
   return (
     <>
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-xl border bg-card shadow-sm">
-        {/* Sidebar */}
+      <div className="flex h-[calc(100vh-3.5rem-2rem)] lg:h-[calc(100vh-3.5rem-3rem)] max-h-full overflow-hidden rounded-xl border bg-card shadow-sm">
+
+        {/* ── Nav sidebar ── */}
         <aside className="flex w-52 shrink-0 flex-col border-r">
           <div className="p-3">
             <Link
@@ -122,54 +198,155 @@ export default async function EmailsPage({ searchParams }: Props) {
           </nav>
 
           <div className="border-t p-3 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
-              Receiving at
-            </p>
-            <p className="text-[11px] font-medium text-foreground/70 break-all">
-              support@hogapay.com
-            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">Receiving at</p>
+            <p className="text-[11px] font-medium text-foreground/70 break-all">support@hogapay.com</p>
           </div>
         </aside>
 
-        {/* Main panel */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Toolbar */}
-          <div className="flex items-center gap-3 border-b px-4 py-2">
+        {/* ── Email list ── */}
+        <div className={cn(
+          'flex flex-col border-r overflow-hidden',
+          selectedEmail ? 'w-72 shrink-0' : 'flex-1',
+        )}>
+          <div className="flex items-center gap-2 border-b px-3 py-2 shrink-0">
             <form method="GET" className="flex flex-1 items-center gap-2">
               <input type="hidden" name="tab" value={tab} />
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   name="search"
                   defaultValue={search}
-                  placeholder={`Search ${tab === 'inbox' ? 'inbox' : 'sent'}…`}
+                  placeholder="Search…"
                   className="h-8 w-full rounded-full border bg-muted/50 pl-8 pr-3 text-xs placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               {search && (
-                <Link href={`?tab=${tab}`} className="text-xs text-muted-foreground hover:text-foreground">
-                  Clear
-                </Link>
+                <Link href={`?tab=${tab}`} className="shrink-0 text-xs text-muted-foreground hover:text-foreground">Clear</Link>
               )}
             </form>
-            <span className="text-xs tabular-nums text-muted-foreground/60">
-              {emailsResult.totalDocs} {emailsResult.totalDocs === 1 ? 'thread' : 'threads'}
-            </span>
             {tab === 'inbox' && <SyncEmailsButton />}
           </div>
 
-          {/* List */}
           <div className="flex-1 overflow-hidden">
             <EmailsDataTable
               emails={threads}
               tab={tab}
+              activeId={emailId ?? undefined}
               pagination={{ currentPage: page, totalPages: emailsResult.totalPages, totalRows: emailsResult.totalDocs, rowsPerPage: limit }}
             />
           </div>
         </div>
+
+        {/* ── Thread detail ── */}
+        {selectedEmail ? (
+          <>
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-6 py-3.5 shrink-0">
+                <h1 className="flex-1 truncate text-sm font-semibold text-gray-900">{selectedEmail.subject}</h1>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Active
+                  </span>
+                  {threadMessages.length > 1 && (
+                    <span className="rounded border border-gray-200 bg-gray-50 px-1.5 py-px text-[10px] font-medium text-gray-400 tabular-nums">
+                      {threadMessages.length}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto bg-white">
+                <EmailThreadView messages={threadMessages} />
+              </div>
+
+              {replyTo && (
+                <div className="shrink-0 border-t border-gray-200 bg-white">
+                  <InlineReplyBox to={replyTo} subject={selectedEmail.subject} threadId={threadRootId} />
+                </div>
+              )}
+            </div>
+
+            {/* ── Contact sidebar ── */}
+            <aside className="w-64 shrink-0 overflow-y-auto border-l">
+              <div className="border-b p-4">
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <span className={cn('flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white', avatarColor(primaryAddr, threadColorMap))}>
+                    {getInitials(primaryAddr)}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{extractName(primaryAddr)}</p>
+                    <p className="mt-0.5 break-all text-xs text-muted-foreground">{primaryAddr.replace(/^.*<(.+)>$/, '$1')}</p>
+                  </div>
+                  {linkedUser && (
+                    <Link
+                      href={`/dashboard/users/${linkedUser.id}`}
+                      className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View platform user
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-b p-4 space-y-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">Conversation</p>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Messages</span>
+                    <span className="font-medium tabular-nums">{threadMessages.length}</span>
+                  </div>
+                  {threadMessages[0] && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Started</span>
+                      <span className="font-medium">
+                        {new Date(threadMessages[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Direction</span>
+                    <span className={cn(
+                      'rounded-full px-2 py-px text-[10px] font-semibold capitalize',
+                      selectedEmail.direction === 'inbound'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                        : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                    )}>
+                      {selectedEmail.direction}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {allAddresses.length > 0 && (
+                <div className="p-4 space-y-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">Participants</p>
+                  <div className="space-y-2">
+                    {allAddresses.slice(0, 6).map((addr) => (
+                      <div key={addr} className="flex items-center gap-2">
+                        <span className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white', avatarColor(addr, threadColorMap))}>
+                          {getInitials(addr)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-medium">{extractName(addr)}</p>
+                          <p className="truncate text-[10px] text-muted-foreground">{addr.replace(/^.*<(.+)>$/, '$1')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+          </>
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
+            <Inbox className="h-10 w-10 opacity-10" />
+            <p className="text-sm">Select a conversation</p>
+          </div>
+        )}
       </div>
 
-      {/* Floating compose window */}
       {composeOpen && (
         <ComposeWindow
           prefill={{

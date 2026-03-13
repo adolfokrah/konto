@@ -107,26 +107,40 @@ export function EmailsDataTable({
             ? [...new Set(email.participants.map(extractName))].slice(0, 3)
             : [name]
 
+          const participantAddrs = email.participants ?? [primaryAddr]
+          const visibleAddrs = participantAddrs.slice(0, 3)
+          const extraCount = participantAddrs.length - 3
+
           return (
             <button
               key={email.id}
-              onClick={() => router.push(`/dashboard/emails/${email.id}`)}
+              onClick={() => {
+                const p = new URLSearchParams(searchParams.toString())
+                p.set('emailId', email.id)
+                router.push(`?${p.toString()}`)
+              }}
               className={cn(
                 'flex w-full flex-col gap-1.5 border-b border-border/40 px-4 py-3.5 text-left transition-colors hover:bg-muted/40',
                 isActive && 'bg-muted/60',
                 unread && !isActive && 'bg-primary/3',
               )}
             >
-              {/* Row 1: name + date */}
+              {/* Row 1: avatar + name + date */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  {/* Unread dot */}
-                  <span className={cn('h-2 w-2 shrink-0 rounded-full', unread ? 'bg-primary' : 'bg-transparent')} />
+                  <div className="relative shrink-0">
+                    <span className={cn('flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold text-white', color)}>
+                      {ini}
+                    </span>
+                    {unread && (
+                      <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-primary ring-1 ring-background" />
+                    )}
+                  </div>
                   <span className={cn(
                     'truncate text-[13px]',
                     unread ? 'font-semibold text-foreground' : 'font-medium text-foreground/80',
                   )}>
-                    {count > 1 ? allParticipants.join(', ') : name}
+                    {count > 1 ? [...new Set(participantAddrs.map(extractName))].slice(0, 3).join(', ') : name}
                   </span>
                   {count > 1 && (
                     <span className="shrink-0 rounded border border-border bg-muted px-1.5 py-px text-[10px] font-medium text-muted-foreground tabular-nums">
@@ -154,17 +168,29 @@ export function EmailsDataTable({
                 </p>
               )}
 
-              {/* Row 4: participant avatars */}
+              {/* Row 4: overlapping avatars */}
               {count > 1 && (
-                <div className="flex items-center gap-1 pt-0.5">
-                  {allParticipants.slice(0, 4).map((p, i) => (
+                <div className="flex items-center pt-0.5">
+                  {visibleAddrs.map((addr, i) => (
                     <span
                       key={i}
-                      className={cn('flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white', avatarColor(email.participants?.[i] ?? p))}
+                      style={{ zIndex: i + 1, marginLeft: i === 0 ? 0 : -6 }}
+                      className={cn(
+                        'flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white ring-1 ring-background',
+                        avatarColor(addr),
+                      )}
                     >
-                      {getInitials(email.participants?.[i] ?? p)}
+                      {getInitials(addr)}
                     </span>
                   ))}
+                  {extraCount > 0 && (
+                    <span
+                      style={{ zIndex: visibleAddrs.length + 1, marginLeft: -6 }}
+                      className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-1 ring-background"
+                    >
+                      +{extraCount}
+                    </span>
+                  )}
                 </div>
               )}
             </button>

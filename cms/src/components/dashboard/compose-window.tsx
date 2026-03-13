@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Send, Loader2, X, Minus, Maximize2, ChevronUp } from 'lucide-react'
+import { Send, Loader2, X, Minus, ChevronUp } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 
 type Props = {
@@ -14,6 +14,8 @@ type Props = {
   } | null
 }
 
+type UserSuggestion = { id: string; email: string; firstName?: string; lastName?: string }
+
 function isValidEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
 }
@@ -23,6 +25,7 @@ export function ComposeWindow({ prefill }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const bodyRef = useRef<HTMLTextAreaElement>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
 
   const [minimized, setMinimized] = useState(false)
   const [sending, setSending] = useState(false)
@@ -35,6 +38,22 @@ export function ComposeWindow({ prefill }: Props) {
   const [toInput, setToInput] = useState('')
   const [subject, setSubject] = useState(prefill?.subject ?? '')
   const [body, setBody] = useState('')
+  const [suggestions, setSuggestions] = useState<UserSuggestion[]>([])
+  const [suggestionIndex, setSuggestionIndex] = useState(0)
+
+  useEffect(() => {
+    const q = toInput.trim()
+    if (!q || q.length < 2) { setSuggestions([]); return }
+    const controller = new AbortController()
+    fetch(`/api/users?where[or][0][email][like]=${encodeURIComponent(q)}&where[or][1][firstName][like]=${encodeURIComponent(q)}&where[or][2][lastName][like]=${encodeURIComponent(q)}&limit=6`, {
+      credentials: 'include',
+      signal: controller.signal,
+    })
+      .then(r => r.json())
+      .then(d => { setSuggestions(d.docs ?? []); setSuggestionIndex(0) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [toInput])
 
   const close = () => {
     const params = new URLSearchParams(searchParams.toString())
@@ -50,11 +69,25 @@ export function ComposeWindow({ prefill }: Props) {
     const v = value.trim()
     if (v && !toChips.includes(v)) setToChips((prev) => [...prev, v])
     setToInput('')
+    setSuggestions([])
+  }
+
+  const pickSuggestion = (user: UserSuggestion) => {
+    const label = user.firstName || user.lastName
+      ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() + ` <${user.email}>`
+      : user.email
+    addChip(label)
   }
 
   const removeChip = (chip: string) => setToChips((prev) => prev.filter((c) => c !== chip))
 
   const handleToKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (suggestions.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setSuggestionIndex(i => Math.min(i + 1, suggestions.length - 1)); return }
+      if (e.key === 'ArrowUp') { e.preventDefault(); setSuggestionIndex(i => Math.max(i - 1, 0)); return }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pickSuggestion(suggestions[suggestionIndex]); return }
+      if (e.key === 'Escape') { setSuggestions([]); return }
+    }
     if ((e.key === 'Enter' || e.key === ',' || e.key === 'Tab') && toInput.trim()) {
       e.preventDefault()
       addChip(toInput)
@@ -64,9 +97,15 @@ export function ComposeWindow({ prefill }: Props) {
     }
   }
 
+  const isValidChip = (chip: string) => {
+    // Accept "Name <email>" format or plain email
+    const m = chip.match(/<([^>]+)>$/)
+    return m ? isValidEmail(m[1]) : isValidEmail(chip)
+  }
+
   const valid =
     toChips.length > 0 &&
-    toChips.every(isValidEmail) &&
+    toChips.every(isValidChip) &&
     subject.trim().length > 0 &&
     body.trim().length > 0
 
@@ -138,7 +177,7 @@ export function ComposeWindow({ prefill }: Props) {
         <>
           <div className="flex flex-col flex-1 divide-y divide-border/50 overflow-hidden">
             {/* To */}
-            <div className="flex min-h-10 items-start gap-2 px-3 py-2">
+            <div className="relative flex min-h-10 items-start gap-2 px-3 py-2">
               <span className="mt-1.5 w-10 shrink-0 text-xs text-muted-foreground">To</span>
               <div className="flex flex-1 flex-wrap items-center gap-1">
                 {toChips.map((chip) => (
@@ -146,7 +185,7 @@ export function ComposeWindow({ prefill }: Props) {
                     key={chip}
                     className={cn(
                       'flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-                      isValidEmail(chip) ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive',
+                      isValidChip(chip) ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive',
                     )}
                   >
                     {chip}
@@ -161,9 +200,36 @@ export function ComposeWindow({ prefill }: Props) {
                   value={toInput}
                   onChange={(e) => setToInput(e.target.value)}
                   onKeyDown={handleToKeyDown}
-                  onBlur={() => toInput.trim() && addChip(toInput)}
+                  onBlur={() => { setTimeout(() => { if (!suggestionsRef.current?.matches(':hover')) { setSuggestions([]); if (toInput.trim()) addChip(toInput) } }, 150) }}
                 />
               </div>
+              {suggestions.length > 0 && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute left-0 right-0 top-full z-50 mt-0.5 overflow-hidden rounded-lg border bg-popover shadow-lg"
+                >
+                  {suggestions.map((u, i) => (
+                    <button
+                      key={u.id}
+                      onMouseDown={(e) => { e.preventDefault(); pickSuggestion(u) }}
+                      className={cn(
+                        'flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted',
+                        i === suggestionIndex && 'bg-muted',
+                      )}
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                        {((u.firstName?.[0] ?? '') + (u.lastName?.[0] ?? '')).toUpperCase() || u.email[0].toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        {(u.firstName || u.lastName) && (
+                          <p className="truncate text-xs font-medium">{`${u.firstName ?? ''} ${u.lastName ?? ''}`.trim()}</p>
+                        )}
+                        <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Subject */}

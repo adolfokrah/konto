@@ -1924,6 +1924,10 @@ export interface Email {
    */
   isRead?: boolean | null;
   /**
+   * RFC 2822 Message-ID header (used for threading via In-Reply-To)
+   */
+  messageId?: string | null;
+  /**
    * Thread ID for grouping related reply chains
    */
   threadId?: string | null;
@@ -3144,6 +3148,7 @@ export interface EmailsSelect<T extends boolean = true> {
   status?: T;
   linkedUser?: T;
   isRead?: T;
+  messageId?: T;
   threadId?: T;
   sentAt?: T;
   updatedAt?: T;

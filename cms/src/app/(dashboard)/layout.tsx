@@ -38,8 +38,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <head>
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
       </head>
-      <body className="min-h-screen bg-background">
-        <div className="flex min-h-screen">
+      <body className="h-screen overflow-hidden bg-background">
+        <div className="flex h-screen overflow-hidden">
           {/* Sidebar - hidden on mobile, sticky on lg+ */}
           <div className="hidden w-52 lg:block">
             <div className="sticky top-0 h-screen">
@@ -48,8 +48,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Main content area */}
-          <div className="flex flex-1 flex-col min-w-0">
-            <div className="sticky top-0 z-10">
+          <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+            <div className="shrink-0">
               <TopBar
                 user={{
                   firstName: user.firstName,
@@ -58,7 +58,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 }}
               />
             </div>
-            <main className="flex-1 p-4 lg:p-6">{children}</main>
+            <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
           </div>
         </div>
         <Toaster />

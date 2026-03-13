@@ -1,4 +1,7 @@
 import type { CollectionConfig } from 'payload'
+import { sendEndpoint } from './endpoints/send'
+import { syncEndpoint } from './endpoints/sync'
+import { rethreadEndpoint } from './endpoints/rethread'
 
 export const Emails: CollectionConfig = {
   slug: 'emails',
@@ -10,6 +13,7 @@ export const Emails: CollectionConfig = {
     useAsTitle: 'subject',
     defaultColumns: ['direction', 'from', 'subject', 'status', 'createdAt'],
   },
+  endpoints: [sendEndpoint, syncEndpoint, rethreadEndpoint],
   access: {
     create: ({ req: { user } }) => !!(user as any),
     read: ({ req: { user } }) => !!(user as any),
@@ -99,6 +103,13 @@ export const Emails: CollectionConfig = {
       defaultValue: false,
       admin: {
         description: 'Whether this email has been read in the admin dashboard',
+      },
+    },
+    {
+      name: 'messageId',
+      type: 'text',
+      admin: {
+        description: 'RFC 2822 Message-ID header (used for threading via In-Reply-To)',
       },
     },
     {
