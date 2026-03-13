@@ -51,11 +51,21 @@ export const syncEndpoint: Endpoint = {
           let bodyText: string | null = null
           let incomingMessageId: string | null = null
           let inReplyTo: string | null = null
+          let attachments: { filename: string; contentType: string; content: string }[] = []
           try {
             const { data: full } = await resend.emails.receiving.get(email.id)
             bodyHtml = full?.html ?? null
             bodyText = full?.text ?? null
             incomingMessageId = (full as any)?.message_id ?? null
+            if (Array.isArray((full as any)?.attachments)) {
+              attachments = (full as any).attachments
+                .filter((a: any) => a.filename || a.name)
+                .map((a: any) => ({
+                  filename: a.filename ?? a.name ?? 'attachment',
+                  contentType: a.content_type ?? a.contentType ?? 'application/octet-stream',
+                  content: a.content ?? '',
+                }))
+            }
             const emailHeaders = (full as any)?.headers
             if (Array.isArray(emailHeaders)) {
               const h = emailHeaders.find(
@@ -112,6 +122,7 @@ export const syncEndpoint: Endpoint = {
               status: 'received',
               isRead: false,
               sentAt: email.created_at,
+              ...(attachments.length ? { attachments } : {}),
               ...(threadId ? { threadId } : {}),
               ...(linkedUser ? { linkedUser } : {}),
             } as any,

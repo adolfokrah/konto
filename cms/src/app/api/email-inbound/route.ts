@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     let bodyText: string | null = null
     let incomingMessageId: string | null = null
     let inReplyTo: string | null = null
+    let attachments: { filename: string; contentType: string; content: string }[] = []
 
     try {
       const fullEmail = await fetch(`https://api.resend.com/emails/receiving/${email_id}`, {
@@ -56,6 +57,17 @@ export async function POST(req: NextRequest) {
       bodyHtml = fullEmail.html ?? null
       bodyText = fullEmail.text ?? null
       incomingMessageId = fullEmail.message_id ?? null
+
+      // Extract attachments
+      if (Array.isArray(fullEmail.attachments)) {
+        attachments = fullEmail.attachments
+          .filter((a: any) => a.filename || a.name)
+          .map((a: any) => ({
+            filename: a.filename ?? a.name ?? 'attachment',
+            contentType: a.content_type ?? a.contentType ?? 'application/octet-stream',
+            content: a.content ?? '',
+          }))
+      }
 
       // Extract In-Reply-To from headers array or object
       const emailHeaders = fullEmail.headers
@@ -149,6 +161,7 @@ export async function POST(req: NextRequest) {
         status: 'received',
         isRead: false,
         sentAt: new Date().toISOString(),
+        ...(attachments.length ? { attachments } : {}),
         ...(threadId ? { threadId } : {}),
         ...(linkedUser ? { linkedUser } : {}),
       } as any,

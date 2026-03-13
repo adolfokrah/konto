@@ -1932,6 +1932,17 @@ export interface Email {
    */
   threadId?: string | null;
   sentAt?: string | null;
+  /**
+   * Email attachments (base64 encoded)
+   */
+  attachments?:
+    | {
+        filename: string;
+        contentType?: string | null;
+        content?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3151,6 +3162,14 @@ export interface EmailsSelect<T extends boolean = true> {
   messageId?: T;
   threadId?: T;
   sentAt?: T;
+  attachments?:
+    | T
+    | {
+        filename?: T;
+        contentType?: T;
+        content?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

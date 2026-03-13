@@ -9,7 +9,7 @@ export const sendEndpoint: Endpoint = {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body = await req.json!()
     const { to, cc, subject, bodyHtml, bodyText, replyToEmailId } = body
 
     if (!to || !subject || (!bodyHtml && !bodyText)) {
@@ -27,7 +27,7 @@ export const sendEndpoint: Endpoint = {
       subject,
       ...(bodyHtml ? { html: bodyHtml } : {}),
       ...(bodyText ? { text: bodyText } : {}),
-    })
+    } as any)
 
     if (error) {
       return Response.json({ error: error.message ?? 'Send failed' }, { status: 500 })

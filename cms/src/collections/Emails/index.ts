@@ -126,5 +126,15 @@ export const Emails: CollectionConfig = {
         date: { pickerAppearance: 'dayAndTime' },
       },
     },
+    {
+      name: 'attachments',
+      type: 'array',
+      admin: { description: 'Email attachments (base64 encoded)' },
+      fields: [
+        { name: 'filename', type: 'text', required: true },
+        { name: 'contentType', type: 'text' },
+        { name: 'content', type: 'textarea' },
+      ],
+    },
   ],
 }

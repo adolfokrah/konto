@@ -136,6 +136,11 @@ export default async function EmailsPage({ searchParams }: Props) {
         linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
           ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
           : null,
+        attachments: Array.isArray(e.attachments) ? e.attachments.map((a: any) => ({
+          filename: a.filename ?? 'attachment',
+          contentType: a.contentType ?? null,
+          content: a.content ?? null,
+        })) : [],
       }))
     } catch {}
   }

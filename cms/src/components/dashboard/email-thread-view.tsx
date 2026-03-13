@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Paperclip, Download } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 import { EmailBodyViewer } from '@/components/dashboard/email-body-viewer'
 
@@ -17,6 +17,7 @@ export type ThreadMessage = {
   isRead: boolean
   createdAt: string
   linkedUser: { id: string; firstName: string; lastName: string; email: string } | null
+  attachments?: { filename: string; contentType?: string | null; content?: string | null }[]
 }
 
 function extractName(addr: string): string {
@@ -47,6 +48,43 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
   })
+}
+
+function downloadAttachment(filename: string, contentType: string, content: string) {
+  const byteChars = atob(content)
+  const byteNums = new Array(byteChars.length)
+  for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i)
+  const blob = new Blob([new Uint8Array(byteNums)], { type: contentType })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function AttachmentList({ attachments }: { attachments: ThreadMessage['attachments'] }) {
+  if (!attachments?.length) return null
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {attachments.map((att, i) => (
+        <button
+          key={i}
+          onClick={() => {
+            if (att.content) {
+              downloadAttachment(att.filename, att.contentType ?? 'application/octet-stream', att.content)
+            }
+          }}
+          disabled={!att.content}
+          className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-default disabled:opacity-50"
+        >
+          <Paperclip className="h-3 w-3 text-gray-400 shrink-0" />
+          <span className="max-w-[180px] truncate">{att.filename}</span>
+          {att.content && <Download className="h-3 w-3 text-gray-400 shrink-0" />}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<string, string> }) {
@@ -81,6 +119,9 @@ function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<str
 
       {/* Body — full width, no indent */}
       <EmailBodyViewer html={msg.bodyHtml} text={msg.bodyText} />
+
+      {/* Attachments */}
+      <AttachmentList attachments={msg.attachments} />
 
       {msg.linkedUser && (
         <div className="mt-4 pt-3 border-t border-gray-100">
