@@ -143,7 +143,7 @@ describe('Contributions Collection Integration Tests', () => {
 
       const contribution = await payload.create({
         collection: 'transactions',
-        data: contributionData,
+        data: contributionData as any,
       })
 
       expect(contribution.contributor).toBeUndefined()
@@ -254,7 +254,7 @@ describe('Contributions Collection Integration Tests', () => {
       for (const contributionData of contributionsData) {
         await payload.create({
           collection: 'transactions',
-          data: contributionData,
+          data: contributionData as any,
         })
       }
     })
@@ -553,7 +553,7 @@ describe('Contributions Collection Integration Tests', () => {
       for (const contributionData of contributionsData) {
         await payload.create({
           collection: 'transactions',
-          data: contributionData,
+          data: contributionData as any,
         })
       }
     })

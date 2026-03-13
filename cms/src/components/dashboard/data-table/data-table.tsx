@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -43,12 +43,14 @@ export function DataTable<TData>({
   readOnly = false,
   onRowClick,
   renderRowActions,
+  renderExpandedRow,
   emptyMessage = 'No results found',
   scrollOffset,
   tableId,
 }: DataTableProps<TData>) {
   const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters, sortBy, sortOrder, updateSort } = useTableFilters(columns)
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
 
   // Load persisted sizes after mount to avoid SSR/hydration mismatch
   useEffect(() => {
@@ -161,26 +163,43 @@ export function DataTable<TData>({
               </TableCell>
             </TableRow>
           ) : (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className={cn(!readOnly && onRowClick && 'cursor-pointer')}
-                onClick={!readOnly && onRowClick ? () => onRowClick(row.original) : undefined}
-              >
-                {row.getVisibleCells().map((cell) => {
-                  const cellMeta = cell.column.columnDef.meta as DataTableColumnMeta | undefined
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      className={cellMeta?.cellClassName}
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  )
-                })}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map((row) => {
+              const isExpanded = expandedRowId === row.id
+              const handleClick = renderExpandedRow
+                ? () => setExpandedRowId(isExpanded ? null : row.id)
+                : !readOnly && onRowClick
+                  ? () => onRowClick(row.original)
+                  : undefined
+              return (
+                <React.Fragment key={row.id}>
+                  <TableRow
+                    className={cn('group', (!readOnly && onRowClick || renderExpandedRow) && 'cursor-pointer')}
+                    data-expanded={isExpanded || undefined}
+                    onClick={handleClick}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      const cellMeta = cell.column.columnDef.meta as DataTableColumnMeta | undefined
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={cellMeta?.cellClassName}
+                          style={{ width: cell.column.getSize() }}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                  {renderExpandedRow && isExpanded && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={totalColumns} className="p-0">
+                        {renderExpandedRow(row.original)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              )
+            })
           )}
         </TableBody>
       </Table>

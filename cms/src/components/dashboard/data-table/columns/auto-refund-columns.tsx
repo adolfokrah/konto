@@ -2,9 +2,20 @@
 
 import { type ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import { RefundStatusBadge } from '@/components/dashboard/refund-status-badge'
 import { AutoRefundActions } from '@/components/dashboard/auto-refund-actions'
 import { type DataTableColumnMeta } from '../types'
+
+export type AutoRefundItem = {
+  id: string
+  accountName: string
+  accountNumber: string
+  mobileMoneyProvider: string
+  amount: number
+  status: string
+  transactionReference: string | null
+}
 
 export type AutoRefundRow = {
   jarId: string
@@ -14,6 +25,7 @@ export type AutoRefundRow = {
   contributors: number
   triggeredAt: string | null
   status: 'awaiting_approval' | 'in-progress' | 'pending' | 'completed' | 'failed' | 'rejected'
+  items: AutoRefundItem[]
 }
 
 function formatAmount(amount: number, currency = 'GHS') {
@@ -33,11 +45,18 @@ export const autoRefundColumns: ColumnDef<AutoRefundRow, any>[] = [
   {
     accessorKey: 'jarName',
     header: 'Jar',
-    size: 200,
+    size: 220,
     cell: ({ row }) => (
-      <Link href={`/dashboard/jars/${row.original.jarId}`} className="font-medium hover:underline">
-        {row.original.jarName}
-      </Link>
+      <div className="flex items-center gap-2">
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-expanded:rotate-90" />
+        <Link
+          href={`/dashboard/jars/${row.original.jarId}`}
+          className="font-medium hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {row.original.jarName}
+        </Link>
+      </div>
     ),
     meta: {} satisfies DataTableColumnMeta,
   },
@@ -74,14 +93,14 @@ export const autoRefundColumns: ColumnDef<AutoRefundRow, any>[] = [
   {
     id: 'actions',
     header: '',
-    size: 180,
+    size: 200,
     enableResizing: false,
     cell: ({ row }) =>
       row.original.status === 'awaiting_approval' ? (
-        <AutoRefundActions jarId={row.original.jarId} />
-      ) : (
-        <span className="text-xs text-muted-foreground">—</span>
-      ),
+        <div onClick={(e) => e.stopPropagation()}>
+          <AutoRefundActions jarId={row.original.jarId} />
+        </div>
+      ) : null,
     meta: {} satisfies DataTableColumnMeta,
   },
 ]

@@ -57,4 +57,6 @@ export type DataTableProps<TData> = {
   scrollOffset?: string
   /** Stable ID for persisting column sizes to localStorage */
   tableId?: string
+  /** Render an expanded panel below a clicked row. Clicking the row toggles it open/closed. */
+  renderExpandedRow?: (row: TData) => React.ReactNode
 }

@@ -112,14 +112,33 @@ export const processRefundTask = {
       })
 
       try {
-        // Get Eganow token and initiate payout to contributor
+        // Get Eganow token
         await getEganow().getToken()
+
+        // KYC lookup — get verified account name from Eganow
+        let accountName = refund.accountName
+        try {
+          const kyc = await getEganow().verifyKYC({
+            paypartnerCode: paypartner,
+            accountNoOrCardNoOrMSISDN: phoneNumber,
+            languageId: 'en',
+            countryCode: 'GH',
+          })
+          if (kyc.isSuccess && kyc.accountName) {
+            accountName = kyc.accountName
+            console.log(`[process-refund] KYC name for ${phoneNumber}: ${accountName}`)
+          } else {
+            console.warn(`[process-refund] KYC lookup failed for ${phoneNumber}, using stored name`)
+          }
+        } catch (kycErr: any) {
+          console.warn(`[process-refund] KYC error for ${phoneNumber}:`, kycErr?.message)
+        }
 
         const payoutData = {
           paypartnerCode: paypartner,
           amount: String(refundAmount.toFixed(2)),
           accountNoOrCardNoOrMSISDN: phoneNumber,
-          accountName: refund.accountName,
+          accountName,
           transactionId: `refund-${refundId}`,
           narration: `Refund for contribution to ${jar.name}`,
           transCurrencyIso: jar.currency || 'GHS',
@@ -129,8 +148,6 @@ export const processRefundTask = {
           languageId: 'en',
           callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
         }
-
-        console.log(payoutData)
 
         const payoutResult = await getEganow().payout(payoutData)
         console.log(

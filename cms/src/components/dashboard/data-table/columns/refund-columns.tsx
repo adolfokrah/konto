@@ -54,7 +54,16 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     accessorKey: 'id',
     header: 'ID',
     size: 220,
-    cell: ({ row }) => <CopyableId id={row.original.id} prefix="refund-" />,
+    cell: ({ row }) => (
+      <div className="space-y-0.5">
+        <CopyableId id={row.original.id} prefix="refund-" />
+        {row.original.transactionReference && (
+          <div className="font-mono text-xs text-muted-foreground opacity-60">
+            {row.original.transactionReference}
+          </div>
+        )}
+      </div>
+    ),
     meta: {
       filter: { type: 'search', paramKey: 'id', placeholder: 'Search by ID...' },
       filterLabel: 'ID',
