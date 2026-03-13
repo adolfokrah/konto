@@ -206,20 +206,23 @@ export const autoRefundDailyTask = {
 
           // 2o. Notify jar creator
           const creator = typeof jar.creator === 'object' ? jar.creator : null
-          // if (creator?.email) {
-          //   try {
-          //     await emailService.sendAutoRefundNoticeEmail({
-          //       to: creator.email,
-          //       firstName: creator.firstName ?? creator.email,
-          //       jarName: jar.name,
-          //       totalAmount: balance,
-          //       currency: jar.currency || 'GHS',
-          //       contributorsCount: filteredContributions.length,
-          //     })
-          //   } catch (emailErr: any) {
-          //     console.error(`Failed to send auto-refund notice for jar ${jar.id}:`, emailErr?.message)
-          //   }
-          // }
+          if (creator?.email) {
+            try {
+              await emailService.sendAutoRefundNoticeEmail({
+                to: creator.email,
+                firstName: creator.firstName ?? creator.email,
+                jarName: jar.name,
+                totalAmount: balance,
+                currency: jar.currency || 'GHS',
+                contributorsCount: filteredContributions.length,
+              })
+            } catch (emailErr: any) {
+              console.error(
+                `Failed to send auto-refund notice for jar ${jar.id}:`,
+                emailErr?.message,
+              )
+            }
+          }
 
           autoRefundsCreated++
           console.log(
