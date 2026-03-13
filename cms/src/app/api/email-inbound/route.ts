@@ -48,11 +48,9 @@ export async function POST(req: NextRequest) {
     let bodyHtml: string | null = null
     let bodyText: string | null = null
     try {
-      const fullEmail = await fetch(`https://api.resend.com/emails/${email_id}`, {
-        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
-      }).then((r) => r.json())
-      bodyHtml = fullEmail.html ?? null
-      bodyText = fullEmail.text ?? null
+      const { data: fullEmail } = await (getResend().emails as any).receiving.get(email_id)
+      bodyHtml = fullEmail?.html ?? null
+      bodyText = fullEmail?.text ?? null
     } catch {
       // Body fetch failed — still save the email with metadata only
     }

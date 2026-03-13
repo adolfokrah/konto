@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Inbox, Send, Plus, Search } from 'lucide-react'
 import { EmailsDataTable, type EmailRow } from '@/components/dashboard/emails-data-table'
 import { ComposeWindow } from '@/components/dashboard/compose-window'
+import { SyncEmailsButton } from '@/components/dashboard/sync-emails-button'
 
 const DEFAULT_LIMIT = 50
 
@@ -154,6 +155,7 @@ export default async function EmailsPage({ searchParams }: Props) {
             <span className="text-xs tabular-nums text-muted-foreground/60">
               {emailsResult.totalDocs} {emailsResult.totalDocs === 1 ? 'thread' : 'threads'}
             </span>
+            {tab === 'inbox' && <SyncEmailsButton />}
           </div>
 
           {/* List */}
