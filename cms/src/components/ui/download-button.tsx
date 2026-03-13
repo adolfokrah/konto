@@ -17,6 +17,8 @@ export default function DownloadButton({
     const element = document.getElementById('cta')
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      window.location.href = '/#cta'
     }
   }
 
