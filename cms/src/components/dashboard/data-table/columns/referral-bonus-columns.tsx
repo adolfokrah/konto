@@ -8,6 +8,7 @@ import { formatShortDate } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
 import { Copy, Check } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
   const [copied, setCopied] = useState(false)
@@ -17,7 +18,7 @@ function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
         {prefix && <span className="opacity-50">{prefix}</span>}{id}
       </span>
       <button
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(prefix ? `${prefix}${id}` : id); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(prefix ? `${prefix}${id}` : id); setCopied(true); toast.success('Copied to clipboard'); setTimeout(() => setCopied(false), 1500) }}
         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
       >
         {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
@@ -96,7 +97,7 @@ export const referralBonusColumns: ColumnDef<ReferralBonusRow, any>[] = [
       const tx = row.original.transaction
       if (!tx) return <span className="text-muted-foreground">—</span>
       return (
-        <Link href={`/dashboard/transactions?highlight=${tx.id}`} className="font-mono text-xs hover:underline">
+        <Link href={`/dashboard/transactions/${tx.id}`} className="font-mono text-xs hover:underline">
           {tx.id}
         </Link>
       )

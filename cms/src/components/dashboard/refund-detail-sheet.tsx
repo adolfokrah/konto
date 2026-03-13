@@ -211,7 +211,9 @@ export function RefundDetailSheet({
                   <DetailRow
                     label="Linked Transaction"
                     value={selected.linkedTransaction ? (
-                      <span className="font-mono text-xs">{selected.linkedTransaction.id}</span>
+                      <Link href={`/dashboard/transactions/${selected.linkedTransaction.id}`} className="font-mono text-xs hover:underline text-primary">
+                        {selected.linkedTransaction.id}
+                      </Link>
                     ) : null}
                   />
                   <DetailRow

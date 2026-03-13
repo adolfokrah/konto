@@ -6,6 +6,7 @@ import { cn } from '@/utilities/ui'
 import Link from 'next/link'
 import { Copy, Check } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   typeStyles,
   statusStyles,
@@ -23,6 +24,7 @@ function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
     e.stopPropagation()
     navigator.clipboard.writeText(prefix ? `${prefix}${id}` : id)
     setCopied(true)
+    toast.success('Copied to clipboard')
     setTimeout(() => setCopied(false), 1500)
   }
 
@@ -66,6 +68,7 @@ export type TransactionRow = {
   collector: { id: string; firstName: string; lastName: string; email: string } | null
   viaPaymentLink: boolean
   createdAt: string
+  webhookResponse?: Record<string, any> | null
 }
 
 function formatAmount(amount: number) {

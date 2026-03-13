@@ -19,6 +19,7 @@ export default async function DisputesPage({ searchParams }: Props) {
   const status = typeof params.status === 'string' ? params.status : ''
   const from = typeof params.from === 'string' ? params.from : ''
   const to = typeof params.to === 'string' ? params.to : ''
+  const id = typeof params.id === 'string' ? params.id : ''
 
   const payload = await getPayload({ config: configPromise })
   const requestHeaders = await getHeaders()
@@ -26,6 +27,9 @@ export default async function DisputesPage({ searchParams }: Props) {
 
   const where: Record<string, any> = {}
 
+  if (id) {
+    where.id = { equals: id }
+  }
   if (status) {
     const valid = ['open', 'under-review', 'resolved', 'rejected']
     const values = status.split(',').filter((v) => valid.includes(v))

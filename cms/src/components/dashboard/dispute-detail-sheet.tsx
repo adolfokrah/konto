@@ -252,7 +252,7 @@ export function DisputeDetailSheet({
                       <div className="flex justify-between py-1">
                         <span className="text-muted-foreground">ID</span>
                         <Link
-                          href={`/dashboard/transactions?id=${transaction.id}`}
+                          href={`/dashboard/transactions/${transaction.id}`}
                           className="font-mono text-xs font-medium hover:underline"
                         >
                           {transaction.id}
