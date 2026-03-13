@@ -11,10 +11,19 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -375,39 +384,52 @@ export function DisputeDetailSheet({
                 {canChangeStatus && (
                   <div>
                     <Separator className="mb-4" />
-                    <h4 className="text-sm font-semibold mb-3">Update Status</h4>
-                    <div className="space-y-3">
-                      <Select value={newStatus} onValueChange={setNewStatus}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose new status…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currentStatus !== 'under-review' && (
-                            <SelectItem value="under-review">Under Review</SelectItem>
-                          )}
-                          <SelectItem value="resolved">Resolved</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      {newStatus && (
-                        <Textarea
-                          placeholder="Reason for this status change (required)…"
-                          value={statusChangeReason}
-                          onChange={(e) => setStatusChangeReason(e.target.value)}
-                          rows={3}
-                        />
-                      )}
-
-                      <Button
-                        className="w-full"
-                        disabled={!newStatus || !statusChangeReason.trim() || saving}
-                        onClick={handleSave}
-                      >
-                        {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        {saving ? 'Saving…' : 'Save Changes'}
-                      </Button>
-                    </div>
+                    <Dialog onOpenChange={(open) => { if (open) handleOpen() }}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">Update Status</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Update Dispute Status</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-2">
+                          <div className="space-y-1.5">
+                            <Label>New Status</Label>
+                            <Select value={newStatus} onValueChange={setNewStatus}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose new status…" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {currentStatus !== 'under-review' && (
+                                  <SelectItem value="under-review">Under Review</SelectItem>
+                                )}
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label>Reason <span className="text-destructive">*</span></Label>
+                            <Textarea
+                              placeholder="Explain why the status is being changed…"
+                              value={statusChangeReason}
+                              onChange={(e) => setStatusChangeReason(e.target.value)}
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            className="w-full"
+                            disabled={!newStatus || !statusChangeReason.trim() || saving}
+                            onClick={handleSave}
+                          >
+                            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {saving ? 'Saving…' : 'Save Changes'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </div>

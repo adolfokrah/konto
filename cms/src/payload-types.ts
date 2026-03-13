@@ -1871,6 +1871,19 @@ export interface Dispute {
    * Admin note on the outcome of this dispute
    */
   resolutionNote?: string | null;
+  /**
+   * Automatic log of all status changes with reasons
+   */
+  statusHistory?:
+    | {
+        from?: ('open' | 'under-review' | 'resolved' | 'rejected') | null;
+        to: 'open' | 'under-review' | 'resolved' | 'rejected';
+        reason: string;
+        changedBy?: (string | null) | User;
+        changedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3050,6 +3063,16 @@ export interface DisputesSelect<T extends boolean = true> {
   status?: T;
   resolvedBy?: T;
   resolutionNote?: T;
+  statusHistory?:
+    | T
+    | {
+        from?: T;
+        to?: T;
+        reason?: T;
+        changedBy?: T;
+        changedAt?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
