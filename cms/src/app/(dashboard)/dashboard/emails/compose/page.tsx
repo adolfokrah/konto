@@ -1,34 +1,21 @@
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { ComposeEmailForm } from '@/components/dashboard/compose-email-form'
+import { redirect } from 'next/navigation'
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function ComposeEmailPage({ searchParams }: Props) {
+// The compose window is now a floating panel on the emails list page.
+// This page redirects there with the appropriate params.
+export default async function ComposeRedirectPage({ searchParams }: Props) {
   const params = await searchParams
   const to = typeof params.to === 'string' ? params.to : ''
   const subject = typeof params.subject === 'string' ? params.subject : ''
   const replyToEmailId = typeof params.replyToEmailId === 'string' ? params.replyToEmailId : ''
 
-  return (
-    <div className="space-y-6 max-w-2xl">
-      <Link
-        href="/dashboard/emails"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Emails
-      </Link>
+  const qs = new URLSearchParams({ tab: 'inbox', compose: '1' })
+  if (to) qs.set('composeTo', to)
+  if (subject) qs.set('composeSubject', subject)
+  if (replyToEmailId) qs.set('replyToEmailId', replyToEmailId)
 
-      <ComposeEmailForm
-        prefill={
-          to || subject || replyToEmailId
-            ? { to, subject, replyToEmailId: replyToEmailId || undefined }
-            : null
-        }
-      />
-    </div>
-  )
+  redirect(`/dashboard/emails?${qs.toString()}`)
 }

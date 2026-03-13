@@ -7,9 +7,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
     const headers = {
-      'svix-id': req.headers.get('svix-id') ?? '',
-      'svix-timestamp': req.headers.get('svix-timestamp') ?? '',
-      'svix-signature': req.headers.get('svix-signature') ?? '',
+      id: req.headers.get('svix-id') ?? '',
+      timestamp: req.headers.get('svix-timestamp') ?? '',
+      signature: req.headers.get('svix-signature') ?? '',
     }
 
     const webhookSecret = process.env.RESEND_WEBHOOK_SECRET
@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     // Verify the webhook signature
     let event: any
     try {
-      event = await getResend().webhooks.verify(body, headers, webhookSecret)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      event = await (getResend().webhooks as any).verify({ payload: body, headers, webhookSecret })
     } catch {
       return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 })
     }
@@ -34,6 +35,13 @@ export async function POST(req: NextRequest) {
       from: string
       to: string[]
       subject: string
+    }
+
+    const INBOX_ADDRESS = 'support@hogapay.com'
+    const toList: string[] = Array.isArray(to) ? to : [to]
+    const isForUs = toList.some((addr) => addr.toLowerCase().includes(INBOX_ADDRESS))
+    if (!isForUs) {
+      return NextResponse.json({ received: true })
     }
 
     // Fetch full email body from Resend
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest) {
       data: {
         direction: 'inbound',
         from,
-        to: (Array.isArray(to) ? to : [to]).map((e) => ({ email: e })),
+        to: toList.map((e) => ({ email: e })),
         subject: subject ?? '(No subject)',
         bodyHtml,
         bodyText,

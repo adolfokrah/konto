@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'Hogapay <noreply@hogapay.com>'
 
     // Send via Resend
-    const sendResult = await getResend().emails.send({
+    const sendResult = await (getResend().emails as any).send({
       from: fromAddress,
       to: toAddresses,
       subject,

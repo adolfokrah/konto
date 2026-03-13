@@ -2,195 +2,262 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Reply, User } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { ArrowLeft, Plus, ExternalLink, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/utilities/ui'
-import { EmailBodyViewer } from '@/components/dashboard/email-body-viewer'
+import { EmailThreadView, type ThreadMessage } from '@/components/dashboard/email-thread-view'
+import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
+import { ComposeWindow } from '@/components/dashboard/compose-window'
 
 type Props = {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-const statusStyles: Record<string, string> = {
-  received: 'bg-blue-100 text-blue-800 border-blue-200',
-  sent: 'bg-green-100 text-green-800 border-green-200',
-  sending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  failed: 'bg-red-100 text-red-800 border-red-200',
-  draft: 'bg-gray-100 text-gray-600 border-gray-200',
+function extractName(addr: string): string {
+  const m = addr.match(/^([^<]+)</)
+  const raw = m ? m[1].trim() : addr.split('@')[0]
+  return raw.replace(/[._-]/g, ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-3 py-2 text-sm">
-      <span className="w-20 shrink-0 text-muted-foreground">{label}</span>
-      <span className="flex-1 text-foreground">{children}</span>
-    </div>
-  )
+function getInitials(addr: string): string {
+  const name = extractName(addr)
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
 }
 
-export default async function EmailDetailPage({ params }: Props) {
+const AVATAR_COLORS = [
+  'bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 'bg-orange-500',
+  'bg-rose-500', 'bg-teal-500', 'bg-indigo-500', 'bg-pink-500',
+]
+function avatarColor(addr: string): string {
+  let h = 0
+  for (let i = 0; i < addr.length; i++) h = addr.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+}
+
+export default async function EmailDetailPage({ params, searchParams }: Props) {
   const { id } = await params
+  const sp = await searchParams
+  const composeOpen = sp.compose === '1'
+  const composeTo = typeof sp.composeTo === 'string' ? sp.composeTo : ''
+  const composeSubject = typeof sp.composeSubject === 'string' ? sp.composeSubject : ''
+  const replyToEmailId = typeof sp.replyToEmailId === 'string' ? sp.replyToEmailId : ''
+
   const payload = await getPayload({ config: configPromise })
 
   let email: any
   try {
-    email = await payload.findByID({
-      collection: 'emails',
-      id,
-      depth: 1,
-      overrideAccess: true,
-    })
+    email = await payload.findByID({ collection: 'emails', id, depth: 1, overrideAccess: true })
   } catch {
     notFound()
   }
   if (!email) notFound()
 
-  // Mark as read if inbound and unread
+  // Mark as read
   if (email.direction === 'inbound' && !email.isRead) {
     try {
-      await payload.update({
-        collection: 'emails',
-        id,
-        data: { isRead: true },
-        overrideAccess: true,
-      })
+      await payload.update({ collection: 'emails', id, data: { isRead: true }, overrideAccess: true })
     } catch {}
   }
 
-  const toAddresses: string[] = (email.to ?? []).map((t: any) => t.email)
-  const linkedUser =
-    email.linkedUser && typeof email.linkedUser === 'object' ? email.linkedUser : null
+  // Fetch all emails in the thread
+  const threadRootId: string = email.threadId || email.id
+  const threadResult = await payload.find({
+    collection: 'emails',
+    where: { or: [{ id: { equals: threadRootId } }, { threadId: { equals: threadRootId } }] },
+    sort: 'createdAt',
+    limit: 100,
+    depth: 1,
+    overrideAccess: true,
+  })
 
-  const replySubject = email.subject?.startsWith('Re:') ? email.subject : `Re: ${email.subject}`
-  const replyTo = email.direction === 'inbound' ? email.from : toAddresses.join(', ')
+  const threadMessages: ThreadMessage[] = threadResult.docs.map((e: any) => ({
+    id: e.id,
+    direction: e.direction,
+    from: e.from,
+    to: e.to ?? [],
+    subject: e.subject,
+    bodyHtml: e.bodyHtml ?? null,
+    bodyText: e.bodyText ?? null,
+    status: e.status,
+    isRead: e.isRead ?? false,
+    createdAt: e.createdAt,
+    linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
+      ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
+      : null,
+  }))
 
-  const replyHref = `/dashboard/emails/compose?to=${encodeURIComponent(replyTo)}&subject=${encodeURIComponent(replySubject)}&replyToEmailId=${email.id}`
+  const subject = email.subject
+  const messageCount = threadMessages.length
+
+  // The primary external contact (inbound sender or outbound recipient)
+  const primaryAddr = email.direction === 'inbound' ? email.from : (email.to?.[0]?.email ?? '')
+  const replyTo = email.direction === 'inbound' ? email.from : (email.to?.[0]?.email ?? '')
+  const linkedUser = email.linkedUser && typeof email.linkedUser === 'object' ? email.linkedUser : null
+
+  // Collect all unique participants except "us" (outbound)
+  const allAddresses = [
+    ...new Set(threadMessages.flatMap(m => [m.from, ...m.to.map(t => t.email)]))
+  ]
+
+  const firstDate = threadMessages[0]?.createdAt
+  const lastDate = threadMessages[threadMessages.length - 1]?.createdAt
 
   return (
-    <div className="space-y-6">
-      {/* Back */}
-      <Link
-        href="/dashboard/emails"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Emails
-      </Link>
+    <>
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-xl border bg-card shadow-sm">
+        {/* ── Left: thread + reply ── */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Thread header */}
+          <div className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
+            <Link
+              href="/dashboard/emails"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Main: email content */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-4">
-                <h1 className="text-lg font-semibold leading-tight">{email.subject}</h1>
-                <Badge
-                  variant="outline"
-                  className={cn('shrink-0 text-xs capitalize', statusStyles[email.status])}
-                >
-                  {email.status}
-                </Badge>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="truncate text-sm font-semibold">{subject}</h1>
+                {messageCount > 1 && (
+                  <span className="shrink-0 rounded border border-border bg-muted px-1.5 py-px text-[10px] font-medium text-muted-foreground tabular-nums">
+                    {messageCount}
+                  </span>
+                )}
               </div>
-              <div className="divide-y divide-border/50 mt-2">
-                <Row label="From">{email.from}</Row>
-                <Row label="To">{toAddresses.join(', ')}</Row>
-                <Row label="Date">
-                  {new Date(email.createdAt).toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </Row>
-              </div>
-            </CardHeader>
+            </div>
 
-            <CardContent>
-              <div className="border-t pt-4">
-                <EmailBodyViewer html={email.bodyHtml ?? null} text={email.bodyText ?? null} />
+            <Link href={`?compose=1&composeTo=${encodeURIComponent('')}&composeSubject=`}>
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Thread messages */}
+          <div className="flex-1 overflow-y-auto bg-muted/20">
+            <div className="mx-auto max-w-2xl px-4 py-6">
+              <EmailThreadView messages={threadMessages} />
+            </div>
+          </div>
+
+          {/* Inline reply box */}
+          {replyTo && (
+            <div className="shrink-0 border-t bg-card px-4 py-4">
+              <div className="mx-auto max-w-2xl">
+                <InlineReplyBox to={replyTo} subject={subject} threadId={threadRootId} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
 
-        {/* Sidebar: actions + metadata */}
-        <div className="space-y-4">
-          {/* Actions */}
-          <Card>
-            <CardContent className="pt-4 space-y-2">
-              <Link href={replyHref} className="w-full">
-                <Button className="w-full" variant="default">
-                  <Reply className="mr-2 h-4 w-4" />
-                  Reply
-                </Button>
-              </Link>
-              <Link href="/dashboard/emails/compose" className="w-full">
-                <Button className="w-full" variant="outline">
-                  New Email
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+        {/* ── Right sidebar: contact info ── */}
+        <aside className="w-72 shrink-0 overflow-y-auto border-l">
+          {/* Contact */}
+          <div className="border-b p-4">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <span className={cn(
+                'flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-white',
+                avatarColor(primaryAddr),
+              )}>
+                {getInitials(primaryAddr)}
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{extractName(primaryAddr)}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{primaryAddr.replace(/^.*<(.+)>$/, '$1')}</p>
+              </div>
 
-          {/* Linked user */}
-          {linkedUser && (
-            <Card>
-              <CardContent className="pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Platform User
-                </p>
+              {linkedUser && (
                 <Link
                   href={`/dashboard/users/${linkedUser.id}`}
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <User className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {[linkedUser.firstName, linkedUser.lastName].filter(Boolean).join(' ') || linkedUser.email}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">{linkedUser.email}</p>
-                  </div>
+                  <ExternalLink className="h-3 w-3" />
+                  View platform user
                 </Link>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </div>
+          </div>
 
-          {/* Metadata */}
-          <Card>
-            <CardContent className="pt-4 space-y-2 text-xs text-muted-foreground">
-              <p className="font-semibold uppercase tracking-widest text-[10px] text-muted-foreground/60 mb-2">
-                Metadata
+          {/* Thread info */}
+          <div className="border-b p-4 space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+              Conversation
+            </p>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Messages</span>
+                <span className="font-medium tabular-nums">{messageCount}</span>
+              </div>
+              {firstDate && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Started</span>
+                  <span className="font-medium">
+                    {new Date(firstDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              {lastDate && messageCount > 1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Last reply</span>
+                  <span className="font-medium">
+                    {new Date(lastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Direction</span>
+                <span className={cn(
+                  'rounded-full px-2 py-px text-[10px] font-semibold capitalize',
+                  email.direction === 'inbound'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                )}>
+                  {email.direction}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Participants */}
+          {allAddresses.length > 1 && (
+            <div className="p-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Participants
               </p>
-              <div className="flex justify-between">
-                <span>Direction</span>
-                <span className="capitalize font-medium text-foreground">{email.direction}</span>
+              <div className="space-y-2">
+                {allAddresses.slice(0, 6).map((addr) => (
+                  <div key={addr} className="flex items-center gap-2">
+                    <span className={cn(
+                      'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white',
+                      avatarColor(addr),
+                    )}>
+                      {getInitials(addr)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium">{extractName(addr)}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{addr.replace(/^.*<(.+)>$/, '$1')}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between">
-                <span>Read</span>
-                <span className="font-medium text-foreground">{email.isRead ? 'Yes' : 'No'}</span>
-              </div>
-              {email.resendEmailId && (
-                <div className="flex justify-between gap-2">
-                  <span>Resend ID</span>
-                  <span className="font-mono text-[10px] text-foreground truncate max-w-[120px]">
-                    {email.resendEmailId}
-                  </span>
-                </div>
-              )}
-              {email.threadId && (
-                <div className="flex justify-between gap-2">
-                  <span>Thread</span>
-                  <span className="font-mono text-[10px] text-foreground truncate max-w-[120px]">
-                    {email.threadId}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          )}
+        </aside>
       </div>
-    </div>
+
+      {composeOpen && (
+        <ComposeWindow
+          prefill={{
+            to: composeTo || undefined,
+            subject: composeSubject || undefined,
+            replyToEmailId: replyToEmailId || undefined,
+          }}
+        />
+      )}
+    </>
   )
 }
