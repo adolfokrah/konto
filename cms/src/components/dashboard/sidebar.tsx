@@ -21,6 +21,7 @@ import {
   LogOut,
   ChevronUp,
   ShieldAlert,
+  Mail,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -49,6 +50,7 @@ const navGroups = [
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
       { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
       { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
+      { label: 'Emails', href: '/dashboard/emails', icon: Mail },
     ],
   },
   {
@@ -85,6 +87,13 @@ export function Sidebar({ className, user }: { className?: string; user: User })
     { refreshInterval: 30000 },
   )
   const openDisputesCount = openDisputes?.totalDocs ?? 0
+
+  const { data: unreadEmails } = useSWR(
+    '/api/emails?where[direction][equals]=inbound&where[isRead][equals]=false&limit=0',
+    fetcher,
+    { refreshInterval: 30000 },
+  )
+  const unreadEmailsCount = unreadEmails?.totalDocs ?? 0
 
   const { trigger: logout } = useSWRMutation(
     '/api/users/logout',
@@ -124,6 +133,7 @@ export function Sidebar({ className, user }: { className?: string; user: User })
                 const count =
                   item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount :
                   item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
+                  item.href === '/dashboard/emails' && unreadEmailsCount > 0 ? unreadEmailsCount :
                   null
 
                 return (
