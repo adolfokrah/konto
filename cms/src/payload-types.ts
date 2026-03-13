@@ -1939,7 +1939,6 @@ export interface Email {
     | {
         filename: string;
         contentType?: string | null;
-        content?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -3167,7 +3166,6 @@ export interface EmailsSelect<T extends boolean = true> {
     | {
         filename?: T;
         contentType?: T;
-        content?: T;
         id?: T;
       };
   updatedAt?: T;

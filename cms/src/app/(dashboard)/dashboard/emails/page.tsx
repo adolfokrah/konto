@@ -6,7 +6,7 @@ import { EmailsDataTable, type EmailRow } from '@/components/dashboard/emails-da
 import { ComposeWindow } from '@/components/dashboard/compose-window'
 import { SyncEmailsButton } from '@/components/dashboard/sync-emails-button'
 import { EmailThreadView, type ThreadMessage } from '@/components/dashboard/email-thread-view'
-import { buildColorMap, extractBareEmail, AVATAR_COLORS } from '@/utilities/avatarColors'
+import { buildColorMap, extractBareEmail, hashColor } from '@/utilities/avatarColors'
 import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
 import { cn } from '@/utilities/ui'
 
@@ -26,10 +26,8 @@ function getInitials(addr: string): string {
 }
 
 function avatarColor(addr: string, colorMap?: Map<string, string>): string {
-  if (colorMap) return colorMap.get(extractBareEmail(addr)) ?? AVATAR_COLORS[0]
-  let h = 0
-  for (let i = 0; i < addr.length; i++) h = addr.charCodeAt(i) + ((h << 5) - h)
-  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+  if (colorMap) return colorMap.get(extractBareEmail(addr)) ?? hashColor(addr)
+  return hashColor(addr)
 }
 
 type Props = {
@@ -133,13 +131,13 @@ export default async function EmailsPage({ searchParams }: Props) {
         status: e.status,
         isRead: e.isRead ?? false,
         createdAt: e.createdAt,
+        resendEmailId: e.resendEmailId ?? null,
         linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
           ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
           : null,
         attachments: Array.isArray(e.attachments) ? e.attachments.map((a: any) => ({
           filename: a.filename ?? 'attachment',
           contentType: a.contentType ?? null,
-          content: a.content ?? null,
         })) : [],
       }))
     } catch {}

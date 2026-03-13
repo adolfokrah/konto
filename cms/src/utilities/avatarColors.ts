@@ -14,6 +14,14 @@ export function extractBareEmail(addr: string): string {
   return (m ? m[1] : addr).toLowerCase().trim()
 }
 
+/** Deterministic color for any email address — same result everywhere */
+export function hashColor(addr: string): string {
+  const bare = extractBareEmail(addr)
+  let h = 0
+  for (let i = 0; i < bare.length; i++) h = bare.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+}
+
 export type ColorMapEntry = { from: string; to: { email: string }[] }
 
 export function buildColorMap(messages: ColorMapEntry[]): Map<string, string> {
@@ -22,7 +30,7 @@ export function buildColorMap(messages: ColorMapEntry[]): Map<string, string> {
     const addrs = [msg.from, ...msg.to.map((t) => t.email)]
     for (const addr of addrs) {
       const bare = extractBareEmail(addr)
-      if (!map.has(bare)) map.set(bare, AVATAR_COLORS[map.size % AVATAR_COLORS.length])
+      if (!map.has(bare)) map.set(bare, hashColor(addr))
     }
   }
   return map

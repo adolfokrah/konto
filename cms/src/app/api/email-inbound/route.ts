@@ -54,8 +54,12 @@ export async function POST(req: NextRequest) {
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
       }).then((r) => r.json())
 
-      bodyHtml = fullEmail.html ?? null
-      bodyText = fullEmail.text ?? null
+      const sanitize = (s: unknown) =>
+        typeof s === 'string'
+          ? s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').slice(0, 200_000)
+          : null
+      bodyHtml = sanitize(fullEmail.html)
+      bodyText = sanitize(fullEmail.text)
       incomingMessageId = fullEmail.message_id ?? null
 
       // Extract attachments
@@ -65,7 +69,6 @@ export async function POST(req: NextRequest) {
           .map((a: any) => ({
             filename: a.filename ?? a.name ?? 'attachment',
             contentType: a.content_type ?? a.contentType ?? 'application/octet-stream',
-            content: a.content ?? '',
           }))
       }
 

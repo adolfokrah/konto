@@ -57,6 +57,7 @@ export const Emails: CollectionConfig = {
     {
       name: 'bodyHtml',
       type: 'textarea',
+      validate: () => true,
       admin: {
         description: 'HTML body of the email',
       },
@@ -64,6 +65,7 @@ export const Emails: CollectionConfig = {
     {
       name: 'bodyText',
       type: 'textarea',
+      validate: () => true,
       admin: {
         description: 'Plain text body of the email',
       },
@@ -133,7 +135,6 @@ export const Emails: CollectionConfig = {
       fields: [
         { name: 'filename', type: 'text', required: true },
         { name: 'contentType', type: 'text' },
-        { name: 'content', type: 'textarea' },
       ],
     },
   ],

@@ -13,6 +13,11 @@ function extractEmail(addr: string): string {
 }
 
 export async function runRethread(payload: BasePayload): Promise<number> {
+  const rawFrom = process.env.RESEND_FROM_EMAIL || 'support@hogapay.com'
+  const SUPPORT_ADDRESS = (
+    rawFrom.match(/<([^>]+)>$/) ? rawFrom.match(/<([^>]+)>$/)![1] : rawFrom
+  ).toLowerCase()
+
   const all = await payload.find({
     collection: 'emails',
     limit: 2000,
@@ -38,19 +43,22 @@ export async function runRethread(payload: BasePayload): Promise<number> {
 
     const clusters: any[][] = []
 
+    // Exclude the platform's own support address from clustering comparison so that two
+    // separate outbound emails to different recipients aren't merged just because they
+    // share the same "from" address.
+    const clusterAddrs = (doc: any) =>
+      new Set(
+        [
+          extractEmail(doc.from ?? ''),
+          ...((doc.to ?? []) as any[]).map((t: any) => extractEmail(t.email ?? '')),
+        ].filter((addr) => addr !== SUPPORT_ADDRESS),
+      )
+
     for (const doc of group) {
-      const docAddresses = new Set([
-        extractEmail(doc.from ?? ''),
-        ...((doc.to ?? []) as any[]).map((t: any) => extractEmail(t.email ?? '')),
-      ])
+      const docAddresses = clusterAddrs(doc)
 
       const match = clusters.find((cluster) => {
-        const clusterAddresses = new Set(
-          cluster.flatMap((d: any) => [
-            extractEmail(d.from ?? ''),
-            ...((d.to ?? []) as any[]).map((t: any) => extractEmail(t.email ?? '')),
-          ]),
-        )
+        const clusterAddresses = new Set(cluster.flatMap((d: any) => [...clusterAddrs(d)]))
         return [...docAddresses].some((addr) => clusterAddresses.has(addr))
       })
 

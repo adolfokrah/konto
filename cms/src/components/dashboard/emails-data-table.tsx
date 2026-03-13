@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/utilities/ui'
 import { ChevronLeft, ChevronRight, Inbox, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { hashColor } from '@/utilities/avatarColors'
 
 export type EmailRow = {
   id: string
@@ -45,15 +46,6 @@ function getInitials(addr: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
-const AVATAR_COLORS = [
-  'bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 'bg-orange-500',
-  'bg-rose-500', 'bg-teal-500', 'bg-indigo-500', 'bg-pink-500',
-]
-function avatarColor(addr: string): string {
-  let h = 0
-  for (let i = 0; i < addr.length; i++) h = addr.charCodeAt(i) + ((h << 5) - h)
-  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
-}
 
 export function EmailsDataTable({
   emails,
@@ -94,7 +86,7 @@ export function EmailsDataTable({
           const primaryAddr = email.direction === 'inbound' ? email.from : (email.to[0]?.email ?? '')
           const name = extractName(primaryAddr)
           const ini = getInitials(primaryAddr)
-          const color = avatarColor(primaryAddr)
+          const color = hashColor(primaryAddr)
           const unread = !email.isRead && email.direction === 'inbound'
           const count = email.messageCount ?? 1
           const isActive = email.id === activeId
@@ -177,7 +169,7 @@ export function EmailsDataTable({
                       style={{ zIndex: i + 1, marginLeft: i === 0 ? 0 : -6 }}
                       className={cn(
                         'flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white ring-1 ring-background',
-                        avatarColor(addr),
+                        hashColor(addr),
                       )}
                     >
                       {getInitials(addr)}

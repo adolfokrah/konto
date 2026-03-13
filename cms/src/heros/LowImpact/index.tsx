@@ -15,7 +15,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
   date,
 }) => {
   return (
-    <section className="bg-secondary-background pt-25 pb-8 lg:pt-45 lg:pb-12 ">
+    <section className="bg-secondary-background pt-35 pb-8 lg:pt-45 lg:pb-12 ">
       <div className="container">
         <div className="max-w-4xl">
           {title && (
