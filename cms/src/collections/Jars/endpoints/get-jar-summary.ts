@@ -175,6 +175,11 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
 
+  // Payouts are stored as negative amountContributed — negate to get positive total
+  const totalTransfers = txDocs
+    .filter((tx: any) => tx.type === 'payout' && tx.paymentStatus === 'completed')
+    .reduce((s: number, tx: any) => s + Math.abs(tx.amountContributed), 0)
+
   // --- Charges breakdown ---
   const totalPlatformCharge = txDocs.reduce(
     (s: number, tx: any) => s + (tx.chargesBreakdown?.platformCharge ?? 0),
@@ -205,6 +210,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         totalAmountTobeTransferred: round2(balance),
         upcomingBalance: round2(unsettledContributionsSum),
         totalYouOwe: 0,
+        totalTransfers: round2(totalTransfers),
         ...paymentBreakdown,
       },
       chargesBreakdown: {
