@@ -94,7 +94,7 @@ export default async function JarsPage({ searchParams }: Props) {
       collection: 'transactions',
       where: {
         jar: { in: jarIds },
-        paymentStatus: { in: ['completed', 'pending'] },
+        paymentStatus: { in: ['completed', 'pending', 'awaiting-approval'] },
       },
       pagination: false,
       select: { jar: true, amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },

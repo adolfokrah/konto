@@ -1,4 +1,5 @@
 import { emailService } from '@/utilities/emailService'
+import { getJarBalance } from '@/utilities/getJarBalance'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -71,49 +72,12 @@ export const withdrawReminderDailyTask = {
       > = {}
 
       for (const jar of openJars.docs as any[]) {
-        // Sum completed contributions
-        const contributions = await payload.find({
-          collection: 'transactions',
-          where: {
-            and: [
-              { jar: { equals: jar.id } },
-              { type: { equals: 'contribution' } },
-              { paymentStatus: { equals: 'completed' } },
-            ],
-          },
-          pagination: false,
-          select: { amountContributed: true, createdAt: true },
-          overrideAccess: true,
-        })
-
-        if (!contributions.docs.length) continue
-
-        const contributionsTotal = contributions.docs.reduce(
-          (sum: number, tx: any) => sum + (tx.amountContributed ?? 0),
-          0,
+        const { balance, settledContributions: contributions } = await getJarBalance(
+          payload,
+          jar.id,
         )
 
-        // Sum all payouts
-        const payouts = await payload.find({
-          collection: 'transactions',
-          where: {
-            and: [
-              { jar: { equals: jar.id } },
-              { type: { equals: 'payout' } },
-              { paymentStatus: { in: ['pending', 'completed', 'awaiting-approval'] } },
-            ],
-          },
-          pagination: false,
-          select: { amountContributed: true },
-          overrideAccess: true,
-        })
-
-        const payoutsTotal = payouts.docs.reduce(
-          (sum: number, tx: any) => sum + (tx.amountContributed ?? 0),
-          0,
-        )
-
-        const balance = contributionsTotal + payoutsTotal
+        if (!contributions.length) continue
         if (balance <= 0) continue
 
         // Determine reference date:
@@ -128,7 +92,7 @@ export const withdrawReminderDailyTask = {
         }
 
         if (!referenceDate) {
-          const sorted = [...contributions.docs].sort(
+          const sorted = [...contributions].sort(
             (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           )
           const lastTxDate = sorted[0]?.createdAt

@@ -1,4 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { getJarBalance } from '@/utilities/getJarBalance'
 
 export const payoutEganow = async (req: PayloadRequest) => {
   try {
@@ -55,7 +56,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
     }
 
     // Check for pending payout and calculate balance in parallel
-    const [pendingPayout, allTransactions] = await Promise.all([
+    const [pendingPayout, { balance: netBalance }] = await Promise.all([
       req.payload.find({
         collection: 'transactions',
         where: {
@@ -66,13 +67,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
         limit: 1,
         overrideAccess: true,
       }),
-      req.payload.find({
-        collection: 'transactions',
-        where: { jar: { equals: jarId } },
-        limit: 10000,
-        select: { amountContributed: true, type: true, isSettled: true, paymentStatus: true },
-        overrideAccess: true,
-      }),
+      getJarBalance(req.payload, jarId),
     ])
 
     if (pendingPayout.docs.length > 0) {
@@ -81,26 +76,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
         { status: 400 },
       )
     }
-
-    // Calculate balance
-    const settledSum = allTransactions.docs
-      .filter(
-        (tx: any) =>
-          tx.type === 'contribution' && tx.paymentStatus === 'completed' && tx.isSettled === true,
-      )
-      .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)
-
-    const payoutsSum = allTransactions.docs
-      .filter(
-        (tx: any) =>
-          tx.type === 'payout' &&
-          (tx.paymentStatus === 'pending' ||
-            tx.paymentStatus === 'completed' ||
-            tx.paymentStatus === 'awaiting-approval'),
-      )
-      .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)
-
-    const netBalance = settledSum + payoutsSum
 
     if (netBalance <= 0) {
       return Response.json(
