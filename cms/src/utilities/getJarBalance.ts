@@ -13,17 +13,21 @@ export async function getJarBalance(
   const allTransactions = await payload.find({
     collection: 'transactions',
     where: {
-      jar: { equals: jarId },
-      or: [
+      and: [
+        { jar: { equals: jarId } },
         {
-          type: { equals: 'contribution' },
-          paymentMethod: { not_equals: 'cash' },
-          paymentStatus: { equals: 'completed' },
-          isSettled: { equals: true },
-        },
-        {
-          type: { equals: 'payout' },
-          paymentStatus: { in: ['pending', 'completed', 'awaiting-approval'] },
+          or: [
+            {
+              type: { equals: 'contribution' },
+              paymentMethod: { equals: 'mobile-money' },
+              paymentStatus: { equals: 'completed' },
+              isSettled: { equals: true },
+            },
+            {
+              type: { equals: 'payout' },
+              paymentStatus: { in: ['pending', 'completed', 'awaiting-approval'] },
+            },
+          ],
         },
       ],
     },
