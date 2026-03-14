@@ -107,7 +107,7 @@ export default async function JarsPage({ searchParams }: Props) {
 
       if (tx.type === 'contribution' && tx.paymentStatus === 'completed') {
         contributionTotals[jarId] = (contributionTotals[jarId] || 0) + (tx.amountContributed || 0)
-        if (tx.isSettled) {
+        if (tx.isSettled && tx.paymentMethod === 'mobile-money') {
           settledTotals[jarId] = (settledTotals[jarId] || 0) + (tx.amountContributed || 0)
         }
         // Upcoming: completed but unsettled mobile money contributions

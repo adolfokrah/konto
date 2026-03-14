@@ -30,6 +30,7 @@ import { JarActions } from '@/components/dashboard/jar-actions'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 import { CollectorsDataTable } from '@/components/dashboard/collectors-data-table'
+import { getJarBalance } from '@/utilities/getJarBalance'
 
 const statusStyles: Record<string, string> = {
   open: 'bg-green-100 text-green-800 border-green-200',
@@ -148,12 +149,13 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   }
 
   // Compute contribution total, balance, upcoming balance, and fetch filtered transactions in parallel
-  const [reportCount, allJarTransactions, transactionsResult] = await Promise.all([
+  const [reportCount, { balance }, allJarTransactions, transactionsResult] = await Promise.all([
     payload.count({
       collection: 'jar-reports',
       where: { jar: { equals: id } },
       overrideAccess: true,
     }),
+    getJarBalance(payload, id),
     payload.find({
       collection: 'transactions',
       where: {
@@ -176,9 +178,8 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
   ])
 
   let totalContributions = 0
-  let settledContributions = 0
-  let totalPayouts = 0
   let upcomingBalance = 0
+  let totalPayouts = 0
   let cashContributions = 0
   let mobileMoneyContributions = 0
   for (const tx of allJarTransactions.docs as any[]) {
@@ -188,20 +189,14 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
         cashContributions += tx.amountContributed || 0
       } else if (tx.paymentMethod === 'mobile-money') {
         mobileMoneyContributions += tx.amountContributed || 0
-      }
-      if (tx.isSettled) {
-        settledContributions += tx.amountContributed || 0
-      }
-      if (!tx.isSettled && tx.paymentMethod === 'mobile-money') {
-        upcomingBalance += tx.amountContributed || 0
+        if (!tx.isSettled) {
+          upcomingBalance += tx.amountContributed || 0
+        }
       }
     } else if (tx.type === 'payout') {
-      // Payout amounts are stored as negative — include pending and completed
       totalPayouts += tx.amountContributed || 0
     }
   }
-  // Balance = settled contributions + payouts (payouts are negative)
-  const balance = settledContributions + totalPayouts
   const totalWithdrawn = Math.abs(totalPayouts)
 
   const creatorObj = typeof jar.creator === 'object' && jar.creator ? jar.creator : null
