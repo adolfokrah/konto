@@ -34,7 +34,8 @@ export async function getJarBalance(
     (tx: any) =>
       tx.type === 'contribution' &&
       tx.paymentStatus === 'completed' &&
-      (tx.isSettled === true || tx.paymentMethod !== 'mobile-money'),
+      (tx.isSettled === true ||
+        (tx.paymentMethod !== 'mobile-money' && tx.paymentMethod !== 'cash')),
   )
 
   const settledSum = settledContributions.reduce(
