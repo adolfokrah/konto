@@ -175,23 +175,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
     )
     .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
 
-  const allCompletedContributionsSum = completedContributions.reduce(
-    (s: number, tx: any) => s + tx.amountContributed,
-    0,
-  )
-
-  const payoutsSum = txDocs
-    .filter(
-      (tx: any) =>
-        tx.type === 'payout' &&
-        (tx.paymentStatus === 'pending' ||
-          tx.paymentStatus === 'completed' ||
-          tx.paymentStatus === 'awaiting-approval'),
-    )
-    .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
-
-  const totalYouOwe = allCompletedContributionsSum + payoutsSum
-
   // --- Charges breakdown ---
   const totalPlatformCharge = txDocs.reduce(
     (s: number, tx: any) => s + (tx.chargesBreakdown?.platformCharge ?? 0),
@@ -221,7 +204,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         totalContributedAmount: round2(totalContributedAmount),
         totalAmountTobeTransferred: round2(balance),
         upcomingBalance: round2(unsettledContributionsSum),
-        totalYouOwe: round2(totalYouOwe),
+        totalYouOwe: round2(balance),
         ...paymentBreakdown,
       },
       chargesBreakdown: {

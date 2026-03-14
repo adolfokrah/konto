@@ -27,9 +27,14 @@ export async function getJarBalance(
     overrideAccess: true,
   })
 
+  // Mobile money: requires explicit settlement (isSettled: true) by the settle-contributions task.
+  // All other payment methods (cash, bank, card, apple-pay) are considered settled immediately
+  // when their paymentStatus is 'completed', since they don't go through the mobile money settlement window.
   const settledContributions = allTransactions.docs.filter(
     (tx: any) =>
-      tx.type === 'contribution' && tx.paymentStatus === 'completed' && tx.isSettled === true,
+      tx.type === 'contribution' &&
+      tx.paymentStatus === 'completed' &&
+      (tx.isSettled === true || tx.paymentMethod !== 'mobile-money'),
   )
 
   const settledSum = settledContributions.reduce(
