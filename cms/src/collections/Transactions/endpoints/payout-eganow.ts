@@ -55,6 +55,18 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    const providerMap: Record<string, string> = {
+      mtn: 'MTNGH',
+      telecel: 'TCELGH',
+    }
+
+    if (!providerMap[user.bank.toLowerCase()]) {
+      return Response.json(
+        { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
+        { status: 400 },
+      )
+    }
+
     // Check for pending payout and calculate balance in parallel
     const [pendingPayout, { balance: netBalance }] = await Promise.all([
       req.payload.find({
@@ -80,19 +92,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
     if (netBalance <= 0) {
       return Response.json(
         { success: false, message: 'No balance available for payout' },
-        { status: 400 },
-      )
-    }
-
-    // Map provider early to fail fast
-    const providerMap: Record<string, string> = {
-      mtn: 'MTNGH',
-      telecel: 'TCELGH',
-    }
-
-    if (!providerMap[user.bank.toLowerCase()]) {
-      return Response.json(
-        { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
         { status: 400 },
       )
     }

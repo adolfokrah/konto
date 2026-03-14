@@ -17,7 +17,7 @@ export async function getJarBalance(
       or: [
         {
           type: { equals: 'contribution' },
-          paymentMethod: { equals: 'mobile-money' },
+          paymentMethod: { not_equals: 'cash' },
           paymentStatus: { equals: 'completed' },
           isSettled: { equals: true },
         },
