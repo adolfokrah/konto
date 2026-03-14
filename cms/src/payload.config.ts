@@ -150,8 +150,8 @@ export default buildConfig({
     defaultLocale: 'en', // required
   },
   email: resendAdapter({
-    defaultFromAddress: 'dev@payloadcms.com',
-    defaultFromName: 'Payload CMS',
+    defaultFromAddress: 'support@hogapay.com',
+    defaultFromName: 'Hogapay',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
   jobs: {

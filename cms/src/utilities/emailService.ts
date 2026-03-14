@@ -27,7 +27,7 @@ interface EmailOptions {
 class EmailService {
   private async sendEmail(options: EmailOptions) {
     const emailData: any = {
-      from: this.getFromEmail(options.subject),
+      from: this.getFromEmail(),
       to: Array.isArray(options.to) ? options.to : [options.to],
       subject: options.subject,
     }
@@ -48,25 +48,8 @@ class EmailService {
     return true
   }
 
-  private getFromEmail(subject: string): string {
-    // Get sender name from env or use default
+  private getFromEmail(): string {
     const senderName = process.env.RESEND_FROM_NAME || 'Hogapay'
-
-    // Different from addresses based on email type
-    if (subject.toLowerCase().includes('kyc')) {
-      return `${senderName} <onboarding@hogapay.com>`
-    }
-    if (subject.toLowerCase().includes('report') || subject.toLowerCase().includes('export')) {
-      return `${senderName} <reports@hogapay.com>`
-    }
-    if (subject.toLowerCase().includes('welcome')) {
-      return `${senderName} <hello@hogapay.com>`
-    }
-    if (subject.toLowerCase().includes('deletion')) {
-      return `${senderName} <noreply@hogapay.com>`
-    }
-
-    // Default
     return process.env.RESEND_FROM_EMAIL || `${senderName} <noreply@hogapay.com>`
   }
 
