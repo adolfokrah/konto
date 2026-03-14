@@ -3,11 +3,8 @@ import type { BasePayload } from 'payload'
 /**
  * Calculates the net available balance for a jar.
  *
- * Balance = settled contributions − (pending/awaiting/completed payouts)
- * Matches the logic used in payout-eganow.ts.
- *
- * Also returns settled contributions (with createdAt) for callers that need
- * to determine the last contribution date.
+ * Balance = settled mobile-money contributions (isSettled + completed)
+ *         + all non-failed payouts (pending | awaiting-approval | completed, stored as negative amounts)
  */
 export async function getJarBalance(
   payload: BasePayload,
@@ -15,28 +12,31 @@ export async function getJarBalance(
 ): Promise<{ balance: number; settledContributions: any[] }> {
   const allTransactions = await payload.find({
     collection: 'transactions',
-    where: { jar: { equals: jarId } },
+    where: {
+      jar: { equals: jarId },
+      or: [
+        {
+          type: { equals: 'contribution' },
+          paymentMethod: { equals: 'mobile-money' },
+          paymentStatus: { equals: 'completed' },
+          isSettled: { equals: true },
+        },
+        {
+          type: { equals: 'payout' },
+          paymentStatus: { in: ['pending', 'completed', 'awaiting-approval'] },
+        },
+      ],
+    },
     pagination: false,
     select: {
       amountContributed: true,
       type: true,
-      isSettled: true,
-      paymentStatus: true,
       createdAt: true,
     },
     overrideAccess: true,
   })
 
-  // Mobile money: requires explicit settlement (isSettled: true) by the settle-contributions task.
-  // All other payment methods (cash, bank, card, apple-pay) are considered settled immediately
-  // when their paymentStatus is 'completed', since they don't go through the mobile money settlement window.
-  const settledContributions = allTransactions.docs.filter(
-    (tx: any) =>
-      tx.type === 'contribution' &&
-      tx.paymentStatus === 'completed' &&
-      (tx.isSettled === true ||
-        (tx.paymentMethod !== 'mobile-money' && tx.paymentMethod !== 'cash')),
-  )
+  const settledContributions = allTransactions.docs.filter((tx: any) => tx.type === 'contribution')
 
   const settledSum = settledContributions.reduce(
     (sum: number, tx: any) => sum + (tx.amountContributed ?? 0),
@@ -44,13 +44,7 @@ export async function getJarBalance(
   )
 
   const payoutsSum = allTransactions.docs
-    .filter(
-      (tx: any) =>
-        tx.type === 'payout' &&
-        (tx.paymentStatus === 'pending' ||
-          tx.paymentStatus === 'completed' ||
-          tx.paymentStatus === 'awaiting-approval'),
-    )
+    .filter((tx: any) => tx.type === 'payout')
     .reduce((sum: number, tx: any) => sum + (tx.amountContributed ?? 0), 0)
 
   return { balance: settledSum + payoutsSum, settledContributions }
