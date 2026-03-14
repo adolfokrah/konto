@@ -204,7 +204,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         totalContributedAmount: round2(totalContributedAmount),
         totalAmountTobeTransferred: round2(balance),
         upcomingBalance: round2(unsettledContributionsSum),
-        totalYouOwe: round2(balance),
+        totalYouOwe: 0,
         ...paymentBreakdown,
       },
       chargesBreakdown: {
