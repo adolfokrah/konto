@@ -9,7 +9,7 @@ import React from 'react'
 
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Sidebar } from '@/components/dashboard/sidebar'
+import { SidebarWrapper } from '@/components/dashboard/sidebar-wrapper'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -24,14 +24,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const payload = await getPayload({ config: configPromise })
   const requestHeaders = await getHeaders()
 
-  // Authenticate using Payload local API (no HTTP self-fetch)
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  // Redirect if not authenticated or not admin
   if (!user || user.role !== 'admin') {
     const pathname = requestHeaders.get('x-pathname') ?? '/dashboard'
     redirect(`/admin?redirect=${encodeURIComponent(pathname)}`)
   }
+
+  const userData = { firstName: user.firstName, lastName: user.lastName, email: user.email }
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-dark')} lang="en" suppressHydrationWarning>
@@ -40,24 +40,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </head>
       <body className="h-screen overflow-hidden bg-background">
         <div className="flex h-screen overflow-hidden">
-          {/* Sidebar - hidden on mobile, sticky on lg+ */}
-          <div className="hidden w-52 lg:block">
-            <div className="sticky top-0 h-screen">
-              <Sidebar user={{ firstName: user.firstName, lastName: user.lastName, email: user.email }} />
-            </div>
-          </div>
-
-          {/* Main content area */}
+          <SidebarWrapper user={userData} />
           <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-            <div className="shrink-0">
-              <TopBar
-                user={{
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  email: user.email,
-                }}
-              />
-            </div>
+            <TopBar user={userData} />
             <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
           </div>
         </div>

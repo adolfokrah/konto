@@ -9,11 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { Sidebar } from './sidebar'
-import { LogOut, Menu, Settings, User as UserIcon } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { LogOut, Menu, Settings } from 'lucide-react'
 import useSWRMutation from 'swr/mutation'
+import { Sidebar } from '@/components/dashboard/sidebar'
 
 type Props = {
   user: {
@@ -56,7 +56,7 @@ export function TopBar({ user }: Props) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-52 border-r-border bg-card p-0">
-          <Sidebar user={user} />
+          <Sidebar user={user} collapsed={false} onToggle={() => {}} />
         </SheetContent>
       </Sheet>
 

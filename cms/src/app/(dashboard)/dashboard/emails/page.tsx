@@ -8,7 +8,7 @@ import { SyncEmailsButton } from '@/components/dashboard/sync-emails-button'
 import { EmailThreadView, type ThreadMessage } from '@/components/dashboard/email-thread-view'
 import { buildColorMap, extractBareEmail, hashColor } from '@/utilities/avatarColors'
 import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
-import { EmailContactSidebar } from '@/components/dashboard/email-contact-sidebar'
+import { EmailThreadPanel } from '@/components/dashboard/email-thread-panel'
 import { cn } from '@/utilities/ui'
 
 const DEFAULT_LIMIT = 50
@@ -243,53 +243,31 @@ export default async function EmailsPage({ searchParams }: Props) {
 
         {/* ── Thread detail ── */}
         {selectedEmail ? (
-          <>
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-6 py-3.5 shrink-0">
-                <h1 className="flex-1 truncate text-sm font-semibold text-gray-900">{selectedEmail.subject}</h1>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Active
-                  </span>
-                  {threadMessages.length > 1 && (
-                    <span className="rounded border border-gray-200 bg-gray-50 px-1.5 py-px text-[10px] font-medium text-gray-400 tabular-nums">
-                      {threadMessages.length}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto bg-white">
-                <EmailThreadView messages={threadMessages} />
-              </div>
-
-              {replyTo && (
-                <div className="shrink-0 border-t border-gray-200 bg-white">
-                  <InlineReplyBox to={replyTo} subject={selectedEmail.subject} threadId={threadRootId} />
-                </div>
-              )}
-            </div>
-
-            {/* ── Contact sidebar ── */}
-            <EmailContactSidebar
-              primaryAddr={primaryAddr.replace(/^.*<(.+)>$/, '$1')}
-              primaryInitials={getInitials(primaryAddr)}
-              primaryColor={avatarColor(primaryAddr, threadColorMap)}
-              primaryName={extractName(primaryAddr)}
-              linkedUser={linkedUser}
-              messageCount={threadMessages.length}
-              startedDate={threadMessages[0] ? new Date(threadMessages[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
-              direction={selectedEmail.direction}
-              allAddresses={allAddresses.map((addr) => ({
+          <EmailThreadPanel
+            subject={selectedEmail.subject}
+            isActive
+            messageCount={threadMessages.length}
+            direction={selectedEmail.direction}
+            body={<EmailThreadView messages={threadMessages} />}
+            replyBox={replyTo ? <InlineReplyBox to={replyTo} subject={selectedEmail.subject} threadId={threadRootId} /> : null}
+            sidebarProps={{
+              primaryAddr: primaryAddr.replace(/^.*<(.+)>$/, '$1'),
+              primaryInitials: getInitials(primaryAddr),
+              primaryColor: avatarColor(primaryAddr, threadColorMap),
+              primaryName: extractName(primaryAddr),
+              linkedUser,
+              messageCount: threadMessages.length,
+              startedDate: threadMessages[0] ? new Date(threadMessages[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '',
+              direction: selectedEmail.direction,
+              allAddresses: allAddresses.map((addr) => ({
                 addr,
                 initials: getInitials(addr),
                 color: avatarColor(addr, threadColorMap),
                 name: extractName(addr),
                 bare: addr.replace(/^.*<(.+)>$/, '$1'),
-              }))}
-            />
-          </>
+              })),
+            }}
+          />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
             <Inbox className="h-10 w-10 opacity-10" />

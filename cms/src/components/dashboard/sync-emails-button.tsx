@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -32,11 +32,14 @@ export function SyncEmailsButton() {
     }
   }, [loading, router])
 
-  // Auto-sync every 5 minutes
+  const syncRef = useRef(sync)
+  useEffect(() => { syncRef.current = sync }, [sync])
+
+  // Auto-sync every 5 minutes (interval created once, always calls latest sync via ref)
   useEffect(() => {
-    const id = setInterval(() => sync(true), SYNC_INTERVAL_MS)
+    const id = setInterval(() => syncRef.current(true), SYNC_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [sync])
+  }, [])
 
   return (
     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => sync(false)} disabled={loading} title="Sync received emails (auto every 5 min)">

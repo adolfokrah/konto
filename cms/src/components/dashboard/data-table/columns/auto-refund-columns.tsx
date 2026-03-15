@@ -72,7 +72,7 @@ export const autoRefundColumns: ColumnDef<AutoRefundRow, any>[] = [
   },
   {
     id: 'contributors',
-    header: 'Contributors',
+    header: 'Transactions',
     cell: ({ row }) => <span className="tabular-nums">{row.original.contributors}</span>,
     meta: {} satisfies DataTableColumnMeta,
   },
