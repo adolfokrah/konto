@@ -49,8 +49,7 @@ class EmailService {
   }
 
   private getFromEmail(): string {
-    const senderName = process.env.RESEND_FROM_NAME || 'Hogapay'
-    return process.env.RESEND_FROM_EMAIL || `${senderName} <noreply@hogapay.com>`
+    return 'Hogapay <noreply@hogapay.com>'
   }
 
   // KYC Verification Success Email
