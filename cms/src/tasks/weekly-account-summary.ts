@@ -1,6 +1,14 @@
 import { emailService } from '@/utilities/emailService'
 import type { JarSummaryRow } from '@/components/emailTemplates/weeklyAccountSummary'
 
+type WeeklySummaryPayload = {
+  to: string
+  firstName: string
+  weekStart: string
+  weekEnd: string
+  jars: JarSummaryRow[]
+}
+
 /**
  * Weekly Account Summary Task
  *
@@ -52,34 +60,32 @@ export const weeklyAccountSummaryTask = {
         return { output: { success: true, message: 'No verified users found', emailsSent: 0 } }
       }
 
-      let emailsSent = 0
+      const batch: WeeklySummaryPayload[] = []
       let emailsSkipped = 0
 
       for (const user of users.docs) {
-        try {
-          if (!user.email) {
-            emailsSkipped++
-            continue
-          }
+        if (!user.email) {
+          emailsSkipped++
+          continue
+        }
 
-          // Get all jars for this user
-          const jarsResult = await payload.find({
-            collection: 'jars',
-            where: { creator: { equals: user.id } },
-            pagination: false,
-            overrideAccess: true,
-          })
+        const jarsResult = await payload.find({
+          collection: 'jars',
+          where: { creator: { equals: user.id } },
+          pagination: false,
+          overrideAccess: true,
+        })
 
-          if (!jarsResult.docs.length) {
-            emailsSkipped++
-            continue
-          }
+        if (!jarsResult.docs.length) {
+          emailsSkipped++
+          continue
+        }
 
-          const jarRows: JarSummaryRow[] = []
+        const jarRows: JarSummaryRow[] = []
 
-          for (const jar of jarsResult.docs) {
-            // Completed contributions this week (cash + momo)
-            const contributions = await payload.find({
+        for (const jar of jarsResult.docs) {
+          const [contributions, payouts] = await Promise.all([
+            payload.find({
               collection: 'transactions',
               where: {
                 and: [
@@ -92,10 +98,8 @@ export const weeklyAccountSummaryTask = {
               },
               pagination: false,
               overrideAccess: true,
-            })
-
-            // Completed payouts this week (momo only)
-            const payouts = await payload.find({
+            }),
+            payload.find({
               collection: 'transactions',
               where: {
                 and: [
@@ -108,68 +112,59 @@ export const weeklyAccountSummaryTask = {
               },
               pagination: false,
               overrideAccess: true,
-            })
+            }),
+          ])
 
-            // Skip jars with no activity this week
-            if (!contributions.docs.length && !payouts.docs.length) continue
+          if (!contributions.docs.length && !payouts.docs.length) continue
 
-            const cashTxs = contributions.docs.filter(
-              (tx: any) => tx.paymentMethod !== 'mobile-money',
-            )
-            const momoTxs = contributions.docs.filter(
-              (tx: any) => tx.paymentMethod === 'mobile-money',
-            )
+          const cashCollected = contributions.docs
+            .filter((tx: any) => tx.paymentMethod !== 'mobile-money')
+            .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
 
-            const cashCollected = cashTxs.reduce(
-              (sum: number, tx: any) => sum + (tx.amountContributed || 0),
-              0,
-            )
-            const momoCollected = momoTxs.reduce(
-              (sum: number, tx: any) => sum + (tx.amountContributed || 0),
-              0,
-            )
-            const withdrawn = payouts.docs.reduce(
-              (sum: number, tx: any) => sum + Math.abs(tx.amountContributed || 0),
-              0,
-            )
+          const momoCollected = contributions.docs
+            .filter((tx: any) => tx.paymentMethod === 'mobile-money')
+            .reduce((sum: number, tx: any) => sum + (tx.amountContributed || 0), 0)
 
-            jarRows.push({
-              name: jar.name,
-              contributionCount: contributions.docs.length,
-              cashCollected,
-              momoCollected,
-              withdrawn,
-              currency: jar.currency || 'GHS',
-            })
-          }
+          const withdrawn = payouts.docs.reduce(
+            (sum: number, tx: any) => sum + Math.abs(tx.amountContributed || 0),
+            0,
+          )
 
-          // Skip users with no jar activity this week
-          if (!jarRows.length) {
-            emailsSkipped++
-            continue
-          }
-
-          await emailService.sendWeeklyAccountSummaryEmail({
-            to: user.email,
-            firstName: user.firstName || 'there',
-            weekStart: weekStartStr,
-            weekEnd: weekEndStr,
-            jars: jarRows,
+          jarRows.push({
+            name: jar.name,
+            contributionCount: contributions.docs.length,
+            cashCollected,
+            momoCollected,
+            withdrawn,
+            currency: jar.currency || 'GHS',
           })
-
-          emailsSent++
-          console.log(`✅ Sent weekly summary to ${user.email} (${jarRows.length} jar(s))`)
-        } catch (err: any) {
-          console.error(`❌ Failed to send weekly summary to user ${user.id}:`, err)
-          emailsSkipped++
         }
+
+        if (!jarRows.length) {
+          emailsSkipped++
+          continue
+        }
+
+        batch.push({
+          to: user.email,
+          firstName: user.firstName || 'there',
+          weekStart: weekStartStr,
+          weekEnd: weekEndStr,
+          jars: jarRows,
+        })
       }
+
+      const { sent: emailsSent, failed: emailsFailed } =
+        batch.length > 0
+          ? await emailService.sendWeeklyAccountSummaryBatch(batch)
+          : { sent: 0, failed: 0 }
 
       return {
         output: {
           success: true,
-          message: `Weekly account summary complete. Sent: ${emailsSent}, Skipped: ${emailsSkipped}`,
+          message: `Weekly account summary complete. Sent: ${emailsSent}, Failed: ${emailsFailed}, Skipped: ${emailsSkipped}`,
           emailsSent,
+          emailsFailed,
           emailsSkipped,
         },
       }

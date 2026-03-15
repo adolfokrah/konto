@@ -32,20 +32,40 @@ class EmailService {
       subject: options.subject,
     }
 
-    if (options.html) {
-      emailData.html = options.html
-    }
+    if (options.html) emailData.html = options.html
+    if (options.react) emailData.react = options.react
+    if (options.attachments) emailData.attachments = options.attachments
 
-    if (options.react) {
-      emailData.react = options.react
-    }
-
-    if (options.attachments) {
-      emailData.attachments = options.attachments
-    }
-
-    const data = await getResend().emails.send(emailData)
+    await getResend().emails.send(emailData)
     return true
+  }
+
+  async sendBatch(emails: EmailOptions[]): Promise<{ sent: number; failed: number }> {
+    const from = this.getFromEmail()
+    const CHUNK_SIZE = 100
+    let sent = 0
+    let failed = 0
+
+    for (let i = 0; i < emails.length; i += CHUNK_SIZE) {
+      const chunk = emails.slice(i, i + CHUNK_SIZE).map((options) => ({
+        from,
+        to: Array.isArray(options.to) ? options.to : [options.to],
+        subject: options.subject,
+        ...(options.html ? { html: options.html } : {}),
+        ...(options.react ? { react: options.react } : {}),
+        ...(options.attachments ? { attachments: options.attachments } : {}),
+      }))
+
+      try {
+        await getResend().batch.send(chunk)
+        sent += chunk.length
+      } catch (err) {
+        console.error(`Batch send failed for chunk ${i / CHUNK_SIZE + 1}:`, err)
+        failed += chunk.length
+      }
+    }
+
+    return { sent, failed }
   }
 
   private getFromEmail(): string {
@@ -200,6 +220,29 @@ class EmailService {
     })
   }
 
+  // Batch Weekly Account Summary
+  async sendWeeklyAccountSummaryBatch(
+    items: {
+      to: string
+      firstName: string
+      weekStart: string
+      weekEnd: string
+      jars: JarSummaryRow[]
+    }[],
+  ) {
+    const emails: EmailOptions[] = items.map((params) => ({
+      to: params.to,
+      subject: `Your weekly jars summary — ${params.weekStart} to ${params.weekEnd}`,
+      react: WeeklyAccountSummary({
+        firstName: params.firstName,
+        weekStart: params.weekStart,
+        weekEnd: params.weekEnd,
+        jars: params.jars,
+      }),
+    }))
+    return this.sendBatch(emails)
+  }
+
   // Withdrawal Reminder Email
   async sendWithdrawalReminderEmail(params: {
     to: string
@@ -222,6 +265,32 @@ class EmailService {
         jars: params.jars,
       }),
     })
+  }
+
+  // Batch Withdrawal Reminder
+  async sendWithdrawalReminderBatch(
+    items: {
+      to: string
+      firstName: string
+      reminderDay: number
+      jars: { name: string; balance: number; currency: string; lastTransactionDate: string }[]
+    }[],
+  ) {
+    const subjectByDay: Record<number, string> = {
+      7: 'Reminder: withdraw your jar balance',
+      10: '2nd reminder: your jar balance is still unclaimed',
+      12: 'Final warning: withdraw now or auto-refund begins',
+    }
+    const emails: EmailOptions[] = items.map((params) => ({
+      to: params.to,
+      subject: subjectByDay[params.reminderDay] ?? 'Action required: withdraw your jar balance',
+      react: WithdrawalReminder({
+        firstName: params.firstName,
+        reminderDay: params.reminderDay,
+        jars: params.jars,
+      }),
+    }))
+    return this.sendBatch(emails)
   }
 
   // Auto Refund Notice Email (sent to jar creator when jar is frozen on Day 14)

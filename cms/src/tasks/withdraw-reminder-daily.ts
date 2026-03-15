@@ -132,11 +132,10 @@ export const withdrawReminderDailyTask = {
         return { output: { success: true, message: 'No jars need reminders', emailsSent: 0 } }
       }
 
-      let emailsSent = 0
-      let emailsFailed = 0
+      // Build one email per user-per-reminderDay combination
+      const batch: Parameters<typeof emailService.sendWithdrawalReminderBatch>[0] = []
 
       for (const { user, jars } of usersToNotify) {
-        // Group jars by reminderDay so each user gets one email per reminder level
         const byDay = jars.reduce((acc: Record<number, typeof jars>, j) => {
           if (!acc[j.reminderDay]) acc[j.reminderDay] = []
           acc[j.reminderDay].push(j)
@@ -144,32 +143,24 @@ export const withdrawReminderDailyTask = {
         }, {})
 
         for (const [dayStr, dayJars] of Object.entries(byDay)) {
-          const reminderDay = Number(dayStr)
-          try {
-            await emailService.sendWithdrawalReminderEmail({
-              to: user.email,
-              firstName: user.firstName ?? user.email,
-              reminderDay,
-              jars: dayJars.map((j) => ({
-                name: j.name,
-                balance: j.balance,
-                currency: j.currency,
-                lastTransactionDate: j.referenceDate,
-              })),
-            })
-            emailsSent++
-            console.log(
-              `✅ Day ${reminderDay} reminder sent to ${user.email} (${dayJars.length} jar(s))`,
-            )
-          } catch (err: any) {
-            console.error(
-              `❌ Failed to send Day ${reminderDay} reminder to ${user.email}:`,
-              err.message,
-            )
-            emailsFailed++
-          }
+          batch.push({
+            to: user.email,
+            firstName: user.firstName ?? user.email,
+            reminderDay: Number(dayStr),
+            jars: dayJars.map((j) => ({
+              name: j.name,
+              balance: j.balance,
+              currency: j.currency,
+              lastTransactionDate: j.referenceDate,
+            })),
+          })
         }
       }
+
+      const { sent: emailsSent, failed: emailsFailed } =
+        batch.length > 0
+          ? await emailService.sendWithdrawalReminderBatch(batch)
+          : { sent: 0, failed: 0 }
 
       return {
         output: {
