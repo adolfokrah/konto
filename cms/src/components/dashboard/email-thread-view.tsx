@@ -19,7 +19,7 @@ export type ThreadMessage = {
   isRead: boolean
   createdAt: string
   resendEmailId?: string | null
-  linkedUser: { id: string; firstName: string; lastName: string; email: string } | null
+  linkedUser: { id: string; firstName: string; lastName: string; email: string; photoUrl?: string | null } | null
   attachments?: { filename: string; contentType?: string | null }[]
 }
 
@@ -148,12 +148,17 @@ function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<str
     <div className="px-6 py-5">
       {/* Sender */}
       <div className="flex items-start gap-3 mb-4">
-        <span className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white mt-0.5',
-          getColor(msg.from, colorMap),
-        )}>
-          {getInitials(msg.from)}
-        </span>
+        {msg.direction === 'inbound' && msg.linkedUser?.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={msg.linkedUser.photoUrl} alt={name} className="h-9 w-9 shrink-0 rounded-full object-cover mt-0.5" />
+        ) : (
+          <span className={cn(
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white mt-0.5',
+            getColor(msg.from, colorMap),
+          )}>
+            {getInitials(msg.from)}
+          </span>
+        )}
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-gray-900">{name}</span>

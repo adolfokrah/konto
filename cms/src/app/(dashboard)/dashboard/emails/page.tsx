@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { Inbox, Send, Plus, Search } from 'lucide-react'
+import { Inbox, Send, Plus } from 'lucide-react'
 import { EmailsDataTable, type EmailRow } from '@/components/dashboard/emails-data-table'
 import { ComposeWindow } from '@/components/dashboard/compose-window'
 import { SyncEmailsButton } from '@/components/dashboard/sync-emails-button'
@@ -9,6 +9,7 @@ import { EmailThreadView, type ThreadMessage } from '@/components/dashboard/emai
 import { buildColorMap, extractBareEmail, hashColor } from '@/utilities/avatarColors'
 import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
 import { EmailThreadPanel } from '@/components/dashboard/email-thread-panel'
+import { EmailSearchInput } from '@/components/dashboard/email-search-input'
 import { cn } from '@/utilities/ui'
 
 const DEFAULT_LIMIT = 50
@@ -64,7 +65,7 @@ export default async function EmailsPage({ searchParams }: Props) {
     payload.count({ collection: 'emails', where: { direction: { equals: 'inbound' } }, overrideAccess: true }),
     payload.count({ collection: 'emails', where: { direction: { equals: 'inbound' }, isRead: { equals: false } }, overrideAccess: true }),
     payload.count({ collection: 'emails', where: { direction: { equals: 'outbound' } }, overrideAccess: true }),
-    payload.find({ collection: 'emails', where, page, limit, sort: '-createdAt', depth: 1, overrideAccess: true }),
+    payload.find({ collection: 'emails', where, page, limit, sort: '-createdAt', depth: 2, overrideAccess: true }),
   ])
 
   // Group into threads
@@ -93,7 +94,7 @@ export default async function EmailsPage({ searchParams }: Props) {
       status: e.status,
       isRead: emails.every((m: any) => m.isRead),
       linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
-        ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
+        ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '', photoUrl: typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url ? e.linkedUser.photo.url : null }
         : null,
       createdAt: e.createdAt,
       messageCount: emails.length,
@@ -105,14 +106,14 @@ export default async function EmailsPage({ searchParams }: Props) {
   let threadMessages: ThreadMessage[] = []
   if (emailId) {
     try {
-      selectedEmail = await payload.findByID({ collection: 'emails', id: emailId, depth: 1, overrideAccess: true })
+      selectedEmail = await payload.findByID({ collection: 'emails', id: emailId, depth: 2, overrideAccess: true })
       const threadRootId: string = selectedEmail.threadId || selectedEmail.id
       const threadResult = await payload.find({
         collection: 'emails',
         where: { or: [{ id: { equals: threadRootId } }, { threadId: { equals: threadRootId } }] },
         sort: 'createdAt',
         limit: 100,
-        depth: 1,
+        depth: 2,
         overrideAccess: true,
       })
       // Mark all unread inbound messages in the thread as read
@@ -134,7 +135,7 @@ export default async function EmailsPage({ searchParams }: Props) {
         createdAt: e.createdAt,
         resendEmailId: e.resendEmailId ?? null,
         linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
-          ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '' }
+          ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '', photoUrl: typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url ? e.linkedUser.photo.url : null }
           : null,
         attachments: Array.isArray(e.attachments) ? e.attachments.map((a: any) => ({
           filename: a.filename ?? 'attachment',
@@ -154,7 +155,8 @@ export default async function EmailsPage({ searchParams }: Props) {
     : ''
   const replyTo = primaryAddr
   const linkedUser = selectedEmail?.linkedUser && typeof selectedEmail.linkedUser === 'object'
-    ? selectedEmail.linkedUser : null
+    ? { ...selectedEmail.linkedUser, photoUrl: typeof selectedEmail.linkedUser.photo === 'object' && selectedEmail.linkedUser.photo?.url ? selectedEmail.linkedUser.photo.url : null }
+    : null
   const allAddresses = selectedEmail
     ? [...new Set(threadMessages.flatMap(m => [m.from, ...m.to.map(t => t.email)]))] as string[]
     : []
@@ -213,21 +215,9 @@ export default async function EmailsPage({ searchParams }: Props) {
           selectedEmail ? 'w-72 shrink-0' : 'flex-1',
         )}>
           <div className="flex items-center gap-2 border-b px-3 py-2 shrink-0">
-            <form method="GET" className="flex flex-1 items-center gap-2">
-              <input type="hidden" name="tab" value={tab} />
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  name="search"
-                  defaultValue={search}
-                  placeholder="Search…"
-                  className="h-8 w-full rounded-full border bg-muted/50 pl-8 pr-3 text-xs placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-              {search && (
-                <Link href={`?tab=${tab}`} className="shrink-0 text-xs text-muted-foreground hover:text-foreground">Clear</Link>
-              )}
-            </form>
+            <div className="flex-1">
+              <EmailSearchInput tab={tab} defaultValue={search} />
+            </div>
             {tab === 'inbox' && <SyncEmailsButton />}
           </div>
 

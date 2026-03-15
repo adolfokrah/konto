@@ -16,7 +16,7 @@ export type EmailRow = {
   bodyText: string | null
   status: 'received' | 'sent' | 'sending' | 'failed' | 'draft'
   isRead: boolean
-  linkedUser: { id: string; firstName: string; lastName: string; email: string } | null
+  linkedUser: { id: string; firstName: string; lastName: string; email: string; photoUrl?: string | null } | null
   createdAt: string
   messageCount?: number
   participants?: string[]
@@ -121,9 +121,14 @@ export function EmailsDataTable({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="relative shrink-0">
-                    <span className={cn('flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold text-white', color)}>
-                      {ini}
-                    </span>
+                    {email.linkedUser?.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={email.linkedUser.photoUrl} alt={name} className="h-6 w-6 rounded-full object-cover" />
+                    ) : (
+                      <span className={cn('flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold text-white', color)}>
+                        {ini}
+                      </span>
+                    )}
                     {unread && (
                       <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-primary ring-1 ring-background" />
                     )}

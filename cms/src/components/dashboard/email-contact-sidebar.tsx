@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 
-type LinkedUser = { id: string; firstName: string; lastName: string; email: string }
+type LinkedUser = { id: string; firstName: string; lastName: string; email: string; photoUrl?: string | null }
 
 export type ContactSidebarProps = {
   primaryAddr: string
@@ -34,14 +34,19 @@ export function EmailContactSidebar({
       {/* Contact header */}
       <div className="border-b p-4">
         <div className="flex flex-col items-center gap-3 text-center">
-          <span
-            className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white',
-              primaryColor,
-            )}
-          >
-            {primaryInitials}
-          </span>
+          {linkedUser?.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={linkedUser.photoUrl} alt={primaryName} className="h-12 w-12 rounded-full object-cover" />
+          ) : (
+            <span
+              className={cn(
+                'flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white',
+                primaryColor,
+              )}
+            >
+              {primaryInitials}
+            </span>
+          )}
           <div>
             <p className="text-sm font-semibold">{primaryName}</p>
             <p className="mt-0.5 break-all text-xs text-muted-foreground">{primaryAddr}</p>
