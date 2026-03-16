@@ -194,7 +194,7 @@ export default buildConfig({
     ],
     autoRun: [
       {
-        cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *', // 2 mins after schedule (*/5)
+        cron: '0 * * * *', // Every hour
         queue: 'settle-contributions',
       },
       {
@@ -206,7 +206,7 @@ export default buildConfig({
         queue: 'check-withdrawal-balance-daily',
       },
       {
-        cron: '2-58/2 * * * *', // 2 mins after schedule (*/2)
+        cron: '*/20 * * * *', // Every 20 minutes
         queue: 'verify-pending-transactions',
       },
       {
@@ -222,11 +222,11 @@ export default buildConfig({
         queue: 'send-scheduled-campaigns',
       },
       {
-        cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *', // 2 mins after schedule (*/5)
+        cron: '*/25 * * * *', // Every 25 minutes
         queue: 'verify-pending-refunds',
       },
       {
-        cron: '2,9,16,23,30,37,44,51,58 * * * *', // 2 mins after schedule (*/7)
+        cron: '*/15 * * * *', // Every 15 minutes
         queue: 'verify-pending-topups',
       },
       {
@@ -240,10 +240,6 @@ export default buildConfig({
       {
         cron: '2 9 * * *', // Every day at 9:02 AM
         queue: 'auto-refund-daily',
-      },
-      {
-        cron: '* * * * *', // Every minute
-        queue: 'refund',
       },
     ],
   },

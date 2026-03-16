@@ -15,7 +15,7 @@ export const settleContributionsTask = {
   slug: 'settle-contributions',
   schedule: [
     {
-      cron: '*/5 * * * *', // Every 5 minutes
+      cron: '0 * * * *', // Every hour
       queue: 'settle-contributions',
     },
   ],

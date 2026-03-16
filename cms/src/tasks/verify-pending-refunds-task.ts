@@ -11,7 +11,7 @@ export const verifyPendingRefundsTask = {
   slug: 'verify-pending-refunds',
   schedule: [
     {
-      cron: '*/5 * * * *',
+      cron: '*/25 * * * *', // Every 25 minutes
       queue: 'verify-pending-refunds',
     },
   ],

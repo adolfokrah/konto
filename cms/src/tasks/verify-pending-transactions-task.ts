@@ -11,7 +11,7 @@ export const verifyPendingTransactionsTask = {
   slug: 'verify-pending-transactions',
   schedule: [
     {
-      cron: '*/2 * * * *', // Every 2 minutes (testing)
+      cron: '*/20 * * * *', // Every 20 minutes
       queue: 'verify-pending-transactions',
     },
   ],

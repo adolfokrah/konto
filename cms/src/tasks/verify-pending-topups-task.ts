@@ -11,7 +11,7 @@ export const verifyPendingTopupsTask = {
   slug: 'verify-pending-topups',
   schedule: [
     {
-      cron: '*/7 * * * *',
+      cron: '*/15 * * * *', // Every 15 minutes
       queue: 'verify-pending-topups',
     },
   ],
