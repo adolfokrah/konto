@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/services/rating_service.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
@@ -150,6 +151,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                 .key;
             context.push('${AppRoutes.awaitMomoPayment}?provider=$provider');
           } else {
+            RatingService.instance.maybeRequestReview();
             context.go(AppRoutes.jarDetail);
           }
           // Show success message

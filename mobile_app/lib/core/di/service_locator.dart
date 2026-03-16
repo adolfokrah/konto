@@ -148,6 +148,7 @@ void setupServiceLocator() {
     () => AuthRepository(
       authApiProvider: getIt<AuthApiProvider>(),
       userStorageService: getIt<UserStorageService>(),
+      userAccountApiProvider: getIt<UserAccountApiProvider>(),
     ),
   );
   getIt.registerLazySingleton<VerificationRepository>(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/services/rating_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
@@ -105,6 +106,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
               context.read<JarSummaryReloadBloc>().add(
                 ReloadJarSummaryRequested(),
               );
+              RatingService.instance.maybeRequestReview();
               context.go(AppRoutes.jarDetail);
             } else if (charge.status == 'pay_offline') {
               // Start periodic verification for offline payment (only once)

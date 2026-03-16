@@ -1,18 +1,23 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/authentication/data/api_providers/auth_api_provider.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
 
 /// Repository for authentication operations
 /// Orchestrates business logic between UI and API calls
 class AuthRepository {
   final AuthApiProvider _authApiProvider;
   final UserStorageService _userStorageService;
+  final UserAccountApiProvider _userAccountApiProvider;
 
   AuthRepository({
     required AuthApiProvider authApiProvider,
     required UserStorageService userStorageService,
+    required UserAccountApiProvider userAccountApiProvider,
   }) : _authApiProvider = authApiProvider,
-       _userStorageService = userStorageService;
+       _userStorageService = userStorageService,
+       _userAccountApiProvider = userAccountApiProvider;
 
   /// Check if user exists in the system
   /// Returns true if user exists (user should login)
@@ -282,6 +287,14 @@ class AuthRepository {
 
   /// Sign out user
   Future<void> signOut() async {
+    try {
+      // Clear FCM token on the server so no more push notifications are sent
+      await _userAccountApiProvider.updateUserDetails(fcmToken: '');
+      // Invalidate the local Firebase token
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (e) {
+      print('⚠️ Error clearing FCM token on sign out: $e');
+    }
     try {
       // Clear ALL data from local storage (complete clean slate)
       await _userStorageService.clearAllData();

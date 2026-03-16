@@ -162,6 +162,7 @@ export interface Config {
       'weekly-account-summary': TaskWeeklyAccountSummary;
       'withdraw-reminder-daily': TaskWithdrawReminderDaily;
       'auto-refund-daily': TaskAutoRefundDaily;
+      'cleanup-old-notifications': TaskCleanupOldNotifications;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -2090,6 +2091,7 @@ export interface PayloadJob {
           | 'weekly-account-summary'
           | 'withdraw-reminder-daily'
           | 'auto-refund-daily'
+          | 'cleanup-old-notifications'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2142,6 +2144,7 @@ export interface PayloadJob {
         | 'weekly-account-summary'
         | 'withdraw-reminder-daily'
         | 'auto-refund-daily'
+        | 'cleanup-old-notifications'
         | 'schedulePublish'
       )
     | null;
@@ -3844,6 +3847,14 @@ export interface TaskWithdrawReminderDaily {
  * via the `definition` "TaskAuto-refund-daily".
  */
 export interface TaskAutoRefundDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCleanup-old-notifications".
+ */
+export interface TaskCleanupOldNotifications {
   input?: unknown;
   output?: unknown;
 }

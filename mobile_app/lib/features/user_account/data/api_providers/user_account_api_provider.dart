@@ -60,7 +60,7 @@ class UserAccountApiProvider extends BaseApiProvider {
         updateData['appSettings'] = settings;
       }
       if (fcmToken != null) {
-        updateData['fcmToken'] = fcmToken;
+        updateData['fcmToken'] = fcmToken; // empty string clears the token
       }
 
       if (updateData.isEmpty) {
