@@ -183,7 +183,7 @@ export function DataTable<TData>({
                         <TableCell
                           key={cell.id}
                           className={cellMeta?.cellClassName}
-                          style={{ width: cell.column.getSize() }}
+                          style={{ width: cell.column.getSize(), maxWidth: cell.column.getSize(), overflow: 'hidden' }}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>

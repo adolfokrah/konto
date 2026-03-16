@@ -137,7 +137,7 @@ export function DataTableFilterHeader<TData>({
   // No filter, no sort — plain header
   if ((!filter || readOnly) && !sortKey) {
     return (
-      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize() }}>
+      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
         {label}
         {resizeHandle}
       </TableHead>
@@ -147,7 +147,7 @@ export function DataTableFilterHeader<TData>({
   // Sort only (no filter)
   if ((!filter || readOnly) && sortKey) {
     return (
-      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize() }}>
+      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
         <button
           onClick={() => updateSort(sortKey)}
           className={cn(
@@ -174,7 +174,7 @@ export function DataTableFilterHeader<TData>({
   const selectedValues = filter!.type === 'select' && rawValue ? rawValue.split(',') : []
 
   return (
-    <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize() }}>
+    <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
       <div className="flex items-center justify-between gap-0.5">
         {/* Sort button wraps label */}
         {sortKey ? (
