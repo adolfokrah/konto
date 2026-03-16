@@ -206,7 +206,7 @@ export default buildConfig({
         queue: 'check-withdrawal-balance-daily',
       },
       {
-        cron: '*/20 * * * *', // Every 20 minutes
+        cron: '*/15 * * * *', // Every 15 minutes
         queue: 'verify-pending-transactions',
       },
       {
