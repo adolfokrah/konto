@@ -49,6 +49,7 @@ import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { autoRefundDailyTask } from './tasks/auto-refund-daily'
+import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -191,6 +192,7 @@ export default buildConfig({
       weeklyAccountSummaryTask as any,
       withdrawReminderDailyTask as any,
       autoRefundDailyTask as any,
+      cleanupOldNotificationsTask as any,
     ],
     autoRun: [
       {
@@ -240,6 +242,10 @@ export default buildConfig({
       {
         cron: '2 9 * * *', // Every day at 9:02 AM
         queue: 'auto-refund-daily',
+      },
+      {
+        cron: '2 3 * * *', // Every day at 3:02 AM
+        queue: 'cleanup-old-notifications',
       },
     ],
   },
