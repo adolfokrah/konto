@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     payload.find({
       collection: 'transactions',
       sort: '-createdAt',
-      limit: 10,
+      limit: 15,
       depth: 1,
       overrideAccess: true,
     }),
@@ -163,7 +163,7 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>The latest 10 transactions across all jars</CardDescription>
+          <CardDescription>The latest 15 transactions across all jars</CardDescription>
         </CardHeader>
         <CardContent>
           <TransactionsDataTable transactions={transactions} />
