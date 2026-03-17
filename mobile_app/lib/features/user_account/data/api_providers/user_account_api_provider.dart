@@ -28,6 +28,7 @@ class UserAccountApiProvider extends BaseApiProvider {
     AppLanguage? appLanguage,
     String? photoId,
     String? fcmToken,
+    String? platform,
   }) async {
     try {
       final user = await userStorageService.getUserData();
@@ -61,6 +62,9 @@ class UserAccountApiProvider extends BaseApiProvider {
       }
       if (fcmToken != null) {
         updateData['fcmToken'] = fcmToken; // empty string clears the token
+      }
+      if (platform != null) {
+        updateData['platform'] = platform;
       }
 
       if (updateData.isEmpty) {

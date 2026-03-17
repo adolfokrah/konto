@@ -230,6 +230,19 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'platform',
+      type: 'select',
+      required: false,
+      options: [
+        { label: 'Android', value: 'android' },
+        { label: 'iOS', value: 'ios' },
+      ],
+      admin: {
+        readOnly: true,
+        description: 'Mobile platform the user is using',
+      },
+    },
+    {
       name: 'otpCode',
       type: 'text',
       required: false,

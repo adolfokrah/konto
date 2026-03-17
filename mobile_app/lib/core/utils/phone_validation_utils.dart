@@ -1,15 +1,5 @@
 /// Phone validation utility for Ghana phone numbers
 class PhoneValidationUtils {
-  /// Valid Ghana mobile network prefixes (without the leading 0)
-  /// MTN: 24, 54, 55, 59
-  /// Vodafone: 20, 50
-  /// AirtelTigo: 26, 27, 56, 57
-  /// Glo: 23
-  static const List<String> _validGhanaPrefixes = [
-    '20', '23', '24', '26', '27', // First digit 2
-    '50', '54', '55', '56', '57', '59', // First digit 5
-  ];
-
   /// Validates a Ghana phone number
   ///
   /// Accepts formats:
@@ -31,32 +21,17 @@ class PhoneValidationUtils {
     String digitsOnly;
 
     if (cleaned.startsWith('+233')) {
-      // Format: +233XXXXXXXXX
       digitsOnly = cleaned.substring(4);
     } else if (cleaned.startsWith('233')) {
-      // Format: 233XXXXXXXXX
       digitsOnly = cleaned.substring(3);
     } else if (cleaned.startsWith('0')) {
-      // Format: 0XXXXXXXXX - remove leading 0
       digitsOnly = cleaned.substring(1);
     } else {
-      // Format: XXXXXXXXX (already without prefix)
       digitsOnly = cleaned;
     }
 
-    // Must be exactly 9 digits
-    if (digitsOnly.length != 9) {
-      return false;
-    }
-
-    // Must contain only digits
-    if (!RegExp(r'^[0-9]+$').hasMatch(digitsOnly)) {
-      return false;
-    }
-
-    // Check if the first two digits match a valid Ghana mobile prefix
-    String prefix = digitsOnly.substring(0, 2);
-    return _validGhanaPrefixes.contains(prefix);
+    // Must be exactly 9 digits containing only numbers
+    return digitsOnly.length == 9 && RegExp(r'^[0-9]+$').hasMatch(digitsOnly);
   }
 
   /// Normalizes a Ghana phone number to the format: 0XXXXXXXXX
@@ -187,11 +162,6 @@ class PhoneValidationUtils {
 
     if (digitsOnly.length > 9) {
       return 'Phone number is too long (must be 9 digits after prefix)';
-    }
-
-    String prefix = digitsOnly.substring(0, 2);
-    if (!_validGhanaPrefixes.contains(prefix)) {
-      return 'Invalid network prefix. Must start with: 020, 023, 024, 026, 027, 050, 054, 055, 056, 057, or 059';
     }
 
     return 'Invalid phone number';

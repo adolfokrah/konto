@@ -1,7 +1,7 @@
 name: Hoga
 description: "Hogapay Mobile App"
 publish_to: 'none'
-version: 0.15.119+20
+version: 0.16.122+24
 
 environment:
   sdk: ^3.7.0

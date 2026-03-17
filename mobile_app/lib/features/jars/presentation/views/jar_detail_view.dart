@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
@@ -174,7 +176,10 @@ class _JarDetailViewState extends State<JarDetailView> {
       // Update user with the token if available and widget is still mounted
       if (token != null && mounted) {
         context.read<UserAccountBloc>().add(
-          UpdatePersonalDetails(fcmToken: token),
+          UpdatePersonalDetails(
+            fcmToken: token,
+            platform: Platform.isAndroid ? 'android' : 'ios',
+          ),
         );
       }
     } catch (e) {

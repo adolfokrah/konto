@@ -300,6 +300,11 @@ class _RegisterViewState extends State<RegisterView> {
                   });
                 },
               ),
+              const SizedBox(height: 3),
+              const Text(
+                'Enter your number without the leading 0. e.g. 241234567',
+                style: AppTextStyles.titleRegularXs,
+              ),
               const SizedBox(height: AppSpacing.spacingS),
               AppTextInput(
                 key: const Key('referralCode'),
