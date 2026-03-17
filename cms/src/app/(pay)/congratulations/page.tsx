@@ -44,9 +44,9 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
         {/* Contribution Details */}
         <div className="rounded-xl p-4 mb-6 space-y-2">
           {jarName && (
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-supreme">Jar:</span>
-              <span className="font-supreme font-medium text-black">{jarName}</span>
+            <div className="flex justify-between items-start gap-4">
+              <span className="text-gray-600 font-supreme shrink-0">Jar:</span>
+              <span className="font-supreme font-medium text-black text-right">{jarName}</span>
             </div>
           )}
 

@@ -68,17 +68,22 @@ export const checkEmptyJarsDailyTask = {
           }
 
           const jarName = jar.name ?? jar.title ?? 'Your jar'
-          const hasEverReceived = !!jar.lastActivityAt
+          const daysSinceActivity = jar.lastActivityAt
+            ? Math.floor(
+                (Date.now() - new Date(jar.lastActivityAt).getTime()) / (24 * 60 * 60 * 1000),
+              )
+            : null
 
-          const { title, message } = hasEverReceived
-            ? {
-                title: `${jarName} has gone quiet 🫙`,
-                message: `"${jarName}" hasn't received any new contributions in the last 3 days. Share your link to keep the momentum going!`,
-              }
-            : {
-                title: `${jarName} is still empty 🫙`,
-                message: `"${jarName}" hasn't received any contributions yet. Share your link to get started!`,
-              }
+          const { title, message } =
+            daysSinceActivity !== null
+              ? {
+                  title: `${jarName} has gone quiet 🫙`,
+                  message: `"${jarName}" hasn't received any new contributions in the last ${daysSinceActivity} day${daysSinceActivity === 1 ? '' : 's'}. Share your link to keep the momentum going!`,
+                }
+              : {
+                  title: `${jarName} is still empty 🫙`,
+                  message: `"${jarName}" hasn't received any contributions yet. Share your link to get started!`,
+                }
 
           await fcmNotifications.sendNotification([creator.fcmToken], message, title, {
             type: 'inactive-jar-reminder',
