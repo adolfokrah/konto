@@ -342,15 +342,6 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
                   ) : null}
                   icon={<Receipt className="h-3.5 w-3.5" />}
                 />
-                {(() => {
-                  const total = (abs(cb.eganowFees) ?? 0) + (cb.platformCharge ?? 0)
-                  return total > 0 ? (
-                    <Row
-                      label="Total Fees"
-                      value={<span className="font-semibold">{formatAmount(total)}</span>}
-                    />
-                  ) : null
-                })()}
               </Section>
             )
           })()}
