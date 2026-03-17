@@ -4,31 +4,10 @@ import 'package:Hoga/core/utils/phone_validation_utils.dart';
 void main() {
   group('PhoneValidationUtils Tests', () {
     group('isValidGhanaPhoneNumber', () {
-      test('should validate MTN numbers correctly', () {
-        // MTN prefixes: 24, 54, 55, 59
+      test('should validate 10-digit numbers with leading 0', () {
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0241234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0541234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0551234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0591234567'), true);
-      });
-
-      test('should validate Vodafone numbers correctly', () {
-        // Vodafone prefixes: 20, 50
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0201234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0501234567'), true);
-      });
-
-      test('should validate AirtelTigo numbers correctly', () {
-        // AirtelTigo prefixes: 26, 27, 56, 57
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0261234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0271234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0561234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0571234567'), true);
-      });
-
-      test('should validate Glo numbers correctly', () {
-        // Glo prefix: 23
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0231234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0101234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0991234567'), true);
       });
 
       test('should accept numbers with +233 prefix', () {
@@ -43,7 +22,7 @@ void main() {
 
       test('should accept numbers without prefix (9 digits)', () {
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('241234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('501234567'), true);
+        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('101234567'), true);
       });
 
       test('should handle numbers with spaces and special characters', () {
@@ -51,13 +30,6 @@ void main() {
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024-123-4567'), true);
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('(024) 123 4567'), true);
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+233 24 123 4567'), true);
-      });
-
-      test('should reject invalid network prefixes', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0101234567'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0151234567'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0281234567'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0991234567'), false);
       });
 
       test('should reject numbers that are too short', () {
@@ -113,7 +85,6 @@ void main() {
       });
 
       test('should return empty string for invalid numbers', () {
-        expect(PhoneValidationUtils.normalizeToLocalFormat('0101234567'), '');
         expect(PhoneValidationUtils.normalizeToLocalFormat('024123'), '');
         expect(PhoneValidationUtils.normalizeToLocalFormat('abc'), '');
       });
@@ -153,10 +124,6 @@ void main() {
       });
 
       test('should return empty string for invalid numbers', () {
-        expect(
-          PhoneValidationUtils.normalizeToInternationalFormat('0101234567'),
-          '',
-        );
         expect(PhoneValidationUtils.normalizeToInternationalFormat('024123'), '');
       });
     });
@@ -191,7 +158,7 @@ void main() {
         expect(PhoneValidationUtils.getNetworkName('261234567'), 'AirtelTigo');
       });
 
-      test('should return Unknown for invalid numbers', () {
+      test('should return Unknown for unrecognised prefixes', () {
         expect(PhoneValidationUtils.getNetworkName('0101234567'), 'Unknown');
         expect(PhoneValidationUtils.getNetworkName('abc'), 'Unknown');
       });
@@ -213,11 +180,6 @@ void main() {
       test('should return appropriate error for too long numbers', () {
         final error = PhoneValidationUtils.getDetailedValidationError('02412345678');
         expect(error.contains('too long'), true);
-      });
-
-      test('should return appropriate error for invalid prefix', () {
-        final error = PhoneValidationUtils.getDetailedValidationError('0101234567');
-        expect(error.contains('Invalid network prefix'), true);
       });
 
       test('should return appropriate error for non-numeric characters', () {

@@ -72,13 +72,17 @@ export const sendPushCampaignTask = {
           page++
         }
       } else {
-        // All users with FCM tokens
+        // All users, or platform-filtered users
+        const platformFilter =
+          campaign.targetAudience === 'android' || campaign.targetAudience === 'ios'
+            ? { platform: { equals: campaign.targetAudience } }
+            : {}
         let page = 1
         let hasMore = true
         while (hasMore) {
           const usersResult = await payload.find({
             collection: 'users',
-            where: { fcmToken: { exists: true } },
+            where: { fcmToken: { exists: true }, ...platformFilter },
             select: { fcmToken: true },
             limit: BATCH_SIZE,
             page,

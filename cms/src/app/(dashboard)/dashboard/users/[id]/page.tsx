@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { PlatformBadge } from '@/components/dashboard/platform-badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -306,7 +307,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
               <CardTitle className="text-sm">App Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
-              <InfoRow label="Platform" value={user.platform ? (user.platform === 'android' ? 'Android' : 'iOS') : null} />
+              <InfoRow label="Platform" value={<PlatformBadge platform={user.platform} />} />
               <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
               <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
               <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />

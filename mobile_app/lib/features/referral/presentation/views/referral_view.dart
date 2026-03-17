@@ -49,9 +49,8 @@ class _ReferralContent extends StatelessWidget {
     Share.share(
       text,
       subject: '$name invited you to Hogapay',
-      sharePositionOrigin: box == null
-          ? null
-          : box.localToGlobal(Offset.zero) & box.size,
+      sharePositionOrigin:
+          box == null ? null : box.localToGlobal(Offset.zero) & box.size,
     );
   }
 
@@ -63,7 +62,7 @@ class _ReferralContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Referral'),
+        title: const Text('Refer & Earn'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -76,7 +75,11 @@ class _ReferralContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.spacingL),
 
             // ── Hero card ─────────────────────────────────────────────────
-            _CodeCard(code: code, isDark: isDark, onCopy: () => _copyCode(context, code)),
+            _CodeCard(
+              code: code,
+              isDark: isDark,
+              onCopy: () => _copyCode(context, code),
+            ),
 
             const SizedBox(height: AppSpacing.spacingL),
 
@@ -110,14 +113,16 @@ class _ReferralContent extends StatelessWidget {
             _StepTile(
               number: '3',
               title: 'Both complete KYC',
-              subtitle: 'You and your friend must verify your identities before any bonus is awarded.',
+              subtitle:
+                  'You and your friend must verify your identities before any bonus is awarded.',
               isDark: isDark,
             ),
             const SizedBox(height: AppSpacing.spacingXs),
             _StepTile(
               number: '4',
-              title: 'Friend makes a contribution',
-              subtitle: 'Once both are verified, your bonus is added automatically when your friend contributes.',
+              title: 'Friend receives a contribution',
+              subtitle:
+                  'Once both are verified, your bonus is added automatically when your friend receive his first contribution.',
               isDark: isDark,
             ),
 
@@ -172,14 +177,16 @@ class _CodeCard extends StatelessWidget {
         vertical: AppSpacing.spacingL,
       ),
       decoration: BoxDecoration(
-        color: isDark
-            ? Theme.of(context).colorScheme.primary
-            : const Color(0xFFFDF7EC),
+        color:
+            isDark
+                ? Theme.of(context).colorScheme.primary
+                : const Color(0xFFFDF7EC),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.06),
         ),
       ),
       child: Column(
@@ -210,9 +217,10 @@ class _CodeCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.06),
+                    color:
+                        isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -282,14 +290,16 @@ class _StepTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacingS),
       decoration: BoxDecoration(
-        color: isDark
-            ? Theme.of(context).colorScheme.primary
-            : const Color(0xFFFDF7EC),
+        color:
+            isDark
+                ? Theme.of(context).colorScheme.primary
+                : const Color(0xFFFDF7EC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.06)
-              : Colors.black.withValues(alpha: 0.05),
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.05),
         ),
       ),
       child: Row(
@@ -300,7 +310,9 @@ class _StepTile extends StatelessWidget {
             height: 30,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -315,7 +327,12 @@ class _StepTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: AppTextStyles.titleMediumS.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
@@ -404,7 +421,9 @@ class _EarningsSectionState extends State<_EarningsSection> {
       extra: {
         'skipInitialOtp': true,
         'onConfirm': (String otp) async {
-          final result = await getIt<ReferralApiProvider>().confirmWithdrawal(otp);
+          final result = await getIt<ReferralApiProvider>().confirmWithdrawal(
+            otp,
+          );
           if (!mounted) return false;
           if (result['success'] == true) {
             AppSnackBar.show(
@@ -448,9 +467,11 @@ class _EarningsSectionState extends State<_EarningsSection> {
               );
             }
 
-            final summary = snapshot.data?['summary'] as Map<String, dynamic>? ?? {};
+            final summary =
+                snapshot.data?['summary'] as Map<String, dynamic>? ?? {};
             final balance = (summary['balance'] as num?)?.toDouble() ?? 0.0;
-            final totalEarned = (summary['totalEarned'] as num?)?.toDouble() ?? 0.0;
+            final totalEarned =
+                (summary['totalEarned'] as num?)?.toDouble() ?? 0.0;
 
             return _EarningsCard(
               balance: balance,
@@ -465,7 +486,6 @@ class _EarningsSectionState extends State<_EarningsSection> {
     );
   }
 }
-
 
 class _EarningsCard extends StatelessWidget {
   final double balance;
@@ -493,9 +513,10 @@ class _EarningsCard extends StatelessWidget {
         color: isDark ? primary : const Color(0xFFFDF7EC),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.06),
         ),
       ),
       child: Column(
@@ -532,15 +553,25 @@ class _EarningsCard extends StatelessWidget {
               child: FilledButton(
                 onPressed: withdrawing ? null : onWithdraw,
                 style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
                   backgroundColor: isDark ? Colors.white : Colors.black87,
                   foregroundColor: isDark ? Colors.black : Colors.white,
                 ),
-                child: withdrawing
-                    ? const SizedBox(width: 18, height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text('Withdraw GHS ${balance.toStringAsFixed(2)}',
-                        style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
+                child:
+                    withdrawing
+                        ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Text(
+                          'Withdraw GHS ${balance.toStringAsFixed(2)}',
+                          style: AppTextStyles.titleMediumS.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
               ),
             ),
           ],
@@ -584,9 +615,12 @@ class _BalancePill extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTextStyles.titleRegularXs.copyWith(
-            color: isDark ? Colors.white54 : Colors.black45,
-          )),
+          Text(
+            label,
+            style: AppTextStyles.titleRegularXs.copyWith(
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(
             'GHS ${amount.toStringAsFixed(2)}',
@@ -621,14 +655,16 @@ class _BenefitCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacingS),
       decoration: BoxDecoration(
-        color: isDark
-            ? Theme.of(context).colorScheme.primary
-            : const Color(0xFFFDF7EC),
+        color:
+            isDark
+                ? Theme.of(context).colorScheme.primary
+                : const Color(0xFFFDF7EC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.06)
-              : Colors.black.withValues(alpha: 0.05),
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.05),
         ),
       ),
       child: Row(
@@ -639,7 +675,9 @@ class _BenefitCard extends StatelessWidget {
             height: 42,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 22),
@@ -649,7 +687,12 @@ class _BenefitCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: AppTextStyles.titleMediumS.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   subtitle,

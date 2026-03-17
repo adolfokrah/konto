@@ -50,7 +50,7 @@ export async function createAndSendCampaign(data: {
   title: string
   message: string
   data?: Record<string, string>
-  targetAudience?: 'all' | 'selected'
+  targetAudience?: 'all' | 'selected' | 'android' | 'ios'
   recipients?: string[]
 }) {
   const { payload, error } = await getAuthenticatedAdmin()
@@ -92,7 +92,7 @@ export async function createAndScheduleCampaign(data: {
   message: string
   scheduledFor: string
   data?: Record<string, string>
-  targetAudience?: 'all' | 'selected'
+  targetAudience?: 'all' | 'selected' | 'android' | 'ios'
   recipients?: string[]
 }) {
   const { payload, error } = await getAuthenticatedAdmin()

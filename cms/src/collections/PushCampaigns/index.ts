@@ -37,6 +37,8 @@ export const PushCampaigns: CollectionConfig = {
       options: [
         { label: 'All Users', value: 'all' },
         { label: 'Selected Users', value: 'selected' },
+        { label: 'Android Users', value: 'android' },
+        { label: 'iOS Users', value: 'ios' },
       ],
       defaultValue: 'all',
       required: true,

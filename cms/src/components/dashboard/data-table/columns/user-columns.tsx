@@ -11,6 +11,7 @@ import {
 } from '@/components/dashboard/table-constants'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { type DataTableColumnMeta } from '../types'
+import { PlatformBadge } from '@/components/dashboard/platform-badge'
 
 export type UserRow = {
   id: string
@@ -139,15 +140,7 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     cell: ({ row }) => {
       const p = row.original.platform
       if (!p) return <span className="text-muted-foreground">—</span>
-      return (
-        <Badge variant="outline" className={cn(
-          p === 'android'
-            ? 'bg-green-900/30 text-green-400 border-green-700'
-            : 'bg-blue-900/30 text-blue-400 border-blue-700'
-        )}>
-          {p === 'android' ? 'Android' : 'iOS'}
-        </Badge>
-      )
+      return <PlatformBadge platform={p} />
     },
     meta: {
       filter: {

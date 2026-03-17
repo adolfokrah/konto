@@ -1641,7 +1641,7 @@ export interface PushCampaign {
     | number
     | boolean
     | null;
-  targetAudience: 'all' | 'selected';
+  targetAudience: 'all' | 'selected' | 'android' | 'ios';
   /**
    * Select specific users (only used when target audience is "Selected Users")
    */

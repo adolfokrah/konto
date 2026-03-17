@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, Clock, Plus, X, Search, Users, User } from 'lucide-react'
+import { FaAndroid, FaApple } from 'react-icons/fa'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,7 +27,7 @@ export function ComposeCampaignForm({
     title: string
     message: string
     data?: Record<string, string>
-    targetAudience?: 'all' | 'selected'
+    targetAudience?: 'all' | 'selected' | 'android' | 'ios'
     recipients?: SelectedUser[]
   } | null
 }) {
@@ -36,7 +37,7 @@ export function ComposeCampaignForm({
   const [dataEntries, setDataEntries] = useState<{ key: string; value: string }[]>(
     prefill?.data ? Object.entries(prefill.data).map(([key, value]) => ({ key, value })) : [],
   )
-  const [targetAudience, setTargetAudience] = useState<'all' | 'selected'>(
+  const [targetAudience, setTargetAudience] = useState<'all' | 'selected' | 'android' | 'ios'>(
     prefill?.targetAudience || 'all',
   )
   const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>(prefill?.recipients || [])
@@ -180,7 +181,7 @@ export function ComposeCampaignForm({
         {/* Target Audience */}
         <div className="space-y-3">
           <Label>Target Audience</Label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant={targetAudience === 'all' ? 'default' : 'outline'}
@@ -189,6 +190,24 @@ export function ComposeCampaignForm({
             >
               <Users className="mr-1.5 h-3.5 w-3.5" />
               All Users
+            </Button>
+            <Button
+              type="button"
+              variant={targetAudience === 'android' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTargetAudience('android')}
+            >
+              <FaAndroid size={14} className="mr-1.5" />
+              Android
+            </Button>
+            <Button
+              type="button"
+              variant={targetAudience === 'ios' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTargetAudience('ios')}
+            >
+              <FaApple size={14} className="mr-1.5" />
+              iOS
             </Button>
             <Button
               type="button"
