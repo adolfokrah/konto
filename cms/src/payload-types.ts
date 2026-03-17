@@ -492,6 +492,10 @@ export interface User {
    * Firebase Cloud Messaging token for push notifications
    */
   fcmToken?: string | null;
+  /**
+   * Mobile platform the user is using
+   */
+  platform?: ('android' | 'ios') | null;
   otpCode?: string | null;
   otpExpiry?: string | null;
   otpAttempts?: number | null;
@@ -2862,6 +2866,7 @@ export interface UsersSelect<T extends boolean = true> {
   country?: T;
   kycSessionId?: T;
   fcmToken?: T;
+  platform?: T;
   otpCode?: T;
   otpExpiry?: T;
   otpAttempts?: T;
