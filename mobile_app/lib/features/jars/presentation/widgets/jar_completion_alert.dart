@@ -12,6 +12,8 @@ import 'package:go_router/go_router.dart';
 /// 2. Missing thank you message
 /// 3. Missing withdrawal account
 /// 4. KYC not verified or in review
+/// 5. Missing profile photo
+/// 6. Missing additional jar photos
 class JarCompletionAlert extends StatelessWidget {
   final JarSummaryModel jarData;
 
@@ -85,12 +87,34 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 5. KYC in review (Lowest Priority)
+        // 5. KYC in review
         if (user.kycStatus == 'in_review') {
           return Alert(
             message:
                 'Your identity verification is under review. This usually takes 24 hours. We\'ll notify you once complete.',
             onTap: null, // Non-clickable, just informational
+          );
+        }
+
+        // 6. No profile photo
+        if (user.photo == null) {
+          return Alert(
+            message:
+                'Add a profile photo so contributors know who they\'re supporting. Tap to update your profile.',
+            onTap: () {
+              context.push(AppRoutes.personalDetails);
+            },
+          );
+        }
+
+        // 7. No additional jar photos
+        if (jarData.images.isEmpty) {
+          return Alert(
+            message:
+                'Add photos to your jar to give contributors a better look at what you\'re collecting for. Tap to add photos.',
+            onTap: () {
+              context.push(AppRoutes.jarInfo);
+            },
           );
         }
 

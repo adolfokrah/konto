@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
@@ -30,15 +30,30 @@ export default function JarImageCarousel({
   const totalSlides = images.length + 1
   const infoIndex = images.length
   const [current, setCurrent] = useState(0)
+  const touchStartX = useRef<number | null>(null)
 
   const prev = () => setCurrent((i) => Math.max(0, i - 1))
   const next = () => setCurrent((i) => Math.min(totalSlides - 1, i + 1))
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]!.clientX
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0]!.clientX
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev()
+    touchStartX.current = null
+  }
 
   const isFirst = current === 0
   const isLast = current === totalSlides - 1
 
   return (
-    <div className="relative w-full h-80 lg:h-100 overflow-hidden rounded-none md:rounded-xl">
+    <div
+      className="relative w-full h-80 lg:h-100 overflow-hidden rounded-none md:rounded-xl"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Image slides */}
       {images.map((src, i) => (
         <div

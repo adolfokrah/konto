@@ -17,7 +17,7 @@ export function JarActions({ jarId, status }: { jarId: string; status: string })
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="h-8 text-xs">
           <MoreHorizontal className="mr-2 h-4 w-4" />
           Actions
         </Button>
