@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import JarImageCarousel from '@/components/JarImageCarousel'
 import ExpandableDescription from '@/components/ExpandableDescription'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ShieldCheck, TriangleAlert } from 'lucide-react'
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
+      { cache: 'no-store' },
     )
 
     const data = await res.json()
@@ -106,11 +108,15 @@ export default async function Page({
     // Get jar data, system settings, and contribution totals in one call
     const jarRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
+      { cache: 'no-store' },
     )
+
 
     const jarData = await jarRes.json()
     const jarWithBalance = jarData?.data
     const systemSettings = jarData?.systemSettings
+    const contributorAvatars = jarData?.contributorAvatars ?? []
+    const donorCount = jarData?.donorCount ?? jarData?.data?.balanceBreakDown?.donorCount ?? 0
 
     if (!jarWithBalance) {
       throw new Error('Jar not found')
@@ -121,6 +127,19 @@ export default async function Page({
       jarWithBalance.image && typeof jarWithBalance.image === 'object'
         ? jarWithBalance.image.url
         : null
+
+    // Build carousel: main image first, then additional gallery photos
+    const galleryUrls: string[] = Array.isArray(jarWithBalance.images)
+      ? jarWithBalance.images
+          .map((item: any) =>
+            item?.image && typeof item.image === 'object' ? item.image.url : null,
+          )
+          .filter(Boolean)
+      : []
+    const carouselImages: string[] = [
+      ...(imageUrl ? [imageUrl] : []),
+      ...galleryUrls,
+    ]
 
     // Get the creator photo URL if it exists
     const creatorPhotoUrl =
@@ -164,29 +183,16 @@ export default async function Page({
         <div className="max-w-2xl mx-auto md:p-4 md:rounded-3xl m-5 bg-white">
           {/* Jar Details */}
           <div>
-            {/* Jar Image - Blurred background with centered overlay */}
-            {imageUrl && (
-              <div className="relative w-full h-80 lg:h-100 overflow-hidden rounded-none  md:rounded-xl">
-                {/* Blurred background */}
-                <Image
-                  src={imageUrl}
-                  alt=""
-                  fill
-                  className="object-cover scale-110 blur-lg brightness-75"
-                  priority
-                />
-                {/* Centered overlay image */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src={imageUrl}
-                    alt={jarWithBalance.name || 'Jar image'}
-                    width={500}
-                    height={500}
-                    className="h-full w-auto object-contain"
-                    priority
-                  />
-                </div>
-              </div>
+            {/* Jar Image Carousel */}
+            {carouselImages.length > 0 && (
+              <JarImageCarousel
+                images={carouselImages}
+                alt={jarWithBalance.name || 'Jar image'}
+                description={jarWithBalance.description || null}
+                donorCount={donorCount}
+                showDonors={jarWithBalance.paymentPage?.showRecentContributions ?? true}
+                contributorAvatars={contributorAvatars}
+              />
             )}
           <div className="p-6">
             <h1 className="font-bold mb-4 text-2xl lg:text-4xl">{jarWithBalance.name}</h1>
@@ -268,6 +274,7 @@ export default async function Page({
             ) : null}
 
             {/* Contribution Input */}
+            <div id="contribution-section" />
             <ContributionInput
               currency={jarWithBalance.currency}
               isFixedAmount={jarWithBalance.isFixedContribution || false}

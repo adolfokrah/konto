@@ -52,6 +52,14 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       }
     }
 
+    List<Map<String, dynamic>>? images;
+    if (event.updates.containsKey('images')) {
+      final raw = event.updates['images'];
+      if (raw is List) {
+        images = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    }
+
     final response = await _jarRepository.updateJar(
       jarId: event.jarId,
       name: event.updates['name'],
@@ -66,6 +74,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       currency: event.updates['currency'],
       status: event.updates['status'],
       invitedCollectors: processedCollectors,
+      images: images,
       thankYouMessage: event.updates['thankYouMessage'],
       showGoal: event.updates['showGoal'],
       showRecentContributions: event.updates['showRecentContributions'],
@@ -73,7 +82,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       requiredApprovals: event.updates['requiredApprovals'],
     );
     if (response['success'] == true) {
-      emit(UpdateJarSuccess());
+      emit(UpdateJarSuccess(silent: images != null));
     } else {
       emit(UpdateJarFailure(response['message'] ?? 'Failed to update jar'));
     }

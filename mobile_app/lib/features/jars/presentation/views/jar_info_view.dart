@@ -12,7 +12,8 @@ import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/core/widgets/operation_complete_modal.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:Hoga/features/jars/data/models/jar_summary_model.dart' hide MediaModel;
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart'
+    hide MediaModel;
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
@@ -69,6 +70,7 @@ class _JarInfoViewState extends State<JarInfoView> {
     ImageUploaderBottomSheet.show(
       context,
       uploadContext: MediaUploadContext.jarImage,
+      maxImages: 3 - _photos.length,
     );
   }
 
@@ -119,16 +121,14 @@ class _JarInfoViewState extends State<JarInfoView> {
               if (_photos.length < 3) {
                 final jarState = context.read<JarSummaryBloc>().state;
                 if (jarState is JarSummaryLoaded) {
-                  final newPhotos = <MediaModel>[
-                    ..._photos,
-                    state.media,
-                  ];
+                  final newPhotos = <MediaModel>[..._photos, state.media];
                   setState(() => _photos = newPhotos);
                   context.read<UpdateJarBloc>().add(
                     UpdateJarRequested(
                       jarId: jarState.jarData.id,
                       updates: {
-                        'images': newPhotos.map((m) => {'image': m.id}).toList(),
+                        'images':
+                            newPhotos.map((m) => {'image': m.id}).toList(),
                       },
                     ),
                   );
@@ -142,8 +142,10 @@ class _JarInfoViewState extends State<JarInfoView> {
         BlocListener<UpdateJarBloc, UpdateJarState>(
           listener: (context, state) {
             if (state is UpdateJarSuccess) {
-              // Refresh jar data
-              context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
+              // Skip refresh for silent updates (e.g. photo uploads — UI already updated locally)
+              if (!state.silent) {
+                context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
+              }
               // If we were breaking a jar, show success modal and then navigate
               if (_isBreakingJar) {
                 _isBreakingJar = false;
@@ -399,29 +401,29 @@ class _JarInfoViewState extends State<JarInfoView> {
                                   if (!_photosInitialized) {
                                     WidgetsBinding.instance
                                         .addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _photos =
-                                              jarData.images
-                                                  .map(
-                                                    (m) => MediaModel(
-                                                      id: m.id,
-                                                      alt: m.alt,
-                                                      url: m.url,
-                                                      filename: m.filename,
-                                                      updatedAt:
-                                                          m.updatedAt ??
-                                                          DateTime.now(),
-                                                      createdAt:
-                                                          m.createdAt ??
-                                                          DateTime.now(),
-                                                    ),
-                                                  )
-                                                  .toList();
-                                          _photosInitialized = true;
+                                          if (mounted) {
+                                            setState(() {
+                                              _photos =
+                                                  jarData.images
+                                                      .map(
+                                                        (m) => MediaModel(
+                                                          id: m.id,
+                                                          alt: m.alt,
+                                                          url: m.url,
+                                                          filename: m.filename,
+                                                          updatedAt:
+                                                              m.updatedAt ??
+                                                              DateTime.now(),
+                                                          createdAt:
+                                                              m.createdAt ??
+                                                              DateTime.now(),
+                                                        ),
+                                                      )
+                                                      .toList();
+                                              _photosInitialized = true;
+                                            });
+                                          }
                                         });
-                                      }
-                                    });
                                   }
                                   return const SizedBox.shrink();
                                 },
@@ -444,7 +446,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'Photos',
+                                            'Additional Photos',
                                             style: AppTextStyles.titleMedium,
                                           ),
                                           Icon(
@@ -466,109 +468,113 @@ class _JarInfoViewState extends State<JarInfoView> {
                                       ),
                                       child: Row(
                                         children: [
-                                          ..._photos.asMap().entries.map(
-                                            (entry) {
-                                              final i = entry.key;
-                                              final photo = entry.value;
-                                              final photoUrl =
-                                                  photo.url != null
-                                                      ? '${BackendConfig.imageBaseUrl}${photo.url}'
-                                                      : null;
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 8,
-                                                ),
-                                                child: Stack(
-                                                  clipBehavior: Clip.none,
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                      child:
-                                                          photoUrl != null
-                                                              ? Image.network(
-                                                                photoUrl,
-                                                                width: 90,
-                                                                height: 90,
-                                                                fit:
-                                                                    BoxFit
-                                                                        .cover,
-                                                                errorBuilder:
-                                                                    (
-                                                                      _,
-                                                                      __,
-                                                                      ___,
-                                                                    ) =>
-                                                                        Container(
-                                                                          width:
-                                                                              90,
-                                                                          height:
-                                                                              90,
-                                                                          decoration: BoxDecoration(
-                                                                            color:
-                                                                                Theme.of(context).colorScheme.surfaceContainerHighest,
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(12),
+                                          ..._photos.asMap().entries.map((
+                                            entry,
+                                          ) {
+                                            final i = entry.key;
+                                            final photo = entry.value;
+                                            final photoUrl =
+                                                photo.url != null
+                                                    ? '${BackendConfig.imageBaseUrl}${photo.url}'
+                                                    : null;
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                    child:
+                                                        photoUrl != null
+                                                            ? Image.network(
+                                                              photoUrl,
+                                                              width: 44,
+                                                              height: 44,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (
+                                                                    _,
+                                                                    __,
+                                                                    ___,
+                                                                  ) => Container(
+                                                                    width: 44,
+                                                                    height: 44,
+                                                                    decoration: BoxDecoration(
+                                                                      color:
+                                                                          Theme.of(
+                                                                            context,
+                                                                          ).colorScheme.surfaceContainerHighest,
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            8,
                                                                           ),
-                                                                          child: Icon(
-                                                                            Icons.broken_image_outlined,
-                                                                            size:
-                                                                                28,
-                                                                            color:
-                                                                                Theme.of(context).colorScheme.outline,
-                                                                          ),
-                                                                        ),
-                                                              )
-                                                              : Container(
-                                                                width: 90,
-                                                                height: 90,
-                                                                decoration: BoxDecoration(
-                                                                  color: Theme.of(
-                                                                        context,
-                                                                      )
-                                                                      .colorScheme
-                                                                      .surfaceContainerHighest,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                            12,
-                                                                          ),
-                                                                ),
+                                                                    ),
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .broken_image_outlined,
+                                                                      size: 28,
+                                                                      color:
+                                                                          Theme.of(
+                                                                            context,
+                                                                          ).colorScheme.outline,
+                                                                    ),
+                                                                  ),
+                                                            )
+                                                            : Container(
+                                                              width: 110,
+                                                              height: 110,
+                                                              decoration: BoxDecoration(
+                                                                color:
+                                                                    Theme.of(
+                                                                          context,
+                                                                        )
+                                                                        .colorScheme
+                                                                        .surfaceContainerHighest,
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      8,
+                                                                    ),
                                                               ),
-                                                    ),
-                                                    Positioned(
-                                                      top: -6,
-                                                      right: -6,
-                                                      child: GestureDetector(
-                                                        onTap:
-                                                            () => _removePhoto(
-                                                              i,
-                                                              jarData.id,
                                                             ),
-                                                        child: Container(
-                                                          width: 20,
-                                                          height: 20,
-                                                          decoration: BoxDecoration(
-                                                            color:
-                                                                Colors.black87,
-                                                            shape:
-                                                                BoxShape.circle,
+                                                  ),
+                                                  Positioned(
+                                                    top: -8,
+                                                    right: -8,
+                                                    child: GestureDetector(
+                                                      onTap:
+                                                          () => _removePhoto(
+                                                            i,
+                                                            jarData.id,
                                                           ),
-                                                          child: Icon(
-                                                            Icons.close,
-                                                            size: 12,
-                                                            color: Colors.white,
-                                                          ),
+                                                      child: Container(
+                                                        width: 26,
+                                                        height: 26,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color:
+                                                                  Colors
+                                                                      .black87,
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
+                                                        child: Icon(
+                                                          Icons.close,
+                                                          size: 14,
+                                                          color: Colors.white,
                                                         ),
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }),
                                           if (_photos.length < 3)
                                             GestureDetector(
                                               onTap: _showImageUploaderSheet,
@@ -576,11 +582,12 @@ class _JarInfoViewState extends State<JarInfoView> {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: BoxDecoration(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .surfaceContainerHighest,
+                                                  color:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .surfaceContainerHighest,
                                                   borderRadius:
-                                                      BorderRadius.circular(12),
+                                                      BorderRadius.circular(8),
                                                   border: Border.all(
                                                     color: Theme.of(context)
                                                         .colorScheme
@@ -593,9 +600,10 @@ class _JarInfoViewState extends State<JarInfoView> {
                                                   Icons
                                                       .add_photo_alternate_outlined,
                                                   size: 16,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .outline,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.outline,
                                                 ),
                                               ),
                                             ),

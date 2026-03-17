@@ -187,6 +187,7 @@ class JarApiProvider extends BaseApiProvider {
     String? status,
     List<String>? acceptedPaymentMethods,
     List<Map<String, dynamic>>? invitedCollectors,
+    List<Map<String, dynamic>>? images,
     String? thankYouMessage,
     bool? showGoal,
     bool? showRecentContributions,
@@ -261,6 +262,9 @@ class JarApiProvider extends BaseApiProvider {
       if (status != null) jarData['status'] = status;
       if (processedInvitedCollectors != null) {
         jarData['invitedCollectors'] = processedInvitedCollectors;
+      }
+      if (images != null) {
+        jarData['images'] = images;
       }
       if (thankYouMessage != null) {
         jarData['thankYouMessage'] = thankYouMessage;

@@ -7,7 +7,10 @@ final class UpdateJarInitial extends UpdateJarState {}
 
 final class UpdateJarInProgress extends UpdateJarState {}
 
-final class UpdateJarSuccess extends UpdateJarState {}
+final class UpdateJarSuccess extends UpdateJarState {
+  final bool silent;
+  UpdateJarSuccess({this.silent = false});
+}
 
 final class UpdateJarFailure extends UpdateJarState {
   final String errorMessage;

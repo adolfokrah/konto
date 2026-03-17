@@ -21,22 +21,28 @@ import '../../logic/bloc/media_bloc.dart';
 /// ```
 class ImageUploaderBottomSheet extends StatelessWidget {
   final MediaUploadContext uploadContext;
+  final int maxImages;
 
   const ImageUploaderBottomSheet({
     super.key,
     this.uploadContext = MediaUploadContext.general,
+    this.maxImages = 1,
   });
 
   static void show(
     BuildContext context, {
     MediaUploadContext uploadContext = MediaUploadContext.general,
+    int maxImages = 1,
   }) {
     HapticUtils.light();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder:
-          (context) => ImageUploaderBottomSheet(uploadContext: uploadContext),
+          (context) => ImageUploaderBottomSheet(
+            uploadContext: uploadContext,
+            maxImages: maxImages,
+          ),
     );
   }
 
@@ -175,34 +181,59 @@ class ImageUploaderBottomSheet extends StatelessWidget {
     HapticUtils.light();
     try {
       final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        imageQuality: 85,
-        maxWidth: 1920,
-        maxHeight: 1920,
-      );
 
-      if (image != null && context.mounted) {
-        // Generate alt text from image filename by replacing spaces with dashes
-        String generatedAltText = image.name.replaceAll(' ', '-');
-        // Remove file extension from alt text
-        if (generatedAltText.contains('.')) {
-          generatedAltText = generatedAltText.substring(
-            0,
-            generatedAltText.lastIndexOf('.'),
-          );
-        }
-
-        // Trigger the upload using MediaBloc
-        context.read<MediaBloc>().add(
-          RequestUploadMedia(
-            imageFile: image,
-            alt: generatedAltText,
-            context: uploadContext,
-          ),
+      if (source == ImageSource.gallery && maxImages > 1) {
+        final images = await picker.pickMultiImage(
+          imageQuality: 85,
+          limit: maxImages,
         );
-      } else if (context.mounted) {
-        Navigator.pop(context);
+
+        if (images.isNotEmpty && context.mounted) {
+          Navigator.pop(context);
+          for (final image in images) {
+            String altText = image.name.replaceAll(' ', '-');
+            if (altText.contains('.')) {
+              altText = altText.substring(0, altText.lastIndexOf('.'));
+            }
+            if (context.mounted) {
+              context.read<MediaBloc>().add(
+                RequestUploadMedia(
+                  imageFile: image,
+                  alt: altText,
+                  context: uploadContext,
+                ),
+              );
+            }
+          }
+        } else if (context.mounted) {
+          Navigator.pop(context);
+        }
+      } else {
+        final XFile? image = await picker.pickImage(
+          source: source,
+          imageQuality: 85,
+          maxWidth: 1920,
+          maxHeight: 1920,
+        );
+
+        if (image != null && context.mounted) {
+          String generatedAltText = image.name.replaceAll(' ', '-');
+          if (generatedAltText.contains('.')) {
+            generatedAltText = generatedAltText.substring(
+              0,
+              generatedAltText.lastIndexOf('.'),
+            );
+          }
+          context.read<MediaBloc>().add(
+            RequestUploadMedia(
+              imageFile: image,
+              alt: generatedAltText,
+              context: uploadContext,
+            ),
+          );
+        } else if (context.mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       if (context.mounted) {
