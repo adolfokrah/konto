@@ -10,21 +10,15 @@ import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-const int _maxWords = 100;
+const int _maxChars = 200;
 
-int _wordCount(String text) {
-  final trimmed = text.trim();
-  if (trimmed.isEmpty) return 0;
-  return trimmed.split(RegExp(r'\s+')).length;
-}
-
-class _WordLimitFormatter extends TextInputFormatter {
+class _CharLimitFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (_wordCount(newValue.text) <= _maxWords) return newValue;
+    if (newValue.text.length <= _maxChars) return newValue;
     return oldValue;
   }
 }
@@ -42,7 +36,7 @@ class _JarThankYouMessageEditViewState
   late final TextEditingController _textController;
   late final FocusNode _focusNode;
   bool _isInitialized = false;
-  int _words = 0;
+  int _chars = 0;
 
   @override
   void initState() {
@@ -50,7 +44,7 @@ class _JarThankYouMessageEditViewState
     _textController = TextEditingController();
     _focusNode = FocusNode();
     _textController.addListener(() {
-      setState(() => _words = _wordCount(_textController.text));
+      setState(() => _chars = _textController.text.length);
     });
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
@@ -87,7 +81,7 @@ class _JarThankYouMessageEditViewState
                 final jarData = state.jarData;
                 if (!_isInitialized) {
                   _textController.text = jarData.thankYouMessage ?? '';
-                  _words = _wordCount(_textController.text);
+                  _chars = _textController.text.length;
                   _isInitialized = true;
                 }
 
@@ -96,11 +90,12 @@ class _JarThankYouMessageEditViewState
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        '$_words / $_maxWords words',
+                        '$_chars / $_maxChars',
                         style: AppTextStyles.titleMediumS.copyWith(
-                          color: _words >= _maxWords
-                              ? Colors.red
-                              : Theme.of(context).hintColor,
+                          color:
+                              _chars >= _maxChars
+                                  ? Colors.red
+                                  : Theme.of(context).hintColor,
                         ),
                       ),
                     ),
@@ -109,7 +104,7 @@ class _JarThankYouMessageEditViewState
                       child: TextField(
                         controller: _textController,
                         focusNode: _focusNode,
-                        inputFormatters: [_WordLimitFormatter()],
+                        inputFormatters: [_CharLimitFormatter()],
                         cursorColor:
                             Theme.of(context).brightness == Brightness.dark
                                 ? Colors.white

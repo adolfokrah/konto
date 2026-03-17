@@ -40,8 +40,9 @@ class _JarCreateViewState extends State<JarCreateView> {
   String selectedJarGroup = '';
   Currency? selectedCurrency = Currencies.defaultCurrency;
   List<InvitedCollector> newInvitedCollectors = [];
-  String jarImageUrl = '';
-  String jarImageId = '';
+  // Multiple photos (max 3)
+  List<String> jarImageUrls = [];
+  List<String> jarImageIds = [];
   double _scrollOffset = 0.0;
 
   @override
@@ -188,7 +189,8 @@ class _JarCreateViewState extends State<JarCreateView> {
         jarGroup: selectedJarGroup,
         currency: selectedCurrency?.code ?? 'GHS',
         invitedCollectors: invitedCollectorsData,
-        imageId: jarImageId,
+        imageId: jarImageIds.isNotEmpty ? jarImageIds.first : null,
+        imageIds: jarImageIds.isNotEmpty ? jarImageIds : null,
         isActive: true,
         goalAmount: 0,
       ),
@@ -212,11 +214,12 @@ class _JarCreateViewState extends State<JarCreateView> {
           listener: (context, state) {
             if (state is MediaLoaded &&
                 state.context == MediaUploadContext.jarImage) {
-              setState(() {
-                jarImageUrl =
-                    "${BackendConfig.imageBaseUrl}/${state.media.url}";
-                jarImageId = state.media.id;
-              });
+              if (jarImageIds.length < 3) {
+                setState(() {
+                  jarImageUrls.add("${BackendConfig.imageBaseUrl}/${state.media.url}");
+                  jarImageIds.add(state.media.id);
+                });
+              }
             } else if (state is MediaError) {
               AppSnackBar.showError(context, message: state.errorMessage);
             }
@@ -259,7 +262,7 @@ class _JarCreateViewState extends State<JarCreateView> {
 
           return Scaffold(
             backgroundColor:
-                jarImageUrl.isNotEmpty && !isDark
+                jarImageUrls.isNotEmpty && !isDark
                     ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.primary,
             body: Column(
@@ -298,9 +301,9 @@ class _JarCreateViewState extends State<JarCreateView> {
                               child: Stack(
                                 children: [
                                   // Background gradient and image (if available)
-                                  if (jarImageUrl.isNotEmpty)
+                                  if (jarImageUrls.isNotEmpty)
                                     ScrollableBackgroundImage(
-                                      imageUrl: jarImageUrl,
+                                      imageUrl: jarImageUrls.first,
                                       scrollOffset: _scrollOffset,
                                       height: 400.0,
                                       maxScrollForOpacity: 100.0,
@@ -338,7 +341,9 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     right: AppSpacing.spacingXs,
                                     child: AppIconButton(
                                       size: const Size(40, 40),
-                                      onPressed: _showImageUploaderSheet,
+                                      onPressed: jarImageIds.length < 3
+                                          ? _showImageUploaderSheet
+                                          : null,
                                       icon: Icons.camera,
                                     ),
                                   ),
@@ -374,6 +379,70 @@ class _JarCreateViewState extends State<JarCreateView> {
                                           context,
                                         )!.enterJarName,
                                     controller: nameController,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  // Photos section
+                                  Text(
+                                    'Photos (${jarImageIds.length}/3)',
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  Row(
+                                    children: [
+                                      ...List.generate(jarImageUrls.length, (i) => Padding(
+                                        padding: const EdgeInsets.only(right: AppSpacing.spacingS),
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.network(
+                                                jarImageUrls[i],
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 2,
+                                              right: 2,
+                                              child: GestureDetector(
+                                                onTap: () => setState(() {
+                                                  jarImageUrls.removeAt(i);
+                                                  jarImageIds.removeAt(i);
+                                                }),
+                                                child: Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.black54,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  padding: const EdgeInsets.all(2),
+                                                  child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )),
+                                      if (jarImageIds.length < 3)
+                                        GestureDetector(
+                                          onTap: _showImageUploaderSheet,
+                                          child: Container(
+                                            width: 80,
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                                                width: 1.5,
+                                              ),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(
+                                              Icons.add_photo_alternate_outlined,
+                                              color: Theme.of(context).colorScheme.outline,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                   const SizedBox(height: AppSpacing.spacingM),
                                   Text(

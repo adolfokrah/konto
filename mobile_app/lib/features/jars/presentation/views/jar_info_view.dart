@@ -12,9 +12,14 @@ import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/core/widgets/operation_complete_modal.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
-import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/data/models/jar_summary_model.dart' hide MediaModel;
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
+import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
+import 'package:Hoga/features/media/data/models/media_model.dart';
+import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
+import 'package:Hoga/core/enums/media_upload_context.dart';
+import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +35,8 @@ class _JarInfoViewState extends State<JarInfoView> {
   final ScrollController _scrollController = ScrollController();
   bool _showTitle = false;
   bool _isBreakingJar = false;
+  List<MediaModel> _photos = [];
+  bool _photosInitialized = false;
 
   @override
   void initState() {
@@ -58,6 +65,26 @@ class _JarInfoViewState extends State<JarInfoView> {
     }
   }
 
+  void _showImageUploaderSheet() {
+    ImageUploaderBottomSheet.show(
+      context,
+      uploadContext: MediaUploadContext.jarImage,
+    );
+  }
+
+  void _removePhoto(int index, String jarId) {
+    final newPhotos = List<MediaModel>.from(_photos)..removeAt(index);
+    setState(() => _photos = newPhotos);
+    context.read<UpdateJarBloc>().add(
+      UpdateJarRequested(
+        jarId: jarId,
+        updates: {
+          'images': newPhotos.map((m) => {'image': m.id}).toList(),
+        },
+      ),
+    );
+  }
+
   void _showJarGroupPicker(String currentJarGroup, String jarId) {
     JarGroupPicker.show(
       context,
@@ -82,6 +109,33 @@ class _JarInfoViewState extends State<JarInfoView> {
           listener: (context, state) {
             if (_isBreakingJar) {
               context.pop();
+            }
+          },
+        ),
+        BlocListener<MediaBloc, MediaState>(
+          listener: (context, state) {
+            if (state is MediaLoaded &&
+                state.context == MediaUploadContext.jarImage) {
+              if (_photos.length < 3) {
+                final jarState = context.read<JarSummaryBloc>().state;
+                if (jarState is JarSummaryLoaded) {
+                  final newPhotos = <MediaModel>[
+                    ..._photos,
+                    state.media,
+                  ];
+                  setState(() => _photos = newPhotos);
+                  context.read<UpdateJarBloc>().add(
+                    UpdateJarRequested(
+                      jarId: jarState.jarData.id,
+                      updates: {
+                        'images': newPhotos.map((m) => {'image': m.id}).toList(),
+                      },
+                    ),
+                  );
+                }
+              }
+            } else if (state is MediaError) {
+              AppSnackBar.showError(context, message: state.errorMessage);
             }
           },
         ),
@@ -331,6 +385,221 @@ class _JarInfoViewState extends State<JarInfoView> {
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                         ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: AppSpacing.spacingXs),
+
+                              // Initialize photos from jar data on first build
+                              Builder(
+                                builder: (context) {
+                                  if (!_photosInitialized) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (mounted) {
+                                        setState(() {
+                                          _photos =
+                                              jarData.images
+                                                  .map(
+                                                    (m) => MediaModel(
+                                                      id: m.id,
+                                                      alt: m.alt,
+                                                      url: m.url,
+                                                      filename: m.filename,
+                                                      updatedAt:
+                                                          m.updatedAt ??
+                                                          DateTime.now(),
+                                                      createdAt:
+                                                          m.createdAt ??
+                                                          DateTime.now(),
+                                                    ),
+                                                  )
+                                                  .toList();
+                                          _photosInitialized = true;
+                                        });
+                                      }
+                                    });
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+
+                              AppCard(
+                                variant: CardVariant.secondary,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.spacingM,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingM,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Photos',
+                                            style: AppTextStyles.titleMedium,
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .color
+                                                ?.withValues(alpha: 0.4),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.spacingS),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.spacingM,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          ..._photos.asMap().entries.map(
+                                            (entry) {
+                                              final i = entry.key;
+                                              final photo = entry.value;
+                                              final photoUrl =
+                                                  photo.url != null
+                                                      ? '${BackendConfig.imageBaseUrl}${photo.url}'
+                                                      : null;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 8,
+                                                ),
+                                                child: Stack(
+                                                  clipBehavior: Clip.none,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                      child:
+                                                          photoUrl != null
+                                                              ? Image.network(
+                                                                photoUrl,
+                                                                width: 90,
+                                                                height: 90,
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover,
+                                                                errorBuilder:
+                                                                    (
+                                                                      _,
+                                                                      __,
+                                                                      ___,
+                                                                    ) =>
+                                                                        Container(
+                                                                          width:
+                                                                              90,
+                                                                          height:
+                                                                              90,
+                                                                          decoration: BoxDecoration(
+                                                                            color:
+                                                                                Theme.of(context).colorScheme.surfaceContainerHighest,
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(12),
+                                                                          ),
+                                                                          child: Icon(
+                                                                            Icons.broken_image_outlined,
+                                                                            size:
+                                                                                28,
+                                                                            color:
+                                                                                Theme.of(context).colorScheme.outline,
+                                                                          ),
+                                                                        ),
+                                                              )
+                                                              : Container(
+                                                                width: 90,
+                                                                height: 90,
+                                                                decoration: BoxDecoration(
+                                                                  color: Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .colorScheme
+                                                                      .surfaceContainerHighest,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                            12,
+                                                                          ),
+                                                                ),
+                                                              ),
+                                                    ),
+                                                    Positioned(
+                                                      top: -6,
+                                                      right: -6,
+                                                      child: GestureDetector(
+                                                        onTap:
+                                                            () => _removePhoto(
+                                                              i,
+                                                              jarData.id,
+                                                            ),
+                                                        child: Container(
+                                                          width: 20,
+                                                          height: 20,
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                Colors.black87,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          child: Icon(
+                                                            Icons.close,
+                                                            size: 12,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          if (_photos.length < 3)
+                                            GestureDetector(
+                                              onTap: _showImageUploaderSheet,
+                                              child: Container(
+                                                width: 44,
+                                                height: 44,
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .surfaceContainerHighest,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .outline
+                                                        .withValues(alpha: 0.3),
+                                                    width: 1.5,
+                                                  ),
+                                                ),
+                                                child: Icon(
+                                                  Icons
+                                                      .add_photo_alternate_outlined,
+                                                  size: 16,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .outline,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                   ],

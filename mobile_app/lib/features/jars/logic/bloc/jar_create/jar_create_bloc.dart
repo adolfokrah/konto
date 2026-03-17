@@ -31,6 +31,7 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
         description: event.description,
         jarGroup: event.jarGroup,
         imageId: event.imageId,
+        imageIds: event.imageIds,
         isActive: event.isActive,
         isFixedContribution: event.isFixedContribution,
         acceptedContributionAmount: event.acceptedContributionAmount,

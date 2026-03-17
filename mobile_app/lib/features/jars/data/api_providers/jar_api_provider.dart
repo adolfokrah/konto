@@ -58,6 +58,7 @@ class JarApiProvider extends BaseApiProvider {
     String? description,
     required String jarGroup,
     String? imageId,
+    List<String>? imageIds,
     bool isActive = true,
     bool isFixedContribution = false,
     double? acceptedContributionAmount,
@@ -110,6 +111,9 @@ class JarApiProvider extends BaseApiProvider {
       // CRITICAL FIX: Only add image if it's not null AND not empty
       if (imageId != null && imageId.isNotEmpty) {
         jarData['image'] = imageId;
+      }
+      if (imageIds != null && imageIds.isNotEmpty) {
+        jarData['images'] = imageIds.map((id) => {'image': id}).toList();
       }
 
       // Remove null values and empty strings to avoid sending problematic data

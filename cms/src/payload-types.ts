@@ -1495,6 +1495,15 @@ export interface Jar {
    */
   image?: (string | null) | Media;
   /**
+   * Upload up to 3 photos for the jar gallery
+   */
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Whether the jar is currently active
    */
   isActive?: boolean | null;
@@ -2952,6 +2961,12 @@ export interface JarsSelect<T extends boolean = true> {
   description?: T;
   jarGroup?: T;
   image?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   isActive?: T;
   isFixedContribution?: T;
   acceptedContributionAmount?: T;

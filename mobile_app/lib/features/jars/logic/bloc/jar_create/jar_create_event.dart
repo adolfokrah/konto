@@ -7,6 +7,7 @@ final class JarCreateSubmitted extends JarCreateEvent {
   final String name;
   final String? description;
   final String? imageId;
+  final List<String>? imageIds;
   final bool isActive;
   final bool isFixedContribution;
   final double? acceptedContributionAmount;
@@ -21,6 +22,7 @@ final class JarCreateSubmitted extends JarCreateEvent {
     required this.name,
     this.description,
     this.imageId,
+    this.imageIds,
     this.isActive = true,
     this.isFixedContribution = false,
     this.acceptedContributionAmount,

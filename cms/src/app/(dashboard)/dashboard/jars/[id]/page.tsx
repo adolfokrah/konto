@@ -21,6 +21,7 @@ import {
   Banknote,
   Smartphone,
   AlertTriangle,
+  ExternalLink,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -309,7 +310,17 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                     <p className="text-sm text-white/80 max-w-2xl">{jar.description}</p>
                   )}
                 </div>
-                <JarActions jarId={jar.id} status={jar.status} />
+                <div className="flex items-center gap-2 mt-3">
+                  <JarActions jarId={jar.id} status={jar.status} />
+                  <Link
+                    href={`/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Contribution Page
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -336,7 +347,17 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                   <p className="text-sm text-muted-foreground max-w-2xl">{jar.description}</p>
                 )}
               </div>
-              <JarActions jarId={jar.id} status={jar.status} />
+              <div className="flex items-center gap-2">
+                <JarActions jarId={jar.id} status={jar.status} />
+                <Link
+                  href={`/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                  target="_blank"
+                  className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  View Contribution Page
+                </Link>
+              </div>
             </div>
           </div>
         )}

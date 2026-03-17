@@ -224,6 +224,7 @@ class JarSummaryModel {
   final bool? allowAnonymousContributions;
   final String? jarGroup;
   final MediaModel? image;
+  final List<MediaModel> images;
   final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -255,6 +256,7 @@ class JarSummaryModel {
     this.allowAnonymousContributions,
     this.jarGroup,
     this.image,
+    this.images = const [],
     this.deadline,
     required this.createdAt,
     required this.updatedAt,
@@ -413,6 +415,12 @@ class JarSummaryModel {
           json['image'] != null
               ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
               : null,
+      images:
+          (json['images'] as List<dynamic>?)
+              ?.where((e) => e is Map<String, dynamic> && e['image'] is Map<String, dynamic>)
+              .map((e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>))
+              .toList() ??
+          [],
       deadline:
           json['deadline'] != null
               ? DateTime.parse(json['deadline'] as String)
@@ -507,6 +515,7 @@ class JarSummaryModel {
       'allowAnonymousContributions': allowAnonymousContributions,
       'jarGroup': jarGroup,
       'image': image?.toJson(),
+      'images': images.map((m) => {'image': m.toJson()}).toList(),
       'deadline': deadline?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

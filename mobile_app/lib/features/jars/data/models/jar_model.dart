@@ -55,6 +55,7 @@ class JarModel {
   final String? description;
   final String jarGroup;
   final MediaModel? image;
+  final List<MediaModel> images;
   final bool isActive;
   final bool isFixedContribution;
   final double? acceptedContributionAmount;
@@ -80,6 +81,7 @@ class JarModel {
     this.description,
     required this.jarGroup,
     this.image,
+    this.images = const [],
     required this.isActive,
     required this.isFixedContribution,
     this.acceptedContributionAmount,
@@ -113,6 +115,12 @@ class JarModel {
           json['image'] is Map<String, dynamic>
               ? MediaModel.fromJson(json['image'] as Map<String, dynamic>)
               : null,
+      images:
+          (json['images'] as List<dynamic>?)
+              ?.where((e) => e is Map<String, dynamic> && e['image'] is Map<String, dynamic>)
+              .map((e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>))
+              .toList() ??
+          [],
       isActive: json['isActive'] as bool? ?? true,
       isFixedContribution: json['isFixedContribution'] as bool? ?? false,
       acceptedContributionAmount:
@@ -155,6 +163,7 @@ class JarModel {
       'description': description,
       'jarGroup': jarGroup,
       'image': image?.toJson(),
+      'images': images.map((m) => {'image': m.toJson()}).toList(),
       'isActive': isActive,
       'isFixedContribution': isFixedContribution,
       'acceptedContributionAmount': acceptedContributionAmount,
@@ -184,6 +193,7 @@ class JarModel {
     String? description,
     String? jarGroup,
     MediaModel? image,
+    List<MediaModel>? images,
     bool? isActive,
     bool? isFixedContribution,
     double? acceptedContributionAmount,
@@ -207,6 +217,7 @@ class JarModel {
       description: description ?? this.description,
       jarGroup: jarGroup ?? this.jarGroup,
       image: image ?? this.image,
+      images: images ?? this.images,
       isActive: isActive ?? this.isActive,
       isFixedContribution: isFixedContribution ?? this.isFixedContribution,
       acceptedContributionAmount:

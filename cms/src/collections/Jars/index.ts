@@ -51,6 +51,23 @@ export const Jars: CollectionConfig = {
       },
     },
     {
+      name: 'images',
+      type: 'array',
+      maxRows: 3,
+      required: false,
+      admin: {
+        description: 'Upload up to 3 photos for the jar gallery',
+      },
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
