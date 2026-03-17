@@ -27,6 +27,7 @@ export default async function UsersPage({ searchParams }: Props) {
   const search = typeof params.search === 'string' ? params.search : ''
   const kyc = typeof params.kyc === 'string' ? params.kyc : ''
   const role = typeof params.role === 'string' ? params.role : ''
+  const platform = typeof params.platform === 'string' ? params.platform : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -53,6 +54,9 @@ export default async function UsersPage({ searchParams }: Props) {
   }
   if (role && ['user', 'admin'].includes(role)) {
     where.role = { equals: role }
+  }
+  if (platform && ['android', 'ios'].includes(platform)) {
+    where.platform = { equals: platform }
   }
 
   const startOfToday = new Date()
@@ -124,6 +128,7 @@ export default async function UsersPage({ searchParams }: Props) {
       bank: u.bank || null,
       accountNumber: u.accountNumber || null,
       accountHolder: u.accountHolder || null,
+      platform: u.platform || null,
       createdAt: u.createdAt,
     }
   })

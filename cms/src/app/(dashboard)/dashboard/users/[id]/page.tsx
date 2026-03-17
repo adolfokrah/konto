@@ -306,6 +306,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
               <CardTitle className="text-sm">App Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
+              <InfoRow label="Platform" value={user.platform ? (user.platform === 'android' ? 'Android' : 'iOS') : null} />
               <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
               <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
               <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />

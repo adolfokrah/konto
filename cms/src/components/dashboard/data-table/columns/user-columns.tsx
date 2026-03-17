@@ -28,6 +28,7 @@ export type UserRow = {
   bank: string | null
   accountNumber: string | null
   accountHolder: string | null
+  platform: 'android' | 'ios' | null
   createdAt: string
 }
 
@@ -129,6 +130,38 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
         displayMap: roleLabels,
       },
       filterLabel: 'Role',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    accessorKey: 'platform',
+    header: 'Platform',
+    size: 100,
+    cell: ({ row }) => {
+      const p = row.original.platform
+      if (!p) return <span className="text-muted-foreground">—</span>
+      return (
+        <Badge variant="outline" className={cn(
+          p === 'android'
+            ? 'bg-green-900/30 text-green-400 border-green-700'
+            : 'bg-blue-900/30 text-blue-400 border-blue-700'
+        )}>
+          {p === 'android' ? 'Android' : 'iOS'}
+        </Badge>
+      )
+    },
+    meta: {
+      filter: {
+        type: 'select',
+        paramKey: 'platform',
+        options: [
+          { label: 'All', value: 'all' },
+          { label: 'Android', value: 'android' },
+          { label: 'iOS', value: 'ios' },
+        ],
+        popoverWidth: 'w-36',
+        displayMap: { android: 'Android', ios: 'iOS' },
+      },
+      filterLabel: 'Platform',
     } satisfies DataTableColumnMeta,
   },
   {
