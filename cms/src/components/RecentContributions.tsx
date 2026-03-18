@@ -122,6 +122,9 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
                   <div className="flex flex-col">
                     <span className="font-medium text-gray-900">{contributorName}</span>
                     <span className="text-xs text-gray-500">{timeAgo}</span>
+                    {contribution.remarks && (
+                      <span className="text-xs text-gray-600 italic mt-0.5">"{contribution.remarks}"</span>
+                    )}
                   </div>
                 </div>
 

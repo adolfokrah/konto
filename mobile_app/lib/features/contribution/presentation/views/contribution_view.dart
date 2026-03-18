@@ -436,43 +436,71 @@ class ContributionView extends StatelessWidget {
                                         if (contribution.transactionReference !=
                                             null) ...[
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 8,
+                                            ),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
                                               children: [
                                                 Text(
                                                   'Transaction Ref',
-                                                  style: AppTextStyles.titleMediumS.copyWith(
-                                                    color: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall!
-                                                        .color
-                                                        ?.withValues(alpha: 0.5),
-                                                  ),
+                                                  style: AppTextStyles
+                                                      .titleMediumS
+                                                      .copyWith(
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall!
+                                                            .color
+                                                            ?.withValues(
+                                                              alpha: 0.5,
+                                                            ),
+                                                      ),
                                                 ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
-                                                    contribution.transactionReference!,
-                                                    style: AppTextStyles.titleMediumS.copyWith(
-                                                      fontFamily: 'monospace',
-                                                      fontSize: 12,
-                                                    ),
+                                                    contribution
+                                                        .transactionReference!,
+                                                    style: AppTextStyles
+                                                        .titleMediumS
+                                                        .copyWith(
+                                                          fontFamily:
+                                                              'monospace',
+                                                          fontSize: 12,
+                                                        ),
                                                     textAlign: TextAlign.end,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     maxLines: 1,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 6),
                                                 GestureDetector(
                                                   onTap: () {
-                                                    Clipboard.setData(ClipboardData(text: contribution.transactionReference!));
-                                                    AppSnackBar.showSuccess(context, message: 'Reference copied!');
+                                                    Clipboard.setData(
+                                                      ClipboardData(
+                                                        text:
+                                                            contribution
+                                                                .transactionReference!,
+                                                      ),
+                                                    );
+                                                    AppSnackBar.showSuccess(
+                                                      context,
+                                                      message:
+                                                          'Reference copied!',
+                                                    );
                                                   },
                                                   child: Icon(
                                                     Icons.copy_outlined,
                                                     size: 16,
-                                                    color: Theme.of(context).textTheme.bodySmall!.color?.withValues(alpha: 0.4),
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(
+                                                          alpha: 0.4,
+                                                        ),
                                                   ),
                                                 ),
                                               ],
@@ -568,18 +596,22 @@ class ContributionView extends StatelessWidget {
 
                                         // Show remarks if present
                                         if (contribution.remarks != null &&
-                                            contribution.remarks!.isNotEmpty) ...[
+                                            contribution
+                                                .remarks!
+                                                .isNotEmpty) ...[
                                           ListTile(
                                             contentPadding: EdgeInsets.zero,
                                             title: Text(
-                                              'Message',
+                                              'Message from contributor',
                                               style: AppTextStyles.titleMediumS
                                                   .copyWith(
                                                     color: Theme.of(context)
                                                         .textTheme
                                                         .bodySmall!
                                                         .color
-                                                        ?.withValues(alpha: 0.5),
+                                                        ?.withValues(
+                                                          alpha: 0.5,
+                                                        ),
                                                   ),
                                             ),
                                             subtitle: Text(
