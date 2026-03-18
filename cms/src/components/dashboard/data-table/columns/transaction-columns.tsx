@@ -69,6 +69,7 @@ export type TransactionRow = {
   viaPaymentLink: boolean
   createdAt: string
   webhookResponse?: Record<string, any> | null
+  remarks?: string | null
 }
 
 function formatAmount(amount: number) {

@@ -33,6 +33,7 @@ export const getRecentContributions = async (req: PayloadRequest) => {
         amountContributed: true,
         createdAt: true,
         type: true,
+        remarks: true,
       },
       overrideAccess: true,
     })

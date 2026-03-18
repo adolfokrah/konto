@@ -373,6 +373,15 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
             />
           </Section>}
 
+          {/* Message from contributor */}
+          {transaction.remarks && (
+            <Section title="Message from Contributor">
+              <div className="py-2">
+                <p className="text-sm whitespace-pre-wrap">{transaction.remarks}</p>
+              </div>
+            </Section>
+          )}
+
           {/* Reference — always visible */}
           {transaction.transactionReference && (
             <Section title="Reference">

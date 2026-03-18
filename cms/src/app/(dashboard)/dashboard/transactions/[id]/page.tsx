@@ -52,6 +52,7 @@ export default async function TransactionDetailPage({ params }: Props) {
     viaPaymentLink: tx.viaPaymentLink ?? false,
     createdAt: tx.createdAt,
     webhookResponse: tx.webhookResponse ?? null,
+    remarks: tx.remarks || null,
   }
 
   return (
