@@ -10,6 +10,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       amount,
       collector,
       mobileMoneyProvider,
+      remarks,
     } = req.data || {}
 
     // Validate required fields
@@ -76,6 +77,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         type: 'contribution',
         collector: collector || jar.creator, // The jar creator is the collector for payment link contributions
         viaPaymentLink: true,
+        ...(remarks ? { remarks } : {}),
       },
       // Use admin context to bypass authentication requirements
       overrideAccess: true,

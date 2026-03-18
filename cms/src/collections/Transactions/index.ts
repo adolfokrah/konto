@@ -50,6 +50,14 @@ export const Transactions: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'remarks',
+      type: 'textarea',
+      required: false,
+      admin: {
+        description: 'Optional message from the contributor to the organizer',
+      },
+    },
+    {
       name: 'contributorPhoneNumber',
       type: 'text',
       required: false,

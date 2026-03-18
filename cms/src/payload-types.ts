@@ -1398,6 +1398,10 @@ export interface Transaction {
   jar: string | Jar;
   contributor?: string | null;
   /**
+   * Optional message from the contributor to the organizer
+   */
+  remarks?: string | null;
+  /**
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
@@ -2925,6 +2929,7 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TransactionsSelect<T extends boolean = true> {
   jar?: T;
   contributor?: T;
+  remarks?: T;
   contributorPhoneNumber?: T;
   paymentMethod?: T;
   mobileMoneyProvider?: T;

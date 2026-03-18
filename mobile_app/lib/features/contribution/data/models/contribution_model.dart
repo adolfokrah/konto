@@ -521,6 +521,7 @@ class ContributionModel {
   final ContributionType type; // contribution | payout | refund
   final bool isSettled;
   final String? transactionReference;
+  final String? remarks;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -540,6 +541,7 @@ class ContributionModel {
     required this.type,
     this.isSettled = false,
     this.transactionReference,
+    this.remarks,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -609,6 +611,7 @@ class ContributionModel {
         ),
         isSettled: json['isSettled'] as bool? ?? false,
         transactionReference: json['transactionReference'] as String?,
+        remarks: json['remarks'] as String?,
         createdAt: DateTime.parse(
           json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         ),
@@ -640,6 +643,7 @@ class ContributionModel {
       'type': type.value,
       'isSettled': isSettled,
       if (transactionReference != null) 'transactionReference': transactionReference,
+      if (remarks != null) 'remarks': remarks,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -662,6 +666,7 @@ class ContributionModel {
     ContributionType? type,
     bool? isSettled,
     String? transactionReference,
+    String? remarks,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -682,6 +687,7 @@ class ContributionModel {
       type: type ?? this.type,
       isSettled: isSettled ?? this.isSettled,
       transactionReference: transactionReference ?? this.transactionReference,
+      remarks: remarks ?? this.remarks,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

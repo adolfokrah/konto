@@ -566,6 +566,29 @@ class ContributionView extends StatelessWidget {
                                           ),
                                         ),
 
+                                        // Show remarks if present
+                                        if (contribution.remarks != null &&
+                                            contribution.remarks!.isNotEmpty) ...[
+                                          ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            title: Text(
+                                              'Message',
+                                              style: AppTextStyles.titleMediumS
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall!
+                                                        .color
+                                                        ?.withValues(alpha: 0.5),
+                                                  ),
+                                            ),
+                                            subtitle: Text(
+                                              contribution.remarks!,
+                                              style: AppTextStyles.titleMediumS,
+                                            ),
+                                          ),
+                                        ],
+
                                         // Only show account number if it exists (for bank transfers)
                                         if (contribution.accountNumber !=
                                             null) ...[

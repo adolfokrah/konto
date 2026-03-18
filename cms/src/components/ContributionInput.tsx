@@ -42,6 +42,7 @@ export default function ContributionInput({
   const [isLoading, setIsLoading] = useState(false)
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [remarks, setRemarks] = useState('')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
@@ -224,6 +225,7 @@ export default function ContributionInput({
         contributorPhoneNumber: contributorPhoneNumber,
         mobileMoneyProvider: mobileMoneyProvider,
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
+        ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
       })
 
       const contributionId = contributionData.data.id
@@ -350,7 +352,6 @@ export default function ContributionInput({
         </div>)}
 
         <div>
-           
           <input
             type={'text'}
             placeholder="Phone number"
@@ -359,6 +360,20 @@ export default function ContributionInput({
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
             required
           />
+        </div>
+
+        <div>
+          <textarea
+            placeholder="Leave a message for the organizer (optional)"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            maxLength={200}
+            rows={3}
+            className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors resize-none"
+          />
+          {remarks.length > 0 && (
+            <p className="text-xs text-gray-400 text-right mt-1">{remarks.length}/200</p>
+          )}
         </div>
       </div>
 
