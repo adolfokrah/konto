@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SystemSettingsForm } from '@/components/dashboard/system-settings-form'
+import { DbBackupButton } from '@/components/dashboard/db-backup-button'
 
 export default async function SettingsPage() {
   const payload = await getPayload({ config: configPromise })
@@ -18,6 +19,14 @@ export default async function SettingsPage() {
       </div>
 
       <SystemSettingsForm settings={settings as any} />
+
+      <div className="border rounded-lg p-6 space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Database Backup</h2>
+          <p className="text-sm text-muted-foreground">Download a full backup of the database as a compressed archive.</p>
+        </div>
+        <DbBackupButton />
+      </div>
     </div>
   )
 }
