@@ -87,7 +87,7 @@ export const Signature = () => {
 
 export const Layout = ({ children, title, showSignature = true }: LayoutProps) => {
   return (
-    <Html>
+    <Html style={{background:'#F4F4F4'}}>
     <Tailwind
       config={{
         theme: {
@@ -110,8 +110,7 @@ export const Layout = ({ children, title, showSignature = true }: LayoutProps) =
            <Img
               src="https://hoga-production.up.railway.app/logo.png"
               alt="Hoganam Logo"
-              width="70"
-              height="23"
+              width="120"
             />
         </div>
         <h2 className="text-4xl font-bold text-primary mb-4" style={{ lineHeight: 1.6 }}>
