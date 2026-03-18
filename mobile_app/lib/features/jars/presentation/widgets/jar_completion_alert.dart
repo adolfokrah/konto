@@ -102,7 +102,7 @@ class JarCompletionAlert extends StatelessWidget {
             message:
                 'Add a profile photo so contributors know who they\'re supporting. Tap to update your profile.',
             onTap: () {
-              context.push(AppRoutes.personalDetails);
+              context.push(AppRoutes.userAccountView);
             },
           );
         }

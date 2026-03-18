@@ -597,8 +597,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                                                   ),
                                                 ),
                                                 child: Icon(
-                                                  Icons
-                                                      .add_photo_alternate_outlined,
+                                                  Icons.camera_alt,
                                                   size: 16,
                                                   color:
                                                       Theme.of(

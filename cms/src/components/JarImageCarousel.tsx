@@ -95,19 +95,19 @@ export default function JarImageCarousel({
             className="object-cover scale-110 blur-lg brightness-50"
           />
         )}
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <div className="bg-white rounded-2xl p-6 w-full shadow-lg">
+        <div className="absolute inset-0 flex items-center justify-center p-5">
+          <div className="bg-white rounded-2xl p-4 w-full shadow-lg">
             {description && (
-              <p className="text-sm text-gray-700 line-clamp-4 mb-4 leading-relaxed">
+              <p className="text-sm text-gray-700 line-clamp-3 mb-4 leading-relaxed">
                 {description}
               </p>
             )}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               {contributorAvatars.length > 0 || donorCount > 0 ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <AvatarGroup>
                     {contributorAvatars.slice(0, 3).map((a, i) => (
-                      <Avatar key={i} className="w-8 h-8 border-2 border-white">
+                      <Avatar key={i} className="w-7 h-7 border-2 border-white">
                         {a.photoUrl && <AvatarImage src={a.photoUrl} alt={a.initials} />}
                         <AvatarFallback className="bg-[#EDE8E3] text-[10px] font-semibold text-gray-700">
                           {a.initials}
@@ -115,12 +115,12 @@ export default function JarImageCarousel({
                       </Avatar>
                     ))}
                     {donorCount > 3 && (
-                      <AvatarGroupCount className="w-8 h-8 text-[10px] bg-[#EDE8E3] text-gray-700">
+                      <AvatarGroupCount className="w-7 h-7 text-[10px] bg-[#EDE8E3] text-gray-700">
                         +{donorCount - 3}
                       </AvatarGroupCount>
                     )}
                   </AvatarGroup>
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
                     {donorCount} {donorCount === 1 ? 'contribution' : 'contributions'}
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export default function JarImageCarousel({
                     navigator.clipboard.writeText(window.location.href)
                   }
                 }}
-                className="bg-[#1B4332] hover:bg-[#163829] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+                className="bg-[#1B4332] hover:bg-[#163829] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shrink-0"
               >
                 Share
               </button>

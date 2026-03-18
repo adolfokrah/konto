@@ -85,7 +85,7 @@ class EmailService {
   async sendWelcomeEmail(userEmail: string, fullName: string) {
     return this.sendEmail({
       to: userEmail,
-      subject: `Welcome to Hoga, ${fullName}! 🎉`,
+      subject: `Welcome to Hogapay, ${fullName}! 🎉`,
       react: Welcome({ fullname: fullName }),
     })
   }
