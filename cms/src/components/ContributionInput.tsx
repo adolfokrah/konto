@@ -364,15 +364,15 @@ export default function ContributionInput({
 
         <div>
           <textarea
-            placeholder="Leave a message for the organizer (optional)"
+            placeholder="Leave a message for this jar (optional)"
             value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            maxLength={200}
+            onChange={(e) => setRemarks(()=>e.target.value)}
+            maxLength={800}
             rows={3}
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors resize-none"
           />
           {remarks.length > 0 && (
-            <p className="text-xs text-gray-400 text-right mt-1">{remarks.length}/200</p>
+            <p className="text-xs text-gray-400 text-right mt-1">{remarks.length}/800</p>
           )}
         </div>
       </div>

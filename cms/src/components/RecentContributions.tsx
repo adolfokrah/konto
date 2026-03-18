@@ -110,9 +110,13 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
             return (
               <div
                 key={contribution.id}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="flex items-center space-x-3">
+                className='border-b border-gray-100 last:border-b-0 pb-0.5'
+                >
+
+                <div
+                className="flex items-center justify-between py-3 "
+                >
+                  <div className="flex items-center space-x-3">
                   <Avatar className="w-10 h-10">
                     <AvatarFallback className="bg-primary-light font-medium">
                       {initials}
@@ -122,9 +126,6 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
                   <div className="flex flex-col">
                     <span className="font-medium text-gray-900">{contributorName}</span>
                     <span className="text-xs text-gray-500">{timeAgo}</span>
-                    {contribution.remarks && (
-                      <span className="text-xs text-gray-600 italic mt-0.5">"{contribution.remarks}"</span>
-                    )}
                   </div>
                 </div>
 
@@ -135,6 +136,12 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
                     </div>
                   </div>
                 </div>
+                </div>
+
+                 {contribution.remarks && (
+                     <div className='mb-2'> <span className="text-sm text-gray-600 mt-0.5 mb-2">"{contribution.remarks}"</span></div>
+                  )}
+
               </div>
             )
           })}
