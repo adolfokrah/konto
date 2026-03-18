@@ -32,6 +32,7 @@ export const shareContributions = async (req: PayloadRequest) => {
       where,
       pagination: false,
       depth: 1,
+      sort: 'createdAt',
     })
 
     const docs: any[] = contributions.docs || []
