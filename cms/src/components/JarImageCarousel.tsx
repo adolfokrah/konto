@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
 
 interface ContributorAvatar {
   initials: string
@@ -108,7 +108,6 @@ export default function JarImageCarousel({
                   <AvatarGroup>
                     {contributorAvatars.slice(0, 3).map((a, i) => (
                       <Avatar key={i} className="w-7 h-7 border-2 border-white">
-                        {a.photoUrl && <AvatarImage src={a.photoUrl} alt={a.initials} />}
                         <AvatarFallback className="bg-[#EDE8E3] text-[10px] font-semibold text-gray-700">
                           {a.initials}
                         </AvatarFallback>
