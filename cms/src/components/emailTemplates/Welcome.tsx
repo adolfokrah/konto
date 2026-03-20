@@ -34,17 +34,18 @@ export default function Welcome({ fullname = 'John Doe' }: EmailTemplateProps) {
           </li>
           <li>Export anytime: PDF or Excel reports for your records or community updates.</li>
           <li>
-            Verified organizers: jars are created by KYC-verified organizers for safer giving.
+            Verified withdrawals: KYC verification is required before you can transfer funds out —
+            keeping your money and your contributors safe.
           </li>
         </ul>
         <p>Get started in 3 quick steps</p>
         <ol>
-          <li>Complete our KYC onboarding to verify your account</li>
-          <li>Create or join a jar (add an event photo for that personal touch)</li>
+          <li>Create a jar — no KYC needed to get started (add an event photo for that personal touch)</li>
           <li>
             Share your QR/link or manually hit the contribute button and watch contributions roll in
             — with receipts and live tracking
           </li>
+          <li>Complete KYC verification when you're ready to withdraw your funds</li>
         </ol>
         <p>If you’re organizing, here are two power tips:</p>
         <ul>
