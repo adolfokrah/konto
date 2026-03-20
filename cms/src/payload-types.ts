@@ -163,6 +163,7 @@ export interface Config {
       'withdraw-reminder-daily': TaskWithdrawReminderDaily;
       'auto-refund-daily': TaskAutoRefundDaily;
       'cleanup-old-notifications': TaskCleanupOldNotifications;
+      'seal-inactive-jars-daily': TaskSealInactiveJarsDaily;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -2109,6 +2110,7 @@ export interface PayloadJob {
           | 'withdraw-reminder-daily'
           | 'auto-refund-daily'
           | 'cleanup-old-notifications'
+          | 'seal-inactive-jars-daily'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2162,6 +2164,7 @@ export interface PayloadJob {
         | 'withdraw-reminder-daily'
         | 'auto-refund-daily'
         | 'cleanup-old-notifications'
+        | 'seal-inactive-jars-daily'
         | 'schedulePublish'
       )
     | null;
@@ -3880,6 +3883,14 @@ export interface TaskAutoRefundDaily {
  * via the `definition` "TaskCleanup-old-notifications".
  */
 export interface TaskCleanupOldNotifications {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSeal-inactive-jars-daily".
+ */
+export interface TaskSealInactiveJarsDaily {
   input?: unknown;
   output?: unknown;
 }

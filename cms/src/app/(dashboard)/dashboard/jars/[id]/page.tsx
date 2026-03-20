@@ -414,12 +414,6 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DetailRow
-              label="Jar Balance"
-              icon={Wallet}
-              value={formatAmount(balance, currency)}
-            />
-            <Separator />
             {upcomingBalance > 0 && (
               <>
                 <DetailRow
@@ -434,6 +428,12 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                 <Separator />
               </>
             )}
+            <DetailRow
+              label="Jar Balance"
+              icon={Wallet}
+              value={formatAmount(balance, currency)}
+            />
+            <Separator />
             <DetailRow
               label="Total Withdrawn"
               icon={ArrowDownToLine}
