@@ -50,6 +50,7 @@ import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { autoRefundDailyTask } from './tasks/auto-refund-daily'
 import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
+import { sealInactiveJarsDailyTask } from './tasks/seal-inactive-jars-daily'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -193,6 +194,7 @@ export default buildConfig({
       withdrawReminderDailyTask as any,
       autoRefundDailyTask as any,
       cleanupOldNotificationsTask as any,
+      sealInactiveJarsDailyTask as any,
     ],
     autoRun: [
       {
@@ -246,6 +248,10 @@ export default buildConfig({
       {
         cron: '2 3 * * *', // Every day at 3:02 AM
         queue: 'cleanup-old-notifications',
+      },
+      {
+        cron: '0 12 * * *', // Every day at 12:00 PM
+        queue: 'seal-inactive-jars-daily',
       },
     ],
   },

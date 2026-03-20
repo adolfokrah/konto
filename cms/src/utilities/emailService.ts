@@ -12,6 +12,7 @@ import WeeklyAccountSummary, {
 } from '@/components/emailTemplates/weeklyAccountSummary'
 import WithdrawalReminder from '@/components/emailTemplates/withdrawalReminder'
 import AutoRefundNotice from '@/components/emailTemplates/autoRefundNotice'
+import SealInactiveJar from '@/components/emailTemplates/sealInactiveJar'
 
 interface EmailOptions {
   to: string | string[]
@@ -277,13 +278,13 @@ class EmailService {
     }[],
   ) {
     const subjectByDay: Record<number, string> = {
-      7: 'Reminder: withdraw your jar balance',
-      10: '2nd reminder: your jar balance is still unclaimed',
-      12: 'Final warning: withdraw now or auto-refund begins',
+      7: '[Action required] Reminder: withdraw your jar balance',
+      10: '[Action required] 2nd reminder: your jar balance is still unclaimed',
+      12: '[Action required] Final warning: withdraw now or auto-refund begins',
     }
     const emails: EmailOptions[] = items.map((params) => ({
       to: params.to,
-      subject: subjectByDay[params.reminderDay] ?? 'Action required: withdraw your jar balance',
+      subject: subjectByDay[params.reminderDay] ?? '[Action required]: withdraw your jar balance',
       react: WithdrawalReminder({
         firstName: params.firstName,
         reminderDay: params.reminderDay,
@@ -313,6 +314,28 @@ class EmailService {
         contributorsCount: params.contributorsCount,
       }),
     })
+  }
+
+  // Seal Inactive Jar Notification Batch
+  async sendSealInactiveJarBatch(
+    items: {
+      to: string
+      firstName: string
+      jars: { name: string; inactiveDays: number; createdAt: string }[]
+    }[],
+  ) {
+    const emails: EmailOptions[] = items.map((params) => ({
+      to: params.to,
+      subject:
+        params.jars.length > 1
+          ? '[Action required] Your jars have been sealed due to inactivity'
+          : `[Action required] Your jar "${params.jars[0]!.name}" has been sealed`,
+      react: SealInactiveJar({
+        firstName: params.firstName,
+        jars: params.jars,
+      }),
+    }))
+    return this.sendBatch(emails)
   }
 
   // Generic email method for custom emails

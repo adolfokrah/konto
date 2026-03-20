@@ -48,12 +48,13 @@ export const Footer = () => {
           issuers where applicable (e.g., MTN MoMo, Telecel Cash). Those providers
           are regulated in their respective jurisdictions.
           <br />
-          KYC. Organizer identity verification is performed via approved third-party providers
-          (e.g., Didit) before a jar can be created. Funds flow & refunds. Contributions are
-          collected on behalf of the organizer and are transferred to the organizer&apos;s designated
-          account per the organizer&apos;s settings and applicable settlement timelines. Refunds and
-          chargebacks are handled according to the organizer&apos;s policy, card network rules,
-          mobile-money rules, and our Terms.
+          KYC. Organizers can create a jar without identity verification, but a completed KYC check
+          via an approved third-party provider (e.g., Didit) is required before any funds can be
+          transferred or withdrawn. Funds flow & refunds. Contributions are collected on behalf of
+          the organizer and are transferred to the organizer&apos;s designated account per the
+          organizer&apos;s settings and applicable settlement timelines. Refunds and chargebacks are
+          handled according to the organizer&apos;s policy, card network rules, mobile-money rules,
+          and our Terms.
           <br />
           No investment advice. Contributions made via Hoganam are not investments and may not be
           refundable. Review the event/jar details before contributing.
