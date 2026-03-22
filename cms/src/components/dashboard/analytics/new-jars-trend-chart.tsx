@@ -90,7 +90,7 @@ export function NewJarsTrendChart({ data, range = 'daily' }: NewJarsTrendChartPr
             />
             <Area
               dataKey="count"
-              type="natural"
+              type="monotone"
               fill="url(#fillJars)"
               stroke="var(--color-count)"
               strokeWidth={2}

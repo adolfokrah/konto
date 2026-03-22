@@ -90,7 +90,7 @@ export function RefundVolumeTrendChart({ data, range = 'daily' }: RefundVolumeTr
             />
             <Area
               dataKey="amount"
-              type="natural"
+              type="monotone"
               fill="url(#fillRefund)"
               stroke="var(--color-amount)"
               strokeWidth={2}

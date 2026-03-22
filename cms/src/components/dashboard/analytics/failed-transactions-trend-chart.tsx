@@ -90,7 +90,7 @@ export function FailedTransactionsTrendChart({ data, range = 'daily' }: FailedTr
             />
             <Area
               dataKey="count"
-              type="natural"
+              type="monotone"
               fill="url(#fillFailed)"
               stroke="var(--color-count)"
               strokeWidth={2}

@@ -90,7 +90,7 @@ export function PayoutVolumeTrendChart({ data, range = 'daily' }: PayoutVolumeTr
             />
             <Area
               dataKey="amount"
-              type="natural"
+              type="monotone"
               fill="url(#fillPayout)"
               stroke="var(--color-amount)"
               strokeWidth={2}
