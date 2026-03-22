@@ -29,6 +29,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/jars': 'Jars',
   '/dashboard/transactions': 'Transactions',
   '/dashboard/analytics': 'Analytics',
+  '/dashboard/deleted-accounts': 'Deleted User Accounts',
 }
 
 export function TopBar({ user }: Props) {

@@ -12,6 +12,12 @@ import {
   Receipt,
   Smartphone,
   Banknote,
+  TrendingDown,
+  RefreshCw,
+  Users2,
+  Percent,
+  Target,
+  Repeat2,
 } from 'lucide-react'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueTrendChart } from '@/components/dashboard/analytics/revenue-trend-chart'
@@ -21,16 +27,44 @@ import { UserGrowthChart } from '@/components/dashboard/analytics/user-growth-ch
 import { TopJarsChart } from '@/components/dashboard/analytics/top-jars-chart'
 import { KycStatusChart } from '@/components/dashboard/analytics/kyc-status-chart'
 import { ContributionVolumeChart } from '@/components/dashboard/analytics/contribution-volume-chart'
+import { ContributionVolumeByMethodChart } from '@/components/dashboard/analytics/contribution-volume-by-method-chart'
+import { TimeRangeSelector } from '@/components/dashboard/analytics/time-range-selector'
+import { Suspense } from 'react'
 import { TopContributorsChart } from '@/components/dashboard/analytics/top-contributors-chart'
 import { JarStatusChart } from '@/components/dashboard/analytics/jar-status-chart'
+import { NewJarsTrendChart } from '@/components/dashboard/analytics/new-jars-trend-chart'
+import { PayoutVolumeTrendChart } from '@/components/dashboard/analytics/payout-volume-trend-chart'
+import { FailedTransactionsTrendChart } from '@/components/dashboard/analytics/failed-transactions-trend-chart'
+import { RefundVolumeTrendChart } from '@/components/dashboard/analytics/refund-volume-trend-chart'
+import { ProviderSplitChart } from '@/components/dashboard/analytics/provider-split-chart'
+import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-breakdown-chart'
+import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
 
 const fmt = (n: number) =>
   n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-export default async function AnalyticsPage() {
+type Range = 'daily' | 'monthly' | 'yearly'
+
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>
+}) {
+  const { range: rawRange } = await searchParams
+  const range: Range =
+    rawRange === 'monthly' ? 'monthly' : rawRange === 'yearly' ? 'yearly' : 'daily'
+
   const payload = await getPayload({ config: configPromise })
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Chart-specific start dates based on selected range
+  const chartStartDate =
+    range === 'yearly'
+      ? new Date(Date.now() - 5 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      : range === 'monthly'
+        ? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+        : thirtyDaysAgo
 
   const [
     // KPI + chart: Transaction status counts
@@ -81,6 +115,24 @@ export default async function AnalyticsPage() {
     last30DaysRefundRevenue,
     momoContributionsResult,
     cashContributionsResult,
+    // Chart: Contribution volume by payment method (last 30 days)
+    last30DaysContributionsByMethod,
+    // Chart: New jars created (range-aware)
+    newJarsInRange,
+    // Chart: Payouts in range (trend)
+    payoutsInRange,
+    // Chart: Failed transactions in range (trend)
+    failedInRange,
+    // Chart + KPI: Refunds in range (amount + createdAt)
+    refundsInRange,
+    // KPI: All refunds count (for refund rate)
+    allRefundsCount,
+    // Chart: MTN contributions
+    mtnContributions,
+    // Chart: Telecel contributions
+    telecelContributions,
+    // Chart: Collector performance
+    collectorContributions,
   ] = await Promise.all([
     // Transaction counts by status
     payload.count({
@@ -115,7 +167,7 @@ export default async function AnalyticsPage() {
         paymentMethod: { equals: 'mobile-money' },
       },
       pagination: false,
-      select: { chargesBreakdown: true },
+      select: { chargesBreakdown: true, type: true },
       overrideAccess: true,
     }),
 
@@ -161,37 +213,37 @@ export default async function AnalyticsPage() {
       },
     }),
 
-    // Last 30 days revenue transactions (all mobile-money)
+    // Chart: revenue transactions (range-aware)
     payload.find({
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
         paymentMethod: { equals: 'mobile-money' },
-        createdAt: { greater_than_equal: thirtyDaysAgo },
+        createdAt: { greater_than_equal: chartStartDate },
       },
       pagination: false,
       select: { chargesBreakdown: true, createdAt: true },
       overrideAccess: true,
     }),
 
-    // Users registered in the last 30 days
+    // Users registered in chart range (range-aware)
     payload.find({
       collection: 'users',
       where: {
         role: { equals: 'user' },
-        createdAt: { greater_than_equal: thirtyDaysAgo },
+        createdAt: { greater_than_equal: chartStartDate },
       },
       pagination: false,
       select: { createdAt: true },
       overrideAccess: true,
     }),
 
-    // Users registered before 30 days ago (baseline)
+    // Users registered before chart range (baseline for cumulative)
     payload.count({
       collection: 'users',
       where: {
         role: { equals: 'user' },
-        createdAt: { less_than: thirtyDaysAgo },
+        createdAt: { less_than: chartStartDate },
       },
     }),
 
@@ -222,13 +274,13 @@ export default async function AnalyticsPage() {
       where: { role: { equals: 'user' }, kycStatus: { equals: 'verified' } },
     }),
 
-    // Last 30 days completed contributions (for volume chart)
+    // Chart: contribution volume (range-aware)
     payload.find({
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'contribution' },
-        createdAt: { greater_than_equal: thirtyDaysAgo },
+        createdAt: { greater_than_equal: chartStartDate },
       },
       pagination: false,
       select: { amountContributed: true, createdAt: true },
@@ -317,12 +369,12 @@ export default async function AnalyticsPage() {
       overrideAccess: true,
     }),
 
-    // Refund hogapay revenue (last 30 days, for revenue trend chart)
+    // Chart: refund revenue (range-aware)
     payload.find({
       collection: 'refunds' as any,
       where: {
         status: { equals: 'completed' },
-        createdAt: { greater_than_equal: thirtyDaysAgo },
+        createdAt: { greater_than_equal: chartStartDate },
       },
       pagination: false,
       select: { hogapayRevenue: true, createdAt: true },
@@ -352,6 +404,113 @@ export default async function AnalyticsPage() {
       },
       pagination: false,
       select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: contribution volume by method (range-aware)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        createdAt: { greater_than_equal: chartStartDate },
+      },
+      pagination: false,
+      select: { amountContributed: true, createdAt: true, paymentMethod: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: new jars created (range-aware)
+    payload.find({
+      collection: 'jars',
+      where: { createdAt: { greater_than_equal: chartStartDate } },
+      pagination: false,
+      select: { createdAt: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: payout volume (range-aware)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'payout' },
+        createdAt: { greater_than_equal: chartStartDate },
+      },
+      pagination: false,
+      select: { amountContributed: true, createdAt: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: failed transactions (range-aware)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'failed' },
+        createdAt: { greater_than_equal: chartStartDate },
+      },
+      pagination: false,
+      select: { createdAt: true },
+      overrideAccess: true,
+    }),
+
+    // Chart + KPI: refunds in range (for refund volume trend)
+    payload.find({
+      collection: 'refunds' as any,
+      where: {
+        status: { equals: 'completed' },
+        createdAt: { greater_than_equal: chartStartDate },
+      },
+      pagination: false,
+      select: { amount: true, createdAt: true },
+      overrideAccess: true,
+    }),
+
+    // KPI: all completed refunds count (for refund rate)
+    payload.count({
+      collection: 'refunds' as any,
+      where: { status: { equals: 'completed' } },
+      overrideAccess: true,
+    }),
+
+    // Chart: MTN contributions (volume + count)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'mobile-money' },
+        mobileMoneyProvider: { equals: 'mtn' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: Telecel contributions (volume + count)
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+        paymentMethod: { equals: 'mobile-money' },
+        mobileMoneyProvider: { equals: 'telecel' },
+      },
+      pagination: false,
+      select: { amountContributed: true },
+      overrideAccess: true,
+    }),
+
+    // Chart: Collector performance (jar creators ranked by total collected)
+    // No select — depth 2 must fully populate jar.createdBy for name resolution
+    payload.find({
+      collection: 'transactions',
+      where: {
+        paymentStatus: { equals: 'completed' },
+        type: { equals: 'contribution' },
+      },
+      pagination: false,
+      depth: 2,
       overrideAccess: true,
     }),
   ])
@@ -430,12 +589,14 @@ export default async function AnalyticsPage() {
   const revenueTrendData = buildRevenueTrendData(
     last30DaysRevenue.docs as any[],
     last30DaysRefundRevenue.docs as any[],
+    range,
   )
 
   // --- Chart data: User Growth ---
   const userGrowthData = buildUserGrowthData(
     last30DaysUsers.docs as any[],
     usersBefore30Days.totalDocs,
+    range,
   )
 
   // --- Chart data: Top Jars ---
@@ -449,7 +610,10 @@ export default async function AnalyticsPage() {
   ].filter((d) => d.value > 0)
 
   // --- Chart data: Contribution Volume ---
-  const contributionVolumeData = buildContributionVolumeData(last30DaysContributions.docs as any[])
+  const contributionVolumeData = buildContributionVolumeData(last30DaysContributions.docs as any[], range)
+
+  // --- Chart data: Contribution Volume by Method ---
+  const contributionVolumeByMethodData = buildContributionVolumeByMethodData(last30DaysContributionsByMethod.docs as any[], range)
 
   // --- Chart data: Top Contributors ---
   const topContributorsData = buildTopContributorsData(contributorTransactions.docs as any[])
@@ -462,8 +626,96 @@ export default async function AnalyticsPage() {
     { name: 'Sealed', value: jarsSealed.totalDocs },
   ].filter((d) => d.value > 0)
 
+  // --- New KPI calculations ---
+  const totalJars = jarsOpen.totalDocs + jarsFrozen.totalDocs + jarsBroken.totalDocs + jarsSealed.totalDocs
+  // Jars with at least one completed contribution = unique jar IDs in topJarsContributions
+  const jarsWithContributions = new Set(
+    topJarsContributions.docs.map((tx: any) => {
+      const jar = tx.jar
+      return typeof jar === 'object' && jar ? jar.id : jar
+    }).filter(Boolean)
+  ).size
+  const jarConversionRate = totalJars > 0 ? (jarsWithContributions / totalJars) * 100 : 0
+
+  const avgContributionsPerJar = jarsWithContributions > 0 ? totalCompleted / jarsWithContributions : 0
+
+  const allRefundsTotal = allRefundsCount.totalDocs
+  const refundRate = totalCompleted > 0 ? (allRefundsTotal / totalCompleted) * 100 : 0
+
+  // Repeat contributors = phone numbers that appear in more than one contribution
+  const phoneCounts: Record<string, number> = {}
+  for (const tx of contributorTransactions.docs as any[]) {
+    const key = tx.contributorPhoneNumber || tx.contributor || ''
+    if (key) phoneCounts[key] = (phoneCounts[key] || 0) + 1
+  }
+  const repeatContributors = Object.values(phoneCounts).filter((c) => c > 1).length
+
+  // --- Chart data: New Jars Trend ---
+  const newJarsTrendData = buildCountTrendData(newJarsInRange.docs as any[], range)
+
+  // --- Chart data: Payout Volume Trend ---
+  const payoutVolumeTrendData = buildAmountTrendData(payoutsInRange.docs as any[], range)
+
+  // --- Chart data: Failed Transactions Trend ---
+  const failedTransactionsTrendData = buildCountTrendData(failedInRange.docs as any[], range)
+
+  // --- Chart data: Refund Volume Trend ---
+  const refundVolumeTrendData = buildRefundVolumeTrendData(refundsInRange.docs as any[], range)
+
+  // --- Chart data: Provider Split ---
+  const mtnVolume = mtnContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
+  const telecelVolume = telecelContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
+  const providerSplitData = [
+    { provider: 'MTN', volume: Number(mtnVolume.toFixed(2)), count: mtnContributions.totalDocs },
+    { provider: 'Telecel', volume: Number(telecelVolume.toFixed(2)), count: telecelContributions.totalDocs },
+  ].filter((d) => d.count > 0)
+
+  // --- Chart data: Revenue Breakdown ---
+  const collectionFeeRevenue = (revenueTransactions.docs as any[])
+    .filter((tx: any) => tx.type === 'contribution' || !tx.type)
+    .reduce((s: number, tx: any) => s + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0), 0)
+  const transferFeeRevenue = (revenueTransactions.docs as any[])
+    .filter((tx: any) => tx.type === 'payout')
+    .reduce((s: number, tx: any) => s + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0), 0)
+  const revenueBreakdownData = [
+    { category: 'Collection Fees', amount: Number(collectionFeeRevenue.toFixed(2)) },
+    { category: 'Transfer Fees', amount: Number(transferFeeRevenue.toFixed(2)) },
+    { category: 'Refund Fees', amount: Number(refundRevenue.toFixed(2)) },
+  ].filter((d) => d.amount > 0)
+
+  // --- Chart data: Collector Performance ---
+  const collectorPerformanceData = buildCollectorPerformanceData(collectorContributions.docs as any[])
+
   return (
     <div className="space-y-6">
+      {/* Engagement KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Jar Conversion Rate"
+          value={`${jarConversionRate.toFixed(1)}%`}
+          description={`${jarsWithContributions} of ${totalJars} jars received contributions`}
+          icon={Target}
+        />
+        <MetricCard
+          title="Avg Contributions / Jar"
+          value={avgContributionsPerJar.toFixed(1)}
+          description="Among jars with at least one contribution"
+          icon={Percent}
+        />
+        <MetricCard
+          title="Refund Rate"
+          value={`${refundRate.toFixed(2)}%`}
+          description={`${allRefundsTotal} refunds out of ${totalCompleted} completed`}
+          icon={RefreshCw}
+        />
+        <MetricCard
+          title="Repeat Contributors"
+          value={repeatContributors.toLocaleString()}
+          description="Users who contributed more than once"
+          icon={Repeat2}
+        />
+      </div>
+
       {/* Volume & Revenue */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -549,20 +801,43 @@ export default async function AnalyticsPage() {
         />
       </div>
 
-      {/* Revenue Trend — full width */}
-      <RevenueTrendChart data={revenueTrendData} />
+      {/* Time range selector */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Showing data for charts below</p>
+        <Suspense>
+          <TimeRangeSelector range={range} />
+        </Suspense>
+      </div>
 
-      {/* Contribution Volume — full width */}
-      <ContributionVolumeChart data={contributionVolumeData} />
+      {/* Revenue Trend + User Growth — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RevenueTrendChart data={revenueTrendData} range={range} />
+        <UserGrowthChart data={userGrowthData} range={range} />
+      </div>
+
+      {/* Contribution Volume + by Payment Method — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <ContributionVolumeChart data={contributionVolumeData} range={range} />
+        <ContributionVolumeByMethodChart data={contributionVolumeByMethodData} range={range} />
+      </div>
+
+      {/* New Jars + Failed Transactions trends — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <NewJarsTrendChart data={newJarsTrendData} range={range} />
+        <FailedTransactionsTrendChart data={failedTransactionsTrendData} range={range} />
+      </div>
+
+      {/* Payout Volume + Refund Volume trends — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <PayoutVolumeTrendChart data={payoutVolumeTrendData} range={range} />
+        <RefundVolumeTrendChart data={refundVolumeTrendData} range={range} />
+      </div>
 
       {/* Payment Methods + Transaction Status — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
         <PaymentMethodChart data={paymentMethodData} />
         <TransactionStatusChart data={transactionStatusData} />
       </div>
-
-      {/* User Growth — full width */}
-      <UserGrowthChart data={userGrowthData} />
 
       {/* Top Jars + KYC Status — 2/3 + 1/3 */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -579,38 +854,68 @@ export default async function AnalyticsPage() {
         </div>
         <JarStatusChart data={jarStatusData} />
       </div>
+
+      {/* Provider Split + Revenue Breakdown — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <ProviderSplitChart data={providerSplitData} />
+        <RevenueBreakdownChart data={revenueBreakdownData} />
+      </div>
+
+      {/* Collector Performance — full width */}
+      <CollectorPerformanceChart data={collectorPerformanceData} />
     </div>
   )
 }
 
 // --- Helper functions ---
 
+function buildBuckets(range: Range): Record<string, number> {
+  const buckets: Record<string, number> = {}
+  if (range === 'yearly') {
+    for (let i = 4; i >= 0; i--) {
+      buckets[String(new Date().getFullYear() - i)] = 0
+    }
+  } else if (range === 'monthly') {
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(1)
+      d.setMonth(d.getMonth() - i)
+      buckets[`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`] = 0
+    }
+  } else {
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+      buckets[d.toISOString().split('T')[0]] = 0
+    }
+  }
+  return buckets
+}
+
+function dateKey(createdAt: string, range: Range): string {
+  const d = new Date(createdAt)
+  if (range === 'yearly') return String(d.getFullYear())
+  if (range === 'monthly')
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  return d.toISOString().split('T')[0]
+}
+
 function buildRevenueTrendData(
   docs: { chargesBreakdown?: { hogapayRevenue?: number }; createdAt: string }[],
   refundDocs: { hogapayRevenue?: number; createdAt: string }[],
+  range: Range = 'daily',
 ) {
-  const daily: Record<string, number> = {}
-
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    daily[date.toISOString().split('T')[0]] = 0
-  }
+  const buckets = buildBuckets(range)
 
   for (const doc of docs) {
-    const key = new Date(doc.createdAt).toISOString().split('T')[0]
-    if (key in daily) {
-      daily[key] += Math.abs(doc.chargesBreakdown?.hogapayRevenue || 0)
-    }
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += Math.abs(doc.chargesBreakdown?.hogapayRevenue || 0)
   }
-
   for (const doc of refundDocs) {
-    const key = new Date(doc.createdAt).toISOString().split('T')[0]
-    if (key in daily) {
-      daily[key] += Math.abs(doc.hogapayRevenue || 0)
-    }
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += Math.abs(doc.hogapayRevenue || 0)
   }
 
-  return Object.entries(daily).map(([date, revenue]) => ({
+  return Object.entries(buckets).map(([date, revenue]) => ({
     date,
     revenue: Number(revenue.toFixed(2)),
   }))
@@ -619,45 +924,32 @@ function buildRevenueTrendData(
 function buildUserGrowthData(
   recentDocs: { createdAt: string }[],
   baselineCount: number,
+  range: Range = 'daily',
 ) {
-  const daily: Record<string, number> = {}
-
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    daily[date.toISOString().split('T')[0]] = 0
-  }
+  const buckets = buildBuckets(range)
 
   for (const doc of recentDocs) {
-    const key = new Date(doc.createdAt).toISOString().split('T')[0]
-    if (key in daily) {
-      daily[key] += 1
-    }
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += 1
   }
 
   // Convert to cumulative
   let cumulative = baselineCount
-  return Object.entries(daily).map(([date, count]) => {
+  return Object.entries(buckets).map(([date, count]) => {
     cumulative += count
     return { date, totalUsers: cumulative }
   })
 }
 
-function buildContributionVolumeData(docs: { amountContributed?: number; createdAt: string }[]) {
-  const daily: Record<string, number> = {}
-
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    daily[date.toISOString().split('T')[0]] = 0
-  }
+function buildContributionVolumeData(docs: { amountContributed?: number; createdAt: string }[], range: Range = 'daily') {
+  const buckets = buildBuckets(range)
 
   for (const doc of docs) {
-    const key = new Date(doc.createdAt).toISOString().split('T')[0]
-    if (key in daily) {
-      daily[key] += doc.amountContributed || 0
-    }
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += doc.amountContributed || 0
   }
 
-  return Object.entries(daily).map(([date, amount]) => ({
+  return Object.entries(buckets).map(([date, amount]) => ({
     date,
     amount: Number(amount.toFixed(2)),
   }))
@@ -684,6 +976,88 @@ function buildTopContributorsData(docs: { amountContributed?: number; contributo
       name: entry.name.length > 25 ? entry.name.slice(0, 25) + '…' : entry.name,
       amount: Number(entry.amount.toFixed(2)),
     }))
+}
+
+function buildContributionVolumeByMethodData(
+  docs: { amountContributed?: number; createdAt: string; paymentMethod?: string }[],
+  range: Range = 'daily',
+) {
+  const rawBuckets = buildBuckets(range)
+  const buckets: Record<string, { mobileMoney: number; cash: number; bank: number; card: number }> = {}
+  for (const key of Object.keys(rawBuckets)) {
+    buckets[key] = { mobileMoney: 0, cash: 0, bank: 0, card: 0 }
+  }
+
+  for (const doc of docs) {
+    const key = dateKey(doc.createdAt, range)
+    if (!(key in buckets)) continue
+    const amount = doc.amountContributed || 0
+    const method = doc.paymentMethod || ''
+    if (method === 'mobile-money') buckets[key].mobileMoney += amount
+    else if (method === 'cash') buckets[key].cash += amount
+    else if (method === 'bank') buckets[key].bank += amount
+    else if (method === 'card' || method === 'apple-pay') buckets[key].card += amount
+  }
+
+  return Object.entries(buckets).map(([date, amounts]) => ({
+    date,
+    mobileMoney: Number(amounts.mobileMoney.toFixed(2)),
+    cash: Number(amounts.cash.toFixed(2)),
+    bank: Number(amounts.bank.toFixed(2)),
+    card: Number(amounts.card.toFixed(2)),
+  }))
+}
+
+function buildCountTrendData(docs: { createdAt: string }[], range: Range = 'daily') {
+  const buckets = buildBuckets(range)
+  for (const doc of docs) {
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += 1
+  }
+  return Object.entries(buckets).map(([date, count]) => ({ date, count }))
+}
+
+function buildAmountTrendData(docs: { amountContributed?: number; createdAt: string }[], range: Range = 'daily') {
+  const buckets = buildBuckets(range)
+  for (const doc of docs) {
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += Math.abs(doc.amountContributed || 0)
+  }
+  return Object.entries(buckets).map(([date, amount]) => ({ date, amount: Number(amount.toFixed(2)) }))
+}
+
+function buildRefundVolumeTrendData(docs: { amount?: number; createdAt: string }[], range: Range = 'daily') {
+  const buckets = buildBuckets(range)
+  for (const doc of docs) {
+    const key = dateKey(doc.createdAt, range)
+    if (key in buckets) buckets[key] += Math.abs(doc.amount || 0)
+  }
+  return Object.entries(buckets).map(([date, amount]) => ({ date, amount: Number(amount.toFixed(2)) }))
+}
+
+function buildCollectorPerformanceData(docs: { amountContributed?: number; jar?: any }[]) {
+  const totals: Record<string, { name: string; amount: number; count: number }> = {}
+
+  for (const doc of docs) {
+    const jar = typeof doc.jar === 'object' && doc.jar ? doc.jar : null
+    if (!jar) continue
+    const createdBy = typeof jar.creator === 'object' && jar.creator ? jar.creator : null
+    const creatorId = createdBy ? String(createdBy.id) : String(jar.id)
+    if (!totals[creatorId]) {
+      const firstName = createdBy?.firstName || ''
+      const lastName = createdBy?.lastName || ''
+      const phone = createdBy?.phoneNumber || ''
+      const fullName = [firstName, lastName].filter(Boolean).join(' ') || phone || 'Unknown'
+      totals[creatorId] = { name: fullName.length > 20 ? fullName.slice(0, 20) + '…' : fullName, amount: 0, count: 0 }
+    }
+    totals[creatorId].amount += doc.amountContributed || 0
+    totals[creatorId].count += 1
+  }
+
+  return Object.values(totals)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 10)
+    .map((e) => ({ name: e.name, amount: Number(e.amount.toFixed(2)), count: e.count }))
 }
 
 function buildTopJarsData(docs: { amountContributed?: number; jar?: any }[]) {

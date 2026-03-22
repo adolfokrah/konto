@@ -135,6 +135,15 @@ export const verifyPendingTransactionsTask = {
 
           const newStatus = statusMap[rawStatus] || 'pending'
 
+          // Skip no-op updates — only write to DB when status actually changes.
+          // This prevents a race condition where two CMS instances both pick up
+          // the same pending transaction: one resolves to 'completed' and the
+          // other resolves to 'pending', overwriting the completed status.
+          if (newStatus === 'pending') {
+            processedCount++
+            continue
+          }
+
           await payload.update({
             collection: 'transactions',
             id,

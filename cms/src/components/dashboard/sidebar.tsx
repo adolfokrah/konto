@@ -22,6 +22,7 @@ import {
   MoreHorizontal,
   ShieldAlert,
   Mail,
+  UserX,
   RefreshCcwDot,
   PanelLeftClose,
   PanelLeftOpen,
@@ -61,6 +62,7 @@ const navGroups = [
       { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
       { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
       { label: 'Emails', href: '/dashboard/emails', icon: Mail },
+      { label: 'Deleted Accounts', href: '/dashboard/deleted-accounts', icon: UserX },
     ],
   },
   {

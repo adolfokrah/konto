@@ -26,8 +26,9 @@ export default function JarImageCarousel({
   donorCount = 0,
   contributorAvatars = [],
 }: JarImageCarouselProps) {
-  // Total slides = images + 1 info card at the end
-  const totalSlides = images.length + 1
+  // Only add the info card slide if there's a description
+  const showInfoSlide = !!description
+  const totalSlides = images.length + (showInfoSlide ? 1 : 0)
   const infoIndex = images.length
   const [current, setCurrent] = useState(0)
   const touchStartX = useRef<number | null>(null)
@@ -81,8 +82,8 @@ export default function JarImageCarousel({
         </div>
       ))}
 
-      {/* Info card slide */}
-      <div
+      {/* Info card slide — only shown when there's a description */}
+      {showInfoSlide && <div
         className="absolute inset-0 transition-transform duration-400 ease-in-out"
         style={{ transform: `translateX(${(infoIndex - current) * 100}%)` }}
       >
@@ -141,7 +142,7 @@ export default function JarImageCarousel({
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Controls */}
       {totalSlides > 1 && (

@@ -14,13 +14,13 @@ type WeeklySummaryPayload = {
  *
  * Runs every Monday at 8 AM.
  * Sends each KYC-verified jar creator a summary of their jars' activity
- * for the past 7 days — only completed transactions.
+ * for the previous Monday–Sunday week — only completed transactions.
  */
 export const weeklyAccountSummaryTask = {
   slug: 'weekly-account-summary',
   schedule: [
     {
-      cron: '0 8 * * 0', // Every Sunday at 8 AM
+      cron: '0 8 * * 1', // Every Monday at 8 AM
       queue: 'weekly-account-summary',
     },
   ],
@@ -29,9 +29,13 @@ export const weeklyAccountSummaryTask = {
       const payload = args.req?.payload || args.payload
 
       const now = new Date()
+      // Runs on Monday — previous week is Mon–Sun
       const weekEnd = new Date(now)
-      const weekStart = new Date(now)
-      weekStart.setDate(weekStart.getDate() - 7)
+      weekEnd.setDate(now.getDate() - 1) // yesterday = Sunday
+      weekEnd.setHours(23, 59, 59, 999)
+      const weekStart = new Date(weekEnd)
+      weekStart.setDate(weekEnd.getDate() - 6) // 6 days back = Monday
+      weekStart.setHours(0, 0, 0, 0)
 
       const formatDate = (d: Date) =>
         d.toLocaleDateString('en-GB', {
