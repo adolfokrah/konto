@@ -12,6 +12,7 @@ import configPromise from '@payload-config'
 import { SidebarWrapper } from '@/components/dashboard/sidebar-wrapper'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { Toaster } from '@/components/ui/sonner'
+import NextTopLoader from 'nextjs-toploader'
 
 import './globals.css'
 
@@ -46,6 +47,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
           </div>
         </div>
+        <NextTopLoader color="#ffffff" showSpinner={false} />
         <Toaster />
       </body>
     </html>

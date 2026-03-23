@@ -80,22 +80,22 @@ class LocalNotificationService {
 
     try {
       final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-      final type = data['type'] as String?;
       final path = data['path'] as String?;
 
       final context = rootNavigatorKey.currentContext;
       if (context == null) return;
 
-      if (type == 'contribution' || type == 'payout-approval') {
-        final jarId = data['jarId'] as String?;
-        final contributionId = (data['contributionId'] ?? data['transactionId']) as String?;
-        if (jarId != null && contributionId != null) {
-          NavigationService.navigateToContribution(
-            context: context,
-            jarId: jarId,
-            contributionId: contributionId,
-          );
-        }
+      final jarId = data['jarId'] as String?;
+      final contributionId = (data['contributionId'] ?? data['transactionId']) as String?;
+
+      if (jarId != null && contributionId != null) {
+        NavigationService.navigateToContribution(
+          context: context,
+          jarId: jarId,
+          contributionId: contributionId,
+        );
+      } else if (jarId != null) {
+        NavigationService.navigateToJarDetail(context, jarId);
       } else if (path != null) {
         GoRouter.of(context).push(path);
       }

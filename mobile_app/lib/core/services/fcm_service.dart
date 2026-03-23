@@ -84,51 +84,46 @@ class FCMService {
       final type = messageData['type'];
       final path = messageData['path'];
 
-      if (type == 'contribution' || type == 'payout-approval') {
-        // Special handling: multi-step jar loading + contribution bottom sheet
-        final jarId = messageData['jarId'];
-        final contributionId = messageData['contributionId'] ?? messageData['transactionId'];
-        if (jarId != null && contributionId != null) {
-          final BuildContext? context = rootNavigatorKey.currentContext;
-          if (context != null) {
-            NavigationService.navigateToContribution(
-              context: context,
-              jarId: jarId,
-              contributionId: contributionId,
-            );
-          } else {
-            print("❌ No navigation context available");
-          }
-        } else {
-          print("❌ Missing jarId or contributionId in notification data");
-        }
-      } else if (path != null) {
-        // Generic path-based navigation for all other types
-        final BuildContext? context = rootNavigatorKey.currentContext;
-        if (context != null) {
-          GoRouter.of(context).push(path);
+      final jarId = messageData['jarId'];
+      final contributionId = messageData['contributionId'] ?? messageData['transactionId'];
+      final BuildContext? context = rootNavigatorKey.currentContext;
 
-          // Type-specific side effects after navigation
-          if (type == 'kyc') {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              final postNavContext = rootNavigatorKey.currentContext;
-              if (postNavContext != null) {
-                try {
-                  postNavContext.read<NotificationsBloc>().add(
-                    FetchNotifications(limit: 20, page: 1),
-                  );
-                  _triggerAutoLogin(postNavContext);
-                } catch (e) {
-                  print('⚠️ Could not dispatch side effects after $type navigation: $e');
-                }
+      if (context == null) {
+        print("❌ No navigation context available");
+        return;
+      }
+
+      if (jarId != null && contributionId != null) {
+        // Has both jarId + contributionId → open contribution detail sheet
+        NavigationService.navigateToContribution(
+          context: context,
+          jarId: jarId,
+          contributionId: contributionId,
+        );
+      } else if (jarId != null) {
+        // Has jarId only → fetch jar and open jar detail
+        NavigationService.navigateToJarDetail(context, jarId);
+      } else if (path != null) {
+        // Generic path-based navigation
+        GoRouter.of(context).push(path);
+
+        if (type == 'kyc') {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            final postNavContext = rootNavigatorKey.currentContext;
+            if (postNavContext != null) {
+              try {
+                postNavContext.read<NotificationsBloc>().add(
+                  FetchNotifications(limit: 20, page: 1),
+                );
+                _triggerAutoLogin(postNavContext);
+              } catch (e) {
+                print('⚠️ Could not dispatch side effects after $type navigation: $e');
               }
-            });
-          }
-        } else {
-          print("❌ No navigation context available for '$type' tap");
+            }
+          });
         }
       } else {
-        print("ℹ️ No path in notification data for type '$type'");
+        print("ℹ️ No actionable data in notification for type '$type'");
       }
     } catch (e) {
       print("❌ Error handling notification tap: $e");
