@@ -148,6 +148,7 @@ export default function ContributionInput({
           amount: selectedAmount.toString(),
           jarName: jarName,
           contributorName: isAnonymous ? 'Anonymous' : contributorName,
+          paymentLink: window.location.href,
         })
         router.push(`/congratulations?${congratsParams.toString()}`)
       } else if (result.data?.status === 'failed') {

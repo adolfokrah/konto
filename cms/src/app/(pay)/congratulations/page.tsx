@@ -1,6 +1,7 @@
 import { CheckCircle } from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { ShareButton } from './share-button'
 
 const APP_STORE_URL = 'https://apps.apple.com/de/app/hogapay/id6755120879'
 const PLAY_STORE_URL =
@@ -16,11 +17,12 @@ interface CongratulationsPageProps {
     amount?: string
     jarName?: string
     contributorName?: string
+    paymentLink?: string
   }>
 }
 
 export default async function CongratulationsPage({ searchParams }: CongratulationsPageProps) {
-  const { reference, amount, jarName, contributorName } = await searchParams
+  const { reference, amount, jarName, contributorName, paymentLink } = await searchParams
 
   return (
     <div className="pt-10 lg:pt-30 pb-10 lg:pb-40 bg-primary-light flex items-center justify-center p-4">
@@ -74,6 +76,11 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
           Your contribution has been recorded and the organizer will be notified. You&apos;ll
           receive an email confirmation shortly.
         </p>
+
+        {/* Share with others */}
+        {jarName && paymentLink && (
+          <ShareButton jarName={jarName} paymentLink={paymentLink} />
+        )}
 
         {/* Marketing — convert donors to jar creators */}
         <div className="mt-8 border-t border-gray-100 pt-8">
