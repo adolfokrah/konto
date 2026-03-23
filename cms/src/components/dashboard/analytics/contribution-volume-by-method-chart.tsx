@@ -118,8 +118,7 @@ export function ContributionVolumeByMethodChart({ data, range = 'daily' }: Props
                 fill={`url(#fill-${m})`}
                 stroke={`var(--color-${m})`}
                 strokeWidth={2}
-                stackId="a"
-              />
+                />
             ))}
           </AreaChart>
         </ChartContainer>
