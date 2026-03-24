@@ -34,8 +34,10 @@ import { TopContributorsChart } from '@/components/dashboard/analytics/top-contr
 import { JarStatusChart } from '@/components/dashboard/analytics/jar-status-chart'
 import { NewJarsTrendChart } from '@/components/dashboard/analytics/new-jars-trend-chart'
 import { PayoutVolumeTrendChart } from '@/components/dashboard/analytics/payout-volume-trend-chart'
+import { TransactionCountTrendChart } from '@/components/dashboard/analytics/transaction-count-trend-chart'
 import { FailedTransactionsTrendChart } from '@/components/dashboard/analytics/failed-transactions-trend-chart'
 import { RefundVolumeTrendChart } from '@/components/dashboard/analytics/refund-volume-trend-chart'
+import { RefundCountTrendChart } from '@/components/dashboard/analytics/refund-count-trend-chart'
 import { ProviderSplitChart } from '@/components/dashboard/analytics/provider-split-chart'
 import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-breakdown-chart'
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
@@ -656,11 +658,20 @@ export default async function AnalyticsPage({
   // --- Chart data: Payout Volume Trend ---
   const payoutVolumeTrendData = buildAmountTrendData(payoutsInRange.docs as any[], range)
 
+  // --- Chart data: Transaction Count Trend (contributions + payouts) ---
+  const transactionCountTrendData = buildCountTrendData(
+    [...(last30DaysContributions.docs as any[]), ...(payoutsInRange.docs as any[])],
+    range,
+  )
+
   // --- Chart data: Failed Transactions Trend ---
   const failedTransactionsTrendData = buildCountTrendData(failedInRange.docs as any[], range)
 
   // --- Chart data: Refund Volume Trend ---
   const refundVolumeTrendData = buildRefundVolumeTrendData(refundsInRange.docs as any[], range)
+
+  // --- Chart data: Refund Count Trend ---
+  const refundCountTrendData = buildCountTrendData(refundsInRange.docs as any[], range)
 
   // --- Chart data: Provider Split ---
   const mtnVolume = mtnContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
@@ -821,16 +832,22 @@ export default async function AnalyticsPage({
         <ContributionVolumeByMethodChart data={contributionVolumeByMethodData} range={range} />
       </div>
 
+      {/* Payout Volume + Transaction Count trends — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <PayoutVolumeTrendChart data={payoutVolumeTrendData} range={range} />
+        <TransactionCountTrendChart data={transactionCountTrendData} range={range} />
+      </div>
+
       {/* New Jars + Failed Transactions trends — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
         <NewJarsTrendChart data={newJarsTrendData} range={range} />
         <FailedTransactionsTrendChart data={failedTransactionsTrendData} range={range} />
       </div>
 
-      {/* Payout Volume + Refund Volume trends — 2 columns */}
+      {/* Refund Volume + Refund Count — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
-        <PayoutVolumeTrendChart data={payoutVolumeTrendData} range={range} />
         <RefundVolumeTrendChart data={refundVolumeTrendData} range={range} />
+        <RefundCountTrendChart data={refundCountTrendData} range={range} />
       </div>
 
       {/* Payment Methods + Transaction Status — 2 columns */}
