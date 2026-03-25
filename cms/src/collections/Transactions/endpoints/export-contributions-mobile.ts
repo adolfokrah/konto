@@ -2,21 +2,12 @@ import type { PayloadRequest } from 'payload'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import fs from 'fs'
 import path from 'path'
-import { fcmNotifications } from '@/utilities/fcmPushNotifications'
-import { emailService } from '@/utilities/emailService'
 import { buildWhere, parseList } from './shared'
 
-export const exportContributions = async (req: PayloadRequest) => {
+export const exportContributionsMobile = async (req: PayloadRequest) => {
   try {
     if (!req.user) {
       return Response.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { email } = req.query as Record<string, string>
-    const targetEmail = email || req.user.email
-
-    if (!targetEmail) {
-      return Response.json({ success: false, message: 'No target email provided' }, { status: 400 })
     }
 
     const { where, error } = await buildWhere(req)
@@ -475,43 +466,12 @@ export const exportContributions = async (req: PayloadRequest) => {
       })
     })
     const pdfBytes = await pdfDoc.save()
-    const pdfBuffer = Buffer.from(pdfBytes)
-
-    // Email PDF via Resend (skip in test mode)
-    const fileName = `contributions_${Date.now()}.pdf`
-    await emailService.sendExportReportEmail(targetEmail, jarName, docs.length, fileName, pdfBuffer)
-
-    // Attempt push notification to the requesting user (if token available)
-    try {
-      // Ensure we have fresh user data (depth 0)
-      let user: any = req.user
-      if (user && typeof user === 'object' && !user.fcmToken) {
-        try {
-          user = await req.payload.findByID({ collection: 'users', id: user.id, depth: 0 })
-        } catch (_) {}
-      }
-      const token = user?.fcmToken
-      if (token) {
-        await fcmNotifications.sendNotification(
-          [token],
-          `Your PDF export for ${jarName || 'the jar'} (${docs.length} records) has been emailed.`,
-          'Contributions Export Ready',
-          { type: 'export', jarName: jarName || 'jar', count: String(docs.length) },
-        )
-      }
-    } catch (pushErr: any) {
-      // Swallow push errors to not affect main response
-      const msg =
-        pushErr && typeof pushErr === 'object' && 'message' in pushErr
-          ? (pushErr as any).message
-          : String(pushErr)
-      req.payload.logger.error?.(`Export push notification failed: ${msg}`)
-    }
+    const base64 = Buffer.from(pdfBytes).toString('base64')
+    const fileName = `contributions_${jarName ? jarName.replace(/\s+/g, '_') : Date.now()}.pdf`
 
     return Response.json({
       success: true,
-      message: 'Export initiated, PDF emailed successfully',
-      meta: { count: docs.length, totalAmount: total },
+      data: { base64, fileName, count: docs.length, totalAmount: total },
     })
   } catch (e: any) {
     return Response.json(

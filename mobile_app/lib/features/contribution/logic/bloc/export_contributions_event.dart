@@ -15,7 +15,6 @@ class TriggerExportContributions extends ExportContributionsEvent {
   final DateTime? startDate;
   final DateTime? endDate;
   final String? contributor;
-  final String? email; // optional override
 
   const TriggerExportContributions({
     required this.jarId,
@@ -26,7 +25,6 @@ class TriggerExportContributions extends ExportContributionsEvent {
     this.startDate,
     this.endDate,
     this.contributor,
-    this.email,
   });
 
   @override
@@ -39,6 +37,5 @@ class TriggerExportContributions extends ExportContributionsEvent {
     startDate,
     endDate,
     contributor,
-    email,
   ];
 }

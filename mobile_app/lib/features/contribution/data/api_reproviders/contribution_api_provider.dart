@@ -370,9 +370,8 @@ class ContributionApiProvider extends BaseApiProvider {
     }
   }
 
-  /// Trigger backend export-to-email for contributions PDF
-  /// Accepts same filter signature as list plus optional email override
-  Future<Map<String, dynamic>> exportContributionsToEmail({
+  /// Fetch contributions PDF as base64 for direct sharing on mobile
+  Future<Map<String, dynamic>> exportContributionsMobile({
     required String jarId,
     List<String>? paymentMethods,
     List<String>? statuses,
@@ -381,7 +380,6 @@ class ContributionApiProvider extends BaseApiProvider {
     DateTime? startDate,
     DateTime? endDate,
     String? contributor,
-    String? email,
   }) async {
     try {
       final headers = await getAuthenticatedHeaders();
@@ -410,12 +408,9 @@ class ContributionApiProvider extends BaseApiProvider {
       if (contributor != null && contributor.isNotEmpty) {
         queryParams['contributor'] = contributor;
       }
-      if (email != null && email.isNotEmpty) {
-        queryParams['email'] = email;
-      }
 
       final response = await dio.get(
-        '${BackendConfig.apiBaseUrl}/transactions/export-contributions',
+        '${BackendConfig.apiBaseUrl}/transactions/export-contributions-mobile',
         queryParameters: queryParams,
         options: Options(headers: headers),
       );

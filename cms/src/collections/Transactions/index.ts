@@ -16,6 +16,7 @@ import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
+import { exportContributionsMobile } from './endpoints/export-contributions-mobile'
 import { recalculateCharges } from './endpoints/recalculate-charges'
 import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
@@ -393,6 +394,11 @@ export const Transactions: CollectionConfig = {
       path: '/export-contributions',
       method: 'get',
       handler: exportContributions,
+    },
+    {
+      path: '/export-contributions-mobile',
+      method: 'get',
+      handler: exportContributionsMobile,
     },
     {
       path: '/recalculate-charges',

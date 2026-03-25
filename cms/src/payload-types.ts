@@ -1598,6 +1598,10 @@ export interface Jar {
         label: string;
         fieldType: 'text' | 'number' | 'select' | 'checkbox' | 'phone' | 'email';
         required?: boolean | null;
+        /**
+         * Include this field's value in exported PDF reports
+         */
+        includeInExport?: boolean | null;
         placeholder?: string | null;
         /**
          * Options for dropdown fields
@@ -3046,6 +3050,7 @@ export interface JarsSelect<T extends boolean = true> {
         label?: T;
         fieldType?: T;
         required?: T;
+        includeInExport?: T;
         placeholder?: T;
         options?:
           | T

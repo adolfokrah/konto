@@ -155,8 +155,8 @@ class ContributionRepository {
     }
   }
 
-  /// Request backend to generate and email a PDF export of contributions
-  Future<Map<String, dynamic>> exportContributionsToEmail({
+  /// Fetch contributions PDF as base64 for direct sharing on mobile
+  Future<Map<String, dynamic>> exportContributionsMobile({
     required String jarId,
     List<String>? paymentMethods,
     List<String>? statuses,
@@ -165,11 +165,10 @@ class ContributionRepository {
     DateTime? startDate,
     DateTime? endDate,
     String? contributor,
-    String? email,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider
-          .exportContributionsToEmail(
+          .exportContributionsMobile(
             jarId: jarId,
             paymentMethods: paymentMethods,
             statuses: statuses,
@@ -178,13 +177,12 @@ class ContributionRepository {
             startDate: startDate,
             endDate: endDate,
             contributor: contributor,
-            email: email,
           );
       if (apiResponse['success'] == true) {
         return {
           'success': true,
-          'data': apiResponse,
-          'message': apiResponse['message'] ?? 'Export initiated',
+          'data': apiResponse['data'],
+          'message': apiResponse['message'] ?? 'PDF ready',
         };
       }
       return {
