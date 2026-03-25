@@ -24,6 +24,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
@@ -189,6 +190,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider.value(value: getIt<AddContributionBloc>()),
         BlocProvider.value(value: getIt<FetchContributionBloc>()),
         BlocProvider.value(value: getIt<UpdateJarBloc>()),
+        BlocProvider.value(value: getIt<ManageCustomFieldsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<WithdrawalAccountVerificationBloc>()),
         BlocProvider.value(value: getIt<MomoPaymentBloc>()),

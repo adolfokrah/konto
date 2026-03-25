@@ -193,6 +193,7 @@ class JarApiProvider extends BaseApiProvider {
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
     int? requiredApprovals,
+    List<Map<String, dynamic>>? customFields,
   }) async {
     try {
       // Get authenticated headers
@@ -274,6 +275,9 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (requiredApprovals != null) {
         jarData['requiredApprovals'] = requiredApprovals;
+      }
+      if (customFields != null) {
+        jarData['customFields'] = customFields;
       }
 
       // Handle paymentPage fields together to avoid overwriting

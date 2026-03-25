@@ -31,4 +31,6 @@ class AppRoutes {
   static const String withdraw = '/withdraw';
   static const String requestContribution = '/request_contribution';
   static const String referral = '/referral';
+  static const String jarCustomFields = '/jar_custom_fields';
+  static const String jarCustomFieldAdd = '/jar_custom_field_add';
 }

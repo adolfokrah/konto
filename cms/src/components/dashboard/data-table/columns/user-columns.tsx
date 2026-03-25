@@ -61,6 +61,10 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     cell: ({ row }) => (
       <span className="truncate block text-sm">{row.original.email || '\u2014'}</span>
     ),
+    meta: {
+      filter: { type: 'search', paramKey: 'email', placeholder: 'Search by email...' },
+      filterLabel: 'Email',
+    } satisfies DataTableColumnMeta,
   },
   {
     accessorKey: 'phoneNumber',

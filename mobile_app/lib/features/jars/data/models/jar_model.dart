@@ -1,5 +1,6 @@
 /// Comprehensive Jar model representing a single jar with all its properties and relationships
 /// Based on the Jars collection schema from PayloadCMS
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 
 /// Model representing an invited collector in a jar
 class InvitedCollector {
@@ -75,6 +76,9 @@ class JarModel {
   final int totalContributors;
   final double progressPercentage;
 
+  // Custom fields defined by the jar creator
+  final List<CustomFieldModel>? customFields;
+
   const JarModel({
     required this.id,
     required this.name,
@@ -98,6 +102,7 @@ class JarModel {
     required this.totalContributions,
     required this.totalContributors,
     required this.progressPercentage,
+    this.customFields,
   });
 
   factory JarModel.fromJson(Map<String, dynamic> json) {
@@ -153,6 +158,13 @@ class JarModel {
           goalAmount > 0
               ? (totalContributions / goalAmount * 100).clamp(0, 100)
               : 0,
+      customFields:
+          (json['customFields'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    CustomFieldModel.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 
@@ -183,6 +195,8 @@ class JarModel {
       'totalContributions': totalContributions,
       'totalContributors': totalContributors,
       'progressPercentage': progressPercentage,
+      if (customFields != null)
+        'customFields': customFields!.map((f) => f.toJson()).toList(),
     };
   }
 
@@ -210,6 +224,7 @@ class JarModel {
     double? totalContributions,
     int? totalContributors,
     double? progressPercentage,
+    List<CustomFieldModel>? customFields,
   }) {
     return JarModel(
       id: id ?? this.id,
@@ -236,6 +251,7 @@ class JarModel {
       totalContributions: totalContributions ?? this.totalContributions,
       totalContributors: totalContributors ?? this.totalContributors,
       progressPercentage: progressPercentage ?? this.progressPercentage,
+      customFields: customFields ?? this.customFields,
     );
   }
 

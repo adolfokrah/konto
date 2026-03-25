@@ -25,6 +25,7 @@ export default async function UsersPage({ searchParams }: Props) {
   const page = Number(params.page) || 1
   const limit = Number(params.limit) || DEFAULT_LIMIT
   const search = typeof params.search === 'string' ? params.search : ''
+  const email = typeof params.email === 'string' ? params.email : ''
   const kyc = typeof params.kyc === 'string' ? params.kyc : ''
   const role = typeof params.role === 'string' ? params.role : ''
   const platform = typeof params.platform === 'string' ? params.platform : ''
@@ -57,6 +58,9 @@ export default async function UsersPage({ searchParams }: Props) {
   }
   if (platform && ['android', 'ios'].includes(platform)) {
     where.platform = { equals: platform }
+  }
+  if (email) {
+    where.email = { like: email }
   }
 
   const startOfToday = new Date()

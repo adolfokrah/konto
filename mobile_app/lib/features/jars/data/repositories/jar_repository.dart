@@ -160,6 +160,7 @@ class JarRepository {
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
     int? requiredApprovals,
+    List<Map<String, dynamic>>? customFields,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -183,6 +184,7 @@ class JarRepository {
         showRecentContributions: showRecentContributions,
         allowAnonymousContributions: allowAnonymousContributions,
         requiredApprovals: requiredApprovals,
+        customFields: customFields,
       );
 
       if (apiResponse['doc'] != null) {

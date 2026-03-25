@@ -34,6 +34,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_rel
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
@@ -238,6 +239,9 @@ void setupServiceLocator() {
   );
   getIt.registerLazySingleton<UpdateJarBloc>(
     () => UpdateJarBloc(jarRepository: getIt<JarRepository>()),
+  );
+  getIt.registerLazySingleton<ManageCustomFieldsBloc>(
+    () => ManageCustomFieldsBloc(jarRepository: getIt<JarRepository>()),
   );
   getIt.registerLazySingleton<FilterContributionsBloc>(
     () => FilterContributionsBloc(),

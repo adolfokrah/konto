@@ -1,5 +1,6 @@
 // Models for the Jar Summary API response
 import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 
 /// Enum representing the type of contribution
 enum ContributionType {
@@ -234,6 +235,7 @@ class JarSummaryModel {
   transactionsByPaymentMethod; // Transactions grouped by payment method
   final BalanceBreakDown balanceBreakDown; // Financial breakdown
   final bool isCreator; // Whether the current user is the creator of this jar
+  final List<CustomFieldModel>? customFields;
 
   const JarSummaryModel({
     required this.id,
@@ -265,6 +267,7 @@ class JarSummaryModel {
     this.transactionsByPaymentMethod,
     required this.balanceBreakDown,
     required this.isCreator,
+    this.customFields,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -486,6 +489,12 @@ class JarSummaryModel {
                 applePay: PaymentMethodBreakdown(totalAmount: 0, totalCount: 0),
               ),
       isCreator: json['isCreator'] as bool? ?? false,
+      customFields:
+          (json['customFields'] as List<dynamic>?)
+              ?.map(
+                (e) => CustomFieldModel.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 
