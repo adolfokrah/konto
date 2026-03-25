@@ -2,12 +2,18 @@ import type { PayloadRequest } from 'payload'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import fs from 'fs'
 import path from 'path'
+import { emailService } from '@/utilities/emailService'
 import { buildWhere, parseList } from './shared'
 
 export const exportContributionsMobile = async (req: PayloadRequest) => {
   try {
     if (!req.user) {
       return Response.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const targetEmail = req.user.email
+    if (!targetEmail) {
+      return Response.json({ success: false, message: 'No email on account' }, { status: 400 })
     }
 
     const { where, error } = await buildWhere(req)
@@ -112,18 +118,20 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, Date [+ custom fields]
-    const basePercents = [0.12, 0.11, 0.11, 0.09, 0.07, 0.08, 0.1, 0.1, 0.1, 0.12]
+    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, [custom fields], Date
+    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.09, 0.1]
     const customFieldPercent = 0.09
     const numCustomFields = exportableCustomFields.length
-    // Scale base columns down to make room for custom field columns
     const scaleFactor = numCustomFields > 0 ? 1 - customFieldPercent * numCustomFields : 1
     const columnPercents = [
-      ...basePercents.map((p) => p * scaleFactor),
-      ...exportableCustomFields.map(() => customFieldPercent),
+      basePercents[0],
+      ...basePercents.slice(1).map((p) => p * scaleFactor),
+      ...exportableCustomFields.map(() => customFieldPercent * scaleFactor),
+      basePercents[10] * scaleFactor,
     ]
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
+      '#',
       'Transaction ID',
       'Contributor',
       'Initiated by',
@@ -133,8 +141,8 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       'Reason',
       'Contribution',
       'Payout',
-      'Date',
       ...exportableCustomFields.map((f) => f.label),
+      'Date',
     ]
 
     const titleSize = 18
@@ -250,9 +258,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       cursorY -= headerRowHeight
     }
 
-    let headerDrawn = false
     drawHeader()
-    headerDrawn = true
 
     let total = 0
     // Simple text wrapping utility
@@ -396,16 +402,20 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
 
       const reason = refundsByTransaction.get(String(c.id)) || '-'
 
-      const customFieldValues: Record<string, any> = {}
+      // Build lookup maps: by fieldId and by label for fallback
+      const cfvById: Record<string, any> = {}
+      const cfvByLabel: Record<string, any> = {}
       if (Array.isArray(c.customFieldValues)) {
         for (const cfv of c.customFieldValues) {
-          if (cfv.fieldId) customFieldValues[cfv.fieldId] = cfv.value
+          if (cfv.fieldId) cfvById[cfv.fieldId] = cfv.value
+          if (cfv.label) cfvByLabel[String(cfv.label).toLowerCase()] = cfv.value
         }
       } else if (c.customFieldValues && typeof c.customFieldValues === 'object') {
-        Object.assign(customFieldValues, c.customFieldValues)
+        Object.assign(cfvById, c.customFieldValues)
       }
 
       const row = [
+        String(idx + 1),
         idShort,
         contributor,
         collectorName,
@@ -415,8 +425,11 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
         reason,
         contributionAmt,
         payoutAmt,
+        ...exportableCustomFields.map((f) => {
+          const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
+          return val !== undefined && val !== null && val !== '' ? String(val) : '-'
+        }),
         dateStr,
-        ...exportableCustomFields.map((f) => String(customFieldValues[f.id] ?? '-')),
       ]
       drawRow(row, idx)
     })
@@ -466,12 +479,14 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       })
     })
     const pdfBytes = await pdfDoc.save()
-    const base64 = Buffer.from(pdfBytes).toString('base64')
-    const fileName = `contributions_${jarName ? jarName.replace(/\s+/g, '_') : Date.now()}.pdf`
+    const pdfBuffer = Buffer.from(pdfBytes)
+    const fileName = `contributions_${Date.now()}.pdf`
+    await emailService.sendExportReportEmail(targetEmail, jarName, docs.length, fileName, pdfBuffer)
 
     return Response.json({
       success: true,
-      data: { base64, fileName, count: docs.length, totalAmount: total },
+      message: 'Your contributions statement has been emailed to you',
+      meta: { count: docs.length, totalAmount: total },
     })
   } catch (e: any) {
     return Response.json(

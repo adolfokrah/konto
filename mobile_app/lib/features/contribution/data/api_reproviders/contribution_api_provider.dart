@@ -412,7 +412,11 @@ class ContributionApiProvider extends BaseApiProvider {
       final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/transactions/export-contributions-mobile',
         queryParameters: queryParams,
-        options: Options(headers: headers),
+        options: Options(
+          headers: headers,
+          receiveTimeout: Duration.zero,
+          sendTimeout: Duration.zero,
+        ),
       );
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;

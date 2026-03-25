@@ -1,9 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 
 part 'export_contributions_event.dart';
@@ -37,28 +33,13 @@ class ExportContributionsBloc
     );
 
     if (result['success'] == true) {
-      try {
-        final data = result['data'] as Map<String, dynamic>;
-        final base64Str = data['base64'] as String;
-        final fileName = data['fileName'] as String? ?? 'contributions.pdf';
-        final bytes = base64Decode(base64Str);
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/$fileName');
-        await file.writeAsBytes(bytes);
-        await Share.shareXFiles(
-          [XFile(file.path, mimeType: 'application/pdf')],
-          subject: fileName,
-        );
-        emit(ExportContributionsSuccess(message: 'PDF ready to share'));
-      } catch (e) {
-        emit(ExportContributionsFailure(message: 'Failed to share PDF: $e'));
-      }
+      emit(ExportContributionsSuccess(
+        message: result['message'] ?? 'Statement emailed successfully',
+      ));
     } else {
-      emit(
-        ExportContributionsFailure(
-          message: result['message'] ?? 'Export failed',
-        ),
-      );
+      emit(ExportContributionsFailure(
+        message: result['message'] ?? 'Export failed',
+      ));
     }
   }
 }

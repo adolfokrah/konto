@@ -121,18 +121,20 @@ export const exportContributions = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, Date [+ custom fields]
-    const basePercents = [0.12, 0.11, 0.11, 0.09, 0.07, 0.08, 0.1, 0.1, 0.1, 0.12]
+    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, [custom fields], Date
+    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.09, 0.1]
     const customFieldPercent = 0.09
     const numCustomFields = exportableCustomFields.length
-    // Scale base columns down to make room for custom field columns
     const scaleFactor = numCustomFields > 0 ? 1 - customFieldPercent * numCustomFields : 1
     const columnPercents = [
-      ...basePercents.map((p) => p * scaleFactor),
-      ...exportableCustomFields.map(() => customFieldPercent),
+      basePercents[0], // # (no scale)
+      ...basePercents.slice(1).map((p) => p * scaleFactor),
+      ...exportableCustomFields.map(() => customFieldPercent * scaleFactor),
+      basePercents[10] * scaleFactor, // Date last
     ]
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
+      '#',
       'Transaction ID',
       'Contributor',
       'Initiated by',
@@ -142,8 +144,8 @@ export const exportContributions = async (req: PayloadRequest) => {
       'Reason',
       'Contribution',
       'Payout',
-      'Date',
       ...exportableCustomFields.map((f) => f.label),
+      'Date',
     ]
 
     const titleSize = 18
@@ -259,9 +261,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       cursorY -= headerRowHeight
     }
 
-    let headerDrawn = false
     drawHeader()
-    headerDrawn = true
 
     let total = 0
     // Simple text wrapping utility
@@ -405,16 +405,20 @@ export const exportContributions = async (req: PayloadRequest) => {
 
       const reason = refundsByTransaction.get(String(c.id)) || '-'
 
-      const customFieldValues: Record<string, any> = {}
+      // Build lookup maps: by fieldId and by label for fallback
+      const cfvById: Record<string, any> = {}
+      const cfvByLabel: Record<string, any> = {}
       if (Array.isArray(c.customFieldValues)) {
         for (const cfv of c.customFieldValues) {
-          if (cfv.fieldId) customFieldValues[cfv.fieldId] = cfv.value
+          if (cfv.fieldId) cfvById[cfv.fieldId] = cfv.value
+          if (cfv.label) cfvByLabel[String(cfv.label).toLowerCase()] = cfv.value
         }
       } else if (c.customFieldValues && typeof c.customFieldValues === 'object') {
-        Object.assign(customFieldValues, c.customFieldValues)
+        Object.assign(cfvById, c.customFieldValues)
       }
 
       const row = [
+        String(idx + 1),
         idShort,
         contributor,
         collectorName,
@@ -424,8 +428,11 @@ export const exportContributions = async (req: PayloadRequest) => {
         reason,
         contributionAmt,
         payoutAmt,
+        ...exportableCustomFields.map((f) => {
+          const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
+          return val !== undefined && val !== null && val !== '' ? String(val) : '-'
+        }),
         dateStr,
-        ...exportableCustomFields.map((f) => String(customFieldValues[f.id] ?? '-')),
       ]
       drawRow(row, idx)
     })

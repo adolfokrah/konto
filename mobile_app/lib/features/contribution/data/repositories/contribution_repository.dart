@@ -155,7 +155,7 @@ class ContributionRepository {
     }
   }
 
-  /// Fetch contributions PDF as base64 for direct sharing on mobile
+  /// Generate and email a PDF statement of contributions (mobile)
   Future<Map<String, dynamic>> exportContributionsMobile({
     required String jarId,
     List<String>? paymentMethods,
