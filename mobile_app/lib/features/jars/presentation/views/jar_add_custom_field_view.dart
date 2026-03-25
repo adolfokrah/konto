@@ -7,6 +7,7 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
@@ -372,19 +373,17 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: SwitchListTile(
+                child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text('Required', style: AppTextStyles.titleMediumS),
                   subtitle: Text(
                     'Contributors must fill in this field',
                     style: AppTextStyles.titleRegularXs,
                   ),
-                  value: _required,
-                  activeThumbColor: Theme.of(context).colorScheme.surface,
-                  activeTrackColor: Theme.of(context).colorScheme.secondary,
-                  inactiveThumbColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
-                  inactiveTrackColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
-                  onChanged: (v) => setState(() => _required = v),
+                  trailing: CustomCupertinoSwitch(
+                    defaultValue: _required,
+                    onChanged: (v) => setState(() => _required = v),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.spacingS),
@@ -397,19 +396,17 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: SwitchListTile(
+                child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text('Include in PDF export', style: AppTextStyles.titleMediumS),
                   subtitle: Text(
                     'Show this field\'s value in exported PDF reports',
                     style: AppTextStyles.titleRegularXs,
                   ),
-                  value: _includeInExport,
-                  activeThumbColor: Theme.of(context).colorScheme.surface,
-                  activeTrackColor: Theme.of(context).colorScheme.secondary,
-                  inactiveThumbColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
-                  inactiveTrackColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
-                  onChanged: (v) => setState(() => _includeInExport = v),
+                  trailing: CustomCupertinoSwitch(
+                    defaultValue: _includeInExport,
+                    onChanged: (v) => setState(() => _includeInExport = v),
+                  ),
                 ),
               ),
 
