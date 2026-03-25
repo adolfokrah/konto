@@ -260,6 +260,69 @@ export const Jars: CollectionConfig = {
         description: 'Allow contributions from users not logged in',
       },
     },
+    {
+      name: 'customFields',
+      type: 'array',
+      required: false,
+      admin: {
+        description: 'Custom fields to collect from contributors on the payment page',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Label shown to contributor (e.g. "T-shirt size", "Attending?")',
+          },
+        },
+        {
+          name: 'fieldType',
+          type: 'select',
+          required: true,
+          defaultValue: 'text',
+          options: [
+            { label: 'Text', value: 'text' },
+            { label: 'Number', value: 'number' },
+            { label: 'Dropdown', value: 'select' },
+            { label: 'Checkbox', value: 'checkbox' },
+            { label: 'Phone', value: 'phone' },
+            { label: 'Email', value: 'email' },
+          ],
+        },
+        {
+          name: 'required',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+        {
+          name: 'placeholder',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'options',
+          type: 'array',
+          required: false,
+          admin: {
+            description: 'Options for dropdown fields',
+            condition: (_data, siblingData) => siblingData?.fieldType === 'select',
+          },
+          fields: [
+            {
+              name: 'label',
+              type: 'text',
+              required: true,
+            },
+            {
+              name: 'value',
+              type: 'text',
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
   ],
   hooks: {
     beforeChange: [

@@ -328,6 +328,15 @@ export const Transactions: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'customFieldValues',
+      type: 'json',
+      required: false,
+      admin: {
+        description: 'Values submitted for custom fields defined on the jar',
+        readOnly: true,
+      },
+    },
   ],
   endpoints: [
     {

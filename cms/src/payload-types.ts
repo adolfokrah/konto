@@ -1477,6 +1477,18 @@ export interface Transaction {
     | number
     | boolean
     | null;
+  /**
+   * Values submitted for custom fields defined on the jar
+   */
+  customFieldValues?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1575,6 +1587,31 @@ export interface Jar {
    * Allow contributions from users not logged in
    */
   allowAnonymousContributions?: boolean | null;
+  /**
+   * Custom fields to collect from contributors on the payment page
+   */
+  customFields?:
+    | {
+        /**
+         * Label shown to contributor (e.g. "T-shirt size", "Attending?")
+         */
+        label: string;
+        fieldType: 'text' | 'number' | 'select' | 'checkbox' | 'phone' | 'email';
+        required?: boolean | null;
+        placeholder?: string | null;
+        /**
+         * Options for dropdown fields
+         */
+        options?:
+          | {
+              label: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2957,6 +2994,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   collector?: T;
   viaPaymentLink?: T;
   webhookResponse?: T;
+  customFieldValues?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3002,6 +3040,22 @@ export interface JarsSelect<T extends boolean = true> {
   freezeReason?: T;
   lastActivityAt?: T;
   allowAnonymousContributions?: T;
+  customFields?:
+    | T
+    | {
+        label?: T;
+        fieldType?: T;
+        required?: T;
+        placeholder?: T;
+        options?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

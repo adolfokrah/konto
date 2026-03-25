@@ -11,6 +11,16 @@ import { Switch } from "@/components/ui/switch"
 import PaymentWaitingModal from './PaymentWaitingModal'
 import { ChevronDown } from 'lucide-react'
 import useSWRMutation from 'swr/mutation'
+import CustomFields from './CustomFields'
+
+export type CustomField = {
+  id: string
+  label: string
+  fieldType: 'text' | 'number' | 'select' | 'checkbox' | 'phone' | 'email'
+  required?: boolean
+  placeholder?: string
+  options?: { label: string; value: string }[]
+}
 
 interface ContributionInputProps {
   currency?: string
@@ -22,6 +32,7 @@ interface ContributionInputProps {
   collectorId?: string | { id: string } | undefined
   allowAnonymousContributions?: boolean
   transactionFeePercentage?: number
+  customFields?: CustomField[]
 }
 
 export default function ContributionInput({
@@ -34,6 +45,7 @@ export default function ContributionInput({
   collectorId = undefined,
   allowAnonymousContributions = false,
   transactionFeePercentage = 1.95,
+  customFields = [],
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -47,6 +59,7 @@ export default function ContributionInput({
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
   const router = useRouter()
 
   const { trigger: createContribution } = useSWRMutation(
@@ -213,6 +226,20 @@ export default function ContributionInput({
       return
     }
 
+    // Validate required custom fields
+    for (const field of customFields) {
+      if (field.required) {
+        const value = customFieldValues[field.id]
+        if (value === undefined || value === null || value === '') {
+          toast.error('Missing Information', {
+            description: `"${field.label}" is required`,
+            duration: 4000,
+          })
+          return
+        }
+      }
+    }
+
     setIsLoading(true)
     setPaymentStatus('idle')
 
@@ -227,6 +254,7 @@ export default function ContributionInput({
         mobileMoneyProvider: mobileMoneyProvider,
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
+        ...(Object.keys(customFieldValues).length > 0 ? { customFieldValues } : {}),
       })
 
       const contributionId = contributionData.data.id
@@ -362,6 +390,13 @@ export default function ContributionInput({
             required
           />
         </div>
+
+        {/* Custom fields defined by the jar creator */}
+        <CustomFields
+          fields={customFields}
+          values={customFieldValues}
+          onChange={(id, value) => setCustomFieldValues((prev) => ({ ...prev, [id]: value }))}
+        />
 
         <div>
           <textarea

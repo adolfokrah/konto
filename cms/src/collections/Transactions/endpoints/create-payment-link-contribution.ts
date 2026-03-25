@@ -11,6 +11,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       collector,
       mobileMoneyProvider,
       remarks,
+      customFieldValues,
     } = req.data || {}
 
     // Validate required fields
@@ -52,6 +53,21 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       )
     }
 
+    // Validate required custom fields
+    const jarCustomFields = (jar.customFields as any[]) || []
+    for (const field of jarCustomFields) {
+      if (field.required) {
+        const value = customFieldValues?.[field.id]
+        const isEmpty = value === undefined || value === null || value === ''
+        if (isEmpty) {
+          return Response.json(
+            { success: false, message: `"${field.label}" is required` },
+            { status: 400 },
+          )
+        }
+      }
+    }
+
     // Check if jar is frozen (AML compliance)
     if (jar.status === 'frozen') {
       return Response.json(
@@ -78,6 +94,17 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         collector: collector || jar.creator, // The jar creator is the collector for payment link contributions
         viaPaymentLink: true,
         ...(remarks ? { remarks } : {}),
+        ...(customFieldValues
+          ? {
+              customFieldValues: jarCustomFields
+                .filter((f: any) => customFieldValues[f.id] !== undefined)
+                .map((f: any) => ({
+                  fieldId: f.id,
+                  label: f.label,
+                  value: customFieldValues[f.id],
+                })),
+            }
+          : {}),
       },
       // Use admin context to bypass authentication requirements
       overrideAccess: true,

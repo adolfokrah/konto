@@ -382,6 +382,23 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
             </Section>
           )}
 
+          {/* Custom Fields */}
+          {transaction.customFieldValues && transaction.customFieldValues.length > 0 && (
+            <Section title="Custom Fields">
+              {transaction.customFieldValues.map((field) => (
+                <Row
+                  key={field.fieldId}
+                  label={field.label}
+                  value={
+                    typeof field.value === 'boolean'
+                      ? field.value ? 'Yes' : 'No'
+                      : String(field.value)
+                  }
+                />
+              ))}
+            </Section>
+          )}
+
           {/* Reference — always visible */}
           {transaction.transactionReference && (
             <Section title="Reference">

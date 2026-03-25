@@ -70,6 +70,7 @@ export type TransactionRow = {
   createdAt: string
   webhookResponse?: Record<string, any> | null
   remarks?: string | null
+  customFieldValues?: { fieldId: string; label: string; value: any }[] | null
 }
 
 function formatAmount(amount: number) {

@@ -53,6 +53,7 @@ export default async function TransactionDetailPage({ params }: Props) {
     createdAt: tx.createdAt,
     webhookResponse: tx.webhookResponse ?? null,
     remarks: tx.remarks || null,
+    customFieldValues: tx.customFieldValues ?? null,
   }
 
   return (
