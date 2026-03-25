@@ -7,26 +7,150 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
+
+class _PasteOptionsSheet extends StatefulWidget {
+  final String initialText;
+  final void Function(List<String> parts) onConvert;
+
+  const _PasteOptionsSheet({required this.initialText, required this.onConvert});
+
+  @override
+  State<_PasteOptionsSheet> createState() => _PasteOptionsSheetState();
+}
+
+class _PasteOptionsSheetState extends State<_PasteOptionsSheet> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 1.0,
+      minChildSize: 0.5,
+      maxChildSize: 1.0,
+      expand: false,
+      builder: (_, __) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.spacingM,
+            right: AppSpacing.spacingM,
+            top: AppSpacing.spacingM,
+            bottom:
+                MediaQuery.of(context).viewInsets.bottom + AppSpacing.spacingM,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Paste Options', style: AppTextStyles.titleMediumS),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.spacingXs),
+              Text(
+                'Type or paste your options separated by commas.',
+                style: AppTextStyles.titleRegularXs.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 180),
+                child: TextField(
+                  controller: _controller,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  autofocus: true,
+                  cursorColor: Colors.white,
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. Option A, Option B, Option C',
+                    hintStyle: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.primary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.all(AppSpacing.spacingM),
+                    alignLabelWithHint: true,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+              AppButton(
+                text: 'Convert to options',
+                onPressed: () {
+                  final text = _controller.text.trim();
+                  if (text.isEmpty) return;
+                  final parts = text
+                      .split(',')
+                      .map((s) => s.trim())
+                      .where((s) => s.isNotEmpty)
+                      .toList();
+                  Navigator.pop(context);
+                  widget.onConvert(parts);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
 class JarAddCustomFieldView extends StatefulWidget {
   final String jarId;
 
-  const JarAddCustomFieldView({super.key, required this.jarId});
+  /// When set, the form is in edit mode
+  final CustomFieldModel? existingField;
+  final int? existingIndex;
+
+  const JarAddCustomFieldView({
+    super.key,
+    required this.jarId,
+    this.existingField,
+    this.existingIndex,
+  });
+
+  bool get isEditMode => existingField != null && existingIndex != null;
 
   @override
   State<JarAddCustomFieldView> createState() => _JarAddCustomFieldViewState();
 }
 
 class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
-  final _labelController = TextEditingController();
-  final _placeholderController = TextEditingController();
-  String _fieldType = 'text';
-  bool _required = false;
-
-  // For select options: each entry is a TextEditingController for the label
-  final List<TextEditingController> _optionControllers = [];
+  late final TextEditingController _labelController;
+  late final TextEditingController _placeholderController;
+  late String _fieldType;
+  late bool _required;
+  late bool _includeInExport;
+  late final List<TextEditingController> _optionControllers;
 
   static const _fieldTypeOptions = [
     SelectOption(value: 'text', label: 'Text'),
@@ -38,6 +162,24 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final field = widget.existingField;
+    _labelController = TextEditingController(text: field?.label ?? '');
+    _placeholderController = TextEditingController(
+      text: field?.placeholder ?? '',
+    );
+    _fieldType = field?.fieldType ?? 'text';
+    _required = field?.required ?? false;
+    _includeInExport = field?.includeInExport ?? false;
+    _optionControllers =
+        field?.options
+            ?.map((o) => TextEditingController(text: o.label))
+            .toList() ??
+        [];
+  }
+
+  @override
   void dispose() {
     _labelController.dispose();
     _placeholderController.dispose();
@@ -45,6 +187,37 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  void _openPasteSheet() {
+    final initialText = _optionControllers
+        .map((c) => c.text.trim())
+        .where((t) => t.isNotEmpty)
+        .join(', ');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return _PasteOptionsSheet(
+          initialText: initialText,
+          onConvert: (parts) {
+            setState(() {
+              for (final c in _optionControllers) {
+                c.dispose();
+              }
+              _optionControllers
+                ..clear()
+                ..addAll(parts.map((p) => TextEditingController(text: p)));
+            });
+          },
+        );
+      },
+    );
   }
 
   void _addOption() {
@@ -82,18 +255,18 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
       }
     }
 
-    // Build the new field map
-    final newField = <String, dynamic>{
+    final fieldMap = <String, dynamic>{
       'label': label,
       'fieldType': _fieldType,
       'required': _required,
+      'includeInExport': _includeInExport,
     };
 
     final placeholder = _placeholderController.text.trim();
-    if (placeholder.isNotEmpty) newField['placeholder'] = placeholder;
+    if (placeholder.isNotEmpty) fieldMap['placeholder'] = placeholder;
 
     if (_fieldType == 'select') {
-      newField['options'] =
+      fieldMap['options'] =
           _optionControllers
               .map((c) => c.text.trim())
               .where((t) => t.isNotEmpty)
@@ -106,21 +279,31 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
               .toList();
     }
 
-    // Append to existing fields
     final summaryState = context.read<JarSummaryBloc>().state;
-    final existing =
+    final currentFields =
         summaryState is JarSummaryLoaded
             ? (summaryState.jarData.customFields ?? [])
                 .map((f) => f.toJson())
                 .toList()
             : <Map<String, dynamic>>[];
 
-    context.read<ManageCustomFieldsBloc>().add(
-      AddCustomFieldRequested(
-        jarId: widget.jarId,
-        updatedFields: [...existing, newField],
-      ),
-    );
+    if (widget.isEditMode) {
+      context.read<ManageCustomFieldsBloc>().add(
+        UpdateCustomFieldRequested(
+          jarId: widget.jarId,
+          index: widget.existingIndex!,
+          updatedField: fieldMap,
+          currentFields: currentFields,
+        ),
+      );
+    } else {
+      context.read<ManageCustomFieldsBloc>().add(
+        AddCustomFieldRequested(
+          jarId: widget.jarId,
+          updatedFields: [...currentFields, fieldMap],
+        ),
+      );
+    }
   }
 
   @override
@@ -135,10 +318,15 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Add Custom Field'),
+          title: Text(
+            widget.isEditMode ? 'Edit Custom Field' : 'Add Custom Field',
+          ),
           centerTitle: true,
         ),
-        body: SingleChildScrollView(
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.spacingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,9 +341,9 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                 label: 'Field Type',
                 value: _fieldType,
                 options: _fieldTypeOptions,
+                enabled: !widget.isEditMode,
                 onChanged: (value) => setState(() {
                   _fieldType = value;
-                  // Clear options when switching away from select
                   if (value != 'select') {
                     for (final c in _optionControllers) {
                       c.dispose();
@@ -166,7 +354,6 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
               ),
               const SizedBox(height: AppSpacing.spacingM),
 
-              // Placeholder — hidden for checkbox
               if (_fieldType != 'checkbox') ...[
                 AppTextInput(
                   label: 'Placeholder (optional)',
@@ -176,7 +363,6 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                 const SizedBox(height: AppSpacing.spacingM),
               ],
 
-              // Required toggle
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.spacingM,
@@ -197,18 +383,61 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                   onChanged: (v) => setState(() => _required = v),
                 ),
               ),
+              const SizedBox(height: AppSpacing.spacingS),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.spacingM,
+                  vertical: AppSpacing.spacingXs,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Include in PDF export', style: AppTextStyles.titleMediumS),
+                  subtitle: Text(
+                    'Show this field\'s value in exported PDF reports',
+                    style: AppTextStyles.titleRegularXs,
+                  ),
+                  value: _includeInExport,
+                  onChanged: (v) => setState(() => _includeInExport = v),
+                ),
+              ),
 
-              // Select options
               if (_fieldType == 'select') ...[
                 const SizedBox(height: AppSpacing.spacingM),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Options', style: AppTextStyles.titleMediumS),
-                    TextButton.icon(
-                      onPressed: _addOption,
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Add option'),
+                    Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: _openPasteSheet,
+                          icon: const Icon(
+                            Icons.content_paste,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Paste',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: _addOption,
+                          icon: const Icon(
+                            Icons.add,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Add option',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -229,7 +458,9 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                   ),
                 ...List.generate(_optionControllers.length, (i) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
+                    padding: const EdgeInsets.only(
+                      bottom: AppSpacing.spacingXs,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -250,20 +481,24 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                 }),
               ],
 
-              const SizedBox(height: AppSpacing.spacingL),
-
-              BlocBuilder<ManageCustomFieldsBloc, ManageCustomFieldsState>(
+            ],
+          ),
+        ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.spacingM),
+              child: BlocBuilder<ManageCustomFieldsBloc, ManageCustomFieldsState>(
                 builder: (context, state) {
                   return AppButton(
-                    text: 'Add Field',
+                    text: widget.isEditMode ? 'Save Changes' : 'Add Field',
                     isLoading: state is ManageCustomFieldsInProgress,
                     onPressed:
                         state is ManageCustomFieldsInProgress ? null : _submit,
                   );
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

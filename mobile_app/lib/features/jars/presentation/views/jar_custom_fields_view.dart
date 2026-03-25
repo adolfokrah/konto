@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/widgets/alert_bottom_sheet.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
@@ -24,7 +25,7 @@ class JarCustomFieldsView extends StatelessWidget {
             context,
             message: 'Custom field added successfully',
           );
-          context.read<JarSummaryBloc>().add(RefreshJarSummaryRequested());
+          context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
         } else if (state is ManageCustomFieldsFailure) {
           AppSnackBar.showError(context, message: state.errorMessage);
         }
@@ -38,6 +39,9 @@ class JarCustomFieldsView extends StatelessWidget {
           onPressed: () {
             context.push('${AppRoutes.jarCustomFieldAdd}?jarId=$jarId');
           },
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          shape: const CircleBorder(),
           child: const Icon(Icons.add),
         ),
         body: BlocBuilder<JarSummaryBloc, JarSummaryState>(
@@ -83,13 +87,43 @@ class JarCustomFieldsView extends StatelessWidget {
               );
             }
 
-            return ListView.separated(
+            return ReorderableListView.builder(
               padding: const EdgeInsets.all(AppSpacing.spacingM),
               itemCount: fields.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.spacingXs),
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex--;
+                final reordered = [...fields];
+                final item = reordered.removeAt(oldIndex);
+                reordered.insert(newIndex, item);
+                context.read<ManageCustomFieldsBloc>().add(
+                  ReorderCustomFieldsRequested(
+                    jarId: jarId,
+                    reorderedFields:
+                        reordered.map((f) => f.toJson()).toList(),
+                  ),
+                );
+              },
               itemBuilder: (context, index) {
-                return _CustomFieldCard(field: fields[index]);
+                return Padding(
+                  key: ValueKey(fields[index].label + index.toString()),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
+                  child: _CustomFieldCard(
+                    field: fields[index],
+                    index: index,
+                    jarId: jarId,
+                    onDelete: () {
+                      final currentFields =
+                          fields.map((f) => f.toJson()).toList();
+                      context.read<ManageCustomFieldsBloc>().add(
+                        DeleteCustomFieldRequested(
+                          jarId: jarId,
+                          index: index,
+                          currentFields: currentFields,
+                        ),
+                      );
+                    },
+                  ),
+                );
               },
             );
           },
@@ -101,12 +135,27 @@ class JarCustomFieldsView extends StatelessWidget {
 
 class _CustomFieldCard extends StatelessWidget {
   final CustomFieldModel field;
+  final int index;
+  final String jarId;
+  final VoidCallback onDelete;
 
-  const _CustomFieldCard({required this.field});
+  const _CustomFieldCard({
+    required this.field,
+    required this.index,
+    required this.jarId,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        context.push(
+          '${AppRoutes.jarCustomFieldAdd}?jarId=$jarId',
+          extra: {'field': field, 'index': index},
+        );
+      },
+      child: Container(
       padding: const EdgeInsets.all(AppSpacing.spacingM),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
@@ -144,8 +193,34 @@ class _CustomFieldCard extends StatelessWidget {
               ],
             ),
           ),
+          GestureDetector(
+            onTap: () {
+              AlertBottomSheet.show(
+                context: context,
+                title: 'Delete Field',
+                message:
+                    'Are you sure you want to delete "${field.label}"? This cannot be undone.',
+                confirmText: 'Delete',
+                onConfirm: onDelete,
+              );
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.errorRed.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.delete_outline,
+                color: AppColors.errorRed,
+                size: 18,
+              ),
+            ),
+          ),
         ],
       ),
+    ),
     );
   }
 }

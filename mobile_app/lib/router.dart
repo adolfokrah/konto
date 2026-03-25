@@ -32,6 +32,9 @@ import 'package:Hoga/features/user_account/presentation/views/language_settings_
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
 import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
+import 'package:Hoga/features/jars/presentation/views/jar_custom_fields_view.dart';
+import 'package:Hoga/features/jars/presentation/views/jar_add_custom_field_view.dart';
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 
 /// Global navigator key for deep navigation (FCM, FlutterLoadingOverlay)
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -193,6 +196,25 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/referral',
         builder: (context, state) => const ReferralView(),
+      ),
+      GoRoute(
+        path: '/jar_custom_fields',
+        builder: (context, state) {
+          final jarId = state.uri.queryParameters['jarId']!;
+          return JarCustomFieldsView(jarId: jarId);
+        },
+      ),
+      GoRoute(
+        path: '/jar_custom_field_add',
+        builder: (context, state) {
+          final jarId = state.uri.queryParameters['jarId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          return JarAddCustomFieldView(
+            jarId: jarId,
+            existingField: extra?['field'] as CustomFieldModel?,
+            existingIndex: extra?['index'] as int?,
+          );
+        },
       ),
     ],
   );

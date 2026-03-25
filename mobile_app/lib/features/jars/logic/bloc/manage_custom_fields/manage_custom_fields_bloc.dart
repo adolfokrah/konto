@@ -14,6 +14,97 @@ class ManageCustomFieldsBloc
     : _jarRepository = jarRepository,
       super(ManageCustomFieldsInitial()) {
     on<AddCustomFieldRequested>(_onAddCustomField);
+    on<UpdateCustomFieldRequested>(_onUpdateCustomField);
+    on<DeleteCustomFieldRequested>(_onDeleteCustomField);
+    on<ReorderCustomFieldsRequested>(_onReorderCustomFields);
+  }
+
+  Future<void> _onUpdateCustomField(
+    UpdateCustomFieldRequested event,
+    Emitter<ManageCustomFieldsState> emit,
+  ) async {
+    emit(ManageCustomFieldsInProgress());
+
+    final updatedFields = List<Map<String, dynamic>>.from(event.currentFields);
+    updatedFields[event.index] = event.updatedField;
+
+    final response = await _jarRepository.updateJar(
+      jarId: event.jarId,
+      customFields: updatedFields,
+    );
+
+    if (response['success'] == true) {
+      emit(
+        ManageCustomFieldsSuccess(
+          updatedFields:
+              updatedFields.map((f) => CustomFieldModel.fromJson(f)).toList(),
+        ),
+      );
+    } else {
+      emit(
+        ManageCustomFieldsFailure(
+          response['message'] ?? 'Failed to update custom field',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onReorderCustomFields(
+    ReorderCustomFieldsRequested event,
+    Emitter<ManageCustomFieldsState> emit,
+  ) async {
+    emit(ManageCustomFieldsInProgress());
+
+    final response = await _jarRepository.updateJar(
+      jarId: event.jarId,
+      customFields: event.reorderedFields,
+    );
+
+    if (response['success'] == true) {
+      emit(
+        ManageCustomFieldsSuccess(
+          updatedFields: event.reorderedFields
+              .map((f) => CustomFieldModel.fromJson(f))
+              .toList(),
+        ),
+      );
+    } else {
+      emit(
+        ManageCustomFieldsFailure(
+          response['message'] ?? 'Failed to reorder custom fields',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDeleteCustomField(
+    DeleteCustomFieldRequested event,
+    Emitter<ManageCustomFieldsState> emit,
+  ) async {
+    emit(ManageCustomFieldsInProgress());
+
+    final updatedFields = List<Map<String, dynamic>>.from(event.currentFields)
+      ..removeAt(event.index);
+
+    final response = await _jarRepository.updateJar(
+      jarId: event.jarId,
+      customFields: updatedFields,
+    );
+
+    if (response['success'] == true) {
+      emit(
+        ManageCustomFieldsSuccess(
+          updatedFields:
+              updatedFields.map((f) => CustomFieldModel.fromJson(f)).toList(),
+        ),
+      );
+    } else {
+      emit(
+        ManageCustomFieldsFailure(
+          response['message'] ?? 'Failed to delete custom field',
+        ),
+      );
+    }
   }
 
   Future<void> _onAddCustomField(

@@ -296,6 +296,14 @@ export const Jars: CollectionConfig = {
           defaultValue: false,
         },
         {
+          name: 'includeInExport',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: "Include this field's value in exported PDF reports",
+          },
+        },
+        {
           name: 'placeholder',
           type: 'text',
           required: false,

@@ -28,6 +28,9 @@ class CustomFieldModel {
   /// Only populated when [fieldType] == 'select'
   final List<CustomFieldOptionModel>? options;
 
+  /// Whether this field's value should be included in exported PDFs
+  final bool includeInExport;
+
   const CustomFieldModel({
     this.id,
     required this.label,
@@ -35,6 +38,7 @@ class CustomFieldModel {
     this.required = false,
     this.placeholder,
     this.options,
+    this.includeInExport = false,
   });
 
   factory CustomFieldModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +48,7 @@ class CustomFieldModel {
       fieldType: json['fieldType'] as String? ?? 'text',
       required: json['required'] as bool? ?? false,
       placeholder: json['placeholder'] as String?,
+      includeInExport: json['includeInExport'] as bool? ?? false,
       options:
           (json['options'] as List<dynamic>?)
               ?.map(
@@ -65,6 +70,7 @@ class CustomFieldModel {
     if (options != null) {
       map['options'] = options!.map((o) => o.toJson()).toList();
     }
+    map['includeInExport'] = includeInExport;
     return map;
   }
 

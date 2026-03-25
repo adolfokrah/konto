@@ -917,6 +917,32 @@ class _JarInfoViewState extends State<JarInfoView> {
                                 ),
                               ),
 
+                              // Custom Fields
+                              if (jarData.isCreator) ...[
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                AppCard(
+                                  variant: CardVariant.secondary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.spacingM,
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
+                                    onTap: () => context.push(
+                                      '${AppRoutes.jarCustomFields}?jarId=${jarData.id}',
+                                    ),
+                                    title: Text(
+                                      'Custom Fields',
+                                      style: AppTextStyles.titleMediumS,
+                                    ),
+                                    subtitle: Text(
+                                      '${jarData.customFields?.length ?? 0} field${(jarData.customFields?.length ?? 0) == 1 ? '' : 's'}',
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                  ),
+                                ),
+                              ],
+
                               // Required Approvals — only show when jar has admin collectors
                               // if ((jarData.invitedCollectors ?? []).any(
                               //   (ic) =>
