@@ -522,6 +522,7 @@ class ContributionModel {
   final bool isSettled;
   final String? transactionReference;
   final String? remarks;
+  final List<Map<String, dynamic>>? customFieldValues;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -542,6 +543,7 @@ class ContributionModel {
     this.isSettled = false,
     this.transactionReference,
     this.remarks,
+    this.customFieldValues,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -612,6 +614,9 @@ class ContributionModel {
         isSettled: json['isSettled'] as bool? ?? false,
         transactionReference: json['transactionReference'] as String?,
         remarks: json['remarks'] as String?,
+        customFieldValues: (json['customFieldValues'] as List<dynamic>?)
+            ?.map((e) => Map<String, dynamic>.from(e as Map))
+            .toList(),
         createdAt: DateTime.parse(
           json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         ),
@@ -644,6 +649,7 @@ class ContributionModel {
       'isSettled': isSettled,
       if (transactionReference != null) 'transactionReference': transactionReference,
       if (remarks != null) 'remarks': remarks,
+      if (customFieldValues != null) 'customFieldValues': customFieldValues,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -667,6 +673,7 @@ class ContributionModel {
     bool? isSettled,
     String? transactionReference,
     String? remarks,
+    List<Map<String, dynamic>>? customFieldValues,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -688,6 +695,7 @@ class ContributionModel {
       isSettled: isSettled ?? this.isSettled,
       transactionReference: transactionReference ?? this.transactionReference,
       remarks: remarks ?? this.remarks,
+      customFieldValues: customFieldValues ?? this.customFieldValues,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -41,6 +41,8 @@ import { RefundCountTrendChart } from '@/components/dashboard/analytics/refund-c
 import { ProviderSplitChart } from '@/components/dashboard/analytics/provider-split-chart'
 import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-breakdown-chart'
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
+import { TotalTransactionVolumeChart } from '@/components/dashboard/analytics/total-transaction-volume-chart'
+import { PayoutCountTrendChart } from '@/components/dashboard/analytics/payout-count-trend-chart'
 
 const fmt = (n: number) =>
   n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -664,6 +666,15 @@ export default async function AnalyticsPage({
     range,
   )
 
+  // --- Chart data: Total Transaction Volume (contributions + payouts, both positive) ---
+  const totalTransactionVolumeData = buildAmountTrendData(
+    [...(last30DaysContributions.docs as any[]), ...(payoutsInRange.docs as any[])],
+    range,
+  )
+
+  // --- Chart data: Payout Count Trend ---
+  const payoutCountTrendData = buildCountTrendData(payoutsInRange.docs as any[], range)
+
   // --- Chart data: Failed Transactions Trend ---
   const failedTransactionsTrendData = buildCountTrendData(failedInRange.docs as any[], range)
 
@@ -832,10 +843,16 @@ export default async function AnalyticsPage({
         <ContributionVolumeByMethodChart data={contributionVolumeByMethodData} range={range} />
       </div>
 
-      {/* Payout Volume + Transaction Count trends — 2 columns */}
+      {/* Transaction Count + Total Transaction Volume — 2 columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <TransactionCountTrendChart data={transactionCountTrendData} range={range} />
+        <TotalTransactionVolumeChart data={totalTransactionVolumeData} range={range} />
+      </div>
+
+      {/* Payout Volume + Payout Count — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
         <PayoutVolumeTrendChart data={payoutVolumeTrendData} range={range} />
-        <TransactionCountTrendChart data={transactionCountTrendData} range={range} />
+        <PayoutCountTrendChart data={payoutCountTrendData} range={range} />
       </div>
 
       {/* New Jars + Failed Transactions trends — 2 columns */}

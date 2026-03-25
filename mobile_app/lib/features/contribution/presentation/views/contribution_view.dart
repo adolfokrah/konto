@@ -628,6 +628,48 @@ class ContributionView extends StatelessWidget {
                                           ),
                                         ],
 
+                                        // Show custom fields if present
+                                        if (contribution.customFieldValues !=
+                                                null &&
+                                            contribution
+                                                .customFieldValues!
+                                                .isNotEmpty) ...[
+                                          ...contribution.customFieldValues!
+                                              .map(
+                                                (field) => ListTile(
+                                                  contentPadding:
+                                                      EdgeInsets.zero,
+                                                  dense: true,
+                                                  title: Text(
+                                                    field['label'] as String? ??
+                                                        '',
+                                                    style: AppTextStyles
+                                                        .titleMediumS
+                                                        .copyWith(
+                                                          color: Theme.of(
+                                                            context,
+                                                          )
+                                                              .textTheme
+                                                              .bodySmall!
+                                                              .color
+                                                              ?.withValues(
+                                                                alpha: 0.5,
+                                                              ),
+                                                        ),
+                                                  ),
+                                                  trailing: Text(
+                                                    field['value'] is bool
+                                                        ? (field['value'] as bool
+                                                            ? 'Yes'
+                                                            : 'No')
+                                                        : '${field['value'] ?? ''}',
+                                                    style: AppTextStyles
+                                                        .titleMediumS,
+                                                  ),
+                                                ),
+                                              ),
+                                        ],
+
                                         // Only show account number if it exists (for bank transfers)
                                         if (contribution.accountNumber !=
                                             null) ...[
