@@ -2,6 +2,23 @@ import type { CollectionBeforeChangeHook } from 'payload'
 
 export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req, context }) => {
   if (context?.skipCharges) return data
+
+  // No fees on 1 cedi contributions or payouts
+  if (data.amountContributed === 1) {
+    data.chargesBreakdown = {
+      platformCharge: 0,
+      amountPaidByContributor: 1,
+      hogapayRevenue: 0,
+      eganowFees: 0,
+    }
+    if (data.type === 'payout') {
+      data.payoutFeePercentage = 0
+      data.payoutFeeAmount = 0
+      data.payoutNetAmount = 1
+    }
+    return data
+  }
+
   if (data.paymentStatus === 'failed') {
     data.chargesBreakdown = {
       platformCharge: 0,
