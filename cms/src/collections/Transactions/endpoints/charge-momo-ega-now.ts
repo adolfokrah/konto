@@ -152,7 +152,6 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     // Try to get account name from Eganow KYC — fully optional, falls back to contributor name
     let accountName = contribution.contributor || 'Anonymous'
     try {
-      await getEganow().getToken()
       const kycResult = await getEganow().verifyKYC({
         paypartnerCode,
         accountNoOrCardNoOrMSISDN: phoneNumber,

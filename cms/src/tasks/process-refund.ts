@@ -45,6 +45,100 @@ export const processRefundTask = {
           ? refund.linkedTransaction
           : (refund.linkedTransaction as any)?.id
 
+      // Validate linked transaction qualifies for refund
+      if (!linkedTransactionId) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        return { output: { success: false, message: 'No linked transaction on refund' } }
+      }
+
+      const linkedTx = await payload.findByID({
+        collection: 'transactions',
+        id: linkedTransactionId,
+        overrideAccess: true,
+        depth: 0,
+      })
+
+      if (!linkedTx) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        return { output: { success: false, message: 'Linked transaction not found' } }
+      }
+
+      if (linkedTx.type !== 'contribution') {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        console.error(
+          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} is type "${linkedTx.type}", only contributions can be refunded`,
+        )
+        return {
+          output: {
+            success: false,
+            message: `Linked transaction is not a contribution (type: ${linkedTx.type})`,
+          },
+        }
+      }
+
+      if (linkedTx.paymentStatus !== 'completed') {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        console.error(
+          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} has status "${linkedTx.paymentStatus}", must be completed`,
+        )
+        return {
+          output: {
+            success: false,
+            message: `Linked transaction is not completed (status: ${linkedTx.paymentStatus})`,
+          },
+        }
+      }
+
+      // Check for duplicate refund — no other completed/in-progress refund should exist for this transaction
+      const existingRefunds = await payload.find({
+        collection: 'refunds' as any,
+        where: {
+          linkedTransaction: { equals: linkedTransactionId },
+          status: { in: ['completed', 'in-progress'] },
+          id: { not_equals: refundId },
+        },
+        limit: 1,
+        overrideAccess: true,
+      })
+
+      if (existingRefunds.totalDocs > 0) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        console.error(
+          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} already has an active refund`,
+        )
+        return {
+          output: {
+            success: false,
+            message: 'A refund for this transaction already exists or is in progress',
+          },
+        }
+      }
+
       // Fetch the jar for currency info
       const jar = await payload.findByID({
         collection: 'jars',
