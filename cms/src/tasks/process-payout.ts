@@ -1,4 +1,5 @@
 import { getEganow } from '@/utilities/initalise'
+import { getJarBalance } from '@/utilities/getJarBalance'
 import type { Transaction } from '@/payload-types'
 
 /**
@@ -107,6 +108,27 @@ export const processPayoutTask = {
         return { output: { success: false, message: 'Jar is frozen' } }
       }
 
+      // Step 3b — verify jar still has sufficient balance to cover this payout
+      const { balance: currentBalance } = await getJarBalance(payload, jarId)
+      const payoutAmount = Math.abs(transaction.amountContributed ?? 0)
+      if (currentBalance < payoutAmount) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
+        console.warn(
+          `❌ Payout ${existingTransactionId} rejected — jar balance (${currentBalance}) is less than payout amount (${payoutAmount})`,
+        )
+        return {
+          output: {
+            success: false,
+            message: `Insufficient jar balance: available ${currentBalance}, required ${payoutAmount}`,
+          },
+        }
+      }
+
       // Fetch creator — jar loaded with depth:1 so creator should be populated,
       // but fall back to a direct lookup if it came back as a bare ID
       const creatorId = typeof jar.creator === 'object' ? (jar.creator as any).id : jar.creator
@@ -155,7 +177,7 @@ export const processPayoutTask = {
         phoneNumber = '233' + phoneNumber
       }
 
-      const grossAmount = Math.abs(transaction.amountContributed ?? 0)
+      const grossAmount = payoutAmount
 
       // Step 5 — call Eganow
       try {

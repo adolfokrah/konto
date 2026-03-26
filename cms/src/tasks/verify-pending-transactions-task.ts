@@ -88,8 +88,6 @@ export const verifyPendingTransactionsTask = {
 
         // Verify with Eganow
         try {
-          await getEganow().getToken()
-
           const statusResult = await getEganow().checkTransactionStatus({
             transactionId: eganowTransactionId,
             languageId: 'en',
@@ -158,6 +156,21 @@ export const verifyPendingTransactionsTask = {
           if (newStatus === 'failed') failedCount++
           processedCount++
         } catch (error: any) {
+          // Eganow sometimes returns a plain-text "Failed. Please try again later."
+          // with HTTP 200 for transactions it can't look up right now. Treat this
+          // as a transient error — skip and let the next scheduled run retry.
+          const isTransient =
+            typeof error.message === 'string' &&
+            error.message.includes('non-JSON response') &&
+            error.message.includes('Failed')
+
+          if (isTransient) {
+            console.warn(
+              `[verify-pending-transactions] Transient Eganow error for ${id}, will retry next run`,
+            )
+            continue
+          }
+
           console.error(
             `[verify-pending-transactions] Error verifying transaction ${id}:`,
             error.message,
