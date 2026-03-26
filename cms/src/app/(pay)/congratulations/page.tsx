@@ -77,6 +77,18 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
           receive an email confirmation shortly.
         </p>
 
+        {/* Contribute Again */}
+        {paymentLink && (
+          <div className="mt-4">
+            <Link
+              href={paymentLink}
+              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-supreme font-semibold text-black hover:bg-gray-50 transition-colors"
+            >
+              Contribute Again
+            </Link>
+          </div>
+        )}
+
         {/* Share with others */}
         {jarName && paymentLink && (
           <ShareButton jarName={jarName} paymentLink={paymentLink} />
