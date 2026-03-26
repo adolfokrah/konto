@@ -149,12 +149,10 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       phoneNumber = '233' + phoneNumber
     }
 
-    // Get token (automatically cached by Eganow class)
-    await getEganow().getToken()
-
-    // Try to get account name from Eganow KYC
+    // Try to get account name from Eganow KYC — fully optional, falls back to contributor name
     let accountName = contribution.contributor || 'Anonymous'
     try {
+      await getEganow().getToken()
       const kycResult = await getEganow().verifyKYC({
         paypartnerCode,
         accountNoOrCardNoOrMSISDN: phoneNumber,
@@ -165,7 +163,10 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
         accountName = kycResult.accountName
       }
     } catch (kycError) {
-      console.log('KYC lookup failed, using contributor name:', kycError)
+      console.warn(
+        'KYC lookup failed, using contributor name as fallback:',
+        (kycError as any)?.message,
+      )
     }
 
     // Prepare collection request data
@@ -185,7 +186,9 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     }
 
     // Initiate mobile money collection via Eganow
+    console.log('[Eganow] collection request:', JSON.stringify(collectionData))
     const collectionResult = await getEganow().collectMobileMoney(collectionData)
+    console.log('[Eganow] collection response:', JSON.stringify(collectionResult))
 
     // Map Eganow transaction status to mobile app expected format
     const statusMap: { [key: string]: string } = {
