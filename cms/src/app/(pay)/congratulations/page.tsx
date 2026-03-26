@@ -74,7 +74,7 @@ export default async function CongratulationsPage({ searchParams }: Congratulati
         {/* Footer Message */}
         <p className="text-xs text-gray-500 font-supreme mt-6 leading-relaxed">
           Your contribution has been recorded and the organizer will be notified. You&apos;ll
-          receive an email confirmation shortly.
+          receive an sms confirmation shortly.
         </p>
 
         {/* Contribute Again */}
