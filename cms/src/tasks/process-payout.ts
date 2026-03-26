@@ -49,7 +49,9 @@ export const processPayoutTask = {
 
       console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
 
-      // Step 2 — safety net: ensure there is exactly one pending payout for this jar
+      // Step 2 — safety net: ensure there is exactly one pending payout for this jar.
+      // Fetch ALL pending payouts sorted oldest-first so we can pick a winner when
+      // two tasks run concurrently and both see duplicates.
       const pendingPayouts = await payload.find({
         collection: 'transactions',
         where: {
@@ -57,27 +59,50 @@ export const processPayoutTask = {
           type: { equals: 'payout' },
           paymentStatus: { equals: 'pending' },
         },
-        limit: 2,
+        sort: 'createdAt', // oldest first
+        limit: 100,
         select: { id: true },
         overrideAccess: true,
       })
 
       if (pendingPayouts.totalDocs > 1) {
-        console.error(
-          `❌ Multiple pending payouts detected for jar ${jarId} — failing transaction ${existingTransactionId}`,
-        )
-        await payload.update({
-          collection: 'transactions',
-          id: existingTransactionId,
-          data: { paymentStatus: 'failed' },
-          overrideAccess: true,
-        })
-        return {
-          output: {
-            success: false,
-            message: 'Multiple pending payouts detected — transaction failed for safety',
-          },
+        const oldestId = pendingPayouts.docs[0]?.id
+
+        if (existingTransactionId !== oldestId) {
+          // This task is processing a duplicate — fail it and let the oldest proceed
+          console.warn(
+            `⚠️ Duplicate pending payout for jar ${jarId} — failing newer transaction ${existingTransactionId}, keeping oldest ${oldestId}`,
+          )
+          await payload.update({
+            collection: 'transactions',
+            id: existingTransactionId,
+            data: { paymentStatus: 'failed' },
+            overrideAccess: true,
+          })
+          return {
+            output: {
+              success: false,
+              message:
+                'Duplicate payout detected — only the oldest pending payout will be processed',
+            },
+          }
         }
+
+        // This task IS the oldest — fail all newer duplicates and proceed
+        console.warn(
+          `⚠️ Multiple pending payouts for jar ${jarId} — this task holds oldest (${existingTransactionId}), failing ${pendingPayouts.totalDocs - 1} duplicate(s)`,
+        )
+        const duplicateIds = pendingPayouts.docs.slice(1).map((d: any) => d.id)
+        await Promise.all(
+          duplicateIds.map((dupId: string) =>
+            payload.update({
+              collection: 'transactions',
+              id: dupId,
+              data: { paymentStatus: 'failed' },
+              overrideAccess: true,
+            }),
+          ),
+        )
       }
 
       // Step 3 — fetch jar and creator account details
