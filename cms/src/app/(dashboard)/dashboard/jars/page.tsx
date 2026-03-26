@@ -78,6 +78,7 @@ export default async function JarsPage({ searchParams }: Props) {
         allowAnonymousContributions: true,
         thankYouMessage: true,
         freezeReason: true,
+        lastActivityAt: true,
       },
     }),
   ])
@@ -151,6 +152,7 @@ export default async function JarsPage({ searchParams }: Props) {
       thankYouMessage: jar.thankYouMessage || null,
       imageUrl: typeof jar.image === 'object' && jar.image?.url ? jar.image.url : null,
       freezeReason: jar.freezeReason || null,
+      lastActivityAt: jar.lastActivityAt || null,
     }
   })
 

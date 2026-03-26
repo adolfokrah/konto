@@ -29,6 +29,7 @@ export type JarRow = {
   thankYouMessage: string | null
   imageUrl: string | null
   freezeReason: string | null
+  lastActivityAt: string | null
 }
 
 const statusStyles: Record<string, string> = {
@@ -166,6 +167,16 @@ export const jarColumns: ColumnDef<JarRow, any>[] = [
       headerClassName: 'text-right',
       cellClassName: 'text-right',
     } satisfies DataTableColumnMeta,
+  },
+  {
+    accessorKey: 'lastActivityAt',
+    header: 'Last Activity',
+    cell: ({ row }) =>
+      row.original.lastActivityAt ? (
+        <span className="text-muted-foreground">{formatDate(row.original.lastActivityAt)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
     accessorKey: 'createdAt',

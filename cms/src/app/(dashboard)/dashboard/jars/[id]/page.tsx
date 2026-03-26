@@ -561,6 +561,16 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                 <DetailRow label="Deadline" icon={Calendar} value={formatDate(jar.deadline)} />
               </>
             )}
+            {jar.lastActivityAt && (
+              <>
+                <Separator />
+                <DetailRow
+                  label="Last Activity"
+                  icon={Clock}
+                  value={formatDate(jar.lastActivityAt)}
+                />
+              </>
+            )}
             <Separator />
             <DetailRow
               label="Jar ID"
