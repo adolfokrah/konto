@@ -3,8 +3,13 @@ import { getEganow } from '@/utilities/initalise'
 /**
  * Process Payout Task
  *
- * Queued by the payout endpoint. The queue ensures sequential processing —
- * only one payout job runs at a time, eliminating race conditions.
+ * Always called with an existingTransactionId — the endpoint creates the
+ * pending transaction record before queuing this job, so any duplicate
+ * payout request is rejected at the endpoint level before it ever reaches here.
+ *
+ * Safety net: if somehow two pending transactions exist for the same jar
+ * (e.g. a race that slipped through), this task fails the transaction and
+ * aborts rather than sending money twice.
  */
 export const processPayoutTask = {
   slug: 'process-payout',
@@ -14,7 +19,7 @@ export const processPayoutTask = {
     { name: 'userBank', type: 'text', required: true },
     { name: 'userAccountNumber', type: 'text', required: true },
     { name: 'userAccountHolder', type: 'text', required: true },
-    { name: 'existingTransactionId', type: 'text' },
+    { name: 'existingTransactionId', type: 'text', required: true },
   ],
   handler: async (args: any) => {
     const payload = args.req?.payload || args.payload
@@ -22,103 +27,103 @@ export const processPayoutTask = {
       args.input
 
     try {
-      console.log(`🔄 Processing payout for jar ${jarId}...`)
+      console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
 
-      // Check if there's already a pending payout for this jar (skip if using existing transaction)
-      if (!existingTransactionId) {
-        const pendingPayout = await payload.find({
-          collection: 'transactions',
-          where: {
-            jar: { equals: jarId },
-            type: { equals: 'payout' },
-            paymentStatus: { equals: 'pending' },
+      // Step 1 — fetch the transaction and confirm it is still pending
+      const transaction = await payload.findByID({
+        collection: 'transactions',
+        id: existingTransactionId,
+        overrideAccess: true,
+      })
+
+      if (!transaction) {
+        return { output: { success: false, message: 'Transaction not found' } }
+      }
+
+      if (transaction.paymentStatus !== 'pending') {
+        console.warn(
+          `⚠️ Transaction ${existingTransactionId} is already ${transaction.paymentStatus}, skipping`,
+        )
+        return {
+          output: {
+            success: false,
+            message: `Transaction is already ${transaction.paymentStatus}`,
           },
-          limit: 1,
-          overrideAccess: true,
-        })
-
-        if (pendingPayout.docs.length > 0) {
-          console.log(`⚠️ Jar ${jarId} already has a pending payout, skipping`)
-          return {
-            output: {
-              success: false,
-              message: 'A payout is already pending for this jar',
-            },
-          }
         }
       }
 
-      // Fetch the jar
+      // Step 2 — safety net: ensure there is exactly one pending payout for this jar
+      const pendingPayouts = await payload.find({
+        collection: 'transactions',
+        where: {
+          jar: { equals: jarId },
+          type: { equals: 'payout' },
+          paymentStatus: { equals: 'pending' },
+        },
+        limit: 2,
+        select: { id: true },
+        overrideAccess: true,
+      })
+
+      if (pendingPayouts.totalDocs > 1) {
+        console.error(
+          `❌ Multiple pending payouts detected for jar ${jarId} — failing transaction ${existingTransactionId}`,
+        )
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: {
+            success: false,
+            message: 'Multiple pending payouts detected — transaction failed for safety',
+          },
+        }
+      }
+
+      // Step 3 — validate jar
       const jar = await payload.findByID({
         collection: 'jars',
         id: jarId,
-        depth: 1,
+        depth: 0,
         overrideAccess: true,
       })
 
       if (!jar) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
         return { output: { success: false, message: 'Jar not found' } }
       }
 
       if (jar.status === 'frozen') {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
         return { output: { success: false, message: 'Jar is frozen' } }
       }
 
-      // Verify ownership
-      const creatorId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
-      if (creatorId !== userId) {
-        return { output: { success: false, message: 'Not the jar creator' } }
-      }
-
-      // Calculate balance
-      const allTransactions = await payload.find({
-        collection: 'transactions',
-        where: { jar: { equals: jarId } },
-        limit: 10000,
-        overrideAccess: true,
-      })
-
-      const settledContributionsSum = allTransactions.docs
-        .filter(
-          (tx: any) =>
-            tx.type === 'contribution' && tx.paymentStatus === 'completed' && tx.isSettled === true,
-        )
-        .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)
-
-      const payoutsSum = allTransactions.docs
-        .filter(
-          (tx: any) =>
-            tx.type === 'payout' &&
-            (tx.paymentStatus === 'pending' ||
-              tx.paymentStatus === 'completed' ||
-              tx.paymentStatus === 'awaiting-approval'),
-        )
-        .reduce((sum: number, tx: any) => sum + tx.amountContributed, 0)
-
-      const netBalance = settledContributionsSum + payoutsSum
-
-      if (netBalance <= 0) {
-        return { output: { success: false, message: 'No balance available for payout' } }
-      }
-
-      // Get system settings for fee
-      const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
-      const transferFeePercentage = systemSettings?.transferFeePercentage || 1
-      const transferFee = (netBalance * transferFeePercentage) / 100
-      const expectedNetAmount = netBalance - transferFee
-
-      // Map provider
-      const providerMap: Record<string, string> = {
-        mtn: 'MTNGH',
-        telecel: 'TCELGH',
-      }
-
+      // Step 4 — map provider and format phone
+      const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
       const paypartner = providerMap[userBank.toLowerCase()]
       if (!paypartner) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
         return { output: { success: false, message: 'Unsupported mobile money provider' } }
       }
 
-      // Format phone number
       let phoneNumber = userAccountNumber.replace(/\s+/g, '')
       if (phoneNumber.startsWith('0')) {
         phoneNumber = '233' + phoneNumber.substring(1)
@@ -126,51 +131,18 @@ export const processPayoutTask = {
         phoneNumber = '233' + phoneNumber
       }
 
-      // Use existing transaction (from approval flow) or create a new one
-      let transaction: any
-      if (existingTransactionId) {
-        transaction = await payload.findByID({
-          collection: 'transactions',
-          id: existingTransactionId,
-          overrideAccess: true,
-        })
-        if (!transaction) {
-          return { output: { success: false, message: 'Existing transaction not found' } }
-        }
-        console.log(`✅ Using existing payout transaction: ${transaction.id}`)
-      } else {
-        transaction = await payload.create({
-          collection: 'transactions',
-          data: {
-            paymentStatus: 'pending',
-            paymentMethod: 'mobile-money',
-            transactionReference: '',
-            jar: jarId,
-            mobileMoneyProvider: userBank,
-            amountContributed: -netBalance,
-            collector: userId,
-            contributorPhoneNumber: userAccountNumber,
-            contributor: userAccountHolder,
-            type: 'payout',
-            payoutFeePercentage: transferFeePercentage,
-            payoutFeeAmount: transferFee,
-            payoutNetAmount: expectedNetAmount,
-          },
-          overrideAccess: true,
-        })
-        console.log(`✅ Payout transaction created: ${transaction.id}`)
-      }
+      const grossAmount = Math.abs(transaction.amountContributed ?? 0)
 
+      // Step 5 — call Eganow
       try {
-        // Get Eganow token and initiate payout
         await getEganow().getToken()
 
-        const payoutData = {
+        const payoutResult = await getEganow().payout({
           paypartnerCode: paypartner,
-          amount: String(netBalance.toFixed(2)),
+          amount: String(grossAmount.toFixed(2)),
           accountNoOrCardNoOrMSISDN: phoneNumber,
           accountName: userAccountHolder,
-          transactionId: `payout-${transaction.id}`,
+          transactionId: `payout-${existingTransactionId}`,
           narration: `Payout for jar ${jar.name}`,
           transCurrencyIso: jar.currency || 'GHS',
           expiryDateMonth: 0,
@@ -178,50 +150,44 @@ export const processPayoutTask = {
           cvv: '',
           languageId: 'en',
           callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
-        }
+        })
 
-        const payoutResult = await getEganow().payout(payoutData)
-
-        // Update with Eganow reference
+        // Step 6 — update transaction with Eganow reference
         await payload.update({
           collection: 'transactions',
-          id: transaction.id,
+          id: existingTransactionId,
           data: { transactionReference: payoutResult.eganowReferenceNo },
           overrideAccess: true,
         })
 
-        console.log(`✅ Payout initiated — ref: ${payoutResult.eganowReferenceNo}`)
+        console.log(
+          `✅ Payout initiated — transaction ${existingTransactionId}, ref: ${payoutResult.eganowReferenceNo}`,
+        )
 
         return {
           output: {
             success: true,
             message: 'Payout initiated successfully',
-            transactionId: transaction.id,
+            transactionId: existingTransactionId,
             eganowReferenceNo: payoutResult.eganowReferenceNo,
-            grossAmount: netBalance,
-            transferFee,
-            netAmount: expectedNetAmount,
           },
         }
       } catch (eganowError: any) {
-        // Eganow call failed — mark transaction as failed
         await payload.update({
           collection: 'transactions',
-          id: transaction.id,
+          id: existingTransactionId,
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
         })
-        console.error(`❌ Eganow payout failed for transaction ${transaction.id}:`, eganowError)
+        console.error(
+          `❌ Eganow payout failed for transaction ${existingTransactionId}:`,
+          eganowError,
+        )
         throw eganowError
       }
     } catch (error: any) {
       console.error(`❌ Payout task error for jar ${jarId}:`, error)
-      return {
-        output: {
-          success: false,
-          message: `Error: ${error.message}`,
-        },
-      }
+      return { output: { success: false, message: `Error: ${error.message}` } }
     }
   },
 }

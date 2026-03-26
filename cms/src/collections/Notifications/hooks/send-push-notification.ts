@@ -39,10 +39,14 @@ export const sendPushNotification: CollectionAfterChangeHook = async ({ doc, req
 
     // Derive title based on notification type (fallback generic)
 
-    const res = await fcmNotifications.sendNotification([fcmToken], doc.message, doc.title, {
-      type: doc.type,
-      ...(doc.data || {}),
-    })
+    // FCM data payload only accepts string values — coerce everything
+    const rawData: Record<string, any> = { type: doc.type, ...(doc.data || {}) }
+    const fcmData: Record<string, string> = {}
+    for (const [k, v] of Object.entries(rawData)) {
+      fcmData[k] = typeof v === 'string' ? v : JSON.stringify(v)
+    }
+
+    const res = await fcmNotifications.sendNotification([fcmToken], doc.message, doc.title, fcmData)
   } catch (e) {
     req.payload.logger.error(`sendPushNotification hook error: ${(e as Error).message}`)
   }

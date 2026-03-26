@@ -168,6 +168,9 @@ class _WithdrawViewState extends State<WithdrawView> {
   Future<void> _processPayout() async {
     if (jarId == null || _isLoading) return;
 
+    // Dismiss keyboard so it doesn't block the result snackbar on iOS
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final localizations = AppLocalizations.of(context)!;
 
     setState(() {

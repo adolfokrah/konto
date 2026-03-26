@@ -179,8 +179,34 @@ export const payoutEganow = async (req: PayloadRequest) => {
       })
     }
 
-    // No collector admin — queue the payout job immediately
-    // The queue processes sequentially, preventing double payouts
+    // No collector admin — create the payout transaction record first so any
+    // subsequent request immediately sees a pending payout and is rejected,
+    // eliminating the double-payout race window.
+    const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
+    const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
+    const transferFee = (netBalance * transferFeePercentage) / 100
+    const expectedNetAmount = netBalance - transferFee
+
+    const transaction = await req.payload.create({
+      collection: 'transactions',
+      data: {
+        paymentStatus: 'pending',
+        paymentMethod: 'mobile-money',
+        transactionReference: '',
+        jar: jarId,
+        mobileMoneyProvider: user.bank,
+        amountContributed: -netBalance,
+        collector: user.id,
+        contributorPhoneNumber: user.accountNumber,
+        contributor: user.accountHolder,
+        type: 'payout',
+        payoutFeePercentage: transferFeePercentage,
+        payoutFeeAmount: transferFee,
+        payoutNetAmount: expectedNetAmount,
+      },
+      overrideAccess: true,
+    })
+
     await req.payload.jobs.queue({
       task: 'process-payout' as any,
       input: {
@@ -189,6 +215,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
         userBank: user.bank,
         userAccountNumber: user.accountNumber,
         userAccountHolder: user.accountHolder,
+        existingTransactionId: transaction.id,
       },
       queue: 'payout',
     })
