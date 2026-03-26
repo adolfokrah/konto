@@ -209,14 +209,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
 
     await req.payload.jobs.queue({
       task: 'process-payout' as any,
-      input: {
-        jarId,
-        userId: user.id,
-        userBank: user.bank,
-        userAccountNumber: user.accountNumber,
-        userAccountHolder: user.accountHolder,
-        existingTransactionId: transaction.id,
-      },
+      input: { existingTransactionId: transaction.id },
       queue: 'payout',
     })
 

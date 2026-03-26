@@ -1,41 +1,28 @@
 import { getEganow } from '@/utilities/initalise'
+import type { Transaction } from '@/payload-types'
 
 /**
  * Process Payout Task
  *
- * Always called with an existingTransactionId — the endpoint creates the
- * pending transaction record before queuing this job, so any duplicate
- * payout request is rejected at the endpoint level before it ever reaches here.
- *
- * Safety net: if somehow two pending transactions exist for the same jar
- * (e.g. a race that slipped through), this task fails the transaction and
- * aborts rather than sending money twice.
+ * Only input needed is the transaction ID — all account details are derived
+ * from the transaction and the jar's creator record.
  */
 export const processPayoutTask = {
   slug: 'process-payout',
-  inputSchema: [
-    { name: 'jarId', type: 'text', required: true },
-    { name: 'userId', type: 'text', required: true },
-    { name: 'userBank', type: 'text', required: true },
-    { name: 'userAccountNumber', type: 'text', required: true },
-    { name: 'userAccountHolder', type: 'text', required: true },
-    { name: 'existingTransactionId', type: 'text', required: true },
-  ],
+  inputSchema: [{ name: 'existingTransactionId', type: 'text', required: true }],
   handler: async (args: any) => {
     const payload = args.req?.payload || args.payload
-    const { jarId, userId, userBank, userAccountNumber, userAccountHolder, existingTransactionId } =
-      args.input
+    const { existingTransactionId } = args.input
 
     try {
-      console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
-
       // Step 1 — fetch the transaction and confirm it is still pending
-      let transaction: any
+      let transaction: Transaction
       try {
         transaction = await payload.findByID({
           collection: 'transactions',
           id: existingTransactionId,
           overrideAccess: true,
+          depth: 3,
         })
       } catch {
         return { output: { success: false, message: 'Transaction not found' } }
@@ -56,6 +43,10 @@ export const processPayoutTask = {
           },
         }
       }
+
+      const jarId = typeof transaction.jar === 'string' ? transaction.jar : transaction.jar?.id
+
+      console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
 
       // Step 2 — safety net: ensure there is exactly one pending payout for this jar
       const pendingPayouts = await payload.find({
@@ -88,11 +79,11 @@ export const processPayoutTask = {
         }
       }
 
-      // Step 3 — validate jar
+      // Step 3 — fetch jar and creator account details
       const jar = await payload.findByID({
         collection: 'jars',
         id: jarId,
-        depth: 0,
+        depth: 1,
         overrideAccess: true,
       })
 
@@ -116,9 +107,37 @@ export const processPayoutTask = {
         return { output: { success: false, message: 'Jar is frozen' } }
       }
 
+      // Fetch creator — jar loaded with depth:1 so creator should be populated,
+      // but fall back to a direct lookup if it came back as a bare ID
+      const creatorId = typeof jar.creator === 'object' ? (jar.creator as any).id : jar.creator
+      let creator: any = typeof jar.creator === 'object' ? jar.creator : null
+      if (!creator) {
+        creator = await payload.findByID({
+          collection: 'users',
+          id: creatorId,
+          overrideAccess: true,
+        })
+      }
+
+      if (!creator?.bank || !creator?.accountNumber || !creator?.accountHolder) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: { success: false, message: 'Creator has no withdrawal account set up' },
+        }
+      }
+
+      const userBank = creator.bank
+      const userAccountNumber = creator.accountNumber
+      const userAccountHolder = creator.accountHolder
+
       // Step 4 — map provider and format phone
       const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
-      const paypartner = providerMap[userBank.toLowerCase()]
+      const paypartner = providerMap[userBank?.toLowerCase()]
       if (!paypartner) {
         await payload.update({
           collection: 'transactions',
@@ -189,7 +208,7 @@ export const processPayoutTask = {
         throw eganowError
       }
     } catch (error: any) {
-      console.error(`❌ Payout task error for jar ${jarId}:`, error)
+      console.error(`❌ Payout task error for transaction ${existingTransactionId}:`, error)
       return { output: { success: false, message: `Error: ${error.message}` } }
     }
   },

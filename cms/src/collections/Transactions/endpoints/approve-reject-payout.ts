@@ -214,14 +214,7 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
     // Queue the payout job with the existing transaction ID
     await req.payload.jobs.queue({
       task: 'process-payout' as any,
-      input: {
-        jarId,
-        userId: creatorId,
-        userBank: creator?.bank || (transaction as any).mobileMoneyProvider,
-        userAccountNumber: creator?.accountNumber || (transaction as any).contributorPhoneNumber,
-        userAccountHolder: creator?.accountHolder || (transaction as any).contributor,
-        existingTransactionId: transactionId,
-      },
+      input: { existingTransactionId: transactionId },
       queue: 'payout',
     })
 

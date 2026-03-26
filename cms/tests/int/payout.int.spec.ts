@@ -450,14 +450,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: pendingTx.id,
-        },
+        input: { existingTransactionId: pendingTx.id },
       })
 
       const updated = await payload.findByID({
@@ -485,14 +478,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: pendingTx.id,
-        },
+        input: { existingTransactionId: pendingTx.id },
       })
 
       const updated = await payload.findByID({
@@ -516,14 +502,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: tx1.id,
-        },
+        input: { existingTransactionId: tx1.id },
       })
 
       expect(result.output.success).toBe(false)
@@ -551,14 +530,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: pendingTx.id,
-        },
+        input: { existingTransactionId: pendingTx.id },
       })
 
       expect(result.output.success).toBe(false)
@@ -568,14 +540,7 @@ describe('Payout Endpoint Integration Tests', () => {
     it('should return error when transaction not found', async () => {
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: 'non-existent-id',
-        },
+        input: { existingTransactionId: 'non-existent-id' },
       })
 
       expect(result.output.success).toBe(false)
@@ -589,14 +554,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: doneTx.id,
-        },
+        input: { existingTransactionId: doneTx.id },
       })
 
       expect(result.output.success).toBe(false)
@@ -604,21 +562,22 @@ describe('Payout Endpoint Integration Tests', () => {
     })
 
     it('should return error for unsupported provider', async () => {
+      // Update creator's bank to an unsupported provider so the task picks it up
+      await payload.update({
+        collection: 'users',
+        id: creatorUser.id,
+        data: { bank: 'unsupported-bank' as any },
+        overrideAccess: true,
+      })
+
       await createSettledContribution(testJar.id, 500)
       const pendingTx = await createPendingPayoutTx(testJar.id, 500, {
-        mobileMoneyProvider: 'vodafone',
+        mobileMoneyProvider: 'unsupported-bank',
       })
 
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'vodafone',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-          existingTransactionId: pendingTx.id,
-        },
+        input: { existingTransactionId: pendingTx.id },
       })
 
       expect(result.output.success).toBe(false)

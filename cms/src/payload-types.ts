@@ -3837,11 +3837,6 @@ export interface TaskJarCreationReminderDaily {
  */
 export interface TaskProcessPayout {
   input: {
-    jarId: string;
-    userId: string;
-    userBank: string;
-    userAccountNumber: string;
-    userAccountHolder: string;
     existingTransactionId: string;
   };
   output?: unknown;
