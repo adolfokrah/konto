@@ -20,6 +20,7 @@ class ContributionRepository {
     required double amountContributed,
     bool viaPaymentLink = false,
     required String mobileMoneyProvider,
+    List<Map<String, dynamic>>? customFieldValues,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider.addContribution(
@@ -31,6 +32,7 @@ class ContributionRepository {
         amountContributed: amountContributed,
         viaPaymentLink: viaPaymentLink,
         mobileMoneyProvider: mobileMoneyProvider,
+        customFieldValues: customFieldValues,
       );
 
       if (apiResponse['doc'] != null) {

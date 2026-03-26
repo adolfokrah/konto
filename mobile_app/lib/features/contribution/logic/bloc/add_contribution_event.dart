@@ -12,6 +12,7 @@ final class AddContributionSubmitted extends AddContributionEvent {
   final double amountContributed;
   final bool viaPaymentLink;
   final String mobileMoneyProvider;
+  final List<Map<String, dynamic>>? customFieldValues;
 
   AddContributionSubmitted({
     required this.jarId,
@@ -22,5 +23,6 @@ final class AddContributionSubmitted extends AddContributionEvent {
     required this.amountContributed,
     this.viaPaymentLink = false,
     required this.mobileMoneyProvider,
+    this.customFieldValues,
   });
 }

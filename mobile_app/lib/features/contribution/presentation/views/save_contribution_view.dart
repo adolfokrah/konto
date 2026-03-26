@@ -13,6 +13,7 @@ import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
@@ -44,6 +45,12 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   String? jarName;
   String? jarId;
   String? jarCreatorId;
+
+  // Custom fields
+  List<CustomFieldModel> _customFields = [];
+  final Map<String, TextEditingController> _customFieldControllers = {};
+  final Map<String, String?> _customFieldSelectValues = {};
+  final Map<String, bool> _customFieldCheckboxValues = {};
 
   final List<String> _operators = [
     'MTN Mobile Money',
@@ -117,7 +124,26 @@ class _SaveContributionViewState extends State<SaveContributionView> {
           if (jar.creator != null) {
             jarCreatorId = jar.creator.id as String?;
           }
+          // Extract custom fields from jar model
+          if (jar.customFields != null) {
+            _initCustomFields(jar.customFields as List<CustomFieldModel>);
+          }
         }
+      }
+    }
+  }
+
+  void _initCustomFields(List<CustomFieldModel> fields) {
+    if (_customFields.isNotEmpty) return; // already initialised
+    _customFields = fields;
+    for (final field in fields) {
+      final key = field.id ?? field.label;
+      if (field.fieldType == 'checkbox') {
+        _customFieldCheckboxValues[key] = false;
+      } else if (field.fieldType == 'select') {
+        _customFieldSelectValues[key] = null;
+      } else {
+        _customFieldControllers[key] = TextEditingController();
       }
     }
   }
@@ -125,6 +151,11 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   @override
   void dispose() {
     _phoneController.dispose();
+    _nameController.dispose();
+    _accountNumberController.dispose();
+    for (final c in _customFieldControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -187,31 +218,63 @@ class _SaveContributionViewState extends State<SaveContributionView> {
               automaticallyImplyLeading:
                   !isLoading, // Disable back button when loading
               title: Text(
-                localizations.requestPayment,
+                localizations.requestContribution,
                 style: TextStyles.titleMediumLg.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               centerTitle: true,
             ),
-            body: Padding(
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.spacingM,
+                  AppSpacing.spacingS,
+                  AppSpacing.spacingM,
+                  AppSpacing.spacingM,
+                ),
+                child: Builder(builder: (context) {
+                  String buttonText;
+                  if (state is AddContributionLoading) {
+                    buttonText = localizations.processing;
+                  } else if (_selectedPaymentMethod == 'mobile-money' &&
+                      amount != null) {
+                    final contributionAmount =
+                        double.tryParse(amount!) ?? 0.0;
+                    final totalAmount = contributionAmount +
+                        _systemSettings
+                            .calculateCollectionFee(contributionAmount);
+                    buttonText =
+                        '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
+                  } else if (_selectedPaymentMethod == 'mobile-money') {
+                    buttonText = localizations.requestPayment;
+                  } else {
+                    buttonText = localizations.saveContribution;
+                  }
+                  return AppButton.filled(
+                    key: const Key('submit_contribution_button'),
+                    isLoading: state is AddContributionLoading,
+                    text: buttonText,
+                    onPressed: () {
+                      _handlePaymentRequest(context);
+                    },
+                  );
+                }),
+              ),
+            ),
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.spacingM,
               ),
               child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight:
-                        MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
-                        MediaQuery.of(context).padding.bottom -
-                        kToolbarHeight -
-                        (AppSpacing.spacingM * 2), // Account for padding
-                  ),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                         // Amount section
                         Text(
                           localizations.amount,
@@ -299,6 +362,20 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           hintText: localizations.enterContributorName,
                           keyboardType: TextInputType.name,
                         ),
+
+                        // Custom fields
+                        if (_customFields.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.spacingM),
+                          ..._customFields.map((field) {
+                            final key = field.id ?? field.label;
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppSpacing.spacingM,
+                              ),
+                              child: _buildCustomFieldInput(field, key),
+                            );
+                          }),
+                        ],
 
                         const SizedBox(height: AppSpacing.spacingL),
 
@@ -413,37 +490,11 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           const SizedBox(height: AppSpacing.spacingM),
                         ],
 
-                        // Add spacing to push button to bottom, but allow scrolling if needed
-                        Spacer(),
-                        // Request button
-                        Builder(builder: (context) {
-                          String buttonText;
-                          if (state is AddContributionLoading) {
-                            buttonText = localizations.processing;
-                          } else if (_selectedPaymentMethod == 'mobile-money' && amount != null) {
-                            final contributionAmount = double.tryParse(amount!) ?? 0.0;
-                            final totalAmount = contributionAmount + _systemSettings.calculateCollectionFee(contributionAmount);
-                            buttonText = '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
-                          } else if (_selectedPaymentMethod == 'mobile-money') {
-                            buttonText = localizations.requestPayment;
-                          } else {
-                            buttonText = localizations.saveContribution;
-                          }
-                          return AppButton.filled(
-                            key: const Key('submit_contribution_button'),
-                            isLoading: state is AddContributionLoading,
-                            text: buttonText,
-                            onPressed: () {
-                              _handlePaymentRequest(context);
-                            },
-                          );
-                        }),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
           );
         }, // BlocBuilder ends
       ), // BlocListener ends
@@ -496,6 +547,29 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       }
     }
 
+    // Validate required custom fields
+    for (final field in _customFields) {
+      if (!field.required) continue;
+      final key = field.id ?? field.label;
+      if (field.fieldType == 'select') {
+        if (_customFieldSelectValues[key] == null ||
+            _customFieldSelectValues[key]!.isEmpty) {
+          _showErrorSnackBar('${field.label} is required');
+          return;
+        }
+      } else if (field.fieldType != 'checkbox') {
+        final text = _customFieldControllers[key]?.text.trim() ?? '';
+        if (text.isEmpty) {
+          _showErrorSnackBar('${field.label} is required');
+          return;
+        }
+      }
+    }
+
+    final customFieldValues =
+        _customFields.isNotEmpty ? _collectCustomFieldValues() : null;
+
+
     context.read<AddContributionBloc>().add(
       AddContributionSubmitted(
         jarId: jarId ?? '',
@@ -514,8 +588,70 @@ class _SaveContributionViewState extends State<SaveContributionView> {
             PaymentMethodUtils.getMobileMoneyOperatorMap(localizations).entries
                 .firstWhere((entry) => entry.value == _selectedOperator)
                 .key,
+        customFieldValues: customFieldValues,
       ),
     );
+  }
+
+  Widget _buildCustomFieldInput(CustomFieldModel field, String key) {
+    final label = field.required ? '${field.label} *' : field.label;
+
+    switch (field.fieldType) {
+      case 'checkbox':
+        return Row(
+          children: [
+            Checkbox(
+              value: _customFieldCheckboxValues[key] ?? false,
+              onChanged: (v) =>
+                  setState(() => _customFieldCheckboxValues[key] = v ?? false),
+            ),
+            Expanded(
+              child: Text(label, style: TextStyles.titleRegularSm),
+            ),
+          ],
+        );
+      case 'select':
+        final options = field.options ?? [];
+        return SelectInput<String>(
+          label: label,
+          value: _customFieldSelectValues[key],
+          options: options
+              .map((o) => SelectOption(value: o.value, label: o.label))
+              .toList(),
+          onChanged: (v) =>
+              setState(() => _customFieldSelectValues[key] = v),
+        );
+      default:
+        return AppTextInput(
+          controller: _customFieldControllers[key]!,
+          label: label,
+          hintText: field.placeholder ?? '',
+          keyboardType: field.fieldType == 'number'
+              ? TextInputType.number
+              : field.fieldType == 'phone'
+                  ? TextInputType.phone
+                  : field.fieldType == 'email'
+                      ? TextInputType.emailAddress
+                      : TextInputType.text,
+        );
+    }
+  }
+
+  List<Map<String, dynamic>> _collectCustomFieldValues() {
+    final result = <Map<String, dynamic>>[];
+    for (final field in _customFields) {
+      final key = field.id ?? field.label;
+      dynamic value;
+      if (field.fieldType == 'checkbox') {
+        value = _customFieldCheckboxValues[key] ?? false;
+      } else if (field.fieldType == 'select') {
+        value = _customFieldSelectValues[key];
+      } else {
+        value = _customFieldControllers[key]?.text.trim();
+      }
+      result.add({'fieldId': key, 'label': field.label, 'value': value});
+    }
+    return result;
   }
 
   void _showErrorSnackBar(String message) {

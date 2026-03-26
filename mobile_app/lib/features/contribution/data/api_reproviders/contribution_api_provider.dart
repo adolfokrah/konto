@@ -21,6 +21,7 @@ class ContributionApiProvider extends BaseApiProvider {
     required double amountContributed,
     bool viaPaymentLink = false,
     required String mobileMoneyProvider, // Required for mobile money
+    List<Map<String, dynamic>>? customFieldValues,
   }) async {
     try {
       // Get authenticated headers
@@ -77,6 +78,11 @@ class ContributionApiProvider extends BaseApiProvider {
         contributionData['accountNumber'] = accountNumber;
       }
 
+      // Add custom field values if provided
+      if (customFieldValues != null && customFieldValues.isNotEmpty) {
+        contributionData['customFieldValues'] = customFieldValues;
+      }
+
       // Remove null values to avoid sending unnecessary data
       contributionData.removeWhere((key, value) => value == null);
 
@@ -127,70 +133,6 @@ class ContributionApiProvider extends BaseApiProvider {
         },
         options: Options(headers: headers),
       );
-
-      if (response.data != null && response.data is Map) {
-        final collector = response.data['collector'];
-        print('🔍 DEBUG API: Collector field in response: $collector');
-        print('🔍 DEBUG API: Collector type: ${collector.runtimeType}');
-
-        // If collector is just an ID string, try to populate from jar's invitedCollectors
-        if (collector is String) {
-          print(
-            '🔍 DEBUG API: Collector is string ID, looking in invitedCollectors...',
-          );
-          final jar = response.data['jar'];
-          if (jar != null && jar is Map && jar['invitedCollectors'] != null) {
-            final invitedCollectors = jar['invitedCollectors'] as List;
-
-            // Find the matching collector in invitedCollectors
-            for (final invitedCollector in invitedCollectors) {
-              if (invitedCollector is Map &&
-                  invitedCollector['collector'] == collector) {
-                print(
-                  '🔍 DEBUG API: Found collector in invitedCollectors: $invitedCollector',
-                );
-
-                // Create a user object from the invited collector data
-                final collectorName =
-                    invitedCollector['name'] as String? ?? 'Unknown User';
-                final collectorPhone =
-                    invitedCollector['phoneNumber'] as String? ?? '';
-
-                // Create a minimal user object with the available data
-                final userObject = {
-                  'id': collector,
-                  'fullName': collectorName,
-                  'phoneNumber': collectorPhone,
-                  'email': '',
-                  'countryCode': '',
-                  'country': '',
-                  'isKYCVerified': false,
-                  'role': 'user',
-                  'createdAt': DateTime.now().toIso8601String(),
-                  'updatedAt': DateTime.now().toIso8601String(),
-                  'sessions': [],
-                  'appSettings': {
-                    'language': 'en',
-                    'theme': 'light',
-                    'biometricAuthEnabled': false,
-                    'notificationsSettings': {
-                      'pushNotificationsEnabled': true,
-                      'emailNotificationsEnabled': true,
-                      'smsNotificationsEnabled': false,
-                    },
-                  },
-                };
-
-                print(
-                  '🔍 DEBUG API: Created user object with name: $collectorName',
-                );
-                response.data['collector'] = userObject;
-                break;
-              }
-            }
-          }
-        }
-      }
 
       return response.data;
     } catch (e) {

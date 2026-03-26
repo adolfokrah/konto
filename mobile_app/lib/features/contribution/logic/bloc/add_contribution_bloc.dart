@@ -32,6 +32,7 @@ class AddContributionBloc
         amountContributed: event.amountContributed,
         viaPaymentLink: event.viaPaymentLink,
         mobileMoneyProvider: event.mobileMoneyProvider,
+        customFieldValues: event.customFieldValues,
       );
 
       if (response['success']) {

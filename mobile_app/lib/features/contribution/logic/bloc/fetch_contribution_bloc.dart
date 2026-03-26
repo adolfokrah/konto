@@ -50,9 +50,6 @@ class FetchContributionBloc
           FetchContributionLoaded(contribution, refundDocs: refundDocs, approvalDocs: approvalDocs, requiredApprovals: requiredApprovals),
         );
       } else {
-        print(
-          '❌ Contribution API Error: ${response['message']}',
-        ); // Debug logging
         emit(
           FetchContributionError(
             response['message'] ?? 'Failed to fetch contribution',
@@ -60,7 +57,6 @@ class FetchContributionBloc
         );
       }
     } catch (e) {
-      print('💥 Contribution API Exception: $e'); // Debug logging
       emit(FetchContributionError('An unexpected error occurred: $e'));
     }
   }

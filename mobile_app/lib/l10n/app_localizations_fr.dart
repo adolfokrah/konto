@@ -666,7 +666,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get requestContribution => 'Demander une Contribution';
+  String get requestContribution => 'Demande de contribution';
 
   @override
   String get scanToGetContribution => 'Scanner pour obtenir une contribution';

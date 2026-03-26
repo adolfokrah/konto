@@ -426,9 +426,7 @@ class ContributionView extends StatelessWidget {
                                                 ? AppColors.infoBlue
                                                 : contribution.isRefund
                                                 ? AppColors.warningOrange
-                                                : Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
+                                                : const Color(0xFF8B5CF6),
                                           ),
                                         ),
                                         // Only show transaction reference when available

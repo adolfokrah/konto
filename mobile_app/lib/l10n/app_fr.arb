@@ -400,5 +400,6 @@
   "noFundsToWithdraw": "Aucun fonds disponible pour le retrait",
   "payoutBalance": "Solde de paiement",
   "transferCharges": "Frais de transfert",
-  "total": "Total"
+  "total": "Total",
+  "requestContribution": "Demande de contribution"
 }
