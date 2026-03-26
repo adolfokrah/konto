@@ -193,9 +193,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
       queue: 'payout',
     })
 
-    // Process the queue immediately
-    await req.payload.jobs.run({ queue: 'payout' })
-
     return Response.json({
       success: true,
       message: 'Payout request is being processed',

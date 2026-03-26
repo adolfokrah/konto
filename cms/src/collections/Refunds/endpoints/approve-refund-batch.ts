@@ -96,9 +96,6 @@ export const approveRefundBatch = async (req: PayloadRequest) => {
       createdRefundIds.push(newRefund.id)
     }
 
-    // Run the refund queue immediately
-    await req.payload.jobs.run({ queue: 'refund' })
-
     // Update batch: status → processing, set approvedBy, approvedAt, childRefunds
     await req.payload.update({
       collection: 'refunds' as any,

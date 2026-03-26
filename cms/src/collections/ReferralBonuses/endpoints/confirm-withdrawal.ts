@@ -125,8 +125,6 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
       queue: 'payout',
     })
 
-    await req.payload.jobs.run({ queue: 'payout' })
-
     return Response.json({
       success: true,
       message: `GHS ${netAmount.toFixed(2)} is being sent to your ${bankName.toUpperCase()} account ending ${accountSuffix}.`,

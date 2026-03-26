@@ -198,6 +198,14 @@ export default buildConfig({
     ],
     autoRun: [
       {
+        cron: '* * * * *', // Every minute — picks up queued payout jobs
+        queue: 'payout',
+      },
+      {
+        cron: '* * * * *', // Every minute — picks up queued refund jobs
+        queue: 'refund',
+      },
+      {
         cron: '0 * * * *', // Every hour
         queue: 'settle-contributions',
       },

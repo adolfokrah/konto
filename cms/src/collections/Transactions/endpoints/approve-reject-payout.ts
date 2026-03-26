@@ -225,8 +225,6 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
       queue: 'payout',
     })
 
-    await req.payload.jobs.run({ queue: 'payout' })
-
     // Notify the jar creator
     if (creatorId) {
       await req.payload.create({

@@ -57,21 +57,16 @@ export const approveRefund = async (req: PayloadRequest) => {
       overrideAccess: true,
     })
 
-    // Queue the refund processing task
+    // Queue the refund processing task — the autoRun runner picks it up within a minute
     await req.payload.jobs.queue({
       task: 'process-refund' as any,
-      input: {
-        refundId,
-      },
+      input: { refundId },
       queue: 'refund',
     })
 
-    // Process the queue immediately
-    await req.payload.jobs.run({ queue: 'refund' })
-
     return Response.json({
       success: true,
-      message: 'Refund approved and processing started',
+      message: 'Refund approved and queued for processing',
     })
   } catch (error: any) {
     console.error('Approve refund error:', error)

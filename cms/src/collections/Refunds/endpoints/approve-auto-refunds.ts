@@ -57,9 +57,6 @@ export const approveAutoRefunds = async (req: PayloadRequest) => {
       })
     }
 
-    // Run the queue immediately so Eganow is called without waiting for the next worker poll
-    await req.payload.jobs.run({ queue: 'refund' })
-
     return Response.json({
       success: true,
       message: `${pending.docs.length} refund(s) approved and queued for processing.`,
