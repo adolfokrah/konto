@@ -87,23 +87,29 @@ describe('Payout Endpoint Integration Tests', () => {
   })
 
   async function createSettledContribution(jarId: string, amount: number) {
+    // Use mobile-money so getJarBalance counts it (cash is excluded from balance).
+    // setPaymentStatus hook forces mobile-money to 'pending' on create, so we
+    // update to 'completed' + isSettled afterwards.
     const tx = await payload.create({
       collection: 'transactions',
       data: {
         jar: jarId,
         contributor: 'Test Contributor',
         contributorPhoneNumber: '+233000000099',
-        paymentMethod: 'cash' as const,
+        paymentMethod: 'mobile-money' as const,
+        mobileMoneyProvider: 'mtn' as const,
         amountContributed: amount,
         collector: creatorUser.id,
         type: 'contribution' as const,
-        isSettled: true,
       },
+      overrideAccess: true,
     })
-    if (tx.paymentStatus !== 'completed') {
-      throw new Error(`Expected paymentStatus 'completed' but got '${tx.paymentStatus}'`)
-    }
-    return tx
+    return payload.update({
+      collection: 'transactions',
+      id: tx.id,
+      data: { paymentStatus: 'completed' as const, isSettled: true },
+      overrideAccess: true,
+    })
   }
 
   function buildMockRequest(overrides: Record<string, any> = {}) {
@@ -495,27 +501,36 @@ describe('Payout Endpoint Integration Tests', () => {
       expect(Math.abs(updated.payoutNetAmount as number)).toBe(expectedNetAmount)
     })
 
-    it('should fail and mark transaction when multiple pending payouts exist', async () => {
+    it('should fail the newer duplicate and let the oldest proceed', async () => {
       await createSettledContribution(testJar.id, 500)
-      const tx1 = await createPendingPayoutTx(testJar.id, 500)
-      await createPendingPayoutTx(testJar.id, 500) // second one triggers safety net
+      const tx1 = await createPendingPayoutTx(testJar.id, 500) // oldest
+      const tx2 = await createPendingPayoutTx(testJar.id, 500) // newer duplicate
 
+      // Processing the newer tx — it should be rejected as a duplicate
       const result = await processPayoutTask.handler({
         req: { payload },
-        input: { existingTransactionId: tx1.id },
+        input: { existingTransactionId: tx2.id },
       })
 
       expect(result.output.success).toBe(false)
       expect(result.output.message).toBe(
-        'Multiple pending payouts detected — transaction failed for safety',
+        'Duplicate payout detected — only the oldest pending payout will be processed',
       )
 
-      const failed = await payload.findByID({
+      const failedTx2 = await payload.findByID({
+        collection: 'transactions',
+        id: tx2.id,
+        overrideAccess: true,
+      })
+      expect(failedTx2.paymentStatus).toBe('failed')
+
+      // The oldest should still be pending (not touched by this task)
+      const stillPendingTx1 = await payload.findByID({
         collection: 'transactions',
         id: tx1.id,
         overrideAccess: true,
       })
-      expect(failed.paymentStatus).toBe('failed')
+      expect(stillPendingTx1.paymentStatus).toBe('pending')
     })
 
     it('should return error when jar is frozen', async () => {

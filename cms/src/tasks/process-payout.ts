@@ -133,10 +133,12 @@ export const processPayoutTask = {
         return { output: { success: false, message: 'Jar is frozen' } }
       }
 
-      // Step 3b — verify jar still has sufficient balance to cover this payout
+      // Step 3b — verify jar still has sufficient balance to cover this payout.
+      // getJarBalance already deducts ALL pending payouts (including this one) from
+      // the settled contribution total, so we only need to ensure the net is >= 0.
       const { balance: currentBalance } = await getJarBalance(payload, jarId)
       const payoutAmount = Math.abs(transaction.amountContributed ?? 0)
-      if (currentBalance < payoutAmount) {
+      if (currentBalance < 0) {
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
@@ -144,12 +146,12 @@ export const processPayoutTask = {
           overrideAccess: true,
         })
         console.warn(
-          `❌ Payout ${existingTransactionId} rejected — jar balance (${currentBalance}) is less than payout amount (${payoutAmount})`,
+          `❌ Payout ${existingTransactionId} rejected — jar balance (${currentBalance}) is insufficient for payout amount (${payoutAmount})`,
         )
         return {
           output: {
             success: false,
-            message: `Insufficient jar balance: available ${currentBalance}, required ${payoutAmount}`,
+            message: `Insufficient jar balance: available ${currentBalance + payoutAmount}, required ${payoutAmount}`,
           },
         }
       }
