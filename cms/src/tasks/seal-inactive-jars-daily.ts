@@ -24,7 +24,9 @@ export const sealInactiveJarsDailyTask = {
     try {
       const payload = args.req?.payload || args.payload
       const now = Date.now()
-      const thresholdDate = new Date(now - INACTIVE_THRESHOLD_DAYS * DAY_MS).toISOString()
+      const _threshold = new Date(now - INACTIVE_THRESHOLD_DAYS * DAY_MS)
+      _threshold.setHours(23, 59, 59, 999)
+      const thresholdDate = _threshold.toISOString()
 
       console.log('🔒 Starting seal-inactive-jars check...')
 

@@ -37,7 +37,9 @@ export const withdrawReminderDailyTask = {
 
       console.log('🔔 Starting withdraw reminder check...')
 
-      const sevenDaysAgo = new Date(now - 7 * DAY_MS).toISOString()
+      const _sevenDaysAgo = new Date(now - 7 * DAY_MS)
+      _sevenDaysAgo.setHours(23, 59, 59, 999)
+      const sevenDaysAgo = _sevenDaysAgo.toISOString()
 
       const openJars = await payload.find({
         collection: 'jars',

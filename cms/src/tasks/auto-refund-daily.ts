@@ -26,7 +26,11 @@ export const autoRefundDailyTask = {
       console.log('Starting auto-refund daily check...')
 
       // 1. Find active jars idle for 14+ days
-      const fourteenDaysAgo = new Date(now - FOURTEEN_DAYS_MS).toISOString()
+      // Use end-of-day so any activity on day X is caught the day after (X + 14 days)
+      // regardless of what time the contribution was made vs what time this task runs.
+      const thresholdDate = new Date(now - FOURTEEN_DAYS_MS)
+      thresholdDate.setHours(23, 59, 59, 999)
+      const fourteenDaysAgo = thresholdDate.toISOString()
 
       const openJars = await payload.find({
         collection: 'jars',
@@ -42,7 +46,9 @@ export const autoRefundDailyTask = {
       })
 
       if (!openJars.docs.length) {
-        return { output: { success: true, message: 'No open jars', autoRefundsCreated: 0 } }
+        return {
+          output: { success: true, message: 'No open or sealed  jars', autoRefundsCreated: 0 },
+        }
       }
 
       let autoRefundsCreated = 0
