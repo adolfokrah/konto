@@ -3842,7 +3842,7 @@ export interface TaskProcessPayout {
     userBank: string;
     userAccountNumber: string;
     userAccountHolder: string;
-    existingTransactionId?: string | null;
+    existingTransactionId: string;
   };
   output?: unknown;
 }

@@ -414,97 +414,105 @@ describe('Payout Endpoint Integration Tests', () => {
   })
 
   describe('Process Payout Task', () => {
-    it('should create a payout transaction with correct fields', async () => {
-      await createSettledContribution(testJar.id, 500)
-
-      await processPayoutTask.handler({
-        req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-        },
-      })
-
-      const payoutTransactions = await payload.find({
-        collection: 'transactions',
-        where: {
-          jar: { equals: testJar.id },
-          type: { equals: 'payout' },
-        },
-        overrideAccess: true,
-      })
-
-      expect(payoutTransactions.docs.length).toBe(1)
-
-      const payoutTx = payoutTransactions.docs[0]
-      expect(payoutTx.type).toBe('payout')
-      expect(payoutTx.amountContributed).toBe(-500)
-      expect(payoutTx.paymentMethod).toBe('mobile-money')
-      expect(payoutTx.mobileMoneyProvider).toBe('mtn')
-      expect(payoutTx.payoutFeePercentage).toBeDefined()
-      expect(payoutTx.payoutFeeAmount).toBeDefined()
-      expect(payoutTx.payoutNetAmount).toBeDefined()
-      expect(payoutTx.paymentStatus).toBe('pending')
-      expect(payoutTx.transactionReference).toBe('MOCK-REF-123')
-    })
-
-    it('should calculate fee correctly based on system settings', async () => {
-      await createSettledContribution(testJar.id, 1000)
-
+    // Helper: create a pending payout transaction (as the endpoint would)
+    async function createPendingPayoutTx(
+      jarId: string,
+      amount: number,
+      overrides: Record<string, any> = {},
+    ) {
       const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
-      const feePercentage = systemSettings?.transferFeePercentage || 1
-
-      await processPayoutTask.handler({
-        req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: creatorUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000001',
-          userAccountHolder: 'Payout Creator',
-        },
-      })
-
-      const payoutTransactions = await payload.find({
-        collection: 'transactions',
-        where: {
-          jar: { equals: testJar.id },
-          type: { equals: 'payout' },
-        },
-        overrideAccess: true,
-      })
-
-      expect(payoutTransactions.docs.length).toBe(1)
-
-      const payoutTx = payoutTransactions.docs[0]
-      const expectedFee = (1000 * feePercentage) / 100
-      const expectedNetAmount = 1000 - expectedFee
-
-      expect(payoutTx.payoutFeePercentage).toBe(feePercentage)
-      expect(Math.abs(payoutTx.payoutFeeAmount as number)).toBe(expectedFee)
-      expect(Math.abs(payoutTx.payoutNetAmount as number)).toBe(expectedNetAmount)
-    })
-
-    it('should skip if a pending payout already exists', async () => {
-      await createSettledContribution(testJar.id, 500)
-
-      await payload.create({
+      const feePercentage = (systemSettings as any)?.transferFeePercentage || 1
+      const fee = (amount * feePercentage) / 100
+      return payload.create({
         collection: 'transactions',
         data: {
-          jar: testJar.id,
+          jar: jarId,
           contributor: 'Payout Creator',
           contributorPhoneNumber: '0000000001',
           paymentMethod: 'mobile-money' as const,
           mobileMoneyProvider: 'mtn' as const,
-          amountContributed: -500,
+          amountContributed: -amount,
           collector: creatorUser.id,
           type: 'payout' as const,
-          paymentStatus: 'pending',
+          paymentStatus: 'pending' as const,
+          payoutFeePercentage: feePercentage,
+          payoutFeeAmount: fee,
+          payoutNetAmount: amount - fee,
+          ...overrides,
+        },
+        overrideAccess: true,
+      })
+    }
+
+    it('should process payout and update transaction reference', async () => {
+      await createSettledContribution(testJar.id, 500)
+      const pendingTx = await createPendingPayoutTx(testJar.id, 500)
+
+      await processPayoutTask.handler({
+        req: { payload },
+        input: {
+          jarId: testJar.id,
+          userId: creatorUser.id,
+          userBank: 'mtn',
+          userAccountNumber: '0000000001',
+          userAccountHolder: 'Payout Creator',
+          existingTransactionId: pendingTx.id,
         },
       })
+
+      const updated = await payload.findByID({
+        collection: 'transactions',
+        id: pendingTx.id,
+        overrideAccess: true,
+      })
+
+      expect(updated.type).toBe('payout')
+      expect(updated.amountContributed).toBe(-500)
+      expect(updated.paymentMethod).toBe('mobile-money')
+      expect(updated.mobileMoneyProvider).toBe('mtn')
+      expect(updated.payoutFeePercentage).toBeDefined()
+      expect(updated.payoutFeeAmount).toBeDefined()
+      expect(updated.payoutNetAmount).toBeDefined()
+      expect(updated.transactionReference).toBe('MOCK-REF-123')
+    })
+
+    it('should use fee fields already set on the transaction', async () => {
+      await createSettledContribution(testJar.id, 1000)
+
+      const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
+      const feePercentage = (systemSettings as any)?.transferFeePercentage || 1
+      const pendingTx = await createPendingPayoutTx(testJar.id, 1000)
+
+      await processPayoutTask.handler({
+        req: { payload },
+        input: {
+          jarId: testJar.id,
+          userId: creatorUser.id,
+          userBank: 'mtn',
+          userAccountNumber: '0000000001',
+          userAccountHolder: 'Payout Creator',
+          existingTransactionId: pendingTx.id,
+        },
+      })
+
+      const updated = await payload.findByID({
+        collection: 'transactions',
+        id: pendingTx.id,
+        overrideAccess: true,
+      })
+
+      const expectedFee = (1000 * feePercentage) / 100
+      const expectedNetAmount = 1000 - expectedFee
+
+      expect(updated.payoutFeePercentage).toBe(feePercentage)
+      expect(Math.abs(updated.payoutFeeAmount as number)).toBe(expectedFee)
+      expect(Math.abs(updated.payoutNetAmount as number)).toBe(expectedNetAmount)
+    })
+
+    it('should fail and mark transaction when multiple pending payouts exist', async () => {
+      await createSettledContribution(testJar.id, 500)
+      const tx1 = await createPendingPayoutTx(testJar.id, 500)
+      await createPendingPayoutTx(testJar.id, 500) // second one triggers safety net
 
       const result = await processPayoutTask.handler({
         req: { payload },
@@ -514,15 +522,26 @@ describe('Payout Endpoint Integration Tests', () => {
           userBank: 'mtn',
           userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
+          existingTransactionId: tx1.id,
         },
       })
 
       expect(result.output.success).toBe(false)
-      expect(result.output.message).toBe('A payout is already pending for this jar')
+      expect(result.output.message).toBe(
+        'Multiple pending payouts detected — transaction failed for safety',
+      )
+
+      const failed = await payload.findByID({
+        collection: 'transactions',
+        id: tx1.id,
+        overrideAccess: true,
+      })
+      expect(failed.paymentStatus).toBe('failed')
     })
 
     it('should return error when jar is frozen', async () => {
       await createSettledContribution(testJar.id, 500)
+      const pendingTx = await createPendingPayoutTx(testJar.id, 500)
 
       await payload.update({
         collection: 'jars',
@@ -538,6 +557,7 @@ describe('Payout Endpoint Integration Tests', () => {
           userBank: 'mtn',
           userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
+          existingTransactionId: pendingTx.id,
         },
       })
 
@@ -545,25 +565,7 @@ describe('Payout Endpoint Integration Tests', () => {
       expect(result.output.message).toBe('Jar is frozen')
     })
 
-    it('should return error when user is not the jar creator', async () => {
-      await createSettledContribution(testJar.id, 500)
-
-      const result = await processPayoutTask.handler({
-        req: { payload },
-        input: {
-          jarId: testJar.id,
-          userId: otherUser.id,
-          userBank: 'mtn',
-          userAccountNumber: '0000000002',
-          userAccountHolder: 'Other User',
-        },
-      })
-
-      expect(result.output.success).toBe(false)
-      expect(result.output.message).toBe('Not the jar creator')
-    })
-
-    it('should return error when balance is zero', async () => {
+    it('should return error when transaction not found', async () => {
       const result = await processPayoutTask.handler({
         req: { payload },
         input: {
@@ -572,15 +574,40 @@ describe('Payout Endpoint Integration Tests', () => {
           userBank: 'mtn',
           userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
+          existingTransactionId: 'non-existent-id',
         },
       })
 
       expect(result.output.success).toBe(false)
-      expect(result.output.message).toBe('No balance available for payout')
+      expect(result.output.message).toBe('Transaction not found')
+    })
+
+    it('should return error when transaction is already processed', async () => {
+      const doneTx = await createPendingPayoutTx(testJar.id, 500, {
+        paymentStatus: 'completed',
+      })
+
+      const result = await processPayoutTask.handler({
+        req: { payload },
+        input: {
+          jarId: testJar.id,
+          userId: creatorUser.id,
+          userBank: 'mtn',
+          userAccountNumber: '0000000001',
+          userAccountHolder: 'Payout Creator',
+          existingTransactionId: doneTx.id,
+        },
+      })
+
+      expect(result.output.success).toBe(false)
+      expect(result.output.message).toContain('completed')
     })
 
     it('should return error for unsupported provider', async () => {
       await createSettledContribution(testJar.id, 500)
+      const pendingTx = await createPendingPayoutTx(testJar.id, 500, {
+        mobileMoneyProvider: 'vodafone',
+      })
 
       const result = await processPayoutTask.handler({
         req: { payload },
@@ -590,6 +617,7 @@ describe('Payout Endpoint Integration Tests', () => {
           userBank: 'vodafone',
           userAccountNumber: '0000000001',
           userAccountHolder: 'Payout Creator',
+          existingTransactionId: pendingTx.id,
         },
       })
 

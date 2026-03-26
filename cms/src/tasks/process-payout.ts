@@ -30,11 +30,16 @@ export const processPayoutTask = {
       console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
 
       // Step 1 — fetch the transaction and confirm it is still pending
-      const transaction = await payload.findByID({
-        collection: 'transactions',
-        id: existingTransactionId,
-        overrideAccess: true,
-      })
+      let transaction: any
+      try {
+        transaction = await payload.findByID({
+          collection: 'transactions',
+          id: existingTransactionId,
+          overrideAccess: true,
+        })
+      } catch {
+        return { output: { success: false, message: 'Transaction not found' } }
+      }
 
       if (!transaction) {
         return { output: { success: false, message: 'Transaction not found' } }
@@ -135,8 +140,6 @@ export const processPayoutTask = {
 
       // Step 5 — call Eganow
       try {
-        await getEganow().getToken()
-
         const payoutResult = await getEganow().payout({
           paypartnerCode: paypartner,
           amount: String(grossAmount.toFixed(2)),

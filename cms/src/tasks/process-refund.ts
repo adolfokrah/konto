@@ -112,9 +112,6 @@ export const processRefundTask = {
       })
 
       try {
-        // Get Eganow token
-        await getEganow().getToken()
-
         // KYC lookup — get verified account name from Eganow
         let accountName = refund.accountName
         try {
