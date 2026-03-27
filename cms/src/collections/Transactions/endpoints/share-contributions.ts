@@ -77,7 +77,7 @@ export const shareContributions = async (req: PayloadRequest) => {
         })
         .filter(Boolean)
 
-      const customSegment = customParts.length ? ` [${customParts.join(', ')}]` : ''
+      const customSegment = customParts.length ? ` - ${customParts.join(', ')}` : ''
       const amountStr = `${currency} ${Math.abs(amount).toFixed(2)}`
 
       if (isFailed) {
