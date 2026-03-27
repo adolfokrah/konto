@@ -20,7 +20,7 @@ export const SupportBlock: React.FC<Props> = ({
   closedDays = 'Saturday - Sunday: Closed',
 }) => {
   return (
-    <div className="max-w-2xl mx-auto px-6 py-24">
+    <div className="max-w-2xl mx-auto px-6 pt-36 pb-24">
       <div className="text-center mb-10">
         {heading && <h2 className="text-4xl font-bold text-black mb-3">{heading}</h2>}
         {subheading && <p className="text-lg text-gray-500">{subheading}</p>}

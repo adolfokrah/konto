@@ -29,6 +29,8 @@ function proxy(request: NextRequest) {
         '/Logo.svg',
         '/fonts/',
         '/next/',
+        '/en/next/',
+        '/fr/next/',
         '/dashboard', // Skip dashboard routes
         '/email',
         '/404',
@@ -90,8 +92,8 @@ function proxy(request: NextRequest) {
         }
       }
 
-      // No locale preservation needed, rewrite to default locale internally
-      return NextResponse.rewrite(new URL(`/en${pathname}`, request.url))
+      // No locale — redirect to /en so the URL reflects the locale
+      return NextResponse.redirect(new URL(`/en${pathname}`, request.url))
     }
 
     return NextResponse.next()

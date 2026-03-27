@@ -1,5 +1,4 @@
 import { withPayload } from '@payloadcms/next/withPayload'
-import redirects from './redirects.js'
 
 // Helper function to clean environment variables (remove extra quotes)
 const cleanEnvVar = (envVar) => {
@@ -118,7 +117,12 @@ const nextConfig = {
   },
   turbopack: {},
   reactStrictMode: true,
-  redirects,
+  async rewrites() {
+    return [
+      // Payload preview/seed routes are outside [locale] — strip the locale prefix
+      { source: '/:locale/next/:path*', destination: '/next/:path*' },
+    ]
+  },
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })
