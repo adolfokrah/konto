@@ -187,7 +187,9 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
     id: 'reviewedBy',
     header: 'Reviewed By',
     cell: ({ row }) => {
-      const user = row.original.reviewedBy
+      const user =
+        row.original.reviewedBy ??
+        (row.original.refundType === 'manual' ? row.original.initiatedBy : null)
       if (!user) return <span className="text-muted-foreground">{'\u2014'}</span>
       const name = `${user.firstName || ''} ${user.lastName || ''}`.trim()
       return <span>{name || user.email || '\u2014'}</span>

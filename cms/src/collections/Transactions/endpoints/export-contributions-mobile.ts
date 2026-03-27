@@ -1,5 +1,6 @@
 import type { PayloadRequest } from 'payload'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+import ExcelJS from 'exceljs'
 import fs from 'fs'
 import path from 'path'
 import { emailService } from '@/utilities/emailService'
@@ -480,8 +481,99 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     })
     const pdfBytes = await pdfDoc.save()
     const pdfBuffer = Buffer.from(pdfBytes)
-    const fileName = `contributions_${Date.now()}.pdf`
-    await emailService.sendExportReportEmail(targetEmail, jarName, docs.length, fileName, pdfBuffer)
+    const ts = Date.now()
+    const pdfFileName = `contributions_${ts}.pdf`
+
+    // Generate Excel
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'HogapayPlatform'
+    workbook.created = new Date()
+    const sheet = workbook.addWorksheet('Contributions', {
+      views: [{ state: 'frozen', ySplit: 1 }],
+    })
+    const excelHeaders = [
+      '#',
+      'Transaction ID',
+      'Contributor',
+      'Initiated By',
+      'Payment Method',
+      'Type',
+      'Status',
+      'Reason',
+      'Contribution',
+      'Payout',
+      ...exportableCustomFields.map((f) => f.label),
+      'Date',
+    ]
+    sheet.columns = excelHeaders.map((h, i) => ({
+      header: h,
+      key: `col${i}`,
+      width: i === 1 ? 28 : i === 2 || i === 3 ? 20 : 14,
+    }))
+    const headerRow = sheet.getRow(1)
+    headerRow.font = { bold: true, size: 10 }
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDEDF0' } }
+    headerRow.height = 22
+
+    docs.forEach((c, idx) => {
+      const contributor = c.contributor || c.contributorPhoneNumber || 'Anonymous'
+      let collectorName = ''
+      if (c.collector && typeof c.collector === 'object') {
+        collectorName = c.collector.fullName || c.collector.name || c.collector.email || ''
+      }
+      const amountNum = Number(c.amountContributed || 0)
+      const typeLower = String(c.type || '').toLowerCase()
+      const reason = refundsByTransaction.get(String(c.id)) || ''
+      const cfvById: Record<string, any> = {}
+      const cfvByLabel: Record<string, any> = {}
+      if (Array.isArray(c.customFieldValues)) {
+        for (const cfv of c.customFieldValues) {
+          if (cfv.fieldId) cfvById[cfv.fieldId] = cfv.value
+          if (cfv.label) cfvByLabel[String(cfv.label).toLowerCase()] = cfv.value
+        }
+      }
+      const rowValues: any = {
+        col0: idx + 1,
+        col1: String(c.id),
+        col2: contributor,
+        col3: collectorName,
+        col4: c.paymentMethod || '',
+        col5: c.type || '',
+        col6: c.paymentStatus || '',
+        col7: reason,
+        col8: typeLower === 'contribution' ? amountNum : null,
+        col9: typeLower === 'payout' ? amountNum : null,
+      }
+      exportableCustomFields.forEach((f, fi) => {
+        const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
+        rowValues[`col${10 + fi}`] = val !== undefined && val !== null ? String(val) : ''
+      })
+      rowValues[`col${10 + exportableCustomFields.length}`] = new Date(c.createdAt).toLocaleString()
+
+      const row = sheet.addRow(rowValues)
+      if (idx % 2 === 1) {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFBFC' } }
+        })
+      }
+    })
+    ;['col8', 'col9'].forEach((key) => {
+      sheet.getColumn(key).numFmt = '#,##0.00'
+    })
+
+    const excelRaw = await workbook.xlsx.writeBuffer()
+    const excelBuffer = Buffer.from(excelRaw)
+    const excelFileName = `contributions_${ts}.xlsx`
+
+    await emailService.sendExportReportEmail(
+      targetEmail,
+      jarName,
+      docs.length,
+      pdfFileName,
+      pdfBuffer,
+      excelFileName,
+      excelBuffer,
+    )
 
     return Response.json({
       success: true,

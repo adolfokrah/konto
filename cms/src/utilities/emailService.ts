@@ -105,9 +105,17 @@ class EmailService {
     userEmail: string,
     jarName: string | undefined,
     recordCount: number,
-    fileName: string,
+    pdfFileName: string,
     pdfBuffer: Buffer,
+    excelFileName?: string,
+    excelBuffer?: Buffer,
   ) {
+    const attachments: Array<{ filename: string; content: string }> = [
+      { filename: pdfFileName, content: pdfBuffer.toString('base64') },
+    ]
+    if (excelFileName && excelBuffer) {
+      attachments.push({ filename: excelFileName, content: excelBuffer.toString('base64') })
+    }
     return this.sendEmail({
       to: userEmail,
       subject: `Your Contributions Report for ${jarName || 'the jar'}`,
@@ -115,12 +123,7 @@ class EmailService {
         jarName: jarName || 'the jar',
         totalRecords: recordCount,
       }),
-      attachments: [
-        {
-          filename: fileName,
-          content: pdfBuffer.toString('base64'),
-        },
-      ],
+      attachments,
     })
   }
 

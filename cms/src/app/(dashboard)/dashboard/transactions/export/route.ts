@@ -5,6 +5,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import ExcelJS from 'exceljs'
 import fs from 'fs'
 import path from 'path'
+import { getResend } from '@/utilities/initalise'
 
 const paymentMethodLabels: Record<string, string> = {
   'mobile-money': 'Mobile Money',
@@ -608,6 +609,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const where = buildWhere(url.searchParams)
     const format = url.searchParams.get('format') || 'pdf'
+    const emailTo = url.searchParams.get('email') || ''
 
     const result = await payload.find({
       collection: 'transactions',
@@ -627,22 +629,34 @@ export async function GET(request: Request) {
       )
     }
 
-    if (format === 'excel') {
-      const buffer = await generateExcel(docs)
-      const fileName = `transactions_export_${Date.now()}.xlsx`
-      return new Response(new Uint8Array(buffer), {
-        headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': `attachment; filename="${fileName}"`,
-        },
+    const isExcel = format === 'excel'
+    const buffer = isExcel ? await generateExcel(docs) : await generatePdf(docs)
+    const ext = isExcel ? 'xlsx' : 'pdf'
+    const fileName = `transactions_export_${Date.now()}.${ext}`
+    const contentType = isExcel
+      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      : 'application/pdf'
+
+    // Send via email instead of downloading
+    if (emailTo) {
+      await getResend().emails.send({
+        from: 'Hogapay <noreply@hogapay.com>',
+        to: [emailTo],
+        subject: `Transactions Export — ${new Date().toLocaleDateString()}`,
+        html: `<p>Hi,</p><p>Please find attached your transactions export (${docs.length} record${docs.length !== 1 ? 's' : ''}) as of ${new Date().toLocaleString()}.</p><p>— Hogapay</p>`,
+        attachments: [
+          {
+            filename: fileName,
+            content: buffer.toString('base64'),
+          },
+        ],
       })
+      return Response.json({ success: true, message: `Export sent to ${emailTo}` })
     }
 
-    const buffer = await generatePdf(docs)
-    const fileName = `transactions_export_${Date.now()}.pdf`
     return new Response(new Uint8Array(buffer), {
       headers: {
-        'Content-Type': 'application/pdf',
+        'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     })
