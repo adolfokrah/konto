@@ -13,6 +13,7 @@ import WeeklyAccountSummary, {
 import WithdrawalReminder from '@/components/emailTemplates/withdrawalReminder'
 import AutoRefundNotice from '@/components/emailTemplates/autoRefundNotice'
 import SealInactiveJar from '@/components/emailTemplates/sealInactiveJar'
+import CustomFieldsAnnouncement from '@/components/emailTemplates/customFieldsAnnouncement'
 
 interface EmailOptions {
   to: string | string[]

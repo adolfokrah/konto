@@ -22,8 +22,21 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: error }, { status: 404 })
     }
 
+    const {
+      transactionTypes,
+      startDate: startDateStr,
+      endDate: endDateStr,
+    } = req.query as Record<string, string>
+    const dateRangeLabel = (() => {
+      const fmt = (d: string) =>
+        new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      if (startDateStr && endDateStr) return `${fmt(startDateStr)} – ${fmt(endDateStr)}`
+      if (startDateStr) return `From ${fmt(startDateStr)}`
+      if (endDateStr) return `Up to ${fmt(endDateStr)}`
+      return null
+    })()
+
     // Apply transaction type filter, always excluding refunds
-    const { transactionTypes } = req.query as Record<string, string>
     const typeList = parseList(transactionTypes)
     if (typeList?.length) {
       const filtered = typeList.filter((t) => t !== 'refund')
@@ -215,6 +228,10 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     cursorY -= titleSize + 4
     if (jarName) {
       drawText(`Jar: ${jarName}`, pageMargin, cursorY, metaFontSize)
+      cursorY -= metaFontSize + 2
+    }
+    if (dateRangeLabel) {
+      drawText(`Period: ${dateRangeLabel}`, pageMargin, cursorY, metaFontSize)
       cursorY -= metaFontSize + 2
     }
     // Add note about multi-page document
@@ -488,7 +505,8 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     const workbook = new ExcelJS.Workbook()
     workbook.creator = 'HogapayPlatform'
     workbook.created = new Date()
-    const sheet = workbook.addWorksheet('Contributions', {
+    const sheetTitle = [jarName, dateRangeLabel].filter(Boolean).join(' · ') || 'Contributions'
+    const sheet = workbook.addWorksheet(sheetTitle.slice(0, 31), {
       views: [{ state: 'frozen', ySplit: 1 }],
     })
     const excelHeaders = [
@@ -505,12 +523,24 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       ...exportableCustomFields.map((f) => f.label),
       'Date',
     ]
+    // Meta rows before header
+    const metaLines = [
+      jarName ? `Jar: ${jarName}` : null,
+      dateRangeLabel ? `Period: ${dateRangeLabel}` : null,
+      `Generated: ${new Date().toLocaleString()}`,
+    ].filter(Boolean) as string[]
+    for (const line of metaLines) {
+      const metaRow = sheet.addRow([line])
+      metaRow.font = { italic: true, size: 9, color: { argb: 'FF6B7280' } }
+    }
+    sheet.addRow([]) // blank spacer
+
     sheet.columns = excelHeaders.map((h, i) => ({
       header: h,
       key: `col${i}`,
       width: i === 1 ? 28 : i === 2 || i === 3 ? 20 : 14,
     }))
-    const headerRow = sheet.getRow(1)
+    const headerRow = sheet.getRow(metaLines.length + 2)
     headerRow.font = { bold: true, size: 10 }
     headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDEDF0' } }
     headerRow.height = 22
