@@ -44,6 +44,11 @@ export const shareContributions = async (req: PayloadRequest) => {
     const currency = jar?.currency || 'GHS'
     const jarName = jar?.name || 'Jar'
 
+    // Resolve which custom fields to include (marked includeInExport)
+    const allCustomFields: { id: string; label: string }[] = ((jar?.customFields as any[]) || [])
+      .filter((f: any) => f.includeInExport === true)
+      .map((f: any) => ({ id: f.id, label: f.label }))
+
     const lines: string[] = []
     lines.push(`*${jarName}*`)
     lines.push('--------------------------------')
@@ -51,16 +56,34 @@ export const shareContributions = async (req: PayloadRequest) => {
     let total = 0
     let counter = 0
     for (const c of docs) {
-      const type = String(c.type || '').toLowerCase()
       const name = c.contributor || 'Anonymous'
       const isFailed = c.paymentStatus === 'failed'
       const amount = isFailed ? 0 : Number(c.amountContributed || 0)
-      const prefix = type === 'payout' ? '-' : '-'
+
+      // Build custom field values lookup
+      const cfvById: Record<string, any> = {}
+      const cfvByLabel: Record<string, any> = {}
+      if (Array.isArray(c.customFieldValues)) {
+        for (const cfv of c.customFieldValues) {
+          if (cfv.fieldId) cfvById[cfv.fieldId] = cfv.value
+          if (cfv.label) cfvByLabel[String(cfv.label).toLowerCase()] = cfv.value
+        }
+      }
+
+      const customParts = allCustomFields
+        .map((f) => {
+          const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
+          return val !== undefined && val !== null && val !== '' ? String(val) : null
+        })
+        .filter(Boolean)
+
+      const customSegment = customParts.length ? ` [${customParts.join(', ')}]` : ''
+      const amountStr = `${currency} ${Math.abs(amount).toFixed(2)}`
 
       if (isFailed) {
-        lines.push(`${counter + 1}. ~${name} ${prefix} ${currency} ${Math.abs(amount).toFixed(2)}~`)
+        lines.push(`${counter + 1}. ~${name}${customSegment} - ${amountStr}~`)
       } else {
-        lines.push(`${counter + 1}. ${name} ${prefix} ${currency} ${Math.abs(amount).toFixed(2)}`)
+        lines.push(`${counter + 1}. ${name}${customSegment} - ${amountStr}`)
       }
       total += amount
       counter++
