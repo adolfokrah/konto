@@ -42,6 +42,7 @@ import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
 import { Emails } from './collections/Emails'
+import { Cashbacks } from './collections/Cashbacks'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
@@ -108,6 +109,7 @@ export default buildConfig({
     ReferralBonuses,
     Disputes,
     Emails,
+    Cashbacks,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],

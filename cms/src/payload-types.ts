@@ -86,6 +86,7 @@ export interface Config {
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
     emails: Email;
+    cashbacks: Cashback;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -116,6 +117,7 @@ export interface Config {
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
     emails: EmailsSelect<false> | EmailsSelect<true>;
+    cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -509,6 +511,10 @@ export interface User {
    * Auto-generated referral code for this user
    */
   referralCode?: string | null;
+  /**
+   * Discount on Hogapay's 0.8% collection fee (0 = no discount, 100 = full discount). Contributor pays less; Hogapay absorbs the difference.
+   */
+  hogapayDiscountPercent?: number | null;
   /**
    * Demo users always use OTP 123456 and skip SMS/email sending
    */
@@ -1430,6 +1436,18 @@ export interface Transaction {
      * Hogapay's share of the fees (revenue)
      */
     hogapayRevenue?: number | null;
+    /**
+     * Discount percentage applied to Hogapay fee (0 = no discount)
+     */
+    discountPercent?: number | null;
+    /**
+     * GHS amount Hogapay absorbed as discount
+     */
+    discountAmount?: number | null;
+    /**
+     * Actual amount sent to Eganow (amountContributed - discountAmount)
+     */
+    amountToSendToEganow?: number | null;
   };
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
@@ -2008,6 +2026,47 @@ export interface Email {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cashbacks".
+ */
+export interface Cashback {
+  id: string;
+  /**
+   * The transaction this cashback is linked to
+   */
+  transaction: string | Transaction;
+  /**
+   * The user who received this discount
+   */
+  user: string | User;
+  /**
+   * Contributor name (denormalised for display)
+   */
+  contributor?: string | null;
+  /**
+   * Jar name at time of contribution (denormalised)
+   */
+  jarName?: string | null;
+  /**
+   * Amount contributed (GHS)
+   */
+  originalAmount: number;
+  /**
+   * Discount percentage applied (0–100)
+   */
+  discountPercent: number;
+  /**
+   * GHS amount Hogapay absorbed as discount
+   */
+  discountAmount: number;
+  /**
+   * Hogapay revenue after discount (GHS)
+   */
+  hogapayRevenue: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2306,6 +2365,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'emails';
         value: string | Email;
+      } | null)
+    | ({
+        relationTo: 'cashbacks';
+        value: string | Cashback;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2930,6 +2993,7 @@ export interface UsersSelect<T extends boolean = true> {
   kycStatus?: T;
   role?: T;
   referralCode?: T;
+  hogapayDiscountPercent?: T;
   demoUser?: T;
   lastActiveAt?: T;
   bank?: T;
@@ -2986,6 +3050,9 @@ export interface TransactionsSelect<T extends boolean = true> {
         amountPaidByContributor?: T;
         eganowFees?: T;
         hogapayRevenue?: T;
+        discountPercent?: T;
+        discountAmount?: T;
+        amountToSendToEganow?: T;
       };
   paymentStatus?: T;
   type?: T;
@@ -3268,6 +3335,22 @@ export interface EmailsSelect<T extends boolean = true> {
         contentType?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cashbacks_select".
+ */
+export interface CashbacksSelect<T extends boolean = true> {
+  transaction?: T;
+  user?: T;
+  contributor?: T;
+  jarName?: T;
+  originalAmount?: T;
+  discountPercent?: T;
+  discountAmount?: T;
+  hogapayRevenue?: T;
   updatedAt?: T;
   createdAt?: T;
 }

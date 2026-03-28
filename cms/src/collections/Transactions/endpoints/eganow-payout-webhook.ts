@@ -327,6 +327,7 @@ async function handlePayoutWebhook(
     id: transfer.id,
     data: { paymentStatus: newStatus, webhookResponse: webhookData },
     overrideAccess: true,
+    context: { skipCharges: true },
   })
 
   // Send FCM notification for payout

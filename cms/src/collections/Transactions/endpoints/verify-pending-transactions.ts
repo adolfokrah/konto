@@ -71,6 +71,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
             },
             overrideAccess: true,
             req,
+            context: { skipCharges: true },
           })
           results.push({
             transactionId: id,
@@ -139,6 +140,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
             },
             overrideAccess: true,
             req,
+            context: { skipCharges: true },
           })
           results.push({
             id,
@@ -176,6 +178,7 @@ export const verifyPendingTransactions = async (req: PayloadRequest) => {
           },
           overrideAccess: true,
           req,
+          context: { skipCharges: true },
         })
 
         if (newStatus === 'failed') {

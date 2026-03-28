@@ -140,6 +140,7 @@ export const reconcileMomoStatus = async (req: PayloadRequest) => {
                 ...(collectorId ? { collector: collectorId } : {}),
               },
               overrideAccess: true,
+              context: { skipCharges: true },
             })
 
             result.action = `updated → ${mappedStatus}`

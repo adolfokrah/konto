@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from './ui/button'
@@ -60,6 +60,11 @@ export default function ContributionInput({
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
+  const [charges, setCharges] = useState<{
+    platformCharge: number
+    amountPaidByContributor: number
+  } | null>(null)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
   const { trigger: createContribution } = useSWRMutation(
@@ -208,6 +213,42 @@ export default function ContributionInput({
     }
   }, [pollingInterval])
 
+  // Fetch live charge breakdown from backend whenever amount changes (debounced)
+  useEffect(() => {
+    if (selectedAmount <= 0) {
+      setCharges(null)
+      return
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ amount: String(selectedAmount) })
+        if (jarId) params.set('jarId', jarId)
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/transactions/get-charges?${params}`,
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) {
+            setCharges({
+              platformCharge: data.platformCharge,
+              amountPaidByContributor: data.amountPaidByContributor,
+            })
+            return
+          }
+        }
+      } catch {
+        // fall through to local fallback
+      }
+      // Fallback: compute locally if API unavailable
+      const fee = contributionAmount * (transactionFeePercentage / 100)
+      setCharges({
+        platformCharge: fee,
+        amountPaidByContributor: contributionAmount + fee,
+      })
+    }, 400)
+  }, [selectedAmount, jarId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
     if (!isAnonymous && !contributorName) {
@@ -286,10 +327,10 @@ export default function ContributionInput({
     return amount.toFixed(2)
   }
 
-  // Calculate transaction fee from system settings (percentage is stored as 1.95, not 0.0195)
   const contributionAmount = selectedAmount
-  const transactionFee = contributionAmount * (transactionFeePercentage / 100)
-  const totalAmountToPay = contributionAmount + transactionFee
+  // Use live charges from API; fall back to local calculation while loading
+  const totalAmountToPay = charges?.amountPaidByContributor ?? contributionAmount * (1 + transactionFeePercentage / 100)
+  const transactionFee = totalAmountToPay - contributionAmount
 
   return (
     <div className={`bg-white ${className}`}>
@@ -441,6 +482,7 @@ export default function ContributionInput({
             {currency} {formatAmount(totalAmountToPay)}
           </span>
         </div>
+
       </div>
 
       {/* Contribute Button */}

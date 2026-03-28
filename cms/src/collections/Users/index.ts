@@ -314,6 +314,17 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'hogapayDiscountPercent',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      max: 100,
+      admin: {
+        description:
+          "Discount on Hogapay's 0.8% collection fee (0 = no discount, 100 = full discount). Contributor pays less; Hogapay absorbs the difference.",
+      },
+    },
+    {
       name: 'demoUser',
       type: 'checkbox',
       defaultValue: false,

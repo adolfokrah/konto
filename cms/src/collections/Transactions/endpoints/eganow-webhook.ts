@@ -111,6 +111,10 @@ export const eganowWebhook = async (req: PayloadRequest) => {
     }
 
     const contribution = contributionResult.docs[0]
+    console.log(
+      `[webhook] fetched contribution chargesBreakdown:`,
+      JSON.stringify(contribution.chargesBreakdown),
+    )
 
     // Only process webhook if contribution status is pending
     if (contribution.paymentStatus !== 'pending') {
@@ -136,6 +140,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
         ...(payPartnerTransactionId && { eganowPayPartnerTransactionId: payPartnerTransactionId }),
       },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     console.log(`Successfully updated contribution ${transactionId} to ${newStatus}`)

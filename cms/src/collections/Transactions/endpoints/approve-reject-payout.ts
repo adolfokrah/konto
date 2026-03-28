@@ -133,6 +133,7 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
           id: transactionId,
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
+          context: { skipCharges: true },
         })
 
         // Notify the jar creator
@@ -209,6 +210,7 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
       id: transactionId,
       data: { paymentStatus: 'pending' },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     // Queue the payout job with the existing transaction ID

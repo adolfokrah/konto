@@ -26,6 +26,7 @@ import {
   RefreshCcwDot,
   PanelLeftClose,
   PanelLeftOpen,
+  Percent,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -72,6 +73,7 @@ const navGroups = [
       { label: 'Ledger', href: '/dashboard/ledger', icon: Wallet },
       { label: 'Referrals', href: '/dashboard/referrals', icon: Share2 },
       { label: 'Referral Bonuses', href: '/dashboard/referral-bonuses', icon: Gift },
+      { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
     ],
   },
 ]

@@ -25,6 +25,8 @@ import { approveRejectPayout } from './endpoints/approve-reject-payout'
 import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
 import { updateJarLastActivity } from './hooks/update-jar-last-activity'
+import { createCashback } from './hooks/create-cashback'
+import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -163,6 +165,30 @@ export const Transactions: CollectionConfig = {
           type: 'number',
           admin: {
             description: "Hogapay's share of the fees (revenue)",
+            readOnly: true,
+          },
+        },
+        {
+          name: 'discountPercent',
+          type: 'number',
+          admin: {
+            description: 'Discount percentage applied to Hogapay fee (0 = no discount)',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'discountAmount',
+          type: 'number',
+          admin: {
+            description: 'GHS amount Hogapay absorbed as discount',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'amountToSendToEganow',
+          type: 'number',
+          admin: {
+            description: 'Actual amount sent to Eganow (amountContributed - discountAmount)',
             readOnly: true,
           },
         },
@@ -425,6 +451,11 @@ export const Transactions: CollectionConfig = {
       method: 'get',
       handler: reconcileMomoStatus,
     },
+    {
+      path: '/get-charges',
+      method: 'get',
+      handler: getChargesEndpoint,
+    },
   ],
   hooks: {
     beforeChange: [setPaymentStatus, getCharges],
@@ -433,6 +464,7 @@ export const Transactions: CollectionConfig = {
       notifyTransactionCompleted,
       processReferralBonus,
       updateJarLastActivity,
+      createCashback,
     ],
     beforeValidate: [validateJarCreatorAccount],
   },

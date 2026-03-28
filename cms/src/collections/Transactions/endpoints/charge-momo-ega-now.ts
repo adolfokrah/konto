@@ -171,7 +171,11 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     // Prepare collection request data
     const collectionData = {
       paypartnerCode,
-      amount: String(contribution.amountContributed || 0), // Send only the contribution amount (without fees)
+      amount: String(
+        (contribution.chargesBreakdown as any)?.amountToSendToEganow ??
+          contribution.amountContributed ??
+          0,
+      ), // After discount: send reduced amount so Eganow's 2% brings total back to what contributor pays
       accountNoOrCardNoOrMSISDN: phoneNumber,
       accountName,
       transactionId: contribution.id, // Use contribution ID as transaction reference
@@ -212,6 +216,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
         transactionReference: collectionResult.eganowReferenceNo,
         paymentStatus: 'pending', // Set to pending while waiting for user approval
       },
+      context: { skipCharges: true },
     })
 
     // Return structured response based on Eganow mobile money response format

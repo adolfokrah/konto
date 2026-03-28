@@ -117,6 +117,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         transactionReference: contribution.id,
       },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     return Response.json({
