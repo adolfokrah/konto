@@ -11,6 +11,7 @@ import { cn } from '@/utilities/ui'
 import { kycStatusLabels } from '@/components/dashboard/table-constants'
 import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
 import { UserKycActions } from '@/components/dashboard/user-kyc-actions'
+import { UserDiscountEditor } from '@/components/dashboard/user-discount-editor'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 
 const TX_DEFAULT_LIMIT = 20
@@ -283,6 +284,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
               <InfoRow label="Country" value={user.country} />
               <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
               <InfoRow label="Referral Code" value={user.referralCode ? <span className="font-mono text-xs tracking-widest">{user.referralCode}</span> : <span className="text-muted-foreground text-xs">Not generated</span>} />
+              <InfoRow label="Fee Discount" value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />} />
               <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
             </CardContent>
           </Card>

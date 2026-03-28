@@ -122,6 +122,34 @@ export async function updateUserKycStatus(
 }
 
 /**
+ * Update a user's Hogapay discount percentage (admin action)
+ */
+export async function updateUserDiscountPercent(
+  userId: string,
+  discountPercent: number,
+): Promise<ActionResult> {
+  try {
+    const clamped = Math.max(0, Math.min(100, discountPercent))
+    const payload = await getPayload({ config: configPromise })
+    await payload.update({
+      collection: 'users',
+      id: userId,
+      data: { hogapayDiscountPercent: clamped } as any,
+      overrideAccess: true,
+    })
+    return {
+      success: true,
+      message: `Discount updated to ${clamped}%.`,
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || 'Failed to update discount percent',
+    }
+  }
+}
+
+/**
  * Fetch the full KYC decision from Didit API (ID verification, liveness, face match, AML)
  */
 export async function fetchDiditDecision(sessionId: string): Promise<DecisionResult> {

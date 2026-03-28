@@ -17,6 +17,11 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 // Extract locale type from Payload Config
 type Locale = Config['locale']
 
+// Allow slugs not returned by generateStaticParams to be rendered on-demand
+export const dynamicParams = true
+// Revalidate every 60 seconds so published changes appear without a full rebuild
+export const revalidate = 60
+
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({
