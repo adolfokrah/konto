@@ -45,6 +45,13 @@ export type PaginationProps = {
   rowsPerPage: number
 }
 
+export type BulkAction<TData> = {
+  label: string
+  icon?: React.ReactNode
+  className?: string
+  onClick: (selectedRows: TData[], clearSelection: () => void) => void
+}
+
 export type DataTableProps<TData> = {
   columns: ColumnDef<TData, any>[]
   data: TData[]
@@ -59,4 +66,12 @@ export type DataTableProps<TData> = {
   tableId?: string
   /** Render an expanded panel below a clicked row. Clicking the row toggles it open/closed. */
   renderExpandedRow?: (row: TData) => React.ReactNode
+  /** Enable row selection with bulk action buttons shown in a toolbar when rows are selected */
+  bulkActions?: BulkAction<TData>[]
+  /** Extract a stable row ID. Defaults to (row as any).id */
+  getRowId?: (row: TData) => string
+  /** Arbitrary metadata passed to table.options.meta — accessible inside column cell renderers */
+  tableMeta?: Record<string, any>
+  /** Makes the DataTable grow to fill its flex parent instead of using a fixed scrollOffset */
+  fillParent?: boolean
 }

@@ -2062,6 +2062,10 @@ export interface Cashback {
    * Hogapay revenue after discount (GHS)
    */
   hogapayRevenue: number;
+  /**
+   * Whether this cashback has been paid/settled
+   */
+  isPaid?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3351,6 +3355,7 @@ export interface CashbacksSelect<T extends boolean = true> {
   discountPercent?: T;
   discountAmount?: T;
   hogapayRevenue?: T;
+  isPaid?: T;
   updatedAt?: T;
   createdAt?: T;
 }

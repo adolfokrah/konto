@@ -4,6 +4,7 @@ import { type ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
 import { formatShortDate } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export type CashbackRow = {
   id: string
@@ -15,6 +16,7 @@ export type CashbackRow = {
   discountPercent: number
   discountAmount: number
   hogapayRevenue: number
+  isPaid: boolean
   createdAt: string
 }
 
@@ -31,7 +33,11 @@ export const cashbackColumns: ColumnDef<CashbackRow, any>[] = [
       if (!u) return <span className="text-muted-foreground">—</span>
       const name = `${u.firstName || ''} ${u.lastName || ''}`.trim()
       return (
-        <Link href={`/dashboard/users/${u.id}`} className="hover:underline font-medium">
+        <Link
+          href={`/dashboard/users/${u.id}`}
+          className="hover:underline font-medium"
+          onClick={(e) => e.stopPropagation()}
+        >
           {name || u.email}
         </Link>
       )
@@ -44,16 +50,12 @@ export const cashbackColumns: ColumnDef<CashbackRow, any>[] = [
   {
     accessorKey: 'contributor',
     header: 'Contributor',
-    cell: ({ row }) => (
-      <span>{row.original.contributor || '—'}</span>
-    ),
+    cell: ({ row }) => <span>{row.original.contributor || '—'}</span>,
   },
   {
     accessorKey: 'jarName',
     header: 'Jar',
-    cell: ({ row }) => (
-      <span>{row.original.jarName || '—'}</span>
-    ),
+    cell: ({ row }) => <span>{row.original.jarName || '—'}</span>,
     meta: {
       filter: { type: 'search', paramKey: 'jar', placeholder: 'Search jar...' },
       filterLabel: 'Jar',
@@ -104,14 +106,32 @@ export const cashbackColumns: ColumnDef<CashbackRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
+    accessorKey: 'isPaid',
+    header: 'Paid',
+    cell: ({ row, table }) => {
+      const onTogglePaid = (table.options.meta as any)?.onTogglePaid
+      return (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={row.original.isPaid}
+            onCheckedChange={(checked) => onTogglePaid?.(row.original.id, !!checked)}
+            aria-label="Mark as paid"
+          />
+        </div>
+      )
+    },
+    meta: {
+      headerClassName: 'text-center',
+      cellClassName: 'text-center',
+    } satisfies DataTableColumnMeta,
+  },
+  {
     accessorKey: 'transaction',
     header: 'Transaction',
     cell: ({ row }) => {
       const tx = row.original.transaction
       if (!tx) return <span className="text-muted-foreground">—</span>
-      return (
-        <span className="font-mono text-xs text-muted-foreground">{tx.id.slice(-8)}</span>
-      )
+      return <span className="font-mono text-xs text-muted-foreground">{tx.id.slice(-8)}</span>
     },
   },
   {

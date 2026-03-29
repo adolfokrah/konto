@@ -244,7 +244,7 @@ export default buildConfig({
         queue: 'verify-pending-topups',
       },
       {
-        cron: '2 8 * * 0', // Every Sunday at 8:02 AM
+        cron: '0 9 * * 0', // Every Sunday at 9 AM
         queue: 'weekly-account-summary',
       },
       {

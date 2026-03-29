@@ -106,5 +106,13 @@ export const Cashbacks: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'isPaid',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether this cashback has been paid/settled',
+      },
+    },
   ],
 }

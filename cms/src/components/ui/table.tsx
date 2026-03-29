@@ -9,7 +9,7 @@ const Table = React.forwardRef<
   <div
     className={cn(
       "relative w-full overflow-auto",
-      scrollOffset && "max-h-(--table-offset) min-h-(--table-offset)",
+      scrollOffset ? "max-h-(--table-offset)" : "flex-1",
     )}
     style={scrollOffset ? { '--table-offset': `calc(100vh - ${scrollOffset})`, ...style } as React.CSSProperties : style}
   >

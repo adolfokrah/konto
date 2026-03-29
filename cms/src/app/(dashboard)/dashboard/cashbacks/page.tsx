@@ -25,7 +25,6 @@ export default async function CashbacksPage({ searchParams }: Props) {
 
   const where: Record<string, any> = {}
   if (search) {
-    // Match on the related user's name via depth — use contributor name as proxy
     where.contributor = { like: search }
   }
   if (jar) {
@@ -40,15 +39,27 @@ export default async function CashbacksPage({ searchParams }: Props) {
     where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
 
-  const result = await payload.find({
-    collection: 'cashbacks' as any,
-    where,
-    page,
-    limit,
-    sort,
-    depth: 1,
-    overrideAccess: true,
-  })
+  const [result, unpaidResult] = await Promise.all([
+    payload.find({
+      collection: 'cashbacks' as any,
+      where,
+      page,
+      limit,
+      sort,
+      depth: 1,
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: 'cashbacks' as any,
+      where: {
+        or: [{ isPaid: { equals: false } }, { isPaid: { exists: false } }],
+      },
+      limit: 0,
+      pagination: false,
+      overrideAccess: true,
+      select: { discountAmount: true } as any,
+    }),
+  ])
 
   const cashbacks: CashbackRow[] = (result.docs as any[]).map((c: any) => {
     const userObj = typeof c.user === 'object' && c.user ? c.user : null
@@ -71,6 +82,7 @@ export default async function CashbacksPage({ searchParams }: Props) {
       discountPercent: c.discountPercent ?? 0,
       discountAmount: c.discountAmount ?? 0,
       hogapayRevenue: c.hogapayRevenue ?? 0,
+      isPaid: c.isPaid ?? false,
       createdAt: c.createdAt,
     }
   })
@@ -80,8 +92,14 @@ export default async function CashbacksPage({ searchParams }: Props) {
     0,
   )
 
+  const totalUnpaidCount = unpaidResult.totalDocs
+  const totalUnpaidAmount = (unpaidResult.docs as any[]).reduce(
+    (sum, c) => sum + (c.discountAmount ?? 0),
+    0,
+  )
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
@@ -97,16 +115,27 @@ export default async function CashbacksPage({ searchParams }: Props) {
             </CardTitle>
           </CardHeader>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Unpaid Cashbacks</CardDescription>
+            <CardTitle className="text-2xl text-yellow-400">
+              GHS {totalUnpaidAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-3 pt-0">
+            <p className="text-xs text-muted-foreground">{totalUnpaidCount} record{totalUnpaidCount !== 1 ? 's' : ''} unpaid</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card>
+      <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Cashbacks</CardTitle>
           <CardDescription>
             {result.totalDocs} cashback record{result.totalDocs !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <CashbacksDataTable
             cashbacks={cashbacks}
             pagination={{

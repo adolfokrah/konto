@@ -12,15 +12,15 @@ type WeeklySummaryPayload = {
 /**
  * Weekly Account Summary Task
  *
- * Runs every Monday at 8 AM.
+ * Runs every Sunday at 9 AM.
  * Sends each KYC-verified jar creator a summary of their jars' activity
- * for the previous Monday–Sunday week — only completed transactions.
+ * for the previous Sunday–Saturday week — only completed transactions.
  */
 export const weeklyAccountSummaryTask = {
   slug: 'weekly-account-summary',
   schedule: [
     {
-      cron: '0 8 * * 1', // Every Monday at 8 AM
+      cron: '0 9 * * 0', // Every Sunday at 9 AM
       queue: 'weekly-account-summary',
     },
   ],
@@ -29,12 +29,14 @@ export const weeklyAccountSummaryTask = {
       const payload = args.req?.payload || args.payload
 
       const now = new Date()
-      // Runs on Monday — previous week is Mon–Sun
+      // Find the most recent completed Saturday regardless of which day this runs.
+      // Sun=0 → 1 day back, Mon=1 → 2, Tue=2 → 3, ..., Sat=6 → 7 (previous Sat)
+      const daysToLastSat = (now.getDay() + 1) % 7 || 7
       const weekEnd = new Date(now)
-      weekEnd.setDate(now.getDate() - 1) // yesterday = Sunday
+      weekEnd.setDate(now.getDate() - daysToLastSat)
       weekEnd.setHours(23, 59, 59, 999)
       const weekStart = new Date(weekEnd)
-      weekStart.setDate(weekEnd.getDate() - 6) // 6 days back = Monday
+      weekStart.setDate(weekEnd.getDate() - 6) // 6 days back = Sunday
       weekStart.setHours(0, 0, 0, 0)
 
       const formatDate = (d: Date) =>
@@ -54,7 +56,7 @@ export const weeklyAccountSummaryTask = {
       const users = await payload.find({
         collection: 'users',
         where: {
-          role: { equals: 'user' },
+          and: [{ role: { equals: 'user' } }],
         },
         pagination: false,
         overrideAccess: true,

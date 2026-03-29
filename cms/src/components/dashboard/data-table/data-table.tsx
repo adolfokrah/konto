@@ -7,6 +7,7 @@ import {
   flexRender,
   type ColumnDef,
   type ColumnSizingState,
+  type RowSelectionState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -15,6 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { X } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 import { DataTableFilterHeader } from './data-table-filter-header'
 import { DataTableActiveFilters } from './data-table-active-filters'
@@ -47,10 +52,20 @@ export function DataTable<TData>({
   emptyMessage = 'No results found',
   scrollOffset,
   tableId,
+  bulkActions,
+  getRowId,
+  tableMeta,
+  fillParent,
 }: DataTableProps<TData>) {
   const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters, sortBy, sortOrder, updateSort } = useTableFilters(columns)
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+
+  const resolveRowId = useCallback(
+    (row: TData): string => (getRowId ? getRowId(row) : (row as any).id ?? ''),
+    [getRowId],
+  )
 
   // Load persisted sizes after mount to avoid SSR/hydration mismatch
   useEffect(() => {
@@ -75,6 +90,34 @@ export function DataTable<TData>({
 
   const rowOffset = pagination ? (pagination.currentPage - 1) * pagination.rowsPerPage : 0
 
+  const checkboxColumn: ColumnDef<TData, any> = {
+    id: '_select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected()
+            ? true
+            : table.getIsSomePageRowsSelected()
+              ? 'indeterminate'
+              : false
+        }
+        onCheckedChange={(checked) => table.toggleAllPageRowsSelected(!!checked)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(checked) => row.toggleSelected(!!checked)}
+        onClick={(e) => e.stopPropagation()}
+        aria-label="Select row"
+      />
+    ),
+    size: 40,
+    enableResizing: false,
+    meta: { headerClassName: 'w-[40px]', cellClassName: 'w-[40px]' } satisfies DataTableColumnMeta,
+  }
+
   const numberColumn: ColumnDef<TData, any> = {
     id: '_number',
     header: '#',
@@ -87,6 +130,7 @@ export function DataTable<TData>({
   }
 
   const allColumns: ColumnDef<TData, any>[] = [
+    ...(bulkActions ? [checkboxColumn] : []),
     numberColumn,
     ...columns,
     ...(renderRowActions
@@ -112,15 +156,22 @@ export function DataTable<TData>({
     manualPagination: true,
     columnResizeMode: 'onChange',
     enableColumnResizing: true,
+    enableRowSelection: !!bulkActions,
     onColumnSizingChange: handleColumnSizingChange,
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row, index) => resolveRowId(row) || String(index),
+    meta: tableMeta,
     state: {
       columnSizing,
+      rowSelection,
     },
   })
 
+  const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original)
+  const selectedCount = selectedRows.length
   const totalColumns = allColumns.length
 
-  return (
+  const inner = (
     <>
       {!readOnly && (
         <DataTableActiveFilters
@@ -134,7 +185,41 @@ export function DataTable<TData>({
         />
       )}
 
-      <Table scrollOffset={scrollOffset} className="table-fixed">
+      {/* Bulk action toolbar */}
+      {bulkActions && selectedCount > 0 && (
+        <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 mb-2">
+          <Badge variant="secondary" className="rounded-sm tabular-nums">
+            {selectedCount}
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            row{selectedCount !== 1 ? 's' : ''} selected
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            {bulkActions.map((action, i) => (
+              <Button
+                key={i}
+                size="sm"
+                variant="outline"
+                className={cn('h-7 gap-1.5 text-xs', action.className)}
+                onClick={() => action.onClick(selectedRows, () => setRowSelection({}))}
+              >
+                {action.icon}
+                {action.label}
+              </Button>
+            ))}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              onClick={() => setRowSelection({})}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Table scrollOffset={fillParent ? undefined : scrollOffset} className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -173,7 +258,11 @@ export function DataTable<TData>({
               return (
                 <React.Fragment key={row.id}>
                   <TableRow
-                    className={cn('group', (!readOnly && onRowClick || renderExpandedRow) && 'cursor-pointer')}
+                    className={cn(
+                      'group',
+                      (!readOnly && onRowClick || renderExpandedRow) && 'cursor-pointer',
+                      row.getIsSelected() && 'bg-muted/40',
+                    )}
                     data-expanded={isExpanded || undefined}
                     onClick={handleClick}
                   >
@@ -209,4 +298,10 @@ export function DataTable<TData>({
       )}
     </>
   )
+
+  if (fillParent) {
+    return <div className="flex flex-col h-full min-h-0">{inner}</div>
+  }
+
+  return inner
 }
