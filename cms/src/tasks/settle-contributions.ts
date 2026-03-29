@@ -101,8 +101,8 @@ export const settleContributionsTask = {
       const contributionsByJar = new Map<string, any[]>()
 
       for (const contribution of eligibleContributions) {
-        if (typeof contribution.jar === 'object' && contribution.jar) {
-          const jarId = contribution.jar.id
+        const jarId = typeof contribution.jar === 'object' ? contribution.jar?.id : contribution.jar
+        if (jarId) {
           if (!contributionsByJar.has(jarId)) {
             contributionsByJar.set(jarId, [])
           }
@@ -118,6 +118,7 @@ export const settleContributionsTask = {
           id: contribution.id,
           data: { isSettled: true },
           overrideAccess: true,
+          context: { skipCharges: true },
         })
         settledCount++
       }

@@ -18,8 +18,8 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_rel
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
-import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
-import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
+import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
+import 'package:Hoga/features/contribution/data/models/charges_model.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -57,35 +57,27 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     'Telecel Cash',
   ];
 
-  // System settings for collection fee
-  SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
+  // Charges from backend (includes discount)
+  ChargesModel? _charges;
+  bool _chargesLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSystemSettings();
   }
 
-  /// Load system settings to get collection fee percentage
-  Future<void> _loadSystemSettings() async {
+  Future<void> _loadCharges() async {
+    final parsedAmount = double.tryParse(amount ?? '');
+    if (parsedAmount == null || parsedAmount <= 0 || jarId == null) return;
+    if (mounted) setState(() { _charges = null; _chargesLoaded = false; });
     try {
-      final apiProvider = SystemSettingsApiProvider(
+      final charges = await ChargesApiProvider(
         dio: getIt<Dio>(),
         userStorageService: getIt<UserStorageService>(),
-      );
-      final settings = await apiProvider.getSystemSettings();
-      if (mounted) {
-        setState(() {
-          _systemSettings = settings;
-        });
-      }
-    } catch (e) {
-      // Use default settings on error
-      if (mounted) {
-        setState(() {
-          _systemSettings = SystemSettingsModel.defaultSettings;
-        });
-      }
+      ).getCharges(amount: parsedAmount, jarId: jarId!);
+      if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
+    } catch (_) {
+      if (mounted) setState(() => _chargesLoaded = true);
     }
   }
 
@@ -130,6 +122,8 @@ class _SaveContributionViewState extends State<SaveContributionView> {
           }
         }
       }
+
+      if (!_chargesLoaded) _loadCharges();
     }
   }
 
@@ -241,9 +235,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                       amount != null) {
                     final contributionAmount =
                         double.tryParse(amount!) ?? 0.0;
-                    final totalAmount = contributionAmount +
-                        _systemSettings
-                            .calculateCollectionFee(contributionAmount);
+                    final totalAmount = _charges?.amountPaidByContributor ?? contributionAmount;
                     buttonText =
                         '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
                   } else if (_selectedPaymentMethod == 'mobile-money') {
@@ -384,8 +376,10 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                           Builder(builder: (context) {
                             final contributionAmount = double.tryParse(amount!) ?? 0.0;
                             final isMobileMoney = _selectedPaymentMethod == 'mobile-money';
-                            final feeAmount = isMobileMoney ? _systemSettings.calculateCollectionFee(contributionAmount) : 0.0;
-                            final totalAmount = contributionAmount + feeAmount;
+                            final totalAmount = isMobileMoney
+                                ? (_charges?.amountPaidByContributor ?? contributionAmount)
+                                : contributionAmount;
+                            final feeAmount = totalAmount - contributionAmount;
 
                             return Container(
                               padding: EdgeInsets.all(AppSpacing.spacingM),
