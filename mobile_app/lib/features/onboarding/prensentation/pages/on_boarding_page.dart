@@ -21,138 +21,140 @@ class OnBoardingPage extends StatelessWidget {
           isDark
               ? Theme.of(context).colorScheme.surface
               : AppColors.primaryLight,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
-        child: Column(
-          children: [
-            const Spacer(),
-            // Auto-scrolling marquee - First row (faster, right to left)
-            SizedBox(
-              height: 200,
-              child: Marqueer(
-                pps: 50,
-                direction: MarqueerDirection.rtl,
-                interaction: false,
-                child: Row(
-                  children: List.generate(10, (index) {
-                    final imageIndex = (index % 5) + 1;
-                    return Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          'assets/images/onboarding/image$imageIndex.png',
-                          width: 150,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 150,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.image_not_supported),
-                            );
-                          },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
+          child: Column(
+            children: [
+              const SizedBox(height: 80),
+              // Auto-scrolling marquee - First row (faster, right to left)
+              SizedBox(
+                height: 200,
+                child: Marqueer(
+                  pps: 50,
+                  direction: MarqueerDirection.rtl,
+                  interaction: false,
+                  child: Row(
+                    children: List.generate(10, (index) {
+                      final imageIndex = (index % 5) + 1;
+                      return Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/onboarding/image$imageIndex.png',
+                            width: 150,
+                            height: 200,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 150,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.image_not_supported),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            // Auto-scrolling marquee - Second row (slower, left to right)
-            SizedBox(
-              height: 200,
-              child: Marqueer(
-                pps: 30,
-                direction: MarqueerDirection.ltr,
-                interaction: false,
-                child: Row(
-                  children: List.generate(10, (index) {
-                    final imageIndex = (index % 5) + 6;
-                    return Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          'assets/images/onboarding/image$imageIndex.png',
-                          width: 150,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 150,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.image_not_supported),
-                            );
-                          },
+              const SizedBox(height: 8),
+              // Auto-scrolling marquee - Second row (slower, left to right)
+              SizedBox(
+                height: 200,
+                child: Marqueer(
+                  pps: 30,
+                  direction: MarqueerDirection.ltr,
+                  interaction: false,
+                  child: Row(
+                    children: List.generate(10, (index) {
+                      final imageIndex = (index % 5) + 6;
+                      return Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/onboarding/image$imageIndex.png',
+                            width: 150,
+                            height: 200,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 150,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.image_not_supported),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingL,
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Create with purpose",
-                    style: AppTextStyles.headingOne,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  Text(
-                    "Set up a jar in seconds to collect contributions for weddings, projects, NGOs, trips, funerals, church offerings, etc.",
-                    style: AppTextStyles.titleMediumS,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 40),
-                  AppButton(
-                    text: "Login",
-                    variant: ButtonVariant.fill,
-                    onPressed: () {
-                      context.push(AppRoutes.login);
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  AppButton(
-                    text: "Register",
-                    variant: ButtonVariant.outline,
-                    onPressed: () {
-                      context.push(AppRoutes.register);
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  InkWell(
-                    onTap: () {
-                      UrlLauncherUtils.launch('https://hogapay.com/about');
-                    },
-                    child: Text(
-                      "About hogapay",
-                      style: AppTextStyles.titleMediumS.copyWith(
-                        decoration: TextDecoration.underline,
-                      ),
+              const SizedBox(height: AppSpacing.spacingL),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.spacingL,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      "Create with purpose",
+                      style: AppTextStyles.headingOne,
                       textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                ],
+                    const SizedBox(height: AppSpacing.spacingXs),
+                    Text(
+                      "Set up a jar in seconds to collect contributions for weddings, projects, NGOs, trips, funerals, church offerings, etc.",
+                      style: AppTextStyles.titleMediumS,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 40),
+                    AppButton(
+                      text: "Login",
+                      variant: ButtonVariant.fill,
+                      onPressed: () {
+                        context.push(AppRoutes.login);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.spacingXs),
+                    AppButton(
+                      text: "Register",
+                      variant: ButtonVariant.outline,
+                      onPressed: () {
+                        context.push(AppRoutes.register);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.spacingXs),
+                    InkWell(
+                      onTap: () {
+                        UrlLauncherUtils.launch('https://hogapay.com/about');
+                      },
+                      child: Text(
+                        "About hogapay",
+                        style: AppTextStyles.titleMediumS.copyWith(
+                          decoration: TextDecoration.underline,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacingXs),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

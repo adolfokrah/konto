@@ -28,7 +28,9 @@ export const Users: CollectionConfig = {
     useAsTitle: 'firstName',
     defaultColumns: ['firstName', 'lastName', 'username', 'phoneNumber', 'kycStatus', 'role'],
   },
-  auth: true,
+  auth: {
+    tokenExpiration: 60 * 60 * 24 * 30, // 30 days in seconds
+  },
   access: {
     // Only allow admin users to access the CMS
     admin: ({ req: { user } }) => {
