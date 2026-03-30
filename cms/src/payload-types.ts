@@ -1448,6 +1448,10 @@ export interface Transaction {
      * Actual amount sent to Eganow (amountContributed - discountAmount)
      */
     amountToSendToEganow?: number | null;
+    /**
+     * Base collection fee rate (%) from system settings at time of transaction
+     */
+    collectionFeePercent?: number | null;
   };
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
@@ -3057,6 +3061,7 @@ export interface TransactionsSelect<T extends boolean = true> {
         discountPercent?: T;
         discountAmount?: T;
         amountToSendToEganow?: T;
+        collectionFeePercent?: T;
       };
   paymentStatus?: T;
   type?: T;

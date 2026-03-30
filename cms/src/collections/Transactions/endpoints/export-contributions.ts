@@ -45,6 +45,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       pagination: false,
       depth: 1,
       sort: 'createdAt',
+      overrideAccess: true,
     })
 
     const docs: any[] = contributions.docs || []

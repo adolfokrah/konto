@@ -71,10 +71,7 @@ export function CashbackDetailSheet({
   )
 
   const cb = tx?.chargesBreakdown
-  const feePercent =
-    cb && selected
-      ? (((cb.amountPaidByContributor ?? 0) - selected.originalAmount) / selected.originalAmount) * 100
-      : null
+  const feePercent: number | null = cb?.collectionFeePercent ?? null
 
   return (
     <Sheet open={!!selected} onOpenChange={(open) => !open && onClose()}>
@@ -163,13 +160,15 @@ export function CashbackDetailSheet({
                 <Separator className="mb-2" />
                 {feePercent !== null && (
                   <DetailRow
-                    label="Fee Charged"
+                    label="Base Fee Rate"
                     value={
                       <span className="font-medium">
-                        {feePercent.toFixed(2)}%
-                        <span className="text-muted-foreground text-xs ml-1">
-                          ({formatAmount(cb.amountPaidByContributor - selected.originalAmount)})
-                        </span>
+                        {feePercent}%
+                        {cb?.amountPaidByContributor != null && selected && (
+                          <span className="text-muted-foreground text-xs ml-1.5">
+                            ({formatAmount(cb.amountPaidByContributor - selected.originalAmount)} charged)
+                          </span>
+                        )}
                       </span>
                     }
                     icon={<Percent className="h-3.5 w-3.5" />}

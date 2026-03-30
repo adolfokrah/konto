@@ -192,6 +192,14 @@ export const Transactions: CollectionConfig = {
             readOnly: true,
           },
         },
+        {
+          name: 'collectionFeePercent',
+          type: 'number',
+          admin: {
+            description: 'Base collection fee rate (%) from system settings at time of transaction',
+            readOnly: true,
+          },
+        },
       ],
     },
     {

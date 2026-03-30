@@ -56,6 +56,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       pagination: false,
       depth: 1,
       sort: 'createdAt',
+      overrideAccess: true,
     })
 
     const docs: any[] = contributions.docs || []
@@ -505,8 +506,13 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     const workbook = new ExcelJS.Workbook()
     workbook.creator = 'HogapayPlatform'
     workbook.created = new Date()
-    const sheetTitle = [jarName, dateRangeLabel].filter(Boolean).join(' · ') || 'Contributions'
-    const sheet = workbook.addWorksheet(sheetTitle.slice(0, 31), {
+    const rawSheetTitle = [jarName, dateRangeLabel].filter(Boolean).join(' · ') || 'Contributions'
+    const sheetTitle =
+      rawSheetTitle
+        .replace(/[*?:\\/[\]]/g, '')
+        .trim()
+        .slice(0, 31) || 'Contributions'
+    const sheet = workbook.addWorksheet(sheetTitle, {
       views: [{ state: 'frozen', ySplit: 1 }],
     })
     const excelHeaders = [

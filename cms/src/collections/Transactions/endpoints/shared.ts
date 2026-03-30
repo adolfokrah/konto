@@ -31,7 +31,11 @@ export const buildWhere = async (req: PayloadRequest) => {
     return { error: 'Jar not found', where: null, jar: null }
   }
 
-  const isJarCreator = jar?.creator === req.user?.id || jar?.creator?.id === req.user?.id
+  const isAdminRole = (req.user as any)?.role === 'admin'
+
+  const creatorId =
+    typeof jar?.creator === 'object' ? String(jar.creator?.id ?? '') : String(jar?.creator ?? '')
+  const isJarCreator = !!req.user?.id && creatorId === String(req.user.id)
 
   // Check if user is an accepted admin collector on this jar
   const isAdminCollector =
@@ -41,7 +45,7 @@ export const buildWhere = async (req: PayloadRequest) => {
       return collectorId === req.user?.id && ic.role === 'admin' && ic.status === 'accepted'
     })
 
-  const hasFullAccess = isJarCreator || isAdminCollector
+  const hasFullAccess = isAdminRole || isJarCreator || isAdminCollector
 
   const where: any = {
     jar: { equals: jar.id },

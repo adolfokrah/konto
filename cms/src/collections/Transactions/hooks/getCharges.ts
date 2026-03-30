@@ -13,6 +13,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       discountPercent: 0,
       discountAmount: 0,
       amountToSendToEganow: data.amountContributed || 0,
+      collectionFeePercent: 0,
     }
     if (data.type === 'payout') {
       data.payoutFeePercentage = 0
@@ -99,6 +100,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountPercent: charges.discountPercent,
           discountAmount: charges.discountAmount,
           amountToSendToEganow: charges.amountToSendToEganow,
+          collectionFeePercent,
         }
       } else {
         // No charges for cash or other payment methods
@@ -110,6 +112,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountPercent: 0,
           discountAmount: 0,
           amountToSendToEganow: data.amountContributed,
+          collectionFeePercent: 0,
         }
       }
     }
@@ -136,6 +139,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountPercent: 0,
           discountAmount: 0,
           amountToSendToEganow: data.amountContributed,
+          collectionFeePercent: transferFee,
         }
       } else {
         data.chargesBreakdown = {
@@ -146,6 +150,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountPercent: 0,
           discountAmount: 0,
           amountToSendToEganow: data.amountContributed,
+          collectionFeePercent: transferFee,
         }
       }
     }
