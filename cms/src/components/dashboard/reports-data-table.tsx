@@ -18,9 +18,11 @@ import { deleteReport } from '@/app/(dashboard)/dashboard/jar-reports/actions'
 export function ReportsDataTable({
   reports,
   pagination,
+  fillParent,
 }: {
   reports: ReportRow[]
   pagination?: PaginationProps
+  fillParent?: boolean
 }) {
   const router = useRouter()
 
@@ -30,7 +32,7 @@ export function ReportsDataTable({
       columns={reportColumns}
       data={reports}
       pagination={pagination}
-      scrollOffset="20rem"
+      fillParent={fillParent}
       onRowClick={(report) => router.push(`/dashboard/jars/${report.jarId}`)}
       renderRowActions={(report) => (
         <DropdownMenu>

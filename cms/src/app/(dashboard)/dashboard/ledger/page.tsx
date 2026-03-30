@@ -86,7 +86,7 @@ export default async function LedgerPage({ searchParams }: Props) {
   }))
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="grid gap-4 md:grid-cols-2">
         <MetricCard
           title="Total Top-Ups (Completed)"
@@ -106,6 +106,7 @@ export default async function LedgerPage({ searchParams }: Props) {
         initialCollectionBalance={balances.collectionBalance}
         initialPayoutBalance={balances.payoutBalance}
         topups={topups}
+        fillParent
         pagination={{
           currentPage: page,
           totalPages: topupsResult.totalPages,

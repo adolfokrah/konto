@@ -93,7 +93,7 @@ export default async function AutoRefundsPage() {
   const completedCount = groups.filter((g) => g.status === 'completed').length
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
@@ -115,15 +115,15 @@ export default async function AutoRefundsPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Auto Refunds</CardTitle>
           <CardDescription>
             {groups.length} jar{groups.length !== 1 ? 's' : ''} with auto refunds
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <AutoRefundsDataTable data={groups} />
+        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <AutoRefundsDataTable data={groups} fillParent />
         </CardContent>
       </Card>
     </div>

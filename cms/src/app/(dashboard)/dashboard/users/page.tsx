@@ -138,7 +138,7 @@ export default async function UsersPage({ searchParams }: Props) {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       {/* Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
@@ -178,7 +178,7 @@ export default async function UsersPage({ searchParams }: Props) {
       </div>
 
       {/* Users Table */}
-      <Card>
+      <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>All Users</CardTitle>
@@ -188,9 +188,10 @@ export default async function UsersPage({ searchParams }: Props) {
           </div>
           <ExportUsersButton />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <UsersDataTable
             users={users}
+            fillParent
             pagination={{
               currentPage: page,
               totalPages: usersResult.totalPages,

@@ -87,6 +87,7 @@ export interface Config {
     disputes: Dispute;
     emails: Email;
     cashbacks: Cashback;
+    'sms-campaigns': SmsCampaign;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -118,6 +119,7 @@ export interface Config {
     disputes: DisputesSelect<false> | DisputesSelect<true>;
     emails: EmailsSelect<false> | EmailsSelect<true>;
     cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
+    'sms-campaigns': SmsCampaignsSelect<false> | SmsCampaignsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -159,6 +161,7 @@ export interface Config {
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
+      'send-sms-campaign': TaskSendSmsCampaign;
       'verify-pending-refunds': TaskVerifyPendingRefunds;
       'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
@@ -2075,6 +2078,29 @@ export interface Cashback {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sms-campaigns".
+ */
+export interface SmsCampaign {
+  id: string;
+  /**
+   * Max 200 characters
+   */
+  message: string;
+  targetAudience: 'all' | 'selected' | 'android' | 'ios';
+  /**
+   * Select specific users (only used when target audience is "Selected Users")
+   */
+  recipients?: (string | User)[] | null;
+  status: 'draft' | 'sending' | 'sent' | 'failed';
+  sentAt?: string | null;
+  recipientCount?: number | null;
+  successCount?: number | null;
+  failureCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2212,6 +2238,7 @@ export interface PayloadJob {
           | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
+          | 'send-sms-campaign'
           | 'verify-pending-refunds'
           | 'verify-pending-topups'
           | 'weekly-account-summary'
@@ -2266,6 +2293,7 @@ export interface PayloadJob {
         | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
+        | 'send-sms-campaign'
         | 'verify-pending-refunds'
         | 'verify-pending-topups'
         | 'weekly-account-summary'
@@ -2377,6 +2405,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'cashbacks';
         value: string | Cashback;
+      } | null)
+    | ({
+        relationTo: 'sms-campaigns';
+        value: string | SmsCampaign;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -3366,6 +3398,22 @@ export interface CashbacksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sms-campaigns_select".
+ */
+export interface SmsCampaignsSelect<T extends boolean = true> {
+  message?: T;
+  targetAudience?: T;
+  recipients?: T;
+  status?: T;
+  sentAt?: T;
+  recipientCount?: T;
+  successCount?: T;
+  failureCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3983,6 +4031,16 @@ export interface TaskSendPushCampaign {
  */
 export interface TaskSendScheduledCampaigns {
   input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSend-sms-campaign".
+ */
+export interface TaskSendSmsCampaign {
+  input: {
+    campaignId: string;
+  };
   output?: unknown;
 }
 /**

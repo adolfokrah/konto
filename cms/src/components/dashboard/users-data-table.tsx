@@ -8,9 +8,11 @@ import { type PaginationProps } from './data-table/types'
 export function UsersDataTable({
   users,
   pagination,
+  fillParent,
 }: {
   users: UserRow[]
   pagination?: PaginationProps
+  fillParent?: boolean
 }) {
   const router = useRouter()
 
@@ -20,6 +22,7 @@ export function UsersDataTable({
       columns={userColumns}
       data={users}
       pagination={pagination}
+      fillParent={fillParent}
       onRowClick={(user) => router.push(`/dashboard/users/${user.id}`)}
     />
   )

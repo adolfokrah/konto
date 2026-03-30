@@ -69,7 +69,7 @@ export default async function JarReportsPage({ searchParams }: Props) {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title="Total Reports"
@@ -78,16 +78,17 @@ export default async function JarReportsPage({ searchParams }: Props) {
         />
       </div>
 
-      <Card>
+      <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Jar Reports</CardTitle>
           <CardDescription>
             {reportsResult.totalDocs} report{reportsResult.totalDocs !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <ReportsDataTable
             reports={reports}
+            fillParent
             pagination={{
               currentPage: page,
               totalPages: reportsResult.totalPages,

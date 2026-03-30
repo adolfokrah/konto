@@ -90,17 +90,18 @@ export default async function DisputesPage({ searchParams }: Props) {
   })
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="flex flex-col h-full">
+      <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Disputes</CardTitle>
           <CardDescription>
             {result.totalDocs} dispute{result.totalDocs !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <DisputesDataTable
             disputes={disputes}
+            fillParent
             pagination={{
               currentPage: page,
               totalPages: result.totalPages,

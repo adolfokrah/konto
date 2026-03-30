@@ -9,9 +9,11 @@ import { DisputeDetailSheet } from './dispute-detail-sheet'
 export function DisputesDataTable({
   disputes,
   pagination,
+  fillParent,
 }: {
   disputes: DisputeRow[]
   pagination?: PaginationProps
+  fillParent?: boolean
 }) {
   const [selected, setSelected] = useState<DisputeRow | null>(null)
 
@@ -22,7 +24,7 @@ export function DisputesDataTable({
         columns={disputeColumns}
         data={disputes}
         pagination={pagination}
-        scrollOffset="20rem"
+        fillParent={fillParent}
         onRowClick={setSelected}
       />
       <DisputeDetailSheet selected={selected} onClose={() => setSelected(null)} />

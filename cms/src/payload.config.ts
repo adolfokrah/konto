@@ -43,7 +43,9 @@ import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
 import { Emails } from './collections/Emails'
 import { Cashbacks } from './collections/Cashbacks'
+import { SmsCampaigns } from './collections/SmsCampaigns'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
+import { sendSmsCampaignTask } from './tasks/send-sms-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
 import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
@@ -110,6 +112,7 @@ export default buildConfig({
     Disputes,
     Emails,
     Cashbacks,
+    SmsCampaigns,
   ],
   cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
@@ -190,6 +193,7 @@ export default buildConfig({
       processRefundTask as any,
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
+      sendSmsCampaignTask as any,
       verifyPendingRefundsTask as any,
       verifyPendingTopupsTask as any,
       weeklyAccountSummaryTask as any,

@@ -61,11 +61,12 @@ interface Props {
   initialPayoutBalance: number | null
   topups: TopupRow[]
   pagination: Pagination
+  fillParent?: boolean
 }
 
 type DialogStep = 'form' | 'waiting' | 'success' | 'failed'
 
-export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, topups, pagination }: Props) {
+export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, topups, pagination, fillParent }: Props) {
   const router = useRouter()
 
   const [collectionBalance, setCollectionBalance] = useState<number | null>(initialCollectionBalance)
@@ -323,7 +324,7 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
   }
 
   return (
-    <div className="space-y-6">
+    <div className={cn(fillParent ? 'flex flex-col flex-1 min-h-0 gap-6' : 'space-y-6')}>
       {/* Eganow Balances */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -373,14 +374,15 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
       </div>
 
       {/* Top-Up Records */}
-      <Card>
+      <Card className={cn(fillParent && 'flex flex-col flex-1 min-h-0')}>
         <CardHeader>
           <CardTitle>Top-Up Records</CardTitle>
           <CardDescription>
             {pagination.totalRows} record{pagination.totalRows !== 1 ? 's' : ''}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={cn(fillParent && 'flex flex-col flex-1 min-h-0 overflow-hidden')}>
+          <div className={cn(fillParent && 'flex-1 overflow-auto min-h-0')}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -419,6 +421,7 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
               )}
             </TableBody>
           </Table>
+          </div>
 
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">

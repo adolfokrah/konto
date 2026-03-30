@@ -18,9 +18,11 @@ import { deleteCampaign } from '@/app/(dashboard)/dashboard/push-notifications/a
 export function CampaignsDataTable({
   campaigns,
   pagination,
+  fillParent,
 }: {
   campaigns: CampaignRow[]
   pagination?: PaginationProps
+  fillParent?: boolean
 }) {
   const router = useRouter()
 
@@ -30,7 +32,7 @@ export function CampaignsDataTable({
       columns={campaignColumns}
       data={campaigns}
       pagination={pagination}
-      scrollOffset="20rem"
+      fillParent={fillParent}
       renderRowActions={(campaign) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>

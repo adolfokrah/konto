@@ -78,9 +78,9 @@ function ExpandedRefundItems({ group }: { group: AutoRefundRow }) {
   )
 }
 
-type Props = { data: AutoRefundRow[] }
+type Props = { data: AutoRefundRow[]; fillParent?: boolean }
 
-export function AutoRefundsDataTable({ data }: Props) {
+export function AutoRefundsDataTable({ data, fillParent }: Props) {
   return (
     <DataTable
       columns={autoRefundColumns}
@@ -88,6 +88,7 @@ export function AutoRefundsDataTable({ data }: Props) {
       renderExpandedRow={(row) => <ExpandedRefundItems group={row} />}
       emptyMessage="No auto refunds found."
       tableId="auto-refunds"
+      fillParent={fillParent}
     />
   )
 }

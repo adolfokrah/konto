@@ -26,16 +26,41 @@ type Props = {
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Overview',
   '/dashboard/users': 'Users',
+  '/dashboard/deleted-accounts': 'Deleted Accounts',
   '/dashboard/jars': 'Jars',
+  '/dashboard/jar-reports': 'Jar Reports',
   '/dashboard/transactions': 'Transactions',
+  '/dashboard/refunds': 'Refunds',
+  '/dashboard/auto-refunds': 'Auto Refunds',
+  '/dashboard/disputes': 'Disputes',
+  '/dashboard/cashbacks': 'Cashbacks',
   '/dashboard/analytics': 'Analytics',
-  '/dashboard/deleted-accounts': 'Deleted User Accounts',
+  '/dashboard/ledger': 'Ledger',
+  '/dashboard/referrals': 'Referrals',
+  '/dashboard/referral-bonuses': 'Referral Bonuses',
+  '/dashboard/push-notifications': 'Push Notifications',
+  '/dashboard/push-notifications/compose': 'New Campaign',
+  '/dashboard/sms': 'SMS',
+  '/dashboard/sms/compose': 'New SMS',
+  '/dashboard/emails': 'Emails',
+  '/dashboard/profile': 'Profile',
+  '/dashboard/settings': 'System Settings',
 }
+
+const pageTitlePrefixes: Array<[string, string]> = [
+  ['/dashboard/users/', 'User Detail'],
+  ['/dashboard/jars/', 'Jar Detail'],
+  ['/dashboard/push-notifications/', 'Push Notifications'],
+  ['/dashboard/sms/', 'SMS'],
+]
 
 export function TopBar({ user }: Props) {
   const pathname = usePathname()
   const router = useRouter()
-  const pageTitle = pageTitles[pathname] || 'Dashboard'
+  const pageTitle =
+    pageTitles[pathname] ||
+    pageTitlePrefixes.find(([prefix]) => pathname.startsWith(prefix))?.[1] ||
+    'Dashboard'
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'
 
   const { trigger: logout } = useSWRMutation(

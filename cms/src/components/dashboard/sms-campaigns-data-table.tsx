@@ -1,23 +1,23 @@
 'use client'
 
 import { DataTable } from './data-table/data-table'
-import { referralBonusColumns, type ReferralBonusRow } from './data-table/columns/referral-bonus-columns'
+import { smsCampaignColumns, type SmsCampaignRow } from './data-table/columns/sms-campaign-columns'
 import { type PaginationProps } from './data-table/types'
 
-export function ReferralBonusesDataTable({
-  bonuses,
+export function SmsCampaignsDataTable({
+  campaigns,
   pagination,
   fillParent,
 }: {
-  bonuses: ReferralBonusRow[]
+  campaigns: SmsCampaignRow[]
   pagination?: PaginationProps
   fillParent?: boolean
 }) {
   return (
     <DataTable
-      tableId="referral-bonuses"
-      columns={referralBonusColumns}
-      data={bonuses}
+      tableId="sms-campaigns"
+      columns={smsCampaignColumns}
+      data={campaigns}
       pagination={pagination}
       fillParent={fillParent}
     />

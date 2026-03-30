@@ -27,6 +27,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Percent,
+  MessageSquare,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -46,24 +47,33 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 
 const navGroups = [
   {
-    label: 'Main',
+    label: 'Home',
     items: [
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Users', href: '/dashboard/users', icon: Users },
-      { label: 'Jars', href: '/dashboard/jars', icon: Container },
-      { label: 'Transactions', href: '/dashboard/transactions', icon: ArrowLeftRight },
     ],
   },
   {
-    label: 'Manage',
+    label: 'People',
     items: [
+      { label: 'Users', href: '/dashboard/users', icon: Users },
+      { label: 'Deleted Accounts', href: '/dashboard/deleted-accounts', icon: UserX },
+    ],
+  },
+  {
+    label: 'Jars',
+    items: [
+      { label: 'Jars', href: '/dashboard/jars', icon: Container },
+      { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
+    ],
+  },
+  {
+    label: 'Payments',
+    items: [
+      { label: 'Transactions', href: '/dashboard/transactions', icon: ArrowLeftRight },
       { label: 'Refunds', href: '/dashboard/refunds', icon: RotateCcw },
       { label: 'Auto Refunds', href: '/dashboard/auto-refunds', icon: RefreshCcwDot },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
-      { label: 'Jar Reports', href: '/dashboard/jar-reports', icon: Flag },
-      { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
-      { label: 'Emails', href: '/dashboard/emails', icon: Mail },
-      { label: 'Deleted Accounts', href: '/dashboard/deleted-accounts', icon: UserX },
+      { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
     ],
   },
   {
@@ -73,7 +83,14 @@ const navGroups = [
       { label: 'Ledger', href: '/dashboard/ledger', icon: Wallet },
       { label: 'Referrals', href: '/dashboard/referrals', icon: Share2 },
       { label: 'Referral Bonuses', href: '/dashboard/referral-bonuses', icon: Gift },
-      { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
+    ],
+  },
+  {
+    label: 'Comms',
+    items: [
+      { label: 'Push Notifications', href: '/dashboard/push-notifications', icon: Bell },
+      { label: 'SMS', href: '/dashboard/sms', icon: MessageSquare },
+      { label: 'Emails', href: '/dashboard/emails', icon: Mail },
     ],
   },
 ]
@@ -177,7 +194,9 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
               {collapsed && gi > 0 && <div className="my-2 border-t" />}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href
+                  const isActive = item.href === '/dashboard'
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href)
                   const count =
                     item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount :
                     item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
@@ -266,38 +285,38 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="end" className="w-56">
-                  <div className="flex items-center gap-2.5 px-2 py-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-                      {initials}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold leading-tight">{displayName}</p>
-                      <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
-                    </div>
+                <div className="flex items-center gap-2.5 px-2 py-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold leading-tight">{displayName}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile" className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      Account
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings" className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      System Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 text-destructive focus:text-destructive"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/profile" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    System Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="flex items-center gap-2 text-destructive focus:text-destructive"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </aside>

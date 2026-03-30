@@ -7,9 +7,11 @@ import { type PaginationProps } from './data-table/types'
 export function ReferralsDataTable({
   referrals,
   pagination,
+  fillParent,
 }: {
   referrals: ReferralRow[]
   pagination?: PaginationProps
+  fillParent?: boolean
 }) {
   return (
     <DataTable
@@ -17,7 +19,7 @@ export function ReferralsDataTable({
       columns={referralColumns}
       data={referrals}
       pagination={pagination}
-      scrollOffset="20rem"
+      fillParent={fillParent}
     />
   )
 }
