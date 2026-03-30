@@ -4,7 +4,7 @@ import ExcelJS from 'exceljs'
 import fs from 'fs'
 import path from 'path'
 import { emailService } from '@/utilities/emailService'
-import { buildWhere, parseList } from './shared'
+import { buildWhere, parseList, sanitizeExcelSheetName, sanitizeExcelCell } from './shared'
 
 export const exportContributionsMobile = async (req: PayloadRequest) => {
   try {
@@ -507,11 +507,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     workbook.creator = 'HogapayPlatform'
     workbook.created = new Date()
     const rawSheetTitle = [jarName, dateRangeLabel].filter(Boolean).join(' · ') || 'Contributions'
-    const sheetTitle =
-      rawSheetTitle
-        .replace(/[*?:\\/[\]]/g, '')
-        .trim()
-        .slice(0, 31) || 'Contributions'
+    const sheetTitle = sanitizeExcelSheetName(rawSheetTitle, 'Contributions')
     const sheet = workbook.addWorksheet(sheetTitle, {
       views: [{ state: 'frozen', ySplit: 1 }],
     })
@@ -570,19 +566,19 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       }
       const rowValues: any = {
         col0: idx + 1,
-        col1: String(c.id),
-        col2: contributor,
-        col3: collectorName,
-        col4: c.paymentMethod || '',
-        col5: c.type || '',
-        col6: c.paymentStatus || '',
-        col7: reason,
+        col1: sanitizeExcelCell(c.id),
+        col2: sanitizeExcelCell(contributor),
+        col3: sanitizeExcelCell(collectorName),
+        col4: sanitizeExcelCell(c.paymentMethod),
+        col5: sanitizeExcelCell(c.type),
+        col6: sanitizeExcelCell(c.paymentStatus),
+        col7: sanitizeExcelCell(reason),
         col8: typeLower === 'contribution' ? amountNum : null,
         col9: typeLower === 'payout' ? amountNum : null,
       }
       exportableCustomFields.forEach((f, fi) => {
         const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
-        rowValues[`col${10 + fi}`] = val !== undefined && val !== null ? String(val) : ''
+        rowValues[`col${10 + fi}`] = sanitizeExcelCell(val)
       })
       rowValues[`col${10 + exportableCustomFields.length}`] = new Date(c.createdAt).toLocaleString()
 

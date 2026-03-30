@@ -1,5 +1,27 @@
 import type { PayloadRequest } from 'payload'
 
+/**
+ * Strips characters that are invalid in Excel worksheet names: * ? : \ / [ ]
+ * Also trims whitespace and enforces Excel's 31-character sheet name limit.
+ */
+export function sanitizeExcelSheetName(name: string, fallback = 'Sheet'): string {
+  return (
+    name
+      .replace(/[*?:\\/[\]]/g, '')
+      .trim()
+      .slice(0, 31) || fallback
+  )
+}
+
+/**
+ * Sanitizes a value for use in an Excel cell.
+ * Truncates extremely long strings to avoid hitting Excel's 32,767-character cell limit.
+ */
+export function sanitizeExcelCell(value: unknown, maxLength = 32000): string {
+  if (value === null || value === undefined) return ''
+  return String(value).slice(0, maxLength)
+}
+
 // Helper to parse list-type query params that may be comma-separated
 export const parseList = (value: any): string[] | undefined => {
   if (!value) return undefined
