@@ -108,6 +108,11 @@ export default async function TransactionsPage({ searchParams }: Props) {
   const transactions: TransactionRow[] = transactionsResult.docs.map((tx: any) => {
     const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
     const collectorObj = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
+    const snap = tx.collectorSnapshot
+
+    // Prefer snapshot (survives account deletion) → fall back to populated relationship
+    const collectorName = snap?.name || (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
+    const collectorEmail = snap?.email || collectorObj?.email || ''
 
     return {
       id: tx.id,
@@ -126,12 +131,12 @@ export default async function TransactionsPage({ searchParams }: Props) {
       payoutFeeAmount: tx.payoutFeeAmount ?? null,
       payoutNetAmount: tx.payoutNetAmount ?? null,
       transactionReference: tx.transactionReference || null,
-      collector: collectorObj
+      collector: (collectorName || collectorEmail)
         ? {
-            id: collectorObj.id,
-            firstName: collectorObj.firstName || '',
-            lastName: collectorObj.lastName || '',
-            email: collectorObj.email || '',
+            id: collectorObj?.id || null,
+            firstName: snap?.name ? snap.name.split(' ')[0] : (collectorObj?.firstName || ''),
+            lastName: snap?.name ? snap.name.split(' ').slice(1).join(' ') : (collectorObj?.lastName || ''),
+            email: collectorEmail,
           }
         : null,
       viaPaymentLink: tx.viaPaymentLink ?? false,

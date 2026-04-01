@@ -23,6 +23,10 @@ export default async function TransactionDetailPage({ params }: Props) {
 
   const jarObj = typeof tx.jar === 'object' && tx.jar ? tx.jar : null
   const collectorObj = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
+  const snap = (tx as any).collectorSnapshot
+
+  const collectorName = snap?.name || (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
+  const collectorEmail = snap?.email || collectorObj?.email || ''
 
   const transaction: TransactionRow = {
     id: tx.id,
@@ -41,12 +45,12 @@ export default async function TransactionDetailPage({ params }: Props) {
     payoutFeeAmount: tx.payoutFeeAmount ?? null,
     payoutNetAmount: tx.payoutNetAmount ?? null,
     transactionReference: tx.transactionReference || null,
-    collector: collectorObj
+    collector: (collectorName || collectorEmail)
       ? {
-          id: collectorObj.id,
-          firstName: collectorObj.firstName || '',
-          lastName: collectorObj.lastName || '',
-          email: collectorObj.email || '',
+          id: collectorObj?.id || null,
+          firstName: snap?.name ? snap.name.split(' ')[0] : (collectorObj?.firstName || ''),
+          lastName: snap?.name ? snap.name.split(' ').slice(1).join(' ') : (collectorObj?.lastName || ''),
+          email: collectorEmail,
         }
       : null,
     viaPaymentLink: tx.viaPaymentLink ?? false,

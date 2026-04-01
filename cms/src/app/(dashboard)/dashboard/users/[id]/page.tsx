@@ -196,9 +196,19 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     payoutFeeAmount: tx.payoutFeeAmount || null,
     payoutNetAmount: tx.payoutNetAmount || null,
     transactionReference: tx.transactionReference || null,
-    collector: typeof tx.collector === 'object' && tx.collector
-      ? { id: tx.collector.id, firstName: tx.collector.firstName, lastName: tx.collector.lastName, email: tx.collector.email }
-      : null,
+    collector: (() => {
+      const c = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
+      const s = tx.collectorSnapshot
+      const name = s?.name || (c ? `${c.firstName || ''} ${c.lastName || ''}`.trim() : '')
+      const email = s?.email || c?.email || ''
+      if (!name && !email) return null
+      return {
+        id: c?.id || null,
+        firstName: s?.name ? s.name.split(' ')[0] : (c?.firstName || ''),
+        lastName: s?.name ? s.name.split(' ').slice(1).join(' ') : (c?.lastName || ''),
+        email,
+      }
+    })(),
     viaPaymentLink: tx.viaPaymentLink ?? false,
     createdAt: tx.createdAt,
   }))

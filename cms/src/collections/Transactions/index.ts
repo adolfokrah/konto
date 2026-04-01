@@ -26,6 +26,7 @@ import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
 import { updateJarLastActivity } from './hooks/update-jar-last-activity'
 import { createCashback } from './hooks/create-cashback'
+import { snapshotCollector } from './hooks/snapshotCollector'
 import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
 
 export const Transactions: CollectionConfig = {
@@ -347,6 +348,27 @@ export const Transactions: CollectionConfig = {
       // },
     },
     {
+      name: 'collectorSnapshot',
+      type: 'group',
+      admin: {
+        description:
+          'Snapshot of collector identity at transaction time — preserved even if account is deleted',
+        readOnly: true,
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          admin: { readOnly: true },
+        },
+        {
+          name: 'email',
+          type: 'email',
+          admin: { readOnly: true },
+        },
+      ],
+    },
+    {
       name: 'viaPaymentLink',
       type: 'checkbox',
       defaultValue: false,
@@ -466,7 +488,7 @@ export const Transactions: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [setPaymentStatus, getCharges],
+    beforeChange: [setPaymentStatus, getCharges, snapshotCollector],
     afterChange: [
       sendContributionReceipt,
       notifyTransactionCompleted,
