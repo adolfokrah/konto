@@ -2,8 +2,8 @@ import { getPayload, Payload } from 'payload'
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 
 import config from '@/payload.config'
-import { payoutEganow } from '../../src/collections/Transactions/endpoints/payout-eganow'
-import { processPayoutTask } from '@/tasks/process-payout'
+import { payoutPaystack } from '../../src/collections/Transactions/endpoints/payout-paystack'
+import { processPayoutPaystackTask } from '@/tasks/process-payout-paystack'
 import { clearAllCollections } from 'tests/utils/testCleanup'
 
 let payload: Payload
@@ -126,7 +126,7 @@ describe('Payout Endpoint Integration Tests', () => {
   describe('Endpoint Validation', () => {
     it('should return 400 when jarId is missing', async () => {
       const req = buildMockRequest({ data: {} })
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -151,7 +151,7 @@ describe('Payout Endpoint Integration Tests', () => {
       })
 
       const req = buildMockRequest({ user: noBankUser })
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -173,7 +173,7 @@ describe('Payout Endpoint Integration Tests', () => {
       })
 
       const req = buildMockRequest({ data: { jarId: frozenJar.id } })
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(403)
@@ -185,7 +185,7 @@ describe('Payout Endpoint Integration Tests', () => {
       await createSettledContribution(testJar.id, 500)
 
       const req = buildMockRequest({ user: otherUser })
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(403)
@@ -212,7 +212,7 @@ describe('Payout Endpoint Integration Tests', () => {
       })
 
       const req = buildMockRequest()
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -222,7 +222,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
     it('should return 400 when jar has no balance', async () => {
       const req = buildMockRequest()
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -249,7 +249,7 @@ describe('Payout Endpoint Integration Tests', () => {
       })
 
       const req = buildMockRequest()
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -285,7 +285,7 @@ describe('Payout Endpoint Integration Tests', () => {
       })
 
       const req = buildMockRequest({ user: unsupportedBankUser })
-      const response = await payoutEganow(req)
+      const response = await payoutPaystack(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
@@ -454,7 +454,7 @@ describe('Payout Endpoint Integration Tests', () => {
       await createSettledContribution(testJar.id, 500)
       const pendingTx = await createPendingPayoutTx(testJar.id, 500)
 
-      await processPayoutTask.handler({
+      await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: pendingTx.id },
       })
@@ -472,7 +472,7 @@ describe('Payout Endpoint Integration Tests', () => {
       expect(updated.payoutFeePercentage).toBeDefined()
       expect(updated.payoutFeeAmount).toBeDefined()
       expect(updated.payoutNetAmount).toBeDefined()
-      expect(updated.transactionReference).toBe('MOCK-REF-123')
+      expect(updated.transactionReference).toBe('TRF_mock123')
     })
 
     it('should use fee fields already set on the transaction', async () => {
@@ -482,7 +482,7 @@ describe('Payout Endpoint Integration Tests', () => {
       const feePercentage = (systemSettings as any)?.transferFeePercentage || 1
       const pendingTx = await createPendingPayoutTx(testJar.id, 1000)
 
-      await processPayoutTask.handler({
+      await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: pendingTx.id },
       })
@@ -507,7 +507,7 @@ describe('Payout Endpoint Integration Tests', () => {
       const tx2 = await createPendingPayoutTx(testJar.id, 500) // newer duplicate
 
       // Processing the newer tx — it should be rejected as a duplicate
-      const result = await processPayoutTask.handler({
+      const result = await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: tx2.id },
       })
@@ -543,7 +543,7 @@ describe('Payout Endpoint Integration Tests', () => {
         data: { status: 'frozen' },
       })
 
-      const result = await processPayoutTask.handler({
+      const result = await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: pendingTx.id },
       })
@@ -553,7 +553,7 @@ describe('Payout Endpoint Integration Tests', () => {
     })
 
     it('should return error when transaction not found', async () => {
-      const result = await processPayoutTask.handler({
+      const result = await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: 'non-existent-id' },
       })
@@ -567,7 +567,7 @@ describe('Payout Endpoint Integration Tests', () => {
         paymentStatus: 'completed',
       })
 
-      const result = await processPayoutTask.handler({
+      const result = await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: doneTx.id },
       })
@@ -590,7 +590,7 @@ describe('Payout Endpoint Integration Tests', () => {
         mobileMoneyProvider: 'unsupported-bank',
       })
 
-      const result = await processPayoutTask.handler({
+      const result = await processPayoutPaystackTask.handler({
         req: { payload },
         input: { existingTransactionId: pendingTx.id },
       })
