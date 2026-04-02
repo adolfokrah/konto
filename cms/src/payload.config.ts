@@ -36,7 +36,6 @@ import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
 import { Refunds } from './collections/Refunds'
 import { PayoutApprovals } from './collections/PayoutApprovals'
-import { LedgerTopups } from './collections/LedgerTopups'
 import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
@@ -47,7 +46,6 @@ import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendSmsCampaignTask } from './tasks/send-sms-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
-import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { autoRefundDailyTask } from './tasks/auto-refund-daily'
@@ -108,7 +106,6 @@ export default buildConfig({
     PushCampaigns,
     Refunds,
     PayoutApprovals,
-    LedgerTopups,
     Referrals,
     ReferralBonuses,
     Disputes,
@@ -202,7 +199,6 @@ export default buildConfig({
       sendScheduledCampaignsTask as any,
       sendSmsCampaignTask as any,
       verifyPendingRefundsTask as any,
-      verifyPendingTopupsTask as any,
       weeklyAccountSummaryTask as any,
       withdrawReminderDailyTask as any,
       autoRefundDailyTask as any,

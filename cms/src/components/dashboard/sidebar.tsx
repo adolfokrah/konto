@@ -80,7 +80,6 @@ const navGroups = [
     label: 'Finance',
     items: [
       { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-      { label: 'Ledger', href: '/dashboard/ledger', icon: Wallet },
       { label: 'Referrals', href: '/dashboard/referrals', icon: Share2 },
       { label: 'Referral Bonuses', href: '/dashboard/referral-bonuses', icon: Gift },
     ],
