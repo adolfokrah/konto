@@ -213,11 +213,12 @@ export const processPayoutPaystackTask = {
           reference: existingTransactionId,
         })
 
-        // Step 7 — store transfer_code as transactionReference
+        // Step 7 — store transfer reference (our own reference we passed to Paystack)
+        // Used by verify task via GET /transfer/verify/:reference
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
-          data: { transactionReference: transfer.transfer_code },
+          data: { transactionReference: transfer.reference ?? existingTransactionId },
           overrideAccess: true,
           context: { skipCharges: true },
         })

@@ -230,7 +230,7 @@ export default buildConfig({
         queue: 'jar-creation-reminder-daily',
       },
       {
-        cron: '*/15 * * * *', // Every 15 minutes — verify pending Paystack payout transfers
+        cron: '*/16 * * * *', // Every minute — verify pending Paystack payout transfers
         queue: 'verify-pending-paystack-payouts',
       },
       {

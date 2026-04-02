@@ -11,12 +11,14 @@ export const verifyPendingPaystackPayoutsTask = {
   slug: 'verify-pending-paystack-payouts',
   schedule: [
     {
-      cron: '*/10 * * * *', // Every 15 minutes
-      queue: 'verify-pending-transactions',
+      cron: '*/15 * * * *', // Every 3 minutes
+      queue: 'verify-pending-paystack-payouts',
     },
   ],
   handler: async (args: any) => {
     try {
+      console.log('calling')
+
       const payload = args.req?.payload || args.payload
 
       const cutoffTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
@@ -29,7 +31,6 @@ export const verifyPendingPaystackPayoutsTask = {
         where: {
           paymentStatus: { equals: 'pending' },
           type: { equals: 'payout' },
-          viaPaymentLink: { equals: true },
           transactionReference: { not_equals: '' },
           createdAt: { less_than: cutoffTime },
         },
@@ -37,6 +38,8 @@ export const verifyPendingPaystackPayoutsTask = {
         depth: 0,
         overrideAccess: true,
       })
+
+      console.log(pendingPayouts.docs.length)
 
       if (pendingPayouts.docs.length === 0) {
         return { output: { processed: 0, message: 'No pending Paystack payouts to verify' } }
@@ -53,16 +56,13 @@ export const verifyPendingPaystackPayoutsTask = {
       for (const transaction of pendingPayouts.docs) {
         const { id, transactionReference } = transaction as any
 
-        // transactionReference is the transfer_code; reference (transaction.id) is what
-        // we passed to initiateTransfer — use transaction.id to verify
+        // transactionReference holds the reference we passed to initiateTransfer (transaction ID)
         if (!transactionReference) {
-          // No transfer_code yet — the process-payout-paystack job hasn't run yet, skip
+          // process-payout-paystack job hasn't run yet, skip
           continue
         }
 
         try {
-          // Paystack verifyTransfer accepts either transfer_code or the reference we passed
-          // We stored transfer_code as transactionReference, so use that
           const result = await paystack.verifyTransfer(transactionReference)
 
           const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {

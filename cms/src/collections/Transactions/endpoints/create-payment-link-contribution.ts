@@ -12,6 +12,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       mobileMoneyProvider,
       remarks,
       customFieldValues,
+      viaPaymentLink,
     } = req.data || {}
 
     // Validate required fields
@@ -92,7 +93,7 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         paymentStatus: 'pending',
         type: 'contribution',
         collector: collector || jar.creator, // The jar creator is the collector for payment link contributions
-        viaPaymentLink: true,
+        viaPaymentLink: viaPaymentLink === true,
         ...(remarks ? { remarks } : {}),
         ...(customFieldValues
           ? {
@@ -108,16 +109,6 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       },
       // Use admin context to bypass authentication requirements
       overrideAccess: true,
-    })
-
-    await req.payload.update({
-      collection: 'transactions',
-      id: contribution.id,
-      data: {
-        transactionReference: contribution.id,
-      },
-      overrideAccess: true,
-      context: { skipCharges: true },
     })
 
     return Response.json({

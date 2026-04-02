@@ -12,8 +12,8 @@ export const verifyPendingPaystackCollectionsTask = {
   slug: 'verify-pending-paystack-collections',
   schedule: [
     {
-      cron: '*/10 * * * *', // Every 15 minutes
-      queue: 'verify-pending-transactions',
+      cron: '*/10 * * * *', // Every 10 minutes
+      queue: 'verify-pending-paystack-collections',
     },
   ],
   handler: async (args: any) => {
@@ -29,7 +29,6 @@ export const verifyPendingPaystackCollectionsTask = {
         where: {
           paymentStatus: { equals: 'pending' },
           type: { equals: 'contribution' },
-          viaPaymentLink: { equals: true },
           transactionReference: { not_equals: '' },
           createdAt: { less_than: cutoffTime },
         },

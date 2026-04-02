@@ -294,6 +294,7 @@ export default function ContributionInput({
         contributorPhoneNumber: contributorPhoneNumber,
         mobileMoneyProvider: mobileMoneyProvider,
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
+        viaPaymentLink: true,
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
         ...(Object.keys(customFieldValues).length > 0 ? { customFieldValues } : {}),
       })

@@ -1,4 +1,4 @@
-import { PayloadRequest } from 'payload'
+import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import crypto from 'crypto'
 
 /**
@@ -16,11 +16,27 @@ export const paystackWebhook = async (req: PayloadRequest) => {
     const signature = req.headers.get('x-paystack-signature')
     const secret = process.env.PAYSTACK_SECRET_KEY!
 
-    const rawBody = (await req.text?.()) ?? ''
+    // Payload v3 exposes the parsed body on req.data — re-serialize for signature verification
+    // since the raw stream may have already been consumed by framework middleware.
+    await addDataAndFileToRequest(req)
+    const rawBody = JSON.stringify(req.data)
+
+    console.log(
+      '[paystack-webhook] received event, body length:',
+      rawBody?.length,
+      'signature present:',
+      !!signature,
+    )
 
     // Verify signature
     const hash = crypto.createHmac('sha512', secret).update(rawBody).digest('hex')
     if (hash !== signature) {
+      console.error(
+        '[paystack-webhook] signature mismatch — hash:',
+        hash.slice(0, 20),
+        'sig:',
+        signature?.slice(0, 20),
+      )
       return Response.json({ success: false, message: 'Invalid signature' }, { status: 401 })
     }
 

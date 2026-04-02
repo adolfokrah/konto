@@ -35,7 +35,6 @@ export const getCharges = async (req: PayloadRequest) => {
       amountToSendToEganow: amountContributed,
     })
   } catch (error: any) {
-    console.error('[get-charges] Error:', error.message)
     return Response.json(
       { success: false, message: error.message || 'Failed to calculate charges' },
       { status: 500 },
