@@ -1,104 +1,79 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
+import { getPaystack } from '@/utilities/initalise'
 
-import { getEganow } from '@/utilities/initalise'
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VDF',
+  vodafone: 'VDF',
+  airteltigo: 'ATL',
+}
 
 export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
-    // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
     const { phoneNumber, bank } = req.data || {}
 
     if (!phoneNumber) {
       return Response.json(
-        {
-          success: false,
-          message: 'Phone number is required',
-          valid: false,
-        },
-        { status: 401 },
+        { success: false, message: 'Phone number is required', valid: false },
+        { status: 400 },
       )
     }
+
     if (!bank) {
       return Response.json(
-        {
-          success: false,
-          message: 'Bank is required',
-          valid: false,
-        },
+        { success: false, message: 'Bank is required', valid: false },
         { status: 400 },
       )
     }
 
-    // Map mobile money provider to Eganow paypartner code
-    const providerMap: Record<string, string> = {
-      mtn: 'MTNGH',
-      telecel: 'TCELGH',
-    }
-
-    const paypartnerCode = providerMap[bank.toLowerCase()]
-    if (!paypartnerCode) {
+    const bankCode = bankCodeMap[bank.toLowerCase()]
+    if (!bankCode) {
       return Response.json(
-        {
-          success: false,
-          message: 'Unsupported mobile money provider',
-          valid: false,
-        },
+        { success: false, message: 'Unsupported mobile money provider', valid: false },
         { status: 400 },
       )
     }
 
-    // Format phone number to international format (233...)
-    let formattedPhoneNumber = phoneNumber.replace(/\s+/g, '')
-    if (formattedPhoneNumber.startsWith('0')) {
-      formattedPhoneNumber = '233' + formattedPhoneNumber.substring(1)
-    } else if (!formattedPhoneNumber.startsWith('233')) {
-      formattedPhoneNumber = '233' + formattedPhoneNumber
+    // Paystack expects local format (0XXXXXXXXX) for Ghana mobile money
+    let formattedPhone = phoneNumber.replace(/\s+/g, '')
+    if (formattedPhone.startsWith('233')) {
+      formattedPhone = '0' + formattedPhone.substring(3)
+    } else if (!formattedPhone.startsWith('0')) {
+      formattedPhone = '0' + formattedPhone
     }
 
-    // Get token (automatically cached by Eganow class)
-    await getEganow().getToken()
+    const result = await getPaystack().resolveAccount(formattedPhone, bankCode)
 
-    // Verify KYC using Eganow
-    const kycResponse = await getEganow().verifyKYC({
-      paypartnerCode,
-      accountNoOrCardNoOrMSISDN: formattedPhoneNumber,
-      languageId: 'en',
-      countryCode: 'GH',
-    })
-
-    if (kycResponse.isSuccess && kycResponse.accountName) {
-      return Response.json(
-        {
-          success: true,
-          message: 'Account details verified successfully',
-          data: {
-            account_name: kycResponse.accountName,
-            account_number: phoneNumber,
-          },
+    return Response.json(
+      {
+        success: true,
+        message: 'Account details verified successfully',
+        data: {
+          account_name: result.account_name,
+          account_number: phoneNumber,
         },
-        { status: 200 },
-      )
-    } else {
-      return Response.json(
-        {
-          success: false,
-          message: 'Account details verification failed',
-          data: null,
-        },
-        { status: 400 },
-      )
-    }
+      },
+      { status: 200 },
+    )
   } catch (error: any) {
     console.error('[verify-account-details]', error.message)
+
+    // Paystack returns 422 when account number is not found
+    const notFound =
+      error.message?.includes('422') || error.message?.toLowerCase().includes('could not resolve')
+
     return Response.json(
       {
         success: false,
-        message: 'An error occurred while verifying account details',
+        message: notFound
+          ? 'Account details verification failed'
+          : 'An error occurred while verifying account details',
         valid: false,
-        error: error.message || 'Unknown error',
+        data: null,
       },
-      { status: 500 },
+      { status: notFound ? 400 : 500 },
     )
   }
 }

@@ -95,6 +95,17 @@ beforeAll(() => {
         channel: 'mobile_money',
       },
     })
+    // Resolve account number (identity verification)
+    .get('/bank/resolve')
+    .reply(200, {
+      status: true,
+      message: 'Account number resolved',
+      data: {
+        account_number: '0201234567',
+        account_name: 'Test User',
+        bank_id: 1,
+      },
+    })
     // Get refund by ID
     .get(/\/refund\/.*/)
     .reply(200, {

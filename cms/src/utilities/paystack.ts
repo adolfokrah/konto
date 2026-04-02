@@ -218,6 +218,14 @@ export interface PaystackRefundResponse {
   updatedAt: string
 }
 
+// ── Identity verification ─────────────────────────────────────────────────────
+
+export interface PaystackResolveAccountResponse {
+  account_number: string
+  account_name: string
+  bank_id: number
+}
+
 // ── Balance ───────────────────────────────────────────────────────────────────
 
 export interface PaystackBalanceResponse {
@@ -411,6 +419,21 @@ export default class Paystack {
    */
   async getRefund(id: number | string): Promise<PaystackRefundResponse> {
     return this.request<PaystackRefundResponse>('GET', `/refund/${encodeURIComponent(String(id))}`)
+  }
+
+  // ── Identity verification ────────────────────────────────────────────────────
+
+  /**
+   * Resolve an account number to get the account holder's name.
+   * Works for bank accounts and mobile money in Nigeria and Ghana.
+   */
+  async resolveAccount(
+    accountNumber: string,
+    bankCode: string,
+  ): Promise<PaystackResolveAccountResponse> {
+    return this.request<PaystackResolveAccountResponse>('GET', '/bank/resolve', {
+      query: { account_number: accountNumber, bank_code: bankCode },
+    })
   }
 
   // ── Balance ─────────────────────────────────────────────────────────────────
