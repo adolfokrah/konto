@@ -1,17 +1,10 @@
 import { getPaystack } from '@/utilities/initalise'
 
-const bankCodeMap: Record<string, string> = {
-  mtn: 'MTN',
-  telecel: 'VDF',
-  vodafone: 'VDF',
-  airteltigo: 'ATL',
-}
-
 /**
  * Process Refund Task
  *
- * Queued by the approve-refund endpoint. Sends money back to the
- * contributor's phone number via Paystack transfer API.
+ * Queued by the approve-refund endpoint. Uses Paystack's refund API to
+ * reverse the original contribution charge back to the contributor.
  */
 export const processRefundTask = {
   slug: 'process-refund',
@@ -44,7 +37,6 @@ export const processRefundTask = {
       }
 
       const refundAmount = Math.abs(Number(refund.amount))
-      const jarId = typeof refund.jar === 'string' ? refund.jar : (refund.jar as any)?.id
       const linkedTransactionId =
         typeof refund.linkedTransaction === 'string'
           ? refund.linkedTransaction
@@ -107,6 +99,22 @@ export const processRefundTask = {
         }
       }
 
+      const originalReference = linkedTx.transactionReference as string
+      if (!originalReference) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: {
+            success: false,
+            message: 'Original Paystack transaction reference not found on linked transaction',
+          },
+        }
+      }
+
       // Check for duplicate refund
       const existingRefunds = await payload.find({
         collection: 'refunds' as any,
@@ -134,80 +142,36 @@ export const processRefundTask = {
         }
       }
 
-      const jar = await payload.findByID({
-        collection: 'jars',
-        id: jarId,
-        depth: 0,
-        overrideAccess: true,
-      })
-
-      if (!jar) {
-        await payload.update({
-          collection: 'refunds' as any,
-          id: refundId,
-          data: { status: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Jar not found' } }
-      }
-
-      const bankCode = bankCodeMap[(refund.mobileMoneyProvider || '').toLowerCase()]
-      if (!bankCode) {
-        await payload.update({
-          collection: 'refunds' as any,
-          id: refundId,
-          data: { status: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Unsupported mobile money provider' } }
-      }
-
-      if (refundAmount < 1) {
-        await payload.update({
-          collection: 'refunds' as any,
-          id: refundId,
-          data: { status: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Refund amount is below minimum GHS 1.00' } }
-      }
-
       try {
         const paystack = getPaystack()
 
-        const recipient = await paystack.createTransferRecipient({
-          type: 'mobile_money',
-          name: refund.accountName,
-          account_number: refund.accountNumber,
-          bank_code: bankCode,
-          currency: (jar.currency as string) || 'GHS',
-        })
-
+        // Amount in pesewas; omit for full refund
         const amountInPesewas = Math.round(refundAmount * 100)
-        const transfer = await paystack.initiateTransfer({
-          source: 'balance',
+
+        const result = await paystack.refund({
+          transaction: originalReference,
           amount: amountInPesewas,
-          recipient: recipient.recipient_code,
-          reason: `Refund for contribution to ${jar.name || 'jar'}`,
-          currency: (jar.currency as string) || 'GHS',
-          reference: refundId,
         })
 
+        // Store Paystack refund ID as transactionReference for status polling
         await payload.update({
           collection: 'refunds' as any,
           id: refundId,
-          data: { transactionReference: transfer.transfer_code },
+          data: { transactionReference: String(result.id) },
           overrideAccess: true,
         })
 
-        console.log(`✅ Refund initiated — transfer: ${transfer.transfer_code}`)
+        console.log(
+          `✅ Paystack refund initiated — refund ID: ${result.id}, status: ${result.status}`,
+        )
 
         return {
           output: {
             success: true,
             message: 'Refund initiated successfully',
             refundId,
-            transferCode: transfer.transfer_code,
+            paystackRefundId: result.id,
+            status: result.status,
             amount: refundAmount,
           },
         }

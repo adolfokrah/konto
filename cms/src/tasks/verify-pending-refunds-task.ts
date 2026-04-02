@@ -4,8 +4,8 @@ import { getPaystack } from '@/utilities/initalise'
  * Verify Pending Refunds Task
  *
  * Runs every 25 minutes. Checks in-progress refunds older than 5 minutes
- * against Paystack transfer API and updates their status. Acts as a safety
- * net in case a transfer.success/failed webhook was missed.
+ * against Paystack's refund API and updates their status. Acts as a safety
+ * net in case a refund.processed/failed webhook was missed.
  */
 export const verifyPendingRefundsTask = {
   slug: 'verify-pending-refunds',
@@ -22,6 +22,7 @@ export const verifyPendingRefundsTask = {
       const cutoffTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       const maxPendingTime = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
+      // transactionReference holds the Paystack refund ID once process-refund runs
       const pendingRefunds = await payload.find({
         collection: 'refunds' as any,
         where: {
@@ -50,19 +51,18 @@ export const verifyPendingRefundsTask = {
       for (const refund of pendingRefunds.docs as any[]) {
         const { id, transactionReference } = refund
 
-        if (!transactionReference) {
-          // No transfer_code yet — process-refund job hasn't run, skip
-          continue
-        }
+        if (!transactionReference) continue
 
         try {
-          const result = await paystack.verifyTransfer(transactionReference)
+          const result = await paystack.getRefund(transactionReference)
 
+          // Paystack refund statuses: pending | processing | processed | failed | needs-attention
           const statusMap: Record<string, string> = {
-            success: 'completed',
+            processed: 'completed',
             failed: 'failed',
-            reversed: 'failed',
+            'needs-attention': 'failed',
             pending: 'in-progress',
+            processing: 'in-progress',
           }
 
           const newStatus = statusMap[result.status] ?? 'in-progress'
@@ -90,7 +90,9 @@ export const verifyPendingRefundsTask = {
             overrideAccess: true,
           })
 
-          console.log(`[verify-pending-refunds] Refund ${id} → ${newStatus}`)
+          console.log(
+            `[verify-pending-refunds] Refund ${id} → ${newStatus} (Paystack: ${result.status})`,
+          )
 
           if (newStatus === 'completed') completedCount++
           if (newStatus === 'failed') failedCount++

@@ -406,6 +406,13 @@ export default class Paystack {
     })
   }
 
+  /**
+   * Fetch a refund by its Paystack refund ID.
+   */
+  async getRefund(id: number | string): Promise<PaystackRefundResponse> {
+    return this.request<PaystackRefundResponse>('GET', `/refund/${encodeURIComponent(String(id))}`)
+  }
+
   // ── Balance ─────────────────────────────────────────────────────────────────
 
   /**

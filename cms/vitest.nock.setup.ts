@@ -81,6 +81,34 @@ beforeAll(() => {
       message: 'Balances retrieved',
       data: [{ currency: 'GHS', balance: 1000000 }],
     })
+    // Create refund
+    .post('/refund')
+    .reply(200, {
+      status: true,
+      message: 'Refund has been queued for processing',
+      data: {
+        id: 1234567,
+        status: 'pending',
+        transaction: { id: 999, reference: 'mock-ref-123', amount: 10000, currency: 'GHS' },
+        amount: 10000,
+        currency: 'GHS',
+        channel: 'mobile_money',
+      },
+    })
+    // Get refund by ID
+    .get(/\/refund\/.*/)
+    .reply(200, {
+      status: true,
+      message: 'Refund retrieved',
+      data: {
+        id: 1234567,
+        status: 'processed',
+        transaction: { id: 999, reference: 'mock-ref-123', amount: 10000, currency: 'GHS' },
+        amount: 10000,
+        currency: 'GHS',
+        channel: 'mobile_money',
+      },
+    })
 
   // SMS (Deywuro)
   nock('https://www.deywuro.com')
