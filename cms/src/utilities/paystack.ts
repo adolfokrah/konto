@@ -418,13 +418,13 @@ export default class Paystack {
   }
 
   /**
-   * Verify a transfer status by reference.
-   * Uses GET /transfer/verify/:reference as per Paystack docs.
+   * Verify a transfer status by transfer code.
+   * Uses GET /transfer/:transfer_code as per Paystack docs.
    */
-  async verifyTransfer(reference: string): Promise<PaystackTransferVerifyResponse> {
+  async verifyTransfer(transferCode: string): Promise<PaystackTransferVerifyResponse> {
     return this.request<PaystackTransferVerifyResponse>(
       'GET',
-      `/transfer/verify/${encodeURIComponent(reference)}`,
+      `/transfer/${encodeURIComponent(transferCode)}`,
     )
   }
 
