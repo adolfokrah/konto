@@ -130,6 +130,31 @@ export const SystemSettings: GlobalConfig = {
       ],
     },
 
+    // ── Contribution Settings ──
+    {
+      type: 'collapsible',
+      label: 'Contribution Settings',
+      admin: {
+        initCollapsed: false,
+        description: 'Rules applied to all contributions.',
+      },
+      fields: [
+        {
+          name: 'minimumContributionAmount',
+          label: 'Minimum Contribution Amount (GHS)',
+          type: 'number',
+          required: true,
+          defaultValue: 2,
+          min: 0,
+          admin: {
+            description: 'Minimum amount a contributor can send (e.g., 2 = GHS 2.00).',
+            step: 0.5,
+            width: '50%',
+          },
+        },
+      ],
+    },
+
     // ── Payout Settings ──
     {
       type: 'collapsible',

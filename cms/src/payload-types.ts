@@ -3758,6 +3758,10 @@ export interface SystemSetting {
    */
   refundFeePercentage: number;
   /**
+   * Minimum amount a contributor can send (e.g., 2 = GHS 2.00).
+   */
+  minimumContributionAmount: number;
+  /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
@@ -3878,6 +3882,7 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
   refundFeePercentage?: T;
+  minimumContributionAmount?: T;
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;

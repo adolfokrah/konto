@@ -285,6 +285,16 @@ class _AddContributionViewState extends State<AddContributionView> {
                         return;
                       }
 
+                      const double minimumAmount = 2.0;
+                      if (_selectedAmount < minimumAmount) {
+                        AppSnackBar.show(
+                          context,
+                          message: 'Minimum contribution amount is ${jarData.currency} ${minimumAmount.toStringAsFixed(2)}',
+                          type: SnackBarType.error,
+                        );
+                        return;
+                      }
+
                       context.push(
                         AppRoutes.saveContributionPaystack,
                         extra: {

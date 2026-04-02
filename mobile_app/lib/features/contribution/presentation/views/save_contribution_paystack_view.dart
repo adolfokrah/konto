@@ -464,6 +464,14 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
   Future<void> _handlePaymentRequest(BuildContext context) async {
     final localizations = AppLocalizations.of(context)!;
 
+    // Validate minimum contribution amount
+    final parsedAmount = double.tryParse(amount ?? '0') ?? 0.0;
+    final minimumAmount = _charges?.minimumContributionAmount ?? 2.0;
+    if (parsedAmount < minimumAmount) {
+      _showErrorSnackBar('Minimum contribution amount is ${currency ?? ''} ${minimumAmount.toStringAsFixed(2)}');
+      return;
+    }
+
     // Manual validation - validate contributor name (always required)
     if (_nameController.text.trim().isEmpty) {
       _showErrorSnackBar(localizations.pleaseEnterContributorName);

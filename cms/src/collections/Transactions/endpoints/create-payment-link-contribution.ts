@@ -30,9 +30,18 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
     // Validate amount is positive
     if (amount <= 0) {
       return Response.json(
+        { success: false, message: 'Amount must be greater than 0' },
+        { status: 400 },
+      )
+    }
+
+    const settings = await req.payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
+    const minimumContributionAmount = (settings as any)?.minimumContributionAmount ?? 2
+    if (amount < minimumContributionAmount) {
+      return Response.json(
         {
           success: false,
-          message: 'Amount must be greater than 0',
+          message: `Minimum contribution amount is GHS ${minimumContributionAmount}`,
         },
         { status: 400 },
       )

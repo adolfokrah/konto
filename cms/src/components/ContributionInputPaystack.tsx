@@ -51,6 +51,7 @@ export default function ContributionInputPaystack({
   const [charges, setCharges] = useState<{
     platformCharge: number
     amountPaidByContributor: number
+    minimumContributionAmount: number
   } | null>(null)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -107,6 +108,7 @@ export default function ContributionInputPaystack({
             setCharges({
               platformCharge: data.platformCharge,
               amountPaidByContributor: data.amountPaidByContributor,
+              minimumContributionAmount: data.minimumContributionAmount ?? 2,
             })
             return
           }
@@ -118,12 +120,22 @@ export default function ContributionInputPaystack({
       setCharges({
         platformCharge: fee,
         amountPaidByContributor: selectedAmount + fee,
+        minimumContributionAmount: 2,
       })
     }, 400)
   }, [selectedAmount, jarId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
+
+    const minimumAmount = charges?.minimumContributionAmount ?? 2
+    if (selectedAmount < minimumAmount) {
+      toast.error('Amount Too Low', {
+        description: `Minimum contribution amount is ${currency} ${minimumAmount.toFixed(2)}`,
+        duration: 4000,
+      })
+      return
+    }
 
     if (!isAnonymous && !contributorName) {
       toast.error('Missing Information', {

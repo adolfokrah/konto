@@ -24,6 +24,9 @@ export const getCharges = async (req: PayloadRequest) => {
       )
     }
 
+    const settings = await req.payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
+    const minimumContributionAmount = (settings as any)?.minimumContributionAmount ?? 2
+
     return Response.json({
       success: true,
       platformCharge: 0,
@@ -33,6 +36,7 @@ export const getCharges = async (req: PayloadRequest) => {
       discountPercent: 0,
       discountAmount: 0,
       amountToSendToEganow: amountContributed,
+      minimumContributionAmount,
     })
   } catch (error: any) {
     return Response.json(

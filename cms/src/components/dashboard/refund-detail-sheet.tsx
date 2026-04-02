@@ -125,8 +125,7 @@ export function RefundDetailSheet({
     },
   )
 
-  const isInitiator = selected?.initiatedBy?.id === currentUserId
-  const canApprove = selected?.status === 'pending' && !isInitiator
+  const canApprove = selected?.status === 'pending'
   const isActioning = approving || rejecting
 
   const handleApprove = async () => {

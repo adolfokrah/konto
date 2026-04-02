@@ -8,6 +8,7 @@ class ChargesModel {
   final double discountPercent;
   final double discountAmount;
   final double amountToSendToEganow;
+  final double minimumContributionAmount;
 
   const ChargesModel({
     required this.platformCharge,
@@ -17,6 +18,7 @@ class ChargesModel {
     required this.discountPercent,
     required this.discountAmount,
     required this.amountToSendToEganow,
+    this.minimumContributionAmount = 2.0,
   });
 
   factory ChargesModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,8 @@ class ChargesModel {
       discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0.0,
       amountToSendToEganow:
           (json['amountToSendToEganow'] as num?)?.toDouble() ?? 0.0,
+      minimumContributionAmount:
+          (json['minimumContributionAmount'] as num?)?.toDouble() ?? 2.0,
     );
   }
 
