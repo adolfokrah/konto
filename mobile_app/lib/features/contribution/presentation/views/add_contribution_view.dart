@@ -6,7 +6,6 @@ import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/currency_text_field.dart';
-import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
@@ -274,36 +273,18 @@ class _AddContributionViewState extends State<AddContributionView> {
                     text: _selectedAmount > 0
                         ? '${localizations.contribute} ${CurrencyUtils.formatAmount(_selectedAmount, jarData.currency)}'
                         : localizations.continueText,
-                    onPressed: () {
-                      // Validate amount
-                      if (_selectedAmount <= 0) {
-                        AppSnackBar.show(
-                          context,
-                          message: localizations.pleaseEnterValidAmount,
-                          type: SnackBarType.error,
-                        );
-                        return;
-                      }
-
-                      const double minimumAmount = 2.0;
-                      if (_selectedAmount < minimumAmount) {
-                        AppSnackBar.show(
-                          context,
-                          message: 'Minimum contribution amount is ${jarData.currency} ${minimumAmount.toStringAsFixed(2)}',
-                          type: SnackBarType.error,
-                        );
-                        return;
-                      }
-
-                      context.push(
-                        AppRoutes.saveContributionPaystack,
-                        extra: {
-                          'jar': state.jarData,
-                          'amount': _selectedAmount.toString(),
-                          'currency': state.jarData.currency,
-                        },
-                      );
-                    },
+                    onPressed: _selectedAmount >= 2.0
+                        ? () {
+                            context.push(
+                              AppRoutes.saveContributionPaystack,
+                              extra: {
+                                'jar': state.jarData,
+                                'amount': _selectedAmount.toString(),
+                                'currency': state.jarData.currency,
+                              },
+                            );
+                          }
+                        : null,
                   ),
                   const SizedBox(height: AppSpacing.spacingM),
                 ],

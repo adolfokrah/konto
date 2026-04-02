@@ -1,11 +1,10 @@
 import { PayloadRequest } from 'payload'
+import { calculatePaystackCharges } from '@/utilities/paystackCharges'
 
 /**
  * GET /api/transactions/get-charges?amount=100&jarId=xxx
- *          OR ?amount=100&userId=xxx  (userId still supported directly)
  *
  * Returns the full charge breakdown for a given amount.
- * Processing fee is currently 0.
  */
 export const getCharges = async (req: PayloadRequest) => {
   try {
@@ -24,20 +23,9 @@ export const getCharges = async (req: PayloadRequest) => {
       )
     }
 
-    const settings = await req.payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
-    const minimumContributionAmount = (settings as any)?.minimumContributionAmount ?? 2
+    const charges = await calculatePaystackCharges(amountContributed, req.payload)
 
-    return Response.json({
-      success: true,
-      platformCharge: 0,
-      amountPaidByContributor: amountContributed,
-      hogapayRevenue: 0,
-      eganowFees: 0,
-      discountPercent: 0,
-      discountAmount: 0,
-      amountToSendToEganow: amountContributed,
-      minimumContributionAmount,
-    })
+    return Response.json({ success: true, ...charges })
   } catch (error: any) {
     return Response.json(
       { success: false, message: error.message || 'Failed to calculate charges' },

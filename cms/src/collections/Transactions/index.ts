@@ -25,6 +25,8 @@ import { verifyPaystackPayment } from './endpoints/verify-paystack-payment'
 import { paystackWebhook } from './endpoints/paystack-webhook'
 import { paymentStatus } from './endpoints/payment-status'
 import { payoutPaystack } from './endpoints/payout-paystack'
+import { chargeMobileMoney } from './endpoints/charge-mobile-money'
+import { submitChargeOtp } from './endpoints/submit-charge-otp'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -483,6 +485,16 @@ export const Transactions: CollectionConfig = {
       path: '/payout-paystack',
       method: 'post',
       handler: payoutPaystack,
+    },
+    {
+      path: '/charge-mobile-money',
+      method: 'post',
+      handler: chargeMobileMoney,
+    },
+    {
+      path: '/submit-charge-otp',
+      method: 'post',
+      handler: submitChargeOtp,
     },
   ],
   hooks: {

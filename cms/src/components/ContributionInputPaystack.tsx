@@ -128,18 +128,17 @@ export default function ContributionInputPaystack({
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
 
-    const minimumAmount = charges?.minimumContributionAmount ?? 2
-    if (selectedAmount < minimumAmount) {
-      toast.error('Amount Too Low', {
-        description: `Minimum contribution amount is ${currency} ${minimumAmount.toFixed(2)}`,
+    if (!isAnonymous && !contributorName) {
+      toast.error('Missing Information', {
+        description: 'Please enter your name to continue',
         duration: 4000,
       })
       return
     }
 
-    if (!isAnonymous && !contributorName) {
+    if (!isAnonymous && !contributorEmail) {
       toast.error('Missing Information', {
-        description: 'Please enter your name to continue',
+        description: 'Please enter your email address to continue',
         duration: 4000,
       })
       return
@@ -294,7 +293,7 @@ export default function ContributionInputPaystack({
             />
             <input
               type="email"
-              placeholder="Your email address (optional)"
+              placeholder="Your email address"
               value={contributorEmail}
               onChange={(e) => setContributorEmail(e.target.value)}
               className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
@@ -361,8 +360,10 @@ export default function ContributionInputPaystack({
         onClick={handleContribute}
         disabled={
           selectedAmount <= 0 ||
+          selectedAmount < (charges?.minimumContributionAmount ?? 2) ||
           isLoading ||
-          (!isAnonymous && !contributorName)
+          (!isAnonymous && !contributorName) ||
+          (!isAnonymous && !contributorEmail)
         }
         className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >

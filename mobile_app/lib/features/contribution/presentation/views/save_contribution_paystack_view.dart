@@ -14,6 +14,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/di/service_locator.dart';
@@ -31,12 +32,14 @@ class SaveContributionPaystackView extends StatefulWidget {
   State<SaveContributionPaystackView> createState() => _SaveContributionPaystackViewState();
 }
 
-class _SaveContributionPaystackViewState extends State<SaveContributionPaystackView> {
+class _SaveContributionPaystackViewState extends State<SaveContributionPaystackView>
+    with WidgetsBindingObserver {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _accountNumberController =
       TextEditingController();
   String _selectedPaymentMethod = 'mobile-money'; // Store API format
+  String _selectedMobileProvider = 'mtn'; // mtn | vod | atl
   // Arguments from previous screen
   String? amount;
   String? currency;
@@ -55,9 +58,25 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
   bool _chargesLoaded = false;
   bool _isLoading = false;
 
+  // Paystack direct charge tracking
+  String? _pendingTransactionId;
+  String? _pendingReference;
+  Timer? _pollingTimer;
+  bool _awaitingPayment = false;
+  // 'none' | 'otp' | 'birthday' | 'pending'
+  String _chargeNextAction = 'none';
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _awaitingPayment && _pendingTransactionId != null) {
+      _checkTransactionStatus();
+    }
   }
 
   Future<void> _loadCharges() async {
@@ -138,6 +157,8 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _pollingTimer?.cancel();
     _phoneController.dispose();
     _nameController.dispose();
     _accountNumberController.dispose();
@@ -145,6 +166,38 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
       c.dispose();
     }
     super.dispose();
+  }
+
+  void _startPolling(String transactionId) {
+    _pendingTransactionId = transactionId;
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _checkTransactionStatus();
+    });
+  }
+
+  Future<void> _checkTransactionStatus() async {
+    if (_pendingTransactionId == null || !mounted) return;
+    try {
+      final dio = getIt<Dio>();
+      final response = await dio.get(
+        '${BackendConfig.apiBaseUrl}/transactions/payment-status',
+        queryParameters: {'transactionId': _pendingTransactionId},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final status = data['data']?['status'] as String?;
+
+      if (status == 'completed') {
+        _onPaymentSuccess();
+      } else if (status == 'failed') {
+        _pollingTimer?.cancel();
+        if (!mounted) return;
+        setState(() { _awaitingPayment = false; _isLoading = false; _chargeNextAction = 'none'; });
+        _showErrorSnackBar('Payment failed. Please try again.');
+      }
+    } catch (_) {
+      // Network error — keep polling
+    }
   }
 
   @override
@@ -242,7 +295,9 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
                 }),
               ),
             ),
-            body: GestureDetector(
+            body: _awaitingPayment
+                ? _buildAwaitingPaymentView()
+                : GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -302,6 +357,21 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
 
                         const SizedBox(height: AppSpacing.spacingM),
 
+
+                        // Provider selector (mobile money only)
+                        if (_selectedPaymentMethod == 'mobile-money') ...[
+                          SelectInput<String>(
+                            label: 'Mobile Network',
+                            value: _selectedMobileProvider,
+                            options: const [
+                              SelectOption(value: 'mtn', label: 'MTN'),
+                              SelectOption(value: 'vod', label: 'Vodafone'),
+                              SelectOption(value: 'atl', label: 'AirtelTigo'),
+                            ],
+                            onChanged: (v) => setState(() => _selectedMobileProvider = v),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingM),
+                        ],
 
                         // Phone number input
                         AppTextInput(
@@ -461,6 +531,45 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
     );
   }
 
+  Widget _buildAwaitingPaymentView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            const Text(
+              'Waiting for payment',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Please approve the payment prompt on your phone. This may take a moment.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            TextButton(
+              onPressed: () {
+                _pollingTimer?.cancel();
+                setState(() {
+                  _awaitingPayment = false;
+                  _chargeNextAction = 'none';
+                  _pendingTransactionId = null;
+                  _pendingReference = null;
+                });
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handlePaymentRequest(BuildContext context) async {
     final localizations = AppLocalizations.of(context)!;
 
@@ -538,7 +647,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
         _customFields.isNotEmpty ? _collectCustomFieldValues() : null;
 
     if (_selectedPaymentMethod == 'mobile-money') {
-      await _initializePaystackPayment(context, customFieldValues);
+      await _chargeMobileMoney(context, customFieldValues);
       return;
     }
 
@@ -560,64 +669,198 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
     );
   }
 
-  Future<void> _initializePaystackPayment(
+  Future<void> _chargeMobileMoney(
     BuildContext context,
     List<Map<String, dynamic>>? customFieldValues,
   ) async {
     final authState = context.read<AuthBloc>().state;
     String? collectorId;
-    if (authState is AuthAuthenticated) {
-      collectorId = authState.user.id;
-    }
+    if (authState is AuthAuthenticated) collectorId = authState.user.id;
+
+    final phone = _phoneController.text.trim();
+    final provider = _selectedMobileProvider;
 
     setState(() => _isLoading = true);
 
     try {
       final dio = getIt<Dio>();
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/transactions/initialize-paystack-payment',
+        '${BackendConfig.apiBaseUrl}/transactions/charge-mobile-money',
         options: Options(headers: {'Content-Type': 'application/json'}),
         data: {
           'jarId': jarId ?? '',
           'contributorName': _nameController.text.trim(),
-          'contributorPhoneNumber': _phoneController.text.trim(),
+          'contributorPhoneNumber': phone,
           'amount': double.tryParse(amount ?? '0') ?? 0.0,
-          'channels': ['mobile_money'],
+          'provider': provider,
           if (collectorId != null) 'collector': collectorId,
           if (customFieldValues != null && customFieldValues.isNotEmpty)
             'customFieldValues': customFieldValues,
         },
       );
 
+      if (!mounted) return;
       final data = response.data as Map<String, dynamic>;
       if (data['success'] == true) {
-        final authorizationUrl = data['data']['authorization_url'] as String;
-        final transactionId = data['data']['transactionId'] as String;
-        if (mounted) {
-          context.push(
-            AppRoutes.paystackWebview,
-            extra: {
-              'authorizationUrl': authorizationUrl,
-              'transactionId': transactionId,
-            },
-          );
-        }
+        final chargeData = data['data'] as Map<String, dynamic>;
+        final status = chargeData['status'] as String;
+        final reference = chargeData['reference'] as String;
+        final transactionId = chargeData['transactionId'] as String;
+
+        setState(() {
+          _pendingReference = reference;
+          _pendingTransactionId = transactionId;
+          _isLoading = false;
+        });
+
+        _handleChargeStatus(status, reference, transactionId);
       } else {
-        if (mounted) {
-          _showErrorSnackBar(data['message'] ?? 'Failed to initialize payment');
-        }
+        _showErrorSnackBar(data['message'] ?? 'Failed to initiate payment');
       }
     } catch (e) {
       if (mounted) {
-        String message = 'Failed to initialize payment';
-        if (e is DioException) {
-          message = e.response?.data?['message'] ?? message;
-        }
+        String message = 'Failed to initiate payment';
+        if (e is DioException) message = e.response?.data?['message'] ?? message;
         _showErrorSnackBar(message);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _handleChargeStatus(String status, String reference, String transactionId) {
+    switch (status) {
+      case 'success':
+        _onPaymentSuccess();
+        break;
+      case 'send_otp':
+        setState(() => _chargeNextAction = 'otp');
+        _showOtpBirthdayDialog(isOtp: true, reference: reference);
+        break;
+      case 'send_birthday':
+        setState(() => _chargeNextAction = 'birthday');
+        _showOtpBirthdayDialog(isOtp: false, reference: reference);
+        break;
+      case 'pay_offline':
+      case 'pending':
+      default:
+        // USSD push sent — user approves on their phone
+        setState(() { _awaitingPayment = true; _chargeNextAction = 'pending'; });
+        _startPolling(transactionId);
+    }
+  }
+
+  void _showOtpBirthdayDialog({required bool isOtp, required String reference}) {
+    final controller = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      barrierColor: Colors.black54,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.spacingM,
+            right: AppSpacing.spacingM,
+            top: AppSpacing.spacingL,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.spacingL,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isOtp ? 'Enter OTP' : 'Enter Date of Birth',
+                style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: AppSpacing.spacingXs),
+              Text(
+                isOtp
+                    ? 'Enter the OTP sent to your phone to complete payment.'
+                    : 'Enter your date of birth to verify your identity.',
+                style: TextStyles.titleRegularSm.copyWith(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+              AppTextInput(
+                controller: controller,
+                label: isOtp ? 'OTP' : 'Date of Birth',
+                hintText: isOtp ? 'Enter OTP' : 'YYYY-MM-DD',
+                keyboardType: isOtp ? TextInputType.number : TextInputType.datetime,
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
+              AppButton.filled(
+                text: 'Submit',
+                onPressed: () async {
+                  final value = controller.text.trim();
+                  if (value.isEmpty) return;
+                  Navigator.of(ctx).pop();
+                  await _submitOtpOrBirthday(
+                    reference: reference,
+                    isOtp: isOtp,
+                    value: value,
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.spacingS),
+              AppButton.outlined(
+                text: 'Cancel',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _submitOtpOrBirthday({
+    required String reference,
+    required bool isOtp,
+    required String value,
+  }) async {
+    setState(() => _isLoading = true);
+    try {
+      final dio = getIt<Dio>();
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/transactions/submit-charge-otp',
+        options: Options(headers: {'Content-Type': 'application/json'}),
+        data: {
+          'reference': reference,
+          if (isOtp) 'otp': value,
+          if (!isOtp) 'birthday': value,
+        },
+      );
+      if (!mounted) return;
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true) {
+        final status = data['data']['status'] as String;
+        _handleChargeStatus(status, reference, _pendingTransactionId ?? '');
+      } else {
+        _showErrorSnackBar(data['message'] ?? 'Submission failed');
+        _showOtpBirthdayDialog(isOtp: isOtp, reference: reference);
+      }
+    } catch (e) {
+      if (mounted) {
+        String message = 'Submission failed';
+        if (e is DioException) message = e.response?.data?['message'] ?? message;
+        _showErrorSnackBar(message);
+        _showOtpBirthdayDialog(isOtp: isOtp, reference: reference);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _onPaymentSuccess() {
+    _pollingTimer?.cancel();
+    if (!mounted) return;
+    setState(() { _awaitingPayment = false; _isLoading = false; });
+    try { context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested()); } catch (_) {}
+    GoRouter.of(context).go(AppRoutes.jarDetail);
   }
 
   Widget _buildCustomFieldInput(CustomFieldModel field, String key) {

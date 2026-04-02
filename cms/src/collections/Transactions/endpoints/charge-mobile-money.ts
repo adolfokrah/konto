@@ -3,34 +3,35 @@ import { getPaystack } from '@/utilities/initalise'
 import { calculatePaystackCharges } from '@/utilities/paystackCharges'
 
 /**
- * POST /api/transactions/initialize-paystack-payment
+ * POST /api/transactions/charge-mobile-money
  *
- * Creates a pending transaction record then initialises a Paystack payment.
- * Returns { authorization_url, reference, transactionId } to the client.
- * The client redirects to authorization_url. After payment Paystack redirects
- * to /pay/callback?reference=xxx which verifies and marks the transaction.
+ * Directly charges a Ghana mobile money number via Paystack /charge.
+ * No WebView or redirect needed — the customer gets a USSD push or OTP on their phone.
+ *
+ * Body: { jarId, contributorName, contributorPhoneNumber, amount, provider, collector?, customFieldValues? }
+ * provider: 'mtn' | 'vod' | 'atl'
  */
-export const initializePaystackPayment = async (req: PayloadRequest) => {
+export const chargeMobileMoney = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
 
     const {
       jarId,
       contributorName,
-      contributorEmail,
       contributorPhoneNumber,
       amount,
+      provider,
       collector,
       remarks,
       customFieldValues,
-      channels,
     } = req.data || {}
 
-    if (!jarId || !contributorName || !amount || !contributorPhoneNumber) {
+    if (!jarId || !contributorName || !amount || !contributorPhoneNumber || !provider) {
       return Response.json(
         {
           success: false,
-          message: 'jarId, contributorName, contributorPhoneNumber and amount are required',
+          message:
+            'jarId, contributorName, contributorPhoneNumber, amount and provider are required',
         },
         { status: 400 },
       )
@@ -56,40 +57,34 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
     }
 
     const jar = await req.payload.findByID({ collection: 'jars', id: jarId })
-
     if (!jar) {
       return Response.json({ success: false, message: 'Jar not found' }, { status: 404 })
-    }
-
-    // Resolve email: use contributor's if provided, otherwise fall back to collector/creator email
-    let emailToUse = contributorEmail as string | undefined
-    if (!emailToUse) {
-      const effectiveCollectorId =
-        collector || (typeof jar.creator === 'object' ? (jar.creator as any)?.id : jar.creator)
-      if (effectiveCollectorId) {
-        const collectorUser = await req.payload.findByID({
-          collection: 'users',
-          id: effectiveCollectorId,
-          overrideAccess: true,
-        })
-        emailToUse = (collectorUser as any)?.email || undefined
-      }
-    }
-
-    if (!emailToUse) {
-      return Response.json(
-        {
-          success: false,
-          message: 'No email available for this transaction. Please provide your email.',
-        },
-        { status: 400 },
-      )
     }
 
     if (jar.status === 'frozen') {
       return Response.json(
         { success: false, message: 'This jar is currently frozen and cannot accept contributions' },
         { status: 403 },
+      )
+    }
+
+    // Resolve email from collector/creator
+    const effectiveCollectorId =
+      collector || (typeof jar.creator === 'object' ? (jar.creator as any)?.id : jar.creator)
+    let emailToUse: string | undefined
+    if (effectiveCollectorId) {
+      const collectorUser = await req.payload.findByID({
+        collection: 'users',
+        id: effectiveCollectorId,
+        overrideAccess: true,
+      })
+      emailToUse = (collectorUser as any)?.email || undefined
+    }
+
+    if (!emailToUse) {
+      return Response.json(
+        { success: false, message: 'No email available for this transaction.' },
+        { status: 400 },
       )
     }
 
@@ -115,12 +110,13 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
         contributor: contributorName,
         contributorEmail: emailToUse,
         contributorPhoneNumber,
-        // paymentMethod is set by the webhook once the customer completes payment
         amountContributed: amount,
         paymentStatus: 'pending',
         type: 'contribution',
+        paymentMethod: 'mobile-money',
+        mobileMoneyProvider: provider,
         collector: collector || jar.creator,
-        viaPaymentLink: true,
+        viaPaymentLink: false,
         ...(remarks ? { remarks } : {}),
         ...(customFieldValues
           ? {
@@ -137,7 +133,6 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       overrideAccess: true,
     })
 
-    // Store transaction id as the reference so we can look it up on callback
     await req.payload.update({
       collection: 'transactions',
       id: transaction.id,
@@ -146,55 +141,60 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       context: { skipCharges: true },
     })
 
-    // Calculate fee passthrough — charge customer the fee-inclusive amount
+    // Normalise phone to international format expected by Paystack (e.g. 0551234987 → 233551234987)
+    const normalizedPhone = contributorPhoneNumber.startsWith('+')
+      ? contributorPhoneNumber.slice(1)
+      : contributorPhoneNumber.startsWith('0')
+        ? `233${contributorPhoneNumber.slice(1)}`
+        : contributorPhoneNumber
+
+    // Apply fee passthrough formula
     const charges = await calculatePaystackCharges(amount, req.payload)
-    const amountToCharge = charges.amountPaidByContributor
-
-    // Amount in smallest currency unit (pesewas for GHS, kobo for NGN — both × 100)
+    const amountInPesewas = Math.round(charges.amountPaidByContributor * 100)
     const currency = (jar.currency as string) || 'GHS'
-    const amountInPesewas = Math.round(amountToCharge * 100)
-
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || ''
-    const callbackUrl = `${baseUrl}/pay/callback`
 
     const paystack = getPaystack()
-    const paystackRes = await paystack.initializeTransaction({
+    const chargeRes = await paystack.charge({
       email: emailToUse,
-      phone: contributorPhoneNumber,
       amount: amountInPesewas,
       currency,
       reference: transaction.id,
-      callback_url: callbackUrl,
-      channels: (channels as string[] | undefined) ?? [
-        'mobile_money',
-        'card',
-        'bank_transfer',
-        'apple_pay',
-      ],
+      mobile_money: {
+        phone: normalizedPhone,
+        provider: provider as 'mtn' | 'vod' | 'atl' | 'tgo',
+      },
       metadata: {
         transactionId: transaction.id,
         jarId,
         contributorName,
-        contributorPhoneNumber,
         jarName: jar.name,
-        cancel_action: callbackUrl,
       },
     })
+
+    console.log('[charge-mobile-money] Paystack response:', JSON.stringify(chargeRes, null, 2))
 
     return Response.json({
       success: true,
       data: {
-        authorization_url: paystackRes.authorization_url,
-        access_code: paystackRes.access_code,
-        reference: paystackRes.reference,
+        status: chargeRes.status,
+        reference: chargeRes.reference,
         transactionId: transaction.id,
+        displayText: chargeRes.display_text,
       },
     })
   } catch (error: any) {
-    console.error('initializePaystackPayment error:', error)
-    return Response.json(
-      { success: false, message: error.message || 'Failed to initialize payment' },
-      { status: 500 },
-    )
+    console.error('[charge-mobile-money] error:', error.message)
+    let message = error.message || 'Failed to initiate charge'
+    try {
+      const match = message.match(/- (\{.+\})$/)
+      if (match) {
+        const parsed = JSON.parse(match[1])
+        console.log('[charge-mobile-money] Paystack error:', JSON.stringify(parsed, null, 2))
+        message = parsed.data?.message || parsed.message || message
+      }
+    } catch {
+      /* keep original */
+    }
+    return Response.json({ success: false, message }, { status: 400 })
   }
 }

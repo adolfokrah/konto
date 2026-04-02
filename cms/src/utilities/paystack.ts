@@ -186,6 +186,30 @@ export interface PaystackTransferVerifyResponse {
   updatedAt: string
 }
 
+// ── Direct Charge (mobile money) ──────────────────────────────────────────────
+
+export interface PaystackChargeRequest {
+  email: string
+  amount: number
+  currency?: string
+  reference?: string
+  mobile_money?: {
+    phone: string
+    provider: 'mtn' | 'vod' | 'atl' | 'tgo'
+  }
+  metadata?: Record<string, unknown>
+}
+
+export interface PaystackChargeResponse {
+  reference: string
+  status: string // 'success' | 'pending' | 'failed' | 'pay_offline' | 'send_otp' | 'send_phone'
+  gateway_response: string
+  amount: number
+  currency: string
+  channel: string
+  display_text?: string
+}
+
 // ── Refund ────────────────────────────────────────────────────────────────────
 
 export interface PaystackRefundRequest {
@@ -402,6 +426,28 @@ export default class Paystack {
       'GET',
       `/transfer/verify/${encodeURIComponent(reference)}`,
     )
+  }
+
+  // ── Direct Charge ───────────────────────────────────────────────────────────
+
+  async charge(params: PaystackChargeRequest): Promise<PaystackChargeResponse> {
+    return this.request<PaystackChargeResponse>('POST', '/charge', { body: params })
+  }
+
+  async submitOtp(reference: string, otp: string): Promise<PaystackChargeResponse> {
+    return this.request<PaystackChargeResponse>('POST', '/charge/submit_otp', {
+      body: { reference, otp },
+    })
+  }
+
+  async submitBirthday(reference: string, birthday: string): Promise<PaystackChargeResponse> {
+    return this.request<PaystackChargeResponse>('POST', '/charge/submit_birthday', {
+      body: { reference, birthday },
+    })
+  }
+
+  async getCharge(reference: string): Promise<PaystackChargeResponse> {
+    return this.request<PaystackChargeResponse>('GET', `/charge/${encodeURIComponent(reference)}`)
   }
 
   // ── Refund ──────────────────────────────────────────────────────────────────

@@ -58,6 +58,7 @@ class _PaystackWebviewViewState extends State<PaystackWebviewView> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _webViewController.loadRequest(Uri.parse('about:blank'));
     super.dispose();
   }
 
@@ -146,7 +147,10 @@ class _PaystackWebviewViewState extends State<PaystackWebviewView> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            _pollingTimer?.cancel();
+            context.go(AppRoutes.jarDetail);
+          },
         ),
         title: Text('Complete Payment', style: TextStyles.titleMediumLg),
       ),
