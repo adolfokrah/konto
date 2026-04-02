@@ -1,6 +1,13 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getJarBalance } from '@/utilities/getJarBalance'
 
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VDF',
+  vodafone: 'VDF',
+  airteltigo: 'ATL',
+}
+
 export const payoutPaystack = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
@@ -24,6 +31,13 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           message:
             'Withdrawal account information is missing. Please set up your withdrawal account first.',
         },
+        { status: 400 },
+      )
+    }
+
+    if (!bankCodeMap[user.bank.toLowerCase()]) {
+      return Response.json(
+        { success: false, message: 'Unsupported mobile money provider' },
         { status: 400 },
       )
     }

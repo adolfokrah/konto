@@ -10,6 +10,12 @@ import { getPaystack } from '@/utilities/initalise'
  */
 export const verifyPendingPaystackCollectionsTask = {
   slug: 'verify-pending-paystack-collections',
+  schedule: [
+    {
+      cron: '*/10 * * * *', // Every 15 minutes
+      queue: 'verify-pending-transactions',
+    },
+  ],
   handler: async (args: any) => {
     try {
       const payload = args.req?.payload || args.payload

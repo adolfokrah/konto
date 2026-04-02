@@ -213,21 +213,12 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
       context: { skipCharges: true },
     })
 
-    if ((transaction as any).viaPaymentLink) {
-      // Paystack payout — queue the job
-      await req.payload.jobs.queue({
-        task: 'process-payout-paystack' as any,
-        input: { existingTransactionId: transactionId },
-        queue: 'payout-paystack',
-      })
-    } else {
-      // Eganow payout — queue the job
-      await req.payload.jobs.queue({
-        task: 'process-payout' as any,
-        input: { existingTransactionId: transactionId },
-        queue: 'payout',
-      })
-    }
+    // Queue Paystack payout job
+    await req.payload.jobs.queue({
+      task: 'process-payout-paystack' as any,
+      input: { existingTransactionId: transactionId },
+      queue: 'payout-paystack',
+    })
 
     // Notify the jar creator
     if (creatorId) {

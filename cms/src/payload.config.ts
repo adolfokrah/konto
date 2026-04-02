@@ -24,9 +24,7 @@ import { Notifications } from './collections/Notifications'
 import { settleContributionsTask } from './tasks/settle-contributions'
 import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
 import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
-import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
-import { processPayoutTask } from './tasks/process-payout'
 import { processReferralWithdrawalTask } from './tasks/process-referral-withdrawal'
 import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
@@ -190,9 +188,7 @@ export default buildConfig({
       settleContributionsTask as any,
       checkEmptyJarsDailyTask as any,
       checkWithdrawalBalanceDailyTask as any,
-      verifyPendingTransactionsTask as any,
       jarCreationReminderDailyTask as any,
-      processPayoutTask as any,
       processReferralWithdrawalTask as any,
       processRefundTask as any,
       sendPushCampaignTask as any,

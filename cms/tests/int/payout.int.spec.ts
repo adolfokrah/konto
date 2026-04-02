@@ -1,10 +1,31 @@
 import { getPayload, Payload } from 'payload'
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 
 import config from '@/payload.config'
 import { payoutPaystack } from '../../src/collections/Transactions/endpoints/payout-paystack'
 import { processPayoutPaystackTask } from '@/tasks/process-payout-paystack'
 import { clearAllCollections } from 'tests/utils/testCleanup'
+
+vi.mock('@/utilities/initalise', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utilities/initalise')>()
+  return {
+    ...actual,
+    getPaystack: vi.fn().mockReturnValue({
+      createTransferRecipient: vi.fn().mockResolvedValue({
+        recipient_code: 'RCP_mock123',
+        type: 'mobile_money',
+        name: 'Test User',
+      }),
+      initiateTransfer: vi.fn().mockResolvedValue({
+        transfer_code: 'TRF_mock123',
+        reference: 'mock-transaction-id',
+        status: 'pending',
+        amount: 9900,
+        currency: 'GHS',
+      }),
+    }),
+  }
+})
 
 let payload: Payload
 
@@ -273,7 +294,7 @@ describe('Payout Endpoint Integration Tests', () => {
           kycStatus: 'verified',
           role: 'user',
           accountNumber: '0000000004',
-          bank: 'vodafone',
+          bank: 'unsupported-bank',
           accountHolder: 'Bad Bank User',
         },
       })
