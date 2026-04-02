@@ -151,9 +151,7 @@ export interface Config {
       'settle-contributions': TaskSettleContributions;
       'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
       'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
-      'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
-      'process-payout': TaskProcessPayout;
       'process-referral-withdrawal': TaskProcessReferralWithdrawal;
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
@@ -2206,9 +2204,7 @@ export interface PayloadJob {
           | 'settle-contributions'
           | 'check-empty-jars-daily'
           | 'check-withdrawal-balance-daily'
-          | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
-          | 'process-payout'
           | 'process-referral-withdrawal'
           | 'process-refund'
           | 'send-push-campaign'
@@ -2262,9 +2258,7 @@ export interface PayloadJob {
         | 'settle-contributions'
         | 'check-empty-jars-daily'
         | 'check-withdrawal-balance-daily'
-        | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
-        | 'process-payout'
         | 'process-referral-withdrawal'
         | 'process-refund'
         | 'send-push-campaign'
@@ -3924,28 +3918,10 @@ export interface TaskCheckWithdrawalBalanceDaily {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-transactions".
- */
-export interface TaskVerifyPendingTransactions {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskJar-creation-reminder-daily".
  */
 export interface TaskJarCreationReminderDaily {
   input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-payout".
- */
-export interface TaskProcessPayout {
-  input: {
-    existingTransactionId: string;
-  };
   output?: unknown;
 }
 /**
