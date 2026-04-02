@@ -28,7 +28,6 @@ import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactio
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
 import { processPayoutTask } from './tasks/process-payout'
 import { processReferralWithdrawalTask } from './tasks/process-referral-withdrawal'
-import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
 import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
@@ -198,7 +197,6 @@ export default buildConfig({
       jarCreationReminderDailyTask as any,
       processPayoutTask as any,
       processReferralWithdrawalTask as any,
-      checkEganowPayoutBalanceTask as any,
       processRefundTask as any,
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
