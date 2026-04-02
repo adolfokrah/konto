@@ -1,5 +1,4 @@
 import type { CollectionBeforeChangeHook } from 'payload'
-import { calculateCharges } from '../../../utilities/calculateCharges'
 
 export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req, context }) => {
   if (context?.skipCharges) return data
@@ -24,16 +23,6 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
   }
 
   if (operation === 'create' || operation === 'update') {
-    // Pull fee percentages from system settings
-    const settings = await req.payload.findGlobal({
-      slug: 'system-settings',
-      overrideAccess: true,
-    })
-
-    const hogapayCollectionFeePercent = (settings.hogapayCollectionFeePercent ?? 0.8) as number
-    const hogapayTransferFeePercent = (settings.hogapayTransferFeePercent ?? 0.5) as number
-    const collectionFeePercent = (settings.collectionFee ?? 2) as number
-
     if (data.type === 'contribution') {
       if (data.paymentMethod === 'mobile-money') {
         // Resolve which user's discount to apply:
@@ -84,23 +73,15 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           )
         }
 
-        const charges = calculateCharges({
-          amountContributed: data.amountContributed,
-          hogapayCollectionFeePercent,
-          collectionFeePercent,
-          discountPercent,
-        })
-
-        console.log(`[getCharges] saving chargesBreakdown:`, JSON.stringify(charges))
         data.chargesBreakdown = {
-          platformCharge: charges.platformCharge,
-          amountPaidByContributor: charges.amountPaidByContributor,
-          hogapayRevenue: charges.hogapayRevenue,
-          eganowFees: charges.eganowFees,
-          discountPercent: charges.discountPercent,
-          discountAmount: charges.discountAmount,
-          amountToSendToEganow: charges.amountToSendToEganow,
-          collectionFeePercent,
+          platformCharge: 0,
+          amountPaidByContributor: data.amountContributed,
+          hogapayRevenue: 0,
+          eganowFees: 0,
+          discountPercent: 0,
+          discountAmount: 0,
+          amountToSendToEganow: data.amountContributed,
+          collectionFeePercent: 0,
         }
       } else {
         // No charges for cash or other payment methods
@@ -118,40 +99,19 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
     }
 
     if (data.type === 'payout') {
-      const transferFee = (settings.transferFeePercentage ?? 0) as number
-      const transferFeeDecimal = transferFee / 100
-      const feeAmount = data.amountContributed * transferFeeDecimal
-      const netAmount = data.amountContributed - feeAmount
+      data.payoutFeePercentage = 0
+      data.payoutFeeAmount = 0
+      data.payoutNetAmount = data.amountContributed
 
-      data.payoutFeePercentage = transferFee
-      data.payoutFeeAmount = feeAmount
-      data.payoutNetAmount = netAmount
-
-      if (data.paymentMethod === 'mobile-money') {
-        const hogapayRevenue = (data.amountContributed * hogapayTransferFeePercent) / 100
-        const eganowFees = feeAmount - hogapayRevenue
-
-        data.chargesBreakdown = {
-          platformCharge: feeAmount,
-          amountPaidByContributor: data.amountContributed,
-          hogapayRevenue: hogapayRevenue,
-          eganowFees: eganowFees,
-          discountPercent: 0,
-          discountAmount: 0,
-          amountToSendToEganow: data.amountContributed,
-          collectionFeePercent: transferFee,
-        }
-      } else {
-        data.chargesBreakdown = {
-          platformCharge: feeAmount,
-          amountPaidByContributor: data.amountContributed,
-          hogapayRevenue: 0,
-          eganowFees: 0,
-          discountPercent: 0,
-          discountAmount: 0,
-          amountToSendToEganow: data.amountContributed,
-          collectionFeePercent: transferFee,
-        }
+      data.chargesBreakdown = {
+        platformCharge: 0,
+        amountPaidByContributor: data.amountContributed,
+        hogapayRevenue: 0,
+        eganowFees: 0,
+        discountPercent: 0,
+        discountAmount: 0,
+        amountToSendToEganow: data.amountContributed,
+        collectionFeePercent: 0,
       }
     }
   }
