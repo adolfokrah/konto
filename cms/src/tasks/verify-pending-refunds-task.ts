@@ -1,17 +1,17 @@
-import { getEganow } from '@/utilities/initalise'
+import { getPaystack } from '@/utilities/initalise'
 
 /**
  * Verify Pending Refunds Task
  *
- * Runs every 5 minutes. Checks in-progress refunds older than 5 minutes
- * against Eganow API and updates their status. Auto-fails refunds
- * stuck in-progress for more than 1 hour.
+ * Runs every 25 minutes. Checks in-progress refunds older than 5 minutes
+ * against Paystack transfer API and updates their status. Acts as a safety
+ * net in case a transfer.success/failed webhook was missed.
  */
 export const verifyPendingRefundsTask = {
   slug: 'verify-pending-refunds',
   schedule: [
     {
-      cron: '*/25 * * * *', // Every 25 minutes
+      cron: '*/25 * * * *',
       queue: 'verify-pending-refunds',
     },
   ],
@@ -26,6 +26,7 @@ export const verifyPendingRefundsTask = {
         collection: 'refunds' as any,
         where: {
           status: { equals: 'in-progress' },
+          transactionReference: { not_equals: '' },
           createdAt: { less_than: cutoffTime },
         },
         limit: 100,
@@ -34,15 +35,14 @@ export const verifyPendingRefundsTask = {
       })
 
       if (pendingRefunds.docs.length === 0) {
-        return {
-          output: { processed: 0, message: 'No in-progress refunds to verify' },
-        }
+        return { output: { processed: 0, message: 'No in-progress refunds to verify' } }
       }
 
       console.log(
-        `[verify-pending-refunds] Found ${pendingRefunds.docs.length} in-progress refunds older than 5 minutes`,
+        `[verify-pending-refunds] Found ${pendingRefunds.docs.length} in-progress refunds`,
       )
 
+      const paystack = getPaystack()
       let processedCount = 0
       let completedCount = 0
       let failedCount = 0
@@ -50,40 +50,25 @@ export const verifyPendingRefundsTask = {
       for (const refund of pendingRefunds.docs as any[]) {
         const { id, transactionReference } = refund
 
-        // No transaction reference means Eganow was never called — auto-fail
         if (!transactionReference) {
-          try {
-            await payload.update({
-              collection: 'refunds' as any,
-              id,
-              data: { status: 'failed' },
-              overrideAccess: true,
-            })
-            console.log(
-              `[verify-pending-refunds] Auto-failed refund ${id}: no transaction reference`,
-            )
-            failedCount++
-          } catch (e: any) {
-            console.error(`[verify-pending-refunds] Error failing refund ${id}:`, e.message)
-          }
+          // No transfer_code yet — process-refund job hasn't run, skip
           continue
         }
 
         try {
-          await getEganow().getToken()
+          const result = await paystack.verifyTransfer(transactionReference)
 
-          const statusResult = await getEganow().checkTransactionStatus({
-            transactionId: `refund-${id}`,
-            languageId: 'en',
-          })
+          const statusMap: Record<string, string> = {
+            success: 'completed',
+            failed: 'failed',
+            reversed: 'failed',
+            pending: 'in-progress',
+          }
 
-          console.log(
-            `[verify-pending-refunds] Eganow response for refund ${id}:`,
-            JSON.stringify(statusResult),
-          )
+          const newStatus = statusMap[result.status] ?? 'in-progress'
 
-          if (!statusResult.isSuccess) {
-            // If older than 1 hour and Eganow doesn't recognize it, fail it
+          if (newStatus === 'in-progress') {
+            // Auto-fail if stuck more than 1 hour
             if (refund.createdAt < maxPendingTime) {
               await payload.update({
                 collection: 'refunds' as any,
@@ -91,49 +76,28 @@ export const verifyPendingRefundsTask = {
                 data: { status: 'failed' },
                 overrideAccess: true,
               })
-              console.log(
-                `[verify-pending-refunds] Auto-failed refund ${id} (> 1 hour, not found in Eganow)`,
-              )
+              console.log(`[verify-pending-refunds] Auto-failed refund ${id} (pending > 1 hour)`)
               failedCount++
+              processedCount++
             }
-            processedCount++
             continue
           }
 
-          const rawStatus = (
-            statusResult.transStatus ||
-            (statusResult as any).transactionstatus ||
-            ''
-          ).toUpperCase()
+          await payload.update({
+            collection: 'refunds' as any,
+            id,
+            data: { status: newStatus },
+            overrideAccess: true,
+          })
 
-          const statusMap: Record<string, string> = {
-            SUCCESSFUL: 'completed',
-            SUCCESS: 'completed',
-            FAILED: 'failed',
-            PENDING: 'in-progress',
-          }
+          console.log(`[verify-pending-refunds] Refund ${id} → ${newStatus}`)
 
-          const newStatus = statusMap[rawStatus] || 'in-progress'
-
-          if (newStatus !== 'in-progress') {
-            // Update refund status (syncLinkedTransaction hook handles marking original tx as failed)
-            await payload.update({
-              collection: 'refunds' as any,
-              id,
-              data: { status: newStatus },
-              overrideAccess: true,
-            })
-
-            if (newStatus === 'completed') completedCount++
-            if (newStatus === 'failed') failedCount++
-            console.log(`[verify-pending-refunds] Updated refund ${id} → ${newStatus}`)
-          }
-
+          if (newStatus === 'completed') completedCount++
+          if (newStatus === 'failed') failedCount++
           processedCount++
         } catch (error: any) {
           console.error(`[verify-pending-refunds] Error verifying refund ${id}:`, error.message)
 
-          // Auto-fail if stuck longer than 1 hour
           if (refund.createdAt < maxPendingTime) {
             try {
               await payload.update({
@@ -142,9 +106,7 @@ export const verifyPendingRefundsTask = {
                 data: { status: 'failed' },
                 overrideAccess: true,
               })
-              console.log(
-                `[verify-pending-refunds] Auto-failed refund ${id} (> 1 hour, Eganow error)`,
-              )
+              console.log(`[verify-pending-refunds] Auto-failed refund ${id} (> 1 hour, API error)`)
               failedCount++
             } catch (e: any) {
               console.error(`[verify-pending-refunds] Error auto-failing refund ${id}:`, e.message)
@@ -168,9 +130,7 @@ export const verifyPendingRefundsTask = {
       }
     } catch (error: any) {
       console.error('[verify-pending-refunds] Task error:', error)
-      return {
-        output: { processed: 0, message: `Error: ${error.message}` },
-      }
+      return { output: { processed: 0, message: `Error: ${error.message}` } }
     }
   },
 }

@@ -1,15 +1,17 @@
-import { getEganow } from '@/utilities/initalise'
+import { getPaystack } from '@/utilities/initalise'
 
-const PROVIDER_MAP: Record<string, string> = {
-  mtn: 'MTNGH',
-  telecel: 'TCELGH',
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VDF',
+  vodafone: 'VDF',
+  airteltigo: 'ATL',
 }
 
 /**
  * Process Referral Withdrawal Task
  *
- * Queued by confirm-withdrawal endpoint. The payout queue ensures sequential
- * processing — only one payout job runs at a time, eliminating race conditions.
+ * Queued by confirm-withdrawal endpoint. The payout-paystack queue ensures
+ * sequential processing — only one payout job runs at a time.
  */
 export const processReferralWithdrawalTask = {
   slug: 'process-referral-withdrawal',
@@ -28,8 +30,8 @@ export const processReferralWithdrawalTask = {
     try {
       console.log(`🔄 Processing referral withdrawal ${withdrawalRecordId}...`)
 
-      const paypartner = PROVIDER_MAP[bank.toLowerCase()]
-      if (!paypartner) {
+      const bankCode = bankCodeMap[bank.toLowerCase()]
+      if (!bankCode) {
         await payload.update({
           collection: 'referral-bonuses',
           id: withdrawalRecordId,
@@ -42,47 +44,56 @@ export const processReferralWithdrawalTask = {
         return { output: { success: false, message: `Unsupported provider: ${bank}` } }
       }
 
-      // Format phone number to international format
-      let phone = accountNumber.replace(/\s+/g, '')
-      if (phone.startsWith('0')) phone = '233' + phone.substring(1)
-      else if (!phone.startsWith('233')) phone = '233' + phone
-
       const netAmount = parseFloat(amount)
+      if (netAmount < 1) {
+        await payload.update({
+          collection: 'referral-bonuses',
+          id: withdrawalRecordId,
+          data: {
+            status: 'failed',
+            description: 'Withdrawal failed: amount below minimum GHS 1.00',
+          },
+          overrideAccess: true,
+        })
+        return { output: { success: false, message: 'Amount below minimum GHS 1.00' } }
+      }
+
       const accountSuffix = accountNumber.slice(-4)
+      const paystack = getPaystack()
 
-      await getEganow().getToken()
-
-      const payoutResult = await getEganow().payout({
-        paypartnerCode: paypartner,
-        amount: String(netAmount.toFixed(2)),
-        accountNoOrCardNoOrMSISDN: phone,
-        accountName: accountHolder,
-        transactionId: `referral-withdrawal-${withdrawalRecordId}`,
-        narration: `Hogapay referral bonus withdrawal`,
-        transCurrencyIso: 'GHS',
-        expiryDateMonth: 0,
-        expiryDateYear: 0,
-        cvv: '',
-        languageId: 'en',
-        callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
+      const recipient = await paystack.createTransferRecipient({
+        type: 'mobile_money',
+        name: accountHolder,
+        account_number: accountNumber,
+        bank_code: bankCode,
+        currency: 'GHS',
       })
 
-      // Update withdrawal record with Eganow reference
+      const amountInPesewas = Math.round(netAmount * 100)
+      const transfer = await paystack.initiateTransfer({
+        source: 'balance',
+        amount: amountInPesewas,
+        recipient: recipient.recipient_code,
+        reason: 'Hogapay referral bonus withdrawal',
+        currency: 'GHS',
+        reference: withdrawalRecordId,
+      })
+
       await payload.update({
         collection: 'referral-bonuses',
         id: withdrawalRecordId,
         data: {
-          description: `Withdrawal GHS ${netAmount.toFixed(2)} → ${bank} ****${accountSuffix} | ref: ${payoutResult.eganowReferenceNo}`,
+          description: `Withdrawal GHS ${netAmount.toFixed(2)} → ${bank} ****${accountSuffix} | transfer: ${transfer.transfer_code}`,
         },
         overrideAccess: true,
       })
 
-      console.log(`✅ Referral withdrawal initiated — ref: ${payoutResult.eganowReferenceNo}`)
+      console.log(`✅ Referral withdrawal initiated — transfer: ${transfer.transfer_code}`)
 
       return {
         output: {
           success: true,
-          eganowReferenceNo: payoutResult.eganowReferenceNo,
+          transferCode: transfer.transfer_code,
         },
       }
     } catch (error: any) {

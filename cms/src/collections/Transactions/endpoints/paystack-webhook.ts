@@ -133,59 +133,63 @@ async function handleChargeEvent(req: PayloadRequest, eventType: string, data: a
 }
 
 async function handleTransferEvent(req: PayloadRequest, eventType: string, data: any) {
-  // data.reference = the value we passed to initiateTransfer = transaction.id
+  // data.reference = the value we passed to initiateTransfer:
+  //   payouts:               transaction.id
+  //   refunds:               refundId
+  //   referral withdrawals:  withdrawalRecordId (no DB update needed from webhook)
   const reference = data?.reference
   if (!reference) return
 
-  // Primary: look up directly by transaction ID
-  let transaction: any = null
+  const newStatus = eventType === 'transfer.success' ? 'completed' : 'failed'
+
+  // ── Try payout transaction (look up by ID) ───────────────────────────────
   try {
-    const doc = await req.payload.findByID({
+    const doc = (await req.payload.findByID({
       collection: 'transactions',
       id: reference,
       overrideAccess: true,
-    })
-    if (doc && (doc as any).type === 'payout') transaction = doc
+    })) as any
+    if (doc && doc.type === 'payout') {
+      if (doc.paymentStatus === 'completed' || doc.paymentStatus === 'failed') return
+      const jarId = typeof doc.jar === 'object' ? doc.jar?.id : doc.jar
+      const collectorId = typeof doc.collector === 'object' ? doc.collector?.id : doc.collector
+      await req.payload.update({
+        collection: 'transactions',
+        id: doc.id,
+        data: {
+          paymentStatus: newStatus,
+          webhookResponse: data,
+          ...(jarId ? { jar: jarId } : {}),
+          ...(collectorId ? { collector: collectorId } : {}),
+        },
+        overrideAccess: true,
+        context: { skipCharges: true },
+      })
+      return
+    }
   } catch {
-    // Not a valid ID — fall through
+    // Not a valid transaction ID — try refund
   }
 
-  // Fallback: look up by transactionReference (for any other flows)
-  if (!transaction) {
-    const results = await req.payload.find({
-      collection: 'transactions',
-      where: {
-        transactionReference: { equals: reference },
-        type: { equals: 'payout' },
-      },
-      limit: 1,
+  // ── Try refund (look up by ID) ───────────────────────────────────────────
+  try {
+    const refund = (await req.payload.findByID({
+      collection: 'refunds',
+      id: reference,
       overrideAccess: true,
-    })
-    transaction = results.docs[0] as any
+    })) as any
+    if (refund && refund.status === 'in-progress') {
+      await req.payload.update({
+        collection: 'refunds',
+        id: refund.id,
+        data: { status: newStatus },
+        overrideAccess: true,
+      })
+      return
+    }
+  } catch {
+    // Not a valid refund ID — fall through (may be referral withdrawal, no action needed)
   }
-
-  if (!transaction) return
-
-  if (transaction.paymentStatus === 'completed' || transaction.paymentStatus === 'failed') return
-
-  const newStatus = eventType === 'transfer.success' ? 'completed' : 'failed'
-
-  const jarId = typeof transaction.jar === 'object' ? transaction.jar?.id : transaction.jar
-  const collectorId =
-    typeof transaction.collector === 'object' ? transaction.collector?.id : transaction.collector
-
-  await req.payload.update({
-    collection: 'transactions',
-    id: transaction.id,
-    data: {
-      paymentStatus: newStatus,
-      webhookResponse: data,
-      ...(jarId ? { jar: jarId } : {}),
-      ...(collectorId ? { collector: collectorId } : {}),
-    },
-    overrideAccess: true,
-    context: { skipCharges: true },
-  })
 }
 
 async function handleRefundEvent(req: PayloadRequest, eventType: string, data: any) {

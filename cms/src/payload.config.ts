@@ -237,10 +237,8 @@ export default buildConfig({
         cron: '2 10 * * *', // Every day at 10:02 AM
         queue: 'check-withdrawal-balance-daily',
       },
-      {
-        cron: '*/15 * * * *', // Every 15 minutes
-        queue: 'verify-pending-transactions',
-      },
+      // DISABLED: Eganow collection verification replaced by Paystack cron
+      // { cron: '*/15 * * * *', queue: 'verify-pending-transactions' },
       {
         cron: '2 11 * * *', // Every day at 11:02 AM
         queue: 'jar-creation-reminder-daily',
@@ -263,10 +261,8 @@ export default buildConfig({
         cron: '*/25 * * * *', // Every 25 minutes
         queue: 'verify-pending-refunds',
       },
-      {
-        cron: '*/15 * * * *', // Every 15 minutes
-        queue: 'verify-pending-topups',
-      },
+      // DISABLED: Eganow topup verification (Paystack has no ledger topup equivalent)
+      // { cron: '*/15 * * * *', queue: 'verify-pending-topups' },
       {
         cron: '0 9 * * 0', // Every Sunday at 9 AM
         queue: 'weekly-account-summary',
