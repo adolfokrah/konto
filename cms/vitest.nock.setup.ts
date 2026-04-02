@@ -5,6 +5,7 @@ import { beforeAll } from 'vitest'
 process.env.EGANOW_SECRET_USERNAME = 'test_username'
 process.env.EGANOW_SECRET_PASSWORD = 'test_password'
 process.env.EGANOW_X_AUTH_TOKEN = 'test_x_auth'
+process.env.PAYSTACK_SECRET_KEY = 'sk_test_mock'
 process.env.RESEND_API_KEY = 'test_resend_key'
 process.env.SMS_USERNAME = 'test_sms_user'
 process.env.SMS_PASS = 'test_sms_pass'
@@ -53,6 +54,81 @@ beforeAll(() => {
     .reply(200, { isSuccess: true, balance: 10000 })
     .get('/api/transactions/collection/get-balance')
     .reply(200, { isSuccess: true, balance: 10000 })
+
+  // Paystack
+  const PAYSTACK_BASE = 'https://api.paystack.co'
+  nock(PAYSTACK_BASE)
+    .persist()
+    // Initialize transaction (contributions)
+    .post('/transaction/initialize')
+    .reply(200, {
+      status: true,
+      message: 'Authorization URL created',
+      data: {
+        authorization_url: 'https://checkout.paystack.com/mock',
+        access_code: 'mock-access-code',
+        reference: 'mock-ref-123',
+      },
+    })
+    // Verify transaction (contributions)
+    .get(/\/transaction\/verify\/.*/)
+    .reply(200, {
+      status: true,
+      message: 'Verification successful',
+      data: {
+        status: 'success',
+        reference: 'mock-ref-123',
+        amount: 10000,
+        currency: 'GHS',
+        channel: 'mobile_money',
+        customer: { email: 'test@example.com' },
+        authorization: { bank: 'mtn' },
+      },
+    })
+    // Create transfer recipient (payouts)
+    .post('/transferrecipient')
+    .reply(200, {
+      status: true,
+      message: 'Transfer recipient created',
+      data: {
+        recipient_code: 'RCP_mock123',
+        type: 'mobile_money',
+        name: 'Test User',
+      },
+    })
+    // Initiate transfer (payouts)
+    .post('/transfer')
+    .reply(200, {
+      status: true,
+      message: 'Transfer initiated',
+      data: {
+        transfer_code: 'TRF_mock123',
+        reference: 'mock-transaction-id',
+        status: 'pending',
+        amount: 9900,
+        currency: 'GHS',
+      },
+    })
+    // Verify transfer status (payout cron)
+    .get(/\/transfer\/.*/)
+    .reply(200, {
+      status: true,
+      message: 'Transfer retrieved',
+      data: {
+        transfer_code: 'TRF_mock123',
+        reference: 'mock-transaction-id',
+        status: 'success',
+        amount: 9900,
+        currency: 'GHS',
+      },
+    })
+    // Paystack balance
+    .get('/balance')
+    .reply(200, {
+      status: true,
+      message: 'Balances retrieved',
+      data: [{ currency: 'GHS', balance: 1000000 }],
+    })
 
   // SMS (Deywuro)
   nock('https://www.deywuro.com')
