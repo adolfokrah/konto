@@ -3754,6 +3754,10 @@ export interface SystemSetting {
    */
   hogapayTransferFeePercent: number;
   /**
+   * Percentage deducted from the refund amount (e.g., 1%). Contributor receives refundAmount − fee.
+   */
+  refundFeePercentage: number;
+  /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
@@ -3873,6 +3877,7 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   hogapayCollectionFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
+  refundFeePercentage?: T;
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;

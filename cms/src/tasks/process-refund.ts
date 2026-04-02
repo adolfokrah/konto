@@ -145,8 +145,17 @@ export const processRefundTask = {
       try {
         const paystack = getPaystack()
 
-        // Amount in pesewas; omit for full refund
-        const amountInPesewas = Math.round(refundAmount * 100)
+        // Read refund fee from system settings (defaults to 1%)
+        const settings = await payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
+        const refundFeePercent = (settings as any)?.refundFeePercentage ?? 1
+        const refundFee = (refundAmount * refundFeePercent) / 100
+        const netRefundAmount = refundAmount - refundFee
+
+        const amountInPesewas = Math.round(netRefundAmount * 100)
+
+        console.log(
+          `[process-refund] amount=${refundAmount} fee=${refundFee} (${refundFeePercent}%) net=${netRefundAmount}`,
+        )
 
         const result = await paystack.refund({
           transaction: originalReference,
@@ -172,7 +181,8 @@ export const processRefundTask = {
             refundId,
             paystackRefundId: result.id,
             status: result.status,
-            amount: refundAmount,
+            amount: netRefundAmount,
+            fee: refundFee,
           },
         }
       } catch (paystackError: any) {

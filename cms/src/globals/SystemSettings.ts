@@ -103,6 +103,33 @@ export const SystemSettings: GlobalConfig = {
       ],
     },
 
+    // ── Refund ──
+    {
+      type: 'collapsible',
+      label: 'Refund',
+      admin: {
+        initCollapsed: false,
+        description: 'Fee deducted from refunds before returning funds to the contributor.',
+      },
+      fields: [
+        {
+          name: 'refundFeePercentage',
+          label: 'Refund Fee (%)',
+          type: 'number',
+          required: true,
+          defaultValue: 1,
+          min: 0,
+          max: 100,
+          admin: {
+            description:
+              'Percentage deducted from the refund amount (e.g., 1%). Contributor receives refundAmount − fee.',
+            step: 0.1,
+            width: '50%',
+          },
+        },
+      ],
+    },
+
     // ── Payout Settings ──
     {
       type: 'collapsible',
