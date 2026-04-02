@@ -1,0 +1,679 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/services/rating_service.dart';
+import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/utils/payment_method_utils.dart';
+import 'package:Hoga/core/utils/phone_validation_utils.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
+import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:dio/dio.dart';
+import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
+import 'package:Hoga/features/contribution/data/models/charges_model.dart';
+import 'package:Hoga/route.dart';
+import 'package:Hoga/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+
+class SaveContributionPaystackView extends StatefulWidget {
+  const SaveContributionPaystackView({super.key});
+
+  @override
+  State<SaveContributionPaystackView> createState() => _SaveContributionPaystackViewState();
+}
+
+class _SaveContributionPaystackViewState extends State<SaveContributionPaystackView> {
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
+  String _selectedPaymentMethod = 'mobile-money'; // Store API format
+  // Arguments from previous screen
+  String? amount;
+  String? currency;
+  String? jarName;
+  String? jarId;
+  String? jarCreatorId;
+
+  // Custom fields
+  List<CustomFieldModel> _customFields = [];
+  final Map<String, TextEditingController> _customFieldControllers = {};
+  final Map<String, String?> _customFieldSelectValues = {};
+  final Map<String, bool> _customFieldCheckboxValues = {};
+
+  // Charges from backend (includes discount)
+  ChargesModel? _charges;
+  bool _chargesLoaded = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _loadCharges() async {
+    final parsedAmount = double.tryParse(amount ?? '');
+    if (parsedAmount == null || parsedAmount <= 0 || jarId == null) return;
+    if (mounted) setState(() { _charges = null; _chargesLoaded = false; });
+    try {
+      final charges = await ChargesApiProvider(
+        dio: getIt<Dio>(),
+        userStorageService: getIt<UserStorageService>(),
+      ).getCharges(amount: parsedAmount, jarId: jarId!);
+      if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
+    } catch (_) {
+      if (mounted) setState(() => _chargesLoaded = true);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Get arguments passed from add_contribution_view
+    final arguments =
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
+
+    if (arguments != null) {
+      amount = arguments['amount'] as String?;
+      currency = arguments['currency'] as String?;
+
+      // Extract jar details from the jar object
+      final jar = arguments['jar'];
+      if (jar != null) {
+        // Handle both Map and object types for jar data
+        if (jar is Map<String, dynamic>) {
+          jarId = jar['id'] as String?;
+          jarName = jar['name'] as String?;
+          // Extract creator ID - could be nested in creator object or direct field
+          if (jar['creator'] != null) {
+            if (jar['creator'] is Map<String, dynamic>) {
+              jarCreatorId = jar['creator']['id'] as String?;
+            } else if (jar['creator'] is String) {
+              jarCreatorId = jar['creator'] as String?;
+            }
+          }
+        } else {
+          // Assume it's a jar model object
+          jarId = jar.id as String?;
+          jarName = jar.name as String?;
+          // Extract creator ID from jar model object
+          if (jar.creator != null) {
+            jarCreatorId = jar.creator.id as String?;
+          }
+          // Extract custom fields from jar model
+          if (jar.customFields != null) {
+            _initCustomFields(jar.customFields as List<CustomFieldModel>);
+          }
+        }
+      }
+
+      if (!_chargesLoaded) _loadCharges();
+    }
+  }
+
+  void _initCustomFields(List<CustomFieldModel> fields) {
+    if (_customFields.isNotEmpty) return; // already initialised
+    _customFields = fields;
+    for (final field in fields) {
+      final key = field.id ?? field.label;
+      if (field.fieldType == 'checkbox') {
+        _customFieldCheckboxValues[key] = false;
+      } else if (field.fieldType == 'select') {
+        _customFieldSelectValues[key] = null;
+      } else {
+        _customFieldControllers[key] = TextEditingController();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _nameController.dispose();
+    _accountNumberController.dispose();
+    for (final c in _customFieldControllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    // Create a mapping of API values to display names using utility function
+    final Map<String, String> paymentMethodMap =
+        PaymentMethodUtils.getPaymentMethodMap(localizations);
+
+    return BlocListener<AddContributionBloc, AddContributionState>(
+      listener: (context, state) {
+        final localizations = AppLocalizations.of(context)!;
+        if (state is AddContributionSuccess) {
+          context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
+
+          if (_selectedPaymentMethod == 'mobile-money') {
+            // mobile money uses Paystack — handled separately
+          } else {
+            RatingService.instance.maybeRequestReview();
+            context.go(AppRoutes.jarDetail);
+          }
+          // Show success message
+          AppSnackBar.showSuccess(
+            context,
+            message: localizations.paymentRequestSentSuccessfully,
+          );
+        } else if (state is AddContributionFailure) {
+          // Show error message with specific error handling
+          String errorMessage;
+          if (state.errorMessage == 'UNKNOWN_ERROR') {
+            errorMessage = localizations.unknownError;
+          } else if (state.errorMessage.startsWith('UNEXPECTED_ERROR:')) {
+            errorMessage = localizations.unexpectedError;
+          } else {
+            // Use the specific error message from server or fallback to generic
+            errorMessage =
+                state.errorMessage.isNotEmpty
+                    ? state.errorMessage
+                    : localizations.failedToSendPaymentRequest;
+          }
+
+          AppSnackBar.showError(context, message: errorMessage);
+        }
+      },
+      child: BlocBuilder<AddContributionBloc, AddContributionState>(
+        builder: (context, state) {
+          final isLoading = state is AddContributionLoading;
+
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              automaticallyImplyLeading:
+                  !isLoading, // Disable back button when loading
+              title: Text(
+                localizations.requestContribution,
+                style: TextStyles.titleMediumLg.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.spacingM,
+                  AppSpacing.spacingS,
+                  AppSpacing.spacingM,
+                  AppSpacing.spacingM,
+                ),
+                child: Builder(builder: (context) {
+                  String buttonText;
+                  if (state is AddContributionLoading) {
+                    buttonText = localizations.processing;
+                  } else if (_selectedPaymentMethod == 'mobile-money' &&
+                      amount != null) {
+                    final contributionAmount =
+                        double.tryParse(amount!) ?? 0.0;
+                    final totalAmount = _charges?.amountPaidByContributor ?? contributionAmount;
+                    buttonText =
+                        '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
+                  } else if (_selectedPaymentMethod == 'mobile-money') {
+                    buttonText = localizations.requestPayment;
+                  } else {
+                    buttonText = localizations.saveContribution;
+                  }
+                  return AppButton.filled(
+                    key: const Key('submit_contribution_button'),
+                    isLoading: state is AddContributionLoading || _isLoading,
+                    text: buttonText,
+                    onPressed: () async {
+                      await _handlePaymentRequest(context);
+                    },
+                  );
+                }),
+              ),
+            ),
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.spacingM,
+              ),
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                        // Amount section
+                        Text(
+                          localizations.amount,
+                          style: TextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.spacingS),
+
+                        // Large amount display
+                        if (amount != null && currency != null) ...[
+                          Text(
+                            CurrencyUtils.formatAmount(
+                              double.tryParse(amount!) ?? 0.0,
+                              currency!,
+                            ),
+                            style: TextStyles.titleBoldXl.copyWith(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.spacingL),
+                        ],
+
+                        // Payment method selection
+                        SelectInput<String>(
+                          label: localizations.paymentMethod,
+                          value: _selectedPaymentMethod,
+                          options:
+                              paymentMethodMap.entries
+                                  .map(
+                                    (entry) => SelectOption(
+                                      value: entry.key, // API value
+                                      label:
+                                          entry.value, // Localized display name
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedPaymentMethod = value;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: AppSpacing.spacingM),
+
+
+                        // Phone number input
+                        AppTextInput(
+                          controller: _phoneController,
+                          label: localizations.phoneNumber,
+                          hintText: _selectedPaymentMethod == 'mobile-money'
+                              ? localizations.enterMobileMoneyNumber
+                              : localizations.enterPhoneNumber,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: AppSpacing.spacingM),
+
+                        AppTextInput(
+                          controller: _nameController,
+                          label: localizations.contributorName,
+                          hintText: localizations.enterContributorName,
+                          keyboardType: TextInputType.name,
+                        ),
+
+                        // Custom fields
+                        if (_customFields.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.spacingM),
+                          ..._customFields.map((field) {
+                            final key = field.id ?? field.label;
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppSpacing.spacingM,
+                              ),
+                              child: _buildCustomFieldInput(field, key),
+                            );
+                          }),
+                        ],
+
+                        const SizedBox(height: AppSpacing.spacingL),
+
+                        // Fee Breakdown Section
+                        if (amount != null && currency != null) ...[
+                          Builder(builder: (context) {
+                            final contributionAmount = double.tryParse(amount!) ?? 0.0;
+                            final isMobileMoney = _selectedPaymentMethod == 'mobile-money';
+                            final totalAmount = isMobileMoney
+                                ? (_charges?.amountPaidByContributor ?? contributionAmount)
+                                : contributionAmount;
+                            final feeAmount = totalAmount - contributionAmount;
+
+                            return Container(
+                              padding: EdgeInsets.all(AppSpacing.spacingM),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Payment Summary',
+                                    style: TextStyles.titleMedium.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingS),
+                                  // Contribution Amount
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Contribution amount',
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          contributionAmount,
+                                          currency!,
+                                        ),
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  // Processing Fee
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Processing fee',
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          feeAmount,
+                                          currency!,
+                                        ),
+                                        style: TextStyles.titleRegularSm.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(height: AppSpacing.spacingM),
+                                  // Total
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total due to pay',
+                                        style: TextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyUtils.formatAmount(
+                                          totalAmount,
+                                          currency!,
+                                        ),
+                                        style: TextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: AppSpacing.spacingM),
+                        ],
+
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          );
+        }, // BlocBuilder ends
+      ), // BlocListener ends
+    );
+  }
+
+  Future<void> _handlePaymentRequest(BuildContext context) async {
+    final localizations = AppLocalizations.of(context)!;
+
+    // Manual validation - validate contributor name (always required)
+    if (_nameController.text.trim().isEmpty) {
+      _showErrorSnackBar(localizations.pleaseEnterContributorName);
+      return;
+    }
+
+    // Validation for mobile money - phone number is required
+    if (_selectedPaymentMethod == 'mobile-money') {
+      // Validate phone number for mobile money
+      if (_phoneController.text.trim().isEmpty) {
+        _showErrorSnackBar(localizations.pleaseEnterMobileMoneyNumber);
+        return;
+      }
+
+      // Validate Ghana phone number format
+      String phoneNumber = _phoneController.text.trim();
+      if (!PhoneValidationUtils.isValidGhanaPhoneNumber(phoneNumber)) {
+        _showErrorSnackBar(PhoneValidationUtils.getDetailedValidationError(phoneNumber));
+        return;
+      }
+
+      // Check if user has set up withdrawal account using AuthBloc
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        // Only check account holder if the current user is the creator of the jar
+        if (authState.user.id == jarCreatorId) {
+          if (authState.user.accountHolder == null ||
+              authState.user.accountHolder!.isEmpty) {
+            context.push(AppRoutes.withdrawalAccount);
+            return;
+          }
+        }
+      }
+    }
+
+    if (_selectedPaymentMethod == 'bank') {
+      // Validate account number for bank transfer
+      if (_accountNumberController.text.trim().isEmpty) {
+        _showErrorSnackBar(localizations.pleaseEnterAccountName);
+        return;
+      }
+    }
+
+    // Validate required custom fields
+    for (final field in _customFields) {
+      if (!field.required) continue;
+      final key = field.id ?? field.label;
+      if (field.fieldType == 'select') {
+        if (_customFieldSelectValues[key] == null ||
+            _customFieldSelectValues[key]!.isEmpty) {
+          _showErrorSnackBar('${field.label} is required');
+          return;
+        }
+      } else if (field.fieldType != 'checkbox') {
+        final text = _customFieldControllers[key]?.text.trim() ?? '';
+        if (text.isEmpty) {
+          _showErrorSnackBar('${field.label} is required');
+          return;
+        }
+      }
+    }
+
+    final customFieldValues =
+        _customFields.isNotEmpty ? _collectCustomFieldValues() : null;
+
+    if (_selectedPaymentMethod == 'mobile-money') {
+      await _initializePaystackPayment(context, customFieldValues);
+      return;
+    }
+
+    context.read<AddContributionBloc>().add(
+      AddContributionSubmitted(
+        jarId: jarId ?? '',
+        contributor: _nameController.text.trim(),
+        contributorPhoneNumber: _phoneController.text.trim(),
+        paymentMethod: _selectedPaymentMethod,
+        accountNumber:
+            _selectedPaymentMethod == 'bank'
+                ? _accountNumberController.text.trim()
+                : null,
+        amountContributed: double.tryParse(amount!) ?? 0.0,
+        viaPaymentLink: false,
+        mobileMoneyProvider: '',
+        customFieldValues: customFieldValues,
+      ),
+    );
+  }
+
+  Future<void> _initializePaystackPayment(
+    BuildContext context,
+    List<Map<String, dynamic>>? customFieldValues,
+  ) async {
+    final authState = context.read<AuthBloc>().state;
+    String? collectorId;
+    if (authState is AuthAuthenticated) {
+      collectorId = authState.user.id;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final dio = getIt<Dio>();
+      final response = await dio.post(
+        '${BackendConfig.apiBaseUrl}/transactions/initialize-paystack-payment',
+        options: Options(headers: {'Content-Type': 'application/json'}),
+        data: {
+          'jarId': jarId ?? '',
+          'contributorName': _nameController.text.trim(),
+          'contributorPhoneNumber': _phoneController.text.trim(),
+          'amount': double.tryParse(amount ?? '0') ?? 0.0,
+          'channels': ['mobile_money'],
+          if (collectorId != null) 'collector': collectorId,
+          if (customFieldValues != null && customFieldValues.isNotEmpty)
+            'customFieldValues': customFieldValues,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true) {
+        final authorizationUrl = data['data']['authorization_url'] as String;
+        final transactionId = data['data']['transactionId'] as String;
+        if (mounted) {
+          context.push(
+            AppRoutes.paystackWebview,
+            extra: {
+              'authorizationUrl': authorizationUrl,
+              'transactionId': transactionId,
+            },
+          );
+        }
+      } else {
+        if (mounted) {
+          _showErrorSnackBar(data['message'] ?? 'Failed to initialize payment');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        String message = 'Failed to initialize payment';
+        if (e is DioException) {
+          message = e.response?.data?['message'] ?? message;
+        }
+        _showErrorSnackBar(message);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildCustomFieldInput(CustomFieldModel field, String key) {
+    final label = field.required ? '${field.label} *' : field.label;
+
+    switch (field.fieldType) {
+      case 'checkbox':
+        return Row(
+          children: [
+            Checkbox(
+              value: _customFieldCheckboxValues[key] ?? false,
+              onChanged: (v) =>
+                  setState(() => _customFieldCheckboxValues[key] = v ?? false),
+            ),
+            Expanded(
+              child: Text(label, style: TextStyles.titleRegularSm),
+            ),
+          ],
+        );
+      case 'select':
+        final options = field.options ?? [];
+        return SelectInput<String>(
+          label: label,
+          value: _customFieldSelectValues[key],
+          options: options
+              .map((o) => SelectOption(value: o.value, label: o.label))
+              .toList(),
+          onChanged: (v) =>
+              setState(() => _customFieldSelectValues[key] = v),
+        );
+      default:
+        return AppTextInput(
+          controller: _customFieldControllers[key]!,
+          label: label,
+          hintText: field.placeholder ?? '',
+          keyboardType: field.fieldType == 'number'
+              ? TextInputType.number
+              : field.fieldType == 'phone'
+                  ? TextInputType.phone
+                  : field.fieldType == 'email'
+                      ? TextInputType.emailAddress
+                      : TextInputType.text,
+        );
+    }
+  }
+
+  List<Map<String, dynamic>> _collectCustomFieldValues() {
+    final result = <Map<String, dynamic>>[];
+    for (final field in _customFields) {
+      final key = field.id ?? field.label;
+      dynamic value;
+      if (field.fieldType == 'checkbox') {
+        value = _customFieldCheckboxValues[key] ?? false;
+      } else if (field.fieldType == 'select') {
+        value = _customFieldSelectValues[key];
+      } else {
+        value = _customFieldControllers[key]?.text.trim();
+      }
+      result.add({'fieldId': key, 'label': field.label, 'value': value});
+    }
+    return result;
+  }
+
+  void _showErrorSnackBar(String message) {
+    AppSnackBar.showError(context, message: message);
+  }
+}

@@ -1,8 +1,10 @@
 import { Resend } from 'resend'
 import Eganow from './eganow'
+import Paystack from './paystack'
 
 let _eganow: Eganow | null = null
 let _resend: Resend | null = null
+let _paystack: Paystack | null = null
 
 export function getEganow(): Eganow {
   if (!_eganow) {
@@ -20,4 +22,13 @@ export function getResend(): Resend {
     _resend = new Resend(process.env.RESEND_API_KEY)
   }
   return _resend
+}
+
+export function getPaystack(): Paystack {
+  if (!_paystack) {
+    _paystack = new Paystack({
+      secretKey: process.env.PAYSTACK_SECRET_KEY!,
+    })
+  }
+  return _paystack
 }

@@ -54,6 +54,9 @@ import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { autoRefundDailyTask } from './tasks/auto-refund-daily'
 import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
 import { sealInactiveJarsDailyTask } from './tasks/seal-inactive-jars-daily'
+import { processPayoutPaystackTask } from './tasks/process-payout-paystack'
+import { verifyPendingPaystackPayoutsTask } from './tasks/verify-pending-paystack-payouts-task'
+import { verifyPendingPaystackCollectionsTask } from './tasks/verify-pending-paystack-collections-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -114,7 +117,13 @@ export default buildConfig({
     Cashbacks,
     SmsCampaigns,
   ],
-  cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
+  cors: [
+    getServerSideURL(),
+    'https://hogapay.com',
+    ...(process.env.EXTRA_CORS_ORIGINS
+      ? process.env.EXTRA_CORS_ORIGINS.split(',').map((s) => s.trim())
+      : []),
+  ].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
     url:
@@ -201,11 +210,16 @@ export default buildConfig({
       autoRefundDailyTask as any,
       cleanupOldNotificationsTask as any,
       sealInactiveJarsDailyTask as any,
+      processPayoutPaystackTask as any,
+      verifyPendingPaystackPayoutsTask as any,
+      verifyPendingPaystackCollectionsTask as any,
     ],
     autoRun: [
+      // DISABLED: Eganow payouts replaced by Paystack
+      // { cron: '* * * * *', queue: 'payout' },
       {
-        cron: '* * * * *', // Every minute — picks up queued payout jobs
-        queue: 'payout',
+        cron: '* * * * *', // Every minute — picks up queued Paystack payout jobs
+        queue: 'payout-paystack',
       },
       {
         cron: '* * * * *', // Every minute — picks up queued refund jobs
@@ -231,9 +245,15 @@ export default buildConfig({
         cron: '2 11 * * *', // Every day at 11:02 AM
         queue: 'jar-creation-reminder-daily',
       },
+      // DISABLED: Eganow payout balance check replaced by Paystack
+      // { cron: '2 * * * *', queue: 'check-eganow-payout-balance' },
       {
-        cron: '2 * * * *', // 2 mins after schedule (0 * * * *)
-        queue: 'check-eganow-payout-balance',
+        cron: '*/15 * * * *', // Every 15 minutes — verify pending Paystack payout transfers
+        queue: 'verify-pending-paystack-payouts',
+      },
+      {
+        cron: '*/15 * * * *', // Every 15 minutes — verify pending Paystack collection transactions
+        queue: 'verify-pending-paystack-collections',
       },
       {
         cron: '* * * * *', // Every minute

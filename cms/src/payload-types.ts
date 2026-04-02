@@ -169,6 +169,9 @@ export interface Config {
       'auto-refund-daily': TaskAutoRefundDaily;
       'cleanup-old-notifications': TaskCleanupOldNotifications;
       'seal-inactive-jars-daily': TaskSealInactiveJarsDaily;
+      'process-payout-paystack': TaskProcessPayoutPaystack;
+      'verify-pending-paystack-payouts': TaskVerifyPendingPaystackPayouts;
+      'verify-pending-paystack-collections': TaskVerifyPendingPaystackCollections;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1412,6 +1415,10 @@ export interface Transaction {
    */
   remarks?: string | null;
   /**
+   * Email address of the contributor
+   */
+  contributorEmail?: string | null;
+  /**
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
@@ -1486,6 +1493,13 @@ export interface Transaction {
    * User who collected the contribution
    */
   collector?: (string | null) | User;
+  /**
+   * Snapshot of collector identity at transaction time — preserved even if account is deleted
+   */
+  collectorSnapshot?: {
+    name?: string | null;
+    email?: string | null;
+  };
   /**
    * Check if this contribution was made via a payment link
    */
@@ -2246,6 +2260,9 @@ export interface PayloadJob {
           | 'auto-refund-daily'
           | 'cleanup-old-notifications'
           | 'seal-inactive-jars-daily'
+          | 'process-payout-paystack'
+          | 'verify-pending-paystack-payouts'
+          | 'verify-pending-paystack-collections'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2301,6 +2318,9 @@ export interface PayloadJob {
         | 'auto-refund-daily'
         | 'cleanup-old-notifications'
         | 'seal-inactive-jars-daily'
+        | 'process-payout-paystack'
+        | 'verify-pending-paystack-payouts'
+        | 'verify-pending-paystack-collections'
         | 'schedulePublish'
       )
     | null;
@@ -3078,6 +3098,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   jar?: T;
   contributor?: T;
   remarks?: T;
+  contributorEmail?: T;
   contributorPhoneNumber?: T;
   paymentMethod?: T;
   mobileMoneyProvider?: T;
@@ -3104,6 +3125,12 @@ export interface TransactionsSelect<T extends boolean = true> {
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
   collector?: T;
+  collectorSnapshot?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+      };
   viaPaymentLink?: T;
   webhookResponse?: T;
   customFieldValues?: T;
@@ -4096,6 +4123,32 @@ export interface TaskCleanupOldNotifications {
  * via the `definition` "TaskSeal-inactive-jars-daily".
  */
 export interface TaskSealInactiveJarsDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcess-payout-paystack".
+ */
+export interface TaskProcessPayoutPaystack {
+  input: {
+    existingTransactionId: string;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-paystack-payouts".
+ */
+export interface TaskVerifyPendingPaystackPayouts {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-paystack-collections".
+ */
+export interface TaskVerifyPendingPaystackCollections {
   input?: unknown;
   output?: unknown;
 }

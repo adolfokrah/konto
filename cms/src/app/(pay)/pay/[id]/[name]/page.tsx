@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
+import ContributionInputPaystack from '@/components/ContributionInputPaystack'
 import RecentContributions from '@/components/RecentContributions'
 import ReportJarButton from '@/components/ReportJarButton'
 import { Metadata } from 'next'
@@ -99,7 +100,7 @@ export default async function Page({
   searchParams 
 }: { 
   params: Promise<{ id: string; name: string }>
-  searchParams: Promise<{ collectorId?: string; cPage?: string }>
+  searchParams: Promise<{ collectorId?: string; cPage?: string; provider?: string }>
 }) {
   const { id: jarId } = await params
   const resolvedSearchParams = await searchParams
@@ -170,6 +171,9 @@ export default async function Page({
       : 'UN' // Unknown if no name
 
     // Resolve collector id from query param or fallback to jar creator
+    const usePaystack = resolvedSearchParams?.provider === 'paystack'
+
+
     const collectorIdFromQuery =
       (resolvedSearchParams?.collectorId as string) || null
     const creatorId =
@@ -275,18 +279,33 @@ export default async function Page({
 
             {/* Contribution Input */}
             <div id="contribution-section" />
-            <ContributionInput
-              currency={jarWithBalance.currency}
-              isFixedAmount={jarWithBalance.isFixedContribution || false}
-              fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
-              className="my-6"
-              jarId={jarId}
-              jarName={jarWithBalance.name}
-              collectorId={effectiveCollectorId}
-              allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
-              transactionFeePercentage={systemSettings?.collectionFee || 1.95}
-              customFields={jarWithBalance.customFields || []}
-            />
+            {usePaystack ? (
+              <ContributionInputPaystack
+                currency={jarWithBalance.currency}
+                isFixedAmount={jarWithBalance.isFixedContribution || false}
+                fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
+                className="my-6"
+                jarId={jarId}
+                jarName={jarWithBalance.name}
+                collectorId={effectiveCollectorId}
+                allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
+                transactionFeePercentage={systemSettings?.collectionFee || 1.95}
+                customFields={jarWithBalance.customFields || []}
+              />
+            ) : (
+              <ContributionInput
+                currency={jarWithBalance.currency}
+                isFixedAmount={jarWithBalance.isFixedContribution || false}
+                fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
+                className="my-6"
+                jarId={jarId}
+                jarName={jarWithBalance.name}
+                collectorId={effectiveCollectorId}
+                allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
+                transactionFeePercentage={systemSettings?.collectionFee || 1.95}
+                customFields={jarWithBalance.customFields || []}
+              />
+            )}
 
             <Separator />
 

@@ -285,9 +285,8 @@ class _AddContributionViewState extends State<AddContributionView> {
                         return;
                       }
 
-                      // Navigate to request momo screen with jar and amount data
                       context.push(
-                        AppRoutes.saveContribution,
+                        AppRoutes.saveContributionPaystack,
                         extra: {
                           'jar': state.jarData,
                           'amount': _selectedAmount.toString(),

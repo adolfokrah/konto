@@ -28,6 +28,11 @@ import { updateJarLastActivity } from './hooks/update-jar-last-activity'
 import { createCashback } from './hooks/create-cashback'
 import { snapshotCollector } from './hooks/snapshotCollector'
 import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
+import { initializePaystackPayment } from './endpoints/initialize-paystack-payment'
+import { verifyPaystackPayment } from './endpoints/verify-paystack-payment'
+import { paystackWebhook } from './endpoints/paystack-webhook'
+import { paymentStatus } from './endpoints/payment-status'
+import { payoutPaystack } from './endpoints/payout-paystack'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -62,6 +67,14 @@ export const Transactions: CollectionConfig = {
       },
     },
     {
+      name: 'contributorEmail',
+      type: 'email',
+      required: false,
+      admin: {
+        description: 'Email address of the contributor',
+      },
+    },
+    {
       name: 'contributorPhoneNumber',
       type: 'text',
       required: false,
@@ -70,9 +83,13 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Phone number is only required for mobile-money payments
-            if (data?.paymentMethod === 'mobile-money' && !data?.contributorPhoneNumber) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (
+              !isPaystackFlow &&
+              data?.paymentMethod === 'mobile-money' &&
+              !data?.contributorPhoneNumber
+            ) {
               throw new APIError('Phone number is required for mobile-money payments', 400)
             }
           },
@@ -98,9 +115,13 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Mobile money provider is required for mobile-money payments
-            if (data?.paymentMethod === 'mobile-money' && !data?.mobileMoneyProvider) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (
+              !isPaystackFlow &&
+              data?.paymentMethod === 'mobile-money' &&
+              !data?.mobileMoneyProvider
+            ) {
               throw new APIError('Mobile money provider is required for mobile-money payments', 400)
             }
           },
@@ -117,9 +138,9 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Account number is only required for bank payments
-            if (data?.paymentMethod === 'bank' && !data?.accountNumber) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (!isPaystackFlow && data?.paymentMethod === 'bank' && !data?.accountNumber) {
               throw new APIError('Account number is required for bank payments', 400)
             }
           },
@@ -485,6 +506,31 @@ export const Transactions: CollectionConfig = {
       path: '/get-charges',
       method: 'get',
       handler: getChargesEndpoint,
+    },
+    {
+      path: '/initialize-paystack-payment',
+      method: 'post',
+      handler: initializePaystackPayment,
+    },
+    {
+      path: '/verify-paystack-payment',
+      method: 'get',
+      handler: verifyPaystackPayment,
+    },
+    {
+      path: '/paystack-webhook',
+      method: 'post',
+      handler: paystackWebhook,
+    },
+    {
+      path: '/payment-status',
+      method: 'get',
+      handler: paymentStatus,
+    },
+    {
+      path: '/payout-paystack',
+      method: 'post',
+      handler: payoutPaystack,
     },
   ],
   hooks: {
