@@ -81,7 +81,6 @@ export interface Config {
     'push-campaigns': PushCampaign;
     refunds: Refund;
     'payout-approvals': PayoutApproval;
-    'ledger-topups': LedgerTopup;
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
@@ -113,7 +112,6 @@ export interface Config {
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
-    'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
@@ -157,13 +155,11 @@ export interface Config {
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
       'process-payout': TaskProcessPayout;
       'process-referral-withdrawal': TaskProcessReferralWithdrawal;
-      'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'send-sms-campaign': TaskSendSmsCampaign;
       'verify-pending-refunds': TaskVerifyPendingRefunds;
-      'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
       'withdraw-reminder-daily': TaskWithdrawReminderDaily;
       'auto-refund-daily': TaskAutoRefundDaily;
@@ -1841,40 +1837,6 @@ export interface PayoutApproval {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups".
- */
-export interface LedgerTopup {
-  id: string;
-  /**
-   * Top-up amount in GHS
-   */
-  amount: number;
-  /**
-   * Mobile money phone number used for top-up
-   */
-  phoneNumber: string;
-  /**
-   * Account holder name from KYC lookup
-   */
-  accountName?: string | null;
-  /**
-   * Mobile money provider
-   */
-  provider: 'mtn' | 'telecel';
-  status: 'pending' | 'completed' | 'failed';
-  /**
-   * Eganow transaction reference
-   */
-  transactionReference?: string | null;
-  /**
-   * Admin who initiated this top-up
-   */
-  initiatedBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referrals".
  */
 export interface Referral {
@@ -2248,13 +2210,11 @@ export interface PayloadJob {
           | 'jar-creation-reminder-daily'
           | 'process-payout'
           | 'process-referral-withdrawal'
-          | 'check-eganow-payout-balance'
           | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
           | 'send-sms-campaign'
           | 'verify-pending-refunds'
-          | 'verify-pending-topups'
           | 'weekly-account-summary'
           | 'withdraw-reminder-daily'
           | 'auto-refund-daily'
@@ -2306,13 +2266,11 @@ export interface PayloadJob {
         | 'jar-creation-reminder-daily'
         | 'process-payout'
         | 'process-referral-withdrawal'
-        | 'check-eganow-payout-balance'
         | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
         | 'send-sms-campaign'
         | 'verify-pending-refunds'
-        | 'verify-pending-topups'
         | 'weekly-account-summary'
         | 'withdraw-reminder-daily'
         | 'auto-refund-daily'
@@ -2401,10 +2359,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payout-approvals';
         value: string | PayoutApproval;
-      } | null)
-    | ({
-        relationTo: 'ledger-topups';
-        value: string | LedgerTopup;
       } | null)
     | ({
         relationTo: 'referrals';
@@ -3303,21 +3257,6 @@ export interface PayoutApprovalsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups_select".
- */
-export interface LedgerTopupsSelect<T extends boolean = true> {
-  amount?: T;
-  phoneNumber?: T;
-  accountName?: T;
-  provider?: T;
-  status?: T;
-  transactionReference?: T;
-  initiatedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referrals_select".
  */
 export interface ReferralsSelect<T extends boolean = true> {
@@ -4026,14 +3965,6 @@ export interface TaskProcessReferralWithdrawal {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCheck-eganow-payout-balance".
- */
-export interface TaskCheckEganowPayoutBalance {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskProcess-refund".
  */
 export interface TaskProcessRefund {
@@ -4075,14 +4006,6 @@ export interface TaskSendSmsCampaign {
  * via the `definition` "TaskVerify-pending-refunds".
  */
 export interface TaskVerifyPendingRefunds {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-topups".
- */
-export interface TaskVerifyPendingTopups {
   input?: unknown;
   output?: unknown;
 }
