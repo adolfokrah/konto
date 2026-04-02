@@ -242,7 +242,7 @@ export default buildConfig({
         queue: 'send-scheduled-campaigns',
       },
       {
-        cron: '*/25 * * * *', // Every 25 minutes
+        cron: '*/26 * * * *', // Every 25 minutes
         queue: 'verify-pending-refunds',
       },
       {
