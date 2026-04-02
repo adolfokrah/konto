@@ -5,26 +5,45 @@ import config from '@/payload.config'
 import { payoutPaystack } from '../../src/collections/Transactions/endpoints/payout-paystack'
 import { processPayoutPaystackTask } from '@/tasks/process-payout-paystack'
 import { clearAllCollections } from 'tests/utils/testCleanup'
+import Paystack from '@/utilities/paystack'
 
-vi.mock('@/utilities/initalise', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/utilities/initalise')>()
-  return {
-    ...actual,
-    getPaystack: vi.fn().mockReturnValue({
-      createTransferRecipient: vi.fn().mockResolvedValue({
-        recipient_code: 'RCP_mock123',
-        type: 'mobile_money',
-        name: 'Test User',
-      }),
-      initiateTransfer: vi.fn().mockResolvedValue({
-        transfer_code: 'TRF_mock123',
-        reference: 'mock-transaction-id',
-        status: 'pending',
-        amount: 9900,
-        currency: 'GHS',
-      }),
-    }),
-  }
+// Spy on Paystack prototype methods — works regardless of when the singleton is created
+vi.spyOn(Paystack.prototype, 'createTransferRecipient').mockResolvedValue({
+  recipient_code: 'RCP_mock123',
+  active: true,
+  createdAt: '',
+  currency: 'GHS',
+  description: '',
+  domain: 'test',
+  id: 1,
+  integration: 1,
+  name: 'Test User',
+  type: 'mobile_money',
+  updatedAt: '',
+  is_deleted: false,
+  details: {
+    authorization_code: null,
+    account_number: '0200000001',
+    account_name: 'Test User',
+    bank_code: 'MTN',
+    bank_name: 'MTN',
+  },
+})
+
+vi.spyOn(Paystack.prototype, 'initiateTransfer').mockResolvedValue({
+  transfer_code: 'TRF_mock123',
+  reference: 'mock-transaction-id',
+  status: 'pending',
+  amount: 9900,
+  currency: 'GHS',
+  integration: 1,
+  domain: 'test',
+  source: 'balance',
+  reason: '',
+  recipient: 1,
+  id: 1,
+  createdAt: '',
+  updatedAt: '',
 })
 
 let payload: Payload
@@ -441,15 +460,13 @@ describe('Payout Endpoint Integration Tests', () => {
   })
 
   describe('Process Payout Task', () => {
-    // Helper: create a pending payout transaction (as the endpoint would)
+    // Helper: create a pending payout transaction (as the endpoint would).
+    // skipCharges prevents the getCharges hook from overwriting values with test-env defaults.
     async function createPendingPayoutTx(
       jarId: string,
       amount: number,
       overrides: Record<string, any> = {},
     ) {
-      const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
-      const feePercentage = (systemSettings as any)?.transferFeePercentage || 1
-      const fee = (amount * feePercentage) / 100
       return payload.create({
         collection: 'transactions',
         data: {
@@ -462,12 +479,10 @@ describe('Payout Endpoint Integration Tests', () => {
           collector: creatorUser.id,
           type: 'payout' as const,
           paymentStatus: 'pending' as const,
-          payoutFeePercentage: feePercentage,
-          payoutFeeAmount: fee,
-          payoutNetAmount: amount - fee,
           ...overrides,
         },
         overrideAccess: true,
+        context: { skipCharges: true },
       })
     }
 
@@ -490,17 +505,11 @@ describe('Payout Endpoint Integration Tests', () => {
       expect(updated.amountContributed).toBe(-500)
       expect(updated.paymentMethod).toBe('mobile-money')
       expect(updated.mobileMoneyProvider).toBe('mtn')
-      expect(updated.payoutFeePercentage).toBeDefined()
-      expect(updated.payoutFeeAmount).toBeDefined()
-      expect(updated.payoutNetAmount).toBeDefined()
       expect(updated.transactionReference).toBe('TRF_mock123')
     })
 
-    it('should use fee fields already set on the transaction', async () => {
+    it('should send full balance to Paystack (no fee deduction)', async () => {
       await createSettledContribution(testJar.id, 1000)
-
-      const systemSettings = await payload.findGlobal({ slug: 'system-settings' })
-      const feePercentage = (systemSettings as any)?.transferFeePercentage || 1
       const pendingTx = await createPendingPayoutTx(testJar.id, 1000)
 
       await processPayoutPaystackTask.handler({
@@ -514,12 +523,9 @@ describe('Payout Endpoint Integration Tests', () => {
         overrideAccess: true,
       })
 
-      const expectedFee = (1000 * feePercentage) / 100
-      const expectedNetAmount = 1000 - expectedFee
-
-      expect(updated.payoutFeePercentage).toBe(feePercentage)
-      expect(Math.abs(updated.payoutFeeAmount as number)).toBe(expectedFee)
-      expect(Math.abs(updated.payoutNetAmount as number)).toBe(expectedNetAmount)
+      // Full balance transferred — no fee fields set by the payout flow
+      expect(updated.amountContributed).toBe(-1000)
+      expect(updated.transactionReference).toBe('TRF_mock123')
     })
 
     it('should fail the newer duplicate and let the oldest proceed', async () => {

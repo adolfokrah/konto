@@ -105,11 +105,6 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       )
     }
 
-    const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-    const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-    const transferFee = (netBalance * transferFeePercentage) / 100
-    const expectedNetAmount = netBalance - transferFee
-
     // Find all accepted admin collectors in the jar
     const adminCollectors = ((jar.invitedCollectors as any[]) || []).filter(
       (ic: any) => ic.role === 'admin' && ic.status === 'accepted',
@@ -143,12 +138,10 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           contributorPhoneNumber: user.accountNumber,
           contributor: user.accountHolder,
           type: 'payout',
-          payoutFeePercentage: transferFeePercentage,
-          payoutFeeAmount: transferFee,
-          payoutNetAmount: expectedNetAmount,
           viaPaymentLink: true,
         },
         overrideAccess: true,
+        context: { skipCharges: true },
       })
 
       const amount = Math.abs(netBalance).toLocaleString(undefined, {
@@ -198,12 +191,10 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         contributorPhoneNumber: user.accountNumber,
         contributor: user.accountHolder,
         type: 'payout',
-        payoutFeePercentage: transferFeePercentage,
-        payoutFeeAmount: transferFee,
-        payoutNetAmount: expectedNetAmount,
         viaPaymentLink: true,
       },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     await req.payload.jobs.queue({

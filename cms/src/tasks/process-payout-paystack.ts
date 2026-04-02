@@ -190,19 +190,6 @@ export const processPayoutPaystackTask = {
         return { output: { success: false, message: 'Unsupported mobile money provider' } }
       }
 
-      const netAmount = (transaction as any).payoutNetAmount ?? payoutAmount
-      if (netAmount < 1) {
-        await payload.update({
-          collection: 'transactions',
-          id: existingTransactionId,
-          data: { paymentStatus: 'failed' },
-          overrideAccess: true,
-        })
-        return {
-          output: { success: false, message: 'Payout net amount is below minimum GHS 1.00' },
-        }
-      }
-
       // Step 5 — create Paystack transfer recipient
       try {
         const paystack = getPaystack()
@@ -215,8 +202,8 @@ export const processPayoutPaystackTask = {
           currency: (jar.currency as string) || 'GHS',
         })
 
-        // Step 6 — initiate transfer; use transaction.id as reference so webhook can look it up
-        const amountInPesewas = Math.round(netAmount * 100)
+        // Step 6 — initiate transfer using the full payout amount (no fees deducted)
+        const amountInPesewas = Math.round(payoutAmount * 100)
         const transfer = await paystack.initiateTransfer({
           source: 'balance',
           amount: amountInPesewas,
