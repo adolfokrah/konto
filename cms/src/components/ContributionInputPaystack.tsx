@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
@@ -11,6 +12,11 @@ import CustomFields from './CustomFields'
 import type { CustomField } from './ContributionInput'
 
 export type { CustomField }
+
+interface PaymentMethodOption {
+  id: string
+  type: string
+}
 
 interface ContributionInputPaystackProps {
   currency?: string
@@ -23,6 +29,15 @@ interface ContributionInputPaystackProps {
   allowAnonymousContributions?: boolean
   transactionFeePercentage?: number
   customFields?: CustomField[]
+  paymentMethods?: PaymentMethodOption[]
+}
+
+function toPaystackChannels(type: string): string[] {
+  const lower = type.toLowerCase()
+  if (lower.includes('mobile')) return ['mobile_money']
+  if (lower.includes('card')) return ['card']
+  if (lower.includes('bank')) return ['bank_transfer']
+  return ['mobile_money', 'card', 'bank_transfer']
 }
 
 export default function ContributionInputPaystack({
@@ -36,7 +51,11 @@ export default function ContributionInputPaystack({
   allowAnonymousContributions = false,
   transactionFeePercentage = 1.95,
   customFields = [],
+  paymentMethods = [],
 }: ContributionInputPaystackProps) {
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
+    () => paymentMethods[0]?.type ?? '',
+  )
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
   const [isCustom, setIsCustom] = useState(false)
@@ -99,6 +118,7 @@ export default function ContributionInputPaystack({
       try {
         const params = new URLSearchParams({ amount: String(selectedAmount) })
         if (jarId) params.set('jarId', jarId)
+        if (selectedPaymentMethod) params.set('paymentMethod', selectedPaymentMethod)
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/transactions/get-charges?${params}`,
         )
@@ -129,7 +149,7 @@ export default function ContributionInputPaystack({
         minimumContributionAmount: 2,
       })
     }, 400)
-  }, [selectedAmount, jarId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedAmount, jarId, selectedPaymentMethod]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
@@ -179,6 +199,8 @@ export default function ContributionInputPaystack({
               : contributorEmail,
             contributorPhoneNumber,
             amount: selectedAmount,
+            paymentMethod: selectedPaymentMethod || undefined,
+            channels: toPaystackChannels(selectedPaymentMethod || paymentMethods[0]?.type || ''),
             collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
             ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
             ...(Object.keys(customFieldValues).length > 0 ? { customFieldValues } : {}),
@@ -277,6 +299,29 @@ export default function ContributionInputPaystack({
         </div>
       </div>
 
+      {/* Payment Method Select */}
+      {paymentMethods.length > 0 && (
+        <div className="mb-6">
+          <label className="block text-sm font-supreme font-medium text-gray-700 mb-2">
+            Payment method
+          </label>
+          <div className="relative">
+            <select
+              value={selectedPaymentMethod}
+              onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+              className="w-full p-4 pr-12 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors bg-white text-black appearance-none"
+            >
+              {paymentMethods.map((pm) => (
+                <option key={pm.id} value={pm.type}>
+                  {pm.type}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          </div>
+        </div>
+      )}
+
       {/* Contributor Information */}
       <div className="space-y-4 mb-6">
         {allowAnonymousContributions && (
@@ -362,6 +407,11 @@ export default function ContributionInputPaystack({
         </div>
       </div>
 
+      {charges?.minimumContributionAmount != null && selectedAmount > 0 && selectedAmount < charges.minimumContributionAmount && (
+        <p className="text-sm text-red-500 font-supreme mt-2 mb-2">
+          Minimum contribution is {currency} {charges.minimumContributionAmount}
+        </p>
+      )}
       <button
         onClick={handleContribute}
         disabled={

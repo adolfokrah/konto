@@ -106,7 +106,9 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
       donorCount: contributions.totalDocs,
       contributorAvatars,
       systemSettings: {
-        collectionFee: systemSettings.collectionFee,
+        mobileMoneyCollectionFee: (systemSettings as any).mobileMoneyCollectionFee ?? 1.95,
+        bankTransferCollectionFee: (systemSettings as any).bankTransferCollectionFee ?? 1.95,
+        cardCollectionFee: (systemSettings as any).cardCollectionFee ?? 1.95,
       },
     })
   } catch (error) {

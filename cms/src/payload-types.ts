@@ -87,6 +87,11 @@ export interface Config {
     emails: Email;
     cashbacks: Cashback;
     'sms-campaigns': SmsCampaign;
+    'payment-methods': PaymentMethod;
+    'collection-fees': CollectionFee;
+    'payout-fees': PayoutFee;
+    'referral-bonus-settings': ReferralBonusSetting;
+    'settlement-delays': SettlementDelay;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -118,6 +123,11 @@ export interface Config {
     emails: EmailsSelect<false> | EmailsSelect<true>;
     cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
     'sms-campaigns': SmsCampaignsSelect<false> | SmsCampaignsSelect<true>;
+    'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
+    'collection-fees': CollectionFeesSelect<false> | CollectionFeesSelect<true>;
+    'payout-fees': PayoutFeesSelect<false> | PayoutFeesSelect<true>;
+    'referral-bonus-settings': ReferralBonusSettingsSelect<false> | ReferralBonusSettingsSelect<true>;
+    'settlement-delays': SettlementDelaysSelect<false> | SettlementDelaysSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1416,7 +1426,7 @@ export interface Transaction {
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
-  paymentMethod?: ('mobile-money' | 'bank' | 'cash' | 'card' | 'apple-pay') | null;
+  paymentMethod?: string | null;
   mobileMoneyProvider?: string | null;
   /**
    * Account number for bank transfers
@@ -2094,6 +2104,132 @@ export interface SmsCampaign {
   createdAt: string;
 }
 /**
+ * Payment methods available per country.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods".
+ */
+export interface PaymentMethod {
+  id: string;
+  /**
+   * e.g. mobile-money, bank, card, cash, apple-pay
+   */
+  type: string;
+  country: ('ghana' | 'nigeria')[];
+  /**
+   * Uncheck to disable this payment method for the country.
+   */
+  isActive?: boolean | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Collection fee rates per country and payment method.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collection-fees".
+ */
+export interface CollectionFee {
+  id: string;
+  country: 'ghana' | 'nigeria';
+  /**
+   * The payment method this fee applies to.
+   */
+  paymentMethod: string | PaymentMethod;
+  /**
+   * Total fee percentage charged to the contributor (%).
+   */
+  fee: number;
+  /**
+   * Hogapay's share of the fee (%).
+   */
+  hogapaySplit: number;
+  /**
+   * Minimum contribution amount allowed for this payment method.
+   */
+  minimumContributionAmount: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Payout fee rates per country and payment method.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payout-fees".
+ */
+export interface PayoutFee {
+  id: string;
+  country: 'ghana' | 'nigeria';
+  /**
+   * The payment method this fee applies to.
+   */
+  paymentMethod: string | PaymentMethod;
+  /**
+   * Percentage fee on payouts (%).
+   */
+  fee: number;
+  /**
+   * Hogapay's share of the fee (%).
+   */
+  hogapaySplit: number;
+  /**
+   * Payouts below this amount attract an additional flat fee.
+   */
+  flatFeeThreshold: number;
+  /**
+   * Flat fee added when payout is below the threshold.
+   */
+  flatFee: number;
+  /**
+   * Minimum payout amount allowed for this payment method.
+   */
+  minimumPayoutAmount: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Referral bonus rates per country.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-bonus-settings".
+ */
+export interface ReferralBonusSetting {
+  id: string;
+  country: 'ghana' | 'nigeria';
+  /**
+   * Bonus paid when the referred user's jar gets its first contribution.
+   */
+  firstContributionBonus: number;
+  /**
+   * % of Hogapay's transfer fee shared with the referrer.
+   */
+  feeShare: number;
+  /**
+   * Minimum referral balance required to initiate a withdrawal.
+   */
+  minWithdrawal: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Settlement delay per country.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settlement-delays".
+ */
+export interface SettlementDelay {
+  id: string;
+  country: 'ghana' | 'nigeria';
+  /**
+   * Delay before contributions are settled (e.g. 0.033 ≈ 2 min).
+   */
+  hours: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -2397,6 +2533,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sms-campaigns';
         value: string | SmsCampaign;
+      } | null)
+    | ({
+        relationTo: 'payment-methods';
+        value: string | PaymentMethod;
+      } | null)
+    | ({
+        relationTo: 'collection-fees';
+        value: string | CollectionFee;
+      } | null)
+    | ({
+        relationTo: 'payout-fees';
+        value: string | PayoutFee;
+      } | null)
+    | ({
+        relationTo: 'referral-bonus-settings';
+        value: string | ReferralBonusSetting;
+      } | null)
+    | ({
+        relationTo: 'settlement-delays';
+        value: string | SettlementDelay;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -3399,6 +3555,69 @@ export interface SmsCampaignsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods_select".
+ */
+export interface PaymentMethodsSelect<T extends boolean = true> {
+  type?: T;
+  country?: T;
+  isActive?: T;
+  slug?: T;
+  slugLock?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collection-fees_select".
+ */
+export interface CollectionFeesSelect<T extends boolean = true> {
+  country?: T;
+  paymentMethod?: T;
+  fee?: T;
+  hogapaySplit?: T;
+  minimumContributionAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payout-fees_select".
+ */
+export interface PayoutFeesSelect<T extends boolean = true> {
+  country?: T;
+  paymentMethod?: T;
+  fee?: T;
+  hogapaySplit?: T;
+  flatFeeThreshold?: T;
+  flatFee?: T;
+  minimumPayoutAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-bonus-settings_select".
+ */
+export interface ReferralBonusSettingsSelect<T extends boolean = true> {
+  country?: T;
+  firstContributionBonus?: T;
+  feeShare?: T;
+  minWithdrawal?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settlement-delays_select".
+ */
+export interface SettlementDelaysSelect<T extends boolean = true> {
+  country?: T;
+  hours?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3763,21 +3982,61 @@ export interface Footer {
 export interface SystemSetting {
   id: string;
   /**
-   * Total fee on contributions (e.g., 1.95%). Paid by the contributor.
+   * Total fee on mobile money contributions (e.g., 1.95%).
    */
-  collectionFee: number;
+  mobileMoneyCollectionFee: number;
   /**
-   * Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.
+   * Hogapay's share of the mobile money collection fee.
    */
-  hogapayCollectionFeePercent: number;
+  mobileMoneyHogapayFeePercent: number;
   /**
-   * Total fee on payouts (e.g., 1%). Deducted from the payout amount.
+   * Total fee on bank transfer contributions (e.g., 1.95%).
+   */
+  bankTransferCollectionFee: number;
+  /**
+   * Hogapay's share of the bank transfer collection fee.
+   */
+  bankTransferHogapayFeePercent: number;
+  /**
+   * Total fee on card contributions (e.g., 1.95%).
+   */
+  cardCollectionFee: number;
+  /**
+   * Hogapay's share of the card collection fee.
+   */
+  cardHogapayFeePercent: number;
+  /**
+   * Percentage fee on mobile money payouts.
    */
   transferFeePercentage: number;
   /**
-   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   * Hogapay's share of the mobile money transfer fee.
    */
   hogapayTransferFeePercent: number;
+  /**
+   * Mobile money payouts below this amount attract an extra flat fee.
+   */
+  payoutFlatFeeThreshold: number;
+  /**
+   * Extra flat fee for mobile money payouts below the threshold.
+   */
+  payoutFlatFeeAmount: number;
+  /**
+   * Percentage fee on bank payouts.
+   */
+  bankPayoutFeePercentage: number;
+  /**
+   * Hogapay's share of the bank transfer fee.
+   */
+  hogapayBankPayoutFeePercent: number;
+  /**
+   * Bank payouts below this amount attract an extra flat fee.
+   */
+  bankPayoutFlatFeeThreshold: number;
+  /**
+   * Extra flat fee for bank payouts below the threshold.
+   */
+  bankPayoutFlatFeeAmount: number;
   /**
    * Percentage deducted from the refund amount (e.g., 1%). Contributor receives refundAmount − fee.
    */
@@ -3790,6 +4049,10 @@ export interface SystemSetting {
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
+  /**
+   * Minimum amount a jar creator can withdraw (e.g., 10 = GHS 10.00).
+   */
+  minimumPayoutAmount: number;
   /**
    * Flat GHS amount paid to the referrer when a referred user's jar receives its first contribution.
    */
@@ -3902,13 +4165,24 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "system-settings_select".
  */
 export interface SystemSettingsSelect<T extends boolean = true> {
-  collectionFee?: T;
-  hogapayCollectionFeePercent?: T;
+  mobileMoneyCollectionFee?: T;
+  mobileMoneyHogapayFeePercent?: T;
+  bankTransferCollectionFee?: T;
+  bankTransferHogapayFeePercent?: T;
+  cardCollectionFee?: T;
+  cardHogapayFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
+  payoutFlatFeeThreshold?: T;
+  payoutFlatFeeAmount?: T;
+  bankPayoutFeePercentage?: T;
+  hogapayBankPayoutFeePercent?: T;
+  bankPayoutFlatFeeThreshold?: T;
+  bankPayoutFlatFeeAmount?: T;
   refundFeePercentage?: T;
   minimumContributionAmount?: T;
   settlementDelayHours?: T;
+  minimumPayoutAmount?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;
   referralMinWithdrawalAmount?: T;

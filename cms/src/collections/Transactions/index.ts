@@ -92,14 +92,10 @@ export const Transactions: CollectionConfig = {
     },
     {
       name: 'paymentMethod',
-      type: 'select',
-      options: [
-        { label: 'Mobile Money', value: 'mobile-money' },
-        { label: 'Bank Transfer', value: 'bank' },
-        { label: 'Cash', value: 'cash' },
-        { label: 'Card', value: 'card' },
-        { label: 'Apple pay', value: 'apple-pay' },
-      ],
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
     },
     {
       name: 'mobileMoneyProvider',

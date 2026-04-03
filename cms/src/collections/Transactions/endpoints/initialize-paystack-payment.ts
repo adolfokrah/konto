@@ -24,6 +24,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       remarks,
       customFieldValues,
       channels,
+      paymentMethod,
     } = req.data || {}
 
     if (!jarId || !contributorName || !amount || !contributorPhoneNumber) {
@@ -55,7 +56,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       )
     }
 
-    const jar = await req.payload.findByID({ collection: 'jars', id: jarId })
+    const jar = await req.payload.findByID({ collection: 'jars', id: jarId, depth: 1 })
 
     if (!jar) {
       return Response.json({ success: false, message: 'Jar not found' }, { status: 404 })
@@ -110,10 +111,14 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
     const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
       | 'contributor'
       | 'jar-creator'
+    const creatorCountry =
+      typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
     const charges = await getCharges(req.payload, {
       amount,
       type: 'contribution',
       collectionFeePaidBy: feePaidBy,
+      paymentMethod: (paymentMethod as string) || undefined,
+      country: creatorCountry,
     })
 
     // Create pending transaction record with charges already calculated

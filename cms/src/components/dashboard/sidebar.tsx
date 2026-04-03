@@ -14,10 +14,12 @@ import {
   Flag,
   Bell,
   RotateCcw,
-  Wallet,
   Gift,
   Share2,
   Settings,
+  CreditCard,
+  Layers,
+  Clock,
   LogOut,
   MoreHorizontal,
   ShieldAlert,
@@ -74,6 +76,11 @@ const navGroups = [
       { label: 'Auto Refunds', href: '/dashboard/auto-refunds', icon: RefreshCcwDot },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
       { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
+      { label: 'Payment Methods', href: '/dashboard/payment-methods', icon: CreditCard },
+      { label: 'Collection Fees', href: '/dashboard/collection-fees', icon: Layers },
+      { label: 'Payout Fees', href: '/dashboard/payout-fees', icon: Layers },
+      { label: 'Referral Bonus', href: '/dashboard/referral-bonus-settings', icon: Gift },
+      { label: 'Settlement Delays', href: '/dashboard/settlement-delays', icon: Clock },
     ],
   },
   {
@@ -298,12 +305,6 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                   <Link href="/dashboard/profile" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     Account
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    System Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

@@ -12,7 +12,8 @@ const bankCodeMap: Record<string, string> = {
 export const payoutPaystack = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { jarId } = req.data || {}
+    const { jarId, payoutType = 'mobile-money' } = req.data || {}
+    const isBank = payoutType === 'bank'
 
     if (!jarId) {
       return Response.json({ success: false, message: 'Jar ID is required' }, { status: 400 })
@@ -70,8 +71,9 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       )
     }
 
-    // Check for pending payout and calculate balance in parallel
-    const [pendingPayout, { balance: netBalance }] = await Promise.all([
+    // Fetch system settings and check pending payout + balance in parallel
+    const [settings, pendingPayout, { balance: netBalance }] = await Promise.all([
+      req.payload.findGlobal({ slug: 'system-settings', overrideAccess: true }),
       req.payload.find({
         collection: 'transactions',
         where: {
@@ -85,7 +87,15 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       getJarBalance(req.payload, jarId),
     ])
 
-    const payoutCharges = await getCharges(req.payload, { amount: netBalance, type: 'payout' })
+    const creatorCountry =
+      typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
+
+    const payoutCharges = await getCharges(req.payload, {
+      amount: netBalance,
+      type: 'payout',
+      paymentMethod: isBank ? 'bank' : 'mobile-money',
+      country: creatorCountry,
+    })
     const feeAmount = payoutCharges.processingFee
     const netAmount = payoutCharges.netAmount
     const transferFeePercentage =
@@ -105,9 +115,13 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       )
     }
 
-    if (netBalance < 1) {
+    const minimumPayoutAmount = (settings as any)?.minimumPayoutAmount ?? 10
+    if (netBalance < minimumPayoutAmount) {
       return Response.json(
-        { success: false, message: 'Minimum payout amount is GHS 1.00' },
+        {
+          success: false,
+          message: `Minimum payout amount is GHS ${minimumPayoutAmount.toFixed(2)}`,
+        },
         { status: 400 },
       )
     }
@@ -136,10 +150,10 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         collection: 'transactions',
         data: {
           paymentStatus: 'awaiting-approval',
-          paymentMethod: 'mobile-money',
+          paymentMethod: isBank ? 'bank' : 'mobile-money',
           transactionReference: '',
           jar: jarId,
-          mobileMoneyProvider: user.bank,
+          mobileMoneyProvider: isBank ? undefined : user.bank,
           amountContributed: -netBalance,
           collector: user.id,
           contributorPhoneNumber: user.accountNumber,
@@ -200,10 +214,10 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       collection: 'transactions',
       data: {
         paymentStatus: 'pending',
-        paymentMethod: 'mobile-money',
+        paymentMethod: isBank ? 'bank' : 'mobile-money',
         transactionReference: '',
         jar: jarId,
-        mobileMoneyProvider: user.bank,
+        mobileMoneyProvider: isBank ? undefined : user.bank,
         amountContributed: -netBalance,
         collector: user.id,
         contributorPhoneNumber: user.accountNumber,

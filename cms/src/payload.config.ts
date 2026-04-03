@@ -40,6 +40,11 @@ import { Disputes } from './collections/Disputes'
 import { Emails } from './collections/Emails'
 import { Cashbacks } from './collections/Cashbacks'
 import { SmsCampaigns } from './collections/SmsCampaigns'
+import { PaymentMethods } from './collections/PaymentMethods'
+import { CollectionFees } from './collections/CollectionFees'
+import { PayoutFees } from './collections/PayoutFees'
+import { ReferralBonusSettings } from './collections/ReferralBonusSettings'
+import { SettlementDelays } from './collections/ContributionSettings'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendSmsCampaignTask } from './tasks/send-sms-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
@@ -110,6 +115,11 @@ export default buildConfig({
     Emails,
     Cashbacks,
     SmsCampaigns,
+    PaymentMethods,
+    CollectionFees,
+    PayoutFees,
+    ReferralBonusSettings,
+    SettlementDelays,
   ],
   cors: [
     getServerSideURL(),

@@ -111,7 +111,6 @@ export default async function Page({
       { cache: 'no-store' },
     )
 
-
     const jarData = await jarRes.json()
     const jarWithBalance = jarData?.data
     const systemSettings = jarData?.systemSettings
@@ -120,6 +119,33 @@ export default async function Page({
 
     if (!jarWithBalance) {
       throw new Error('Jar not found')
+    }
+
+    const creatorCountry =
+      typeof jarWithBalance?.creator === 'object' ? jarWithBalance.creator.country : null
+
+    let paymentMethods: { id: string; type: string }[] = []
+    if (creatorCountry) {
+      try {
+        const pmRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? ''}/api/payment-methods?where[country][equals]=${encodeURIComponent(creatorCountry)}&where[isActive][equals]=true&limit=20`,
+          { cache: 'no-store' },
+        )
+        if (pmRes.ok) {
+          const pmData = await pmRes.json()
+          const priority = (type: string) => {
+            const t = type.toLowerCase()
+            if (t.includes('mobile')) return 0
+            if (t.includes('card')) return 1
+            if (t.includes('bank')) return 2
+            return 3
+          }
+          paymentMethods = (pmData?.docs ?? [])
+            .filter((pm: any) => pm.type?.toLowerCase() !== 'cash')
+            .map((pm: any) => ({ id: pm.id, type: pm.type }))
+            .sort((a: any, b: any) => priority(a.type) - priority(b.type))
+        }
+      } catch (_) {}
     }
 
     // Get the image URL if it exists
@@ -283,8 +309,9 @@ export default async function Page({
               jarName={jarWithBalance.name}
               collectorId={effectiveCollectorId}
               allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
-              transactionFeePercentage={systemSettings?.collectionFee || 1.95}
+              transactionFeePercentage={(systemSettings as any)?.cardCollectionFee || 1.95}
               customFields={jarWithBalance.customFields || []}
+              paymentMethods={paymentMethods}
             />
 
             <Separator />

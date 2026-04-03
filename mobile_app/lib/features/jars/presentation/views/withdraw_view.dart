@@ -47,11 +47,16 @@ class _WithdrawViewState extends State<WithdrawView> {
 
   Future<void> _loadSystemSettings() async {
     try {
+      final authState = context.read<AuthBloc>().state;
+      final country = authState is AuthAuthenticated
+          ? authState.user.country
+          : null;
+
       final apiProvider = SystemSettingsApiProvider(
         dio: getIt<Dio>(),
         userStorageService: getIt<UserStorageService>(),
       );
-      final settings = await apiProvider.getSystemSettings();
+      final settings = await apiProvider.getSystemSettings(country: country);
       if (mounted) {
         setState(() {
           _systemSettings = settings;
@@ -84,6 +89,18 @@ class _WithdrawViewState extends State<WithdrawView> {
   /// Step 1: Send OTP to user's phone
   Future<void> _handleWithdraw() async {
     if (jarId == null || _isSendingOtp) return;
+
+    final balance = payoutBalance ?? 0.0;
+    final minPayout = _systemSettings.minimumPayoutAmount;
+    if (balance < minPayout) {
+      AppSnackBar.show(
+        context,
+        message:
+            'Minimum payout amount is ${CurrencyUtils.getCurrencySymbol(currency ?? 'GHS')} ${minPayout.toStringAsFixed(2)}',
+        type: SnackBarType.error,
+      );
+      return;
+    }
 
     final authState = context.read<AuthBloc>().state;
 
@@ -222,8 +239,10 @@ class _WithdrawViewState extends State<WithdrawView> {
     final localizations = AppLocalizations.of(context)!;
     final balance = payoutBalance ?? 0.0;
     final cur = currency ?? 'GHS';
-    final double transferCharges = _systemSettings.calculateTransferFee(balance);
-    final double total = _systemSettings.calculateNetPayout(balance);
+    // Fees are calculated server-side based on country + payment method.
+    // Show the gross balance; the net amount will be confirmed after the payout is processed.
+    final double transferCharges = 0.0;
+    final double total = balance;
 
     // Check KYC before allowing transfer
     final authState = context.read<AuthBloc>().state;

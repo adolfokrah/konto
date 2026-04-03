@@ -35,23 +35,30 @@ export const getCharges = async (req: PayloadRequest) => {
 
     const jarId = url.searchParams.get('jarId')
     let feePaidBy: 'contributor' | 'jar-creator' = 'contributor'
+    let creatorCountry: string | undefined
     if (jarId) {
       try {
         const jar = await req.payload.findByID({
           collection: 'jars',
           id: jarId,
-          depth: 0,
+          depth: 1,
           overrideAccess: true,
         })
         feePaidBy =
           ((jar as any)?.collectionFeePaidBy as 'contributor' | 'jar-creator') || 'contributor'
+        const creator = (jar as any)?.creator
+        creatorCountry = typeof creator === 'object' ? creator?.country : undefined
       } catch (_) {}
     }
+
+    const paymentMethod = url.searchParams.get('paymentMethod') ?? undefined
 
     const charges = await calculateCharges(req.payload, {
       amount: amountContributed,
       type: 'contribution',
       collectionFeePaidBy: feePaidBy,
+      paymentMethod,
+      country: creatorCountry,
     })
 
     return Response.json({ success: true, ...charges, collectionFeePaidBy: feePaidBy })

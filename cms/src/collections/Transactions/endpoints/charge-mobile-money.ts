@@ -109,6 +109,7 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
       amount,
       type: 'contribution',
       collectionFeePaidBy: feePaidBy,
+      paymentMethod: 'mobile-money',
     })
 
     // Create pending transaction record with charges already calculated

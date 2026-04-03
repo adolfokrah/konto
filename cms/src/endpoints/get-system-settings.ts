@@ -1,38 +1,72 @@
 import type { PayloadRequest } from 'payload'
 
 /**
- * Get System Settings Endpoint
+ * GET /api/system-settings?country=ghana
  *
- * Returns public system settings like collection fee and transfer fee percentages
- * Used by mobile app to calculate fees and display relevant information
+ * Returns per-country settings: min contribution, min payout, settlement delay.
+ * - settlementDelayHours from settlement-delays collection
+ * - minimumContributionAmount from collection-fees (minimum across all methods for the country)
+ * - minimumPayoutAmount from payout-fees (minimum across all methods for the country)
  */
 export const getSystemSettings = async (req: PayloadRequest) => {
   try {
     const { payload } = req
+    const url = new URL(req.url || '', 'http://localhost')
+    const country = url.searchParams.get('country')?.toLowerCase()
 
-    // Fetch system settings global
-    const settings = await payload.findGlobal({
-      slug: 'system-settings',
-      overrideAccess: true, // Public endpoint - bypass auth for mobile app access
-    })
+    let minimumContributionAmount = 2
+    let minimumPayoutAmount = 10
+    let settlementDelayHours = 0.033
 
-    if (!settings) {
-      return Response.json(
-        {
-          success: false,
-          message: 'System settings not found',
-        },
-        { status: 404 },
-      )
+    if (country) {
+      const [delayResult, collectionFeesResult, payoutFeesResult] = await Promise.all([
+        payload.find({
+          collection: 'settlement-delays' as any,
+          where: { country: { equals: country } },
+          limit: 1,
+          overrideAccess: true,
+        }),
+        payload.find({
+          collection: 'collection-fees' as any,
+          where: { country: { equals: country } },
+          limit: 100,
+          overrideAccess: true,
+        }),
+        payload.find({
+          collection: 'payout-fees' as any,
+          where: { country: { equals: country } },
+          limit: 100,
+          overrideAccess: true,
+        }),
+      ])
+
+      const delayDoc = delayResult.docs[0] as any
+      if (delayDoc) {
+        settlementDelayHours = delayDoc.hours ?? settlementDelayHours
+      }
+
+      const collectionFeeAmounts = (collectionFeesResult.docs as any[])
+        .map((d) => d.minimumContributionAmount)
+        .filter((v) => v != null)
+      if (collectionFeeAmounts.length > 0) {
+        minimumContributionAmount = Math.min(...collectionFeeAmounts)
+      }
+
+      const payoutFeeAmounts = (payoutFeesResult.docs as any[])
+        .map((d) => d.minimumPayoutAmount)
+        .filter((v) => v != null)
+      if (payoutFeeAmounts.length > 0) {
+        minimumPayoutAmount = Math.min(...payoutFeeAmounts)
+      }
     }
 
-    // Return public settings
     return Response.json(
       {
         success: true,
         data: {
-          collectionFee: settings.collectionFee ?? 1.95,
-          transferFeePercentage: settings.transferFeePercentage ?? 1,
+          minimumContributionAmount,
+          minimumPayoutAmount,
+          settlementDelayHours,
         },
       },
       { status: 200 },
@@ -40,11 +74,7 @@ export const getSystemSettings = async (req: PayloadRequest) => {
   } catch (error: any) {
     console.error('Error fetching system settings:', error)
     return Response.json(
-      {
-        success: false,
-        message: 'Failed to fetch system settings',
-        error: error.message,
-      },
+      { success: false, message: 'Failed to fetch system settings', error: error.message },
       { status: 500 },
     )
   }

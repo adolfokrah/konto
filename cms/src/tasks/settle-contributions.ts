@@ -23,22 +23,29 @@ export const settleContributionsTask = {
     try {
       const payload = args.req?.payload || args.payload
 
-      // Fetch system settings to get settlement delay
-      const systemSettings = await payload.findGlobal({
-        slug: 'system-settings',
+      // Build a per-country settlement delay map from contribution-settings collection
+      const DEFAULT_DELAY_HOURS = 0.033
+      const contributionSettingsResult = await payload.find({
+        collection: 'settlement-delays' as any,
+        limit: 100,
         overrideAccess: true,
       })
+      const delayByCountry: Record<string, number> = {}
+      for (const doc of contributionSettingsResult.docs as any[]) {
+        if (doc.country && doc.hours != null) {
+          delayByCountry[doc.country.toLowerCase()] = doc.hours
+        }
+      }
 
-      // Get settlement delay in hours (default to ~2 minutes if not set)
-      const settlementDelayHours = systemSettings?.settlementDelayHours || 0.033
+      // Use the minimum delay as the DB query cutoff to cast the widest net,
+      // then filter per contribution in memory
+      const allDelays = Object.values(delayByCountry)
+      const minDelayHours = allDelays.length > 0 ? Math.min(...allDelays) : DEFAULT_DELAY_HOURS
+      const cutoffTime = new Date(Date.now() - minDelayHours * 60 * 60 * 1000).toISOString()
 
-      // Convert hours to milliseconds
-      const settlementDelayMs = settlementDelayHours * 60 * 60 * 1000
-
-      // Calculate the cutoff time
-      const cutoffTime = new Date(Date.now() - settlementDelayMs).toISOString()
-
-      console.log(`Settlement delay: ${settlementDelayHours} hours (${settlementDelayMs}ms)`)
+      console.log(
+        `Settlement delays by country: ${JSON.stringify(delayByCountry)}, cutoff: ${cutoffTime}`,
+      )
 
       // Find all unsettled completed mobile money contributions older than cutoff time
       const unsettledContributions = await payload.find({
@@ -84,9 +91,19 @@ export const settleContributionsTask = {
         ),
       )
 
-      const eligibleContributions = unsettledContributions.docs.filter(
-        (c: any) => !refundingIds.has(c.id),
-      )
+      const now = Date.now()
+      const eligibleContributions = unsettledContributions.docs.filter((c: any) => {
+        if (refundingIds.has(c.id)) return false
+
+        // Determine settlement delay for this contribution's jar creator country
+        const country =
+          typeof c.jar?.creator === 'object' ? c.jar.creator?.country?.toLowerCase() : undefined
+        const delayHours =
+          country && delayByCountry[country] != null ? delayByCountry[country] : DEFAULT_DELAY_HOURS
+        const delayMs = delayHours * 60 * 60 * 1000
+        const createdAt = new Date(c.createdAt).getTime()
+        return now - createdAt >= delayMs
+      })
 
       if (eligibleContributions.length === 0) {
         return {

@@ -23,7 +23,9 @@ type Props = {
     youReceiveLabel?: string
   }
   feeStructure?: {
-    collectionFee?: number
+    mobileMoneyCollectionFee?: number
+    bankTransferCollectionFee?: number
+    cardCollectionFee?: number
     transferFeePercentage?: number
   }
   features?: Feature[]
@@ -58,7 +60,7 @@ export const PricingBlock: React.FC<Props> = ({
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {
-          setCollectionFee(res.data.collectionFee ?? 1.95)
+          setCollectionFee(res.data.mobileMoneyCollectionFee ?? 1.95)
           setTransferFee(res.data.transferFeePercentage ?? 1)
         }
       })

@@ -14,17 +14,17 @@ export const SystemSettings: GlobalConfig = {
     // ── Collection (Contributions) ──
     {
       type: 'collapsible',
-      label: 'Collection',
+      label: 'Collection — Mobile Money',
       admin: {
         initCollapsed: false,
-        description: 'Fees charged on contributions/collections.',
+        description: 'Fees charged on mobile money contributions.',
       },
       fields: [
         {
           type: 'row',
           fields: [
             {
-              name: 'collectionFee',
+              name: 'mobileMoneyCollectionFee',
               label: 'Fee (%)',
               type: 'number',
               required: true,
@@ -32,13 +32,13 @@ export const SystemSettings: GlobalConfig = {
               min: 0,
               max: 100,
               admin: {
-                description: 'Total fee on contributions (e.g., 1.95%). Paid by the contributor.',
+                description: 'Total fee on mobile money contributions (e.g., 1.95%).',
                 step: 0.01,
                 width: '50%',
               },
             },
             {
-              name: 'hogapayCollectionFeePercent',
+              name: 'mobileMoneyHogapayFeePercent',
               label: 'Hogapay Split (%)',
               type: 'number',
               required: true,
@@ -46,8 +46,7 @@ export const SystemSettings: GlobalConfig = {
               min: 0,
               max: 100,
               admin: {
-                description:
-                  "Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.",
+                description: "Hogapay's share of the mobile money collection fee.",
                 step: 0.01,
                 width: '50%',
               },
@@ -57,13 +56,101 @@ export const SystemSettings: GlobalConfig = {
       ],
     },
 
-    // ── Transfer (Payouts) ──
     {
       type: 'collapsible',
-      label: 'Transfer (Payout)',
+      label: 'Collection — Bank Transfer',
       admin: {
         initCollapsed: false,
-        description: 'Fees charged on withdrawals/payouts.',
+        description: 'Fees charged on bank transfer contributions.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'bankTransferCollectionFee',
+              label: 'Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1.95,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Total fee on bank transfer contributions (e.g., 1.95%).',
+                step: 0.01,
+                width: '50%',
+              },
+            },
+            {
+              name: 'bankTransferHogapayFeePercent',
+              label: 'Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.8,
+              min: 0,
+              max: 100,
+              admin: {
+                description: "Hogapay's share of the bank transfer collection fee.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      type: 'collapsible',
+      label: 'Collection — Card',
+      admin: {
+        initCollapsed: false,
+        description: 'Fees charged on card contributions.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'cardCollectionFee',
+              label: 'Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1.95,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Total fee on card contributions (e.g., 1.95%).',
+                step: 0.01,
+                width: '50%',
+              },
+            },
+            {
+              name: 'cardHogapayFeePercent',
+              label: 'Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.8,
+              min: 0,
+              max: 100,
+              admin: {
+                description: "Hogapay's share of the card collection fee.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    // ── Transfer (Payouts) — Mobile Money ──
+    {
+      type: 'collapsible',
+      label: 'Transfer (Payout) — Mobile Money',
+      admin: {
+        initCollapsed: false,
+        description: 'Fees charged on mobile money withdrawals.',
       },
       fields: [
         {
@@ -78,7 +165,7 @@ export const SystemSettings: GlobalConfig = {
               min: 0,
               max: 100,
               admin: {
-                description: 'Total fee on payouts (e.g., 1%). Deducted from the payout amount.',
+                description: 'Percentage fee on mobile money payouts.',
                 step: 0.1,
                 width: '50%',
               },
@@ -92,9 +179,115 @@ export const SystemSettings: GlobalConfig = {
               min: 0,
               max: 100,
               admin: {
-                description:
-                  "Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.",
+                description: "Hogapay's share of the mobile money transfer fee.",
                 step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'payoutFlatFeeThreshold',
+              label: 'Flat Fee Threshold (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 100,
+              min: 0,
+              admin: {
+                description: 'Mobile money payouts below this amount attract an extra flat fee.',
+                step: 1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'payoutFlatFeeAmount',
+              label: 'Flat Fee (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              min: 0,
+              admin: {
+                description: 'Extra flat fee for mobile money payouts below the threshold.',
+                step: 0.5,
+                width: '50%',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    // ── Transfer (Payouts) — Bank ──
+    {
+      type: 'collapsible',
+      label: 'Transfer (Payout) — Bank',
+      admin: {
+        initCollapsed: false,
+        description: 'Fees charged on bank transfer withdrawals.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'bankPayoutFeePercentage',
+              label: 'Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Percentage fee on bank payouts.',
+                step: 0.1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'hogapayBankPayoutFeePercent',
+              label: 'Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.5,
+              min: 0,
+              max: 100,
+              admin: {
+                description: "Hogapay's share of the bank transfer fee.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'bankPayoutFlatFeeThreshold',
+              label: 'Flat Fee Threshold (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 100,
+              min: 0,
+              admin: {
+                description: 'Bank payouts below this amount attract an extra flat fee.',
+                step: 1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'bankPayoutFlatFeeAmount',
+              label: 'Flat Fee (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              min: 0,
+              admin: {
+                description: 'Extra flat fee for bank payouts below the threshold.',
+                step: 0.5,
                 width: '50%',
               },
             },
@@ -164,17 +357,35 @@ export const SystemSettings: GlobalConfig = {
       },
       fields: [
         {
-          name: 'settlementDelayHours',
-          label: 'Settlement Delay (Hours)',
-          type: 'number',
-          required: true,
-          defaultValue: 0.033, // ~2 minutes (2/60 hours)
-          min: 0,
-          admin: {
-            description: 'Delay before contributions are settled (e.g., 0.033 = ~2 min).',
-            step: 0.001,
-            width: '50%',
-          },
+          type: 'row',
+          fields: [
+            {
+              name: 'settlementDelayHours',
+              label: 'Settlement Delay (Hours)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.033, // ~2 minutes (2/60 hours)
+              min: 0,
+              admin: {
+                description: 'Delay before contributions are settled (e.g., 0.033 = ~2 min).',
+                step: 0.001,
+                width: '50%',
+              },
+            },
+            {
+              name: 'minimumPayoutAmount',
+              label: 'Minimum Payout Amount (GHS)',
+              type: 'number',
+              required: true,
+              defaultValue: 10,
+              min: 0,
+              admin: {
+                description: 'Minimum amount a jar creator can withdraw (e.g., 10 = GHS 10.00).',
+                step: 0.5,
+                width: '50%',
+              },
+            },
+          ],
         },
       ],
     },
