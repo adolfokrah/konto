@@ -1487,6 +1487,13 @@ export interface Transaction {
    */
   collector?: (string | null) | User;
   /**
+   * Snapshot of collector identity at transaction time — preserved even if account is deleted
+   */
+  collectorSnapshot?: {
+    name?: string | null;
+    email?: string | null;
+  };
+  /**
    * Check if this contribution was made via a payment link
    */
   viaPaymentLink?: boolean | null;
@@ -3104,6 +3111,12 @@ export interface TransactionsSelect<T extends boolean = true> {
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
   collector?: T;
+  collectorSnapshot?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+      };
   viaPaymentLink?: T;
   webhookResponse?: T;
   customFieldValues?: T;
