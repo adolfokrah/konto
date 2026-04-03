@@ -114,7 +114,12 @@ export default buildConfig({
     Cashbacks,
     SmsCampaigns,
   ],
-  cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
+  cors: [
+    getServerSideURL(),
+    'https://hogapay.com',
+    'https://www.usehoga.com',
+    'https://usehoga.com',
+  ].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
     url:
