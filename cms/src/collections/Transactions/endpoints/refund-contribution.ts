@@ -101,8 +101,19 @@ export const refundContribution = async (req: PayloadRequest) => {
       )
     }
 
-    // Get jar ID
+    // Get jar ID and creator country for fee lookup
     const jarId = typeof originalTx.jar === 'string' ? originalTx.jar : (originalTx.jar as any)?.id
+    let creatorCountry: string | undefined
+    try {
+      const jar = await req.payload.findByID({
+        collection: 'jars',
+        id: jarId,
+        depth: 1,
+        overrideAccess: true,
+      })
+      const creator = jar?.creator as any
+      creatorCountry = creator?.country
+    } catch (_) {}
 
     // Refund base is amountDue (what the jar actually received after PSP fees)
     // Using amountContributed would mean refunding more than the jar holds
@@ -110,6 +121,7 @@ export const refundContribution = async (req: PayloadRequest) => {
     const refundCharges = await getCharges(req.payload, {
       amount: amountToRefund,
       type: 'refund',
+      country: creatorCountry,
     })
 
     // Create refund record with pending status (awaiting approval)

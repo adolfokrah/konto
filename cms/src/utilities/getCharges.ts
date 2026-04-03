@@ -47,11 +47,22 @@ export async function getCharges(
     country?: string
   },
 ): Promise<ChargesBreakdown> {
-  const settings = await payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
-
   // ── REFUND ────────────────────────────────────────────────────────────────
   if (type === 'refund') {
-    const refundFeePercentage = (settings as any)?.refundFeePercentage ?? 1
+    let refundFeePercentage = 1
+    if (country) {
+      try {
+        const result = await payload.find({
+          collection: 'refund-fees' as any,
+          where: { country: { equals: country.toLowerCase() } },
+          limit: 1,
+          overrideAccess: true,
+        })
+        if (result.docs.length > 0) {
+          refundFeePercentage = (result.docs[0] as any).fee
+        }
+      } catch (_) {}
+    }
     const processingFee = Math.round(amount * (refundFeePercentage / 100) * 100) / 100
     const netAmount = Math.round((amount - processingFee) * 100) / 100
     return {
@@ -65,15 +76,12 @@ export async function getCharges(
 
   // ── PAYOUT ────────────────────────────────────────────────────────────────
   if (type === 'payout') {
-    const s = settings as any
+    const feeRecord = await resolvePayoutFee(payload, country, paymentMethod)
 
     let transferFeePercentage: number
     let hogapayTransferFeePercent: number
     let flatFeeThreshold: number
     let flatFeeAmount: number
-
-    // Try country+paymentMethod based payout-fees collection first
-    const feeRecord = await resolvePayoutFee(payload, country, paymentMethod)
 
     if (feeRecord) {
       transferFeePercentage = feeRecord.fee
@@ -81,20 +89,11 @@ export async function getCharges(
       flatFeeThreshold = feeRecord.flatFeeThreshold
       flatFeeAmount = feeRecord.flatFee
     } else {
-      // Fall back to system-settings
-      const isBank = paymentMethod === 'bank' || paymentMethod === 'bank-transfer'
-      transferFeePercentage = isBank
-        ? (s?.bankPayoutFeePercentage ?? s?.transferFeePercentage ?? 0)
-        : (s?.transferFeePercentage ?? 0)
-      hogapayTransferFeePercent = isBank
-        ? (s?.hogapayBankPayoutFeePercent ?? s?.hogapayTransferFeePercent ?? 0)
-        : (s?.hogapayTransferFeePercent ?? 0)
-      flatFeeThreshold = isBank
-        ? (s?.bankPayoutFlatFeeThreshold ?? s?.payoutFlatFeeThreshold ?? 100)
-        : (s?.payoutFlatFeeThreshold ?? 100)
-      flatFeeAmount = isBank
-        ? (s?.bankPayoutFlatFeeAmount ?? s?.payoutFlatFeeAmount ?? 1)
-        : (s?.payoutFlatFeeAmount ?? 1)
+      // Hard-coded defaults if no fee record found
+      transferFeePercentage = 1.3
+      hogapayTransferFeePercent = 0.35
+      flatFeeThreshold = 100
+      flatFeeAmount = 1
     }
 
     const percentageFee = Math.round(amount * (transferFeePercentage / 100) * 100) / 100
@@ -107,33 +106,21 @@ export async function getCharges(
   }
 
   // ── CONTRIBUTION ──────────────────────────────────────────────────────────
-  const s = settings as any
-  let collectionFeePercent: number
-  let hogapayCollectionFeePercent: number
-
-  // Try country+paymentMethod based collection-fees collection first
   const feeRecord = await resolveCollectionFee(payload, country, paymentMethod)
 
+  let collectionFeePercent: number
+  let hogapayCollectionFeePercent: number
   let minimumContributionAmount: number | undefined
+
   if (feeRecord) {
     collectionFeePercent = feeRecord.fee
     hogapayCollectionFeePercent = feeRecord.hogapaySplit
     minimumContributionAmount = feeRecord.minimumContributionAmount
   } else {
-    // Fall back to system-settings per payment method
-    if (paymentMethod === 'mobile-money') {
-      collectionFeePercent = s?.mobileMoneyCollectionFee ?? 1.95
-      hogapayCollectionFeePercent = s?.mobileMoneyHogapayFeePercent ?? 0.8
-    } else if (paymentMethod === 'bank' || paymentMethod === 'bank-transfer') {
-      collectionFeePercent = s?.bankTransferCollectionFee ?? 1.95
-      hogapayCollectionFeePercent = s?.bankTransferHogapayFeePercent ?? 0.8
-    } else if (paymentMethod === 'card') {
-      collectionFeePercent = s?.cardCollectionFee ?? 1.95
-      hogapayCollectionFeePercent = s?.cardHogapayFeePercent ?? 0.8
-    } else {
-      collectionFeePercent = s?.mobileMoneyCollectionFee ?? 1.95
-      hogapayCollectionFeePercent = s?.mobileMoneyHogapayFeePercent ?? 0.8
-    }
+    // Hard-coded defaults if no fee record found
+    collectionFeePercent = 1.95
+    hogapayCollectionFeePercent = 0.8
+    minimumContributionAmount = 2
   }
 
   const feeRate = collectionFeePercent / 100

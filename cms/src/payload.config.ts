@@ -43,6 +43,7 @@ import { SmsCampaigns } from './collections/SmsCampaigns'
 import { PaymentMethods } from './collections/PaymentMethods'
 import { CollectionFees } from './collections/CollectionFees'
 import { PayoutFees } from './collections/PayoutFees'
+import { RefundFees } from './collections/RefundFees'
 import { ReferralBonusSettings } from './collections/ReferralBonusSettings'
 import { SettlementDelays } from './collections/ContributionSettings'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
@@ -118,6 +119,7 @@ export default buildConfig({
     PaymentMethods,
     CollectionFees,
     PayoutFees,
+    RefundFees,
     ReferralBonusSettings,
     SettlementDelays,
   ],
