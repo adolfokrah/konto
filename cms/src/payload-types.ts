@@ -1426,7 +1426,7 @@ export interface Transaction {
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
-  paymentMethod?: string | null;
+  paymentMethod?: ('mobile-money' | 'cash' | 'bank' | 'card') | null;
   mobileMoneyProvider?: string | null;
   /**
    * Account number for bank transfers

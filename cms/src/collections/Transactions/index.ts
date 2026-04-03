@@ -92,7 +92,13 @@ export const Transactions: CollectionConfig = {
     },
     {
       name: 'paymentMethod',
-      type: 'text',
+      type: 'select',
+      options: [
+        { label: 'Mobile Money', value: 'mobile-money' },
+        { label: 'Cash', value: 'cash' },
+        { label: 'Bank', value: 'bank' },
+        { label: 'Card', value: 'card' },
+      ],
       admin: {
         readOnly: true,
       },
