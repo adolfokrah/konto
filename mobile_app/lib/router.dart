@@ -20,9 +20,12 @@ import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
 import 'package:Hoga/features/jars/presentation/views/withdraw_view.dart';
 import 'package:Hoga/features/contribution/presentation/views/add_contribution_view.dart';
 import 'package:Hoga/features/contribution/presentation/views/save_contribution_view.dart';
+import 'package:Hoga/features/contribution/presentation/views/save_contribution_paystack_view.dart';
+import 'package:Hoga/features/contribution/presentation/views/paystack_webview_view.dart';
 import 'package:Hoga/features/contribution/presentation/views/await_momo_payment_view.dart';
 import 'package:Hoga/features/contribution/presentation/views/contributions_list_view.dart';
 import 'package:Hoga/features/contribution/presentation/views/request_contribution_view.dart';
+import 'package:Hoga/features/contribution/presentation/views/request_contribution_paystack_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/user_account_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/personal_details_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/change_phone_number_view.dart';
@@ -111,12 +114,24 @@ GoRouter createRouter(AuthBloc authBloc) {
         builder: (context, state) => RequestContributionView(),
       ),
       GoRoute(
+        path: '/request_contribution_paystack',
+        builder: (context, state) => RequestContributionPaystackView(),
+      ),
+      GoRoute(
         path: '/add_contribution',
         builder: (context, state) => const AddContributionView(),
       ),
       GoRoute(
         path: '/save_contribution',
         builder: (context, state) => const SaveContributionView(),
+      ),
+      GoRoute(
+        path: '/save_contribution_paystack',
+        builder: (context, state) => const SaveContributionPaystackView(),
+      ),
+      GoRoute(
+        path: '/paystack_webview',
+        builder: (context, state) => const PaystackWebviewView(),
       ),
       GoRoute(
         path: '/jar_create',

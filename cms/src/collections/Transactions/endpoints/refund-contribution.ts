@@ -1,4 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { getCharges } from '@/utilities/getCharges'
 
 export const refundContribution = async (req: PayloadRequest) => {
   try {
@@ -103,12 +104,22 @@ export const refundContribution = async (req: PayloadRequest) => {
     // Get jar ID
     const jarId = typeof originalTx.jar === 'string' ? originalTx.jar : (originalTx.jar as any)?.id
 
+    // Refund base is amountDue (what the jar actually received after PSP fees)
+    // Using amountContributed would mean refunding more than the jar holds
+    const amountToRefund = (originalTx as any).amountDue ?? originalTx.amountContributed
+    const refundCharges = await getCharges(req.payload, {
+      amount: amountToRefund,
+      type: 'refund',
+    })
+
     // Create refund record with pending status (awaiting approval)
     await req.payload.create({
       collection: 'refunds' as any,
       data: {
         initiatedBy: req.user.id,
-        amount: originalTx.amountContributed,
+        amount: refundCharges.netAmount,
+        processingFee: refundCharges.processingFee,
+        initialAmount: refundCharges.initialAmount,
         accountNumber: originalTx.contributorPhoneNumber,
         accountName: originalTx.contributor || 'Contributor',
         mobileMoneyProvider: originalTx.mobileMoneyProvider,

@@ -1,15 +1,22 @@
-import { getEganow } from '@/utilities/initalise'
+import { getPaystack } from '@/utilities/initalise'
 import { getJarBalance } from '@/utilities/getJarBalance'
 import type { Transaction } from '@/payload-types'
 
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VDF',
+  vodafone: 'VDF',
+  airteltigo: 'ATL',
+}
+
 /**
- * Process Payout Task
+ * Process Paystack Payout Task
  *
- * Only input needed is the transaction ID — all account details are derived
- * from the transaction and the jar's creator record.
+ * Picks up a pending payout transaction and initiates a Paystack transfer
+ * to the jar creator's registered mobile money account.
  */
-export const processPayoutTask = {
-  slug: 'process-payout',
+export const processPayoutPaystackTask = {
+  slug: 'process-payout-paystack',
   inputSchema: [{ name: 'existingTransactionId', type: 'text', required: true }],
   handler: async (args: any) => {
     const payload = args.req?.payload || args.payload
@@ -47,11 +54,11 @@ export const processPayoutTask = {
 
       const jarId = typeof transaction.jar === 'string' ? transaction.jar : transaction.jar?.id
 
-      console.log(`🔄 Processing payout for jar ${jarId}, transaction ${existingTransactionId}...`)
+      console.log(
+        `🔄 Processing Paystack payout for jar ${jarId}, transaction ${existingTransactionId}...`,
+      )
 
-      // Step 2 — safety net: ensure there is exactly one pending payout for this jar.
-      // Fetch ALL pending payouts sorted oldest-first so we can pick a winner when
-      // two tasks run concurrently and both see duplicates.
+      // Step 2 — safety net: deduplicate concurrent pending payouts for this jar
       const pendingPayouts = await payload.find({
         collection: 'transactions',
         where: {
@@ -59,7 +66,7 @@ export const processPayoutTask = {
           type: { equals: 'payout' },
           paymentStatus: { equals: 'pending' },
         },
-        sort: 'createdAt', // oldest first
+        sort: 'createdAt',
         limit: 100,
         select: { id: true },
         overrideAccess: true,
@@ -69,7 +76,6 @@ export const processPayoutTask = {
         const oldestId = pendingPayouts.docs[0]?.id
 
         if (existingTransactionId !== oldestId) {
-          // This task is processing a duplicate — fail it and let the oldest proceed
           console.warn(
             `⚠️ Duplicate pending payout for jar ${jarId} — failing newer transaction ${existingTransactionId}, keeping oldest ${oldestId}`,
           )
@@ -88,10 +94,6 @@ export const processPayoutTask = {
           }
         }
 
-        // This task IS the oldest — fail all newer duplicates and proceed
-        console.warn(
-          `⚠️ Multiple pending payouts for jar ${jarId} — this task holds oldest (${existingTransactionId}), failing ${pendingPayouts.totalDocs - 1} duplicate(s)`,
-        )
         const duplicateIds = pendingPayouts.docs.slice(1).map((d: any) => d.id)
         await Promise.all(
           duplicateIds.map((dupId: string) =>
@@ -105,7 +107,7 @@ export const processPayoutTask = {
         )
       }
 
-      // Step 3 — fetch jar and creator account details
+      // Step 3 — fetch jar and validate
       const jar = await payload.findByID({
         collection: 'jars',
         id: jarId,
@@ -133,9 +135,7 @@ export const processPayoutTask = {
         return { output: { success: false, message: 'Jar is frozen' } }
       }
 
-      // Step 3b — verify jar still has sufficient balance to cover this payout.
-      // getJarBalance already deducts ALL pending payouts (including this one) from
-      // the settled contribution total, so we only need to ensure the net is >= 0.
+      // Step 3b — verify jar still has sufficient balance
       const { balance: currentBalance } = await getJarBalance(payload, jarId)
       const payoutAmount = Math.abs(transaction.amountContributed ?? 0)
       if (currentBalance < 0) {
@@ -146,7 +146,7 @@ export const processPayoutTask = {
           overrideAccess: true,
         })
         console.warn(
-          `❌ Payout ${existingTransactionId} rejected — jar balance (${currentBalance}) is insufficient for payout amount (${payoutAmount})`,
+          `❌ Payout ${existingTransactionId} rejected — jar balance (${currentBalance}) insufficient`,
         )
         return {
           output: {
@@ -156,8 +156,7 @@ export const processPayoutTask = {
         }
       }
 
-      // Fetch creator — jar loaded with depth:1 so creator should be populated,
-      // but fall back to a direct lookup if it came back as a bare ID
+      // Step 4 — fetch jar creator's withdrawal account
       const creatorId = typeof jar.creator === 'object' ? (jar.creator as any).id : jar.creator
       let creator: any = typeof jar.creator === 'object' ? jar.creator : null
       if (!creator) {
@@ -180,14 +179,8 @@ export const processPayoutTask = {
         }
       }
 
-      const userBank = creator.bank
-      const userAccountNumber = creator.accountNumber
-      const userAccountHolder = creator.accountHolder
-
-      // Step 4 — map provider and format phone
-      const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
-      const paypartner = providerMap[userBank?.toLowerCase()]
-      if (!paypartner) {
+      const bankCode = bankCodeMap[creator.bank.toLowerCase()]
+      if (!bankCode) {
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
@@ -197,67 +190,73 @@ export const processPayoutTask = {
         return { output: { success: false, message: 'Unsupported mobile money provider' } }
       }
 
-      let phoneNumber = userAccountNumber.replace(/\s+/g, '')
-      if (phoneNumber.startsWith('0')) {
-        phoneNumber = '233' + phoneNumber.substring(1)
-      } else if (!phoneNumber.startsWith('233')) {
-        phoneNumber = '233' + phoneNumber
-      }
-
-      const grossAmount = payoutAmount
-
-      // Step 5 — call Eganow
+      // Step 5 — create Paystack transfer recipient
       try {
-        const payoutResult = await getEganow().payout({
-          paypartnerCode: paypartner,
-          amount: String(grossAmount.toFixed(2)),
-          accountNoOrCardNoOrMSISDN: phoneNumber,
-          accountName: userAccountHolder,
-          transactionId: `payout-${existingTransactionId}`,
-          narration: `Payout for jar ${jar.name}`,
-          transCurrencyIso: jar.currency || 'GHS',
-          expiryDateMonth: 0,
-          expiryDateYear: 0,
-          cvv: '',
-          languageId: 'en',
-          callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
+        const paystack = getPaystack()
+
+        const recipient = await paystack.createTransferRecipient({
+          type: 'mobile_money',
+          name: creator.accountHolder,
+          account_number: creator.accountNumber,
+          bank_code: bankCode,
+          currency: (jar.currency as string) || 'GHS',
         })
 
-        // Step 6 — update transaction with Eganow reference
+        // Step 6 — initiate transfer using the full payout amount (no fees deducted)
+        const amountInPesewas = Math.round(payoutAmount * 100)
+        const transfer = await paystack.initiateTransfer({
+          source: 'balance',
+          amount: amountInPesewas,
+          recipient: recipient.recipient_code,
+          reason: `Payout from ${jar.name || 'jar'}`,
+          currency: (jar.currency as string) || 'GHS',
+          reference: existingTransactionId,
+        })
+
+        // Step 7 — store Paystack transfer_code
+        // Used by verify task via GET /transfer/:transfer_code
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
-          data: { transactionReference: payoutResult.eganowReferenceNo },
+          data: { transactionReference: transfer.transfer_code },
           overrideAccess: true,
+          context: { skipCharges: true },
         })
 
         console.log(
-          `✅ Payout initiated — transaction ${existingTransactionId}, ref: ${payoutResult.eganowReferenceNo}`,
+          `✅ Paystack payout initiated — transaction ${existingTransactionId}, transfer: ${transfer.transfer_code}`,
         )
 
         return {
           output: {
             success: true,
-            message: 'Payout initiated successfully',
+            message:
+              transfer.status === 'otp'
+                ? 'OTP required to complete transfer'
+                : 'Payout initiated successfully',
             transactionId: existingTransactionId,
-            eganowReferenceNo: payoutResult.eganowReferenceNo,
+            transferCode: transfer.transfer_code,
           },
         }
-      } catch (eganowError: any) {
+      } catch (paystackError: any) {
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
+          context: { skipCharges: true },
         })
         console.error(
-          `❌ Eganow payout failed for transaction ${existingTransactionId}:`,
-          eganowError,
+          `❌ Paystack payout failed for transaction ${existingTransactionId}:`,
+          paystackError,
         )
-        throw eganowError
+        throw paystackError
       }
     } catch (error: any) {
-      console.error(`❌ Payout task error for transaction ${existingTransactionId}:`, error)
+      console.error(
+        `❌ Paystack payout task error for transaction ${existingTransactionId}:`,
+        error,
+      )
       return { output: { success: false, message: `Error: ${error.message}` } }
     }
   },

@@ -1,20 +1,15 @@
 import { PayloadRequest } from 'payload'
-import { calculateCharges } from '../../../utilities/calculateCharges'
+import { getCharges as calculateCharges } from '@/utilities/getCharges'
 
 /**
  * GET /api/transactions/get-charges?amount=100&jarId=xxx
- *          OR ?amount=100&userId=xxx  (userId still supported directly)
  *
  * Returns the full charge breakdown for a given amount.
- * Resolves the discount percent from the jar creator (via jarId) or directly from userId.
- * Does not require authentication (public — used on contribution pages).
  */
 export const getCharges = async (req: PayloadRequest) => {
   try {
     const url = new URL(req.url || '', 'http://localhost')
     const amountParam = url.searchParams.get('amount')
-    const jarId = url.searchParams.get('jarId')
-    const userId = url.searchParams.get('userId')
 
     if (!amountParam) {
       return Response.json({ success: false, message: 'amount is required' }, { status: 400 })
@@ -28,19 +23,19 @@ export const getCharges = async (req: PayloadRequest) => {
       )
     }
 
-    // Fetch system settings for fee percentages
-    const settings = await req.payload.findGlobal({
-      slug: 'system-settings',
-      overrideAccess: true,
-    })
+    const type = url.searchParams.get('type')
+    if (type === 'payout') {
+      return Response.json({
+        success: true,
+        originalAmount: amountContributed,
+        processingFee: 0,
+        netAmount: amountContributed,
+      })
+    }
 
-    const hogapayCollectionFeePercent = (settings.hogapayCollectionFeePercent ?? 0.8) as number
-    const collectionFeePercent = (settings.collectionFee ?? 2) as number
-
-    // Resolve the user ID: from jarId (look up creator) or directly from userId param
-    let resolvedUserId: string | null = userId
-
-    if (jarId && !resolvedUserId) {
+    const jarId = url.searchParams.get('jarId')
+    let feePaidBy: 'contributor' | 'jar-creator' = 'contributor'
+    if (jarId) {
       try {
         const jar = await req.payload.findByID({
           collection: 'jars',
@@ -48,47 +43,19 @@ export const getCharges = async (req: PayloadRequest) => {
           depth: 0,
           overrideAccess: true,
         })
-        const creator = (jar as any).creator
-        resolvedUserId = typeof creator === 'object' ? creator?.id : (creator ?? null)
-        console.log(
-          `[get-charges] jarId=${jarId} creator=${JSON.stringify(creator)} resolvedUserId=${resolvedUserId}`,
-        )
-      } catch (e: any) {
-        console.warn(`[get-charges] Jar ${jarId} not found:`, e.message)
-      }
+        feePaidBy =
+          ((jar as any)?.collectionFeePaidBy as 'contributor' | 'jar-creator') || 'contributor'
+      } catch (_) {}
     }
 
-    // Fetch the resolved user's discount percent
-    let discountPercent = 0
-    if (resolvedUserId) {
-      try {
-        const user = await req.payload.findByID({
-          collection: 'users',
-          id: resolvedUserId,
-          depth: 0,
-          overrideAccess: true,
-        })
-        discountPercent = (user as any).hogapayDiscountPercent ?? 0
-        console.log(
-          `[get-charges] resolvedUserId=${resolvedUserId} hogapayDiscountPercent=${discountPercent}`,
-        )
-      } catch (e: any) {
-        console.warn(`[get-charges] User ${resolvedUserId} not found:`, e.message)
-      }
-    } else {
-      console.warn(`[get-charges] No resolvedUserId for jarId=${jarId} userId=${userId}`)
-    }
-
-    const result = calculateCharges({
-      amountContributed,
-      hogapayCollectionFeePercent,
-      collectionFeePercent,
-      discountPercent,
+    const charges = await calculateCharges(req.payload, {
+      amount: amountContributed,
+      type: 'contribution',
+      collectionFeePaidBy: feePaidBy,
     })
 
-    return Response.json({ success: true, ...result })
+    return Response.json({ success: true, ...charges, collectionFeePaidBy: feePaidBy })
   } catch (error: any) {
-    console.error('[get-charges] Error:', error.message)
     return Response.json(
       { success: false, message: error.message || 'Failed to calculate charges' },
       { status: 500 },

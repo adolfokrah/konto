@@ -64,6 +64,7 @@ export type TransactionRow = {
   payoutFeePercentage: number | null
   payoutFeeAmount: number | null
   payoutNetAmount: number | null
+  amountDue: number | null
   transactionReference: string | null
   collector: { id: string; firstName: string; lastName: string; email: string } | null
   viaPaymentLink: boolean
@@ -289,22 +290,14 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
-    id: 'payout',
-    header: 'Payout',
+    id: 'amountPaid',
+    header: 'Amount Paid',
     size: 130,
     cell: ({ row }) => {
-      if (row.original.type !== 'payout')
-        return <span className="text-muted-foreground">—</span>
-      return (
-        <span
-          className={cn(
-            'font-medium',
-            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400',
-          )}
-        >
-          -{formatAmount(Math.abs(row.original.amountContributed))}
-        </span>
-      )
+      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
+      const paid = row.original.chargesBreakdown?.amountPaidByContributor
+      if (paid == null) return <span className="text-muted-foreground">—</span>
+      return <span className="font-medium">{formatAmount(Math.abs(paid))}</span>
     },
     meta: {
       headerClassName: 'text-right',
@@ -313,8 +306,8 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
   },
   {
     id: 'platformCharge',
-    header: 'Plat. Charge',
-    size: 120,
+    header: 'Fees',
+    size: 110,
     cell: ({ row }) => {
       const charge = row.original.chargesBreakdown?.platformCharge
       if (!charge) return <span className="text-muted-foreground">—</span>
@@ -326,8 +319,44 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
+    id: 'amountDue',
+    header: 'Amount Due',
+    size: 130,
+    cell: ({ row }) => {
+      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
+      const amountDue = row.original.amountDue
+      if (amountDue == null) return <span className="text-muted-foreground">—</span>
+      return (
+        <span className={cn('font-medium', row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : '')}>
+          {formatAmount(amountDue)}
+        </span>
+      )
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    id: 'payout',
+    header: 'Payout',
+    size: 130,
+    cell: ({ row }) => {
+      if (row.original.type !== 'payout') return <span className="text-muted-foreground">—</span>
+      return (
+        <span className={cn('font-medium', row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400')}>
+          -{formatAmount(Math.abs(row.original.amountContributed))}
+        </span>
+      )
+    },
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+    } satisfies DataTableColumnMeta,
+  },
+  {
     id: 'eganowFees',
-    header: 'Eganow Fees',
+    header: 'PSP Fees',
     size: 120,
     cell: ({ row }) => {
       const fees = row.original.chargesBreakdown?.eganowFees

@@ -159,6 +159,7 @@ class JarRepository {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    String? collectionFeePaidBy,
     int? requiredApprovals,
     List<Map<String, dynamic>>? customFields,
   }) async {
@@ -183,6 +184,7 @@ class JarRepository {
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
         allowAnonymousContributions: allowAnonymousContributions,
+        collectionFeePaidBy: collectionFeePaidBy,
         requiredApprovals: requiredApprovals,
         customFields: customFields,
       );

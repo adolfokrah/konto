@@ -8,6 +8,8 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const user = req.user
   const jarId = req.routeParams?.id as string | undefined
+  const url = new URL(req.url || '', 'http://localhost')
+  const paymentMethodFilter = url.searchParams.get('paymentMethod') || null
 
   async function getUserJar() {
     const result = await req.payload.find({
@@ -90,6 +92,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         jar: { equals: jar.id },
         type: { not_equals: 'refund' },
         ...(hasFullAccess ? {} : { collector: { equals: user } }),
+        ...(paymentMethodFilter ? { paymentMethod: { equals: paymentMethodFilter } } : {}),
       },
       limit: 5,
       sort: '-createdAt',
@@ -103,6 +106,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       pagination: false,
       select: {
         amountContributed: true,
+        amountDue: true,
         paymentStatus: true,
         paymentMethod: true,
         type: true,
@@ -170,10 +174,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
       (tx: any) =>
         tx.type === 'contribution' &&
         tx.paymentStatus === 'completed' &&
-        tx.isSettled === false &&
-        tx.paymentMethod === 'mobile-money',
+        !tx.isSettled &&
+        ['mobile-money', 'card', 'bank'].includes(tx.paymentMethod),
     )
-    .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
+    .reduce((s: number, tx: any) => s + (tx.amountDue ?? 0), 0)
 
   // Payouts are stored as negative amountContributed — negate to get positive total
   const totalTransfers = txDocs
@@ -181,6 +185,26 @@ export const getJarSummary = async (req: PayloadRequest) => {
     .reduce((s: number, tx: any) => s + Math.abs(tx.amountContributed), 0)
 
   // --- Charges breakdown ---
+  const chargesByMethod = (method: string) => {
+    const filtered = txDocs.filter(
+      (tx: any) =>
+        tx.type === 'contribution' &&
+        tx.paymentStatus === 'completed' &&
+        tx.paymentMethod === method,
+    )
+    return {
+      platformCharge: filtered.reduce(
+        (s: number, tx: any) => s + (tx.chargesBreakdown?.platformCharge ?? 0),
+        0,
+      ),
+      amountPaidByContributors: filtered.reduce(
+        (s: number, tx: any) =>
+          s + (tx.chargesBreakdown?.amountPaidByContributor ?? tx.amountContributed),
+        0,
+      ),
+    }
+  }
+
   const totalPlatformCharge = txDocs.reduce(
     (s: number, tx: any) => s + (tx.chargesBreakdown?.platformCharge ?? 0),
     0,
@@ -191,6 +215,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
       s + (tx.chargesBreakdown?.amountPaidByContributor ?? tx.amountContributed),
     0,
   )
+
+  const mobileMoneyCharges = chargesByMethod('mobile-money')
+  const cardCharges = chargesByMethod('card')
+  const bankCharges = chargesByMethod('bank')
 
   const round2 = (n: number) => Number(n.toFixed(2))
 
@@ -216,6 +244,18 @@ export const getJarSummary = async (req: PayloadRequest) => {
       chargesBreakdown: {
         totalPlatformCharge: round2(totalPlatformCharge),
         totalAmountPaidByContributors: round2(totalAmountPaidByContributors),
+        mobileMoney: {
+          platformCharge: round2(mobileMoneyCharges.platformCharge),
+          amountPaidByContributors: round2(mobileMoneyCharges.amountPaidByContributors),
+        },
+        card: {
+          platformCharge: round2(cardCharges.platformCharge),
+          amountPaidByContributors: round2(cardCharges.amountPaidByContributors),
+        },
+        bank: {
+          platformCharge: round2(bankCharges.platformCharge),
+          amountPaidByContributors: round2(bankCharges.amountPaidByContributors),
+        },
       },
     },
   })

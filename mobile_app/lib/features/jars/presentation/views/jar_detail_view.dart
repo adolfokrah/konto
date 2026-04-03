@@ -1061,6 +1061,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     contribution.isTransfer,
                                                 isRefund:
                                                     contribution.isRefund,
+                                                fee: contribution.platformCharge,
                                               ),
                                             ],
                                           )
@@ -1138,21 +1139,21 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   backgroundColor:
                                       Theme.of(context).colorScheme.surface,
                                 ),
-                                // PaymentMethodContributionItem(
-                                //   title: localizations.bankTransfer,
-                                //   subtitle: localizations.contributionsCount(
-                                //     jarData.bankTransferContributionCount,
-                                //   ),
-                                //   amount:
-                                //       jarData
-                                //           .balanceBreakDown
-                                //           .bankTransfer
-                                //           .totalAmount,
-                                //   currency: jarData.currency,
-                                //   icon: Icons.account_balance,
-                                //   backgroundColor:
-                                //       Theme.of(context).colorScheme.surface,
-                                // ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.bankTransfer,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.bankTransferContributionCount,
+                                  ),
+                                  amount:
+                                      jarData
+                                          .balanceBreakDown
+                                          .bankTransfer
+                                          .totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.account_balance,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
                                 PaymentMethodContributionItem(
                                   title: localizations.mobileMoney,
                                   subtitle: localizations.contributionsCount(
@@ -1168,18 +1169,18 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   backgroundColor:
                                       Theme.of(context).colorScheme.surface,
                                 ),
-                                // PaymentMethodContributionItem(
-                                //   title: localizations.cardPayment,
-                                //   subtitle: localizations.contributionsCount(
-                                //     jarData.balanceBreakDown.card.totalCount,
-                                //   ),
-                                //   amount:
-                                //       jarData.balanceBreakDown.card.totalAmount,
-                                //   currency: jarData.currency,
-                                //   icon: Icons.credit_card,
-                                //   backgroundColor:
-                                //       Theme.of(context).colorScheme.surface,
-                                // ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.cardPayment,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.balanceBreakDown.card.totalCount,
+                                  ),
+                                  amount:
+                                      jarData.balanceBreakDown.card.totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.credit_card,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
                                 // PaymentMethodContributionItem(
                                 //   title: localizations.applePayPayment,
                                 //   subtitle: localizations.contributionsCount(

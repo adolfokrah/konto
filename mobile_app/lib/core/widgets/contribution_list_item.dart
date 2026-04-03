@@ -49,6 +49,9 @@ class ContributionListItem extends StatelessWidget {
   /// Whether this is a refund transaction
   final bool isRefund;
 
+  /// Optional platform fee charged on this contribution
+  final double? fee;
+
   const ContributionListItem({
     super.key,
     required this.contributorName,
@@ -64,6 +67,7 @@ class ContributionListItem extends StatelessWidget {
     required this.contributionId,
     this.isTransfer = false,
     this.isRefund = false,
+    this.fee,
   });
 
   @override
@@ -118,23 +122,38 @@ class ContributionListItem extends StatelessWidget {
             AppDateUtils.formatTimestamp(timestamp, localizations),
             style: TextStyles.titleRegularXs,
           ),
-          if (paymentMethod != null && paymentMethod != 'cash')
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.radiusM / 3),
-              ),
-              child: Text(
-                PaymentMethodUtils.getPaymentMethodLabel(
-                  paymentMethod,
-                  localizations,
-                ).toUpperCase(),
-                style: TextStyles.titleRegularXs,
-              ),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (fee != null && fee! > 0 && !isTransfer && !isRefund)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    'Fee: ${CurrencyUtils.formatAmount(fee!, currency)}',
+                    style: TextStyles.titleRegularXs.copyWith(
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+              if (paymentMethod != null && paymentMethod != 'cash')
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusM / 3),
+                  ),
+                  child: Text(
+                    PaymentMethodUtils.getPaymentMethodLabel(
+                      paymentMethod,
+                      localizations,
+                    ).toUpperCase(),
+                    style: TextStyles.titleRegularXs,
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );

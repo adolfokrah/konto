@@ -223,6 +223,7 @@ class JarSummaryModel {
   final bool? showGoal;
   final bool? showRecentContributions;
   final bool? allowAnonymousContributions;
+  final String collectionFeePaidBy; // 'contributor' | 'jar-creator'
   final String? jarGroup;
   final MediaModel? image;
   final List<MediaModel> images;
@@ -256,6 +257,7 @@ class JarSummaryModel {
     this.showGoal,
     this.showRecentContributions,
     this.allowAnonymousContributions,
+    this.collectionFeePaidBy = 'contributor',
     this.jarGroup,
     this.image,
     this.images = const [],
@@ -413,6 +415,7 @@ class JarSummaryModel {
               ? json['paymentPage']['showRecentContributions'] as bool?
               : null,
       allowAnonymousContributions: json['allowAnonymousContributions'] as bool?,
+      collectionFeePaidBy: json['collectionFeePaidBy'] as String? ?? 'contributor',
       jarGroup: json['jarGroup'] as String?,
       image:
           json['image'] != null
@@ -522,6 +525,7 @@ class JarSummaryModel {
         'showRecentContributions': showRecentContributions,
       },
       'allowAnonymousContributions': allowAnonymousContributions,
+      'collectionFeePaidBy': collectionFeePaidBy,
       'jarGroup': jarGroup,
       'image': image?.toJson(),
       'images': images.map((m) => {'image': m.toJson()}).toList(),
@@ -813,6 +817,7 @@ class ContributionModel {
   final String? accountNumber; // Account number for bank transfers
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
+  final double? platformCharge; // Platform fee charged on this contribution
   final String
   paymentStatus; // 'pending' | 'completed' | 'failed'
   final UserModel? collector;
@@ -831,6 +836,7 @@ class ContributionModel {
     this.accountNumber,
     required this.amountContributed,
     this.charges,
+    this.platformCharge,
     required this.paymentStatus,
     this.collector,
     this.viaPaymentLink,
@@ -851,6 +857,10 @@ class ContributionModel {
       amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
       charges:
           json['charges'] != null ? (json['charges'] as num).toDouble() : null,
+      platformCharge:
+          json['chargesBreakdown']?['platformCharge'] != null
+              ? (json['chargesBreakdown']['platformCharge'] as num).toDouble()
+              : null,
       paymentStatus: json['paymentStatus'] as String,
       collector:
           json['collector'] != null
@@ -882,6 +892,7 @@ class ContributionModel {
       'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       'charges': charges,
+      'platformCharge': platformCharge,
       'paymentStatus': paymentStatus,
       'collector': collector?.toJson(),
       'viaPaymentLink': viaPaymentLink,

@@ -137,9 +137,12 @@ class MomoApiProvider extends BaseApiProvider {
       }
 
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/transactions/payout-eganow',
+        '${BackendConfig.apiBaseUrl}/transactions/payout-paystack',
         data: {'jarId': jarId},
-        options: Options(headers: headers),
+        options: Options(headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        }),
       );
 
       return response.data;

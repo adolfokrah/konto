@@ -35,7 +35,6 @@ const pageTitles: Record<string, string> = {
   '/dashboard/disputes': 'Disputes',
   '/dashboard/cashbacks': 'Cashbacks',
   '/dashboard/analytics': 'Analytics',
-  '/dashboard/ledger': 'Ledger',
   '/dashboard/referrals': 'Referrals',
   '/dashboard/referral-bonuses': 'Referral Bonuses',
   '/dashboard/push-notifications': 'Push Notifications',

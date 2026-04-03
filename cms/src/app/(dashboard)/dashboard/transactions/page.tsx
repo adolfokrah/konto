@@ -130,6 +130,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
       payoutFeePercentage: tx.payoutFeePercentage ?? null,
       payoutFeeAmount: tx.payoutFeeAmount ?? null,
       payoutNetAmount: tx.payoutNetAmount ?? null,
+      amountDue: tx.amountDue ?? null,
       transactionReference: tx.transactionReference || null,
       collector: (collectorName || collectorEmail)
         ? {

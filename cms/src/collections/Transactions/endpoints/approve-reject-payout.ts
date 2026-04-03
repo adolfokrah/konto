@@ -213,11 +213,11 @@ export const approveRejectPayout = async (req: PayloadRequest) => {
       context: { skipCharges: true },
     })
 
-    // Queue the payout job with the existing transaction ID
+    // Queue Paystack payout job
     await req.payload.jobs.queue({
-      task: 'process-payout' as any,
+      task: 'process-payout-paystack' as any,
       input: { existingTransactionId: transactionId },
-      queue: 'payout',
+      queue: 'payout-paystack',
     })
 
     // Notify the jar creator

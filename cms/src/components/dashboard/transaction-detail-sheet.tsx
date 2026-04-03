@@ -347,7 +347,7 @@ export function TransactionDetailSheet({
                       />
                     )}
                     <DetailRow
-                      label="Eganow Fees"
+                      label="PSP Fees"
                       value={abs(cb.eganowFees) != null ? formatAmount(abs(cb.eganowFees)!) : null}
                     />
                     <DetailRow

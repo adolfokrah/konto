@@ -111,7 +111,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     { header: 'Contribution', key: 'contribution', width: 16 },
     { header: 'Payout', key: 'payout', width: 16 },
     { header: 'Platform Charge', key: 'platformCharge', width: 16 },
-    { header: 'Eganow Fees', key: 'eganowFees', width: 14 },
+    { header: 'PSP Fees', key: 'eganowFees', width: 14 },
     { header: 'Hogapay Revenue', key: 'hogapayRevenue', width: 16 },
     { header: 'Settled', key: 'settled', width: 10 },
     { header: 'Via Link', key: 'viaLink', width: 10 },
@@ -259,7 +259,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
     'Contribution',
     'Payout',
     'Plat. Charge',
-    'Eganow Fees',
+    'PSP Fees',
     'Hogapay Rev',
     'Date',
   ]

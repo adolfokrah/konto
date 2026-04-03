@@ -125,8 +125,7 @@ export function RefundDetailSheet({
     },
   )
 
-  const isInitiator = selected?.initiatedBy?.id === currentUserId
-  const canApprove = selected?.status === 'pending' && !isInitiator
+  const canApprove = selected?.status === 'pending'
   const isActioning = approving || rejecting
 
   const handleApprove = async () => {
@@ -233,7 +232,7 @@ export function RefundDetailSheet({
                     <h4 className="text-sm font-semibold mb-1">Fees</h4>
                     <Separator className="mb-2" />
                     <DetailRow
-                      label="Eganow Fees"
+                      label="PSP Fees"
                       value={formatAmount(Math.abs(selected.eganowFees), currency)}
                     />
                     <DetailRow

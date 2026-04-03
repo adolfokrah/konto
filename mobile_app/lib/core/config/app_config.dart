@@ -16,7 +16,7 @@ class AppConfig {
       dotenv.env['NEXT_PROJECT_BASE_URL'] ?? '';
 
   static String get contributionPage =>
-      dotenv.env['CONTRIBUTION_PAGE'] ?? 'https://hogapay.com';
+      dotenv.env['NEXT_PROJECT_BASE_URL'] ?? 'https://hogapay.com';
 
   static bool get isDevelopment => flutterEnv == 'development';
   static bool get isProduction => flutterEnv == 'production';

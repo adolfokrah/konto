@@ -1,11 +1,10 @@
-import { getEganow } from '@/utilities/initalise'
+import { getPaystack } from '@/utilities/initalise'
 
 /**
  * Process Refund Task
  *
- * Queued by the approve-refund endpoint. Sends money back to the
- * contributor's phone number via Eganow payout API.
- * Works with the 'refunds' collection.
+ * Queued by the approve-refund endpoint. Uses Paystack's refund API to
+ * reverse the original contribution charge back to the contributor.
  */
 export const processRefundTask = {
   slug: 'process-refund',
@@ -17,7 +16,6 @@ export const processRefundTask = {
     try {
       console.log(`🔄 Processing refund ${refundId}...`)
 
-      // Fetch the refund record
       const refund = await payload.findByID({
         collection: 'refunds' as any,
         id: refundId,
@@ -39,13 +37,11 @@ export const processRefundTask = {
       }
 
       const refundAmount = Math.abs(Number(refund.amount))
-      const jarId = typeof refund.jar === 'string' ? refund.jar : (refund.jar as any)?.id
       const linkedTransactionId =
         typeof refund.linkedTransaction === 'string'
           ? refund.linkedTransaction
           : (refund.linkedTransaction as any)?.id
 
-      // Validate linked transaction qualifies for refund
       if (!linkedTransactionId) {
         await payload.update({
           collection: 'refunds' as any,
@@ -80,9 +76,6 @@ export const processRefundTask = {
           data: { status: 'failed' },
           overrideAccess: true,
         })
-        console.error(
-          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} is type "${linkedTx.type}", only contributions can be refunded`,
-        )
         return {
           output: {
             success: false,
@@ -98,9 +91,6 @@ export const processRefundTask = {
           data: { status: 'failed' },
           overrideAccess: true,
         })
-        console.error(
-          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} has status "${linkedTx.paymentStatus}", must be completed`,
-        )
         return {
           output: {
             success: false,
@@ -109,7 +99,23 @@ export const processRefundTask = {
         }
       }
 
-      // Check for duplicate refund — no other completed/in-progress refund should exist for this transaction
+      const originalReference = linkedTx.transactionReference as string
+      if (!originalReference) {
+        await payload.update({
+          collection: 'refunds' as any,
+          id: refundId,
+          data: { status: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: {
+            success: false,
+            message: 'Original Paystack transaction reference not found on linked transaction',
+          },
+        }
+      }
+
+      // Check for duplicate refund
       const existingRefunds = await payload.find({
         collection: 'refunds' as any,
         where: {
@@ -128,9 +134,6 @@ export const processRefundTask = {
           data: { status: 'failed' },
           overrideAccess: true,
         })
-        console.error(
-          `❌ Refund ${refundId} rejected — linked transaction ${linkedTransactionId} already has an active refund`,
-        )
         return {
           output: {
             success: false,
@@ -139,172 +142,62 @@ export const processRefundTask = {
         }
       }
 
-      // Fetch the jar for currency info
-      const jar = await payload.findByID({
-        collection: 'jars',
-        id: jarId,
-        depth: 0,
-        overrideAccess: true,
-      })
-
-      if (!jar) {
-        await payload.update({
-          collection: 'refunds' as any,
-          id: refundId,
-          data: { status: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Jar not found' } }
-      }
-
-      // Map provider
-      const providerMap: Record<string, string> = {
-        mtn: 'MTNGH',
-        telecel: 'TCELGH',
-      }
-
-      const paypartner = providerMap[refund.mobileMoneyProvider.toLowerCase()]
-      if (!paypartner) {
-        await payload.update({
-          collection: 'refunds' as any,
-          id: refundId,
-          data: { status: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Unsupported mobile money provider' } }
-      }
-
-      // Format phone number
-      let phoneNumber = refund.accountNumber.replace(/\s+/g, '')
-      if (phoneNumber.startsWith('0')) {
-        phoneNumber = '233' + phoneNumber.substring(1)
-      } else if (!phoneNumber.startsWith('233')) {
-        phoneNumber = '233' + phoneNumber
-      }
-
-      // Calculate fees
-      const settings = await payload.findGlobal({
-        slug: 'system-settings',
-        overrideAccess: true,
-      })
-
-      const transferFeePercent = (settings.transferFeePercentage ?? 0) / 100
-      const hogapayTransferFeePercent = settings.hogapayTransferFeePercent ?? 0.5
-      const feeAmount = refundAmount * transferFeePercent
-      const hogapayRevenue = (refundAmount * hogapayTransferFeePercent) / 100
-      const eganowFees = feeAmount - hogapayRevenue
-
-      // Update refund with calculated fees
-      await payload.update({
-        collection: 'refunds' as any,
-        id: refundId,
-        data: {
-          eganowFees,
-          hogapayRevenue,
-        },
-        overrideAccess: true,
-      })
-
       try {
-        // KYC lookup — get verified account name from Eganow
-        let accountName = refund.accountName
-        try {
-          const kyc = await getEganow().verifyKYC({
-            paypartnerCode: paypartner,
-            accountNoOrCardNoOrMSISDN: phoneNumber,
-            languageId: 'en',
-            countryCode: 'GH',
-          })
-          if (kyc.isSuccess && kyc.accountName) {
-            accountName = kyc.accountName
-            console.log(`[process-refund] KYC name for ${phoneNumber}: ${accountName}`)
-          } else {
-            console.warn(`[process-refund] KYC lookup failed for ${phoneNumber}, using stored name`)
-          }
-        } catch (kycErr: any) {
-          console.warn(`[process-refund] KYC error for ${phoneNumber}:`, kycErr?.message)
-        }
+        const paystack = getPaystack()
 
-        const payoutData = {
-          paypartnerCode: paypartner,
-          amount: String(refundAmount.toFixed(2)),
-          accountNoOrCardNoOrMSISDN: phoneNumber,
-          accountName,
-          transactionId: `refund-${refundId}`,
-          narration: `Refund for contribution to ${jar.name}`,
-          transCurrencyIso: jar.currency || 'GHS',
-          expiryDateMonth: 0,
-          expiryDateYear: 0,
-          cvv: '',
-          languageId: 'en',
-          callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
-        }
+        // Read refund fee from system settings (defaults to 1%)
+        const settings = await payload.findGlobal({ slug: 'system-settings', overrideAccess: true })
+        const refundFeePercent = (settings as any)?.refundFeePercentage ?? 1
+        const refundFee = (refundAmount * refundFeePercent) / 100
+        const netRefundAmount = refundAmount - refundFee
 
-        const payoutResult = await getEganow().payout(payoutData)
+        const amountInPesewas = Math.round(netRefundAmount * 100)
+
         console.log(
-          `[process-refund] Eganow payout response for refund ${refundId}:`,
-          JSON.stringify(payoutResult),
+          `[process-refund] amount=${refundAmount} fee=${refundFee} (${refundFeePercent}%) net=${netRefundAmount}`,
         )
 
-        // Handle immediate failure from Eganow
-        if (payoutResult.transactionStatus === 'FAILED') {
-          await payload.update({
-            collection: 'refunds' as any,
-            id: refundId,
-            data: { status: 'failed' },
-            overrideAccess: true,
-          })
-          console.error(
-            `❌ Eganow immediately rejected refund ${refundId}: ${payoutResult.message}`,
-          )
-          return {
-            output: {
-              success: false,
-              message: `Eganow rejected: ${payoutResult.message}`,
-              refundId,
-            },
-          }
-        }
+        const result = await paystack.refund({
+          transaction: originalReference,
+          amount: amountInPesewas,
+        })
 
-        // Update with Eganow reference
+        // Store Paystack refund ID as transactionReference for status polling
         await payload.update({
           collection: 'refunds' as any,
           id: refundId,
-          data: { transactionReference: payoutResult.eganowReferenceNo },
+          data: { transactionReference: String(result.id) },
           overrideAccess: true,
         })
 
-        console.log(`✅ Refund initiated — ref: ${payoutResult.eganowReferenceNo}`)
+        console.log(
+          `✅ Paystack refund initiated — refund ID: ${result.id}, status: ${result.status}`,
+        )
 
         return {
           output: {
             success: true,
             message: 'Refund initiated successfully',
             refundId,
-            eganowReferenceNo: payoutResult.eganowReferenceNo,
-            amount: refundAmount,
+            paystackRefundId: result.id,
+            status: result.status,
+            amount: netRefundAmount,
+            fee: refundFee,
           },
         }
-      } catch (eganowError: any) {
-        // Eganow call failed — mark refund as failed
+      } catch (paystackError: any) {
         await payload.update({
           collection: 'refunds' as any,
           id: refundId,
           data: { status: 'failed' },
           overrideAccess: true,
         })
-
-        console.error(`❌ Eganow refund failed for refund ${refundId}:`, eganowError)
-        throw eganowError
+        console.error(`❌ Paystack refund failed for refund ${refundId}:`, paystackError)
+        throw paystackError
       }
     } catch (error: any) {
       console.error(`❌ Refund task error for refund ${refundId}:`, error)
-      return {
-        output: {
-          success: false,
-          message: `Error: ${error.message}`,
-        },
-      }
+      return { output: { success: false, message: `Error: ${error.message}` } }
     }
   },
 }

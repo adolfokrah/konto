@@ -5,7 +5,6 @@ import ContributionsReport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
 import sendKyc from '@/components/emailTemplates/sendKyc'
-import EganowBalanceAlert from '@/components/emailTemplates/EganowBalanceAlert'
 import TransactionNotification from '@/components/emailTemplates/transactionNotification'
 import WeeklyAccountSummary, {
   type JarSummaryRow,
@@ -142,31 +141,6 @@ class EmailService {
       to: userEmail,
       subject: `your Hogapay KYC Verification`,
       react: sendKyc({ link }),
-    })
-  }
-
-  // Eganow Payout Balance Alert
-  async sendEganowBalanceAlert(params: {
-    totalJarBalances: number
-    totalUpcoming: number
-    combinedTotal: number
-    eganowBalance: number
-    shortfall: number
-    currency: string
-  }) {
-    const fmt = (n: number) =>
-      n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    return this.sendEmail({
-      to: 'hello@usehoga.com',
-      subject: `Eganow Payout Balance Alert — Top Up Needed`,
-      react: EganowBalanceAlert({
-        totalJarBalances: fmt(params.totalJarBalances),
-        totalUpcoming: fmt(params.totalUpcoming),
-        combinedTotal: fmt(params.combinedTotal),
-        eganowBalance: fmt(params.eganowBalance),
-        shortfall: fmt(params.shortfall),
-        currency: params.currency,
-      }),
     })
   }
 

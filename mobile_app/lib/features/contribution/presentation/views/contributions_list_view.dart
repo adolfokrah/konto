@@ -377,6 +377,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       viaPaymentLink: contribution.viaPaymentLink,
       isTransfer: contribution.isTransfer,
       isRefund: contribution.isRefund,
+      fee: contribution.chargesBreakdown?.platformCharge,
     );
   }
 

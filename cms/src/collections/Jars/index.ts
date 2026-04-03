@@ -261,6 +261,18 @@ export const Jars: CollectionConfig = {
       },
     },
     {
+      name: 'collectionFeePaidBy',
+      type: 'select',
+      defaultValue: 'contributor',
+      options: [
+        { label: 'Contributor', value: 'contributor' },
+        { label: 'Jar Creator', value: 'jar-creator' },
+      ],
+      admin: {
+        description: 'Who bears the collection fee on contributions to this jar',
+      },
+    },
+    {
       name: 'customFields',
       type: 'array',
       required: false,

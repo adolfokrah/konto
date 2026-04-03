@@ -30,6 +30,9 @@ class AppRoutes {
   static const String walkthrough = '/walkthrough';
   static const String withdraw = '/withdraw';
   static const String requestContribution = '/request_contribution';
+  static const String requestContributionPaystack = '/request_contribution_paystack';
+  static const String saveContributionPaystack = '/save_contribution_paystack';
+  static const String paystackWebview = '/paystack_webview';
   static const String referral = '/referral';
   static const String jarCustomFields = '/jar_custom_fields';
   static const String jarCustomFieldAdd = '/jar_custom_field_add';

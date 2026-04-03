@@ -24,11 +24,8 @@ import { Notifications } from './collections/Notifications'
 import { settleContributionsTask } from './tasks/settle-contributions'
 import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
 import { checkWithdrawalBalanceDailyTask } from './tasks/check-withdrawal-balance-daily'
-import { verifyPendingTransactionsTask } from './tasks/verify-pending-transactions-task'
 import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-daily'
-import { processPayoutTask } from './tasks/process-payout'
 import { processReferralWithdrawalTask } from './tasks/process-referral-withdrawal'
-import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
 import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
@@ -37,7 +34,6 @@ import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
 import { Refunds } from './collections/Refunds'
 import { PayoutApprovals } from './collections/PayoutApprovals'
-import { LedgerTopups } from './collections/LedgerTopups'
 import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
@@ -48,12 +44,14 @@ import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendSmsCampaignTask } from './tasks/send-sms-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
 import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
-import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { autoRefundDailyTask } from './tasks/auto-refund-daily'
 import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
 import { sealInactiveJarsDailyTask } from './tasks/seal-inactive-jars-daily'
+import { processPayoutPaystackTask } from './tasks/process-payout-paystack'
+import { verifyPendingPaystackPayoutsTask } from './tasks/verify-pending-paystack-payouts-task'
+import { verifyPendingPaystackCollectionsTask } from './tasks/verify-pending-paystack-collections-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -106,7 +104,6 @@ export default buildConfig({
     PushCampaigns,
     Refunds,
     PayoutApprovals,
-    LedgerTopups,
     Referrals,
     ReferralBonuses,
     Disputes,
@@ -114,7 +111,13 @@ export default buildConfig({
     Cashbacks,
     SmsCampaigns,
   ],
-  cors: [getServerSideURL(), 'https://hogapay.com'].filter(Boolean),
+  cors: [
+    getServerSideURL(),
+    'https://hogapay.com',
+    ...(process.env.EXTRA_CORS_ORIGINS
+      ? process.env.EXTRA_CORS_ORIGINS.split(',').map((s) => s.trim())
+      : []),
+  ].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
     url:
@@ -185,27 +188,26 @@ export default buildConfig({
       settleContributionsTask as any,
       checkEmptyJarsDailyTask as any,
       checkWithdrawalBalanceDailyTask as any,
-      verifyPendingTransactionsTask as any,
       jarCreationReminderDailyTask as any,
-      processPayoutTask as any,
       processReferralWithdrawalTask as any,
-      checkEganowPayoutBalanceTask as any,
       processRefundTask as any,
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
       sendSmsCampaignTask as any,
       verifyPendingRefundsTask as any,
-      verifyPendingTopupsTask as any,
       weeklyAccountSummaryTask as any,
       withdrawReminderDailyTask as any,
       autoRefundDailyTask as any,
       cleanupOldNotificationsTask as any,
       sealInactiveJarsDailyTask as any,
+      processPayoutPaystackTask as any,
+      verifyPendingPaystackPayoutsTask as any,
+      verifyPendingPaystackCollectionsTask as any,
     ],
     autoRun: [
       {
-        cron: '* * * * *', // Every minute — picks up queued payout jobs
-        queue: 'payout',
+        cron: '* * * * *', // Every minute — picks up queued Paystack payout jobs
+        queue: 'payout-paystack',
       },
       {
         cron: '* * * * *', // Every minute — picks up queued refund jobs
@@ -224,28 +226,24 @@ export default buildConfig({
         queue: 'check-withdrawal-balance-daily',
       },
       {
-        cron: '*/15 * * * *', // Every 15 minutes
-        queue: 'verify-pending-transactions',
-      },
-      {
         cron: '2 11 * * *', // Every day at 11:02 AM
         queue: 'jar-creation-reminder-daily',
       },
       {
-        cron: '2 * * * *', // 2 mins after schedule (0 * * * *)
-        queue: 'check-eganow-payout-balance',
+        cron: '*/16 * * * *', // Every minute — verify pending Paystack payout transfers
+        queue: 'verify-pending-paystack-payouts',
+      },
+      {
+        cron: '*/15 * * * *', // Every 15 minutes — verify pending Paystack collection transactions
+        queue: 'verify-pending-paystack-collections',
       },
       {
         cron: '* * * * *', // Every minute
         queue: 'send-scheduled-campaigns',
       },
       {
-        cron: '*/25 * * * *', // Every 25 minutes
+        cron: '*/26 * * * *', // Every 25 minutes
         queue: 'verify-pending-refunds',
-      },
-      {
-        cron: '*/15 * * * *', // Every 15 minutes
-        queue: 'verify-pending-topups',
       },
       {
         cron: '0 9 * * 0', // Every Sunday at 9 AM

@@ -1,7 +1,15 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getJarBalance } from '@/utilities/getJarBalance'
+import { getCharges } from '@/utilities/getCharges'
 
-export const payoutEganow = async (req: PayloadRequest) => {
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VDF',
+  vodafone: 'VDF',
+  airteltigo: 'ATL',
+}
+
+export const payoutPaystack = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
     const { jarId } = req.data || {}
@@ -14,7 +22,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: 'Authentication required' }, { status: 401 })
     }
 
-    const user = req.user
+    const user = req.user as any
 
     // Validate withdrawal account
     if (!user.bank || !user.accountNumber || !user.accountHolder) {
@@ -24,6 +32,13 @@ export const payoutEganow = async (req: PayloadRequest) => {
           message:
             'Withdrawal account information is missing. Please set up your withdrawal account first.',
         },
+        { status: 400 },
+      )
+    }
+
+    if (!bankCodeMap[user.bank.toLowerCase()]) {
+      return Response.json(
+        { success: false, message: 'Unsupported mobile money provider' },
         { status: 400 },
       )
     }
@@ -47,23 +62,11 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    const creatorId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
+    const creatorId = typeof jar.creator === 'string' ? jar.creator : (jar.creator as any)?.id
     if (creatorId !== user.id) {
       return Response.json(
         { success: false, message: 'Only the jar creator can request a payout' },
         { status: 403 },
-      )
-    }
-
-    const providerMap: Record<string, string> = {
-      mtn: 'MTNGH',
-      telecel: 'TCELGH',
-    }
-
-    if (!providerMap[user.bank.toLowerCase()]) {
-      return Response.json(
-        { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
-        { status: 400 },
       )
     }
 
@@ -82,6 +85,12 @@ export const payoutEganow = async (req: PayloadRequest) => {
       getJarBalance(req.payload, jarId),
     ])
 
+    const payoutCharges = await getCharges(req.payload, { amount: netBalance, type: 'payout' })
+    const feeAmount = payoutCharges.processingFee
+    const netAmount = payoutCharges.netAmount
+    const transferFeePercentage =
+      netBalance > 0 ? Math.round((feeAmount / netBalance) * 100 * 100) / 100 : 0
+
     if (pendingPayout.docs.length > 0) {
       return Response.json(
         { success: false, message: 'A payout is already pending for this jar' },
@@ -96,13 +105,20 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    if (netBalance < 1) {
+      return Response.json(
+        { success: false, message: 'Minimum payout amount is GHS 1.00' },
+        { status: 400 },
+      )
+    }
+
     // Find all accepted admin collectors in the jar
     const adminCollectors = ((jar.invitedCollectors as any[]) || []).filter(
       (ic: any) => ic.role === 'admin' && ic.status === 'accepted',
     )
 
     if (adminCollectors.length > 0) {
-      // Cap requiredApprovals to the number of admin collectors
+      // Cap requiredApprovals to number of admin collectors
       const requiredApprovals = Math.min(
         (jar as any).requiredApprovals || 1,
         adminCollectors.length,
@@ -115,12 +131,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
           overrideAccess: true,
         })
       }
-
-      // Jar has admin collectors — create transaction as awaiting-approval and skip Eganow
-      const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-      const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-      const transferFee = (netBalance * transferFeePercentage) / 100
-      const expectedNetAmount = netBalance - transferFee
 
       const transaction = await req.payload.create({
         collection: 'transactions',
@@ -136,13 +146,22 @@ export const payoutEganow = async (req: PayloadRequest) => {
           contributor: user.accountHolder,
           type: 'payout',
           payoutFeePercentage: transferFeePercentage,
-          payoutFeeAmount: transferFee,
-          payoutNetAmount: expectedNetAmount,
+          payoutFeeAmount: feeAmount,
+          payoutNetAmount: netAmount,
+          chargesBreakdown: {
+            platformCharge: feeAmount,
+            amountPaidByContributor: netBalance,
+            hogapayRevenue: payoutCharges.hogapayRevenue,
+            eganowFees: payoutCharges.eganowFees,
+            discountPercent: 0,
+            discountAmount: 0,
+            amountToSendToEganow: netAmount,
+            collectionFeePercent: transferFeePercentage,
+          },
         },
         overrideAccess: true,
       })
 
-      // Send notification to each admin collector (no approval records created yet)
       const amount = Math.abs(netBalance).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -173,20 +192,10 @@ export const payoutEganow = async (req: PayloadRequest) => {
         }),
       )
 
-      return Response.json({
-        success: true,
-        message: 'Payout request submitted for approval',
-      })
+      return Response.json({ success: true, message: 'Payout request submitted for approval' })
     }
 
-    // No collector admin — create the payout transaction record first so any
-    // subsequent request immediately sees a pending payout and is rejected,
-    // eliminating the double-payout race window.
-    const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-    const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-    const transferFee = (netBalance * transferFeePercentage) / 100
-    const expectedNetAmount = netBalance - transferFee
-
+    // No admin collectors — create transaction and queue payout job
     const transaction = await req.payload.create({
       collection: 'transactions',
       data: {
@@ -201,30 +210,33 @@ export const payoutEganow = async (req: PayloadRequest) => {
         contributor: user.accountHolder,
         type: 'payout',
         payoutFeePercentage: transferFeePercentage,
-        payoutFeeAmount: transferFee,
-        payoutNetAmount: expectedNetAmount,
+        payoutFeeAmount: feeAmount,
+        payoutNetAmount: netAmount,
+        chargesBreakdown: {
+          platformCharge: feeAmount,
+          amountPaidByContributor: netBalance,
+          hogapayRevenue: feeAmount,
+          eganowFees: 0,
+          discountPercent: 0,
+          discountAmount: 0,
+          amountToSendToEganow: netAmount,
+          collectionFeePercent: transferFeePercentage,
+        },
       },
       overrideAccess: true,
     })
 
     await req.payload.jobs.queue({
-      task: 'process-payout' as any,
+      task: 'process-payout-paystack' as any,
       input: { existingTransactionId: transaction.id },
-      queue: 'payout',
+      queue: 'payout-paystack',
     })
 
-    return Response.json({
-      success: true,
-      message: 'Payout request is being processed',
-    })
+    return Response.json({ success: true, message: 'Payout is being processed' })
   } catch (error: any) {
-    console.error('Payout queue error:', error)
+    console.error('payoutPaystack error:', error)
     return Response.json(
-      {
-        success: false,
-        message: 'Failed to process payout request',
-        error: error.message || 'Unknown error',
-      },
+      { success: false, message: error.message || 'Failed to process payout request' },
       { status: 500 },
     )
   }

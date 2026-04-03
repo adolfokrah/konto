@@ -334,7 +334,10 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
               <Section title="Charges Breakdown">
                 {!isPayout && <Row label="Amount Paid by Contributor" value={cb.amountPaidByContributor != null ? formatAmount(cb.amountPaidByContributor) : null} />}
                 {!isPayout && <Row label="Platform Charge" value={cb.platformCharge != null ? formatAmount(cb.platformCharge) : null} />}
-                <Row label="Eganow Fees" value={abs(cb.eganowFees) != null ? formatAmount(abs(cb.eganowFees)!) : null} />
+                {!isPayout && transaction.amountDue != null && (
+                  <Row label="Amount Due" value={<span className="font-semibold">{formatAmount(transaction.amountDue)}</span>} />
+                )}
+                <Row label="PSP Fees" value={abs(cb.eganowFees) != null ? formatAmount(abs(cb.eganowFees)!) : null} />
                 <Row
                   label="Hogapay Revenue"
                   value={abs(cb.hogapayRevenue) != null ? (

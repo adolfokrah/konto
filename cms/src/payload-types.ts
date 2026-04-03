@@ -81,7 +81,6 @@ export interface Config {
     'push-campaigns': PushCampaign;
     refunds: Refund;
     'payout-approvals': PayoutApproval;
-    'ledger-topups': LedgerTopup;
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
@@ -113,7 +112,6 @@ export interface Config {
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
-    'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
@@ -153,22 +151,21 @@ export interface Config {
       'settle-contributions': TaskSettleContributions;
       'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
       'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
-      'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
-      'process-payout': TaskProcessPayout;
       'process-referral-withdrawal': TaskProcessReferralWithdrawal;
-      'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
       'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'send-sms-campaign': TaskSendSmsCampaign;
       'verify-pending-refunds': TaskVerifyPendingRefunds;
-      'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
       'withdraw-reminder-daily': TaskWithdrawReminderDaily;
       'auto-refund-daily': TaskAutoRefundDaily;
       'cleanup-old-notifications': TaskCleanupOldNotifications;
       'seal-inactive-jars-daily': TaskSealInactiveJarsDaily;
+      'process-payout-paystack': TaskProcessPayoutPaystack;
+      'verify-pending-paystack-payouts': TaskVerifyPendingPaystackPayouts;
+      'verify-pending-paystack-collections': TaskVerifyPendingPaystackCollections;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1412,6 +1409,10 @@ export interface Transaction {
    */
   remarks?: string | null;
   /**
+   * Email address of the contributor
+   */
+  contributorEmail?: string | null;
+  /**
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
@@ -1459,9 +1460,17 @@ export interface Transaction {
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
   /**
+   * amountPaidByContributor minus platformCharge — net amount into the jar
+   */
+  amountDue?: number | null;
+  /**
    * Whether this contribution has been settled
    */
   isSettled?: boolean | null;
+  /**
+   * Who paid the collection fee for this contribution
+   */
+  collectionFeePaidBy?: ('contributor' | 'jar-creator') | null;
   /**
    * Transfer fee percentage applied to this payout
    */
@@ -1486,6 +1495,13 @@ export interface Transaction {
    * User who collected the contribution
    */
   collector?: (string | null) | User;
+  /**
+   * Snapshot of collector identity at transaction time — preserved even if account is deleted
+   */
+  collectorSnapshot?: {
+    name?: string | null;
+    email?: string | null;
+  };
   /**
    * Check if this contribution was made via a payment link
    */
@@ -1612,6 +1628,10 @@ export interface Jar {
    * Allow contributions from users not logged in
    */
   allowAnonymousContributions?: boolean | null;
+  /**
+   * Who bears the collection fee on contributions to this jar
+   */
+  collectionFeePaidBy?: ('contributor' | 'jar-creator') | null;
   /**
    * Custom fields to collect from contributors on the payment page
    */
@@ -1751,7 +1771,15 @@ export interface Refund {
    */
   initiatedBy?: (string | null) | User;
   /**
-   * Refund amount (stored as negative)
+   * Original contribution amount before fee deduction
+   */
+  initialAmount?: number | null;
+  /**
+   * Fee deducted from the refund amount
+   */
+  processingFee?: number | null;
+  /**
+   * Net refund amount sent to contributor (originalAmount - processingFee)
    */
   amount: number;
   /**
@@ -1822,40 +1850,6 @@ export interface PayoutApproval {
    * Admin who approved or rejected the payout
    */
   actionBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups".
- */
-export interface LedgerTopup {
-  id: string;
-  /**
-   * Top-up amount in GHS
-   */
-  amount: number;
-  /**
-   * Mobile money phone number used for top-up
-   */
-  phoneNumber: string;
-  /**
-   * Account holder name from KYC lookup
-   */
-  accountName?: string | null;
-  /**
-   * Mobile money provider
-   */
-  provider: 'mtn' | 'telecel';
-  status: 'pending' | 'completed' | 'failed';
-  /**
-   * Eganow transaction reference
-   */
-  transactionReference?: string | null;
-  /**
-   * Admin who initiated this top-up
-   */
-  initiatedBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -2230,22 +2224,21 @@ export interface PayloadJob {
           | 'settle-contributions'
           | 'check-empty-jars-daily'
           | 'check-withdrawal-balance-daily'
-          | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
-          | 'process-payout'
           | 'process-referral-withdrawal'
-          | 'check-eganow-payout-balance'
           | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
           | 'send-sms-campaign'
           | 'verify-pending-refunds'
-          | 'verify-pending-topups'
           | 'weekly-account-summary'
           | 'withdraw-reminder-daily'
           | 'auto-refund-daily'
           | 'cleanup-old-notifications'
           | 'seal-inactive-jars-daily'
+          | 'process-payout-paystack'
+          | 'verify-pending-paystack-payouts'
+          | 'verify-pending-paystack-collections'
           | 'schedulePublish';
         taskID: string;
         input?:
@@ -2285,22 +2278,21 @@ export interface PayloadJob {
         | 'settle-contributions'
         | 'check-empty-jars-daily'
         | 'check-withdrawal-balance-daily'
-        | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
-        | 'process-payout'
         | 'process-referral-withdrawal'
-        | 'check-eganow-payout-balance'
         | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
         | 'send-sms-campaign'
         | 'verify-pending-refunds'
-        | 'verify-pending-topups'
         | 'weekly-account-summary'
         | 'withdraw-reminder-daily'
         | 'auto-refund-daily'
         | 'cleanup-old-notifications'
         | 'seal-inactive-jars-daily'
+        | 'process-payout-paystack'
+        | 'verify-pending-paystack-payouts'
+        | 'verify-pending-paystack-collections'
         | 'schedulePublish'
       )
     | null;
@@ -2381,10 +2373,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payout-approvals';
         value: string | PayoutApproval;
-      } | null)
-    | ({
-        relationTo: 'ledger-topups';
-        value: string | LedgerTopup;
       } | null)
     | ({
         relationTo: 'referrals';
@@ -3078,6 +3066,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   jar?: T;
   contributor?: T;
   remarks?: T;
+  contributorEmail?: T;
   contributorPhoneNumber?: T;
   paymentMethod?: T;
   mobileMoneyProvider?: T;
@@ -3097,13 +3086,21 @@ export interface TransactionsSelect<T extends boolean = true> {
       };
   paymentStatus?: T;
   type?: T;
+  amountDue?: T;
   isSettled?: T;
+  collectionFeePaidBy?: T;
   payoutFeePercentage?: T;
   payoutFeeAmount?: T;
   payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
   collector?: T;
+  collectorSnapshot?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+      };
   viaPaymentLink?: T;
   webhookResponse?: T;
   customFieldValues?: T;
@@ -3152,6 +3149,7 @@ export interface JarsSelect<T extends boolean = true> {
   freezeReason?: T;
   lastActivityAt?: T;
   allowAnonymousContributions?: T;
+  collectionFeePaidBy?: T;
   customFields?:
     | T
     | {
@@ -3244,6 +3242,8 @@ export interface RefundsSelect<T extends boolean = true> {
   refundType?: T;
   jar?: T;
   initiatedBy?: T;
+  initialAmount?: T;
+  processingFee?: T;
   amount?: T;
   accountNumber?: T;
   accountName?: T;
@@ -3271,21 +3271,6 @@ export interface PayoutApprovalsSelect<T extends boolean = true> {
   status?: T;
   requestedBy?: T;
   actionBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups_select".
- */
-export interface LedgerTopupsSelect<T extends boolean = true> {
-  amount?: T;
-  phoneNumber?: T;
-  accountName?: T;
-  provider?: T;
-  status?: T;
-  transactionReference?: T;
-  initiatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3794,6 +3779,14 @@ export interface SystemSetting {
    */
   hogapayTransferFeePercent: number;
   /**
+   * Percentage deducted from the refund amount (e.g., 1%). Contributor receives refundAmount − fee.
+   */
+  refundFeePercentage: number;
+  /**
+   * Minimum amount a contributor can send (e.g., 2 = GHS 2.00).
+   */
+  minimumContributionAmount: number;
+  /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
   settlementDelayHours: number;
@@ -3913,6 +3906,8 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   hogapayCollectionFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
+  refundFeePercentage?: T;
+  minimumContributionAmount?: T;
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;
@@ -3958,28 +3953,10 @@ export interface TaskCheckWithdrawalBalanceDaily {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-transactions".
- */
-export interface TaskVerifyPendingTransactions {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskJar-creation-reminder-daily".
  */
 export interface TaskJarCreationReminderDaily {
   input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-payout".
- */
-export interface TaskProcessPayout {
-  input: {
-    existingTransactionId: string;
-  };
   output?: unknown;
 }
 /**
@@ -3995,14 +3972,6 @@ export interface TaskProcessReferralWithdrawal {
     accountHolder: string;
     amount: string;
   };
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCheck-eganow-payout-balance".
- */
-export interface TaskCheckEganowPayoutBalance {
-  input?: unknown;
   output?: unknown;
 }
 /**
@@ -4053,14 +4022,6 @@ export interface TaskVerifyPendingRefunds {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-topups".
- */
-export interface TaskVerifyPendingTopups {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskWeekly-account-summary".
  */
 export interface TaskWeeklyAccountSummary {
@@ -4096,6 +4057,32 @@ export interface TaskCleanupOldNotifications {
  * via the `definition` "TaskSeal-inactive-jars-daily".
  */
 export interface TaskSealInactiveJarsDaily {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcess-payout-paystack".
+ */
+export interface TaskProcessPayoutPaystack {
+  input: {
+    existingTransactionId: string;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-paystack-payouts".
+ */
+export interface TaskVerifyPendingPaystackPayouts {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerify-pending-paystack-collections".
+ */
+export interface TaskVerifyPendingPaystackCollections {
   input?: unknown;
   output?: unknown;
 }

@@ -192,6 +192,7 @@ class JarApiProvider extends BaseApiProvider {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    String? collectionFeePaidBy,
     int? requiredApprovals,
     List<Map<String, dynamic>>? customFields,
   }) async {
@@ -272,6 +273,9 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (allowAnonymousContributions != null) {
         jarData['allowAnonymousContributions'] = allowAnonymousContributions;
+      }
+      if (collectionFeePaidBy != null) {
+        jarData['collectionFeePaidBy'] = collectionFeePaidBy;
       }
       if (requiredApprovals != null) {
         jarData['requiredApprovals'] = requiredApprovals;

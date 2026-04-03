@@ -44,6 +44,7 @@ export default async function TransactionDetailPage({ params }: Props) {
     payoutFeePercentage: tx.payoutFeePercentage ?? null,
     payoutFeeAmount: tx.payoutFeeAmount ?? null,
     payoutNetAmount: tx.payoutNetAmount ?? null,
+      amountDue: tx.amountDue ?? null,
     transactionReference: tx.transactionReference || null,
     collector: (collectorName || collectorEmail)
       ? {

@@ -36,19 +36,6 @@ export const approveRefund = async (req: PayloadRequest) => {
       )
     }
 
-    // Prevent the initiator from approving their own refund
-    const initiatorId =
-      typeof refund.initiatedBy === 'object' ? (refund.initiatedBy as any)?.id : refund.initiatedBy
-    if (initiatorId && initiatorId === req.user!.id) {
-      return Response.json(
-        {
-          success: false,
-          message: 'You cannot approve a refund you initiated. A different admin must approve it.',
-        },
-        { status: 403 },
-      )
-    }
-
     // Update status to in-progress
     await req.payload.update({
       collection: 'refunds' as any,

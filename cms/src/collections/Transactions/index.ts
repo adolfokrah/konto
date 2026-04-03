@@ -1,20 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
-import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
-import { eganowWebhook } from './endpoints/eganow-webhook'
-import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
-import { payoutEganow } from './endpoints/payout-eganow'
-import { testPayoutEganow } from './endpoints/test-payout-eganow'
-import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus } from './hooks'
-import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
-import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 import { exportContributionsMobile } from './endpoints/export-contributions-mobile'
 import { recalculateCharges } from './endpoints/recalculate-charges'
@@ -22,12 +14,19 @@ import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
-import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
 import { updateJarLastActivity } from './hooks/update-jar-last-activity'
 import { createCashback } from './hooks/create-cashback'
 import { snapshotCollector } from './hooks/snapshotCollector'
+import { computeAmountDue } from './hooks/computeAmountDue'
 import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
+import { initializePaystackPayment } from './endpoints/initialize-paystack-payment'
+import { verifyPaystackPayment } from './endpoints/verify-paystack-payment'
+import { paystackWebhook } from './endpoints/paystack-webhook'
+import { paymentStatus } from './endpoints/payment-status'
+import { payoutPaystack } from './endpoints/payout-paystack'
+import { chargeMobileMoney } from './endpoints/charge-mobile-money'
+import { submitChargeOtp } from './endpoints/submit-charge-otp'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -62,6 +61,14 @@ export const Transactions: CollectionConfig = {
       },
     },
     {
+      name: 'contributorEmail',
+      type: 'email',
+      required: false,
+      admin: {
+        description: 'Email address of the contributor',
+      },
+    },
+    {
       name: 'contributorPhoneNumber',
       type: 'text',
       required: false,
@@ -70,9 +77,13 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Phone number is only required for mobile-money payments
-            if (data?.paymentMethod === 'mobile-money' && !data?.contributorPhoneNumber) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (
+              !isPaystackFlow &&
+              data?.paymentMethod === 'mobile-money' &&
+              !data?.contributorPhoneNumber
+            ) {
               throw new APIError('Phone number is required for mobile-money payments', 400)
             }
           },
@@ -98,9 +109,13 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Mobile money provider is required for mobile-money payments
-            if (data?.paymentMethod === 'mobile-money' && !data?.mobileMoneyProvider) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (
+              !isPaystackFlow &&
+              data?.paymentMethod === 'mobile-money' &&
+              !data?.mobileMoneyProvider
+            ) {
               throw new APIError('Mobile money provider is required for mobile-money payments', 400)
             }
           },
@@ -117,9 +132,9 @@ export const Transactions: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ data }) => {
-            // Account number is only required for bank payments
-            if (data?.paymentMethod === 'bank' && !data?.accountNumber) {
+          ({ data, originalDoc }) => {
+            const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
+            if (!isPaystackFlow && data?.paymentMethod === 'bank' && !data?.accountNumber) {
               throw new APIError('Account number is required for bank payments', 400)
             }
           },
@@ -229,6 +244,16 @@ export const Transactions: CollectionConfig = {
       ],
     },
     {
+      name: 'amountDue',
+      type: 'number',
+      virtual: true,
+      admin: {
+        readOnly: true,
+        description: 'amountPaidByContributor minus platformCharge — net amount into the jar',
+        condition: (data) => data?.type === 'contribution',
+      },
+    },
+    {
       name: 'isSettled',
       type: 'checkbox',
       defaultValue: false,
@@ -236,6 +261,19 @@ export const Transactions: CollectionConfig = {
         description: 'Whether this contribution has been settled',
         condition: (data) =>
           data?.type === 'contribution' && data?.paymentMethod === 'mobile-money',
+      },
+    },
+    {
+      name: 'collectionFeePaidBy',
+      type: 'select',
+      defaultValue: 'contributor',
+      options: [
+        { label: 'Contributor', value: 'contributor' },
+        { label: 'Jar Creator', value: 'jar-creator' },
+      ],
+      admin: {
+        description: 'Who paid the collection fee for this contribution',
+        condition: (data) => data?.type === 'contribution',
       },
     },
     {
@@ -402,36 +440,6 @@ export const Transactions: CollectionConfig = {
       handler: createPaymentLinkContribution,
     },
     {
-      path: '/charge-momo-eganow',
-      method: 'post',
-      handler: chargeMomoEganow,
-    },
-    {
-      path: '/eganow-webhook',
-      method: 'post',
-      handler: eganowWebhook,
-    },
-    {
-      path: '/eganow-payout-webhook',
-      method: 'post',
-      handler: eganowPayoutWebhook,
-    },
-    {
-      path: '/verify-payment-ega-now',
-      method: 'post',
-      handler: verifyPaymentEgaNow,
-    },
-    {
-      path: '/payout-eganow',
-      method: 'post',
-      handler: payoutEganow,
-    },
-    {
-      path: '/test-payout-eganow',
-      method: 'post',
-      handler: testPayoutEganow,
-    },
-    {
       path: '/approve-reject-payout',
       method: 'post',
       handler: approveRejectPayout,
@@ -440,11 +448,6 @@ export const Transactions: CollectionConfig = {
       path: '/verify-transfer',
       method: 'post',
       handler: verifyTransfer,
-    },
-    {
-      path: '/verify-pending-transactions',
-      method: 'get',
-      handler: verifyPendingTransactions,
     },
     {
       path: '/export-contributions',
@@ -477,18 +480,49 @@ export const Transactions: CollectionConfig = {
       handler: getTransaction,
     },
     {
-      path: '/reconcile-momo-status',
-      method: 'get',
-      handler: reconcileMomoStatus,
-    },
-    {
       path: '/get-charges',
       method: 'get',
       handler: getChargesEndpoint,
     },
+    {
+      path: '/initialize-paystack-payment',
+      method: 'post',
+      handler: initializePaystackPayment,
+    },
+    {
+      path: '/verify-paystack-payment',
+      method: 'get',
+      handler: verifyPaystackPayment,
+    },
+    {
+      path: '/paystack-webhook',
+      method: 'post',
+      handler: paystackWebhook,
+    },
+    {
+      path: '/payment-status',
+      method: 'get',
+      handler: paymentStatus,
+    },
+    {
+      path: '/payout-paystack',
+      method: 'post',
+      handler: payoutPaystack,
+    },
+    {
+      path: '/charge-mobile-money',
+      method: 'post',
+      handler: chargeMobileMoney,
+    },
+    {
+      path: '/submit-charge-otp',
+      method: 'post',
+      handler: submitChargeOtp,
+    },
   ],
   hooks: {
-    beforeChange: [setPaymentStatus, getCharges, snapshotCollector],
+    afterRead: [computeAmountDue],
+    beforeChange: [setPaymentStatus, snapshotCollector],
     afterChange: [
       sendContributionReceipt,
       notifyTransactionCompleted,

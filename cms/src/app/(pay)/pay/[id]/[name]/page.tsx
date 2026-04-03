@@ -6,7 +6,7 @@ import { ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
-import ContributionInput from '@/components/ContributionInput'
+import ContributionInputPaystack from '@/components/ContributionInputPaystack'
 import RecentContributions from '@/components/RecentContributions'
 import ReportJarButton from '@/components/ReportJarButton'
 import { Metadata } from 'next'
@@ -169,7 +169,6 @@ export default async function Page({
           .toUpperCase()
       : 'UN' // Unknown if no name
 
-    // Resolve collector id from query param or fallback to jar creator
     const collectorIdFromQuery =
       (resolvedSearchParams?.collectorId as string) || null
     const creatorId =
@@ -275,7 +274,7 @@ export default async function Page({
 
             {/* Contribution Input */}
             <div id="contribution-section" />
-            <ContributionInput
+            <ContributionInputPaystack
               currency={jarWithBalance.currency}
               isFixedAmount={jarWithBalance.isFixedContribution || false}
               fixedAmount={jarWithBalance.acceptedContributionAmount || 0}

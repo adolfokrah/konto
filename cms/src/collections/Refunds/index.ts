@@ -58,10 +58,22 @@ export const Refunds: CollectionConfig = {
       },
     },
     {
+      name: 'initialAmount',
+      type: 'number',
+      admin: { description: 'Original contribution amount before fee deduction' },
+    },
+    {
+      name: 'processingFee',
+      type: 'number',
+      admin: { description: 'Fee deducted from the refund amount' },
+    },
+    {
       name: 'amount',
       type: 'number',
       required: true,
-      admin: { description: 'Refund amount (stored as negative)' },
+      admin: {
+        description: 'Net refund amount sent to contributor (originalAmount - processingFee)',
+      },
     },
     {
       name: 'accountNumber',

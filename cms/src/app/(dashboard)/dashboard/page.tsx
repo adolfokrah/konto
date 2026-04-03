@@ -119,6 +119,7 @@ export default async function DashboardPage() {
       payoutFeePercentage: tx.payoutFeePercentage ?? null,
       payoutFeeAmount: tx.payoutFeeAmount ?? null,
       payoutNetAmount: tx.payoutNetAmount ?? null,
+      amountDue: tx.amountDue ?? null,
       transactionReference: tx.transactionReference || null,
       collector: collectorObj
         ? {

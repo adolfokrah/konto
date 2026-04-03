@@ -122,16 +122,18 @@ export const exportContributions = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, [custom fields], Date
-    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.09, 0.1]
-    const customFieldPercent = 0.09
+    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Amount Paid, Fees, Amount Due, Payout, [custom fields], Date
+    const basePercents = [
+      0.04, 0.1, 0.09, 0.09, 0.07, 0.05, 0.06, 0.07, 0.07, 0.07, 0.06, 0.07, 0.07, 0.09,
+    ]
+    const customFieldPercent = 0.07
     const numCustomFields = exportableCustomFields.length
     const scaleFactor = numCustomFields > 0 ? 1 - customFieldPercent * numCustomFields : 1
     const columnPercents = [
       basePercents[0], // # (no scale)
-      ...basePercents.slice(1).map((p) => p * scaleFactor),
+      ...basePercents.slice(1, 13).map((p) => p * scaleFactor),
       ...exportableCustomFields.map(() => customFieldPercent * scaleFactor),
-      basePercents[10] * scaleFactor, // Date last
+      basePercents[13] * scaleFactor, // Date last
     ]
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
@@ -144,6 +146,9 @@ export const exportContributions = async (req: PayloadRequest) => {
       'Status',
       'Reason',
       'Contribution',
+      'Amount Paid',
+      'Fees',
+      'Amount Due',
       'Payout',
       ...exportableCustomFields.map((f) => f.label),
       'Date',
@@ -399,6 +404,18 @@ export const exportContributions = async (req: PayloadRequest) => {
 
       const contributionAmt =
         typeLower === 'contribution' ? `${currency} ${amountNum.toFixed(2)}` : '-'
+      const paidNum =
+        typeLower === 'contribution'
+          ? Number(c.chargesBreakdown?.amountPaidByContributor || amountNum)
+          : 0
+      const amountPaidAmt = typeLower === 'contribution' ? `${currency} ${paidNum.toFixed(2)}` : '-'
+      const feeNum =
+        typeLower === 'contribution' ? Number(c.chargesBreakdown?.platformCharge || 0) : 0
+      const feeAmt =
+        typeLower === 'contribution' && feeNum > 0 ? `${currency} ${feeNum.toFixed(2)}` : '-'
+      const amountDueNum = typeLower === 'contribution' ? paidNum - feeNum : 0
+      const amountDueAmt =
+        typeLower === 'contribution' ? `${currency} ${amountDueNum.toFixed(2)}` : '-'
       const payoutAmt = typeLower === 'payout' ? `${currency} ${amountNum.toFixed(2)}` : '-'
 
       if (typeLower === 'contribution') total += amountNum
@@ -428,6 +445,9 @@ export const exportContributions = async (req: PayloadRequest) => {
         statusVal,
         reason,
         contributionAmt,
+        amountPaidAmt,
+        feeAmt,
+        amountDueAmt,
         payoutAmt,
         ...exportableCustomFields.map((f) => {
           const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
