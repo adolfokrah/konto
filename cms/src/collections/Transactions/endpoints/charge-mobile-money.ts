@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getPaystack } from '@/utilities/initalise'
-import { calculatePaystackCharges } from '@/utilities/paystackCharges'
+import { getCharges } from '@/utilities/getCharges'
 
 /**
  * POST /api/transactions/charge-mobile-money
@@ -102,7 +102,16 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
       }
     }
 
-    // Create pending transaction record
+    const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
+      | 'contributor'
+      | 'jar-creator'
+    const charges = await getCharges(req.payload, {
+      amount,
+      type: 'contribution',
+      collectionFeePaidBy: feePaidBy,
+    })
+
+    // Create pending transaction record with charges already calculated
     const transaction = await req.payload.create({
       collection: 'transactions',
       data: {
@@ -117,6 +126,20 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
         mobileMoneyProvider: provider,
         collector: collector || jar.creator,
         viaPaymentLink: false,
+        collectionFeePaidBy: feePaidBy,
+        chargesBreakdown: {
+          platformCharge: charges.processingFee,
+          amountPaidByContributor:
+            feePaidBy === 'contributor'
+              ? charges.initialAmount + charges.processingFee
+              : charges.initialAmount,
+          hogapayRevenue: charges.hogapayRevenue,
+          eganowFees: charges.eganowFees,
+          discountPercent: 0,
+          discountAmount: 0,
+          amountToSendToEganow: charges.netAmount,
+          collectionFeePercent: 0,
+        },
         ...(remarks ? { remarks } : {}),
         ...(customFieldValues
           ? {
@@ -131,6 +154,7 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
           : {}),
       },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     await req.payload.update({
@@ -141,6 +165,11 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
       context: { skipCharges: true },
     })
 
+    const amountToCharge =
+      feePaidBy === 'contributor'
+        ? charges.initialAmount + charges.processingFee
+        : charges.initialAmount
+
     // Normalise phone to international format expected by Paystack (e.g. 0551234987 → 233551234987)
     const normalizedPhone = contributorPhoneNumber.startsWith('+')
       ? contributorPhoneNumber.slice(1)
@@ -148,9 +177,7 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
         ? `233${contributorPhoneNumber.slice(1)}`
         : contributorPhoneNumber
 
-    // Apply fee passthrough formula
-    const charges = await calculatePaystackCharges(amount, req.payload)
-    const amountInPesewas = Math.round(charges.amountPaidByContributor * 100)
+    const amountInPesewas = Math.round(amountToCharge * 100)
     const currency = (jar.currency as string) || 'GHS'
 
     const paystack = getPaystack()

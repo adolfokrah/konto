@@ -18,9 +18,6 @@ class AppConfig {
   static String get contributionPage =>
       dotenv.env['NEXT_PROJECT_BASE_URL'] ?? 'https://hogapay.com';
 
-  static String get paystackPublicKey =>
-      dotenv.env['PAYSTACK_PUBLIC_KEY'] ?? '';
-
   static bool get isDevelopment => flutterEnv == 'development';
   static bool get isProduction => flutterEnv == 'production';
 

@@ -4,7 +4,6 @@ import { APIError } from 'payload'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { setPaymentStatus } from './hooks'
-import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
 import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
@@ -19,6 +18,7 @@ import { processReferralBonus } from './hooks/process-referral-bonus'
 import { updateJarLastActivity } from './hooks/update-jar-last-activity'
 import { createCashback } from './hooks/create-cashback'
 import { snapshotCollector } from './hooks/snapshotCollector'
+import { computeAmountDue } from './hooks/computeAmountDue'
 import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
 import { initializePaystackPayment } from './endpoints/initialize-paystack-payment'
 import { verifyPaystackPayment } from './endpoints/verify-paystack-payment'
@@ -244,6 +244,16 @@ export const Transactions: CollectionConfig = {
       ],
     },
     {
+      name: 'amountDue',
+      type: 'number',
+      virtual: true,
+      admin: {
+        readOnly: true,
+        description: 'amountPaidByContributor minus platformCharge — net amount into the jar',
+        condition: (data) => data?.type === 'contribution',
+      },
+    },
+    {
       name: 'isSettled',
       type: 'checkbox',
       defaultValue: false,
@@ -251,6 +261,19 @@ export const Transactions: CollectionConfig = {
         description: 'Whether this contribution has been settled',
         condition: (data) =>
           data?.type === 'contribution' && data?.paymentMethod === 'mobile-money',
+      },
+    },
+    {
+      name: 'collectionFeePaidBy',
+      type: 'select',
+      defaultValue: 'contributor',
+      options: [
+        { label: 'Contributor', value: 'contributor' },
+        { label: 'Jar Creator', value: 'jar-creator' },
+      ],
+      admin: {
+        description: 'Who paid the collection fee for this contribution',
+        condition: (data) => data?.type === 'contribution',
       },
     },
     {
@@ -498,7 +521,8 @@ export const Transactions: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [setPaymentStatus, getCharges, snapshotCollector],
+    afterRead: [computeAmountDue],
+    beforeChange: [setPaymentStatus, snapshotCollector],
     afterChange: [
       sendContributionReceipt,
       notifyTransactionCompleted,

@@ -513,6 +513,7 @@ class ContributionModel {
   final String? accountNumber;
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
+  final double? amountDue; // Net amount received by the jar after fees
   final ChargesBreakdown? chargesBreakdown; // Detailed charges breakdown
   final String
   paymentStatus; // 'pending' | 'completed' | 'failed'
@@ -535,6 +536,7 @@ class ContributionModel {
     this.accountNumber,
     required this.amountContributed,
     this.charges,
+    this.amountDue,
     this.chargesBreakdown,
     required this.paymentStatus,
     this.collector,
@@ -599,6 +601,10 @@ class ContributionModel {
             json['charges'] != null
                 ? (json['charges'] as num).toDouble()
                 : null,
+        amountDue:
+            json['amountDue'] != null
+                ? (json['amountDue'] as num).toDouble()
+                : null,
         chargesBreakdown:
             json['chargesBreakdown'] != null
                 ? ChargesBreakdown.fromJson(
@@ -640,6 +646,7 @@ class ContributionModel {
       if (accountNumber != null) 'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       if (charges != null) 'charges': charges,
+      if (amountDue != null) 'amountDue': amountDue,
       if (chargesBreakdown != null)
         'chargesBreakdown': chargesBreakdown!.toJson(),
       'paymentStatus': paymentStatus,
@@ -665,6 +672,7 @@ class ContributionModel {
     String? accountNumber,
     double? amountContributed,
     double? charges,
+    double? amountDue,
     ChargesBreakdown? chargesBreakdown,
     String? paymentStatus,
     ContributionUser? Function()? collector,
@@ -687,6 +695,7 @@ class ContributionModel {
       accountNumber: accountNumber ?? this.accountNumber,
       amountContributed: amountContributed ?? this.amountContributed,
       charges: charges ?? this.charges,
+      amountDue: amountDue ?? this.amountDue,
       chargesBreakdown: chargesBreakdown ?? this.chargesBreakdown,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       collector: collector != null ? collector() : this.collector,

@@ -1,5 +1,5 @@
 import { PayloadRequest } from 'payload'
-import { calculatePaystackCharges } from '@/utilities/paystackCharges'
+import { getCharges as calculateCharges } from '@/utilities/getCharges'
 
 /**
  * GET /api/transactions/get-charges?amount=100&jarId=xxx
@@ -23,9 +23,38 @@ export const getCharges = async (req: PayloadRequest) => {
       )
     }
 
-    const charges = await calculatePaystackCharges(amountContributed, req.payload)
+    const type = url.searchParams.get('type')
+    if (type === 'payout') {
+      return Response.json({
+        success: true,
+        originalAmount: amountContributed,
+        processingFee: 0,
+        netAmount: amountContributed,
+      })
+    }
 
-    return Response.json({ success: true, ...charges })
+    const jarId = url.searchParams.get('jarId')
+    let feePaidBy: 'contributor' | 'jar-creator' = 'contributor'
+    if (jarId) {
+      try {
+        const jar = await req.payload.findByID({
+          collection: 'jars',
+          id: jarId,
+          depth: 0,
+          overrideAccess: true,
+        })
+        feePaidBy =
+          ((jar as any)?.collectionFeePaidBy as 'contributor' | 'jar-creator') || 'contributor'
+      } catch (_) {}
+    }
+
+    const charges = await calculateCharges(req.payload, {
+      amount: amountContributed,
+      type: 'contribution',
+      collectionFeePaidBy: feePaidBy,
+    })
+
+    return Response.json({ success: true, ...charges, collectionFeePaidBy: feePaidBy })
   } catch (error: any) {
     return Response.json(
       { success: false, message: error.message || 'Failed to calculate charges' },

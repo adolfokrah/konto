@@ -1460,9 +1460,17 @@ export interface Transaction {
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
   /**
+   * amountPaidByContributor minus platformCharge — net amount into the jar
+   */
+  amountDue?: number | null;
+  /**
    * Whether this contribution has been settled
    */
   isSettled?: boolean | null;
+  /**
+   * Who paid the collection fee for this contribution
+   */
+  collectionFeePaidBy?: ('contributor' | 'jar-creator') | null;
   /**
    * Transfer fee percentage applied to this payout
    */
@@ -1621,6 +1629,10 @@ export interface Jar {
    */
   allowAnonymousContributions?: boolean | null;
   /**
+   * Who bears the collection fee on contributions to this jar
+   */
+  collectionFeePaidBy?: ('contributor' | 'jar-creator') | null;
+  /**
    * Custom fields to collect from contributors on the payment page
    */
   customFields?:
@@ -1759,7 +1771,15 @@ export interface Refund {
    */
   initiatedBy?: (string | null) | User;
   /**
-   * Refund amount (stored as negative)
+   * Original contribution amount before fee deduction
+   */
+  initialAmount?: number | null;
+  /**
+   * Fee deducted from the refund amount
+   */
+  processingFee?: number | null;
+  /**
+   * Net refund amount sent to contributor (originalAmount - processingFee)
    */
   amount: number;
   /**
@@ -3066,7 +3086,9 @@ export interface TransactionsSelect<T extends boolean = true> {
       };
   paymentStatus?: T;
   type?: T;
+  amountDue?: T;
   isSettled?: T;
+  collectionFeePaidBy?: T;
   payoutFeePercentage?: T;
   payoutFeeAmount?: T;
   payoutNetAmount?: T;
@@ -3127,6 +3149,7 @@ export interface JarsSelect<T extends boolean = true> {
   freezeReason?: T;
   lastActivityAt?: T;
   allowAnonymousContributions?: T;
+  collectionFeePaidBy?: T;
   customFields?:
     | T
     | {
@@ -3219,6 +3242,8 @@ export interface RefundsSelect<T extends boolean = true> {
   refundType?: T;
   jar?: T;
   initiatedBy?: T;
+  initialAmount?: T;
+  processingFee?: T;
   amount?: T;
   accountNumber?: T;
   accountName?: T;

@@ -34,8 +34,8 @@ export async function getJarBalance(
     pagination: false,
     select: {
       amountContributed: true,
+      amountDue: true,
       type: true,
-      createdAt: true,
     },
     overrideAccess: true,
   })
@@ -43,7 +43,7 @@ export async function getJarBalance(
   const settledContributions = allTransactions.docs.filter((tx: any) => tx.type === 'contribution')
 
   const settledSum = settledContributions.reduce(
-    (sum: number, tx: any) => sum + (tx.amountContributed ?? 0),
+    (sum: number, tx: any) => sum + (tx.amountDue ?? 0),
     0,
   )
 

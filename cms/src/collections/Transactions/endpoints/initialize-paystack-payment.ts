@@ -1,6 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getPaystack } from '@/utilities/initalise'
-import { calculatePaystackCharges } from '@/utilities/paystackCharges'
+import { getCharges } from '@/utilities/getCharges'
 
 /**
  * POST /api/transactions/initialize-paystack-payment
@@ -107,7 +107,16 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       }
     }
 
-    // Create pending transaction record
+    const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
+      | 'contributor'
+      | 'jar-creator'
+    const charges = await getCharges(req.payload, {
+      amount,
+      type: 'contribution',
+      collectionFeePaidBy: feePaidBy,
+    })
+
+    // Create pending transaction record with charges already calculated
     const transaction = await req.payload.create({
       collection: 'transactions',
       data: {
@@ -121,6 +130,20 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
         type: 'contribution',
         collector: collector || jar.creator,
         viaPaymentLink: true,
+        collectionFeePaidBy: feePaidBy,
+        chargesBreakdown: {
+          platformCharge: charges.processingFee,
+          amountPaidByContributor:
+            feePaidBy === 'contributor'
+              ? charges.initialAmount + charges.processingFee
+              : charges.initialAmount,
+          hogapayRevenue: charges.hogapayRevenue,
+          eganowFees: charges.eganowFees,
+          discountPercent: 0,
+          discountAmount: 0,
+          amountToSendToEganow: charges.netAmount,
+          collectionFeePercent: 0,
+        },
         ...(remarks ? { remarks } : {}),
         ...(customFieldValues
           ? {
@@ -135,6 +158,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
           : {}),
       },
       overrideAccess: true,
+      context: { skipCharges: true },
     })
 
     // Store transaction id as the reference so we can look it up on callback
@@ -146,9 +170,10 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       context: { skipCharges: true },
     })
 
-    // Calculate fee passthrough — charge customer the fee-inclusive amount
-    const charges = await calculatePaystackCharges(amount, req.payload)
-    const amountToCharge = charges.amountPaidByContributor
+    const amountToCharge =
+      feePaidBy === 'contributor'
+        ? charges.initialAmount + charges.processingFee
+        : charges.initialAmount
 
     // Amount in smallest currency unit (pesewas for GHS, kobo for NGN — both × 100)
     const currency = (jar.currency as string) || 'GHS'

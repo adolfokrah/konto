@@ -1,5 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getJarBalance } from '@/utilities/getJarBalance'
+import { getCharges } from '@/utilities/getCharges'
 
 const bankCodeMap: Record<string, string> = {
   mtn: 'MTN',
@@ -84,6 +85,12 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       getJarBalance(req.payload, jarId),
     ])
 
+    const payoutCharges = await getCharges(req.payload, { amount: netBalance, type: 'payout' })
+    const feeAmount = payoutCharges.processingFee
+    const netAmount = payoutCharges.netAmount
+    const transferFeePercentage =
+      netBalance > 0 ? Math.round((feeAmount / netBalance) * 100 * 100) / 100 : 0
+
     if (pendingPayout.docs.length > 0) {
       return Response.json(
         { success: false, message: 'A payout is already pending for this jar' },
@@ -138,9 +145,21 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           contributorPhoneNumber: user.accountNumber,
           contributor: user.accountHolder,
           type: 'payout',
+          payoutFeePercentage: transferFeePercentage,
+          payoutFeeAmount: feeAmount,
+          payoutNetAmount: netAmount,
+          chargesBreakdown: {
+            platformCharge: feeAmount,
+            amountPaidByContributor: netBalance,
+            hogapayRevenue: payoutCharges.hogapayRevenue,
+            eganowFees: payoutCharges.eganowFees,
+            discountPercent: 0,
+            discountAmount: 0,
+            amountToSendToEganow: netAmount,
+            collectionFeePercent: transferFeePercentage,
+          },
         },
         overrideAccess: true,
-        context: { skipCharges: true },
       })
 
       const amount = Math.abs(netBalance).toLocaleString(undefined, {
@@ -190,9 +209,21 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         contributorPhoneNumber: user.accountNumber,
         contributor: user.accountHolder,
         type: 'payout',
+        payoutFeePercentage: transferFeePercentage,
+        payoutFeeAmount: feeAmount,
+        payoutNetAmount: netAmount,
+        chargesBreakdown: {
+          platformCharge: feeAmount,
+          amountPaidByContributor: netBalance,
+          hogapayRevenue: feeAmount,
+          eganowFees: 0,
+          discountPercent: 0,
+          discountAmount: 0,
+          amountToSendToEganow: netAmount,
+          collectionFeePercent: transferFeePercentage,
+        },
       },
       overrideAccess: true,
-      context: { skipCharges: true },
     })
 
     await req.payload.jobs.queue({

@@ -76,7 +76,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     { header: 'Provider', key: 'provider', width: 14 },
     { header: 'Jar', key: 'jar', width: 20 },
     { header: 'Amount', key: 'amount', width: 16 },
-    { header: 'Eganow Fees', key: 'eganowFees', width: 14 },
+    { header: 'PSP Fees', key: 'eganowFees', width: 14 },
     { header: 'Hogapay Revenue', key: 'hogapayRevenue', width: 16 },
     { header: 'Status', key: 'status', width: 16 },
     { header: 'Initiated By', key: 'initiatedBy', width: 20 },
@@ -209,7 +209,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
     'Provider',
     'Jar',
     'Amount',
-    'Eganow Fees',
+    'PSP Fees',
     'Hogapay Rev',
     'Status',
     'Initiated By',
@@ -493,7 +493,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
       color: colors.text,
     })
 
-    // Eganow Fees column (index 6)
+    // PSP Fees column (index 6)
     const egaX = columnWidths.slice(0, 6).reduce((a, b) => a + b, 0) + pageMargin + 3
     page.drawText(fmtAmt(totalEganowFees), {
       x: egaX,

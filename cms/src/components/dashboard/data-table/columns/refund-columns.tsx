@@ -124,7 +124,7 @@ export const refundColumns: ColumnDef<RefundRow, any>[] = [
   },
   {
     id: 'eganowFees',
-    header: 'Eganow Fees',
+    header: 'PSP Fees',
     cell: ({ row }) => {
       if (row.original.status !== 'completed' || !row.original.eganowFees)
         return <span className="text-muted-foreground">{'\u2014'}</span>

@@ -250,6 +250,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
       payoutFeePercentage: tx.payoutFeePercentage ?? null,
       payoutFeeAmount: tx.payoutFeeAmount ?? null,
       payoutNetAmount: tx.payoutNetAmount ?? null,
+      amountDue: tx.amountDue ?? null,
       transactionReference: tx.transactionReference || null,
       collector: collectorObj
         ? {
@@ -554,6 +555,21 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
             <DetailRow
               label="Anonymous Contributions"
               value={jar.allowAnonymousContributions ? 'Allowed' : 'Not allowed'}
+            />
+            <Separator />
+            <DetailRow
+              label="Collection Fee Paid By"
+              value={
+                jar.collectionFeePaidBy === 'jar-creator' ? (
+                  <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
+                    Jar Creator
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                    Contributor
+                  </Badge>
+                )
+              }
             />
             {jar.deadline && (
               <>

@@ -913,6 +913,46 @@ class _JarInfoViewState extends State<JarInfoView> {
                                         },
                                       ),
                                     ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        'Collection Fee Paid By',
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        jarData.collectionFeePaidBy == 'jar-creator'
+                                            ? 'Jar Creator'
+                                            : 'Contributor',
+                                      ),
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
+                                            jarData.collectionFeePaidBy ==
+                                            'jar-creator',
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: {
+                                                'collectionFeePaidBy':
+                                                    value ? 'jar-creator' : 'contributor',
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

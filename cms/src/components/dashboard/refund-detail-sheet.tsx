@@ -232,7 +232,7 @@ export function RefundDetailSheet({
                     <h4 className="text-sm font-semibold mb-1">Fees</h4>
                     <Separator className="mb-2" />
                     <DetailRow
-                      label="Eganow Fees"
+                      label="PSP Fees"
                       value={formatAmount(Math.abs(selected.eganowFees), currency)}
                     />
                     <DetailRow

@@ -105,9 +105,13 @@ export default function ContributionInputPaystack({
         if (res.ok) {
           const data = await res.json()
           if (data.success) {
+            const feePaidBy = data.collectionFeePaidBy ?? 'contributor'
+            const amountPaidByContributor = feePaidBy === 'contributor'
+              ? data.initialAmount + data.processingFee
+              : data.initialAmount
             setCharges({
-              platformCharge: data.platformCharge,
-              amountPaidByContributor: data.amountPaidByContributor,
+              platformCharge: data.processingFee,
+              amountPaidByContributor,
               minimumContributionAmount: data.minimumContributionAmount ?? 2,
             })
             return
@@ -116,10 +120,12 @@ export default function ContributionInputPaystack({
       } catch {
         // fall through to local fallback
       }
-      const fee = selectedAmount * (transactionFeePercentage / 100)
+      const feeRate = transactionFeePercentage / 100
+      const amountPaidByContributor = Math.round((selectedAmount / (1 - feeRate) + 0.01) * 100) / 100
+      const fee = Math.round((amountPaidByContributor - selectedAmount) * 100) / 100
       setCharges({
         platformCharge: fee,
-        amountPaidByContributor: selectedAmount + fee,
+        amountPaidByContributor,
         minimumContributionAmount: 2,
       })
     }, 400)

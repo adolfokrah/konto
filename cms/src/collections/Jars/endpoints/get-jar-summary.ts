@@ -106,6 +106,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
       pagination: false,
       select: {
         amountContributed: true,
+        amountDue: true,
         paymentStatus: true,
         paymentMethod: true,
         type: true,
@@ -173,10 +174,10 @@ export const getJarSummary = async (req: PayloadRequest) => {
       (tx: any) =>
         tx.type === 'contribution' &&
         tx.paymentStatus === 'completed' &&
-        tx.isSettled === false &&
+        !tx.isSettled &&
         ['mobile-money', 'card', 'bank'].includes(tx.paymentMethod),
     )
-    .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
+    .reduce((s: number, tx: any) => s + (tx.amountDue ?? 0), 0)
 
   // Payouts are stored as negative amountContributed — negate to get positive total
   const totalTransfers = txDocs
