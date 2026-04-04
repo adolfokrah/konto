@@ -61,9 +61,6 @@ export type TransactionRow = {
   paymentStatus: 'pending' | 'completed' | 'failed' | 'awaiting-approval'
   type: 'contribution' | 'payout'
   isSettled: boolean
-  payoutFeePercentage: number | null
-  payoutFeeAmount: number | null
-  payoutNetAmount: number | null
   amountDue: number | null
   transactionReference: string | null
   collector: { id: string; firstName: string; lastName: string; email: string } | null
@@ -267,19 +264,25 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
-    id: 'contribution',
-    header: 'Contribution',
-    size: 130,
+    id: 'amountContributed',
+    header: 'Amount',
+    size: 150,
     cell: ({ row }) => {
-      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
+      const { type, amountContributed, paymentStatus } = row.original
+      const failed = paymentStatus === 'failed'
+      const isPayout = type === 'payout'
       return (
         <span
           className={cn(
             'font-medium',
-            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-green-400',
+            failed
+              ? 'text-muted-foreground line-through'
+              : isPayout
+              ? 'text-red-400'
+              : 'text-green-400',
           )}
         >
-          {formatAmount(Math.abs(row.original.amountContributed))}
+          {isPayout ? '-' : '+'}{formatAmount(Math.abs(amountContributed))}
         </span>
       )
     },
@@ -290,27 +293,12 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     } satisfies DataTableColumnMeta,
   },
   {
-    id: 'amountPaid',
-    header: 'Amount Paid',
-    size: 130,
-    cell: ({ row }) => {
-      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
-      const paid = row.original.chargesBreakdown?.amountPaidByContributor
-      if (paid == null) return <span className="text-muted-foreground">—</span>
-      return <span className="font-medium">{formatAmount(Math.abs(paid))}</span>
-    },
-    meta: {
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
-    } satisfies DataTableColumnMeta,
-  },
-  {
     id: 'platformCharge',
     header: 'Fees',
-    size: 110,
+    size: 120,
     cell: ({ row }) => {
       const charge = row.original.chargesBreakdown?.platformCharge
-      if (!charge) return <span className="text-muted-foreground">—</span>
+      if (charge == null) return <span className="text-muted-foreground">—</span>
       return <span className="text-muted-foreground">{formatAmount(Math.abs(charge))}</span>
     },
     meta: {
@@ -323,29 +311,15 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Amount Due',
     size: 130,
     cell: ({ row }) => {
-      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
-      const amountDue = row.original.amountDue
-      if (amountDue == null) return <span className="text-muted-foreground">—</span>
+      const { type, amountDue, amountContributed, chargesBreakdown, paymentStatus } = row.original
+      const value =
+        type === 'payout'
+          ? Math.abs(amountContributed) - Math.abs(chargesBreakdown?.platformCharge ?? 0)
+          : amountDue
+      if (value == null) return <span className="text-muted-foreground">—</span>
       return (
-        <span className={cn('font-medium', row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : '')}>
-          {formatAmount(amountDue)}
-        </span>
-      )
-    },
-    meta: {
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
-    } satisfies DataTableColumnMeta,
-  },
-  {
-    id: 'payout',
-    header: 'Payout',
-    size: 130,
-    cell: ({ row }) => {
-      if (row.original.type !== 'payout') return <span className="text-muted-foreground">—</span>
-      return (
-        <span className={cn('font-medium', row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400')}>
-          -{formatAmount(Math.abs(row.original.amountContributed))}
+        <span className={cn('font-medium', paymentStatus === 'failed' ? 'text-muted-foreground line-through' : '')}>
+          {formatAmount(Math.abs(value))}
         </span>
       )
     },
@@ -360,7 +334,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     size: 120,
     cell: ({ row }) => {
       const fees = row.original.chargesBreakdown?.eganowFees
-      if (!fees) return <span className="text-muted-foreground">—</span>
+      if (fees == null) return <span className="text-muted-foreground">—</span>
       return <span className="text-muted-foreground">{formatAmount(Math.abs(fees))}</span>
     },
     meta: {
@@ -374,7 +348,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     size: 120,
     cell: ({ row }) => {
       const revenue = row.original.chargesBreakdown?.hogapayRevenue
-      if (!revenue) return <span className="text-muted-foreground">—</span>
+      if (revenue == null) return <span className="text-muted-foreground">—</span>
       return <span className="text-green-400">{formatAmount(Math.abs(revenue))}</span>
     },
     meta: {

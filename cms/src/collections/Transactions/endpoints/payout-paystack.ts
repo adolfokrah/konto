@@ -1,19 +1,12 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getJarBalance } from '@/utilities/getJarBalance'
 import { getCharges } from '@/utilities/getCharges'
-
-const bankCodeMap: Record<string, string> = {
-  mtn: 'MTN',
-  telecel: 'VDF',
-  vodafone: 'VDF',
-  airteltigo: 'ATL',
-}
+import type { User, PaymentMethod } from '@/payload-types'
 
 export const payoutPaystack = async (req: PayloadRequest) => {
   try {
     await addDataAndFileToRequest(req)
-    const { jarId, payoutType = 'mobile-money' } = req.data || {}
-    const isBank = payoutType === 'bank'
+    const { jarId } = req.data || {}
 
     if (!jarId) {
       return Response.json({ success: false, message: 'Jar ID is required' }, { status: 400 })
@@ -23,7 +16,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: 'Authentication required' }, { status: 401 })
     }
 
-    const user = req.user as any
+    const user = req.user as User
 
     // Validate withdrawal account
     if (!user.bank || !user.accountNumber || !user.accountHolder) {
@@ -37,9 +30,27 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       )
     }
 
-    if (!bankCodeMap[user.bank.toLowerCase()]) {
+    const withdrawalPaymentMethod = user.withdrawalPaymentMethod
+    const paymentMethodSlug =
+      typeof withdrawalPaymentMethod === 'object' && withdrawalPaymentMethod !== null
+        ? (withdrawalPaymentMethod as PaymentMethod).slug
+        : (withdrawalPaymentMethod as string | null | undefined)
+
+    const paymentMethodType =
+      typeof withdrawalPaymentMethod === 'object' && withdrawalPaymentMethod !== null
+        ? (withdrawalPaymentMethod as PaymentMethod).type
+        : paymentMethodSlug
+
+    const isBank = paymentMethodType === 'bank'
+
+    type TransactionPaymentMethod = 'bank' | 'mobile-money' | 'cash' | 'card'
+    const paymentMethod = (paymentMethodSlug ??
+      (isBank ? 'bank' : 'mobile-money')) as TransactionPaymentMethod
+
+    const resolvedBankCode = user.bankCode
+    if (!resolvedBankCode) {
       return Response.json(
-        { success: false, message: 'Unsupported mobile money provider' },
+        { success: false, message: 'Bank code missing. Please re-save your withdrawal account.' },
         { status: 400 },
       )
     }
@@ -96,13 +107,12 @@ export const payoutPaystack = async (req: PayloadRequest) => {
     const payoutCharges = await getCharges(req.payload, {
       amount: netBalance,
       type: 'payout',
-      paymentMethod: isBank ? 'bank' : 'mobile-money',
+      paymentMethod: paymentMethod || 'mobile-money',
       country: creatorCountry,
     })
+
     const feeAmount = payoutCharges.processingFee
     const netAmount = payoutCharges.netAmount
-    const transferFeePercentage =
-      netBalance > 0 ? Math.round((feeAmount / netBalance) * 100 * 100) / 100 : 0
 
     if (pendingPayout.docs.length > 0) {
       return Response.json(
@@ -118,12 +128,24 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       )
     }
 
-    const minimumPayoutAmount = (settings as any)?.minimumPayoutAmount ?? 10
+    // Use per-payment-method minimum if available, fall back to global system setting
+    const minimumPayoutAmount =
+      payoutCharges.minimumPayoutAmount ?? (settings as any)?.minimumPayoutAmount ?? 10
     if (netBalance < minimumPayoutAmount) {
       return Response.json(
         {
           success: false,
           message: `Minimum payout amount is GHS ${minimumPayoutAmount.toFixed(2)}`,
+        },
+        { status: 400 },
+      )
+    }
+
+    if (netAmount <= 0) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Balance is insufficient to cover payout fees',
         },
         { status: 400 },
       )
@@ -153,7 +175,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         collection: 'transactions',
         data: {
           paymentStatus: 'awaiting-approval',
-          paymentMethod: isBank ? 'bank' : 'mobile-money',
+          paymentMethod: paymentMethod,
           transactionReference: '',
           jar: jarId,
           mobileMoneyProvider: isBank ? undefined : user.bank,
@@ -162,9 +184,6 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           contributorPhoneNumber: user.accountNumber,
           contributor: user.accountHolder,
           type: 'payout',
-          payoutFeePercentage: transferFeePercentage,
-          payoutFeeAmount: feeAmount,
-          payoutNetAmount: netAmount,
           chargesBreakdown: {
             platformCharge: feeAmount,
             amountPaidByContributor: netBalance,
@@ -172,8 +191,6 @@ export const payoutPaystack = async (req: PayloadRequest) => {
             eganowFees: payoutCharges.eganowFees,
             discountPercent: 0,
             discountAmount: 0,
-            amountToSendToEganow: netAmount,
-            collectionFeePercent: transferFeePercentage,
           },
         },
         overrideAccess: true,
@@ -226,18 +243,13 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         contributorPhoneNumber: user.accountNumber,
         contributor: user.accountHolder,
         type: 'payout',
-        payoutFeePercentage: transferFeePercentage,
-        payoutFeeAmount: feeAmount,
-        payoutNetAmount: netAmount,
         chargesBreakdown: {
           platformCharge: feeAmount,
           amountPaidByContributor: netBalance,
-          hogapayRevenue: feeAmount,
-          eganowFees: 0,
+          hogapayRevenue: payoutCharges.hogapayRevenue,
+          eganowFees: payoutCharges.eganowFees,
           discountPercent: 0,
           discountAmount: 0,
-          amountToSendToEganow: netAmount,
-          collectionFeePercent: transferFeePercentage,
         },
       },
       overrideAccess: true,

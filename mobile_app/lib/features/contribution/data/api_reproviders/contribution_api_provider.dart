@@ -190,10 +190,8 @@ class ContributionApiProvider extends BaseApiProvider {
                   ].contains(method),
                 )
                 .toList();
-        if (validPaymentMethods.isNotEmpty) {
-          queryParams['where[paymentMethod][in]'] = validPaymentMethods.join(
-            ',',
-          );
+        for (var i = 0; i < validPaymentMethods.length; i++) {
+          queryParams['where[paymentMethod][in][$i]'] = validPaymentMethods[i];
         }
       }
 
@@ -209,8 +207,8 @@ class ContributionApiProvider extends BaseApiProvider {
                   ].contains(status),
                 )
                 .toList();
-        if (validStatuses.isNotEmpty) {
-          queryParams['where[paymentStatus][in]'] = validStatuses.join(',');
+        for (var i = 0; i < validStatuses.length; i++) {
+          queryParams['where[paymentStatus][in][$i]'] = validStatuses[i];
         }
       }
 
@@ -226,8 +224,8 @@ class ContributionApiProvider extends BaseApiProvider {
                   ].contains(type),
                 )
                 .toList();
-        if (validTypes.isNotEmpty) {
-          queryParams['where[type][in]'] = validTypes.join(',');
+        for (var i = 0; i < validTypes.length; i++) {
+          queryParams['where[type][in][$i]'] = validTypes[i];
         }
       } else {
         // Default: exclude refunds from list

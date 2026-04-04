@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:Hoga/core/config/backend_config.dart';
 import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/core/enums/app_language.dart';
+import 'package:Hoga/features/user_account/data/models/bank_model.dart';
+import 'package:Hoga/features/user_account/data/models/payment_method_model.dart';
 
 import 'package:Hoga/core/services/base_api_provider.dart';
 
@@ -23,7 +25,9 @@ class UserAccountApiProvider extends BaseApiProvider {
     String? email,
     String? accountNumber,
     String? bank,
+    String? bankCode,
     String? accountHolder,
+    String? withdrawalPaymentMethod,
     AppTheme? appTheme,
     AppLanguage? appLanguage,
     String? photoId,
@@ -51,7 +55,10 @@ class UserAccountApiProvider extends BaseApiProvider {
       if (email != null) updateData['email'] = email;
       if (accountNumber != null) updateData['accountNumber'] = accountNumber;
       if (bank != null) updateData['bank'] = bank;
+      if (bankCode != null) updateData['bankCode'] = bankCode;
       if (accountHolder != null) updateData['accountHolder'] = accountHolder;
+      if (withdrawalPaymentMethod != null)
+        updateData['withdrawalPaymentMethod'] = withdrawalPaymentMethod;
       if (photoId != null)
         updateData['photo'] = photoId; // attach media document id
       if (appTheme != null || appLanguage != null) {
@@ -72,7 +79,7 @@ class UserAccountApiProvider extends BaseApiProvider {
       }
 
       final response = await dio.patch(
-        '${BackendConfig.apiBaseUrl}${BackendConfig.usersEndpoint}/${user.id}',
+        '${BackendConfig.apiBaseUrl}${BackendConfig.usersEndpoint}/${user.id}?depth=1',
         data: updateData,
         options: Options(headers: headers),
       );
@@ -165,13 +172,18 @@ class UserAccountApiProvider extends BaseApiProvider {
 
   /// Verify account details using Paystack
   Future<Map<String, dynamic>> verifyAccountDetails({
-    required String phoneNumber,
+    required String accountNumber,
     required String bank,
+    required String paymentMethod,
   }) async {
     try {
       final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/users/verify-account-details',
-        data: {'phoneNumber': phoneNumber, 'bank': bank},
+        data: {
+          'accountNumber': accountNumber,
+          'bank': bank,
+          'paymentMethod': paymentMethod,
+        },
         options: Options(headers: BackendConfig.defaultHeaders),
       );
 
@@ -209,6 +221,44 @@ class UserAccountApiProvider extends BaseApiProvider {
         'error': e.toString(),
       };
     }
+  }
+
+  /// Fetch payment methods available in a country (excludes card & cash).
+  Future<List<PaymentMethodModel>> fetchPaymentMethods({
+    required String country,
+  }) async {
+    final response = await dio.get(
+      '${BackendConfig.apiBaseUrl}/payment-methods',
+      queryParameters: {
+        'where[and][0][country][in][0]': country.toLowerCase(),
+        'where[and][1][isActive][equals]': true,
+        'where[and][2][slug][in][0]': 'mobile-money',
+        'where[and][2][slug][in][1]': 'bank-transfer',
+        'limit': 100,
+      },
+      options: Options(headers: BackendConfig.defaultHeaders),
+    );
+    final docs = response.data['docs'] as List<dynamic>? ?? [];
+    return docs
+        .map((e) => PaymentMethodModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Fetch available banks / mobile money operators from Paystack via backend.
+  /// [type] — 'mobile_money' for MoMo providers, 'ghipss' for bank transfers.
+  Future<List<BankModel>> getBanks({
+    String country = 'ghana',
+    String? type,
+  }) async {
+    final response = await dio.get(
+      '${BackendConfig.apiBaseUrl}/users/banks',
+      queryParameters: {'country': country, if (type != null) 'type': type},
+      options: Options(headers: BackendConfig.defaultHeaders),
+    );
+    final data = response.data['data'] as List<dynamic>? ?? [];
+    return data
+        .map((e) => BankModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Delete user account

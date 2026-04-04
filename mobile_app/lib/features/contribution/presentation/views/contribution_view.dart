@@ -696,11 +696,9 @@ class ContributionView extends StatelessWidget {
                                     ),
                                   ),
 
-                                  // Fees breakdown card — only for contributions with charges
-                                  if (contribution.type.value ==
-                                          ContributionType.contribution.value &&
-                                      (contribution.chargesBreakdown != null ||
-                                          contribution.amountDue != null)) ...[
+                                  // Fees breakdown — contribution and payout
+                                  if (contribution.chargesBreakdown?.platformCharge != null ||
+                                      contribution.amountDue != null) ...[
                                     const SizedBox(height: AppSpacing.spacingM),
                                     AppCard(
                                       padding: const EdgeInsets.symmetric(
@@ -708,75 +706,46 @@ class ContributionView extends StatelessWidget {
                                       ),
                                       child: Column(
                                         children: [
-                                          ListTile(
-                                            contentPadding: EdgeInsets.zero,
-                                            dense: true,
-                                            title: Text(
-                                              'Amount Charged',
-                                              style: AppTextStyles.titleMediumS
-                                                  .copyWith(
-                                                    color: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall!
-                                                        .color
-                                                        ?.withValues(alpha: 0.5),
+                                          if (contribution.chargesBreakdown?.platformCharge != null)
+                                            ListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              dense: true,
+                                              title: Text(
+                                                'Processing Fee',
+                                                style: AppTextStyles.titleMediumS.copyWith(
+                                                  color: Theme.of(context).textTheme.bodySmall!.color?.withValues(alpha: 0.5),
+                                                ),
+                                              ),
+                                              trailing: Text(
+                                                '- ${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.platformCharge!.abs().toStringAsFixed(2)}',
+                                                style: AppTextStyles.titleMediumS.copyWith(
+                                                  color: AppColors.errorRed,
+                                                ),
+                                              ),
+                                            ),
+                                          Builder(
+                                            builder: (_) {
+                                              final fee = contribution.chargesBreakdown?.platformCharge ?? 0;
+                                              final amountDue = contribution.type == ContributionType.payout
+                                                  ? contribution.amountContributed.abs() - fee.abs()
+                                                  : contribution.amountDue;
+                                              if (amountDue == null) return const SizedBox.shrink();
+                                              return ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                dense: true,
+                                                title: Text(
+                                                  'Amount Due',
+                                                  style: AppTextStyles.titleMediumS,
+                                                ),
+                                                trailing: Text(
+                                                  '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${amountDue.abs().toStringAsFixed(2)}',
+                                                  style: AppTextStyles.titleMediumS.copyWith(
+                                                    fontWeight: FontWeight.w600,
                                                   ),
-                                            ),
-                                            trailing: Text(
-                                              '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.amountPaidByContributor!.abs().toStringAsFixed(2)}',
-                                              style: AppTextStyles.titleMediumS,
-                                            ),
+                                                ),
+                                              );
+                                            },
                                           ),
-                                          if (contribution.chargesBreakdown!
-                                                  .platformCharge !=
-                                              null)
-                                            ListTile(
-                                              contentPadding: EdgeInsets.zero,
-                                              dense: true,
-                                              title: Text(
-                                                'Platform Fee',
-                                                style: AppTextStyles.titleMediumS
-                                                    .copyWith(
-                                                      color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall!
-                                                          .color
-                                                          ?.withValues(
-                                                            alpha: 0.5,
-                                                          ),
-                                                    ),
-                                              ),
-                                              trailing: Text(
-                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.chargesBreakdown!.platformCharge!.abs().toStringAsFixed(2)}',
-                                                style:
-                                                    AppTextStyles.titleMediumS,
-                                              ),
-                                            ),
-                                          if (contribution.amountDue != null)
-                                            ListTile(
-                                              contentPadding: EdgeInsets.zero,
-                                              dense: true,
-                                              title: Text(
-                                                'Amount Due',
-                                                style: AppTextStyles.titleMediumS
-                                                    .copyWith(
-                                                      color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall!
-                                                          .color
-                                                          ?.withValues(
-                                                            alpha: 0.5,
-                                                          ),
-                                                    ),
-                                              ),
-                                              trailing: Text(
-                                                '${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${contribution.amountDue!.abs().toStringAsFixed(2)}',
-                                                style: AppTextStyles.titleMediumS
-                                                    .copyWith(
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     ),

@@ -36,15 +36,10 @@ class FilterOptions {
 
   /// Payment method options for contributions filter
   static const List<PaymentMethodOption> paymentMethods = [
-    PaymentMethodOption(
-      'mobile-money',
-      'mobileMoneyPayment',
-      Icons.phone_android,
-    ),
+    PaymentMethodOption('mobile-money', 'mobileMoneyPayment', Icons.phone_android),
     PaymentMethodOption('cash', 'cashPayment', Icons.money),
-    // PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
-    // PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
-    // PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
+    PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
+    PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
   ];
 
   /// Status options for contributions filter

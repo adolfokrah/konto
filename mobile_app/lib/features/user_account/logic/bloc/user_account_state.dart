@@ -19,3 +19,14 @@ final class UserAccountError extends UserAccountState {
 
   UserAccountError({required this.message});
 }
+
+final class PaymentMethodsLoaded extends UserAccountState {
+  final List<PaymentMethodModel> paymentMethods;
+  PaymentMethodsLoaded({required this.paymentMethods});
+}
+
+final class BanksLoaded extends UserAccountState {
+  final List<BankModel> banks;
+  final String paystackType;
+  BanksLoaded({required this.banks, required this.paystackType});
+}

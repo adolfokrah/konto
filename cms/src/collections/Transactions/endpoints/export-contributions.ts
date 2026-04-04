@@ -145,7 +145,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       'Type',
       'Status',
       'Reason',
-      'Contribution',
+      'Amount',
       'Amount Paid',
       'Fees',
       'Amount Due',
