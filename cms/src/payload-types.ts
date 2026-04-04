@@ -1458,7 +1458,7 @@ export interface Transaction {
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
-  paymentMethod?: ('mobile-money' | 'cash' | 'bank' | 'card') | null;
+  paymentMethod?: ('mobile-money' | 'cash' | 'bank-transfer' | 'card') | null;
   mobileMoneyProvider?: string | null;
   /**
    * Account number for bank transfers
@@ -2212,10 +2212,6 @@ export interface ReferralBonusSetting {
    * % of Hogapay's transfer fee shared with the referrer.
    */
   feeShare: number;
-  /**
-   * Minimum referral balance required to initiate a withdrawal.
-   */
-  minWithdrawal: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -3619,7 +3615,6 @@ export interface ReferralBonusSettingsSelect<T extends boolean = true> {
   country?: T;
   firstContributionBonus?: T;
   feeShare?: T;
-  minWithdrawal?: T;
   updatedAt?: T;
   createdAt?: T;
 }

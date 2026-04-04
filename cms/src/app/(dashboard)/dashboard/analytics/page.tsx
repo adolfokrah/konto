@@ -197,7 +197,7 @@ export default async function AnalyticsPage({
       where: {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'contribution' },
-        paymentMethod: { equals: 'bank' },
+        paymentMethod: { equals: 'bank-transfer' },
       },
     }),
     payload.count({
@@ -1029,7 +1029,7 @@ function buildContributionVolumeByMethodData(
     const method = doc.paymentMethod || ''
     if (method === 'mobile-money') buckets[key].mobileMoney += amount
     else if (method === 'cash') buckets[key].cash += amount
-    else if (method === 'bank') buckets[key].bank += amount
+    else if (method === 'bank-transfer') buckets[key].bank += amount
     else if (method === 'card' || method === 'apple-pay') buckets[key].card += amount
   }
 

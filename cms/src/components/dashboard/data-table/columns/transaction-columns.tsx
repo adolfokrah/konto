@@ -175,7 +175,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
           { label: 'All', value: 'all' },
           { label: 'Mobile Money', value: 'mobile-money' },
           { label: 'Cash', value: 'cash' },
-          { label: 'Bank', value: 'bank' },
+          { label: 'Bank Transfer', value: 'bank-transfer' },
           { label: 'Card', value: 'card' },
           { label: 'Apple Pay', value: 'apple-pay' },
         ],

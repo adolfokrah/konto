@@ -18,7 +18,7 @@ class PaymentMethodUtils {
         return localizations.paymentMethodMobileMoney;
       case 'cash':
         return localizations.paymentMethodCash;
-      case 'bank':
+      case 'bank-transfer':
         return localizations.paymentMethodBankTransfer;
       default:
         // Return the original value with proper formatting if not found

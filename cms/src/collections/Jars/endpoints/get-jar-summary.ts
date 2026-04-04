@@ -147,7 +147,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
   // --- Payment method breakdown ---
   const PAYMENT_METHODS: Record<string, string> = {
     cash: 'cash',
-    bankTransfer: 'bank',
+    bankTransfer: 'bank-transfer',
     mobileMoney: 'mobile-money',
     card: 'card',
     applePay: 'apple-pay',
@@ -175,7 +175,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         tx.type === 'contribution' &&
         tx.paymentStatus === 'completed' &&
         !tx.isSettled &&
-        ['mobile-money', 'card', 'bank'].includes(tx.paymentMethod),
+        ['mobile-money', 'card', 'bank-transfer'].includes(tx.paymentMethod),
     )
     .reduce((s: number, tx: any) => s + (tx.amountDue ?? 0), 0)
 
@@ -218,7 +218,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
 
   const mobileMoneyCharges = chargesByMethod('mobile-money')
   const cardCharges = chargesByMethod('card')
-  const bankCharges = chargesByMethod('bank')
+  const bankCharges = chargesByMethod('bank-transfer')
 
   const round2 = (n: number) => Number(n.toFixed(2))
 

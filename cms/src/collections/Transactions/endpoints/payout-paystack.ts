@@ -43,9 +43,9 @@ export const payoutPaystack = async (req: PayloadRequest) => {
 
     const isBank = paymentMethodType === 'bank'
 
-    type TransactionPaymentMethod = 'bank' | 'mobile-money' | 'cash' | 'card'
+    type TransactionPaymentMethod = 'bank-transfer' | 'mobile-money' | 'cash' | 'card'
     const paymentMethod = (paymentMethodSlug ??
-      (isBank ? 'bank' : 'mobile-money')) as TransactionPaymentMethod
+      (isBank ? 'bank-transfer' : 'mobile-money')) as TransactionPaymentMethod
 
     const bankCodeMap: Record<string, string> = {
       mtn: 'MTN',
@@ -248,7 +248,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       collection: 'transactions',
       data: {
         paymentStatus: 'pending',
-        paymentMethod: isBank ? 'bank' : 'mobile-money',
+        paymentMethod: isBank ? 'bank-transfer' : 'mobile-money',
         transactionReference: '',
         jar: jarId,
         mobileMoneyProvider: isBank ? undefined : user.bank,

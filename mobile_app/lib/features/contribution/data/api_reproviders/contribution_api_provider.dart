@@ -74,7 +74,7 @@ class ContributionApiProvider extends BaseApiProvider {
       };
 
       // Add account number if payment method is bank transfer
-      if (paymentMethod == 'bank' && accountNumber != null) {
+      if (paymentMethod == 'bank-transfer' && accountNumber != null) {
         contributionData['accountNumber'] = accountNumber;
       }
 
@@ -184,7 +184,7 @@ class ContributionApiProvider extends BaseApiProvider {
                   (method) => [
                     'mobile-money',
                     'cash',
-                    'bank',
+                    'bank-transfer',
                     'card',
                     'apple-pay',
                   ].contains(method),

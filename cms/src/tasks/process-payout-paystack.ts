@@ -196,15 +196,10 @@ export const processPayoutPaystackTask = {
         airteltigo: 'ATL',
         atl: 'ATL',
       }
+      const isBank = (transaction.paymentMethod as string) === 'bank-transfer'
       const creatorBankSlug = ((creator as any).bank as string | undefined)?.toLowerCase()
       const derivedBankCode = creatorBankSlug ? (bankCodeMap[creatorBankSlug] ?? null) : null
 
-      const withdrawalPM = (creator as any).withdrawalPaymentMethod
-      const withdrawalPMSlug =
-        typeof withdrawalPM === 'object' && withdrawalPM !== null
-          ? (withdrawalPM as any).slug
-          : (withdrawalPM as string | null | undefined)
-      const isBank = withdrawalPMSlug === 'bank' || withdrawalPMSlug === 'bank-transfer'
       if (!isBank && creatorBankSlug && !derivedBankCode) {
         await payload.update({
           collection: 'transactions',
@@ -212,6 +207,7 @@ export const processPayoutPaystackTask = {
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
         })
+        console.log('failed')
         return {
           output: { success: false, message: 'Unsupported mobile money provider' },
         }

@@ -44,7 +44,7 @@ function buildWhere(params: URLSearchParams): Record<string, any> {
     else if (values.length > 1) where.type = { in: values }
   }
   if (method) {
-    const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+    const valid = ['mobile-money', 'cash', 'bank-transfer', 'card', 'apple-pay']
     const values = method.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) where.paymentMethod = { equals: values[0] }
     else if (values.length > 1) where.paymentMethod = { in: values }

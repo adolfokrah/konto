@@ -133,7 +133,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         else if (values.length > 1) txWhere.type = { in: values }
       }
       if (txMethod) {
-        const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+        const valid = ['mobile-money', 'cash', 'bank-transfer', 'card', 'apple-pay']
         const values = txMethod.split(',').filter((v) => valid.includes(v))
         if (values.length === 1) txWhere.paymentMethod = { equals: values[0] }
         else if (values.length > 1) txWhere.paymentMethod = { in: values }

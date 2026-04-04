@@ -620,7 +620,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
       }
     }
 
-    if (_selectedPaymentMethod == 'bank') {
+    if (_selectedPaymentMethod == 'bank-transfer') {
       // Validate account number for bank transfer
       if (_accountNumberController.text.trim().isEmpty) {
         _showErrorSnackBar(localizations.pleaseEnterAccountName);
@@ -662,7 +662,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
         contributorPhoneNumber: _phoneController.text.trim(),
         paymentMethod: _selectedPaymentMethod,
         accountNumber:
-            _selectedPaymentMethod == 'bank'
+            _selectedPaymentMethod == 'bank-transfer'
                 ? _accountNumberController.text.trim()
                 : null,
         amountContributed: double.tryParse(amount!) ?? 0.0,

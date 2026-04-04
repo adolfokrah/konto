@@ -96,7 +96,7 @@ export const Transactions: CollectionConfig = {
       options: [
         { label: 'Mobile Money', value: 'mobile-money' },
         { label: 'Cash', value: 'cash' },
-        { label: 'Bank', value: 'bank' },
+        { label: 'Bank Transfer', value: 'bank-transfer' },
         { label: 'Card', value: 'card' },
       ],
       admin: {
@@ -130,13 +130,17 @@ export const Transactions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Account number for bank transfers',
-        condition: (data) => data?.paymentMethod === 'bank',
+        condition: (data) => data?.paymentMethod === 'bank-transfer',
       },
       hooks: {
         beforeChange: [
           ({ data, originalDoc }) => {
             const isPaystackFlow = data?.viaPaymentLink || originalDoc?.viaPaymentLink
-            if (!isPaystackFlow && data?.paymentMethod === 'bank' && !data?.accountNumber) {
+            if (
+              !isPaystackFlow &&
+              data?.paymentMethod === 'bank-transfer' &&
+              !data?.accountNumber
+            ) {
               throw new APIError('Account number is required for bank payments', 400)
             }
           },

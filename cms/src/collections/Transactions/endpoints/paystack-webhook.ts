@@ -106,12 +106,12 @@ async function handleChargeEvent(req: PayloadRequest, eventType: string, data: a
   const channel = data?.channel as string | undefined
 
   // Map Paystack channel to our paymentMethod values
-  const channelToMethod: Record<string, 'mobile-money' | 'card' | 'bank'> = {
+  const channelToMethod: Record<string, 'mobile-money' | 'card' | 'bank-transfer'> = {
     mobile_money: 'mobile-money',
     card: 'card',
     apple_pay: 'card',
-    bank: 'bank',
-    bank_transfer: 'bank',
+    bank: 'bank-transfer',
+    bank_transfer: 'bank-transfer',
   }
   const paymentMethod = channel ? (channelToMethod[channel] ?? null) : null
 

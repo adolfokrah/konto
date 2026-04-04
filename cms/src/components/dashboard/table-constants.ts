@@ -19,7 +19,7 @@ export const statusLabels: Record<string, string> = {
 
 export const paymentMethodLabels: Record<string, string> = {
   'mobile-money': 'Mobile Money',
-  bank: 'Bank',
+  'bank-transfer': 'Bank Transfer',
   cash: 'Cash',
   card: 'Card',
   'apple-pay': 'Apple Pay',
