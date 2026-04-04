@@ -57,7 +57,8 @@ export const payoutPaystack = async (req: PayloadRequest) => {
     const userBankSlug = (user.bank as string | undefined)?.toLowerCase()
     const derivedBankCode = userBankSlug ? (bankCodeMap[userBankSlug] ?? null) : null
 
-    if (userBankSlug && !derivedBankCode) {
+    // Only validate against known MoMo providers when not a bank transfer
+    if (!isBank && userBankSlug && !derivedBankCode) {
       return Response.json(
         { success: false, message: 'Unsupported mobile money provider' },
         { status: 400 },

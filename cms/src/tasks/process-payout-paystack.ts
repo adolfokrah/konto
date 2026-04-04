@@ -199,7 +199,8 @@ export const processPayoutPaystackTask = {
       const creatorBankSlug = ((creator as any).bank as string | undefined)?.toLowerCase()
       const derivedBankCode = creatorBankSlug ? (bankCodeMap[creatorBankSlug] ?? null) : null
 
-      if (creatorBankSlug && !derivedBankCode) {
+      const isBank = transaction.paymentMethod === 'bank'
+      if (!isBank && creatorBankSlug && !derivedBankCode) {
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
