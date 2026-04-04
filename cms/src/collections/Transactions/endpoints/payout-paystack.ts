@@ -47,7 +47,24 @@ export const payoutPaystack = async (req: PayloadRequest) => {
     const paymentMethod = (paymentMethodSlug ??
       (isBank ? 'bank' : 'mobile-money')) as TransactionPaymentMethod
 
-    const resolvedBankCode = user.bankCode
+    const bankCodeMap: Record<string, string> = {
+      mtn: 'MTN',
+      telecel: 'VOD',
+      vodafone: 'VOD',
+      airteltigo: 'ATL',
+      atl: 'ATL',
+    }
+    const userBankSlug = (user.bank as string | undefined)?.toLowerCase()
+    const derivedBankCode = userBankSlug ? (bankCodeMap[userBankSlug] ?? null) : null
+
+    if (userBankSlug && !derivedBankCode) {
+      return Response.json(
+        { success: false, message: 'Unsupported mobile money provider' },
+        { status: 400 },
+      )
+    }
+
+    const resolvedBankCode = user.bankCode || derivedBankCode
     if (!resolvedBankCode) {
       return Response.json(
         { success: false, message: 'Bank code missing. Please re-save your withdrawal account.' },

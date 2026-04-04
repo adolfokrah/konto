@@ -189,7 +189,29 @@ export const processPayoutPaystackTask = {
         }
       }
 
-      const bankCode = (creator as any).bankCode
+      const bankCodeMap: Record<string, string> = {
+        mtn: 'MTN',
+        telecel: 'VOD',
+        vodafone: 'VOD',
+        airteltigo: 'ATL',
+        atl: 'ATL',
+      }
+      const creatorBankSlug = ((creator as any).bank as string | undefined)?.toLowerCase()
+      const derivedBankCode = creatorBankSlug ? (bankCodeMap[creatorBankSlug] ?? null) : null
+
+      if (creatorBankSlug && !derivedBankCode) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: { success: false, message: 'Unsupported mobile money provider' },
+        }
+      }
+
+      const bankCode = (creator as any).bankCode || derivedBankCode
       if (!bankCode) {
         await payload.update({
           collection: 'transactions',

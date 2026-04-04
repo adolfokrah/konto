@@ -1,50 +1,12 @@
 import { getPayload, Payload } from 'payload'
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 
 import config from '@/payload.config'
 import { payoutPaystack } from '../../src/collections/Transactions/endpoints/payout-paystack'
 import { processPayoutPaystackTask } from '@/tasks/process-payout-paystack'
 import { clearAllCollections } from 'tests/utils/testCleanup'
-import Paystack from '@/utilities/paystack'
 
-// Spy on Paystack prototype methods — works regardless of when the singleton is created
-vi.spyOn(Paystack.prototype, 'createTransferRecipient').mockResolvedValue({
-  recipient_code: 'RCP_mock123',
-  active: true,
-  createdAt: '',
-  currency: 'GHS',
-  description: '',
-  domain: 'test',
-  id: 1,
-  integration: 1,
-  name: 'Test User',
-  type: 'mobile_money',
-  updatedAt: '',
-  is_deleted: false,
-  details: {
-    authorization_code: null,
-    account_number: '0200000001',
-    account_name: 'Test User',
-    bank_code: 'MTN',
-    bank_name: 'MTN',
-  },
-})
-
-vi.spyOn(Paystack.prototype, 'initiateTransfer').mockResolvedValue({
-  transfer_code: 'TRF_mock123',
-  reference: 'mock-transaction-id',
-  status: 'pending',
-  amount: 9900,
-  currency: 'GHS',
-  integration: 1,
-  domain: 'test',
-  source: 'balance',
-  reason: '',
-  recipient: 1,
-  id: 1,
-  createdAt: '',
-  updatedAt: '',
-})
+// Paystack HTTP calls are intercepted by nock in vitest.nock.setup.ts
 
 let payload: Payload
 

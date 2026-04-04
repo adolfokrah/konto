@@ -120,6 +120,74 @@ beforeAll(() => {
         channel: 'mobile_money',
       },
     })
+    // Mobile money charge
+    .post('/charge')
+    .reply(200, {
+      status: true,
+      message: 'Charge attempted',
+      data: {
+        reference: 'mock-charge-ref',
+        status: 'pending',
+        gateway_response: 'Please enter your PIN',
+        amount: 10000,
+        currency: 'GHS',
+        channel: 'mobile_money',
+        display_text: 'Approve the transaction',
+      },
+    })
+    // Submit OTP for charge
+    .post('/charge/submit_otp')
+    .reply(200, {
+      status: true,
+      message: 'Charge attempted',
+      data: { reference: 'mock-charge-ref', status: 'success', amount: 10000, currency: 'GHS', channel: 'mobile_money' },
+    })
+    // Submit birthday for charge
+    .post('/charge/submit_birthday')
+    .reply(200, {
+      status: true,
+      message: 'Charge attempted',
+      data: { reference: 'mock-charge-ref', status: 'success', amount: 10000, currency: 'GHS', channel: 'mobile_money' },
+    })
+    // Get charge status by reference
+    .get(/\/charge\/.*/)
+    .reply(200, {
+      status: true,
+      message: 'Charge retrieved',
+      data: { reference: 'mock-charge-ref', status: 'success', amount: 10000, currency: 'GHS', channel: 'mobile_money' },
+    })
+    // Finalize transfer (OTP)
+    .post('/transfer/finalize_transfer')
+    .reply(200, {
+      status: true,
+      message: 'Transfer finalized',
+      data: { transfer_code: 'TRF_mock123', status: 'success', amount: 9900, currency: 'GHS' },
+    })
+    // List banks
+    .get('/bank')
+    .reply(200, {
+      status: true,
+      message: 'Banks retrieved',
+      data: [
+        { id: 1, name: 'MTN Mobile Money', slug: 'mtn', code: 'MTN', active: true, is_deleted: false, country: 'ghana', type: 'mobile_money', currency: 'GHS' },
+        { id: 2, name: 'Telecel Cash', slug: 'telecel', code: 'VOD', active: true, is_deleted: false, country: 'ghana', type: 'mobile_money', currency: 'GHS' },
+        { id: 3, name: 'AirtelTigo Money', slug: 'airteltigo', code: 'ATL', active: true, is_deleted: false, country: 'ghana', type: 'mobile_money', currency: 'GHS' },
+      ],
+    })
+    // Create payment link
+    .post('/page')
+    .reply(200, {
+      status: true,
+      message: 'Page created',
+      data: { id: 1, slug: 'mock-page-slug', name: 'Mock Page', integration: 1 },
+    })
+    // Update payment link
+    .put(/\/page\/.*/)
+    .reply(200, {
+      status: true,
+      message: 'Page updated',
+      data: { id: 1, slug: 'mock-page-slug', name: 'Mock Page Updated', integration: 1 },
+    })
 
   // SMS (Deywuro)
   nock('https://www.deywuro.com')
