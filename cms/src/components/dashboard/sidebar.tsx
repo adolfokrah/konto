@@ -79,6 +79,7 @@ const navGroups = [
       { label: 'Payment Methods', href: '/dashboard/payment-methods', icon: CreditCard },
       { label: 'Collection Fees', href: '/dashboard/collection-fees', icon: Layers },
       { label: 'Payout Fees', href: '/dashboard/payout-fees', icon: Layers },
+      { label: 'Refund Fees', href: '/dashboard/refund-fees', icon: Layers },
       { label: 'Referral Bonus', href: '/dashboard/referral-bonus-settings', icon: Gift },
       { label: 'Settlement Delays', href: '/dashboard/settlement-delays', icon: Clock },
     ],
