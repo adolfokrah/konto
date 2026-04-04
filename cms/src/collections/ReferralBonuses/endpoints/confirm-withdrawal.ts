@@ -1,9 +1,18 @@
 import type { PayloadHandler } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
+import { getCharges } from '@/utilities/getCharges'
 
 const MAX_OTP_ATTEMPTS = 5
 
 const MOMO_PROVIDERS = new Set(['mtn', 'telecel'])
+
+const bankCodeMap: Record<string, string> = {
+  mtn: 'MTN',
+  telecel: 'VOD',
+  vodafone: 'VOD',
+  airteltigo: 'ATL',
+  atl: 'ATL',
+}
 
 export const confirmWithdrawal: PayloadHandler = async (req) => {
   const user = req.user
@@ -83,15 +92,34 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
   })
 
   const totalAmount = allBonuses.docs.reduce((sum, b) => sum + (b.amount ?? 0), 0)
-  const netAmount = parseFloat(totalAmount.toFixed(4))
+  const grossAmount = parseFloat(totalAmount.toFixed(4))
 
-  if (netAmount <= 0) {
+  if (grossAmount <= 0) {
     return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
   }
 
   const accountSuffix = (fullUser.accountNumber ?? '').slice(-4)
   const bankName = fullUser.bank ?? ''
   const isMoMo = MOMO_PROVIDERS.has(bankName.toLowerCase())
+  const resolvedBankCode = bankCodeMap[bankName.toLowerCase()] ?? null
+
+  // Calculate payout charges — user receives net after processing fee
+  const payoutCharges = await getCharges(req.payload, {
+    amount: grossAmount,
+    type: 'payout',
+    paymentMethod: 'mobile-money',
+    country: (fullUser.country as string | undefined)?.toLowerCase(),
+  })
+
+  const processingFee = payoutCharges.processingFee
+  const netAmount = payoutCharges.netAmount
+
+  if (netAmount <= 0) {
+    return Response.json(
+      { success: false, message: 'Balance is insufficient to cover payout fees' },
+      { status: 400 },
+    )
+  }
 
   // Get a referral reference from the most recent earned bonus
   const earnedBonus = allBonuses.docs.find((b) => (b.amount ?? 0) > 0)
@@ -103,9 +131,9 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
       user: user.id,
       referral: earnedBonus?.referral as string,
       bonusType: earnedBonus?.bonusType ?? 'fee_share',
-      amount: -netAmount,
+      amount: -grossAmount,
       status: 'pending',
-      description: `Withdrawal of GHS ${netAmount.toFixed(2)} → ${bankName} ****${accountSuffix}`,
+      description: `Withdrawal of GHS ${netAmount.toFixed(2)} (fee: GHS ${processingFee.toFixed(2)}) → ${bankName} ****${accountSuffix}`,
     },
     overrideAccess: true,
   })
@@ -118,6 +146,7 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
         withdrawalRecordId: withdrawalRecord.id,
         userId: user.id,
         bank: bankName,
+        bankCode: resolvedBankCode ?? '',
         accountNumber: fullUser.accountNumber,
         accountHolder: fullUser.accountHolder ?? fullUser.firstName ?? fullUser.username ?? '',
         amount: String(netAmount),
@@ -128,6 +157,8 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
     return Response.json({
       success: true,
       message: `GHS ${netAmount.toFixed(2)} is being sent to your ${bankName.toUpperCase()} account ending ${accountSuffix}.`,
+      grossAmount,
+      processingFee,
       amount: netAmount,
     })
   }
@@ -136,6 +167,8 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
   return Response.json({
     success: true,
     message: `Withdrawal request of GHS ${netAmount.toFixed(2)} submitted. Our team will process it to your ${bankName} account ending ${accountSuffix}.`,
+    grossAmount,
+    processingFee,
     amount: netAmount,
   })
 }

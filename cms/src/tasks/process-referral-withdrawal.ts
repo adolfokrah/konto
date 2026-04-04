@@ -32,7 +32,15 @@ export const processReferralWithdrawalTask = {
     try {
       console.log(`🔄 Processing referral withdrawal ${withdrawalRecordId}...`)
 
-      const bankCode = storedBankCode
+      const bankCodeMap: Record<string, string> = {
+        mtn: 'MTN',
+        telecel: 'VOD',
+        vodafone: 'VOD',
+        airteltigo: 'ATL',
+        atl: 'ATL',
+      }
+      const bankSlug = bank?.toLowerCase()
+      const bankCode = storedBankCode || (bankSlug ? bankCodeMap[bankSlug] : null)
       if (!bankCode) {
         await payload.update({
           collection: 'referral-bonuses',
@@ -43,7 +51,7 @@ export const processReferralWithdrawalTask = {
           },
           overrideAccess: true,
         })
-        return { output: { success: false, message: `Unsupported provider: ${bank}` } }
+        return { output: { success: false, message: `Unsupported mobile money provider` } }
       }
 
       const netAmount = parseFloat(amount)
