@@ -86,7 +86,7 @@ class PhoneValidationUtils {
 
   /// Gets the mobile network name from a Ghana phone number
   ///
-  /// Returns the network name (MTN, Vodafone, AirtelTigo, Glo) or 'Unknown'
+  /// Returns the network name (MTN, Telecel, AirtelTigo, Glo) or 'Unknown'
   static String getNetworkName(String phoneNumber) {
     if (!isValidGhanaPhoneNumber(phoneNumber)) {
       return 'Unknown';
@@ -115,7 +115,7 @@ class PhoneValidationUtils {
         return 'MTN';
       case '20':
       case '50':
-        return 'Vodafone';
+        return 'Telecel';
       case '26':
       case '27':
       case '56':

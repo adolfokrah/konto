@@ -365,7 +365,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
                             value: _selectedMobileProvider,
                             options: const [
                               SelectOption(value: 'mtn', label: 'MTN'),
-                              SelectOption(value: 'vod', label: 'Vodafone'),
+                              SelectOption(value: 'vod', label: 'Telecel'),
                               SelectOption(value: 'atl', label: 'AirtelTigo'),
                             ],
                             onChanged: (v) => setState(() => _selectedMobileProvider = v),

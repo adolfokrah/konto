@@ -136,9 +136,9 @@ void main() {
         expect(PhoneValidationUtils.getNetworkName('0591234567'), 'MTN');
       });
 
-      test('should identify Vodafone networks', () {
-        expect(PhoneValidationUtils.getNetworkName('0201234567'), 'Vodafone');
-        expect(PhoneValidationUtils.getNetworkName('0501234567'), 'Vodafone');
+      test('should identify Telecel networks', () {
+        expect(PhoneValidationUtils.getNetworkName('0201234567'), 'Telecel');
+        expect(PhoneValidationUtils.getNetworkName('0501234567'), 'Telecel');
       });
 
       test('should identify AirtelTigo networks', () {
@@ -154,7 +154,7 @@ void main() {
 
       test('should work with different formats', () {
         expect(PhoneValidationUtils.getNetworkName('+233241234567'), 'MTN');
-        expect(PhoneValidationUtils.getNetworkName('233201234567'), 'Vodafone');
+        expect(PhoneValidationUtils.getNetworkName('233201234567'), 'Telecel');
         expect(PhoneValidationUtils.getNetworkName('261234567'), 'AirtelTigo');
       });
 
