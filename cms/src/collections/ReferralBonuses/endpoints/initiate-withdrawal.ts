@@ -68,31 +68,6 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
   }
 
-  // Fetch withdrawal limits from system settings
-  const settings = await req.payload.findGlobal({ slug: 'system-settings' })
-  const minWithdrawal = settings?.referralMinWithdrawalAmount ?? 20
-  const maxWithdrawal = settings?.referralMaxWithdrawalAmount ?? 500
-
-  if (amount < minWithdrawal) {
-    return Response.json(
-      {
-        success: false,
-        message: `Minimum withdrawal amount is GHS ${minWithdrawal.toFixed(2)}. Your current balance is GHS ${amount.toFixed(2)}.`,
-      },
-      { status: 400 },
-    )
-  }
-
-  if (maxWithdrawal > 0 && amount > maxWithdrawal) {
-    return Response.json(
-      {
-        success: false,
-        message: `Maximum withdrawal amount is GHS ${maxWithdrawal.toFixed(2)}.`,
-      },
-      { status: 400 },
-    )
-  }
-
   // Generate OTP and send via SMS + email
   const phone = `${fullUser.countryCode}${fullUser.phoneNumber}`
   await generateAndSendOtp(req.payload, user.id, {
