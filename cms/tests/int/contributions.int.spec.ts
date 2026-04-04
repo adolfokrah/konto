@@ -172,7 +172,7 @@ describe('Contributions Collection Integration Tests', () => {
       })
 
       expect(contribution.viaPaymentLink).toBe(true)
-      expect(contribution.paymentMethod).toBe('bank')
+      expect(contribution.paymentMethod).toBe('bank-transfer')
       expect(contribution.amountContributed).toBe(200)
     })
 
@@ -420,7 +420,7 @@ describe('Contributions Collection Integration Tests', () => {
         },
       })
 
-      expect(updatedContribution.paymentMethod).toBe('bank')
+      expect(updatedContribution.paymentMethod).toBe('bank-transfer')
     })
 
     it('should update contributor information', async () => {
@@ -589,7 +589,7 @@ describe('Contributions Collection Integration Tests', () => {
         collection: 'transactions',
         where: {
           paymentMethod: {
-            equals: 'bank',
+            equals: 'bank-transfer',
           },
         },
         sort: '-amountContributed',
