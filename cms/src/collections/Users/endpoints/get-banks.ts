@@ -13,7 +13,7 @@ import { getPaystack } from '@/utilities/initalise'
  */
 export const getBanks = async (req: PayloadRequest) => {
   try {
-    const url = new URL(req.url)
+    const url = new URL(req.url ?? '')
     const country = url.searchParams.get('country') ?? 'ghana'
     const type = url.searchParams.get('type') ?? undefined
 
