@@ -87,7 +87,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
       final charges = await ChargesApiProvider(
         dio: getIt<Dio>(),
         userStorageService: getIt<UserStorageService>(),
-      ).getCharges(amount: parsedAmount, jarId: jarId!);
+      ).getCharges(amount: parsedAmount, jarId: jarId!, paymentMethod: _selectedPaymentMethod);
       if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
     } catch (_) {
       if (mounted) setState(() => _chargesLoaded = true);
@@ -352,6 +352,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
                             setState(() {
                               _selectedPaymentMethod = value;
                             });
+                            _loadCharges();
                           },
                         ),
 
@@ -778,7 +779,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
               const SizedBox(height: AppSpacing.spacingXs),
               Text(
                 isOtp
-                    ? 'Enter the OTP sent to your phone to complete payment.'
+                    ? 'Enter the OTP sent to the contributor\'s phone to complete payment.'
                     : 'Enter your date of birth to verify your identity.',
                 style: TextStyles.titleRegularSm.copyWith(
                   color: Colors.grey,

@@ -171,12 +171,7 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
         ? charges.initialAmount + charges.processingFee
         : charges.initialAmount
 
-    // Normalise phone to international format expected by Paystack (e.g. 0551234987 → 233551234987)
-    const normalizedPhone = contributorPhoneNumber.startsWith('+')
-      ? contributorPhoneNumber.slice(1)
-      : contributorPhoneNumber.startsWith('0')
-        ? `233${contributorPhoneNumber.slice(1)}`
-        : contributorPhoneNumber
+    const normalizedPhone = contributorPhoneNumber
 
     const amountInPesewas = Math.round(amountToCharge * 100)
     const currency = (jar.currency as string) || 'GHS'
@@ -199,7 +194,10 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
       },
     })
 
-    console.log('[charge-mobile-money] Paystack response:', JSON.stringify(chargeRes, null, 2))
+    console.log(
+      '[charge-mobile-money] Paystack response:',
+      JSON.stringify({ phone: normalizedPhone, provider, ...chargeRes }, null, 2),
+    )
 
     return Response.json({
       success: true,

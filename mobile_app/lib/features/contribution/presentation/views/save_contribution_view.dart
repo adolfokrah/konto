@@ -74,7 +74,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       final charges = await ChargesApiProvider(
         dio: getIt<Dio>(),
         userStorageService: getIt<UserStorageService>(),
-      ).getCharges(amount: parsedAmount, jarId: jarId!);
+      ).getCharges(amount: parsedAmount, jarId: jarId!, paymentMethod: _selectedPaymentMethod);
       if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
     } catch (_) {
       if (mounted) setState(() => _chargesLoaded = true);
@@ -309,6 +309,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                             setState(() {
                               _selectedPaymentMethod = value;
                             });
+                            _loadCharges();
                           },
                         ),
 

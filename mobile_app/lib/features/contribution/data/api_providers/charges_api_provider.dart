@@ -15,10 +15,15 @@ class ChargesApiProvider extends BaseApiProvider {
   Future<ChargesModel> getCharges({
     required double amount,
     required String jarId,
+    String? paymentMethod,
   }) async {
     final response = await dio.get(
       '${BackendConfig.apiBaseUrl}/transactions/get-charges',
-      queryParameters: {'amount': amount, 'jarId': jarId},
+      queryParameters: {
+        'amount': amount,
+        'jarId': jarId,
+        if (paymentMethod != null) 'paymentMethod': paymentMethod,
+      },
     );
 
     return ChargesModel.fromJson(response.data as Map<String, dynamic>);
