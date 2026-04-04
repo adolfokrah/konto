@@ -115,17 +115,13 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       getJarBalance(req.payload, jarId),
     ])
 
-    const creatorCountry: string | undefined = (
-      typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
-    )
-      ?.toLowerCase()
-      .trim()
+    const userCountry = (user.country as string | undefined)?.toLowerCase().trim()
 
     const payoutCharges = await getCharges(req.payload, {
       amount: netBalance,
       type: 'payout',
       paymentMethod: paymentMethod || 'mobile-money',
-      country: creatorCountry,
+      country: userCountry,
     })
 
     const feeAmount = payoutCharges.processingFee
