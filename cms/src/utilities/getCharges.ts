@@ -177,9 +177,7 @@ async function resolveCollectionFee(
         hogapaySplit: match.hogapaySplit,
         minimumContributionAmount: match.minimumContributionAmount,
       }
-  } catch (e) {
-    console.log('[resolveCollectionFee] error:', e)
-  }
+  } catch (_) {}
   return null
 }
 
