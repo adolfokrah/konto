@@ -9,7 +9,6 @@ export type ReferralBonusSettingRow = {
   country: string
   firstContributionBonus: number
   feeShare: number
-  minWithdrawal: number
 }
 
 const COUNTRY_LABELS: Record<string, string> = {
@@ -49,15 +48,6 @@ export const referralBonusSettingsColumns: ColumnDef<ReferralBonusSettingRow, an
     accessorKey: 'feeShare',
     header: 'Fee Share (%)',
     cell: ({ row }) => <span>{row.original.feeShare}%</span>,
-    meta: {
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
-    } satisfies DataTableColumnMeta,
-  },
-  {
-    accessorKey: 'minWithdrawal',
-    header: 'Min Withdrawal',
-    cell: ({ row }) => <span>{row.original.minWithdrawal}</span>,
     meta: {
       headerClassName: 'text-right',
       cellClassName: 'text-right',

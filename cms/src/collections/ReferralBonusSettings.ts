@@ -6,7 +6,7 @@ export const ReferralBonusSettings: CollectionConfig = {
   slug: 'referral-bonus-settings',
   admin: {
     useAsTitle: 'id',
-    defaultColumns: ['country', 'firstContributionBonus', 'feeShare', 'minWithdrawal'],
+    defaultColumns: ['country', 'firstContributionBonus', 'feeShare'],
     description: 'Referral bonus rates per country.',
   },
   access: {
@@ -39,14 +39,6 @@ export const ReferralBonusSettings: CollectionConfig = {
       required: true,
       admin: {
         description: "% of Hogapay's transfer fee shared with the referrer.",
-      },
-    },
-    {
-      name: 'minWithdrawal',
-      type: 'number',
-      required: true,
-      admin: {
-        description: 'Minimum referral balance required to initiate a withdrawal.',
       },
     },
   ],

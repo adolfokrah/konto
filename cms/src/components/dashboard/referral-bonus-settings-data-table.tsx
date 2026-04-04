@@ -40,10 +40,9 @@ type FormState = {
   country: string
   firstContributionBonus: string
   feeShare: string
-  minWithdrawal: string
 }
 
-const empty: FormState = { country: 'ghana', firstContributionBonus: '', feeShare: '', minWithdrawal: '' }
+const empty: FormState = { country: 'ghana', firstContributionBonus: '', feeShare: '' }
 
 export function ReferralBonusSettingsDataTable({ settings }: { settings: ReferralBonusSettingRow[] }) {
   const router = useRouter()
@@ -66,13 +65,12 @@ export function ReferralBonusSettingsDataTable({ settings }: { settings: Referra
       country: row.country,
       firstContributionBonus: String(row.firstContributionBonus),
       feeShare: String(row.feeShare),
-      minWithdrawal: String(row.minWithdrawal),
     })
     setDialogOpen(true)
   }
 
   const handleSave = async () => {
-    if (!form.country || form.firstContributionBonus === '' || form.feeShare === '' || form.minWithdrawal === '') {
+    if (!form.country || form.firstContributionBonus === '' || form.feeShare === '') {
       toast.error('All fields are required')
       return
     }
@@ -82,7 +80,6 @@ export function ReferralBonusSettingsDataTable({ settings }: { settings: Referra
         country: form.country,
         firstContributionBonus: parseFloat(form.firstContributionBonus),
         feeShare: parseFloat(form.feeShare),
-        minWithdrawal: parseFloat(form.minWithdrawal),
       }
       const res = editing
         ? await fetch(`/api/referral-bonus-settings/${editing.id}`, {
@@ -220,27 +217,15 @@ export function ReferralBonusSettingsDataTable({ settings }: { settings: Referra
                 onChange={(e) => setForm((p) => ({ ...p, firstContributionBonus: e.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Fee Share (%)</label>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="20"
-                  value={form.feeShare}
-                  onChange={(e) => setForm((p) => ({ ...p, feeShare: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Min Withdrawal</label>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="20"
-                  value={form.minWithdrawal}
-                  onChange={(e) => setForm((p) => ({ ...p, minWithdrawal: e.target.value }))}
-                />
-              </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Fee Share (%)</label>
+              <Input
+                type="number"
+                step="1"
+                placeholder="20"
+                value={form.feeShare}
+                onChange={(e) => setForm((p) => ({ ...p, feeShare: e.target.value }))}
+              />
             </div>
           </div>
           <DialogFooter>

@@ -18,7 +18,6 @@ export default async function ReferralBonusSettingsPage() {
     country: doc.country,
     firstContributionBonus: doc.firstContributionBonus ?? 0,
     feeShare: doc.feeShare ?? 0,
-    minWithdrawal: doc.minWithdrawal ?? 0,
   }))
 
   return (
