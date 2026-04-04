@@ -276,7 +276,8 @@ class _WithdrawViewState extends State<WithdrawView> {
     final cur = currency ?? 'GHS';
     final double transferCharges = _payoutCharges?.platformCharge ?? 0.0;
     final double total = balance - transferCharges;
-    final bool canAffordFees = total > 0;
+    final double minPayout = _payoutCharges?.minimumPayoutAmount ?? _systemSettings.minimumPayoutAmount;
+    final bool canAffordFees = total > 0 && balance >= minPayout;
 
     // Check KYC before allowing transfer
     final authState = context.read<AuthBloc>().state;

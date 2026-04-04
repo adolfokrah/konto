@@ -11,6 +11,9 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
+import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
+import 'package:Hoga/core/services/user_storage_service.dart';
+import 'package:dio/dio.dart';
 import 'package:Hoga/route.dart';
 
 class ReferralView extends StatelessWidget {
@@ -362,11 +365,32 @@ class _EarningsSection extends StatefulWidget {
 class _EarningsSectionState extends State<_EarningsSection> {
   late Future<Map<String, dynamic>> _bonusesFuture;
   bool _initiating = false;
+  double? _minimumPayoutAmount;
 
   @override
   void initState() {
     super.initState();
     _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
+    _loadMinimumPayout();
+  }
+
+  Future<void> _loadMinimumPayout() async {
+    try {
+      final authState = context.read<AuthBloc>().state;
+      final user = authState is AuthAuthenticated ? authState.user : null;
+      final charges = await ChargesApiProvider(
+        dio: getIt<Dio>(),
+        userStorageService: getIt<UserStorageService>(),
+      ).getCharges(
+        amount: 1,
+        type: 'payout',
+        paymentMethod: 'mobile-money',
+        country: user?.country,
+      );
+      if (mounted && charges.minimumPayoutAmount != null) {
+        setState(() => _minimumPayoutAmount = charges.minimumPayoutAmount);
+      }
+    } catch (_) {}
   }
 
   void _reload() {
@@ -473,12 +497,14 @@ class _EarningsSectionState extends State<_EarningsSection> {
             final totalEarned =
                 (summary['totalEarned'] as num?)?.toDouble() ?? 0.0;
 
+            final minPayout = _minimumPayoutAmount ?? 0;
             return _EarningsCard(
               balance: balance,
               totalEarned: totalEarned,
               isDark: widget.isDark,
               withdrawing: _initiating,
-              onWithdraw: balance > 0 ? _onWithdrawTap : null,
+              minimumPayoutAmount: minPayout,
+              onWithdraw: balance > 0 && balance >= minPayout ? _onWithdrawTap : null,
             );
           },
         ),
@@ -492,6 +518,7 @@ class _EarningsCard extends StatelessWidget {
   final double totalEarned;
   final bool isDark;
   final bool withdrawing;
+  final double minimumPayoutAmount;
   final VoidCallback? onWithdraw;
 
   const _EarningsCard({
@@ -499,6 +526,7 @@ class _EarningsCard extends StatelessWidget {
     required this.totalEarned,
     required this.isDark,
     required this.withdrawing,
+    required this.minimumPayoutAmount,
     required this.onWithdraw,
   });
 
@@ -547,11 +575,21 @@ class _EarningsCard extends StatelessWidget {
 
           if (balance > 0) ...[
             const SizedBox(height: AppSpacing.spacingM),
+            if (minimumPayoutAmount > 0 && balance < minimumPayoutAmount)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.spacingS),
+                child: Text(
+                  'Minimum withdrawal is GHS ${minimumPayoutAmount.toStringAsFixed(2)}',
+                  style: AppTextStyles.titleRegularXs.copyWith(
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               height: 44,
               child: FilledButton(
-                onPressed: withdrawing ? null : onWithdraw,
+                onPressed: (withdrawing || onWithdraw == null) ? null : onWithdraw,
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100),
