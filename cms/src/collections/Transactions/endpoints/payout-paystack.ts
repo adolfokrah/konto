@@ -36,12 +36,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         ? (withdrawalPaymentMethod as PaymentMethod).slug
         : (withdrawalPaymentMethod as string | null | undefined)
 
-    const paymentMethodType =
-      typeof withdrawalPaymentMethod === 'object' && withdrawalPaymentMethod !== null
-        ? (withdrawalPaymentMethod as PaymentMethod).type
-        : paymentMethodSlug
-
-    const isBank = paymentMethodType === 'bank'
+    const isBank = paymentMethodSlug === 'bank-transfer' || paymentMethodSlug === 'bank'
 
     type TransactionPaymentMethod = 'bank-transfer' | 'mobile-money' | 'cash' | 'card'
     const paymentMethod = (paymentMethodSlug ??
@@ -195,7 +190,9 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           mobileMoneyProvider: isBank ? undefined : user.bank,
           amountContributed: -netBalance,
           collector: user.id,
-          contributorPhoneNumber: user.accountNumber,
+          ...(isBank
+            ? { accountNumber: user.accountNumber }
+            : { contributorPhoneNumber: user.accountNumber }),
           contributor: user.accountHolder,
           type: 'payout',
           chargesBreakdown: {
@@ -254,7 +251,9 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         mobileMoneyProvider: isBank ? undefined : user.bank,
         amountContributed: -netBalance,
         collector: user.id,
-        contributorPhoneNumber: user.accountNumber,
+        ...(isBank
+          ? { accountNumber: user.accountNumber }
+          : { contributorPhoneNumber: user.accountNumber }),
         contributor: user.accountHolder,
         type: 'payout',
         chargesBreakdown: {

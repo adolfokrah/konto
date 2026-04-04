@@ -550,13 +550,41 @@ class ContributionView extends StatelessWidget {
                                     ),
                                     child: Column(
                                       children: [
-                                        if (contribution.type.value ==
-                                            ContributionType.contribution.value)
+                                        ListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          title: Text(
+                                            contribution.isPayout
+                                                ? 'Account name'
+                                                : localizations.contributor,
+                                            style: AppTextStyles.titleMediumS
+                                                .copyWith(
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall!
+                                                      .color
+                                                      ?.withValues(
+                                                        alpha: 0.5,
+                                                      ),
+                                                ),
+                                          ),
+                                          trailing: Text(
+                                            contribution.contributor ??
+                                                localizations.unknown,
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ),
+                                        // Show phone number for contributions and MoMo payouts
+                                        if (!contribution.isPayout ||
+                                            contribution.accountNumber ==
+                                                null) ...[
                                           ListTile(
                                             contentPadding: EdgeInsets.zero,
-                                            dense: true,
                                             title: Text(
-                                              localizations.contributor,
+                                              contribution.isPayout
+                                                  ? localizations.accountNumber
+                                                  : localizations
+                                                      .contributorPhoneNumber,
                                               style: AppTextStyles.titleMediumS
                                                   .copyWith(
                                                     color: Theme.of(context)
@@ -569,35 +597,14 @@ class ContributionView extends StatelessWidget {
                                                   ),
                                             ),
                                             trailing: Text(
-                                              contribution.contributor ??
+                                              contribution
+                                                      .contributorPhoneNumber ??
                                                   localizations.unknown,
+                                              style: AppTextStyles.titleMediumS,
                                               textAlign: TextAlign.end,
                                             ),
                                           ),
-                                        ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          title: Text(
-                                            contribution.isPayout
-                                                ? localizations.accountNumber
-                                                : localizations
-                                                    .contributorPhoneNumber,
-                                            style: AppTextStyles.titleMediumS
-                                                .copyWith(
-                                                  color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .color
-                                                      ?.withValues(alpha: 0.5),
-                                                ),
-                                          ),
-                                          trailing: Text(
-                                            contribution
-                                                    .contributorPhoneNumber ??
-                                                localizations.unknown,
-                                            style: AppTextStyles.titleMediumS,
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ),
+                                        ],
 
                                         // Show remarks if present
                                         if (contribution.remarks != null &&
