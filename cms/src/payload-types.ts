@@ -90,6 +90,7 @@ export interface Config {
     'payment-methods': PaymentMethod;
     'collection-fees': CollectionFee;
     'payout-fees': PayoutFee;
+    'refund-fees': RefundFee;
     'referral-bonus-settings': ReferralBonusSetting;
     'settlement-delays': SettlementDelay;
     redirects: Redirect;
@@ -126,6 +127,7 @@ export interface Config {
     'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
     'collection-fees': CollectionFeesSelect<false> | CollectionFeesSelect<true>;
     'payout-fees': PayoutFeesSelect<false> | PayoutFeesSelect<true>;
+    'refund-fees': RefundFeesSelect<false> | RefundFeesSelect<true>;
     'referral-bonus-settings': ReferralBonusSettingsSelect<false> | ReferralBonusSettingsSelect<true>;
     'settlement-delays': SettlementDelaysSelect<false> | SettlementDelaysSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -2190,6 +2192,22 @@ export interface PayoutFee {
   createdAt: string;
 }
 /**
+ * Refund fee rates per country.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refund-fees".
+ */
+export interface RefundFee {
+  id: string;
+  country: 'ghana' | 'nigeria';
+  /**
+   * Percentage fee deducted from refund amount (e.g. 1%).
+   */
+  fee: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Referral bonus rates per country.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2545,6 +2563,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payout-fees';
         value: string | PayoutFee;
+      } | null)
+    | ({
+        relationTo: 'refund-fees';
+        value: string | RefundFee;
       } | null)
     | ({
         relationTo: 'referral-bonus-settings';
@@ -3591,6 +3613,16 @@ export interface PayoutFeesSelect<T extends boolean = true> {
   flatFeeThreshold?: T;
   flatFee?: T;
   minimumPayoutAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refund-fees_select".
+ */
+export interface RefundFeesSelect<T extends boolean = true> {
+  country?: T;
+  fee?: T;
   updatedAt?: T;
   createdAt?: T;
 }
