@@ -4,6 +4,7 @@ import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
 import { verifyAccountDetails } from './endpoints/verify-account-details'
+import { getBanks } from './endpoints/get-banks'
 import { manageUserRole } from './endpoints/manage-user-role'
 import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
@@ -81,6 +82,11 @@ export const Users: CollectionConfig = {
       path: '/verify-account-details',
       method: 'post',
       handler: verifyAccountDetails,
+    },
+    {
+      path: '/banks',
+      method: 'get',
+      handler: getBanks,
     },
     {
       path: '/manage-role',
@@ -348,8 +354,20 @@ export const Users: CollectionConfig = {
       type: 'group',
       fields: [
         {
+          name: 'withdrawalPaymentMethod',
+          type: 'relationship',
+          relationTo: 'payment-methods',
+          hasMany: false,
+        },
+        {
           name: 'bank',
           type: 'text',
+          admin: { description: 'Bank / network name (e.g. MTN Mobile Money)' },
+        },
+        {
+          name: 'bankCode',
+          type: 'text',
+          admin: { description: 'Paystack bank code (e.g. MTN, VDF, ATL)' },
         },
         {
           name: 'accountNumber',

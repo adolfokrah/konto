@@ -192,10 +192,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     paymentStatus: tx.paymentStatus || 'pending',
     type: tx.type || 'contribution',
     isSettled: tx.isSettled ?? false,
-    payoutFeePercentage: tx.payoutFeePercentage || null,
-    payoutFeeAmount: tx.payoutFeeAmount || null,
-    payoutNetAmount: tx.payoutNetAmount || null,
-      amountDue: tx.amountDue ?? null,
+    amountDue: tx.amountDue ?? null,
     transactionReference: tx.transactionReference || null,
     collector: (() => {
       const c = typeof tx.collector === 'object' && tx.collector ? tx.collector : null

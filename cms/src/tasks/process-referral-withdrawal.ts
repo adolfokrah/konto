@@ -1,12 +1,5 @@
 import { getPaystack } from '@/utilities/initalise'
 
-const bankCodeMap: Record<string, string> = {
-  mtn: 'MTN',
-  telecel: 'VDF',
-  vodafone: 'VDF',
-  airteltigo: 'ATL',
-}
-
 /**
  * Process Referral Withdrawal Task
  *
@@ -19,18 +12,27 @@ export const processReferralWithdrawalTask = {
     { name: 'withdrawalRecordId', type: 'text', required: true },
     { name: 'userId', type: 'text', required: true },
     { name: 'bank', type: 'text', required: true },
+    { name: 'bankCode', type: 'text', required: false },
     { name: 'accountNumber', type: 'text', required: true },
     { name: 'accountHolder', type: 'text', required: true },
     { name: 'amount', type: 'text', required: true },
   ],
   handler: async (args: any) => {
     const payload = args.req?.payload || args.payload
-    const { withdrawalRecordId, userId, bank, accountNumber, accountHolder, amount } = args.input
+    const {
+      withdrawalRecordId,
+      userId,
+      bank,
+      bankCode: storedBankCode,
+      accountNumber,
+      accountHolder,
+      amount,
+    } = args.input
 
     try {
       console.log(`🔄 Processing referral withdrawal ${withdrawalRecordId}...`)
 
-      const bankCode = bankCodeMap[bank.toLowerCase()]
+      const bankCode = storedBankCode
       if (!bankCode) {
         await payload.update({
           collection: 'referral-bonuses',

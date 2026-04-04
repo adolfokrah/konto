@@ -6,7 +6,9 @@ export interface ChargesBreakdown {
   netAmount: number
   hogapayRevenue: number
   eganowFees: number
+  feeRate?: number
   minimumContributionAmount?: number
+  minimumPayoutAmount?: number
 }
 
 /**
@@ -102,7 +104,15 @@ export async function getCharges(
     const hogapayRevenue = Math.round(amount * (hogapayTransferFeePercent / 100) * 100) / 100
     const eganowFees = Math.round((processingFee - hogapayRevenue) * 100) / 100
     const netAmount = Math.round((amount - processingFee) * 100) / 100
-    return { initialAmount: amount, processingFee, netAmount, hogapayRevenue, eganowFees }
+    return {
+      initialAmount: amount,
+      processingFee,
+      netAmount,
+      hogapayRevenue,
+      eganowFees,
+      feeRate: transferFeePercentage,
+      minimumPayoutAmount: feeRecord?.minimumPayoutAmount,
+    }
   }
 
   // ── CONTRIBUTION ──────────────────────────────────────────────────────────
@@ -190,6 +200,7 @@ async function resolvePayoutFee(
   hogapaySplit: number
   flatFeeThreshold: number
   flatFee: number
+  minimumPayoutAmount?: number
 } | null> {
   if (!country || !paymentMethod) return null
   try {
@@ -201,7 +212,9 @@ async function resolvePayoutFee(
       overrideAccess: true,
     })
     const match = (result.docs as any[]).find(
-      (r) => r.paymentMethod?.slug?.toLowerCase() === paymentMethod.toLowerCase(),
+      (r) =>
+        r.paymentMethod?.slug?.toLowerCase() === paymentMethod.toLowerCase() ||
+        r.paymentMethod?.type?.toLowerCase() === paymentMethod.toLowerCase(),
     )
     if (match)
       return {
@@ -209,6 +222,7 @@ async function resolvePayoutFee(
         hogapaySplit: match.hogapaySplit,
         flatFeeThreshold: match.flatFeeThreshold,
         flatFee: match.flatFee,
+        minimumPayoutAmount: match.minimumPayoutAmount,
       }
   } catch (_) {}
   return null

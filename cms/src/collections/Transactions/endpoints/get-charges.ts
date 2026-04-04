@@ -25,12 +25,15 @@ export const getCharges = async (req: PayloadRequest) => {
 
     const type = url.searchParams.get('type')
     if (type === 'payout') {
-      return Response.json({
-        success: true,
-        originalAmount: amountContributed,
-        processingFee: 0,
-        netAmount: amountContributed,
+      const paymentMethod = url.searchParams.get('paymentMethod') ?? undefined
+      const country = url.searchParams.get('country') ?? undefined
+      const charges = await calculateCharges(req.payload, {
+        amount: amountContributed,
+        type: 'payout',
+        paymentMethod,
+        country: country?.toLowerCase().trim(),
       })
+      return Response.json({ success: true, ...charges })
     }
 
     const jarId = url.searchParams.get('jarId')

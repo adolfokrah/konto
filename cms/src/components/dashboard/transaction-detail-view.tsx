@@ -39,7 +39,6 @@ import {
   RotateCcw,
   Loader2,
   ShieldAlert,
-  Banknote,
   Copy,
   Check,
 } from 'lucide-react'
@@ -348,21 +347,6 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
               </Section>
             )
           })()}
-
-          {/* Payout Details */}
-          {transaction.type === 'payout' && (
-            <Section title="Payout Details">
-              <Row label="Fee Percentage" value={transaction.payoutFeePercentage != null ? `${transaction.payoutFeePercentage}%` : null} />
-              <Row label="Fee Amount" value={transaction.payoutFeeAmount != null ? formatAmount(transaction.payoutFeeAmount) : null} />
-              <Row
-                label="Net Amount"
-                value={transaction.payoutNetAmount != null ? (
-                  <span className="font-semibold">{formatAmount(transaction.payoutNetAmount)}</span>
-                ) : null}
-                icon={<Banknote className="h-3.5 w-3.5" />}
-              />
-            </Section>
-          )}
 
           {/* Settlement — only for momo contributions */}
           {transaction.type === 'contribution' && transaction.paymentMethod === 'mobile-money' && <Section title="Settlement">

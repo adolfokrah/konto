@@ -535,7 +535,15 @@ export interface User {
    * Last time the user made an authenticated request (used for DAU tracking)
    */
   lastActiveAt?: string | null;
+  withdrawalPaymentMethod?: (string | null) | PaymentMethod;
+  /**
+   * Bank / network name (e.g. MTN Mobile Money)
+   */
   bank?: string | null;
+  /**
+   * Paystack bank code (e.g. MTN, VDF, ATL)
+   */
+  bankCode?: string | null;
   accountNumber?: string | null;
   accountHolder?: string | null;
   appSettings?: {
@@ -565,6 +573,28 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * Payment methods available per country.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods".
+ */
+export interface PaymentMethod {
+  id: string;
+  /**
+   * e.g. mobile-money, bank, card, cash, apple-pay
+   */
+  type: string;
+  country: ('ghana' | 'nigeria')[];
+  /**
+   * Uncheck to disable this payment method for the country.
+   */
+  isActive?: boolean | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1460,14 +1490,6 @@ export interface Transaction {
      * GHS amount Hogapay absorbed as discount
      */
     discountAmount?: number | null;
-    /**
-     * Actual amount sent to Eganow (amountContributed - discountAmount)
-     */
-    amountToSendToEganow?: number | null;
-    /**
-     * Base collection fee rate (%) from system settings at time of transaction
-     */
-    collectionFeePercent?: number | null;
   };
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
@@ -1483,18 +1505,6 @@ export interface Transaction {
    * Who paid the collection fee for this contribution
    */
   collectionFeePaidBy?: ('contributor' | 'jar-creator') | null;
-  /**
-   * Transfer fee percentage applied to this payout
-   */
-  payoutFeePercentage?: number | null;
-  /**
-   * Transfer fee amount deducted from this payout
-   */
-  payoutFeeAmount?: number | null;
-  /**
-   * Net amount transferred to user (after fee deduction)
-   */
-  payoutNetAmount?: number | null;
   /**
    * Transaction reference for tracking payments
    */
@@ -2102,28 +2112,6 @@ export interface SmsCampaign {
   recipientCount?: number | null;
   successCount?: number | null;
   failureCount?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Payment methods available per country.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payment-methods".
- */
-export interface PaymentMethod {
-  id: string;
-  /**
-   * e.g. mobile-money, bank, card, cash, apple-pay
-   */
-  type: string;
-  country: ('ghana' | 'nigeria')[];
-  /**
-   * Uncheck to disable this payment method for the country.
-   */
-  isActive?: boolean | null;
-  slug?: string | null;
-  slugLock?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3202,7 +3190,9 @@ export interface UsersSelect<T extends boolean = true> {
   hogapayDiscountPercent?: T;
   demoUser?: T;
   lastActiveAt?: T;
+  withdrawalPaymentMethod?: T;
   bank?: T;
+  bankCode?: T;
   accountNumber?: T;
   accountHolder?: T;
   appSettings?:
@@ -3259,17 +3249,12 @@ export interface TransactionsSelect<T extends boolean = true> {
         hogapayRevenue?: T;
         discountPercent?: T;
         discountAmount?: T;
-        amountToSendToEganow?: T;
-        collectionFeePercent?: T;
       };
   paymentStatus?: T;
   type?: T;
   amountDue?: T;
   isSettled?: T;
   collectionFeePaidBy?: T;
-  payoutFeePercentage?: T;
-  payoutFeeAmount?: T;
-  payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
   collector?: T;
@@ -4274,6 +4259,7 @@ export interface TaskProcessReferralWithdrawal {
     withdrawalRecordId: string;
     userId: string;
     bank: string;
+    bankCode?: string | null;
     accountNumber: string;
     accountHolder: string;
     amount: string;

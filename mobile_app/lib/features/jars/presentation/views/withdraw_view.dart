@@ -18,6 +18,8 @@ import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
+import 'package:Hoga/features/contribution/data/models/charges_model.dart';
 import 'package:go_router/go_router.dart';
 
 class WithdrawView extends StatefulWidget {
@@ -31,12 +33,15 @@ class _WithdrawViewState extends State<WithdrawView> {
   bool _isLoading = false;
   bool _isSendingOtp = false;
   bool _isLoadingSettings = true;
+  bool _isLoadingCharges = true;
+  bool _chargesLoaded = false;
 
   // Arguments from previous screen
   String? jarId;
   double? payoutBalance;
   String? currency;
 
+  ChargesModel? _payoutCharges;
   SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
 
   @override
@@ -79,10 +84,40 @@ class _WithdrawViewState extends State<WithdrawView> {
     final arguments =
         GoRouterState.of(context).extra as Map<String, dynamic>?;
 
-    if (arguments != null) {
+    if (arguments != null && !_chargesLoaded) {
       jarId = arguments['jarId'] as String?;
       payoutBalance = arguments['payoutBalance'] as double?;
       currency = arguments['currency'] as String?;
+      _chargesLoaded = true;
+      _loadPayoutCharges();
+    }
+  }
+
+  Future<void> _loadPayoutCharges() async {
+    if (payoutBalance == null) {
+      setState(() => _isLoadingCharges = false);
+      return;
+    }
+    try {
+      final authState = context.read<AuthBloc>().state;
+      final user = authState is AuthAuthenticated ? authState.user : null;
+      final charges = await ChargesApiProvider(
+        dio: getIt<Dio>(),
+        userStorageService: getIt<UserStorageService>(),
+      ).getCharges(
+        amount: payoutBalance!,
+        type: 'payout',
+        paymentMethod: user?.withdrawalPaymentMethod ?? 'mobile-money',
+        country: user?.country,
+      );
+      if (mounted) {
+        setState(() {
+          _payoutCharges = charges;
+          _isLoadingCharges = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingCharges = false);
     }
   }
 
@@ -91,7 +126,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     if (jarId == null || _isSendingOtp) return;
 
     final balance = payoutBalance ?? 0.0;
-    final minPayout = _systemSettings.minimumPayoutAmount;
+    final minPayout = _payoutCharges?.minimumPayoutAmount ?? _systemSettings.minimumPayoutAmount;
     if (balance < minPayout) {
       AppSnackBar.show(
         context,
@@ -239,10 +274,9 @@ class _WithdrawViewState extends State<WithdrawView> {
     final localizations = AppLocalizations.of(context)!;
     final balance = payoutBalance ?? 0.0;
     final cur = currency ?? 'GHS';
-    // Fees are calculated server-side based on country + payment method.
-    // Show the gross balance; the net amount will be confirmed after the payout is processed.
-    final double transferCharges = 0.0;
-    final double total = balance;
+    final double transferCharges = _payoutCharges?.platformCharge ?? 0.0;
+    final double total = balance - transferCharges;
+    final bool canAffordFees = total > 0;
 
     // Check KYC before allowing transfer
     final authState = context.read<AuthBloc>().state;
@@ -271,7 +305,7 @@ class _WithdrawViewState extends State<WithdrawView> {
         ),
         centerTitle: true,
       ),
-      body: _isLoadingSettings
+      body: (_isLoadingSettings || _isLoadingCharges)
           ? const Center(child: CircularProgressIndicator())
           : Padding(
                 padding: const EdgeInsets.symmetric(
@@ -307,6 +341,7 @@ class _WithdrawViewState extends State<WithdrawView> {
                       CurrencyUtils.formatAmount(total, cur),
                       context,
                       isBold: true,
+                      valueColor: canAffordFees ? null : Theme.of(context).colorScheme.error,
                     ),
 
                     if (accountNumber != null || accountHolder != null) ...[
@@ -353,7 +388,7 @@ class _WithdrawViewState extends State<WithdrawView> {
                       text: localizations.withdraw,
                       isLoading: _isLoading || _isSendingOtp,
                       onPressed:
-                          (_isLoading || _isSendingOtp)
+                          (_isLoading || _isSendingOtp || !canAffordFees)
                               ? null
                               : _handleWithdraw,
                     ),
@@ -383,6 +418,7 @@ class _WithdrawViewState extends State<WithdrawView> {
     String value,
     BuildContext context, {
     bool isBold = false,
+    Color? valueColor,
   }) {
     final style =
         isBold
@@ -391,7 +427,10 @@ class _WithdrawViewState extends State<WithdrawView> {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label, style: style), Text(value, style: style)],
+      children: [
+        Text(label, style: style),
+        Text(value, style: valueColor != null ? style.copyWith(color: valueColor) : style),
+      ],
     );
   }
 }

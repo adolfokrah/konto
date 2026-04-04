@@ -19,6 +19,8 @@ class User {
   final String? accountHolder;
   final String? accountNumber;
   final String? bank;
+  final String? bankCode;
+  final String? withdrawalPaymentMethod;
 
   /// Computed full name from firstName and lastName
   String get fullName => '$firstName $lastName'.trim();
@@ -47,6 +49,8 @@ class User {
     this.accountHolder,
     this.accountNumber,
     this.bank,
+    this.bankCode,
+    this.withdrawalPaymentMethod,
     this.photo,
     this.paystackSubAccountCode,
     this.referralCode,
@@ -81,12 +85,23 @@ class User {
       accountHolder: json['accountHolder'] as String?,
       accountNumber: json['accountNumber'] as String?,
       bank: json['bank'] as String?,
+      bankCode: json['bankCode'] as String?,
+      withdrawalPaymentMethod: _parseWithdrawalPaymentMethod(json['withdrawalPaymentMethod']),
       photo: _parsePhoto(json['photo']),
       paystackSubAccountCode: json['paystackSubAccountCode'] as String?,
       referralCode: json['referralCode'] as String?,
       collection: json['collection'] as String?,
       strategy: json['_strategy'] as String?,
     );
+  }
+
+  static String? _parseWithdrawalPaymentMethod(dynamic raw) {
+    if (raw == null) return null;
+    // Populated relationship → extract type slug
+    if (raw is Map<String, dynamic>) return raw['type'] as String?;
+    // Bare string: could be a type slug ('mobile-money') or a document ID —
+    // return as-is so the view can match against both pm.type and pm.id
+    return raw as String?;
   }
 
   static MediaModel? _parsePhoto(dynamic raw) {
@@ -120,6 +135,8 @@ class User {
       if (accountHolder != null) 'accountHolder': accountHolder,
       if (accountNumber != null) 'accountNumber': accountNumber,
       if (bank != null) 'bank': bank,
+      if (bankCode != null) 'bankCode': bankCode,
+      if (withdrawalPaymentMethod != null) 'withdrawalPaymentMethod': withdrawalPaymentMethod,
       if (photo != null) 'photo': photo!.toJson(),
       if (paystackSubAccountCode != null)
         'paystackSubAccountCode': paystackSubAccountCode,
@@ -146,6 +163,8 @@ class User {
     String? accountHolder,
     String? accountNumber,
     String? bank,
+    String? bankCode,
+    String? withdrawalPaymentMethod,
     MediaModel? photo,
     String? paystackSubAccountCode,
     String? referralCode,
@@ -169,6 +188,8 @@ class User {
       accountHolder: accountHolder ?? this.accountHolder,
       accountNumber: accountNumber ?? this.accountNumber,
       bank: bank ?? this.bank,
+      bankCode: bankCode ?? this.bankCode,
+      withdrawalPaymentMethod: withdrawalPaymentMethod ?? this.withdrawalPaymentMethod,
       photo: photo ?? this.photo,
       paystackSubAccountCode:
           paystackSubAccountCode ?? this.paystackSubAccountCode,

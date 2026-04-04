@@ -250,6 +250,29 @@ export interface PaystackResolveAccountResponse {
   bank_id: number
 }
 
+// ── Banks / Miscellaneous ─────────────────────────────────────────────────────
+
+export interface PaystackBankListParams {
+  /** Country to filter banks by e.g. 'ghana', 'nigeria' */
+  country?: string
+  /** 'mobile_money' | 'ghipss' | 'nuban' | 'basa' */
+  type?: string
+  /** Max records per page (default 50, max 100) */
+  perPage?: number
+}
+
+export interface PaystackBank {
+  id: number
+  name: string
+  slug: string
+  code: string
+  type: string
+  country: string
+  currency: string
+  active: boolean
+  is_deleted: boolean
+}
+
 // ── Balance ───────────────────────────────────────────────────────────────────
 
 export interface PaystackBalanceResponse {
@@ -480,6 +503,25 @@ export default class Paystack {
   ): Promise<PaystackResolveAccountResponse> {
     return this.request<PaystackResolveAccountResponse>('GET', '/bank/resolve', {
       query: { account_number: accountNumber, bank_code: bankCode },
+    })
+  }
+
+  // ── Miscellaneous ───────────────────────────────────────────────────────────
+
+  /**
+   * List banks and mobile money providers available on Paystack.
+   * Filter by country and type to get the relevant options.
+   * - type 'mobile_money' → mobile money operators (MTN, Telecel, etc.)
+   * - type 'ghipss'       → Ghana bank transfer providers
+   */
+  async listBanks(params: PaystackBankListParams = {}): Promise<PaystackBank[]> {
+    return this.request<PaystackBank[]>('GET', '/bank', {
+      query: {
+        country: params.country,
+        type: params.type,
+        per_page: params.perPage ?? 100,
+        use_cursor: false,
+      },
     })
   }
 

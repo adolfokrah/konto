@@ -32,11 +32,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           eganowFees: 0,
         },
       }
-      if (tx.type === 'payout') {
-        data.payoutFeePercentage = 0
-        data.payoutFeeAmount = 0
-        data.payoutNetAmount = amount
-      }
       await req.payload.update({
         collection: 'transactions',
         id: tx.id,
@@ -67,11 +62,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           eganowFees: 0,
         },
       }
-      if (tx.type === 'payout') {
-        data.payoutFeePercentage = 0
-        data.payoutFeeAmount = 0
-        data.payoutNetAmount = amount
-      }
       await req.payload.update({
         collection: 'transactions',
         id: tx.id,
@@ -101,11 +91,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           hogapayRevenue: 0,
           eganowFees: 0,
         },
-      }
-      if (tx.type === 'payout') {
-        data.payoutFeePercentage = 0
-        data.payoutFeeAmount = 0
-        data.payoutNetAmount = amount
       }
       await req.payload.update({
         collection: 'transactions',

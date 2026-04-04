@@ -14,15 +14,19 @@ class ChargesApiProvider extends BaseApiProvider {
   /// Throws if the request fails — callers should handle errors.
   Future<ChargesModel> getCharges({
     required double amount,
-    required String jarId,
+    String? jarId,
     String? paymentMethod,
+    String? type,
+    String? country,
   }) async {
     final response = await dio.get(
       '${BackendConfig.apiBaseUrl}/transactions/get-charges',
       queryParameters: {
         'amount': amount,
-        'jarId': jarId,
+        if (jarId != null) 'jarId': jarId,
         if (paymentMethod != null) 'paymentMethod': paymentMethod,
+        if (type != null) 'type': type,
+        if (country != null) 'country': country,
       },
     );
 

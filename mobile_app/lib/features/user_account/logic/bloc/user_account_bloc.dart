@@ -4,6 +4,8 @@ import 'package:Hoga/core/enums/app_language.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/user_account/data/models/bank_model.dart';
+import 'package:Hoga/features/user_account/data/models/payment_method_model.dart';
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
 
 part 'user_account_event.dart';
@@ -19,6 +21,8 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
       super(UserAccountInitial()) {
     on<UpdatePersonalDetails>(_updatePersonalDetails);
     on<DeleteAccount>(_deleteAccount);
+    on<FetchPaymentMethods>(_fetchPaymentMethods);
+    on<FetchBanks>(_fetchBanks);
   }
 
   Future<void> _updatePersonalDetails(
@@ -38,7 +42,9 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
         email: event.email,
         accountNumber: event.accountNumber,
         bank: event.bank,
+        bankCode: event.bankCode,
         accountHolder: event.accountHolder,
+        withdrawalPaymentMethod: event.withdrawalPaymentMethod,
         appTheme: event.appTheme,
         appLanguage: event.appLanguage,
         photoId: event.photoId,
@@ -62,6 +68,35 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
           message: 'Failed to update personal details: ${e.toString()}',
         ),
       );
+    }
+  }
+
+  Future<void> _fetchPaymentMethods(
+    FetchPaymentMethods event,
+    Emitter<UserAccountState> emit,
+  ) async {
+    try {
+      final methods = await _userAccountRepository.fetchPaymentMethods(
+        country: event.country,
+      );
+      emit(PaymentMethodsLoaded(paymentMethods: methods));
+    } catch (e) {
+      emit(UserAccountError(message: 'Failed to load payment methods: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _fetchBanks(
+    FetchBanks event,
+    Emitter<UserAccountState> emit,
+  ) async {
+    try {
+      final banks = await _userAccountRepository.fetchBanks(
+        country: event.country,
+        paystackType: event.paystackType,
+      );
+      emit(BanksLoaded(banks: banks, paystackType: event.paystackType));
+    } catch (e) {
+      emit(UserAccountError(message: 'Failed to load banks: ${e.toString()}'));
     }
   }
 

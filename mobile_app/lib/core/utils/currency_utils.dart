@@ -42,7 +42,8 @@ class CurrencyUtils {
     int decimalPlaces = 2,
   }) {
     final symbol = getCurrencySymbol(currency);
-    return '$symbol ${amount.abs().toStringAsFixed(decimalPlaces)}';
+    final formatted = amount.abs().toStringAsFixed(decimalPlaces);
+    return amount < 0 ? '-$symbol $formatted' : '$symbol $formatted';
   }
 
   /// Format amount with currency symbol and no decimal places

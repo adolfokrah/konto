@@ -102,7 +102,7 @@ class ContributionListItem extends StatelessWidget {
             ),
           ),
           Text(
-            '${(isTransfer || isRefund) ? '- ' : ''}${CurrencyUtils.formatAmount(amount, currency)}',
+            '${(isTransfer || isRefund) ? '- ' : ''}${CurrencyUtils.formatAmount(amount.abs(), currency)}',
             style: TextStyles.titleBoldM.copyWith(
               color: isRefund ? AppColors.warningOrange : null,
               decoration:
@@ -125,16 +125,6 @@ class ContributionListItem extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (fee != null && fee! > 0 && !isTransfer && !isRefund)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: Text(
-                    'Fee: ${CurrencyUtils.formatAmount(fee!, currency)}',
-                    style: TextStyles.titleRegularXs.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ),
               if (paymentMethod != null && paymentMethod != 'cash')
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 2),

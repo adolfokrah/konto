@@ -234,9 +234,9 @@ class JarBalanceBreakdown extends StatelessWidget {
           ),
           Text(
             isRedAmount
-                ? '-${CurrencyUtils.formatAmount(amount, currency)}'
+                ? '-${CurrencyUtils.formatAmount(amount.abs(), currency)}'
                 : isGreenAmount
-                ? '+${CurrencyUtils.formatAmount(amount, currency)}'
+                ? '+${CurrencyUtils.formatAmount(amount.abs(), currency)}'
                 : CurrencyUtils.formatAmount(amount, currency),
             style:
                 isLastItem

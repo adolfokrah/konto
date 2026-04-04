@@ -149,8 +149,6 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
           eganowFees: charges.eganowFees,
           discountPercent: 0,
           discountAmount: 0,
-          amountToSendToEganow: charges.netAmount,
-          collectionFeePercent: 0,
         },
         ...(remarks ? { remarks } : {}),
         ...(customFieldValues

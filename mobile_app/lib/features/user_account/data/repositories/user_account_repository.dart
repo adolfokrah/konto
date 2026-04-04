@@ -3,6 +3,8 @@ import 'package:Hoga/core/enums/app_language.dart' show AppLanguage;
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
+import 'package:Hoga/features/user_account/data/models/bank_model.dart';
+import 'package:Hoga/features/user_account/data/models/payment_method_model.dart';
 
 /// Repository for user account operations
 /// Implements the repository pattern to abstract API calls
@@ -28,7 +30,9 @@ class UserAccountRepository {
     String? email,
     String? accountNumber,
     String? bank,
+    String? bankCode,
     String? accountHolder,
+    String? withdrawalPaymentMethod,
     AppTheme? appTheme,
     AppLanguage? appLanguage,
     String? photoId,
@@ -46,7 +50,9 @@ class UserAccountRepository {
         email: email,
         accountNumber: accountNumber,
         bank: bank,
+        bankCode: bankCode,
         accountHolder: accountHolder,
+        withdrawalPaymentMethod: withdrawalPaymentMethod,
         appTheme: appTheme,
         appLanguage: appLanguage,
         photoId: photoId,
@@ -104,13 +110,15 @@ class UserAccountRepository {
   /// Verify account details using Paystack
   /// Returns a record with success status, message, and validity
   Future verifyAccountDetails({
-    required String phoneNumber,
+    required String accountNumber,
     required String bank,
+    required String paymentMethod,
   }) async {
     try {
       final result = await _apiProvider.verifyAccountDetails(
-        phoneNumber: phoneNumber,
+        accountNumber: accountNumber,
         bank: bank,
+        paymentMethod: paymentMethod,
       );
       return (success: true, message: result['message'], data: result['data']);
     } catch (e) {
@@ -120,6 +128,21 @@ class UserAccountRepository {
         data: null,
       );
     }
+  }
+
+  /// Fetch payment methods available for a country (excludes card & cash).
+  Future<List<PaymentMethodModel>> fetchPaymentMethods({
+    required String country,
+  }) async {
+    return _apiProvider.fetchPaymentMethods(country: country);
+  }
+
+  /// Fetch banks / mobile-money operators from Paystack via backend.
+  Future<List<BankModel>> fetchBanks({
+    String country = 'ghana',
+    String? paystackType,
+  }) async {
+    return _apiProvider.getBanks(country: country, type: paystackType);
   }
 
   /// Delete user account

@@ -12,7 +12,6 @@ export interface ChargesResult {
   eganowFees: number // Eganow's cut
   discountPercent: number // 0 if no discount
   discountAmount: number // GHS Hogapay absorbs (0 if no discount)
-  amountToSendToEganow: number // amountContributed - discountAmount
 }
 
 /**
@@ -42,7 +41,7 @@ export function calculateCharges(input: ChargesInput): ChargesResult {
   const discountAmount = fullHogapayRevenue * (discountPercent / 100) // e.g. 0.56 at 70%
   const hogapayRevenue = fullHogapayRevenue - discountAmount // e.g. 0.24
 
-  const amountToSendToEganow = amountContributed - discountAmount
+  const amountToSendToEganow = amountContributed - discountAmount // used internally for fee calc
 
   // Mirror Eganow's internal pesewa arithmetic: convert to pesewas, apply fee, ceil, convert back.
   // Use integer multiplier (basis points) to avoid IEEE 754 floating point errors where
@@ -62,7 +61,6 @@ export function calculateCharges(input: ChargesInput): ChargesResult {
     eganowFees: round2(eganowFees),
     discountPercent,
     discountAmount: round2(discountAmount),
-    amountToSendToEganow: round2(amountToSendToEganow),
   }
 }
 

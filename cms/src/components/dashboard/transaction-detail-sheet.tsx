@@ -361,28 +361,6 @@ export function TransactionDetailSheet({
                 )
               })()}
 
-              {/* Payout Details */}
-              {selected.type === 'payout' && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Payout Details</h4>
-                  <Separator className="mb-2" />
-                  <DetailRow
-                    label="Fee Percentage"
-                    value={selected.payoutFeePercentage != null ? `${selected.payoutFeePercentage}%` : null}
-                  />
-                  <DetailRow
-                    label="Fee Amount"
-                    value={selected.payoutFeeAmount != null ? formatAmount(selected.payoutFeeAmount) : null}
-                  />
-                  <DetailRow
-                    label="Net Amount"
-                    value={selected.payoutNetAmount != null ? (
-                      <span className="font-semibold">{formatAmount(selected.payoutNetAmount)}</span>
-                    ) : null}
-                  />
-                </div>
-              )}
-
               {/* Referral Bonus */}
               {referralBonus && (
                 <div>

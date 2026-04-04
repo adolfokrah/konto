@@ -202,22 +202,6 @@ export const Transactions: CollectionConfig = {
             readOnly: true,
           },
         },
-        {
-          name: 'amountToSendToEganow',
-          type: 'number',
-          admin: {
-            description: 'Actual amount sent to Eganow (amountContributed - discountAmount)',
-            readOnly: true,
-          },
-        },
-        {
-          name: 'collectionFeePercent',
-          type: 'number',
-          admin: {
-            description: 'Base collection fee rate (%) from system settings at time of transaction',
-            readOnly: true,
-          },
-        },
       ],
     },
     {
@@ -276,33 +260,6 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Who paid the collection fee for this contribution',
         condition: (data) => data?.type === 'contribution',
-      },
-    },
-    {
-      name: 'payoutFeePercentage',
-      type: 'number',
-      admin: {
-        description: 'Transfer fee percentage applied to this payout',
-        readOnly: true,
-        condition: (data) => data?.type === 'payout',
-      },
-    },
-    {
-      name: 'payoutFeeAmount',
-      type: 'number',
-      admin: {
-        description: 'Transfer fee amount deducted from this payout',
-        readOnly: true,
-        condition: (data) => data?.type === 'payout',
-      },
-    },
-    {
-      name: 'payoutNetAmount',
-      type: 'number',
-      admin: {
-        description: 'Net amount transferred to user (after fee deduction)',
-        readOnly: true,
-        condition: (data) => data?.type === 'payout',
       },
     },
     {

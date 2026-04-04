@@ -5,11 +5,13 @@ sealed class WithdrawalAccountVerificationEvent {}
 
 final class RequestValidateWithdrawalAccountEvent
     extends WithdrawalAccountVerificationEvent {
-  final String phoneNumber;
+  final String accountNumber;
   final String bank;
+  final String paymentMethod;
 
   RequestValidateWithdrawalAccountEvent({
-    required this.phoneNumber,
+    required this.accountNumber,
     required this.bank,
+    required this.paymentMethod,
   });
 }

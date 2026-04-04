@@ -112,7 +112,7 @@ export default function TransactionNotification({
             {paymentMethod && (
               <tr style={rowStyle}>
                 <td style={labelStyle}>Payment Method</td>
-                <td style={{ ...valueStyle, textTransform: 'capitalize' }}>{paymentMethod}</td>
+                <td style={valueStyle}>{paymentMethod}</td>
               </tr>
             )}
             {phone && (

@@ -75,10 +75,10 @@ class ReviewWithdrawalAccountBottomSheet extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.spacingM),
 
-              // Phone Number
+              // Account Number
               _buildDetailRow(
-                label: 'Phone Number',
-                value: verificationData.phoneNumber,
+                label: 'Account Number',
+                value: verificationData.accountNumber,
               ),
             ],
           ),

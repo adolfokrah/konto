@@ -2,13 +2,6 @@ import { getPaystack } from '@/utilities/initalise'
 import { getJarBalance } from '@/utilities/getJarBalance'
 import type { Transaction } from '@/payload-types'
 
-const bankCodeMap: Record<string, string> = {
-  mtn: 'MTN',
-  telecel: 'VDF',
-  vodafone: 'VDF',
-  airteltigo: 'ATL',
-}
-
 /**
  * Process Paystack Payout Task
  *
@@ -137,7 +130,24 @@ export const processPayoutPaystackTask = {
 
       // Step 3b — verify jar still has sufficient balance
       const { balance: currentBalance } = await getJarBalance(payload, jarId)
-      const payoutAmount = Math.abs(transaction.amountContributed ?? 0)
+      const payoutAmount =
+        Math.abs(transaction.amountContributed) -
+        Math.abs((transaction.chargesBreakdown as any)?.platformCharge ?? 0)
+      if (!payoutAmount || payoutAmount <= 0) {
+        await payload.update({
+          collection: 'transactions',
+          id: existingTransactionId,
+          data: { paymentStatus: 'failed' },
+          overrideAccess: true,
+        })
+        return {
+          output: {
+            success: false,
+            message: 'Net payout amount is missing or invalid on transaction',
+          },
+        }
+      }
+
       if (currentBalance < 0) {
         await payload.update({
           collection: 'transactions',
@@ -179,7 +189,7 @@ export const processPayoutPaystackTask = {
         }
       }
 
-      const bankCode = bankCodeMap[creator.bank.toLowerCase()]
+      const bankCode = (creator as any).bankCode
       if (!bankCode) {
         await payload.update({
           collection: 'transactions',
@@ -187,7 +197,12 @@ export const processPayoutPaystackTask = {
           data: { paymentStatus: 'failed' },
           overrideAccess: true,
         })
-        return { output: { success: false, message: 'Unsupported mobile money provider' } }
+        return {
+          output: {
+            success: false,
+            message: 'Bank code missing. Creator must re-save their withdrawal account.',
+          },
+        }
       }
 
       // Step 5 — create Paystack transfer recipient
@@ -202,7 +217,7 @@ export const processPayoutPaystackTask = {
           currency: (jar.currency as string) || 'GHS',
         })
 
-        // Step 6 — initiate transfer using the full payout amount (no fees deducted)
+        // Step 6 — initiate transfer of net amount (after fees) to the creator
         const amountInPesewas = Math.round(payoutAmount * 100)
         const transfer = await paystack.initiateTransfer({
           source: 'balance',

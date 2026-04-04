@@ -29,17 +29,16 @@ class WithdrawalAccountVerificationBloc
     emit(WithdrawalAccountVerificationLoading());
 
     final result = await _userAccountRepository.verifyAccountDetails(
-      phoneNumber: event.phoneNumber,
+      accountNumber: event.accountNumber,
       bank: event.bank,
+      paymentMethod: event.paymentMethod,
     );
-
-    print(result);
 
     if (result.success && result.data != null) {
       emit(
         WithdrawalAccountVerificationSuccess(
           name: result.data['account_name'],
-          phoneNumber: result.data['account_number'],
+          accountNumber: result.data['account_number'],
         ),
       );
     } else {

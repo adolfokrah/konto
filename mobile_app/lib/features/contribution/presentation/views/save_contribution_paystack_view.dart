@@ -248,53 +248,56 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
           final isLoading = state is AddContributionLoading;
 
           return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              automaticallyImplyLeading:
-                  !isLoading, // Disable back button when loading
-              title: Text(
-                localizations.requestContribution,
-                style: TextStyles.titleMediumLg.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              centerTitle: true,
-            ),
-            bottomNavigationBar: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.spacingM,
-                  AppSpacing.spacingS,
-                  AppSpacing.spacingM,
-                  AppSpacing.spacingM,
-                ),
-                child: Builder(builder: (context) {
-                  String buttonText;
-                  if (state is AddContributionLoading) {
-                    buttonText = localizations.processing;
-                  } else if (_selectedPaymentMethod == 'mobile-money' &&
-                      amount != null) {
-                    final contributionAmount =
-                        double.tryParse(amount!) ?? 0.0;
-                    final totalAmount = _charges?.amountPaidByContributor ?? contributionAmount;
-                    buttonText =
-                        '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
-                  } else if (_selectedPaymentMethod == 'mobile-money') {
-                    buttonText = localizations.requestPayment;
-                  } else {
-                    buttonText = localizations.saveContribution;
-                  }
-                  return AppButton.filled(
-                    key: const Key('submit_contribution_button'),
-                    isLoading: state is AddContributionLoading || _isLoading,
-                    text: buttonText,
-                    onPressed: () async {
-                      await _handlePaymentRequest(context);
-                    },
-                  );
-                }),
-              ),
-            ),
+            appBar: _awaitingPayment
+                ? null
+                : AppBar(
+                    elevation: 0,
+                    automaticallyImplyLeading: !isLoading,
+                    title: Text(
+                      localizations.requestContribution,
+                      style: TextStyles.titleMediumLg.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    centerTitle: true,
+                  ),
+            bottomNavigationBar: _awaitingPayment
+                ? null
+                : SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.spacingM,
+                        AppSpacing.spacingS,
+                        AppSpacing.spacingM,
+                        AppSpacing.spacingM,
+                      ),
+                      child: Builder(builder: (context) {
+                        String buttonText;
+                        if (state is AddContributionLoading) {
+                          buttonText = localizations.processing;
+                        } else if (_selectedPaymentMethod == 'mobile-money' &&
+                            amount != null) {
+                          final contributionAmount =
+                              double.tryParse(amount!) ?? 0.0;
+                          final totalAmount = _charges?.amountPaidByContributor ?? contributionAmount;
+                          buttonText =
+                              '${localizations.request} ${currency ?? ''} ${totalAmount.toStringAsFixed(2)}';
+                        } else if (_selectedPaymentMethod == 'mobile-money') {
+                          buttonText = localizations.requestPayment;
+                        } else {
+                          buttonText = localizations.saveContribution;
+                        }
+                        return AppButton.filled(
+                          key: const Key('submit_contribution_button'),
+                          isLoading: state is AddContributionLoading || _isLoading,
+                          text: buttonText,
+                          onPressed: () async {
+                            await _handlePaymentRequest(context);
+                          },
+                        );
+                      }),
+                    ),
+                  ),
             body: _awaitingPayment
                 ? _buildAwaitingPaymentView()
                 : GestureDetector(
@@ -548,7 +551,7 @@ class _SaveContributionPaystackViewState extends State<SaveContributionPaystackV
             ),
             const SizedBox(height: 12),
             const Text(
-              'Please approve the payment prompt on your phone. This may take a moment.',
+              'Please ask the contributor to approve the payment prompt on their phone. This may take a moment.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),

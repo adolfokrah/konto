@@ -12,8 +12,10 @@ final class UpdatePersonalDetails extends UserAccountEvent {
   final String? country;
   final String? email;
   final String? accountNumber;
-  final String? bank;
+  final String? bank;     // display name, e.g. "MTN Mobile Money"
+  final String? bankCode; // Paystack code, e.g. "MTN"
   final String? accountHolder;
+  final String? withdrawalPaymentMethod;
   final AppTheme? appTheme;
   final AppLanguage? appLanguage;
   final String? photoId; // newly uploaded media document id
@@ -30,7 +32,9 @@ final class UpdatePersonalDetails extends UserAccountEvent {
     this.email,
     this.accountNumber,
     this.bank,
+    this.bankCode,
     this.accountHolder,
+    this.withdrawalPaymentMethod,
     this.appTheme,
     this.appLanguage,
     this.photoId,
@@ -43,4 +47,15 @@ final class DeleteAccount extends UserAccountEvent {
   final String reason; // Reason for account deletion
 
   DeleteAccount({required this.reason});
+}
+
+final class FetchPaymentMethods extends UserAccountEvent {
+  final String country;
+  FetchPaymentMethods({required this.country});
+}
+
+final class FetchBanks extends UserAccountEvent {
+  final String country;
+  final String paystackType; // 'mobile_money' or 'ghipss'
+  FetchBanks({required this.country, required this.paystackType});
 }
