@@ -87,8 +87,11 @@ export const payoutPaystack = async (req: PayloadRequest) => {
       getJarBalance(req.payload, jarId),
     ])
 
-    const creatorCountry =
+    const creatorCountry: string | undefined = (
       typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
+    )
+      ?.toLowerCase()
+      .trim()
 
     const payoutCharges = await getCharges(req.payload, {
       amount: netBalance,

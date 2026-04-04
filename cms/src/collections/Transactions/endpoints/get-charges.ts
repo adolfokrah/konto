@@ -47,7 +47,9 @@ export const getCharges = async (req: PayloadRequest) => {
         feePaidBy =
           ((jar as any)?.collectionFeePaidBy as 'contributor' | 'jar-creator') || 'contributor'
         const creator = (jar as any)?.creator
-        creatorCountry = typeof creator === 'object' ? creator?.country : undefined
+        const rawCountry: string | undefined =
+          typeof creator === 'object' ? creator?.country : undefined
+        creatorCountry = rawCountry?.toLowerCase().trim()
       } catch (_) {}
     }
 

@@ -111,8 +111,11 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
     const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
       | 'contributor'
       | 'jar-creator'
-    const creatorCountry =
+    const creatorCountry: string | undefined = (
       typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
+    )
+      ?.toLowerCase()
+      .trim()
     const charges = await getCharges(req.payload, {
       amount,
       type: 'contribution',

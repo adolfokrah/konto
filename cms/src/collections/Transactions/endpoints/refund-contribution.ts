@@ -112,7 +112,7 @@ export const refundContribution = async (req: PayloadRequest) => {
         overrideAccess: true,
       })
       const creator = jar?.creator as any
-      creatorCountry = creator?.country
+      creatorCountry = creator?.country?.toLowerCase()?.trim()
     } catch (_) {}
 
     // Refund base is amountDue (what the jar actually received after PSP fees)

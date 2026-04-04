@@ -16,6 +16,7 @@ export type { CustomField }
 interface PaymentMethodOption {
   id: string
   type: string
+  slug?: string
 }
 
 interface ContributionInputPaystackProps {
@@ -118,7 +119,9 @@ export default function ContributionInputPaystack({
       try {
         const params = new URLSearchParams({ amount: String(selectedAmount) })
         if (jarId) params.set('jarId', jarId)
-        if (selectedPaymentMethod) params.set('paymentMethod', selectedPaymentMethod)
+        const selectedPm = paymentMethods.find((pm) => pm.type === selectedPaymentMethod)
+        const pmSlug = selectedPm?.slug ?? selectedPaymentMethod
+        if (pmSlug) params.set('paymentMethod', pmSlug)
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/transactions/get-charges?${params}`,
         )

@@ -54,7 +54,7 @@ export async function getCharges(
       try {
         const result = await payload.find({
           collection: 'refund-fees' as any,
-          where: { country: { equals: country.toLowerCase() } },
+          where: { country: { equals: country.toLowerCase().trim() } },
           limit: 1,
           overrideAccess: true,
         })
@@ -161,13 +161,15 @@ async function resolveCollectionFee(
   try {
     const result = await payload.find({
       collection: 'collection-fees' as any,
-      where: { country: { equals: country.toLowerCase() } },
+      where: { country: { equals: country.toLowerCase().trim() } },
       depth: 1,
       limit: 50,
       overrideAccess: true,
     })
     const match = (result.docs as any[]).find(
-      (r) => r.paymentMethod?.type?.toLowerCase() === paymentMethod.toLowerCase(),
+      (r) =>
+        r.paymentMethod?.slug?.toLowerCase() === paymentMethod.toLowerCase() ||
+        r.paymentMethod?.type?.toLowerCase() === paymentMethod.toLowerCase(),
     )
     if (match)
       return {
@@ -175,7 +177,9 @@ async function resolveCollectionFee(
         hogapaySplit: match.hogapaySplit,
         minimumContributionAmount: match.minimumContributionAmount,
       }
-  } catch (_) {}
+  } catch (e) {
+    console.log('[resolveCollectionFee] error:', e)
+  }
   return null
 }
 
@@ -193,13 +197,13 @@ async function resolvePayoutFee(
   try {
     const result = await payload.find({
       collection: 'payout-fees' as any,
-      where: { country: { equals: country.toLowerCase() } },
+      where: { country: { equals: country.toLowerCase().trim() } },
       depth: 1,
       limit: 50,
       overrideAccess: true,
     })
     const match = (result.docs as any[]).find(
-      (r) => r.paymentMethod?.type?.toLowerCase() === paymentMethod.toLowerCase(),
+      (r) => r.paymentMethod?.slug?.toLowerCase() === paymentMethod.toLowerCase(),
     )
     if (match)
       return {

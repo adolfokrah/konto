@@ -56,7 +56,7 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
       )
     }
 
-    const jar = await req.payload.findByID({ collection: 'jars', id: jarId })
+    const jar = await req.payload.findByID({ collection: 'jars', id: jarId, depth: 1 })
     if (!jar) {
       return Response.json({ success: false, message: 'Jar not found' }, { status: 404 })
     }
@@ -105,11 +105,17 @@ export const chargeMobileMoney = async (req: PayloadRequest) => {
     const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
       | 'contributor'
       | 'jar-creator'
+    const creatorCountry: string | undefined = (
+      typeof jar.creator === 'object' ? (jar.creator as any)?.country : undefined
+    )
+      ?.toLowerCase()
+      .trim()
     const charges = await getCharges(req.payload, {
       amount,
       type: 'contribution',
       collectionFeePaidBy: feePaidBy,
       paymentMethod: 'mobile-money',
+      country: creatorCountry,
     })
 
     // Create pending transaction record with charges already calculated

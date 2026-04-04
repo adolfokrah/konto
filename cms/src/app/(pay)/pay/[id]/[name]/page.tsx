@@ -124,7 +124,7 @@ export default async function Page({
     const creatorCountry =
       typeof jarWithBalance?.creator === 'object' ? jarWithBalance.creator.country : null
 
-    let paymentMethods: { id: string; type: string }[] = []
+    let paymentMethods: { id: string; type: string; slug?: string }[] = []
     if (creatorCountry) {
       try {
         const pmRes = await fetch(
@@ -142,7 +142,7 @@ export default async function Page({
           }
           paymentMethods = (pmData?.docs ?? [])
             .filter((pm: any) => pm.type?.toLowerCase() !== 'cash')
-            .map((pm: any) => ({ id: pm.id, type: pm.type }))
+            .map((pm: any) => ({ id: pm.id, type: pm.type, slug: pm.slug }))
             .sort((a: any, b: any) => priority(a.type) - priority(b.type))
         }
       } catch (_) {}
