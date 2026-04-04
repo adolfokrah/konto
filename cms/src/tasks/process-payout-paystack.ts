@@ -199,7 +199,12 @@ export const processPayoutPaystackTask = {
       const creatorBankSlug = ((creator as any).bank as string | undefined)?.toLowerCase()
       const derivedBankCode = creatorBankSlug ? (bankCodeMap[creatorBankSlug] ?? null) : null
 
-      const isBank = transaction.paymentMethod === 'bank'
+      const withdrawalPM = (creator as any).withdrawalPaymentMethod
+      const withdrawalPMSlug =
+        typeof withdrawalPM === 'object' && withdrawalPM !== null
+          ? (withdrawalPM as any).slug
+          : (withdrawalPM as string | null | undefined)
+      const isBank = withdrawalPMSlug === 'bank' || withdrawalPMSlug === 'bank-transfer'
       if (!isBank && creatorBankSlug && !derivedBankCode) {
         await payload.update({
           collection: 'transactions',
