@@ -5,8 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
-import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
-import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
@@ -32,7 +31,6 @@ class WithdrawView extends StatefulWidget {
 class _WithdrawViewState extends State<WithdrawView> {
   bool _isLoading = false;
   bool _isSendingOtp = false;
-  bool _isLoadingSettings = true;
   bool _isLoadingCharges = true;
   bool _chargesLoaded = false;
 
@@ -42,39 +40,10 @@ class _WithdrawViewState extends State<WithdrawView> {
   String? currency;
 
   ChargesModel? _payoutCharges;
-  SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
 
   @override
   void initState() {
     super.initState();
-    _loadSystemSettings();
-  }
-
-  Future<void> _loadSystemSettings() async {
-    try {
-      final authState = context.read<AuthBloc>().state;
-      final country = authState is AuthAuthenticated
-          ? authState.user.country
-          : null;
-
-      final apiProvider = SystemSettingsApiProvider(
-        dio: getIt<Dio>(),
-        userStorageService: getIt<UserStorageService>(),
-      );
-      final settings = await apiProvider.getSystemSettings(country: country);
-      if (mounted) {
-        setState(() {
-          _systemSettings = settings;
-          _isLoadingSettings = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingSettings = false;
-        });
-      }
-    }
   }
 
   @override
@@ -126,7 +95,10 @@ class _WithdrawViewState extends State<WithdrawView> {
     if (jarId == null || _isSendingOtp) return;
 
     final balance = payoutBalance ?? 0.0;
-    final minPayout = _payoutCharges?.minimumPayoutAmount ?? _systemSettings.minimumPayoutAmount;
+    final minPayout = _payoutCharges?.minimumPayoutAmount ?? (() {
+          final s = context.read<PayoutMinimumBloc>().state;
+          return s is PayoutMinimumLoaded ? s.minimumPayoutAmount : 0.0;
+        })();
     if (balance < minPayout) {
       AppSnackBar.show(
         context,
@@ -276,7 +248,10 @@ class _WithdrawViewState extends State<WithdrawView> {
     final cur = currency ?? 'GHS';
     final double transferCharges = _payoutCharges?.platformCharge ?? 0.0;
     final double total = balance - transferCharges;
-    final double minPayout = _payoutCharges?.minimumPayoutAmount ?? _systemSettings.minimumPayoutAmount;
+    final double minPayout = _payoutCharges?.minimumPayoutAmount ?? (() {
+          final s = context.read<PayoutMinimumBloc>().state;
+          return s is PayoutMinimumLoaded ? s.minimumPayoutAmount : 0.0;
+        })();
     final bool canAffordFees = total > 0 && balance >= minPayout;
 
     // Check KYC before allowing transfer
@@ -306,7 +281,7 @@ class _WithdrawViewState extends State<WithdrawView> {
         ),
         centerTitle: true,
       ),
-      body: (_isLoadingSettings || _isLoadingCharges)
+      body: (_isLoadingCharges)
           ? const Center(child: CircularProgressIndicator())
           : Padding(
                 padding: const EdgeInsets.symmetric(

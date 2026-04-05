@@ -238,11 +238,10 @@ export const Transactions: CollectionConfig = {
     {
       name: 'amountDue',
       type: 'number',
-      virtual: true,
       admin: {
         readOnly: true,
-        description: 'amountPaidByContributor minus platformCharge — net amount into the jar',
-        condition: (data) => data?.type === 'contribution',
+        description:
+          'Net amount into the jar (contribution) or net amount received by creator (payout)',
       },
     },
     {

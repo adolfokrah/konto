@@ -15,13 +15,15 @@ export const settleContributionsTask = {
   slug: 'settle-contributions',
   schedule: [
     {
-      cron: '0 * * * *', // Every hour
+      cron: '0/3 * * * *', // Every hour
       queue: 'settle-contributions',
     },
   ],
   handler: async (args: any) => {
     try {
       const payload = args.req?.payload || args.payload
+
+      console.log('settlment called')
 
       // Build a per-country settlement delay map from contribution-settings collection
       const DEFAULT_DELAY_HOURS = 0.033
@@ -47,12 +49,12 @@ export const settleContributionsTask = {
         `Settlement delays by country: ${JSON.stringify(delayByCountry)}, cutoff: ${cutoffTime}`,
       )
 
-      // Find all unsettled completed mobile money contributions older than cutoff time
+      // Find all unsettled completed contributions older than cutoff time
       const unsettledContributions = await payload.find({
         collection: 'transactions',
         where: {
           type: { equals: 'contribution' },
-          paymentMethod: { equals: 'mobile-money' },
+          paymentMethod: { in: ['mobile-money', 'card', 'bank-transfer'] },
           paymentStatus: { equals: 'completed' },
           isSettled: { equals: false },
           createdAt: { less_than: cutoffTime },

@@ -10,13 +10,8 @@ final class ReferralLoading extends ReferralState {}
 final class ReferralLoaded extends ReferralState {
   final double balance;
   final double totalEarned;
-  final double minimumPayoutAmount;
 
-  ReferralLoaded({
-    required this.balance,
-    required this.totalEarned,
-    required this.minimumPayoutAmount,
-  });
+  ReferralLoaded({required this.balance, required this.totalEarned});
 }
 
 final class ReferralError extends ReferralState {

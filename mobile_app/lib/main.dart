@@ -28,6 +28,7 @@ import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/router.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
@@ -198,6 +199,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider.value(value: getIt<ContributionsListBloc>()),
         BlocProvider.value(value: getIt<ExportContributionsBloc>()),
         BlocProvider.value(value: getIt<KycBloc>()),
+        BlocProvider.value(
+          value: getIt<PayoutMinimumBloc>()..add(PayoutMinimumLoadRequested()),
+        ),
         BlocProvider.value(value: getIt<NotificationsBloc>()),
         BlocProvider.value(value: getIt<JarInviteActionBloc>()),
         BlocProvider.value(value: getIt<ReminderBloc>()),

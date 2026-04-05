@@ -1494,7 +1494,7 @@ export interface Transaction {
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
   /**
-   * amountPaidByContributor minus platformCharge — net amount into the jar
+   * Net amount into the jar (contribution) or net amount received by creator (payout)
    */
   amountDue?: number | null;
   /**

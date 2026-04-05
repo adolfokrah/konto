@@ -12,6 +12,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
 import 'package:Hoga/features/referral/logic/bloc/referral_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:Hoga/route.dart';
 
 class ReferralView extends StatelessWidget {
@@ -462,7 +463,10 @@ class _EarningsSectionState extends State<_EarningsSection> {
             }
 
             if (state is ReferralLoaded) {
-              final minPayout = state.minimumPayoutAmount;
+              final payoutMinState = context.watch<PayoutMinimumBloc>().state;
+              final minPayout = payoutMinState is PayoutMinimumLoaded
+                  ? payoutMinState.minimumPayoutAmount
+                  : 0.0;
               return _EarningsCard(
                 balance: state.balance,
                 totalEarned: state.totalEarned,

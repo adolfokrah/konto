@@ -11,6 +11,7 @@ import 'package:Hoga/features/user_account/data/models/bank_model.dart';
 import 'package:Hoga/features/user_account/data/models/payment_method_model.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/review_withdrawal_account.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -175,6 +176,7 @@ class _WithdrawalAccountViewState extends State<WithdrawalAccountView> {
                   token: state.token,
                 ),
               );
+              context.read<PayoutMinimumBloc>().add(PayoutMinimumLoadRequested());
               context.pop();
             } else if (state is UserAccountError) {
               AppSnackBar.showError(context, message: state.message);

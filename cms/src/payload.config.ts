@@ -226,7 +226,7 @@ export default buildConfig({
         queue: 'refund',
       },
       {
-        cron: '0 * * * *', // Every hour
+        cron: '0/5 * * * *', // Every hour
         queue: 'settle-contributions',
       },
       {

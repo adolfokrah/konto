@@ -189,6 +189,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
           jar: jarId,
           mobileMoneyProvider: isBank ? undefined : user.bank,
           amountContributed: -netBalance,
+          amountDue: netAmount,
           collector: user.id,
           ...(isBank
             ? { accountNumber: user.accountNumber }
@@ -250,6 +251,7 @@ export const payoutPaystack = async (req: PayloadRequest) => {
         jar: jarId,
         mobileMoneyProvider: isBank ? undefined : user.bank,
         amountContributed: -netBalance,
+        amountDue: netAmount,
         collector: user.id,
         ...(isBank
           ? { accountNumber: user.accountNumber }

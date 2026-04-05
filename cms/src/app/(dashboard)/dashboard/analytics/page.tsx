@@ -333,13 +333,13 @@ export default async function AnalyticsPage({
       overrideAccess: true,
     }),
 
-    // Unsettled mobile money contributions (upcoming balance)
+    // Unsettled contributions (upcoming balance)
     payload.find({
       collection: 'transactions',
       where: {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'contribution' },
-        paymentMethod: { equals: 'mobile-money' },
+        paymentMethod: { in: ['mobile-money', 'card', 'bank-transfer'] },
         isSettled: { equals: false },
       },
       pagination: false,
@@ -784,7 +784,7 @@ export default async function AnalyticsPage({
         <MetricCard
           title="Upcoming Balances"
           value={`GHS ${fmt(totalUpcomingBalances)}`}
-          description="Unsettled mobile money"
+          description="Unsettled contributions"
           icon={Clock}
           valueClassName="text-amber-600"
         />

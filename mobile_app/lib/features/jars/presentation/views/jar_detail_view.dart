@@ -42,10 +42,7 @@ import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:Hoga/core/di/service_locator.dart';
-import 'package:Hoga/core/services/user_storage_service.dart';
-import 'package:Hoga/features/jars/data/api_providers/payout_minimum_api_provider.dart';
-import 'package:dio/dio.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class JarDetailView extends StatefulWidget {
@@ -61,8 +58,6 @@ class _JarDetailViewState extends State<JarDetailView> {
   bool _walkthroughTriggered =
       false; // Flag to prevent multiple walkthrough navigations
 
-  double _minimumPayoutAmount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -74,17 +69,6 @@ class _JarDetailViewState extends State<JarDetailView> {
 
     _requestFCMPermissionAndUpdateToken();
     _fetchUserNotifications();
-    _loadMinimumPayout();
-  }
-
-  Future<void> _loadMinimumPayout() async {
-    try {
-      final minimum = await PayoutMinimumApiProvider(
-        dio: getIt<Dio>(),
-        userStorageService: getIt<UserStorageService>(),
-      ).getMinimumPayoutAmount();
-      if (mounted) setState(() => _minimumPayoutAmount = minimum);
-    } catch (_) {}
   }
 
   void _scrollListener() {
@@ -727,7 +711,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                       }
                       final balance =
                           jarData.balanceBreakDown.totalAmountTobeTransferred;
-                      final hasFunds = balance >= _minimumPayoutAmount;
+                      final payoutMinState =
+                          context.watch<PayoutMinimumBloc>().state;
+                      final minimumPayout = payoutMinState
+                              is PayoutMinimumLoaded
+                          ? payoutMinState.minimumPayoutAmount
+                          : 0.0;
+                      final hasFunds = balance >= minimumPayout;
                       return SizedBox(
                         width: double.infinity,
                         child: AppCard(
