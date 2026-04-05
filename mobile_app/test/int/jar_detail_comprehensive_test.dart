@@ -20,6 +20,7 @@ import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/jars/logic/bloc/payout_minimum/payout_minimum_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/di/service_locator.dart';
@@ -223,6 +224,7 @@ void main() {
         BlocProvider.value(value: getIt<NotificationsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+        BlocProvider.value(value: getIt<PayoutMinimumBloc>()),
       ],
       child: MaterialApp.router(
         localizationsDelegates: const [
@@ -415,6 +417,7 @@ void main() {
           BlocProvider.value(value: getIt<NotificationsBloc>()),
           BlocProvider.value(value: getIt<UserAccountBloc>()),
           BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
+          BlocProvider.value(value: getIt<PayoutMinimumBloc>()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: const [
