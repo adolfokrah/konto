@@ -25,6 +25,8 @@ import 'package:Hoga/features/notifications/data/repositories/notifications_repo
 import 'package:Hoga/features/collaborators/data/api_providers/collaborators_providers.dart';
 import 'package:Hoga/features/collaborators/data/repositories/collaborators_repository.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
+import 'package:Hoga/features/jars/data/api_providers/payout_minimum_api_provider.dart';
+import 'package:Hoga/features/referral/logic/bloc/referral_bloc.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -141,6 +143,18 @@ void setupServiceLocator() {
     () => ReferralApiProvider(
       dio: getIt<Dio>(),
       userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<PayoutMinimumApiProvider>(
+    () => PayoutMinimumApiProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerFactory<ReferralBloc>(
+    () => ReferralBloc(
+      referralApiProvider: getIt<ReferralApiProvider>(),
+      payoutMinimumApiProvider: getIt<PayoutMinimumApiProvider>(),
     ),
   );
 

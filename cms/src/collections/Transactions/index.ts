@@ -25,6 +25,8 @@ import { verifyPaystackPayment } from './endpoints/verify-paystack-payment'
 import { paystackWebhook } from './endpoints/paystack-webhook'
 import { paymentStatus } from './endpoints/payment-status'
 import { payoutPaystack } from './endpoints/payout-paystack'
+import { getPayoutMinimum } from './endpoints/get-payout-minimum'
+import { getCollectionMinimum } from './endpoints/get-collection-minimum'
 import { chargeMobileMoney } from './endpoints/charge-mobile-money'
 import { submitChargeOtp } from './endpoints/submit-charge-otp'
 
@@ -471,6 +473,16 @@ export const Transactions: CollectionConfig = {
       path: '/payout-paystack',
       method: 'post',
       handler: payoutPaystack,
+    },
+    {
+      path: '/get-payout-minimum',
+      method: 'get',
+      handler: getPayoutMinimum,
+    },
+    {
+      path: '/get-collection-minimum',
+      method: 'get',
+      handler: getCollectionMinimum,
     },
     {
       path: '/charge-mobile-money',

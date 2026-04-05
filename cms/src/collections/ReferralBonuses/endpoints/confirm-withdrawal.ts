@@ -1,6 +1,7 @@
 import type { PayloadHandler } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { getCharges } from '@/utilities/getCharges'
+import type { PaymentMethod } from '@/payload-types'
 
 const MAX_OTP_ATTEMPTS = 5
 
@@ -103,11 +104,17 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
   const isMoMo = MOMO_PROVIDERS.has(bankName.toLowerCase())
   const resolvedBankCode = bankCodeMap[bankName.toLowerCase()] ?? null
 
-  // Calculate payout charges — user receives net after processing fee
+  const withdrawalPaymentMethod = fullUser.withdrawalPaymentMethod
+  const paymentMethodSlug =
+    typeof withdrawalPaymentMethod === 'object' && withdrawalPaymentMethod !== null
+      ? (withdrawalPaymentMethod as PaymentMethod).slug
+      : (withdrawalPaymentMethod as string | null | undefined)
+
+  // Referral withdrawal only charges the flat fee (no percentage rate)
   const payoutCharges = await getCharges(req.payload, {
     amount: grossAmount,
-    type: 'payout',
-    paymentMethod: 'mobile-money',
+    type: 'referral-payout',
+    paymentMethod: paymentMethodSlug ?? 'mobile-money',
     country: (fullUser.country as string | undefined)?.toLowerCase(),
   })
 

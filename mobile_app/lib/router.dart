@@ -35,6 +35,9 @@ import 'package:Hoga/features/user_account/presentation/views/language_settings_
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
 import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
+import 'package:Hoga/features/referral/logic/bloc/referral_bloc.dart';
+import 'package:Hoga/core/di/service_locator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_custom_fields_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_add_custom_field_view.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
@@ -210,7 +213,10 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: '/referral',
-        builder: (context, state) => const ReferralView(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => getIt<ReferralBloc>()..add(ReferralLoadRequested()),
+          child: const ReferralView(),
+        ),
       ),
       GoRoute(
         path: '/jar_custom_fields',

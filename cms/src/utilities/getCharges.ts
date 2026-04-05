@@ -43,7 +43,7 @@ export async function getCharges(
     country,
   }: {
     amount: number
-    type?: 'contribution' | 'payout' | 'refund'
+    type?: 'contribution' | 'payout' | 'referral-payout' | 'refund'
     collectionFeePaidBy?: 'contributor' | 'jar-creator'
     paymentMethod?: string
     country?: string
@@ -73,6 +73,24 @@ export async function getCharges(
       netAmount,
       hogapayRevenue: processingFee,
       eganowFees: 0,
+    }
+  }
+
+  // ── REFERRAL PAYOUT (flat fee only, no percentage) ───────────────────────
+  if (type === 'referral-payout') {
+    const feeRecord = await resolvePayoutFee(payload, country, paymentMethod)
+    const flatFeeAmount = feeRecord?.flatFee ?? 1
+    const flatFeeThreshold = feeRecord?.flatFeeThreshold ?? 100
+    const processingFee = amount < flatFeeThreshold ? flatFeeAmount : 0
+    const netAmount = Math.round((amount - processingFee) * 100) / 100
+    const hogapayRevenue = processingFee
+    return {
+      initialAmount: amount,
+      processingFee,
+      netAmount,
+      hogapayRevenue,
+      eganowFees: 0,
+      minimumPayoutAmount: feeRecord?.minimumPayoutAmount,
     }
   }
 

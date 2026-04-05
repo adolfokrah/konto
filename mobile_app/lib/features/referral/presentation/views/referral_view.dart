@@ -11,9 +11,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
-import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
-import 'package:Hoga/core/services/user_storage_service.dart';
-import 'package:dio/dio.dart';
+import 'package:Hoga/features/referral/logic/bloc/referral_bloc.dart';
 import 'package:Hoga/route.dart';
 
 class ReferralView extends StatelessWidget {
@@ -363,44 +361,9 @@ class _EarningsSection extends StatefulWidget {
 }
 
 class _EarningsSectionState extends State<_EarningsSection> {
-  late Future<Map<String, dynamic>> _bonusesFuture;
   bool _initiating = false;
-  double? _minimumPayoutAmount;
-
-  @override
-  void initState() {
-    super.initState();
-    _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
-    _loadMinimumPayout();
-  }
-
-  Future<void> _loadMinimumPayout() async {
-    try {
-      final authState = context.read<AuthBloc>().state;
-      final user = authState is AuthAuthenticated ? authState.user : null;
-      final charges = await ChargesApiProvider(
-        dio: getIt<Dio>(),
-        userStorageService: getIt<UserStorageService>(),
-      ).getCharges(
-        amount: 1,
-        type: 'payout',
-        paymentMethod: 'mobile-money',
-        country: user?.country,
-      );
-      if (mounted && charges.minimumPayoutAmount != null) {
-        setState(() => _minimumPayoutAmount = charges.minimumPayoutAmount);
-      }
-    } catch (_) {}
-  }
-
-  void _reload() {
-    setState(() {
-      _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
-    });
-  }
 
   Future<void> _onWithdrawTap() async {
-    // Pre-flight: check KYC + withdrawal account from AuthBloc
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
     final user = authState.user;
@@ -423,7 +386,6 @@ class _EarningsSectionState extends State<_EarningsSection> {
       return;
     }
 
-    // Call initiate — sends OTP + returns amount/masked phone
     setState(() => _initiating = true);
     final init = await getIt<ReferralApiProvider>().initiateWithdrawal();
     setState(() => _initiating = false);
@@ -439,15 +401,12 @@ class _EarningsSectionState extends State<_EarningsSection> {
       return;
     }
 
-    // Navigate to shared OTP view with a custom confirm handler
     await context.push(
       AppRoutes.otp,
       extra: {
         'skipInitialOtp': true,
         'onConfirm': (String otp) async {
-          final result = await getIt<ReferralApiProvider>().confirmWithdrawal(
-            otp,
-          );
+          final result = await getIt<ReferralApiProvider>().confirmWithdrawal(otp);
           if (!mounted) return false;
           if (result['success'] == true) {
             AppSnackBar.show(
@@ -469,7 +428,7 @@ class _EarningsSectionState extends State<_EarningsSection> {
       },
     );
 
-    if (mounted) _reload();
+    if (mounted) context.read<ReferralBloc>().add(ReferralReloadRequested());
   }
 
   @override
@@ -479,10 +438,9 @@ class _EarningsSectionState extends State<_EarningsSection> {
       children: [
         Text('Your earnings', style: AppTextStyles.titleBoldLg),
         const SizedBox(height: AppSpacing.spacingS),
-        FutureBuilder<Map<String, dynamic>>(
-          future: _bonusesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        BlocBuilder<ReferralBloc, ReferralState>(
+          builder: (context, state) {
+            if (state is ReferralLoading || state is ReferralInitial) {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
@@ -491,21 +449,34 @@ class _EarningsSectionState extends State<_EarningsSection> {
               );
             }
 
-            final summary =
-                snapshot.data?['summary'] as Map<String, dynamic>? ?? {};
-            final balance = (summary['balance'] as num?)?.toDouble() ?? 0.0;
-            final totalEarned =
-                (summary['totalEarned'] as num?)?.toDouble() ?? 0.0;
+            if (state is ReferralError) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  state.message,
+                  style: AppTextStyles.titleRegularXs.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              );
+            }
 
-            final minPayout = _minimumPayoutAmount ?? 0;
-            return _EarningsCard(
-              balance: balance,
-              totalEarned: totalEarned,
-              isDark: widget.isDark,
-              withdrawing: _initiating,
-              minimumPayoutAmount: minPayout,
-              onWithdraw: balance > 0 && balance >= minPayout ? _onWithdrawTap : null,
-            );
+            if (state is ReferralLoaded) {
+              final minPayout = state.minimumPayoutAmount;
+              return _EarningsCard(
+                balance: state.balance,
+                totalEarned: state.totalEarned,
+                isDark: widget.isDark,
+                withdrawing: _initiating,
+                minimumPayoutAmount: minPayout,
+                onWithdraw:
+                    state.balance > 0 && state.balance >= minPayout
+                        ? _onWithdrawTap
+                        : null,
+              );
+            }
+
+            return const SizedBox.shrink();
           },
         ),
       ],
@@ -550,7 +521,6 @@ class _EarningsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Balance row ──
           Row(
             children: [
               Expanded(
