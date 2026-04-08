@@ -25,7 +25,10 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       customFieldValues,
       channels,
       paymentMethod,
+      currency: currencyOverride,
     } = req.data || {}
+
+    console.log(currencyOverride)
 
     if (!jarId || !contributorName || !amount || !contributorPhoneNumber) {
       return Response.json(
@@ -108,6 +111,9 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       }
     }
 
+    // Resolve currency: body override → jar currency → default GHS
+    const currency = (currencyOverride as string) || (jar.currency as string) || 'GHS'
+
     const feePaidBy = ((jar.collectionFeePaidBy as string) || 'contributor') as
       | 'contributor'
       | 'jar-creator'
@@ -134,6 +140,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
         contributorPhoneNumber,
         // paymentMethod is set by the webhook once the customer completes payment
         amountContributed: amount,
+        currency,
         paymentStatus: 'pending',
         type: 'contribution',
         collector: collector || jar.creator,
@@ -181,8 +188,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
         ? charges.initialAmount + charges.processingFee
         : charges.initialAmount
 
-    // Amount in smallest currency unit (pesewas for GHS, kobo for NGN — both × 100)
-    const currency = (jar.currency as string) || 'GHS'
+    // Amount in smallest currency unit (pesewas for GHS, kobo for NGN, cents for USD — all × 100)
     const amountInPesewas = Math.round(amountToCharge * 100)
 
     const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || ''
@@ -193,7 +199,7 @@ export const initializePaystackPayment = async (req: PayloadRequest) => {
       email: emailToUse,
       phone: contributorPhoneNumber,
       amount: amountInPesewas,
-      currency,
+      currency: 'usd',
       reference: transaction.id,
       callback_url: callbackUrl,
       channels: (channels as string[] | undefined) ?? [

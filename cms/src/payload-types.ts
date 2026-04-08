@@ -1466,6 +1466,10 @@ export interface Transaction {
   accountNumber?: string | null;
   amountContributed: number;
   /**
+   * Currency code for this transaction (e.g. GHS, NGN, USD)
+   */
+  currency?: string | null;
+  /**
    * Detailed breakdown of all charges applied to this contribution
    */
   chargesBreakdown?: {
@@ -3236,6 +3240,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   mobileMoneyProvider?: T;
   accountNumber?: T;
   amountContributed?: T;
+  currency?: T;
   chargesBreakdown?:
     | T
     | {

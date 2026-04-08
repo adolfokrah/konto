@@ -1,3 +1,5 @@
+import { headers } from 'next/headers'
+import { getCountryFromIp } from '@/utilities/getCountryFromIp'
 import Image from 'next/image'
 import JarImageCarousel from '@/components/JarImageCarousel'
 import ExpandableDescription from '@/components/ExpandableDescription'
@@ -7,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import Goal from '@/components/Goal'
 import ContributionInputPaystack from '@/components/ContributionInputPaystack'
+import ContributionInputInternational from '@/components/ContributionInputInternational'
 import RecentContributions from '@/components/RecentContributions'
 import ReportJarButton from '@/components/ReportJarButton'
 import { Metadata } from 'next'
@@ -104,6 +107,11 @@ export default async function Page({
   const { id: jarId } = await params
   const resolvedSearchParams = await searchParams
 
+  const headersList = await headers()
+  const visitorCountry = await getCountryFromIp(headersList)
+  const isInternationalVisitor = visitorCountry !== 'GH'
+  console.log(`[/pay] Visitor country detected: ${visitorCountry} (international: ${isInternationalVisitor})`)
+
   try {
     // Get jar data, system settings, and contribution totals in one call
     const jarRes = await fetch(
@@ -142,6 +150,7 @@ export default async function Page({
           }
           paymentMethods = (pmData?.docs ?? [])
             .filter((pm: any) => pm.type?.toLowerCase() !== 'cash')
+            .filter((pm: any) => !isInternationalVisitor || pm.type?.toLowerCase().includes('card'))
             .map((pm: any) => ({ id: pm.id, type: pm.type, slug: pm.slug }))
             .sort((a: any, b: any) => priority(a.type) - priority(b.type))
         }
@@ -300,19 +309,32 @@ export default async function Page({
 
             {/* Contribution Input */}
             <div id="contribution-section" />
-            <ContributionInputPaystack
-              currency={jarWithBalance.currency}
-              isFixedAmount={jarWithBalance.isFixedContribution || false}
-              fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
-              className="my-6"
-              jarId={jarId}
-              jarName={jarWithBalance.name}
-              collectorId={effectiveCollectorId}
-              allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
-              transactionFeePercentage={(systemSettings as any)?.cardCollectionFee || 1.95}
-              customFields={jarWithBalance.customFields || []}
-              paymentMethods={paymentMethods}
-            />
+            {isInternationalVisitor ? (
+              <ContributionInputInternational
+                isFixedAmount={jarWithBalance.isFixedContribution || false}
+                fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
+                className="my-6"
+                jarId={jarId}
+                jarName={jarWithBalance.name}
+                collectorId={effectiveCollectorId}
+                allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
+                customFields={jarWithBalance.customFields || []}
+              />
+            ) : (
+              <ContributionInputPaystack
+                currency={jarWithBalance.currency}
+                isFixedAmount={jarWithBalance.isFixedContribution || false}
+                fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
+                className="my-6"
+                jarId={jarId}
+                jarName={jarWithBalance.name}
+                collectorId={effectiveCollectorId}
+                allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
+                transactionFeePercentage={(systemSettings as any)?.cardCollectionFee || 1.95}
+                customFields={jarWithBalance.customFields || []}
+                paymentMethods={paymentMethods}
+              />
+            )}
 
             <Separator />
 

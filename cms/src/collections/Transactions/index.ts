@@ -155,6 +155,13 @@ export const Transactions: CollectionConfig = {
       required: true,
     },
     {
+      name: 'currency',
+      type: 'text',
+      admin: {
+        description: 'Currency code for this transaction (e.g. GHS, NGN, USD)',
+      },
+    },
+    {
       name: 'chargesBreakdown',
       type: 'group',
       admin: {
