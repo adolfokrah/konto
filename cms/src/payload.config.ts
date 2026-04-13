@@ -211,10 +211,12 @@ export default buildConfig({
       {
         cron: '* * * * *', // Every minute — picks up queued payout jobs
         queue: 'payout',
+        limit: 1,
       },
       {
         cron: '* * * * *', // Every minute — picks up queued refund jobs
         queue: 'refund',
+        limit: 1,
       },
       {
         cron: '0 * * * *', // Every hour

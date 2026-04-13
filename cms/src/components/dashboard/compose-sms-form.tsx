@@ -17,11 +17,19 @@ type SelectedUser = { id: string; name: string; email: string }
 
 const MAX_CHARS = 200
 
-export function ComposeSmsForm() {
+export function ComposeSmsForm({
+  prefill,
+}: {
+  prefill?: {
+    message: string
+    targetAudience?: 'all' | 'selected' | 'android' | 'ios'
+    recipients?: SelectedUser[]
+  } | null
+}) {
   const router = useRouter()
-  const [message, setMessage] = useState('')
-  const [targetAudience, setTargetAudience] = useState<'all' | 'selected' | 'android' | 'ios'>('all')
-  const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>([])
+  const [message, setMessage] = useState(prefill?.message ?? '')
+  const [targetAudience, setTargetAudience] = useState<'all' | 'selected' | 'android' | 'ios'>(prefill?.targetAudience ?? 'all')
+  const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>(prefill?.recipients ?? [])
   const [userSearch, setUserSearch] = useState('')
   const [searchResults, setSearchResults] = useState<SelectedUser[]>([])
   const [searching, setSearching] = useState(false)
