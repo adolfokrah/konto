@@ -130,6 +130,7 @@ export const Transactions: CollectionConfig = {
       name: 'amountContributed',
       type: 'number',
       required: true,
+      min: 0,
     },
     {
       name: 'chargesBreakdown',
