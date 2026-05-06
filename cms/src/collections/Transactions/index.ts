@@ -166,7 +166,6 @@ export const Transactions: CollectionConfig = {
           type: 'number',
           admin: {
             description: "Hogapay's share of the fees (revenue)",
-            readOnly: true,
           },
         },
         {
