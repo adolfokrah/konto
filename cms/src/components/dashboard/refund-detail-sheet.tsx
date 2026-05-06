@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useIsAdmin } from './dashboard-user-context'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,6 +95,7 @@ export function RefundDetailSheet({
   onClose: () => void
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [showApproveDialog, setShowApproveDialog] = useState(false)
   const [showRejectDialog, setShowRejectDialog] = useState(false)
 
@@ -126,7 +128,7 @@ export function RefundDetailSheet({
   )
 
   const isInitiator = selected?.initiatedBy?.id === currentUserId
-  const canApprove = selected?.status === 'pending' && !isInitiator
+  const canApprove = selected?.status === 'pending' && !isInitiator && isAdmin
   const isActioning = approving || rejecting
 
   const handleApprove = async () => {

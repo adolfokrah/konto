@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { CheckCircle2, Circle, User, Container, Calendar, Tag, DollarSign, Percent } from 'lucide-react'
 import Link from 'next/link'
+import { useIsAdmin } from './dashboard-user-context'
 import useSWR from 'swr'
 import { type CashbackRow } from './data-table/columns/cashback-columns'
 
@@ -63,6 +64,7 @@ export function CashbackDetailSheet({
   onClose: () => void
   onTogglePaid: (id: string, isPaid: boolean) => void
 }) {
+  const isAdmin = useIsAdmin()
   const { data: tx } = useSWR<any>(
     selected?.transaction?.id
       ? `/api/transactions/${selected.transaction.id}?depth=0`
@@ -212,31 +214,33 @@ export function CashbackDetailSheet({
               )}
 
               {/* Paid Status Toggle */}
-              <div>
-                <Separator className="mb-4" />
-                <div className="flex items-center gap-3 rounded-lg border p-4">
-                  {selected.isPaid ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
-                  )}
-                  <div className="flex-1">
-                    <Label htmlFor="isPaid-toggle" className="text-sm font-medium cursor-pointer">
-                      Mark as Paid
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {selected.isPaid
-                        ? 'This cashback has been settled'
-                        : 'Toggle to mark this cashback as settled'}
-                    </p>
+              {isAdmin && (
+                <div>
+                  <Separator className="mb-4" />
+                  <div className="flex items-center gap-3 rounded-lg border p-4">
+                    {selected.isPaid ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
+                    )}
+                    <div className="flex-1">
+                      <Label htmlFor="isPaid-toggle" className="text-sm font-medium cursor-pointer">
+                        Mark as Paid
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {selected.isPaid
+                          ? 'This cashback has been settled'
+                          : 'Toggle to mark this cashback as settled'}
+                      </p>
+                    </div>
+                    <Checkbox
+                      id="isPaid-toggle"
+                      checked={selected.isPaid}
+                      onCheckedChange={(checked) => onTogglePaid(selected.id, !!checked)}
+                    />
                   </div>
-                  <Checkbox
-                    id="isPaid-toggle"
-                    checked={selected.isPaid}
-                    onCheckedChange={(checked) => onTogglePaid(selected.id, !!checked)}
-                  />
                 </div>
-              </div>
+              )}
             </div>
           </>
         )}

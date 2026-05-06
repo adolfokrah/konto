@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Percent, Clock, Gift, ArrowRightLeft } from 'lucide-react'
+import { useIsAdmin } from './dashboard-user-context'
 
 interface Settings {
   collectionFee: number
@@ -66,6 +67,7 @@ function SettingsCard({
 }
 
 export function SystemSettingsForm({ settings }: { settings: Settings }) {
+  const isAdmin = useIsAdmin()
   const [values, setValues] = useState<Settings>({
     collectionFee: settings.collectionFee ?? 1.95,
     hogapayCollectionFeePercent: settings.hogapayCollectionFeePercent ?? 0.8,
@@ -165,18 +167,20 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
         </SettingRow>
       </SettingsCard>
 
-      <div className="flex justify-end pt-2">
-        <Button onClick={handleSave} disabled={saving} className="min-w-28">
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving…
-            </>
-          ) : (
-            'Save Settings'
-          )}
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="flex justify-end pt-2">
+          <Button onClick={handleSave} disabled={saving} className="min-w-28">
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving…
+              </>
+            ) : (
+              'Save Settings'
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

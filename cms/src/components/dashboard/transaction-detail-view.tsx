@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useIsAdmin } from './dashboard-user-context'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,6 +130,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function TransactionDetailView({ transaction }: { transaction: TransactionRow }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
   const [showDisputeDialog, setShowDisputeDialog] = useState(false)
@@ -221,6 +223,7 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
   )
 
   const canRefund =
+    isAdmin &&
     transaction.type === 'contribution' &&
     transaction.paymentStatus === 'completed' &&
     transaction.paymentMethod === 'mobile-money' &&
@@ -530,14 +533,16 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
                       <p className="text-sm text-muted-foreground">No disputes</p>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    className="w-full border-orange-800/60 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300"
-                    onClick={() => setShowDisputeDialog(true)}
-                  >
-                    <ShieldAlert className="h-4 w-4 mr-2" />
-                    {relatedDisputes && relatedDisputes.length > 0 ? 'Flag Another Dispute' : 'Flag as Dispute'}
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      className="w-full border-orange-800/60 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300"
+                      onClick={() => setShowDisputeDialog(true)}
+                    >
+                      <ShieldAlert className="h-4 w-4 mr-2" />
+                      {relatedDisputes && relatedDisputes.length > 0 ? 'Flag Another Dispute' : 'Flag as Dispute'}
+                    </Button>
+                  )}
                 </TabsContent>
 
                 {/* Referral */}

@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function DbBackupButton() {
   const [loading, setLoading] = useState(false)
+  const isAdmin = useIsAdmin()
 
   const handleDownload = async () => {
     setLoading(true)
@@ -32,6 +34,8 @@ export function DbBackupButton() {
       setLoading(false)
     }
   }
+
+  if (!isAdmin) return null
 
   return (
     <Button variant="outline" onClick={handleDownload} disabled={loading}>

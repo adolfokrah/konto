@@ -298,11 +298,13 @@ export const Users: CollectionConfig = {
       options: [
         { label: 'User', value: 'user' },
         { label: 'Admin', value: 'admin' },
+        { label: 'Auditor', value: 'auditor' },
       ],
       defaultValue: 'user',
       required: true,
       admin: {
-        description: 'User role - only admin users can access the CMS',
+        description:
+          'User role - admins have full access, auditors have read-only access to the dashboard',
       },
     },
     {

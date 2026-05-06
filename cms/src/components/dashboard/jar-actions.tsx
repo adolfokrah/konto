@@ -10,9 +10,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { toggleJarFreeze } from '@/app/(dashboard)/dashboard/jars/actions'
 import { toast } from 'sonner'
+import { useIsAdmin } from '@/components/dashboard/dashboard-user-context'
 
 export function JarActions({ jarId, status }: { jarId: string; status: string }) {
   const isFrozen = status === 'frozen'
+  const isAdmin = useIsAdmin()
+
+  if (!isAdmin) return null
 
   return (
     <DropdownMenu>

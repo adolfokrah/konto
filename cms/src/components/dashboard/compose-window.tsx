@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Send, Loader2, X, Minus, ChevronUp } from 'lucide-react'
 import { cn } from '@/utilities/ui'
+import { useIsAdmin } from './dashboard-user-context'
 
 type Props = {
   prefill?: {
@@ -24,6 +25,7 @@ export function ComposeWindow({ prefill }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const isAdmin = useIsAdmin()
   const bodyRef = useRef<HTMLTextAreaElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
@@ -138,6 +140,8 @@ export function ComposeWindow({ prefill }: Props) {
   const title = prefill?.replyToEmailId
     ? subject || 'Reply'
     : 'New Message'
+
+  if (!isAdmin) return null
 
   return (
     <div

@@ -2,6 +2,7 @@
 
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { headers as getHeaders } from 'next/headers'
 import {
   createDiditKYC,
   isSessionCompleted,
@@ -10,6 +11,13 @@ import {
 } from '@/utilities/diditKyc'
 import { sendSMS } from '@/utilities/sms'
 import { emailService } from '@/utilities/emailService'
+
+async function assertAdmin(): Promise<{ ok: boolean; message?: string }> {
+  const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers: await getHeaders() })
+  if (!user || user.role !== 'admin') return { ok: false, message: 'Unauthorized' }
+  return { ok: true }
+}
 
 type ActionResult = {
   success: boolean
@@ -30,6 +38,8 @@ export async function checkDiditKycStatus(
   userId: string,
   sessionId: string,
 ): Promise<ActionResult> {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { success: false, message: auth.message ?? 'Unauthorized' }
   try {
     const didit = createDiditKYC()
     const session = await didit.getSessionStatus(sessionId)
@@ -89,6 +99,8 @@ export async function updateUserKycStatus(
   userId: string,
   kycStatus: 'none' | 'in_review' | 'verified',
 ): Promise<ActionResult> {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { success: false, message: auth.message ?? 'Unauthorized' }
   try {
     const payload = await getPayload({ config: configPromise })
     const user = await payload.update({
@@ -128,6 +140,8 @@ export async function updateUserDiscountPercent(
   userId: string,
   discountPercent: number,
 ): Promise<ActionResult> {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { success: false, message: auth.message ?? 'Unauthorized' }
   try {
     const clamped = Math.max(0, Math.min(100, discountPercent))
     const payload = await getPayload({ config: configPromise })

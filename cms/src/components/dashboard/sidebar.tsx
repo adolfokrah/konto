@@ -99,6 +99,7 @@ type User = {
   firstName?: string | null
   lastName?: string | null
   email?: string | null
+  role?: string | null
 }
 
 type Props = {
@@ -149,7 +150,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
 
   const handleLogout = async () => {
     await logout()
-    router.push('/admin')
+    router.push('/dashboard/login')
   }
 
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'

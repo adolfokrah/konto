@@ -1,9 +1,8 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Users, Container as JarIcon, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MetricCard } from '@/components/dashboard/metric-card'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
+import { TransactionCountChart } from '@/components/dashboard/transaction-count-chart'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
 
@@ -92,10 +91,18 @@ export default async function DashboardPage() {
     }),
   ])
 
-  // Build 30-day chart data with both series
+  // Build 30-day chart data
   const chartData = buildChartData(
     last30DaysContributions.docs as any[],
     last30DaysPayouts.docs as any[],
+  )
+
+  // Summary stats
+  const totalContributions = (last30DaysContributions.docs as any[]).reduce(
+    (sum, doc) => sum + Math.abs(doc.amountContributed || 0), 0,
+  )
+  const totalPayouts = (last30DaysPayouts.docs as any[]).reduce(
+    (sum, doc) => sum + Math.abs(doc.amountContributed || 0), 0,
   )
 
   // Format recent transactions for the table
@@ -135,29 +142,39 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Overview Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <MetricCard
-          title="Total Users"
-          value={totalUsersResult.totalDocs.toLocaleString()}
-          icon={Users}
-        />
-        <MetricCard
-          title="Total Jars"
-          value={totalJarsResult.totalDocs.toLocaleString()}
-          description={`${activeJarsResult.totalDocs} active`}
-          icon={JarIcon}
-        />
-        <MetricCard
-          title="Daily Active Users"
-          value={dauResult.totalDocs.toLocaleString()}
-          description="Active today"
-          icon={Activity}
-        />
+      {/* Compact stats strip */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Users</p>
+          <p className="text-2xl font-semibold mt-1">{totalUsersResult.totalDocs.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{dauResult.totalDocs} active today</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Jars</p>
+          <p className="text-2xl font-semibold mt-1">{totalJarsResult.totalDocs.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{activeJarsResult.totalDocs} open</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Contributions (30d)</p>
+          <p className="text-2xl font-semibold mt-1">
+            GHS {totalContributions.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{last30DaysContributions.totalDocs} transactions</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-muted-foreground">Payouts (30d)</p>
+          <p className="text-2xl font-semibold mt-1">
+            GHS {totalPayouts.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{last30DaysPayouts.totalDocs} transactions</p>
+        </Card>
       </div>
 
-      {/* Revenue Chart */}
-      <RevenueChart data={chartData} />
+      {/* Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <RevenueChart data={chartData} />
+        <TransactionCountChart data={chartData} />
+      </div>
 
       {/* Recent Transactions */}
       <Card>
@@ -179,6 +196,8 @@ function buildChartData(
 ) {
   const contributions: Record<string, number> = {}
   const payouts: Record<string, number> = {}
+  const contributionCounts: Record<string, number> = {}
+  const payoutCounts: Record<string, number> = {}
 
   // Initialize last 30 days with 0
   for (let i = 29; i >= 0; i--) {
@@ -186,12 +205,15 @@ function buildChartData(
     const key = date.toISOString().split('T')[0]
     contributions[key] = 0
     payouts[key] = 0
+    contributionCounts[key] = 0
+    payoutCounts[key] = 0
   }
 
   for (const doc of contributionDocs) {
     const key = new Date(doc.createdAt).toISOString().split('T')[0]
     if (key in contributions) {
       contributions[key] += Math.abs(doc.amountContributed || 0)
+      contributionCounts[key] += 1
     }
   }
 
@@ -199,12 +221,15 @@ function buildChartData(
     const key = new Date(doc.createdAt).toISOString().split('T')[0]
     if (key in payouts) {
       payouts[key] += Math.abs(doc.amountContributed || 0)
+      payoutCounts[key] += 1
     }
   }
 
   return Object.keys(contributions).map((date) => ({
     date,
     contributions: Number(contributions[date].toFixed(2)),
-    payouts: -Number(payouts[date].toFixed(2)),
+    payouts: Number(payouts[date].toFixed(2)),
+    contributionCount: contributionCounts[date],
+    payoutCount: payoutCounts[date],
   }))
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { SmsCampaignsDataTable } from '@/components/dashboard/sms-campaigns-data-table'
 import { type SmsCampaignRow } from '@/components/dashboard/data-table/columns/sms-campaign-columns'
+import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
 
 const DEFAULT_LIMIT = 20
 
@@ -82,12 +83,14 @@ export default async function SmsPage({ searchParams }: Props) {
             icon={MessageSquare}
           />
         </div>
-        <Link href="/dashboard/sms/compose">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New SMS
-          </Button>
-        </Link>
+        <AdminOnly>
+          <Link href="/dashboard/sms/compose">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New SMS
+            </Button>
+          </Link>
+        </AdminOnly>
       </div>
 
       <Card className="flex flex-col flex-1 min-h-0">

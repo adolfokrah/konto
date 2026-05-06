@@ -507,9 +507,9 @@ export interface User {
   otpAttempts?: number | null;
   kycStatus?: ('none' | 'in_review' | 'verified') | null;
   /**
-   * User role - only admin users can access the CMS
+   * User role - admins have full access, auditors have read-only access to the dashboard
    */
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'auditor';
   /**
    * Auto-generated referral code for this user
    */

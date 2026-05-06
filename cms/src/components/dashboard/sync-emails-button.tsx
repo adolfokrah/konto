@@ -5,12 +5,14 @@ import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useIsAdmin } from './dashboard-user-context'
 
 const SYNC_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 
 export function SyncEmailsButton() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const isAdmin = useIsAdmin()
 
   const sync = useCallback(async (silent = false) => {
     if (loading) return
@@ -37,9 +39,12 @@ export function SyncEmailsButton() {
 
   // Auto-sync every 5 minutes (interval created once, always calls latest sync via ref)
   useEffect(() => {
+    if (!isAdmin) return
     const id = setInterval(() => syncRef.current(true), SYNC_INTERVAL_MS)
     return () => clearInterval(id)
-  }, [])
+  }, [isAdmin])
+
+  if (!isAdmin) return null
 
   return (
     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => sync(false)} disabled={loading} title="Sync received emails (auto every 5 min)">

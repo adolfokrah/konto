@@ -115,6 +115,7 @@ export const cashbackColumns: ColumnDef<CashbackRow, any>[] = [
           <Checkbox
             checked={row.original.isPaid}
             onCheckedChange={(checked) => onTogglePaid?.(row.original.id, !!checked)}
+            disabled={!onTogglePaid}
             aria-label="Mark as paid"
           />
         </div>

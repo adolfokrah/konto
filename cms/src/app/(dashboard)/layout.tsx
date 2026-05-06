@@ -11,6 +11,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SidebarWrapper } from '@/components/dashboard/sidebar-wrapper'
 import { TopBar } from '@/components/dashboard/top-bar'
+import { DashboardUserProvider } from '@/components/dashboard/dashboard-user-context'
 import { Toaster } from '@/components/ui/sonner'
 import NextTopLoader from 'nextjs-toploader'
 
@@ -27,12 +28,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'auditor')) {
     const pathname = requestHeaders.get('x-pathname') ?? '/dashboard'
-    redirect(`/admin?redirect=${encodeURIComponent(pathname)}`)
+    redirect(`/dashboard/login?redirect=${encodeURIComponent(pathname)}`)
   }
 
-  const userData = { firstName: user.firstName, lastName: user.lastName, email: user.email }
+  const userData = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    role: user.role,
+  }
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-dark')} lang="en" suppressHydrationWarning>
@@ -40,13 +46,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
       </head>
       <body className="h-screen overflow-hidden bg-background">
-        <div className="flex h-screen overflow-hidden">
-          <SidebarWrapper user={userData} />
-          <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-            <TopBar user={userData} />
-            <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+        <DashboardUserProvider user={userData}>
+          <div className="flex h-screen overflow-hidden">
+            <SidebarWrapper user={userData} />
+            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+              <TopBar user={userData} />
+              <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+            </div>
           </div>
-        </div>
+        </DashboardUserProvider>
         <NextTopLoader color="#ffffff" showSpinner={false} />
         <Toaster />
       </body>

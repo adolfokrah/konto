@@ -10,6 +10,7 @@ import { buildColorMap, extractBareEmail, hashColor } from '@/utilities/avatarCo
 import { InlineReplyBox } from '@/components/dashboard/inline-reply-box'
 import { EmailThreadPanel } from '@/components/dashboard/email-thread-panel'
 import { EmailSearchInput } from '@/components/dashboard/email-search-input'
+import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
 import { cn } from '@/utilities/ui'
 
 const DEFAULT_LIMIT = 50
@@ -169,15 +170,17 @@ export default async function EmailsPage({ searchParams }: Props) {
 
         {/* ── Nav sidebar ── */}
         <aside className="flex w-52 shrink-0 flex-col border-r">
-          <div className="p-3">
-            <Link
-              href={`?tab=${tab}&compose=1`}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-2.5 text-[13px] font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
-            >
-              <Plus className="h-4 w-4" />
-              Compose
-            </Link>
-          </div>
+          <AdminOnly>
+            <div className="p-3">
+              <Link
+                href={`?tab=${tab}&compose=1`}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-2.5 text-[13px] font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
+              >
+                <Plus className="h-4 w-4" />
+                Compose
+              </Link>
+            </div>
+          </AdminOnly>
 
           <nav className="flex-1 space-y-0.5 px-2 pb-3">
             {folders.map((f) => (

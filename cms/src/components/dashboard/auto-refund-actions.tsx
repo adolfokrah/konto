@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useIsAdmin } from './dashboard-user-context'
 
 type Props = {
   jarId: string
@@ -11,8 +12,10 @@ type Props = {
 
 export function AutoRefundActions({ jarId }: Props) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [approving, setApproving] = useState(false)
   const [rejecting, setRejecting] = useState(false)
+  if (!isAdmin) return null
 
   const handleApprove = async () => {
     setApproving(true)

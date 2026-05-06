@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useIsAdmin } from './dashboard-user-context'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,6 +132,7 @@ export function TransactionDetailSheet({
   onClose: () => void
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [refunded, setRefunded] = useState(false)
   const [showRefundDialog, setShowRefundDialog] = useState(false)
   const [showDisputeDialog, setShowDisputeDialog] = useState(false)
@@ -223,6 +225,7 @@ export function TransactionDetailSheet({
   )
 
   const canRefund =
+    isAdmin &&
     selected?.type === 'contribution' &&
     selected?.paymentStatus === 'completed' &&
     selected?.paymentMethod === 'mobile-money' &&
@@ -550,17 +553,19 @@ export function TransactionDetailSheet({
               )}
 
               {/* Flag Dispute */}
-              <div>
-                <Separator className="mb-4" />
-                <Button
-                  variant="outline"
-                  className="w-full border-orange-700 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300"
-                  onClick={() => setShowDisputeDialog(true)}
-                >
-                  <ShieldAlert className="h-4 w-4 mr-2" />
-                  Flag as Dispute
-                </Button>
-              </div>
+              {isAdmin && (
+                <div>
+                  <Separator className="mb-4" />
+                  <Button
+                    variant="outline"
+                    className="w-full border-orange-700 text-orange-400 hover:bg-orange-900/20 hover:text-orange-300"
+                    onClick={() => setShowDisputeDialog(true)}
+                  >
+                    <ShieldAlert className="h-4 w-4 mr-2" />
+                    Flag as Dispute
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         )}

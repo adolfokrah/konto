@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { CampaignsDataTable } from '@/components/dashboard/campaigns-data-table'
+import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
 
 const DEFAULT_LIMIT = 20
 
@@ -84,12 +85,14 @@ export default async function PushNotificationsPage({ searchParams }: Props) {
             icon={Bell}
           />
         </div>
-        <Link href="/dashboard/push-notifications/compose">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Campaign
-          </Button>
-        </Link>
+        <AdminOnly>
+          <Link href="/dashboard/push-notifications/compose">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Campaign
+            </Button>
+          </Link>
+        </AdminOnly>
       </div>
 
       <Card className="flex flex-col flex-1 min-h-0">

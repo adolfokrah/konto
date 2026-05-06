@@ -36,6 +36,7 @@ import Link from 'next/link'
 import { cn } from '@/utilities/ui'
 import { type DisputeRow } from './data-table/columns/dispute-columns'
 import { ImageViewer, type ImageViewerImage } from '@/components/ui/image-viewer'
+import { useIsAdmin } from './dashboard-user-context'
 
 const statusStyles: Record<string, string> = {
   open: 'bg-blue-900/40 text-blue-300 border-blue-700',
@@ -78,6 +79,7 @@ export function DisputeDetailSheet({
   onClose: () => void
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [newStatus, setNewStatus] = useState<string>('')
   const [statusChangeReason, setStatusChangeReason] = useState('')
   const [saving, setSaving] = useState(false)
@@ -123,7 +125,7 @@ export function DisputeDetailSheet({
   }
 
   const currentStatus = detail?.status ?? selected?.status ?? ''
-  const canChangeStatus = !['resolved', 'rejected'].includes(currentStatus)
+  const canChangeStatus = !['resolved', 'rejected'].includes(currentStatus) && isAdmin
   const statusHistory: any[] = detail?.statusHistory ?? []
 
   const evidence: any[] = detail?.evidence ?? []

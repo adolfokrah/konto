@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ComposeSmsForm } from '@/components/dashboard/compose-sms-form'
+import { headers as getHeaders } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -12,6 +14,10 @@ type Props = {
 export default async function ComposeSmsPage({ searchParams }: Props) {
   const params = await searchParams
   const duplicateId = typeof params.duplicate === 'string' ? params.duplicate : null
+
+  const payloadAuth = await getPayload({ config: configPromise })
+  const { user } = await payloadAuth.auth({ headers: await getHeaders() })
+  if (!user || user.role !== 'admin') redirect('/dashboard/sms')
 
   let prefill: {
     message: string

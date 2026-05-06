@@ -13,6 +13,7 @@ import { RefreshCw, Loader2 } from 'lucide-react'
 import { checkDiditKycStatus, updateUserKycStatus } from '@/app/(dashboard)/dashboard/users/actions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function UserKycActions({
   userId,
@@ -24,8 +25,10 @@ export function UserKycActions({
   currentStatus: string
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [isPending, startTransition] = useTransition()
   const [isChecking, setIsChecking] = useState(false)
+  if (!isAdmin) return null
 
   const handleCheckKyc = async () => {
     if (!kycSessionId) return

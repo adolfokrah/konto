@@ -3,6 +3,8 @@ import configPromise from '@payload-config'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ComposeCampaignForm } from '@/components/dashboard/compose-campaign-form'
+import { headers as getHeaders } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -11,6 +13,10 @@ type Props = {
 export default async function ComposePage({ searchParams }: Props) {
   const params = await searchParams
   const duplicateId = typeof params.duplicate === 'string' ? params.duplicate : null
+
+  const payloadAuth = await getPayload({ config: configPromise })
+  const { user } = await payloadAuth.auth({ headers: await getHeaders() })
+  if (!user || user.role !== 'admin') redirect('/dashboard/push-notifications')
 
   let prefill: {
     title: string

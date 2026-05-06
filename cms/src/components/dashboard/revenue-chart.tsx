@@ -18,11 +18,11 @@ type Props = {
 const chartConfig = {
   contributions: {
     label: 'Contributions',
-    color: '#22c55e',
+    color: '#2563eb',
   },
   payouts: {
     label: 'Payouts',
-    color: '#ef4444',
+    color: '#7c3aed',
   },
 } satisfies ChartConfig
 
@@ -30,19 +30,19 @@ export function RevenueChart({ data }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Transactions</CardTitle>
-        <CardDescription>Contributions and payouts over the last 30 days</CardDescription>
+        <CardTitle>Volume — Last 30 Days</CardTitle>
+        <CardDescription>Contribution and payout amounts over time</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <ChartContainer config={chartConfig} className="h-[280px] w-full">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="fillContributions" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-contributions)" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="var(--color-contributions)" stopOpacity={0.2} />
                 <stop offset="95%" stopColor="var(--color-contributions)" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="fillPayouts" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-payouts)" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="var(--color-payouts)" stopOpacity={0.2} />
                 <stop offset="95%" stopColor="var(--color-payouts)" stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -52,6 +52,7 @@ export function RevenueChart({ data }: Props) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              interval={4}
               tickFormatter={(value) => {
                 const date = new Date(value)
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -61,13 +62,13 @@ export function RevenueChart({ data }: Props) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
+                  labelFormatter={(value) =>
+                    new Date(value).toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
                     })
-                  }}
+                  }
                 />
               }
             />

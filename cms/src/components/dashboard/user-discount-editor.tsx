@@ -7,6 +7,7 @@ import { Pencil, Check, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { updateUserDiscountPercent } from '@/app/(dashboard)/dashboard/users/actions'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function UserDiscountEditor({
   userId,
@@ -16,6 +17,7 @@ export function UserDiscountEditor({
   currentDiscount: number
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [isPending, startTransition] = useTransition()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(String(currentDiscount))
@@ -49,13 +51,15 @@ export function UserDiscountEditor({
         <span className="text-sm font-medium">
           {currentDiscount}%
         </span>
-        <button
-          onClick={() => setEditing(true)}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Edit discount"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setEditing(true)}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Edit discount"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     )
   }

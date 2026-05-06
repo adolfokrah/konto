@@ -5,7 +5,7 @@ export const sendEndpoint: Endpoint = {
   path: '/send',
   method: 'post',
   handler: async (req) => {
-    if (!req.user) {
+    if (!req.user || (req.user as any).role !== 'admin') {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

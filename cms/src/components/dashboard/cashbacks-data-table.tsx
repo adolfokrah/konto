@@ -9,6 +9,7 @@ import { type PaginationProps, type BulkAction } from './data-table/types'
 import { CashbackDetailSheet } from './cashback-detail-sheet'
 import { toggleCashbackPaid, bulkUpdateCashbackPaid } from '@/app/(dashboard)/dashboard/cashbacks/actions'
 import { CheckCircle2, Circle } from 'lucide-react'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function CashbacksDataTable({
   cashbacks,
@@ -18,6 +19,7 @@ export function CashbacksDataTable({
   pagination?: PaginationProps
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [openSheet, setOpenSheet] = useState<CashbackRow | null>(null)
   const [, startTransition] = useTransition()
 
@@ -78,7 +80,7 @@ export function CashbacksDataTable({
     [],
   )
 
-  const tableMeta = useMemo(() => ({ onTogglePaid: handleTogglePaid }), [openSheet])
+  const tableMeta = useMemo(() => ({ onTogglePaid: isAdmin ? handleTogglePaid : undefined, isAdmin }), [openSheet, isAdmin])
 
   return (
     <>
@@ -89,7 +91,7 @@ export function CashbacksDataTable({
         pagination={pagination}
         fillParent
         onRowClick={setOpenSheet}
-        bulkActions={bulkActions}
+        bulkActions={isAdmin ? bulkActions : []}
         tableMeta={tableMeta}
       />
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Send, Loader2, X } from 'lucide-react'
+import { useIsAdmin } from './dashboard-user-context'
 
 type Props = {
   to: string
@@ -13,6 +14,7 @@ type Props = {
 
 export function InlineReplyBox({ to, subject, threadId }: Props) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [showCc, setShowCc] = useState(false)
@@ -67,6 +69,8 @@ export function InlineReplyBox({ to, subject, threadId }: Props) {
       handleSend()
     }
   }
+
+  if (!isAdmin) return null
 
   return (
     <div className="bg-white overflow-hidden">

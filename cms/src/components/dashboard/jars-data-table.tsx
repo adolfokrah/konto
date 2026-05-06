@@ -14,6 +14,7 @@ import { DataTable } from './data-table/data-table'
 import { jarColumns, type JarRow } from './data-table/columns/jar-columns'
 import { toggleJarFreeze } from '@/app/(dashboard)/dashboard/jars/actions'
 import { type PaginationProps } from './data-table/types'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function JarsDataTable({
   jars,
@@ -23,6 +24,7 @@ export function JarsDataTable({
   pagination?: PaginationProps
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
 
   return (
     <DataTable
@@ -32,7 +34,7 @@ export function JarsDataTable({
       pagination={pagination}
       scrollOffset="28rem"
       onRowClick={(jar) => router.push(`/dashboard/jars/${jar.id}`)}
-      renderRowActions={(jar) => (
+      renderRowActions={!isAdmin ? undefined : (jar) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" className="h-8 w-8 p-0">

@@ -20,6 +20,7 @@ type Props = {
     firstName?: string | null
     lastName?: string | null
     email?: string | null
+    role?: string | null
   }
 }
 
@@ -70,7 +71,7 @@ export function TopBar({ user }: Props) {
 
   const handleLogout = async () => {
     await logout()
-    router.push('/admin')
+    router.push('/dashboard/login')
   }
 
   return (
@@ -101,13 +102,17 @@ export function TopBar({ user }: Props) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href="/admin">
-                <Settings className="mr-2 h-4 w-4" />
-                Payload Admin
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {user.role === 'admin' && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Payload Admin
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout

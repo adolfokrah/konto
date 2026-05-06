@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
+import { useIsAdmin } from './dashboard-user-context'
 
 const statusLabel: Record<string, string> = {
   open: 'Open',
@@ -35,6 +36,7 @@ export function DisputeStatusForm({
   resolvedBy: { id: string; name: string } | null
 }) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const [newStatus, setNewStatus] = useState('')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
@@ -73,6 +75,8 @@ export function DisputeStatusForm({
       setSaving(false)
     }
   }
+
+  if (!isAdmin) return null
 
   return (
     <div className="space-y-3">

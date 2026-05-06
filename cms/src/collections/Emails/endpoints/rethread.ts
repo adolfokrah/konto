@@ -5,7 +5,7 @@ export const rethreadEndpoint: Endpoint = {
   path: '/rethread',
   method: 'post',
   handler: async (req) => {
-    if (!req.user) {
+    if (!req.user || (req.user as any).role !== 'admin') {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

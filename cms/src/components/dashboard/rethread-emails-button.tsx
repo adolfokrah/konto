@@ -5,10 +5,13 @@ import { GitMerge } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useIsAdmin } from './dashboard-user-context'
 
 export function RethreadEmailsButton() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const isAdmin = useIsAdmin()
+  if (!isAdmin) return null
 
   const rethread = async () => {
     setLoading(true)
