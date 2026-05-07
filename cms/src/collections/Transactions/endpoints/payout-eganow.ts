@@ -48,7 +48,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
     }
 
     const creatorId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
-    if (creatorId !== user.id) {
+    if (creatorId !== user.id || user.role !== 'admin') {
       return Response.json(
         { success: false, message: 'Only the jar creator can request a payout' },
         { status: 403 },
@@ -187,7 +187,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
     const transferFee = (netBalance * transferFeePercentage) / 100
     const expectedNetAmount = netBalance - transferFee
 
-
     const data = {
       paymentStatus: 'pending',
       paymentMethod: 'mobile-money',
@@ -204,7 +203,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       payoutNetAmount: expectedNetAmount,
     }
 
-    console.log("payout data is", data);
+    console.log('payout data is', data)
 
     const transaction = await req.payload.create({
       collection: 'transactions',
