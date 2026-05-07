@@ -16,18 +16,6 @@ export const payoutEganow = async (req: PayloadRequest) => {
 
     const user = req.user
 
-    // Validate withdrawal account
-    if (!user.bank || !user.accountNumber || !user.accountHolder) {
-      return Response.json(
-        {
-          success: false,
-          message:
-            'Withdrawal account information is missing. Please set up your withdrawal account first.',
-        },
-        { status: 400 },
-      )
-    }
-
     // Fetch jar and verify ownership
     const jar = await req.payload.findByID({
       collection: 'jars',
@@ -47,11 +35,38 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    const creatorId = typeof jar.creator === 'string' ? jar.creator : jar.creator?.id
-    if (creatorId !== user.id || user.role !== 'admin') {
+    // jar.creator is populated due to depth:1 — fall back to fetch if it's still an ID
+    const creator: any =
+      typeof jar.creator === 'object' && jar.creator
+        ? jar.creator
+        : jar.creator
+          ? await req.payload.findByID({
+              collection: 'users',
+              id: jar.creator as string,
+              overrideAccess: true,
+            })
+          : null
+
+    if (!creator) {
+      return Response.json({ success: false, message: 'Jar creator not found' }, { status: 404 })
+    }
+
+    if (creator.id !== user.id && user.role !== 'admin') {
       return Response.json(
-        { success: false, message: 'Only the jar creator can request a payout' },
+        { success: false, message: 'Only the jar creator or an admin can request a payout' },
         { status: 403 },
+      )
+    }
+
+    // Validate the jar creator's withdrawal account
+    if (!creator.bank || !creator.accountNumber || !creator.accountHolder) {
+      return Response.json(
+        {
+          success: false,
+          message:
+            "Jar creator's withdrawal account is missing. The creator must set up a withdrawal account first.",
+        },
+        { status: 400 },
       )
     }
 
@@ -60,7 +75,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       telecel: 'TCELGH',
     }
 
-    if (!providerMap[user.bank.toLowerCase()]) {
+    if (!providerMap[creator.bank.toLowerCase()]) {
       return Response.json(
         { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
         { status: 400 },
@@ -129,11 +144,11 @@ export const payoutEganow = async (req: PayloadRequest) => {
           paymentMethod: 'mobile-money',
           transactionReference: '',
           jar: jarId,
-          mobileMoneyProvider: user.bank,
+          mobileMoneyProvider: creator.bank,
           amountContributed: -netBalance,
-          collector: user.id,
-          contributorPhoneNumber: user.accountNumber,
-          contributor: user.accountHolder,
+          collector: creator.id,
+          contributorPhoneNumber: creator.accountNumber,
+          contributor: creator.accountHolder,
           type: 'payout',
           payoutFeePercentage: transferFeePercentage,
           payoutFeeAmount: transferFee,
@@ -192,11 +207,11 @@ export const payoutEganow = async (req: PayloadRequest) => {
       paymentMethod: 'mobile-money',
       transactionReference: '',
       jar: jarId,
-      mobileMoneyProvider: user.bank,
+      mobileMoneyProvider: creator.bank,
       amountContributed: -netBalance,
-      collector: user.id,
-      contributorPhoneNumber: user.accountNumber,
-      contributor: user.accountHolder,
+      collector: creator.id,
+      contributorPhoneNumber: creator.accountNumber,
+      contributor: creator.accountHolder,
       type: 'payout',
       payoutFeePercentage: transferFeePercentage,
       payoutFeeAmount: transferFee,
