@@ -13,6 +13,7 @@ import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
+import { validateAmountSign } from './hooks/validate-amount-sign'
 import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
 import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
@@ -130,7 +131,6 @@ export const Transactions: CollectionConfig = {
       name: 'amountContributed',
       type: 'number',
       required: true,
-      min: 0,
     },
     {
       name: 'chargesBreakdown',
@@ -496,6 +496,6 @@ export const Transactions: CollectionConfig = {
       updateJarLastActivity,
       createCashback,
     ],
-    beforeValidate: [validateJarCreatorAccount],
+    beforeValidate: [validateJarCreatorAccount, validateAmountSign],
   },
 }

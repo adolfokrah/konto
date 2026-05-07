@@ -52,7 +52,7 @@ export const processReferralWithdrawalTask = {
 
       await getEganow().getToken()
 
-      const payoutResult = await getEganow().payout({
+      const payoutPayload = {
         paypartnerCode: paypartner,
         amount: String(netAmount.toFixed(2)),
         accountNoOrCardNoOrMSISDN: phone,
@@ -65,7 +65,10 @@ export const processReferralWithdrawalTask = {
         cvv: '',
         languageId: 'en',
         callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
-      })
+      }
+      console.log('[Eganow] referral payout request:', JSON.stringify(payoutPayload))
+      const payoutResult = await getEganow().payout(payoutPayload)
+      console.log('[Eganow] referral payout response:', JSON.stringify(payoutResult))
 
       // Update withdrawal record with Eganow reference
       await payload.update({

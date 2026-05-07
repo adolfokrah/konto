@@ -240,6 +240,7 @@ export const processRefundTask = {
           callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
         }
 
+        console.log('[Eganow] refund payout request:', JSON.stringify(payoutData))
         const payoutResult = await getEganow().payout(payoutData)
         console.log(
           `[process-refund] Eganow payout response for refund ${refundId}:`,

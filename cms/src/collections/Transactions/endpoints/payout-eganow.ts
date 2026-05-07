@@ -187,23 +187,28 @@ export const payoutEganow = async (req: PayloadRequest) => {
     const transferFee = (netBalance * transferFeePercentage) / 100
     const expectedNetAmount = netBalance - transferFee
 
+
+    const data = {
+      paymentStatus: 'pending',
+      paymentMethod: 'mobile-money',
+      transactionReference: '',
+      jar: jarId,
+      mobileMoneyProvider: user.bank,
+      amountContributed: -netBalance,
+      collector: user.id,
+      contributorPhoneNumber: user.accountNumber,
+      contributor: user.accountHolder,
+      type: 'payout',
+      payoutFeePercentage: transferFeePercentage,
+      payoutFeeAmount: transferFee,
+      payoutNetAmount: expectedNetAmount,
+    }
+
+    console.log("payout data is", data);
+
     const transaction = await req.payload.create({
       collection: 'transactions',
-      data: {
-        paymentStatus: 'pending',
-        paymentMethod: 'mobile-money',
-        transactionReference: '',
-        jar: jarId,
-        mobileMoneyProvider: user.bank,
-        amountContributed: -netBalance,
-        collector: user.id,
-        contributorPhoneNumber: user.accountNumber,
-        contributor: user.accountHolder,
-        type: 'payout',
-        payoutFeePercentage: transferFeePercentage,
-        payoutFeeAmount: transferFee,
-        payoutNetAmount: expectedNetAmount,
-      },
+      data: data as any,
       overrideAccess: true,
     })
 
