@@ -208,7 +208,7 @@ export const processPayoutTask = {
 
       // Step 5 — call Eganow
       try {
-        const payoutResult = await getEganow().payout({
+        const payoutPayload = {
           paypartnerCode: paypartner,
           amount: String(grossAmount.toFixed(2)),
           accountNoOrCardNoOrMSISDN: phoneNumber,
@@ -221,7 +221,10 @@ export const processPayoutTask = {
           cvv: '',
           languageId: 'en',
           callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
-        })
+        }
+        console.log('[Eganow] payout request:', JSON.stringify(payoutPayload))
+        const payoutResult = await getEganow().payout(payoutPayload)
+        console.log('[Eganow] payout response:', JSON.stringify(payoutResult))
 
         // Step 6 — update transaction with Eganow reference
         await payload.update({
