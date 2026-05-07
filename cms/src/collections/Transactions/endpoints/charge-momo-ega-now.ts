@@ -2,6 +2,7 @@ import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
 import { getEganow } from '@/utilities/initalise'
+import { sanitizeNarration } from '@/utilities/eganow'
 
 // Eganow mobile money response data structure based on documentation
 interface EganowChargeResponseData {
@@ -179,7 +180,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       accountNoOrCardNoOrMSISDN: phoneNumber,
       accountName,
       transactionId: contribution.id, // Use contribution ID as transaction reference
-      narration: `Contribution for jar: ${jar.name}`,
+      narration: sanitizeNarration(`Contribution for jar ${jar.name}`),
       transCurrencyIso: jar.currency as string,
       expiryDateMonth: 0,
       expiryDateYear: 0,

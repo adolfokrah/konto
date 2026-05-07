@@ -1,4 +1,5 @@
 import { getEganow } from '@/utilities/initalise'
+import { sanitizeNarration } from '@/utilities/eganow'
 
 /**
  * Process Refund Task
@@ -231,7 +232,7 @@ export const processRefundTask = {
           accountNoOrCardNoOrMSISDN: phoneNumber,
           accountName,
           transactionId: `refund-${refundId}`,
-          narration: `Refund for contribution to ${jar.name}`,
+          narration: sanitizeNarration(`Refund for contribution to ${jar.name}`),
           transCurrencyIso: jar.currency || 'GHS',
           expiryDateMonth: 0,
           expiryDateYear: 0,

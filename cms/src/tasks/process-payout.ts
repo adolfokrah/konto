@@ -1,4 +1,5 @@
 import { getEganow } from '@/utilities/initalise'
+import { sanitizeNarration } from '@/utilities/eganow'
 import { getJarBalance } from '@/utilities/getJarBalance'
 import type { Transaction } from '@/payload-types'
 
@@ -206,15 +207,36 @@ export const processPayoutTask = {
 
       const grossAmount = payoutAmount
 
+      // Step 4b — KYC lookup to get the verified mobile-money account name.
+      // MTN MoMo rejects payouts whose accountName doesn't match its KYC records.
+      // Falls back to the stored accountHolder if KYC lookup fails.
+      let accountName = userAccountHolder
+      try {
+        const kyc = await getEganow().verifyKYC({
+          paypartnerCode: paypartner,
+          accountNoOrCardNoOrMSISDN: phoneNumber,
+          languageId: 'en',
+          countryCode: 'GH',
+        })
+        if (kyc.isSuccess && kyc.accountName) {
+          accountName = kyc.accountName
+          console.log(`[process-payout] KYC name for ${phoneNumber}: ${accountName}`)
+        } else {
+          console.warn(`[process-payout] KYC lookup failed for ${phoneNumber}, using stored name`)
+        }
+      } catch (kycErr: any) {
+        console.warn(`[process-payout] KYC error for ${phoneNumber}:`, kycErr?.message)
+      }
+
       // Step 5 — call Eganow
       try {
         const payoutPayload = {
           paypartnerCode: paypartner,
           amount: String(grossAmount.toFixed(2)),
           accountNoOrCardNoOrMSISDN: phoneNumber,
-          accountName: userAccountHolder,
+          accountName,
           transactionId: `payout-${existingTransactionId}`,
-          narration: `Payout for jar ${jar.name}`,
+          narration: sanitizeNarration(`Payout for jar ${jar.name}`),
           transCurrencyIso: jar.currency || 'GHS',
           expiryDateMonth: 0,
           expiryDateYear: 0,

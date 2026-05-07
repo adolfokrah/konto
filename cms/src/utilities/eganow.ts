@@ -5,6 +5,17 @@ interface EganowOptions {
   baseUrl?: string
 }
 
+/**
+ * Strip characters Eganow's narration field doesn't accept.
+ * Keeps alphanumerics and spaces; collapses repeated spaces.
+ */
+export function sanitizeNarration(s: string): string {
+  return (s ?? '')
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 interface EganowEnvelope<T = unknown> {
   isSuccess: boolean
   message?: string
