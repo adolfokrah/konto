@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
+import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { eganowWebhook } from './endpoints/eganow-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
@@ -405,6 +406,11 @@ export const Transactions: CollectionConfig = {
       path: '/charge-momo-eganow',
       method: 'post',
       handler: chargeMomoEganow,
+    },
+    {
+      path: '/chango-webhook',
+      method: 'post',
+      handler: changoWebhook,
     },
     {
       path: '/eganow-webhook',
