@@ -53,18 +53,14 @@ export default function ContributionInput({
   const [contributorName, setContributorName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
+  const [contributorEmail, setContributorEmail] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [remarks, setRemarks] = useState('')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
-  const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
+  const [paymentMethod, setPaymentMethod] = useState<'mobile-money' | 'card'>('mobile-money')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
-  const [charges, setCharges] = useState<{
-    platformCharge: number
-    amountPaidByContributor: number
-  } | null>(null)
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
   const { trigger: createContribution } = useSWRMutation(
@@ -82,7 +78,7 @@ export default function ContributionInput({
   )
 
   const { trigger: chargeMomo } = useSWRMutation(
-    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-momo-eganow`,
+    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-chango`,
     async (url: string, { arg }: { arg: { contributionId: string } }) => {
       const res = await fetch(url, {
         method: 'POST',
@@ -213,42 +209,6 @@ export default function ContributionInput({
     }
   }, [pollingInterval])
 
-  // Fetch live charge breakdown from backend whenever amount changes (debounced)
-  useEffect(() => {
-    if (selectedAmount <= 0) {
-      setCharges(null)
-      return
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const params = new URLSearchParams({ amount: String(selectedAmount) })
-        if (jarId) params.set('jarId', jarId)
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transactions/get-charges?${params}`,
-        )
-        if (res.ok) {
-          const data = await res.json()
-          if (data.success) {
-            setCharges({
-              platformCharge: data.platformCharge,
-              amountPaidByContributor: data.amountPaidByContributor,
-            })
-            return
-          }
-        }
-      } catch {
-        // fall through to local fallback
-      }
-      // Fallback: compute locally if API unavailable
-      const fee = contributionAmount * (transactionFeePercentage / 100)
-      setCharges({
-        platformCharge: fee,
-        amountPaidByContributor: contributionAmount + fee,
-      })
-    }, 400)
-  }, [selectedAmount, jarId]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
     if (!isAnonymous && !contributorName) {
@@ -262,6 +222,14 @@ export default function ContributionInput({
     if (!isAnonymous && !contributorPhoneNumber) {
       toast.error('Missing Information', {
         description: 'Please enter your phone number to continue',
+        duration: 4000,
+      })
+      return
+    }
+
+    if (!contributorEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contributorEmail)) {
+      toast.error('Missing Information', {
+        description: 'Please enter a valid email address',
         duration: 4000,
       })
       return
@@ -292,7 +260,8 @@ export default function ContributionInput({
         amount: selectedAmount,
         currency,
         contributorPhoneNumber: contributorPhoneNumber,
-        mobileMoneyProvider: mobileMoneyProvider,
+        contributorEmail: contributorEmail,
+        paymentMethod: paymentMethod,
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
         ...(Object.keys(customFieldValues).length > 0 ? { customFieldValues } : {}),
@@ -300,19 +269,18 @@ export default function ContributionInput({
 
       const contributionId = contributionData.data.id
 
-      // Charge mobile money via Eganow
+      // Initiate Chango hosted checkout
       const chargeData = await chargeMomo({ contributionId })
+      const checkoutUrl = chargeData?.data?.checkoutUrl
 
-      // Get transaction reference from charge response
-      const transactionReference = chargeData?.data?.reference
+      if (!checkoutUrl) {
+        throw new Error(chargeData?.message || 'No checkout URL returned')
+      }
 
-
-      // Show waiting modal
-      setShowPaymentModal(true)
-
-      // Start polling for payment verification using transactionReference
-      startPaymentPolling(transactionReference)
-
+      // Redirect to Chango's hosted checkout — webhook updates the transaction
+      // when payment completes, and Chango redirects the user to our
+      // successRedirectUrl / failureRedirectUrl afterwards.
+      window.location.href = checkoutUrl
     } catch (error: any) {
       setIsLoading(false)
       setPaymentStatus('failed')
@@ -328,9 +296,6 @@ export default function ContributionInput({
   }
 
   const contributionAmount = selectedAmount
-  // Use live charges from API; fall back to local calculation while loading
-  const totalAmountToPay = charges?.amountPaidByContributor ?? contributionAmount * (1 + transactionFeePercentage / 100)
-  const transactionFee = totalAmountToPay - contributionAmount
 
   return (
     <div className={`bg-white ${className}`}>
@@ -407,12 +372,12 @@ export default function ContributionInput({
 
           <div className="relative">
             <select
-              value={mobileMoneyProvider}
-              onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'telecel')}
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value as 'mobile-money' | 'card')}
               className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors px-4 pr-10 appearance-none outline-none focus:border-gray-400"
             >
-              <option value="mtn">MTN Mobile Money</option>
-              <option value="telecel">Telecel Cash</option>
+              <option value="mobile-money">Mobile Money</option>
+              <option value="card">Card</option>
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
           </div>
@@ -427,6 +392,17 @@ export default function ContributionInput({
             placeholder="Phone number"
             value={contributorPhoneNumber}
             onChange={(e) => setContributorPhoneNumber(e.target.value)}
+            className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={contributorEmail}
+            onChange={(e) => setContributorEmail(e.target.value)}
             className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
             required
           />
@@ -467,19 +443,11 @@ export default function ContributionInput({
           </span>
         </div>
 
-        {/* Transaction Fee */}
-        <div className="flex justify-between text-gray-700">
-          <span>Processing fee</span>
-          <span>
-            {currency} {formatAmount(transactionFee)}
-          </span>
-        </div>
-
         {/* Total Due */}
         <div className="flex justify-between font-bold text-black pt-2 border-t border-gray-200">
           <span>Total due to pay</span>
           <span>
-            {currency} {formatAmount(totalAmountToPay)}
+            {currency} {formatAmount(contributionAmount)}
           </span>
         </div>
 
@@ -489,7 +457,7 @@ export default function ContributionInput({
       <button
         onClick={handleContribute}
         disabled={
-          selectedAmount <= 0 || isLoading || paymentStatus === 'pending' || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber)
+          selectedAmount <= 0 || isLoading || paymentStatus === 'pending' || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber) || !contributorEmail
         }
         className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
@@ -522,7 +490,7 @@ export default function ContributionInput({
           }
         }}
         phoneNumber={contributorPhoneNumber}
-        provider={mobileMoneyProvider}
+        provider={paymentMethod === 'mobile-money' ? 'mtn' : 'telecel'}
       />
     </div>
   )

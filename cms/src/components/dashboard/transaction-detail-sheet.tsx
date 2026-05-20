@@ -350,10 +350,6 @@ export function TransactionDetailSheet({
                       />
                     )}
                     <DetailRow
-                      label="Eganow Fees"
-                      value={abs(cb.eganowFees) != null ? formatAmount(abs(cb.eganowFees)!) : null}
-                    />
-                    <DetailRow
                       label="Hogapay Revenue"
                       value={abs(cb.hogapayRevenue) != null ? (
                         <span className="text-green-700 font-semibold">{formatAmount(abs(cb.hogapayRevenue)!)}</span>

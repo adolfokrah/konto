@@ -29,7 +29,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           platformCharge: 0,
           amountPaidByContributor: amount,
           hogapayRevenue: 0,
-          eganowFees: 0,
         },
       }
       if (tx.type === 'payout') {
@@ -64,7 +63,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           platformCharge: 0,
           amountPaidByContributor: amount,
           hogapayRevenue: 0,
-          eganowFees: 0,
         },
       }
       if (tx.type === 'payout') {
@@ -99,7 +97,6 @@ export const recalculateCharges = async (req: PayloadRequest) => {
           platformCharge: 0,
           amountPaidByContributor: amount,
           hogapayRevenue: 0,
-          eganowFees: 0,
         },
       }
       if (tx.type === 'payout') {

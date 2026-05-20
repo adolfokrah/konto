@@ -33,16 +33,12 @@ import { Suspense } from 'react'
 import { TopContributorsChart } from '@/components/dashboard/analytics/top-contributors-chart'
 import { JarStatusChart } from '@/components/dashboard/analytics/jar-status-chart'
 import { NewJarsTrendChart } from '@/components/dashboard/analytics/new-jars-trend-chart'
-import { PayoutVolumeTrendChart } from '@/components/dashboard/analytics/payout-volume-trend-chart'
 import { TransactionCountTrendChart } from '@/components/dashboard/analytics/transaction-count-trend-chart'
 import { FailedTransactionsTrendChart } from '@/components/dashboard/analytics/failed-transactions-trend-chart'
-import { RefundVolumeTrendChart } from '@/components/dashboard/analytics/refund-volume-trend-chart'
-import { RefundCountTrendChart } from '@/components/dashboard/analytics/refund-count-trend-chart'
 import { ProviderSplitChart } from '@/components/dashboard/analytics/provider-split-chart'
 import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-breakdown-chart'
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
 import { TotalTransactionVolumeChart } from '@/components/dashboard/analytics/total-transaction-volume-chart'
-import { PayoutCountTrendChart } from '@/components/dashboard/analytics/payout-count-trend-chart'
 
 const fmt = (n: number) =>
   n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -849,22 +845,10 @@ export default async function AnalyticsPage({
         <TotalTransactionVolumeChart data={totalTransactionVolumeData} range={range} />
       </div>
 
-      {/* Payout Volume + Payout Count — 2 columns */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <PayoutVolumeTrendChart data={payoutVolumeTrendData} range={range} />
-        <PayoutCountTrendChart data={payoutCountTrendData} range={range} />
-      </div>
-
       {/* New Jars + Failed Transactions trends — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
         <NewJarsTrendChart data={newJarsTrendData} range={range} />
         <FailedTransactionsTrendChart data={failedTransactionsTrendData} range={range} />
-      </div>
-
-      {/* Refund Volume + Refund Count — 2 columns */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <RefundVolumeTrendChart data={refundVolumeTrendData} range={range} />
-        <RefundCountTrendChart data={refundCountTrendData} range={range} />
       </div>
 
       {/* Payment Methods + Transaction Status — 2 columns */}

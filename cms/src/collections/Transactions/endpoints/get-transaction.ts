@@ -52,7 +52,6 @@ export const getTransaction = async (req: PayloadRequest) => {
       mobileMoneyProvider: refund.mobileMoneyProvider,
       status: refund.status,
       transactionReference: refund.transactionReference,
-      eganowFees: refund.eganowFees,
       hogapayRevenue: refund.hogapayRevenue,
       createdAt: refund.createdAt,
     }))

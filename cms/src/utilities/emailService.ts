@@ -5,13 +5,10 @@ import ContributionsReport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
 import sendKyc from '@/components/emailTemplates/sendKyc'
-import EganowBalanceAlert from '@/components/emailTemplates/EganowBalanceAlert'
 import TransactionNotification from '@/components/emailTemplates/transactionNotification'
 import WeeklyAccountSummary, {
   type JarSummaryRow,
 } from '@/components/emailTemplates/weeklyAccountSummary'
-import WithdrawalReminder from '@/components/emailTemplates/withdrawalReminder'
-import AutoRefundNotice from '@/components/emailTemplates/autoRefundNotice'
 import SealInactiveJar from '@/components/emailTemplates/sealInactiveJar'
 import CustomFieldsAnnouncement from '@/components/emailTemplates/customFieldsAnnouncement'
 
@@ -145,31 +142,6 @@ class EmailService {
     })
   }
 
-  // Eganow Payout Balance Alert
-  async sendEganowBalanceAlert(params: {
-    totalJarBalances: number
-    totalUpcoming: number
-    combinedTotal: number
-    eganowBalance: number
-    shortfall: number
-    currency: string
-  }) {
-    const fmt = (n: number) =>
-      n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    return this.sendEmail({
-      to: 'hello@usehoga.com',
-      subject: `Eganow Payout Balance Alert — Top Up Needed`,
-      react: EganowBalanceAlert({
-        totalJarBalances: fmt(params.totalJarBalances),
-        totalUpcoming: fmt(params.totalUpcoming),
-        combinedTotal: fmt(params.combinedTotal),
-        eganowBalance: fmt(params.eganowBalance),
-        shortfall: fmt(params.shortfall),
-        currency: params.currency,
-      }),
-    })
-  }
-
   // Transaction / Refund Notification Email (internal)
   async sendTransactionNotificationEmail(params: {
     to: string
@@ -246,78 +218,6 @@ class EmailService {
       }),
     }))
     return this.sendBatch(emails)
-  }
-
-  // Withdrawal Reminder Email
-  async sendWithdrawalReminderEmail(params: {
-    to: string
-    firstName: string
-    reminderDay: number
-    jars: { name: string; balance: number; currency: string; lastTransactionDate: string }[]
-  }) {
-    const subjectByDay: Record<number, string> = {
-      7: 'Reminder: withdraw your jar balance',
-      10: '2nd reminder: your jar balance is still unclaimed',
-      12: 'Final warning: withdraw now or auto-refund begins',
-    }
-    const subject = subjectByDay[params.reminderDay] ?? 'Action required: withdraw your jar balance'
-    return this.sendEmail({
-      to: params.to,
-      subject,
-      react: WithdrawalReminder({
-        firstName: params.firstName,
-        reminderDay: params.reminderDay,
-        jars: params.jars,
-      }),
-    })
-  }
-
-  // Batch Withdrawal Reminder
-  async sendWithdrawalReminderBatch(
-    items: {
-      to: string
-      firstName: string
-      reminderDay: number
-      jars: { name: string; balance: number; currency: string; lastTransactionDate: string }[]
-    }[],
-  ) {
-    const subjectByDay: Record<number, string> = {
-      7: '[Action required] Reminder: withdraw your jar balance',
-      10: '[Action required] 2nd reminder: your jar balance is still unclaimed',
-      12: '[Action required] Final warning: withdraw now or auto-refund begins',
-    }
-    const emails: EmailOptions[] = items.map((params) => ({
-      to: params.to,
-      subject: subjectByDay[params.reminderDay] ?? '[Action required]: withdraw your jar balance',
-      react: WithdrawalReminder({
-        firstName: params.firstName,
-        reminderDay: params.reminderDay,
-        jars: params.jars,
-      }),
-    }))
-    return this.sendBatch(emails)
-  }
-
-  // Auto Refund Notice Email (sent to jar creator when jar is frozen on Day 14)
-  async sendAutoRefundNoticeEmail(params: {
-    to: string
-    firstName: string
-    jarName: string
-    totalAmount: number
-    currency: string
-    contributorsCount: number
-  }) {
-    return this.sendEmail({
-      to: params.to,
-      subject: `Your jar "${params.jarName}" has been frozen — auto-refund initiated`,
-      react: AutoRefundNotice({
-        firstName: params.firstName,
-        jarName: params.jarName,
-        totalAmount: params.totalAmount,
-        currency: params.currency,
-        contributorsCount: params.contributorsCount,
-      }),
-    })
   }
 
   // Seal Inactive Jar Notification Batch

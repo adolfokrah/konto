@@ -132,7 +132,7 @@ export const Pricing: Block = {
           type: 'upload',
           relationTo: 'media',
           admin: {
-            description: 'Payment provider logo (e.g., Eganow)',
+            description: 'Payment provider logo (e.g., payment provider logo)',
           },
         },
       ],

@@ -1415,6 +1415,10 @@ export interface Transaction {
    * Phone number of the contributor
    */
   contributorPhoneNumber?: string | null;
+  /**
+   * Email of the contributor (used by Chango for receipts)
+   */
+  contributorEmail?: string | null;
   paymentMethod?: ('mobile-money' | 'bank' | 'cash' | 'card' | 'apple-pay') | null;
   mobileMoneyProvider?: string | null;
   /**
@@ -1483,6 +1487,14 @@ export interface Transaction {
    */
   eganowPayPartnerTransactionId?: string | null;
   /**
+   * Chango's invoiceId returned when initiating a payment
+   */
+  changoInvoiceId?: string | null;
+  /**
+   * Hosted-checkout URL returned by Chango. Open in browser/webview.
+   */
+  changoCheckoutUrl?: string | null;
+  /**
    * User who collected the contribution
    */
   collector?: (string | null) | User;
@@ -1534,6 +1546,10 @@ export interface Jar {
    * Name of the jar
    */
   name: string;
+  /**
+   * Chango campaign UUID — set by the afterChange sync hook
+   */
+  changoCampaignId?: string | null;
   /**
    * Description of the jar
    */
@@ -3086,6 +3102,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   contributor?: T;
   remarks?: T;
   contributorPhoneNumber?: T;
+  contributorEmail?: T;
   paymentMethod?: T;
   mobileMoneyProvider?: T;
   accountNumber?: T;
@@ -3110,6 +3127,8 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
+  changoInvoiceId?: T;
+  changoCheckoutUrl?: T;
   collector?: T;
   collectorSnapshot?:
     | T
@@ -3129,6 +3148,7 @@ export interface TransactionsSelect<T extends boolean = true> {
  */
 export interface JarsSelect<T extends boolean = true> {
   name?: T;
+  changoCampaignId?: T;
   description?: T;
   jarGroup?: T;
   image?: T;

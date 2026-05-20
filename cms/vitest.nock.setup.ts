@@ -2,9 +2,12 @@ import nock from 'nock'
 import { beforeAll } from 'vitest'
 
 // Override real credentials with dummy values so real keys are never used in tests
-process.env.EGANOW_SECRET_USERNAME = 'test_username'
-process.env.EGANOW_SECRET_PASSWORD = 'test_password'
-process.env.EGANOW_X_AUTH_TOKEN = 'test_x_auth'
+process.env.CHANGO_API_KEY = 'test_chango_key'
+process.env.CHANGO_GROUP_ID = 'test_group_id'
+process.env.CHANGO_PAYMENT_DESTINATION_NUMBER = '0000000000'
+process.env.CHANGO_BANK_ID = 'test_bank_id'
+process.env.CHANGO_BRANCH_ID = 'test_branch_id'
+process.env.CHANGO_MERCHANT_PRODUCT_ID = 'test_merchant_product_id'
 process.env.RESEND_API_KEY = 'test_resend_key'
 process.env.SMS_USERNAME = 'test_sms_user'
 process.env.SMS_PASS = 'test_sms_pass'
@@ -12,47 +15,28 @@ process.env.SMS_SOURCE = 'TEST'
 process.env.DIDIT_KYC_API_KEY = 'test_didit_key'
 process.env.DIDIT_WORKFLOW_ID = 'test_workflow_id'
 
-const EGANOW_BASE = 'https://developer.deveganowapi.com'
-
-
-console.log('EGANOW_BASE', process.env.EGANOW_SECRET_PASSWORD)
-
 beforeAll(() => {
   nock.disableNetConnect()
   nock.enableNetConnect((host) => host.includes('127.0.0.1') || host.includes('localhost'))
 
-  // Eganow
-  nock(EGANOW_BASE)
+  // Chango
+  nock('https://thirdpartyuat.changoapp.com')
     .persist()
-    .get('/api/auth/token')
+    .post(/.*/)
     .reply(200, {
-      isSuccess: true,
-      message: 'Token generated',
-      egaMerchantId: 'MOCK-MERCHANT',
-      developerJwtToken: 'mock-jwt-token',
+      response_code: '200',
+      response_message: 'OK',
+      data: {
+        success: true,
+        invoiceId: 'mock-invoice',
+        checkoutTransactionReference: 'mock-checkout-ref',
+        checkoutUrl: 'https://checkoutuat.itcsrvc.com/mock',
+      },
     })
-    .post('/api/transactions/payout')
-    .reply(200, {
-      transactionStatus: 'INITIATED',
-      eganowReferenceNo: 'MOCK-REF-123',
-      message: 'Payout initiated',
-    })
-    .post('/api/transactions/status')
-    .reply(200, {
-      isSuccess: true,
-      transactionstatus: 'SUCCESSFUL',
-      referenceNo: 'MOCK-REF-123',
-    })
-    .post('/api/vas/kyc')
-    .reply(200, { isSuccess: true, message: 'Verified' })
-    .post('/api/partners/charges')
-    .reply(200, { isSuccess: true, charges: 0 })
-    .post('/api/transactions/collection')
-    .reply(200, { isSuccess: true, message: 'Collection initiated' })
-    .get('/api/transactions/payout/get-balance')
-    .reply(200, { isSuccess: true, balance: 10000 })
-    .get('/api/transactions/collection/get-balance')
-    .reply(200, { isSuccess: true, balance: 10000 })
+    .put(/.*/)
+    .reply(200, { response_code: '200', response_message: 'OK', data: {} })
+    .get(/.*/)
+    .reply(200, { response_code: '200', response_message: 'OK', data: { count: 0, data: [] } })
 
   // SMS (Deywuro)
   nock('https://www.deywuro.com')

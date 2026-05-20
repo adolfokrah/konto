@@ -55,7 +55,6 @@ export type TransactionRow = {
   chargesBreakdown: {
     platformCharge: number | null
     amountPaidByContributor: number | null
-    eganowFees: number | null
     hogapayRevenue: number | null
   } | null
   paymentStatus: 'pending' | 'completed' | 'failed' | 'awaiting-approval'
@@ -319,20 +318,6 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
       const charge = row.original.chargesBreakdown?.platformCharge
       if (!charge) return <span className="text-muted-foreground">—</span>
       return <span className="text-muted-foreground">{formatAmount(Math.abs(charge))}</span>
-    },
-    meta: {
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
-    } satisfies DataTableColumnMeta,
-  },
-  {
-    id: 'eganowFees',
-    header: 'Eganow Fees',
-    size: 120,
-    cell: ({ row }) => {
-      const fees = row.original.chargesBreakdown?.eganowFees
-      if (!fees) return <span className="text-muted-foreground">—</span>
-      return <span className="text-muted-foreground">{formatAmount(Math.abs(fees))}</span>
     },
     meta: {
       headerClassName: 'text-right',
