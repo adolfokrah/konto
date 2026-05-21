@@ -150,13 +150,24 @@ describe('Payout Endpoint Integration Tests', () => {
         },
       })
 
-      const req = buildMockRequest({ user: noBankUser })
+      const noBankJar = await payload.create({
+        collection: 'jars',
+        data: {
+          name: 'No Bank Jar',
+          status: 'open' as const,
+          currency: 'GHS' as const,
+          creator: noBankUser.id,
+          isActive: true,
+        },
+      })
+
+      const req = buildMockRequest({ user: noBankUser, data: { jarId: noBankJar.id } })
       const response = await payoutEganow(req)
       const result = await response.json()
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toContain('Withdrawal account information is missing')
+      expect(result.message).toContain('withdrawal account is missing')
     })
 
     it('should return 403 when jar is frozen', async () => {
@@ -190,7 +201,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(403)
       expect(result.success).toBe(false)
-      expect(result.message).toBe('Only the jar creator can request a payout')
+      expect(result.message).toBe('Only the jar creator or an admin can request a payout')
     })
 
     it('should return 400 when a payout is already pending', async () => {
