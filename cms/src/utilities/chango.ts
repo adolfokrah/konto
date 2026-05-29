@@ -1,10 +1,12 @@
 interface ChangoOptions {
   apiKey: string
+  xApiKey?: string
   groupId: string
   paymentDestinationNumber: string
   bankId?: string
   branchId?: string
   merchantProductId?: string
+  transflowId?: string
   baseUrl?: string
 }
 
@@ -144,20 +146,24 @@ export interface ChangoTransactionData {
 
 export default class Chango {
   private readonly apiKey: string
+  private readonly xApiKey?: string
   private readonly groupId: string
   private readonly paymentDestinationNumber: string
   private readonly bankId?: string
   private readonly branchId?: string
   private readonly merchantProductId?: string
+  private readonly transflowId?: string
   private readonly baseUrl: string
 
   constructor({
     apiKey,
+    xApiKey,
     groupId,
     paymentDestinationNumber,
     bankId,
     branchId,
     merchantProductId,
+    transflowId,
     baseUrl = 'https://thirdpartyuat.changoapp.com',
   }: ChangoOptions) {
     if (!apiKey || !groupId || !paymentDestinationNumber) {
@@ -165,29 +171,40 @@ export default class Chango {
     }
 
     this.apiKey = apiKey
+    this.xApiKey = xApiKey
     this.groupId = groupId
     this.paymentDestinationNumber = paymentDestinationNumber
     this.bankId = bankId
     this.branchId = branchId
     this.merchantProductId = merchantProductId
+    this.transflowId = transflowId
     this.baseUrl = baseUrl.replace(/\/+$/, '')
   }
 
-  private url(path: string): string {
-    return new URL(path.startsWith('/') ? path : `/${path}`, this.baseUrl).toString()
+  private url(path: string, query?: Record<string, string | undefined>): string {
+    const u = new URL(path.startsWith('/') ? path : `/${path}`, this.baseUrl)
+    if (query) {
+      for (const [k, v] of Object.entries(query)) {
+        if (v !== undefined && v !== null && v !== '') u.searchParams.set(k, v)
+      }
+    }
+    return u.toString()
   }
 
   private async request<T = unknown>(
     method: 'GET' | 'POST' | 'PUT',
     path: string,
     body?: unknown,
+    query?: Record<string, string | undefined>,
   ): Promise<T> {
-    const fullUrl = this.url(path)
+    const fullUrl = this.url(path, query)
     console.log(
       `[Chango] ${method} ${fullUrl} apiKey.len=${this.apiKey?.length ?? 0} baseUrl=${this.baseUrl}`,
     )
     const headers = new Headers()
-    headers.set('x-api-key', this.apiKey)
+    if (this.xApiKey) headers.set('x-api-key', this.xApiKey)
+    headers.set('api-key', this.apiKey)
+    if (this.transflowId) headers.set('transflow-id', this.transflowId)
     headers.set('Content-Type', 'application/json')
     const response = await fetch(fullUrl, {
       method,
@@ -218,15 +235,19 @@ export default class Chango {
   async createCampaign(
     params: ChangoCreateCampaignRequest,
   ): Promise<ChangoEnvelope<ChangoCampaignData>> {
-    const body = {
+    const { campaign_images, ...rest } = params
+    const body: Record<string, any> = {
       payment_destination_number: this.paymentDestinationNumber,
       bank_id: this.bankId,
       branch_id: this.branchId,
       hide_total_amount: false,
       hide_donor_count: false,
       hide_donors: false,
-      ...params,
+      ...rest,
     }
+    // Chango rejects empty entries in campaign_images — only include if non-empty.
+    const cleaned = (campaign_images ?? []).filter((s) => s && s.length > 0)
+    if (cleaned.length > 0) body.campaign_images = cleaned
     if (!body.bank_id || !body.branch_id) {
       throw new Error('bank_id and branch_id are required (set them in env or pass per-call)')
     }
@@ -234,6 +255,7 @@ export default class Chango {
       'POST',
       `/api/v1/thirdParty/groups/${this.groupId}/assign/campaign-account`,
       body,
+      { merchantProductId: this.merchantProductId },
     )
   }
 
@@ -248,6 +270,7 @@ export default class Chango {
       'PUT',
       `/api/v1/thirdParty/groups/${this.groupId}/assign/campaign-account/${campaignId}`,
       params,
+      { merchantProductId: this.merchantProductId },
     )
   }
 
@@ -258,10 +281,11 @@ export default class Chango {
   async createTransaction(
     params: ChangoCreateTransactionRequest,
   ): Promise<ChangoEnvelope<ChangoTransactionData>> {
+    const merchantProductId = params.merchantProductId ?? this.merchantProductId
     const body = {
       groupId: this.groupId,
       paymentDestinationNumber: this.paymentDestinationNumber,
-      merchantProductId: params.merchantProductId ?? this.merchantProductId ?? params.campaignId,
+      merchantProductId,
       platform: 'thirdparty',
       countryId: 'GH',
       recurring: false,
@@ -271,6 +295,8 @@ export default class Chango {
       ...params,
       narration: sanitizeNarration(params.narration),
     }
-    return this.request('POST', '/api/v1/thirdParty/payment', body)
+    return this.request('POST', '/api/v1/thirdParty/payment', body, {
+      merchantProductId,
+    })
   }
 }
