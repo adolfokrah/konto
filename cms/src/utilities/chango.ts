@@ -182,15 +182,21 @@ export default class Chango {
     path: string,
     body?: unknown,
   ): Promise<T> {
-    console.log(`[Chango] ${method} ${path} apiKey.len=${this.apiKey?.length ?? 0}`)
-    const response = await fetch(this.url(path), {
+    const fullUrl = this.url(path)
+    console.log(
+      `[Chango] ${method} ${fullUrl} apiKey.len=${this.apiKey?.length ?? 0} baseUrl=${this.baseUrl}`,
+    )
+    const response = await fetch(fullUrl, {
       method,
       headers: {
         'x-api-key': this.apiKey,
+        'X-Api-Key': this.apiKey,
+        'X-API-KEY': this.apiKey,
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
     })
+    console.log(`[Chango] response status=${response.status} ${response.statusText}`)
 
     const text = await response.text()
 
