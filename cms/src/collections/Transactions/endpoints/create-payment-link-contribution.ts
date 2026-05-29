@@ -7,12 +7,17 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       jarId,
       contributorName,
       contributorPhoneNumber,
+      contributorEmail,
       amount,
       collector,
+      paymentMethod,
       mobileMoneyProvider,
       remarks,
       customFieldValues,
     } = req.data || {}
+
+    const resolvedPaymentMethod: 'mobile-money' | 'card' =
+      paymentMethod === 'card' ? 'card' : 'mobile-money'
 
     // Validate required fields
     if (!jarId || !contributorName || !contributorPhoneNumber || !amount) {
@@ -86,8 +91,11 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
         jar: jarId,
         contributor: contributorName,
         contributorPhoneNumber, // Using phone number field as identifier for anonymous contributions
-        paymentMethod: 'mobile-money', // Paystack payment
-        mobileMoneyProvider: mobileMoneyProvider || 'MTN', // Use the provider from request, default to MTN
+        ...(contributorEmail ? { contributorEmail } : {}),
+        paymentMethod: resolvedPaymentMethod,
+        ...(resolvedPaymentMethod === 'mobile-money'
+          ? { mobileMoneyProvider: mobileMoneyProvider || 'MTN' }
+          : {}),
         amountContributed: amount,
         paymentStatus: 'pending',
         type: 'contribution',

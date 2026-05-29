@@ -111,7 +111,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     { header: 'Contribution', key: 'contribution', width: 16 },
     { header: 'Payout', key: 'payout', width: 16 },
     { header: 'Platform Charge', key: 'platformCharge', width: 16 },
-    { header: 'Eganow Fees', key: 'eganowFees', width: 14 },
     { header: 'Hogapay Revenue', key: 'hogapayRevenue', width: 16 },
     { header: 'Settled', key: 'settled', width: 10 },
     { header: 'Via Link', key: 'viaLink', width: 10 },
@@ -128,7 +127,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
   let totalContributions = 0
   let totalPayouts = 0
   let totalPlatformCharge = 0
-  let totalEganowFees = 0
   let totalHogapayRevenue = 0
 
   docs.forEach((tx, idx) => {
@@ -137,7 +135,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
-    const eganowFees = Math.abs(Number(cb.eganowFees || 0))
     const hogapayRevenue = Math.abs(Number(cb.hogapayRevenue || 0))
 
     if (isPayout) {
@@ -146,7 +143,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
       totalContributions += amount
     }
     totalPlatformCharge += platformCharge
-    totalEganowFees += eganowFees
     totalHogapayRevenue += hogapayRevenue
 
     const provider = tx.paymentMethod === 'mobile-money' ? tx.mobileMoneyProvider || '' : ''
@@ -167,7 +163,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
       contribution: isPayout ? null : amount,
       payout: isPayout ? -amount : null,
       platformCharge: platformCharge || null,
-      eganowFees: eganowFees || null,
       hogapayRevenue: hogapayRevenue || null,
       settled: tx.isSettled ? 'Yes' : 'No',
       viaLink: tx.viaPaymentLink ? 'Yes' : 'No',
@@ -183,7 +178,7 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
   })
 
   // Format number columns
-  const numberCols = ['contribution', 'payout', 'platformCharge', 'eganowFees', 'hogapayRevenue']
+  const numberCols = ['contribution', 'payout', 'platformCharge', 'hogapayRevenue']
   numberCols.forEach((key) => {
     const col = sheet.getColumn(key)
     col.numFmt = '#,##0.00'
@@ -203,7 +198,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     contribution: totalContributions,
     payout: -totalPayouts,
     platformCharge: totalPlatformCharge,
-    eganowFees: totalEganowFees,
     hogapayRevenue: totalHogapayRevenue,
     settled: '',
     viaLink: '',
@@ -259,12 +253,11 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
     'Contribution',
     'Payout',
     'Plat. Charge',
-    'Eganow Fees',
     'Hogapay Rev',
     'Date',
   ]
   const usableWidth = A4_LANDSCAPE.width - pageMargin * 2
-  const columnPercents = [0.03, 0.11, 0.11, 0.11, 0.08, 0.07, 0.08, 0.08, 0.08, 0.08, 0.08, 0.09]
+  const columnPercents = [0.03, 0.12, 0.12, 0.12, 0.09, 0.08, 0.09, 0.09, 0.09, 0.09, 0.08]
   const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
 
   let logoImage: any = null
@@ -388,7 +381,6 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
   let totalContributions = 0
   let totalPayouts = 0
   let totalPlatformCharge = 0
-  let totalEganowFees = 0
   let totalHogapayRevenue = 0
 
   const drawRow = (cells: string[], rowIndex: number) => {
@@ -449,7 +441,6 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
     const isPayout = tx.type === 'payout'
     const cb = tx.chargesBreakdown || {}
     const platformCharge = Math.abs(Number(cb.platformCharge || 0))
-    const eganowFees = Math.abs(Number(cb.eganowFees || 0))
     const hogapayRevenue = Math.abs(Number(cb.hogapayRevenue || 0))
 
     if (isPayout) {
@@ -458,7 +449,6 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
       totalContributions += amount
     }
     totalPlatformCharge += platformCharge
-    totalEganowFees += eganowFees
     totalHogapayRevenue += hogapayRevenue
 
     const provider = tx.paymentMethod === 'mobile-money' ? tx.mobileMoneyProvider || '' : ''
@@ -477,7 +467,6 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
       isPayout ? '—' : fmtAmt(amount),
       isPayout ? `-${fmtAmt(amount)}` : '—',
       fmtAmt(platformCharge || null),
-      fmtAmt(eganowFees || null),
       fmtAmt(hogapayRevenue || null),
       fmtDate(tx.createdAt),
     ]
@@ -556,16 +545,7 @@ async function generatePdf(docs: any[]): Promise<Buffer> {
       color: colors.text,
     })
 
-    const egaX = columnWidths.slice(0, 9).reduce((a, b) => a + b, 0) + pageMargin + 3
-    page.drawText(fmtAmt(totalEganowFees), {
-      x: egaX,
-      y: textY,
-      size: headerFontSize,
-      font: boldFont,
-      color: colors.text,
-    })
-
-    const hogaX = columnWidths.slice(0, 10).reduce((a, b) => a + b, 0) + pageMargin + 3
+    const hogaX = columnWidths.slice(0, 9).reduce((a, b) => a + b, 0) + pageMargin + 3
     page.drawText(fmtAmt(totalHogapayRevenue), {
       x: hogaX,
       y: textY,

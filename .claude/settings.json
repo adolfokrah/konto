@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/usr/bin/curl -sS -X POST https://thirdpartyuat.changoapp.com/api/v1/thirdParty/payment -H 'x-api-key: ZzshkGNMKX9MOyRvTE21w1vqhAuPm8DE1zZjmzFa' -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(cp \"/Users/adolphus.okrah/Downloads/API Documentation – Chango Thirdparty.pdf\" /tmp/chango.pdf && ls -la /tmp/chango.pdf)",
+      "Bash(/usr/bin/curl -sS -X POST https://thirdpartyuat.changoapp.com/api/v1/thirdParty/groups/52cd710a-7ff8-485b-8f68-a651386d0932/assign/campaign-account -H 'x-api-key: ZzshkGNMKX9MOyRvTE21w1vqhAuPm8DE1zZjmzFa' -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(rm -f utilities/eganow.ts tasks/check-eganow-payout-balance.ts tasks/process-payout.ts tasks/process-referral-withdrawal.ts tasks/process-refund.ts tasks/verify-pending-refunds-task.ts tasks/verify-pending-topups-task.ts tasks/verify-pending-transactions-task.ts collections/LedgerTopups/endpoints/eganow-topup-webhook.ts collections/LedgerTopups/endpoints/initiate-topup.ts collections/Transactions/endpoints/eganow-payout-webhook.ts collections/Transactions/endpoints/eganow-webhook.ts collections/Transactions/endpoints/payout-eganow.ts collections/Transactions/endpoints/test-payout-eganow.ts collections/Transactions/endpoints/verify-payment-ega-now.ts components/emailTemplates/EganowBalanceAlert.tsx)",
+      "Bash(rm -rf app/api/eganow-balances)"
+    ],
+    "additionalDirectories": [
+      "/Users/adolphus.okrah/Downloads"
+    ]
+  }
+}

@@ -14,6 +14,7 @@ import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 import { capRequiredApprovals } from './hooks/capRequiredApprovals'
+import { syncChangoCampaign } from './hooks/syncChangoCampaign'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -27,6 +28,15 @@ export const Jars: CollectionConfig = {
       required: true,
       admin: {
         description: 'Name of the jar',
+      },
+    },
+    {
+      name: 'changoCampaignId',
+      type: 'text',
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'Chango campaign UUID — set by the afterChange sync hook',
       },
     },
     {
@@ -343,6 +353,7 @@ export const Jars: CollectionConfig = {
       deleteInviteNotification,
       deleteInviteNotifications,
       sendFreezeNotificationToCreator,
+      syncChangoCampaign,
     ],
     beforeRead: [],
     beforeDelete: [validateJarBalanceBeforeDelete],

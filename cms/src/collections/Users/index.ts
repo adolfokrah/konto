@@ -3,7 +3,6 @@ import { APIError, type CollectionConfig } from 'payload'
 import { checkUserExistence } from './endpoints/check-user-existence'
 import { loginWithPhoneNumber } from './endpoints/login-with-phone-number'
 import { registerUser } from './endpoints/register-user'
-import { verifyAccountDetails } from './endpoints/verify-account-details'
 import { manageUserRole } from './endpoints/manage-user-role'
 import { updateKYC } from './endpoints/update-kyc'
 import { requestKYC } from './endpoints/request-kyc'
@@ -76,11 +75,6 @@ export const Users: CollectionConfig = {
       path: '/register-user',
       method: 'post',
       handler: registerUser,
-    },
-    {
-      path: '/verify-account-details',
-      method: 'post',
-      handler: verifyAccountDetails,
     },
     {
       path: '/manage-role',

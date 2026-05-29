@@ -9,10 +9,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       platformCharge: 0,
       amountPaidByContributor: data.amountContributed || 0,
       hogapayRevenue: 0,
-      eganowFees: 0,
       discountPercent: 0,
       discountAmount: 0,
-      amountToSendToEganow: data.amountContributed || 0,
       collectionFeePercent: 0,
     }
     if (data.type === 'payout') {
@@ -96,10 +94,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           platformCharge: charges.platformCharge,
           amountPaidByContributor: charges.amountPaidByContributor,
           hogapayRevenue: charges.hogapayRevenue,
-          eganowFees: charges.eganowFees,
           discountPercent: charges.discountPercent,
           discountAmount: charges.discountAmount,
-          amountToSendToEganow: charges.amountToSendToEganow,
           collectionFeePercent,
         }
       } else {
@@ -108,10 +104,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           platformCharge: 0,
           amountPaidByContributor: data.amountContributed,
           hogapayRevenue: 0,
-          eganowFees: 0,
           discountPercent: 0,
           discountAmount: 0,
-          amountToSendToEganow: data.amountContributed,
           collectionFeePercent: 0,
         }
       }
@@ -129,16 +123,13 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
 
       if (data.paymentMethod === 'mobile-money') {
         const hogapayRevenue = (data.amountContributed * hogapayTransferFeePercent) / 100
-        const eganowFees = feeAmount - hogapayRevenue
 
         data.chargesBreakdown = {
           platformCharge: feeAmount,
           amountPaidByContributor: data.amountContributed,
           hogapayRevenue: hogapayRevenue,
-          eganowFees: eganowFees,
           discountPercent: 0,
           discountAmount: 0,
-          amountToSendToEganow: data.amountContributed,
           collectionFeePercent: transferFee,
         }
       } else {
@@ -146,10 +137,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           platformCharge: feeAmount,
           amountPaidByContributor: data.amountContributed,
           hogapayRevenue: 0,
-          eganowFees: 0,
           discountPercent: 0,
           discountAmount: 0,
-          amountToSendToEganow: data.amountContributed,
           collectionFeePercent: transferFee,
         }
       }

@@ -118,7 +118,9 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
-  /// Navigate to withdraw page, checking KYC and withdrawal account first
+  /// Navigate to withdraw page, checking KYC and withdrawal account first.
+  /// Currently unused — withdraw button is disabled in-app. Kept for easy re-enable.
+  // ignore: unused_element
   void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
@@ -545,9 +547,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                             children: [
                               AppIconButton(
                                 key: const Key('contribute_button'),
-                                enabled:
-                                    jarData.status != JarStatus.sealed &&
-                                    jarData.status != JarStatus.frozen,
+                                // Disabled: in-app contribution is paused while we wait
+                                // on the Chango integration. Re-enable when ready.
+                                enabled: false,
                                 onPressed: () {
                                   context.push(AppRoutes.addContribution);
                                 },
@@ -558,15 +560,11 @@ class _JarDetailViewState extends State<JarDetailView> {
                               Text(
                                 localizations.contribute,
                                 style: TextStyles.titleMediumS.copyWith(
+                                  // Always dimmed while in-app contribute is disabled.
                                   color: Theme.of(
                                     context,
                                   ).textTheme.bodyLarge?.color?.withValues(
-                                    alpha:
-                                        jarData.status == JarStatus.sealed ||
-                                                jarData.status ==
-                                                    JarStatus.frozen
-                                            ? 0.4
-                                            : 1.0,
+                                    alpha: 0.4,
                                   ),
                                 ),
                               ),
@@ -768,8 +766,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     key: const Key('withdraw_button'),
                                     text: 'Transfer',
                                     isFullWidth: false,
-                                    onPressed:
-                                        () => _handleWithdraw(context, jarData),
+                                    // Disabled: payouts are not handled in-app for now.
+                                    onPressed: null,
                                   ),
                                 ),
                             ],
@@ -1010,11 +1008,8 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       ),
                                       AppButton.filled(
                                         text: localizations.contribute,
-                                        onPressed: () {
-                                          context.push(
-                                            AppRoutes.addContribution,
-                                          );
-                                        },
+                                        // Disabled: in-app contribution is paused.
+                                        onPressed: null,
                                       ),
                                     ],
                                   )

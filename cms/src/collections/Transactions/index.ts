@@ -1,33 +1,21 @@
 import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
-import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
+import { chargeChango } from './endpoints/charge-chango'
 import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
-import { eganowWebhook } from './endpoints/eganow-webhook'
-import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
-import { verifyTransfer } from './endpoints/verify-transfer'
-import { payoutEganow } from './endpoints/payout-eganow'
-import { testPayoutEganow } from './endpoints/test-payout-eganow'
-import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
 import { sendContributionReceipt } from './hooks/send-contribution-receipt'
 import { validateJarCreatorAccount } from './hooks/validate-jar-creator-account'
-import { validateAmountSign } from './hooks/validate-amount-sign'
 import { notifyTransactionCompleted } from './hooks/notify-transaction-completed'
-import { verifyPendingTransactions } from './endpoints/verify-pending-transactions'
 import { exportContributions } from './endpoints/export-contributions'
 import { exportContributionsMobile } from './endpoints/export-contributions-mobile'
 import { recalculateCharges } from './endpoints/recalculate-charges'
-import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
-import { approveRejectPayout } from './endpoints/approve-reject-payout'
-import { reconcileMomoStatus } from './endpoints/reconcile-momo-status'
 import { processReferralBonus } from './hooks/process-referral-bonus'
 import { updateJarLastActivity } from './hooks/update-jar-last-activity'
-import { createCashback } from './hooks/create-cashback'
 import { snapshotCollector } from './hooks/snapshotCollector'
 import { getCharges as getChargesEndpoint } from './endpoints/get-charges'
 
@@ -79,6 +67,14 @@ export const Transactions: CollectionConfig = {
             }
           },
         ],
+      },
+    },
+    {
+      name: 'contributorEmail',
+      type: 'email',
+      required: false,
+      admin: {
+        description: 'Email of the contributor (used by Chango for receipts)',
       },
     },
     {
@@ -156,14 +152,6 @@ export const Transactions: CollectionConfig = {
           },
         },
         {
-          name: 'eganowFees',
-          type: 'number',
-          admin: {
-            description: "Eganow's share of the fees",
-            readOnly: true,
-          },
-        },
-        {
           name: 'hogapayRevenue',
           type: 'number',
           admin: {
@@ -183,14 +171,6 @@ export const Transactions: CollectionConfig = {
           type: 'number',
           admin: {
             description: 'GHS amount Hogapay absorbed as discount',
-            readOnly: true,
-          },
-        },
-        {
-          name: 'amountToSendToEganow',
-          type: 'number',
-          admin: {
-            description: 'Actual amount sent to Eganow (amountContributed - discountAmount)',
             readOnly: true,
           },
         },
@@ -276,11 +256,21 @@ export const Transactions: CollectionConfig = {
       },
     },
     {
-      name: 'eganowPayPartnerTransactionId',
+      name: 'changoInvoiceId',
+      type: 'text',
+      required: false,
+      index: true,
+      admin: {
+        description: "Chango's invoiceId returned when initiating a payment",
+        readOnly: true,
+      },
+    },
+    {
+      name: 'changoCheckoutUrl',
       type: 'text',
       required: false,
       admin: {
-        description: "Eganow's PayPartnerTransactionId received in webhook callback",
+        description: 'Hosted-checkout URL returned by Chango. Open in browser/webview.',
         readOnly: true,
       },
     },
@@ -403,54 +393,14 @@ export const Transactions: CollectionConfig = {
       handler: createPaymentLinkContribution,
     },
     {
-      path: '/charge-momo-eganow',
+      path: '/charge-chango',
       method: 'post',
-      handler: chargeMomoEganow,
+      handler: chargeChango,
     },
     {
       path: '/chango-webhook',
       method: 'post',
       handler: changoWebhook,
-    },
-    {
-      path: '/eganow-webhook',
-      method: 'post',
-      handler: eganowWebhook,
-    },
-    {
-      path: '/eganow-payout-webhook',
-      method: 'post',
-      handler: eganowPayoutWebhook,
-    },
-    {
-      path: '/verify-payment-ega-now',
-      method: 'post',
-      handler: verifyPaymentEgaNow,
-    },
-    {
-      path: '/payout-eganow',
-      method: 'post',
-      handler: payoutEganow,
-    },
-    {
-      path: '/test-payout-eganow',
-      method: 'post',
-      handler: testPayoutEganow,
-    },
-    {
-      path: '/approve-reject-payout',
-      method: 'post',
-      handler: approveRejectPayout,
-    },
-    {
-      path: '/verify-transfer',
-      method: 'post',
-      handler: verifyTransfer,
-    },
-    {
-      path: '/verify-pending-transactions',
-      method: 'get',
-      handler: verifyPendingTransactions,
     },
     {
       path: '/export-contributions',
@@ -468,11 +418,6 @@ export const Transactions: CollectionConfig = {
       handler: recalculateCharges,
     },
     {
-      path: '/refund-contribution',
-      method: 'post',
-      handler: refundContribution,
-    },
-    {
       path: '/share-contributions',
       method: 'get',
       handler: shareContributions,
@@ -481,11 +426,6 @@ export const Transactions: CollectionConfig = {
       path: '/get-transaction',
       method: 'get',
       handler: getTransaction,
-    },
-    {
-      path: '/reconcile-momo-status',
-      method: 'get',
-      handler: reconcileMomoStatus,
     },
     {
       path: '/get-charges',
@@ -500,8 +440,7 @@ export const Transactions: CollectionConfig = {
       notifyTransactionCompleted,
       processReferralBonus,
       updateJarLastActivity,
-      createCashback,
     ],
-    beforeValidate: [validateJarCreatorAccount, validateAmountSign],
+    beforeValidate: [validateJarCreatorAccount],
   },
 }

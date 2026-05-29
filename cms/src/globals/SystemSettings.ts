@@ -47,7 +47,7 @@ export const SystemSettings: GlobalConfig = {
               max: 100,
               admin: {
                 description:
-                  "Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.",
+                  "Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to the payment provider.",
                 step: 0.01,
                 width: '50%',
               },
@@ -93,7 +93,7 @@ export const SystemSettings: GlobalConfig = {
               max: 100,
               admin: {
                 description:
-                  "Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.",
+                  "Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to the payment provider.",
                 step: 0.01,
                 width: '50%',
               },
