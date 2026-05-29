@@ -186,14 +186,12 @@ export default class Chango {
     console.log(
       `[Chango] ${method} ${fullUrl} apiKey.len=${this.apiKey?.length ?? 0} baseUrl=${this.baseUrl}`,
     )
+    const headers = new Headers()
+    headers.set('x-api-key', this.apiKey)
+    headers.set('Content-Type', 'application/json')
     const response = await fetch(fullUrl, {
       method,
-      headers: {
-        'x-api-key': this.apiKey,
-        'X-Api-Key': this.apiKey,
-        'X-API-KEY': this.apiKey,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: body ? JSON.stringify(body) : undefined,
     })
     console.log(`[Chango] response status=${response.status} ${response.statusText}`)
