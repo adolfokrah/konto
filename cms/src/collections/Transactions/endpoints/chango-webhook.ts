@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
+const FORWARD_URL = 'https://hoga-staging.up.railway.app/api/transactions/chango-webhook'
+
 /**
  * Chango webhook receiver.
  *
@@ -17,11 +19,21 @@ import { addDataAndFileToRequest } from 'payload'
  *
  * Match: webhook.invoiceId === transaction.transactionReference
  * Status: responseCode "01" => completed; otherwise failed.
+ * Also forwards body to staging (fire-and-forget).
  */
 export const changoWebhook = async (req: PayloadRequest) => {
   await addDataAndFileToRequest(req)
   const body = (req.data ?? {}) as Record<string, any>
   console.log('[Chango] webhook body:', JSON.stringify(body, null, 2))
+
+  // Fire-and-forget forward to staging
+  fetch(FORWARD_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+    .then((res) => console.log(`[Chango] forwarded to staging: ${res.status}`))
+    .catch((err) => console.warn('[Chango] forward to staging failed:', err?.message ?? err))
 
   const invoiceId: string | undefined = body.invoiceId
   if (!invoiceId) {

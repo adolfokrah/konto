@@ -249,8 +249,9 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
-          listenWhen: (previous, current) =>
-              current is LeaveJarSuccess || current is LeaveJarFailure,
+          listenWhen:
+              (previous, current) =>
+                  current is LeaveJarSuccess || current is LeaveJarFailure,
           listener: (context, state) {
             if (state is LeaveJarSuccess) {
               AppSnackBar.show(
@@ -260,9 +261,9 @@ class _JarDetailViewState extends State<JarDetailView> {
               );
               // Refresh jar list and jar details
               context.read<JarListBloc>().add(LoadJarList());
-              context
-                  .read<JarSummaryReloadBloc>()
-                  .add(ReloadJarSummaryRequested());
+              context.read<JarSummaryReloadBloc>().add(
+                ReloadJarSummaryRequested(),
+              );
             } else if (state is LeaveJarFailure) {
               AppSnackBar.show(
                 context,
@@ -541,36 +542,41 @@ class _JarDetailViewState extends State<JarDetailView> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AppIconButton(
-                                key: const Key('contribute_button'),
-                                // Disabled: in-app contribution is paused while we wait
-                                // on the Chango integration. Re-enable when ready.
-                                enabled: false,
-                                onPressed: () {
-                                  context.push(AppRoutes.addContribution);
-                                },
-                                icon: Icons.add,
-                                opacity: 0.8,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              Text(
-                                localizations.contribute,
-                                style: TextStyles.titleMediumS.copyWith(
-                                  // Always dimmed while in-app contribute is disabled.
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color?.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Expanded(
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.center,
+                        //     children: [
+                        //       // Disabled: in-app contribution paused.
+                        //       AppIconButton(
+                        //         key: const Key('contribute_button'),
+                        //         enabled:
+                        //             jarData.status != JarStatus.sealed &&
+                        //             jarData.status != JarStatus.frozen,
+                        //         onPressed: () {
+                        //           context.push(AppRoutes.addContribution);
+                        //         },
+                        //         icon: Icons.add,
+                        //         opacity: 0.8,
+                        //       ),
+                        //       const SizedBox(height: AppSpacing.spacingXs),
+                        //       Text(
+                        //         localizations.contribute,
+                        //         style: TextStyles.titleMediumS.copyWith(
+                        //           color: Theme.of(
+                        //             context,
+                        //           ).textTheme.bodyLarge?.color?.withValues(
+                        //             alpha:
+                        //                 jarData.status == JarStatus.sealed ||
+                        //                         jarData.status ==
+                        //                             JarStatus.frozen
+                        //                     ? 0.4
+                        //                     : 1.0,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -620,40 +626,43 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 children: [
                                   AppIconButton(
                                     key: const Key('info_button'),
-                                    onPressed: isCreator
-                                        ? () {
-                                            context.push(AppRoutes.jarInfo);
-                                          }
-                                        : () async {
-                                            final result =
-                                                await JarInfoSheet.show(
-                                              context: context,
-                                              jarData: jarData,
-                                            );
-                                            if (!context.mounted) return;
-                                            if (result == 'leave') {
-                                              context
-                                                  .read<UpdateJarBloc>()
-                                                  .add(LeaveJarRequested(
-                                                    jarId: jarData.id,
-                                                  ));
-                                            } else if (result == 'report') {
-                                              final reported =
-                                                  await JarReportSheet.show(
-                                                context: context,
-                                                jarId: jarData.id,
-                                              );
-                                              if (reported == true &&
-                                                  context.mounted) {
-                                                AppSnackBar.show(
-                                                  context,
-                                                  message:
-                                                      'Report submitted successfully',
-                                                  type: SnackBarType.success,
-                                                );
-                                              }
+                                    onPressed:
+                                        isCreator
+                                            ? () {
+                                              context.push(AppRoutes.jarInfo);
                                             }
-                                          },
+                                            : () async {
+                                              final result =
+                                                  await JarInfoSheet.show(
+                                                    context: context,
+                                                    jarData: jarData,
+                                                  );
+                                              if (!context.mounted) return;
+                                              if (result == 'leave') {
+                                                context
+                                                    .read<UpdateJarBloc>()
+                                                    .add(
+                                                      LeaveJarRequested(
+                                                        jarId: jarData.id,
+                                                      ),
+                                                    );
+                                              } else if (result == 'report') {
+                                                final reported =
+                                                    await JarReportSheet.show(
+                                                      context: context,
+                                                      jarId: jarData.id,
+                                                    );
+                                                if (reported == true &&
+                                                    context.mounted) {
+                                                  AppSnackBar.show(
+                                                    context,
+                                                    message:
+                                                        'Report submitted successfully',
+                                                    type: SnackBarType.success,
+                                                  );
+                                                }
+                                              }
+                                            },
                                     icon: Icons.info_outline,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingXs),
@@ -706,6 +715,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                       if (!isCreator) {
                         return Container();
                       }
+                      // ignore: unused_local_variable
                       final hasFunds =
                           jarData.balanceBreakDown.totalAmountTobeTransferred >
                           0;
@@ -759,17 +769,18 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   ],
                                 ),
                               ),
-                              if (hasFunds &&
-                                  jarData.status != JarStatus.frozen)
-                                SizedBox(
-                                  child: AppButton.filled(
-                                    key: const Key('withdraw_button'),
-                                    text: 'Transfer',
-                                    isFullWidth: false,
-                                    // Disabled: payouts are not handled in-app for now.
-                                    onPressed: null,
-                                  ),
-                                ),
+                              // Disabled: payouts paused.
+                              // if (hasFunds &&
+                              //     jarData.status != JarStatus.frozen)
+                              //   SizedBox(
+                              //     child: AppButton.filled(
+                              //       key: const Key('withdraw_button'),
+                              //       text: 'Transfer',
+                              //       isFullWidth: false,
+                              //       onPressed:
+                              //           () => _handleWithdraw(context, jarData),
+                              //     ),
+                              //   ),
                             ],
                           ),
                         ),
@@ -1054,8 +1065,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     contribution.paymentStatus,
                                                 isTransfer:
                                                     contribution.isTransfer,
-                                                isRefund:
-                                                    contribution.isRefund,
+                                                isRefund: contribution.isRefund,
                                               ),
                                             ],
                                           )

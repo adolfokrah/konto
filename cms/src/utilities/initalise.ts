@@ -6,6 +6,10 @@ let _resend: Resend | null = null
 
 export function getChango(): Chango {
   if (!_chango) {
+    const k = process.env.CHANGO_API_KEY
+    console.log(
+      `[Chango] init: apiKey present=${!!k} len=${k?.length ?? 0} startsWithQuote=${k?.startsWith('"') ?? false}`,
+    )
     _chango = new Chango({
       apiKey: process.env.CHANGO_API_KEY!,
       groupId: process.env.CHANGO_GROUP_ID!,
