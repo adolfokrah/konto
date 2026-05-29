@@ -262,6 +262,7 @@ export default class Chango {
       recurring: false,
       anonymous: false,
       pledgeRedemption: false,
+      timeout: 300,
       ...params,
       narration: sanitizeNarration(params.narration),
     }

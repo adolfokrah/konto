@@ -145,7 +145,9 @@ export const chargeChango = async (req: PayloadRequest) => {
       fullName,
       email,
       pageTitle: jar.name ?? 'Konto Jar',
-      pageDescription: (jar.description as string) ?? undefined,
+      pageDescription: 'Contribution',
+      timeout: 300,
+      logo: process.env.CHANGO_LOGO_URL ?? 'https://hogapay.com/api/media/file/Group%2082.png',
       successRedirectUrl: process.env.CHANGO_SUCCESS_REDIRECT_URL,
       failureRedirectUrl: process.env.CHANGO_FAILURE_REDIRECT_URL,
     }

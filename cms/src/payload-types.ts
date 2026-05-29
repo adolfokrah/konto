@@ -79,14 +79,10 @@ export interface Config {
     dailyActiveUsers: DailyActiveUser;
     'jar-reports': JarReport;
     'push-campaigns': PushCampaign;
-    refunds: Refund;
-    'payout-approvals': PayoutApproval;
-    'ledger-topups': LedgerTopup;
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
     emails: Email;
-    cashbacks: Cashback;
     'sms-campaigns': SmsCampaign;
     redirects: Redirect;
     forms: Form;
@@ -111,14 +107,10 @@ export interface Config {
     dailyActiveUsers: DailyActiveUsersSelect<false> | DailyActiveUsersSelect<true>;
     'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
-    refunds: RefundsSelect<false> | RefundsSelect<true>;
-    'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
-    'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
     emails: EmailsSelect<false> | EmailsSelect<true>;
-    cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
     'sms-campaigns': SmsCampaignsSelect<false> | SmsCampaignsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -152,21 +144,11 @@ export interface Config {
     tasks: {
       'settle-contributions': TaskSettleContributions;
       'check-empty-jars-daily': TaskCheckEmptyJarsDaily;
-      'check-withdrawal-balance-daily': TaskCheckWithdrawalBalanceDaily;
-      'verify-pending-transactions': TaskVerifyPendingTransactions;
       'jar-creation-reminder-daily': TaskJarCreationReminderDaily;
-      'process-payout': TaskProcessPayout;
-      'process-referral-withdrawal': TaskProcessReferralWithdrawal;
-      'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
-      'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'send-sms-campaign': TaskSendSmsCampaign;
-      'verify-pending-refunds': TaskVerifyPendingRefunds;
-      'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
-      'withdraw-reminder-daily': TaskWithdrawReminderDaily;
-      'auto-refund-daily': TaskAutoRefundDaily;
       'cleanup-old-notifications': TaskCleanupOldNotifications;
       'seal-inactive-jars-daily': TaskSealInactiveJarsDaily;
       schedulePublish: TaskSchedulePublish;
@@ -1187,7 +1169,7 @@ export interface PricingBlock {
   poweredBy?: {
     text?: string | null;
     /**
-     * Payment provider logo (e.g., Eganow)
+     * Payment provider logo (e.g., payment provider logo)
      */
     logo?: (string | null) | Media;
   };
@@ -1436,10 +1418,6 @@ export interface Transaction {
      */
     amountPaidByContributor?: number | null;
     /**
-     * Eganow's share of the fees
-     */
-    eganowFees?: number | null;
-    /**
      * Hogapay's share of the fees (revenue)
      */
     hogapayRevenue?: number | null;
@@ -1451,10 +1429,6 @@ export interface Transaction {
      * GHS amount Hogapay absorbed as discount
      */
     discountAmount?: number | null;
-    /**
-     * Actual amount sent to Eganow (amountContributed - discountAmount)
-     */
-    amountToSendToEganow?: number | null;
     /**
      * Base collection fee rate (%) from system settings at time of transaction
      */
@@ -1482,10 +1456,6 @@ export interface Transaction {
    * Transaction reference for tracking payments
    */
   transactionReference?: string | null;
-  /**
-   * Eganow's PayPartnerTransactionId received in webhook callback
-   */
-  eganowPayPartnerTransactionId?: string | null;
   /**
    * Chango's invoiceId returned when initiating a payment
    */
@@ -1763,127 +1733,6 @@ export interface PushCampaign {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "refunds".
- */
-export interface Refund {
-  id: string;
-  refundType: 'manual' | 'auto';
-  jar: string | Jar;
-  /**
-   * Admin who initiated the refund. Null when triggered by the system.
-   */
-  initiatedBy?: (string | null) | User;
-  /**
-   * Refund amount (stored as negative)
-   */
-  amount: number;
-  /**
-   * Contributor phone number
-   */
-  accountNumber: string;
-  /**
-   * Contributor name
-   */
-  accountName?: string | null;
-  /**
-   * e.g. mtn, telecel
-   */
-  mobileMoneyProvider: string;
-  /**
-   * The original contribution being refunded
-   */
-  linkedTransaction: string | Transaction;
-  eganowFees?: number | null;
-  hogapayRevenue?: number | null;
-  /**
-   * Eganow transaction reference
-   */
-  transactionReference?: string | null;
-  webhookResponse?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * When the cron job created this auto refund
-   */
-  triggeredAt?: string | null;
-  /**
-   * Admin who approved or rejected this auto refund
-   */
-  reviewedBy?: (string | null) | User;
-  reviewedAt?: string | null;
-  updatedBy?: (string | null) | User;
-  status: 'awaiting_approval' | 'pending' | 'in-progress' | 'completed' | 'failed' | 'rejected';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payout-approvals".
- */
-export interface PayoutApproval {
-  id: string;
-  /**
-   * The jar this payout approval belongs to
-   */
-  jar: string | Jar;
-  /**
-   * The payout transaction linked to this approval
-   */
-  linkedTransaction?: (string | null) | Transaction;
-  status: 'approved' | 'rejected';
-  /**
-   * User who requested the payout
-   */
-  requestedBy?: (string | null) | User;
-  /**
-   * Admin who approved or rejected the payout
-   */
-  actionBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups".
- */
-export interface LedgerTopup {
-  id: string;
-  /**
-   * Top-up amount in GHS
-   */
-  amount: number;
-  /**
-   * Mobile money phone number used for top-up
-   */
-  phoneNumber: string;
-  /**
-   * Account holder name from KYC lookup
-   */
-  accountName?: string | null;
-  /**
-   * Mobile money provider
-   */
-  provider: 'mtn' | 'telecel';
-  status: 'pending' | 'completed' | 'failed';
-  /**
-   * Eganow transaction reference
-   */
-  transactionReference?: string | null;
-  /**
-   * Admin who initiated this top-up
-   */
-  initiatedBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referrals".
  */
 export interface Referral {
@@ -2056,51 +1905,6 @@ export interface Email {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cashbacks".
- */
-export interface Cashback {
-  id: string;
-  /**
-   * The transaction this cashback is linked to
-   */
-  transaction: string | Transaction;
-  /**
-   * The user who received this discount
-   */
-  user: string | User;
-  /**
-   * Contributor name (denormalised for display)
-   */
-  contributor?: string | null;
-  /**
-   * Jar name at time of contribution (denormalised)
-   */
-  jarName?: string | null;
-  /**
-   * Amount contributed (GHS)
-   */
-  originalAmount: number;
-  /**
-   * Discount percentage applied (0–100)
-   */
-  discountPercent: number;
-  /**
-   * GHS amount Hogapay absorbed as discount
-   */
-  discountAmount: number;
-  /**
-   * Hogapay revenue after discount (GHS)
-   */
-  hogapayRevenue: number;
-  /**
-   * Whether this cashback has been paid/settled
-   */
-  isPaid?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sms-campaigns".
  */
 export interface SmsCampaign {
@@ -2252,21 +2056,11 @@ export interface PayloadJob {
           | 'inline'
           | 'settle-contributions'
           | 'check-empty-jars-daily'
-          | 'check-withdrawal-balance-daily'
-          | 'verify-pending-transactions'
           | 'jar-creation-reminder-daily'
-          | 'process-payout'
-          | 'process-referral-withdrawal'
-          | 'check-eganow-payout-balance'
-          | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
           | 'send-sms-campaign'
-          | 'verify-pending-refunds'
-          | 'verify-pending-topups'
           | 'weekly-account-summary'
-          | 'withdraw-reminder-daily'
-          | 'auto-refund-daily'
           | 'cleanup-old-notifications'
           | 'seal-inactive-jars-daily'
           | 'schedulePublish';
@@ -2307,21 +2101,11 @@ export interface PayloadJob {
         | 'inline'
         | 'settle-contributions'
         | 'check-empty-jars-daily'
-        | 'check-withdrawal-balance-daily'
-        | 'verify-pending-transactions'
         | 'jar-creation-reminder-daily'
-        | 'process-payout'
-        | 'process-referral-withdrawal'
-        | 'check-eganow-payout-balance'
-        | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
         | 'send-sms-campaign'
-        | 'verify-pending-refunds'
-        | 'verify-pending-topups'
         | 'weekly-account-summary'
-        | 'withdraw-reminder-daily'
-        | 'auto-refund-daily'
         | 'cleanup-old-notifications'
         | 'seal-inactive-jars-daily'
         | 'schedulePublish'
@@ -2398,18 +2182,6 @@ export interface PayloadLockedDocument {
         value: string | PushCampaign;
       } | null)
     | ({
-        relationTo: 'refunds';
-        value: string | Refund;
-      } | null)
-    | ({
-        relationTo: 'payout-approvals';
-        value: string | PayoutApproval;
-      } | null)
-    | ({
-        relationTo: 'ledger-topups';
-        value: string | LedgerTopup;
-      } | null)
-    | ({
         relationTo: 'referrals';
         value: string | Referral;
       } | null)
@@ -2424,10 +2196,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'emails';
         value: string | Email;
-      } | null)
-    | ({
-        relationTo: 'cashbacks';
-        value: string | Cashback;
       } | null)
     | ({
         relationTo: 'sms-campaigns';
@@ -3112,11 +2880,9 @@ export interface TransactionsSelect<T extends boolean = true> {
     | {
         platformCharge?: T;
         amountPaidByContributor?: T;
-        eganowFees?: T;
         hogapayRevenue?: T;
         discountPercent?: T;
         discountAmount?: T;
-        amountToSendToEganow?: T;
         collectionFeePercent?: T;
       };
   paymentStatus?: T;
@@ -3126,7 +2892,6 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutFeeAmount?: T;
   payoutNetAmount?: T;
   transactionReference?: T;
-  eganowPayPartnerTransactionId?: T;
   changoInvoiceId?: T;
   changoCheckoutUrl?: T;
   collector?: T;
@@ -3271,59 +3036,6 @@ export interface PushCampaignsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "refunds_select".
- */
-export interface RefundsSelect<T extends boolean = true> {
-  refundType?: T;
-  jar?: T;
-  initiatedBy?: T;
-  amount?: T;
-  accountNumber?: T;
-  accountName?: T;
-  mobileMoneyProvider?: T;
-  linkedTransaction?: T;
-  eganowFees?: T;
-  hogapayRevenue?: T;
-  transactionReference?: T;
-  webhookResponse?: T;
-  triggeredAt?: T;
-  reviewedBy?: T;
-  reviewedAt?: T;
-  updatedBy?: T;
-  status?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payout-approvals_select".
- */
-export interface PayoutApprovalsSelect<T extends boolean = true> {
-  jar?: T;
-  linkedTransaction?: T;
-  status?: T;
-  requestedBy?: T;
-  actionBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ledger-topups_select".
- */
-export interface LedgerTopupsSelect<T extends boolean = true> {
-  amount?: T;
-  phoneNumber?: T;
-  accountName?: T;
-  provider?: T;
-  status?: T;
-  transactionReference?: T;
-  initiatedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referrals_select".
  */
 export interface ReferralsSelect<T extends boolean = true> {
@@ -3409,23 +3121,6 @@ export interface EmailsSelect<T extends boolean = true> {
         contentType?: T;
         id?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cashbacks_select".
- */
-export interface CashbacksSelect<T extends boolean = true> {
-  transaction?: T;
-  user?: T;
-  contributor?: T;
-  jarName?: T;
-  originalAmount?: T;
-  discountPercent?: T;
-  discountAmount?: T;
-  hogapayRevenue?: T;
-  isPaid?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3815,7 +3510,7 @@ export interface SystemSetting {
    */
   collectionFee: number;
   /**
-   * Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to Eganow.
+   * Hogapay's share of the collection fee (e.g., 0.8%). Rest goes to the payment provider.
    */
   hogapayCollectionFeePercent: number;
   /**
@@ -3823,7 +3518,7 @@ export interface SystemSetting {
    */
   transferFeePercentage: number;
   /**
-   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to the payment provider.
    */
   hogapayTransferFeePercent: number;
   /**
@@ -3983,69 +3678,10 @@ export interface TaskCheckEmptyJarsDaily {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCheck-withdrawal-balance-daily".
- */
-export interface TaskCheckWithdrawalBalanceDaily {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-transactions".
- */
-export interface TaskVerifyPendingTransactions {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskJar-creation-reminder-daily".
  */
 export interface TaskJarCreationReminderDaily {
   input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-payout".
- */
-export interface TaskProcessPayout {
-  input: {
-    existingTransactionId: string;
-  };
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-referral-withdrawal".
- */
-export interface TaskProcessReferralWithdrawal {
-  input: {
-    withdrawalRecordId: string;
-    userId: string;
-    bank: string;
-    accountNumber: string;
-    accountHolder: string;
-    amount: string;
-  };
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskCheck-eganow-payout-balance".
- */
-export interface TaskCheckEganowPayoutBalance {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-refund".
- */
-export interface TaskProcessRefund {
-  input: {
-    refundId: string;
-  };
   output?: unknown;
 }
 /**
@@ -4078,41 +3714,9 @@ export interface TaskSendSmsCampaign {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-refunds".
- */
-export interface TaskVerifyPendingRefunds {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-topups".
- */
-export interface TaskVerifyPendingTopups {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskWeekly-account-summary".
  */
 export interface TaskWeeklyAccountSummary {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskWithdraw-reminder-daily".
- */
-export interface TaskWithdrawReminderDaily {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskAuto-refund-daily".
- */
-export interface TaskAutoRefundDaily {
   input?: unknown;
   output?: unknown;
 }

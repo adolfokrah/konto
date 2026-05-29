@@ -55,7 +55,6 @@ export const syncChangoCampaign: CollectionAfterChangeHook = async ({
         campaign_type: campaignTypeFor(doc),
         description: jarDescription,
         end: endFor(doc),
-        target: typeof goalAmount === 'number' && goalAmount > 0 ? goalAmount : undefined,
       })
 
       const newCampaignId: string | undefined =
