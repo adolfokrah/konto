@@ -6,22 +6,22 @@ All endpoints require these headers:
 x-api-key: ZzshkGNMKX9MOyRvTE21w1vqhAuPm8DE1zZjmzFa
 api-key: 55093903053.330376e52dfd44-d1dd-485f-b69f-8539c3852402
 transflow-id: dd53c2ea-ccea-4f79-93e9-23ec53175c3c
+merchantProductId: e062a513-e691-4eb1-8b20-22d441815578
 Content-Type: application/json
 ```
 
-`merchantProductId` (`e062a513-e691-4eb1-8b20-22d441815578`) goes in:
-- query string (always)
-- request body (only for `createTransaction`)
+`merchantProductId` is now a **header** (previously query/body).
 
 ---
 
 ## Create Campaign
 
 ```bash
-curl --location 'https://thirdpartyuat.changoapp.com/api/v1/thirdParty/groups/85daae6a-d221-4a37-b5f8-c88ce0eb0cad/assign/campaign-account?merchantProductId=e062a513-e691-4eb1-8b20-22d441815578' \
+curl --location 'https://thirdpartyuat.changoapp.com/api/v1/thirdParty/groups/85daae6a-d221-4a37-b5f8-c88ce0eb0cad/assign/campaign-account' \
   --header 'x-api-key: ZzshkGNMKX9MOyRvTE21w1vqhAuPm8DE1zZjmzFa' \
   --header 'api-key: 55093903053.330376e52dfd44-d1dd-485f-b69f-8539c3852402' \
   --header 'transflow-id: dd53c2ea-ccea-4f79-93e9-23ec53175c3c' \
+  --header 'merchantProductId: e062a513-e691-4eb1-8b20-22d441815578' \
   --header 'Content-Type: application/json' \
   --data '{
     "campaign_name": "Thirdparty Test2",
@@ -33,7 +33,6 @@ curl --location 'https://thirdpartyuat.changoapp.com/api/v1/thirdParty/groups/85
     "hide_total_amount": false,
     "hide_donor_count": false,
     "hide_donors": false,
-    "merchantProductId": "e062a513-e691-4eb1-8b20-22d441815578",
     "end": "2027-12-31T23:59:59+00:00",
     "target": 7500000
   }'
@@ -47,18 +46,16 @@ Notes:
 
 ## Create Transaction
 
-`merchantProductId` is required in BOTH query string and body.
-
 ```bash
-curl --location 'https://thirdpartyuat.changoapp.com/api/v1/thirdParty/payment?merchantProductId=e062a513-e691-4eb1-8b20-22d441815578' \
+curl --location 'https://thirdpartyuat.changoapp.com/api/v1/thirdParty/payment' \
   --header 'x-api-key: ZzshkGNMKX9MOyRvTE21w1vqhAuPm8DE1zZjmzFa' \
   --header 'api-key: 55093903053.330376e52dfd44-d1dd-485f-b69f-8539c3852402' \
   --header 'transflow-id: dd53c2ea-ccea-4f79-93e9-23ec53175c3c' \
+  --header 'merchantProductId: e062a513-e691-4eb1-8b20-22d441815578' \
   --header 'Content-Type: application/json' \
   --data '{
     "groupId": "85daae6a-d221-4a37-b5f8-c88ce0eb0cad",
     "campaignId": "d7197c52-b4c1-4a8f-8cb8-81e89bfafcd2",
-    "merchantProductId": "e062a513-e691-4eb1-8b20-22d441815578",
     "amount": "1",
     "currency": "GHS",
     "narration": "Test contribution",

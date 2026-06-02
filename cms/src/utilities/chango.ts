@@ -205,6 +205,7 @@ export default class Chango {
     if (this.xApiKey) headers.set('x-api-key', this.xApiKey)
     headers.set('api-key', this.apiKey)
     if (this.transflowId) headers.set('transflow-id', this.transflowId)
+    if (this.merchantProductId) headers.set('merchantProductId', this.merchantProductId)
     headers.set('Content-Type', 'application/json')
     const response = await fetch(fullUrl, {
       method,
@@ -255,7 +256,6 @@ export default class Chango {
       'POST',
       `/api/v1/thirdParty/groups/${this.groupId}/assign/campaign-account`,
       body,
-      { merchantProductId: this.merchantProductId },
     )
   }
 
@@ -270,7 +270,6 @@ export default class Chango {
       'PUT',
       `/api/v1/thirdParty/groups/${this.groupId}/assign/campaign-account/${campaignId}`,
       params,
-      { merchantProductId: this.merchantProductId },
     )
   }
 
@@ -281,22 +280,19 @@ export default class Chango {
   async createTransaction(
     params: ChangoCreateTransactionRequest,
   ): Promise<ChangoEnvelope<ChangoTransactionData>> {
-    const merchantProductId = params.merchantProductId ?? this.merchantProductId
+    const { merchantProductId: _ignored, ...rest } = params
     const body = {
       groupId: this.groupId,
       paymentDestinationNumber: this.paymentDestinationNumber,
-      merchantProductId,
       platform: 'thirdparty',
       countryId: 'GH',
       recurring: false,
       anonymous: false,
       pledgeRedemption: false,
       timeout: 300,
-      ...params,
+      ...rest,
       narration: sanitizeNarration(params.narration),
     }
-    return this.request('POST', '/api/v1/thirdParty/payment', body, {
-      merchantProductId,
-    })
+    return this.request('POST', '/api/v1/thirdParty/payment', body)
   }
 }
