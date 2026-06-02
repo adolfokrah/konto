@@ -26,15 +26,6 @@ export const changoWebhook = async (req: PayloadRequest) => {
   const body = (req.data ?? {}) as Record<string, any>
   console.log('[Chango] webhook body:', JSON.stringify(body, null, 2))
 
-  // Fire-and-forget forward to staging
-  fetch(FORWARD_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-    .then((res) => console.log(`[Chango] forwarded to staging: ${res.status}`))
-    .catch((err) => console.warn('[Chango] forward to staging failed:', err?.message ?? err))
-
   const invoiceId: string | undefined = body.invoiceId
   if (!invoiceId) {
     return Response.json({ success: true, message: 'No invoiceId in body' })
