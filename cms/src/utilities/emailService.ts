@@ -5,6 +5,8 @@ import ContributionsReport from '@/components/emailTemplates/contributionReport'
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
 import sendKyc from '@/components/emailTemplates/sendKyc'
+import KybApproved from '@/components/emailTemplates/kybApproved'
+import KybRejected from '@/components/emailTemplates/kybRejected'
 import EganowBalanceAlert from '@/components/emailTemplates/EganowBalanceAlert'
 import TransactionNotification from '@/components/emailTemplates/transactionNotification'
 import WeeklyAccountSummary, {
@@ -79,6 +81,29 @@ class EmailService {
       to: userEmail,
       subject: 'KYC Verification Successful',
       react: kycVerified({ fullname: fullName }),
+    })
+  }
+
+  // KYB Approved
+  async sendKybApprovedEmail(userEmail: string, fullName: string, businessName?: string) {
+    return this.sendEmail({
+      to: userEmail,
+      subject: 'Business verification approved 🎉',
+      react: KybApproved({ fullname: fullName, businessName }),
+    })
+  }
+
+  // KYB Rejected
+  async sendKybRejectedEmail(
+    userEmail: string,
+    fullName: string,
+    reason?: string,
+    businessName?: string,
+  ) {
+    return this.sendEmail({
+      to: userEmail,
+      subject: 'Business verification update',
+      react: KybRejected({ fullname: fullName, businessName, reason }),
     })
   }
 

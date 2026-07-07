@@ -25,6 +25,9 @@ import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/features/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:Hoga/features/jars/data/models/jar_model.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
+import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/withdrawal_account_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class JarCreateView extends StatefulWidget {
@@ -44,11 +47,14 @@ class _JarCreateViewState extends State<JarCreateView> {
   List<String> jarImageUrls = [];
   List<String> jarImageIds = [];
   double _scrollOffset = 0.0;
+  String? selectedWithdrawalAccountId;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    // Load the user's withdrawal accounts for the payout picker.
+    context.read<WithdrawalAccountsBloc>().add(LoadWithdrawalAccounts());
   }
 
   void _showInviteCollaboratorsSheet() {
@@ -171,6 +177,15 @@ class _JarCreateViewState extends State<JarCreateView> {
       return;
     }
 
+    if (selectedWithdrawalAccountId == null ||
+        selectedWithdrawalAccountId!.isEmpty) {
+      AppSnackBar.showError(
+        context,
+        message: 'Please select a payout account',
+      );
+      return;
+    }
+
     final invitedCollectorsData =
         newInvitedCollectors
             .where((contributor) => contributor.collector?.id != null)
@@ -193,7 +208,85 @@ class _JarCreateViewState extends State<JarCreateView> {
         imageIds: jarImageIds.isNotEmpty ? jarImageIds : null,
         isActive: true,
         goalAmount: 0,
+        withdrawalAccount: selectedWithdrawalAccountId!,
       ),
+    );
+  }
+
+  /// Opens the shared payout-account picker and stores the returned id.
+  Future<void> _openPayoutAccountPicker() async {
+    await WithdrawalAccountPicker.show(
+      context,
+      currentId: selectedWithdrawalAccountId,
+      onSelected: (id) {
+        if (!mounted) return;
+        setState(() => selectedWithdrawalAccountId = id);
+      },
+    );
+  }
+
+  Widget _buildPayoutAccountPicker(BuildContext context) {
+    return BlocConsumer<WithdrawalAccountsBloc, WithdrawalAccountsState>(
+      listenWhen: (prev, curr) => prev.accounts != curr.accounts,
+      listener: (context, state) {
+        // Auto-select the default (or first) account once loaded.
+        if (selectedWithdrawalAccountId == null && state.accounts.isNotEmpty) {
+          final def = state.accounts.firstWhere(
+            (a) => a.isDefault,
+            orElse: () => state.accounts.first,
+          );
+          setState(() => selectedWithdrawalAccountId = def.id);
+        }
+      },
+      builder: (context, state) {
+        WithdrawalAccountModel? selected;
+        for (final a in state.accounts) {
+          if (a.id == selectedWithdrawalAccountId) {
+            selected = a;
+            break;
+          }
+        }
+
+        final subtitle = selected == null
+            ? 'Select payout account'
+            : '${selected.label?.isNotEmpty == true ? selected.label! : withdrawalAccountLabel(selected)}  •  ${selected.maskedAccountNumber}';
+
+        return GestureDetector(
+          onTap: _openPayoutAccountPicker,
+          child: AppCard(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.spacingS,
+              vertical: 4,
+            ),
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              leading: Icon(
+                selected == null
+                    ? Icons.account_balance_wallet_outlined
+                    : (selected.isMobileMoney
+                        ? Icons.phone_android
+                        : Icons.account_balance),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              title: Text(
+                subtitle,
+                style: AppTextStyles.titleMediumS.copyWith(
+                  color: selected == null
+                      ? Theme.of(context).hintColor
+                      : Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -517,6 +610,14 @@ class _JarCreateViewState extends State<JarCreateView> {
                                     },
                                     selectedCurrency: selectedCurrency,
                                   ),
+                                  const SizedBox(height: AppSpacing.spacingM),
+                                  Text(
+                                    'Payout account',
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: AppSpacing.spacingXs),
+                                  _buildPayoutAccountPicker(context),
                                   const SizedBox(height: AppSpacing.spacingM),
                                   Row(
                                     mainAxisAlignment:

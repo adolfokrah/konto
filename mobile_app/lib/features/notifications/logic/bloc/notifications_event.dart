@@ -14,3 +14,5 @@ final class MarkjarInviteAsRead extends NotificationsEvent {
   final String notificationId;
   MarkjarInviteAsRead({required this.notificationId});
 }
+
+final class MarkAllNotificationsRead extends NotificationsEvent {}

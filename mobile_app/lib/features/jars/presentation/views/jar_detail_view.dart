@@ -120,6 +120,9 @@ class _JarDetailViewState extends State<JarDetailView> {
 
   /// Navigate to withdraw page, checking KYC and withdrawal account first
   void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
+    // Business verification (KYB) is required before any payout
+    if (!_requireKyb(context)) return;
+
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final user = authState.user;
@@ -142,16 +145,8 @@ class _JarDetailViewState extends State<JarDetailView> {
         return;
       }
 
-      // KYC is verified, now check if user has withdrawal account set up
-      if (user.bank == null ||
-          user.bank!.isEmpty ||
-          user.accountNumber == null ||
-          user.accountNumber!.isEmpty ||
-          user.accountHolder == null ||
-          user.accountHolder!.isEmpty) {
-        context.push(AppRoutes.withdrawalAccount);
-        return;
-      }
+      // The jar now carries its own linked withdrawal account, so there is no
+      // longer a per-user withdrawal-account existence check here.
     }
 
     context.push(
@@ -160,8 +155,28 @@ class _JarDetailViewState extends State<JarDetailView> {
         'jarId': jarData.id,
         'payoutBalance': jarData.balanceBreakDown.totalAmountTobeTransferred,
         'currency': jarData.currency,
+        'withdrawalAccount': jarData.withdrawalAccount,
       },
     );
+  }
+
+  /// Business verification (KYB) gate. Returns true if the user is approved and the
+  /// action may proceed; otherwise routes to the KYB screen and returns false.
+  bool _requireKyb(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated && authState.user.kybStatus != 'approved') {
+      final status = authState.user.kybStatus;
+      final message =
+          (status == 'in_review' || status == 'pending')
+              ? 'Your business verification is under review. Please wait for approval.'
+              : status == 'rejected'
+                  ? 'Your business verification was rejected. Please review and resubmit.'
+                  : 'Complete business verification to continue.';
+      AppSnackBar.show(context, message: message, type: SnackBarType.info);
+      context.push(AppRoutes.businessKyb);
+      return false;
+    }
+    return true;
   }
 
   /// Request FCM permissions and update user token
@@ -363,6 +378,15 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 key: const Key('request_button_qr_code'),
                                 opacity: 0.8,
                                 onPressed: () {
+                                  final authState =
+                                      context.read<AuthBloc>().state;
+                                  if (authState is AuthAuthenticated) {
+                                    final kyb = authState.user.kybStatus;
+                                    if (kyb != 'approved') {
+                                      context.push(AppRoutes.businessKyb);
+                                      return;
+                                    }
+                                  }
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -549,6 +573,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
+                                  if (!_requireKyb(context)) return;
                                   context.push(AppRoutes.addContribution);
                                 },
                                 icon: Icons.add,
@@ -583,6 +608,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
+                                  if (!_requireKyb(context)) return;
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -1011,6 +1037,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppButton.filled(
                                         text: localizations.contribute,
                                         onPressed: () {
+                                          if (!_requireKyb(context)) return;
                                           context.push(
                                             AppRoutes.addContribution,
                                           );
@@ -1168,18 +1195,18 @@ class _JarDetailViewState extends State<JarDetailView> {
                                   backgroundColor:
                                       Theme.of(context).colorScheme.surface,
                                 ),
-                                // PaymentMethodContributionItem(
-                                //   title: localizations.cardPayment,
-                                //   subtitle: localizations.contributionsCount(
-                                //     jarData.balanceBreakDown.card.totalCount,
-                                //   ),
-                                //   amount:
-                                //       jarData.balanceBreakDown.card.totalAmount,
-                                //   currency: jarData.currency,
-                                //   icon: Icons.credit_card,
-                                //   backgroundColor:
-                                //       Theme.of(context).colorScheme.surface,
-                                // ),
+                                PaymentMethodContributionItem(
+                                  title: localizations.cardPayment,
+                                  subtitle: localizations.contributionsCount(
+                                    jarData.balanceBreakDown.card.totalCount,
+                                  ),
+                                  amount:
+                                      jarData.balanceBreakDown.card.totalAmount,
+                                  currency: jarData.currency,
+                                  icon: Icons.credit_card,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
                                 // PaymentMethodContributionItem(
                                 //   title: localizations.applePayPayment,
                                 //   subtitle: localizations.contributionsCount(

@@ -170,7 +170,24 @@ export const processPayoutTask = {
         })
       }
 
-      if (!creator?.bank || !creator?.accountNumber || !creator?.accountHolder) {
+      // Step 4 — resolve the destination from the payout transaction's linked
+      // withdrawal account (momo or bank). Falls back to failing the payout if missing.
+      const accountId =
+        typeof (transaction as any).withdrawalAccount === 'object'
+          ? (transaction as any).withdrawalAccount?.id
+          : (transaction as any).withdrawalAccount
+      const account: any = accountId
+        ? await payload
+            .findByID({
+              collection: 'withdrawal-accounts',
+              id: accountId,
+              depth: 0,
+              overrideAccess: true,
+            })
+            .catch(() => null)
+        : null
+
+      if (!account?.provider || !account?.accountNumber || !account?.accountHolder) {
         await payload.update({
           collection: 'transactions',
           id: existingTransactionId,
@@ -178,55 +195,57 @@ export const processPayoutTask = {
           overrideAccess: true,
         })
         return {
-          output: { success: false, message: 'Creator has no withdrawal account set up' },
+          output: { success: false, message: 'Payout has no valid withdrawal account' },
         }
       }
 
-      const userBank = creator.bank
-      const userAccountNumber = creator.accountNumber
-      const userAccountHolder = creator.accountHolder
-
-      // Step 4 — map provider and format phone
-      const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
-      const paypartner = providerMap[userBank?.toLowerCase()]
-      if (!paypartner) {
-        await payload.update({
-          collection: 'transactions',
-          id: existingTransactionId,
-          data: { paymentStatus: 'failed' },
-          overrideAccess: true,
-        })
-        return { output: { success: false, message: 'Unsupported mobile money provider' } }
-      }
-
-      let phoneNumber = userAccountNumber.replace(/\s+/g, '')
-      if (phoneNumber.startsWith('0')) {
-        phoneNumber = '233' + phoneNumber.substring(1)
-      } else if (!phoneNumber.startsWith('233')) {
-        phoneNumber = '233' + phoneNumber
-      }
-
+      const isBankAccount = account.type === 'bank'
       const grossAmount = payoutAmount
+      let paypartner: string
+      let accountNoOrCardNoOrMSISDN: string
+      let accountName: string = account.accountHolder
 
-      // Step 4b — KYC lookup to get the verified mobile-money account name.
-      // MTN MoMo rejects payouts whose accountName doesn't match its KYC records.
-      // Falls back to the stored accountHolder if KYC lookup fails.
-      let accountName = userAccountHolder
-      try {
-        const kyc = await getEganow().verifyKYC({
-          paypartnerCode: paypartner,
-          accountNoOrCardNoOrMSISDN: phoneNumber,
-          languageId: 'en',
-          countryCode: 'GH',
-        })
-        if (kyc.isSuccess && kyc.accountName) {
-          accountName = kyc.accountName
-          console.log(`[process-payout] KYC name for ${phoneNumber}: ${accountName}`)
-        } else {
-          console.warn(`[process-payout] KYC lookup failed for ${phoneNumber}, using stored name`)
+      if (isBankAccount) {
+        // Bank: paypartnerCode is the bank code; account number sent as-is.
+        paypartner = String(account.provider)
+        accountNoOrCardNoOrMSISDN = String(account.accountNumber).replace(/\s+/g, '')
+      } else {
+        // Mobile money: map provider → Eganow code, format phone, name-enquiry.
+        const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
+        const mapped = providerMap[String(account.provider).toLowerCase()]
+        if (!mapped) {
+          await payload.update({
+            collection: 'transactions',
+            id: existingTransactionId,
+            data: { paymentStatus: 'failed' },
+            overrideAccess: true,
+          })
+          return { output: { success: false, message: 'Unsupported mobile money provider' } }
         }
-      } catch (kycErr: any) {
-        console.warn(`[process-payout] KYC error for ${phoneNumber}:`, kycErr?.message)
+        paypartner = mapped
+
+        let phoneNumber = String(account.accountNumber).replace(/\s+/g, '')
+        if (phoneNumber.startsWith('0')) phoneNumber = '233' + phoneNumber.substring(1)
+        else if (!phoneNumber.startsWith('233')) phoneNumber = '233' + phoneNumber
+        accountNoOrCardNoOrMSISDN = phoneNumber
+
+        // MTN MoMo rejects payouts whose accountName doesn't match its KYC records.
+        try {
+          const kyc = await getEganow().verifyKYC({
+            paypartnerCode: paypartner,
+            accountNoOrCardNoOrMSISDN: phoneNumber,
+            languageId: 'en',
+            countryCode: 'GH',
+          })
+          if (kyc.isSuccess && kyc.accountName) {
+            accountName = kyc.accountName
+            console.log(`[process-payout] KYC name for ${phoneNumber}: ${accountName}`)
+          } else {
+            console.warn(`[process-payout] KYC lookup failed for ${phoneNumber}, using stored name`)
+          }
+        } catch (kycErr: any) {
+          console.warn(`[process-payout] KYC error for ${phoneNumber}:`, kycErr?.message)
+        }
       }
 
       // Step 5 — call Eganow
@@ -234,7 +253,7 @@ export const processPayoutTask = {
         const payoutPayload = {
           paypartnerCode: paypartner,
           amount: String(grossAmount.toFixed(2)),
-          accountNoOrCardNoOrMSISDN: phoneNumber,
+          accountNoOrCardNoOrMSISDN,
           accountName,
           transactionId: `payout-${existingTransactionId}`,
           narration: sanitizeNarration(`Payout for jar ${jar.name}`),

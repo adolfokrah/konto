@@ -26,6 +26,7 @@ import {
   PanelLeftOpen,
   Percent,
   MessageSquare,
+  BadgeCheck,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -69,6 +70,7 @@ const navGroups = [
     items: [
       { label: 'Transactions', href: '/dashboard/transactions', icon: ArrowLeftRight },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
+      { label: 'Business Verifications', href: '/dashboard/business-verifications', icon: BadgeCheck },
       { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
     ],
   },
@@ -115,6 +117,13 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
     { refreshInterval: 30000 },
   )
   const openDisputesCount = openDisputes?.totalDocs ?? 0
+
+  const { data: pendingVerifications } = useSWR(
+    '/api/business-verifications?where[or][0][status][equals]=pending&where[or][1][status][equals]=under-review&limit=0',
+    fetcher,
+    { refreshInterval: 30000 },
+  )
+  const pendingVerificationsCount = pendingVerifications?.totalDocs ?? 0
 
   const { data: unreadEmails } = useSWR(
     '/api/emails?where[direction][equals]=inbound&where[isRead][equals]=false&limit=0',
@@ -180,6 +189,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                     : pathname.startsWith(item.href)
                   const count =
                     item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
+                    item.href === '/dashboard/business-verifications' && pendingVerificationsCount > 0 ? pendingVerificationsCount :
                     item.href === '/dashboard/emails' && unreadEmailsCount > 0 ? unreadEmailsCount :
                     null
 

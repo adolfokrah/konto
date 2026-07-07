@@ -11,7 +11,11 @@ final class MediaLoaded extends MediaState {
   final MediaModel media;
   final MediaUploadContext context;
 
-  MediaLoaded({required this.media, required this.context});
+  /// Identifier for the specific upload slot, echoed from the request. Null for
+  /// uploads that don't need to distinguish between concurrent slots.
+  final String? contextId;
+
+  MediaLoaded({required this.media, required this.context, this.contextId});
 }
 
 final class MediaError extends MediaState {

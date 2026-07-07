@@ -135,6 +135,7 @@ interface ContributionInputProps {
   allowAnonymousContributions?: boolean
   transactionFeePercentage?: number
   customFields?: CustomField[]
+  acceptingContributions?: boolean
 }
 
 export default function ContributionInput({
@@ -148,6 +149,7 @@ export default function ContributionInput({
   allowAnonymousContributions = false,
   transactionFeePercentage = 1.95,
   customFields = [],
+  acceptingContributions = true,
 }: ContributionInputProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
   const [customAmount, setCustomAmount] = useState<string>('')
@@ -520,6 +522,19 @@ export default function ContributionInput({
   // Use live charges from API; fall back to local calculation while loading
   const totalAmountToPay = charges?.amountPaidByContributor ?? contributionAmount * (1 + transactionFeePercentage / 100)
   const transactionFee = totalAmountToPay - contributionAmount
+
+  if (!acceptingContributions) {
+    return (
+      <div className={`bg-white ${className}`}>
+        <div className="rounded-2xl border-2 border-gray-200 bg-gray-50 p-6 text-center font-supreme">
+          <h2 className="text-lg font-medium text-black mb-2">Not accepting contributions yet</h2>
+          <p className="text-sm text-gray-600">
+            This organizer is completing business verification. Please check back soon.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`bg-white ${className}`}>

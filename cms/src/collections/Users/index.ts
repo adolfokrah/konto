@@ -293,6 +293,23 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'kybStatus',
+      type: 'select',
+      label: 'KYB Status',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'In Review', value: 'in_review' },
+        { label: 'Approved', value: 'approved' },
+        { label: 'Rejected', value: 'rejected' },
+      ],
+      defaultValue: 'none',
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'Business verification status — synced from Business Verifications.',
+      },
+    },
+    {
       name: 'role',
       type: 'select',
       options: [

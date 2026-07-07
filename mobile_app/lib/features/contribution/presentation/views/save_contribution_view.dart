@@ -69,12 +69,21 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   Future<void> _loadCharges() async {
     final parsedAmount = double.tryParse(amount ?? '');
     if (parsedAmount == null || parsedAmount <= 0 || jarId == null) return;
+    // Cash has no processing fee — no need to fetch a breakdown.
+    if (_selectedPaymentMethod == 'cash') {
+      if (mounted) setState(() { _charges = null; _chargesLoaded = true; });
+      return;
+    }
     if (mounted) setState(() { _charges = null; _chargesLoaded = false; });
     try {
       final charges = await ChargesApiProvider(
         dio: getIt<Dio>(),
         userStorageService: getIt<UserStorageService>(),
-      ).getCharges(amount: parsedAmount, jarId: jarId!);
+      ).getCharges(
+        amount: parsedAmount,
+        jarId: jarId!,
+        paymentMethod: _selectedPaymentMethod,
+      );
       if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
     } catch (_) {
       if (mounted) setState(() => _chargesLoaded = true);
@@ -309,6 +318,8 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                             setState(() {
                               _selectedPaymentMethod = value;
                             });
+                            // Fee schedule differs per method — refresh the breakdown.
+                            _loadCharges();
                           },
                         ),
 
@@ -375,8 +386,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                         if (amount != null && currency != null) ...[
                           Builder(builder: (context) {
                             final contributionAmount = double.tryParse(amount!) ?? 0.0;
-                            final isMobileMoney = _selectedPaymentMethod == 'mobile-money';
-                            final totalAmount = isMobileMoney
+                            // Cash has no processing fee; momo/card do (rate from get-charges).
+                            final feeBearing = _selectedPaymentMethod != 'cash';
+                            final totalAmount = feeBearing
                                 ? (_charges?.amountPaidByContributor ?? contributionAmount)
                                 : contributionAmount;
                             final feeAmount = totalAmount - contributionAmount;

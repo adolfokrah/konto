@@ -14,11 +14,13 @@ class MediaRepository {
   Future<Map<String, dynamic>> uploadImage({
     required XFile imageFile,
     String? alt,
+    String collection = 'media',
   }) async {
     try {
       final apiResponse = await _mediaApiProvider.uploadImage(
         imageFile: imageFile,
         alt: alt,
+        collection: collection,
       );
 
       if (apiResponse['success'] == true) {

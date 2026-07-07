@@ -136,7 +136,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
       data.payoutFeeAmount = feeAmount
       data.payoutNetAmount = netAmount
 
-      if (data.paymentMethod === 'mobile-money') {
+      if (data.paymentMethod === 'mobile-money' || data.paymentMethod === 'bank') {
         const hogapayRevenue = (data.amountContributed * hogapayTransferFeePercent) / 100
         const eganowFees = feeAmount - hogapayRevenue
 

@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+import { isCreatorKybApproved } from '@/utilities/kyb'
 
 /**
  * Public endpoint to get jar data for the contribution page.
@@ -95,10 +96,14 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
       if (contributorAvatars.length >= 3) break
     }
 
+    // KYB gate: jar can only accept contributions once its creator is business-verified
+    const acceptingContributions = await isCreatorKybApproved(req.payload, jarDoc.creator)
+
     return Response.json({
       success: true,
       data: {
         ...jarDoc,
+        acceptingContributions,
         balanceBreakDown: {
           totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
         },

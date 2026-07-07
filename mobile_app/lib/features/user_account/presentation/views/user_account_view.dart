@@ -178,8 +178,8 @@ class UserAccountView extends StatelessWidget {
               context: context,
               title: localizations.withdrawalAccount,
               onTap: () {
-                // Navigate to withdrawal account
-                context.push(AppRoutes.withdrawalAccount);
+                // Navigate to the withdrawal accounts manager (multi-account)
+                context.push(AppRoutes.withdrawalAccounts);
               },
             ),
             _buildMenuItem(
@@ -189,6 +189,11 @@ class UserAccountView extends StatelessWidget {
                 // Navigate to change phone number
                 context.push(AppRoutes.changePhoneNumber);
               },
+            ),
+            _buildMenuItem(
+              context: context,
+              title: 'Business verification',
+              onTap: () => context.push(AppRoutes.businessKyb),
             ),
             _buildMenuItem(
               context: context,

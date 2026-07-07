@@ -84,6 +84,9 @@ export interface Config {
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
+    'business-verifications': BusinessVerification;
+    'business-documents': BusinessDocument;
+    'withdrawal-accounts': WithdrawalAccount;
     emails: Email;
     cashbacks: Cashback;
     'sms-campaigns': SmsCampaign;
@@ -115,6 +118,9 @@ export interface Config {
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
+    'business-verifications': BusinessVerificationsSelect<false> | BusinessVerificationsSelect<true>;
+    'business-documents': BusinessDocumentsSelect<false> | BusinessDocumentsSelect<true>;
+    'withdrawal-accounts': WithdrawalAccountsSelect<false> | WithdrawalAccountsSelect<true>;
     emails: EmailsSelect<false> | EmailsSelect<true>;
     cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
     'sms-campaigns': SmsCampaignsSelect<false> | SmsCampaignsSelect<true>;
@@ -501,6 +507,10 @@ export interface User {
   otpExpiry?: string | null;
   otpAttempts?: number | null;
   kycStatus?: ('none' | 'in_review' | 'verified') | null;
+  /**
+   * Business verification status — synced from Business Verifications.
+   */
+  kybStatus?: ('none' | 'in_review' | 'approved' | 'rejected') | null;
   /**
    * User role - admins have full access, auditors have read-only access to the dashboard
    */
@@ -1478,6 +1488,10 @@ export interface Transaction {
    */
   eganowPayPartnerTransactionId?: string | null;
   /**
+   * Destination withdrawal account for a payout
+   */
+  withdrawalAccount?: (string | null) | WithdrawalAccount;
+  /**
    * User who collected the contribution
    */
   collector?: (string | null) | User;
@@ -1575,6 +1589,10 @@ export interface Jar {
    * User who created the jar
    */
   creator: string | User;
+  /**
+   * The withdrawal account this jar's payouts are sent to
+   */
+  withdrawalAccount?: (string | null) | WithdrawalAccount;
   invitedCollectors?:
     | {
         /**
@@ -1648,11 +1666,43 @@ export interface Jar {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-accounts".
+ */
+export interface WithdrawalAccount {
+  id: string;
+  user: string | User;
+  type: 'mobile-money' | 'bank';
+  /**
+   * Mobile money: mtn|telecel. Bank: Eganow bank paypartner code (e.g. STANBICGH).
+   */
+  provider: string;
+  /**
+   * Phone number (mobile money) or bank account number.
+   */
+  accountNumber: string;
+  accountHolder: string;
+  /**
+   * Optional nickname shown in pickers.
+   */
+  label?: string | null;
+  /**
+   * Default account for user-level payouts (e.g. referral bonuses).
+   */
+  isDefault?: boolean | null;
+  /**
+   * True when the account name was verified via name enquiry.
+   */
+  verified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "notifications".
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen' | 'payout-approval';
+  type: 'jarInvite' | 'info' | 'kyc' | 'kyb' | 'jarFrozen' | 'payout-approval';
   title: string;
   message: string;
   data?:
@@ -1915,6 +1965,84 @@ export interface Dispute {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-verifications".
+ */
+export interface BusinessVerification {
+  id: string;
+  /**
+   * The user/organization owner submitting business verification
+   */
+  user: string | User;
+  /**
+   * Registered business/organization name
+   */
+  businessName?: string | null;
+  /**
+   * Company registration certificate/document
+   */
+  companyRegistrationDoc: string | BusinessDocument;
+  /**
+   * Proof of business address (utility bill, lease, etc.)
+   */
+  proofOfBusinessAddress: string | BusinessDocument;
+  /**
+   * Each director and their government-issued ID
+   */
+  directors?:
+    | {
+        fullName: string;
+        /**
+         * Government-issued ID (front)
+         */
+        idDocument: string | BusinessDocument;
+        /**
+         * Government-issued ID (back)
+         */
+        idDocumentBack: string | BusinessDocument;
+        id?: string | null;
+      }[]
+    | null;
+  status: 'pending' | 'under-review' | 'approved' | 'rejected';
+  /**
+   * Reason shown to the user when rejected
+   */
+  rejectionReason?: string | null;
+  reviewedBy?: (string | null) | User;
+  reviewedAt?: string | null;
+  statusHistory?:
+    | {
+        from?: ('pending' | 'under-review' | 'approved' | 'rejected') | null;
+        to: 'pending' | 'under-review' | 'approved' | 'rejected';
+        reason?: string | null;
+        changedBy?: (string | null) | User;
+        changedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-documents".
+ */
+export interface BusinessDocument {
+  id: string;
+  uploadedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2328,6 +2456,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'disputes';
         value: string | Dispute;
+      } | null)
+    | ({
+        relationTo: 'business-verifications';
+        value: string | BusinessVerification;
+      } | null)
+    | ({
+        relationTo: 'business-documents';
+        value: string | BusinessDocument;
+      } | null)
+    | ({
+        relationTo: 'withdrawal-accounts';
+        value: string | WithdrawalAccount;
       } | null)
     | ({
         relationTo: 'emails';
@@ -2962,6 +3102,7 @@ export interface UsersSelect<T extends boolean = true> {
   otpExpiry?: T;
   otpAttempts?: T;
   kycStatus?: T;
+  kybStatus?: T;
   role?: T;
   referralCode?: T;
   hogapayDiscountPercent?: T;
@@ -3034,6 +3175,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
+  withdrawalAccount?: T;
   collector?: T;
   collectorSnapshot?:
     | T
@@ -3069,6 +3211,7 @@ export interface JarsSelect<T extends boolean = true> {
   deadline?: T;
   currency?: T;
   creator?: T;
+  withdrawalAccount?: T;
   invitedCollectors?:
     | T
     | {
@@ -3255,6 +3398,74 @@ export interface DisputesSelect<T extends boolean = true> {
         changedAt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-verifications_select".
+ */
+export interface BusinessVerificationsSelect<T extends boolean = true> {
+  user?: T;
+  businessName?: T;
+  companyRegistrationDoc?: T;
+  proofOfBusinessAddress?: T;
+  directors?:
+    | T
+    | {
+        fullName?: T;
+        idDocument?: T;
+        idDocumentBack?: T;
+        id?: T;
+      };
+  status?: T;
+  rejectionReason?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  statusHistory?:
+    | T
+    | {
+        from?: T;
+        to?: T;
+        reason?: T;
+        changedBy?: T;
+        changedAt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-documents_select".
+ */
+export interface BusinessDocumentsSelect<T extends boolean = true> {
+  uploadedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-accounts_select".
+ */
+export interface WithdrawalAccountsSelect<T extends boolean = true> {
+  user?: T;
+  type?: T;
+  provider?: T;
+  accountNumber?: T;
+  accountHolder?: T;
+  label?: T;
+  isDefault?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3912,7 +4123,8 @@ export interface TaskProcessReferralWithdrawal {
   input: {
     withdrawalRecordId: string;
     userId: string;
-    bank: string;
+    type?: string | null;
+    provider: string;
     accountNumber: string;
     accountHolder: string;
     amount: string;

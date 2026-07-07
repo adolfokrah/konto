@@ -9,6 +9,9 @@ import 'package:Hoga/features/authentication/data/api_providers/auth_api_provide
 import 'package:Hoga/features/authentication/data/repositories/auth_repository.dart';
 import 'package:Hoga/features/verification/data/api_providers/verification_provider.dart';
 import 'package:Hoga/features/verification/data/repositories/verification_repository.dart';
+import 'package:Hoga/features/business_kyb/data/api_providers/business_kyb_provider.dart';
+import 'package:Hoga/features/business_kyb/data/repositories/business_kyb_repository.dart';
+import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
 import 'package:Hoga/features/onboarding/data/repositories/walkthrough_repository.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
@@ -20,6 +23,9 @@ import 'package:Hoga/features/contribution/data/api_reproviders/momo_api_provide
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
 import 'package:Hoga/features/user_account/data/api_providers/user_account_api_provider.dart';
 import 'package:Hoga/features/user_account/data/repositories/user_account_repository.dart';
+import 'package:Hoga/features/withdrawal_accounts/data/api_providers/withdrawal_accounts_api_provider.dart';
+import 'package:Hoga/features/withdrawal_accounts/data/repositories/withdrawal_accounts_repository.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/notifications/data/api_proivders/notifications_provider.dart';
 import 'package:Hoga/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:Hoga/features/collaborators/data/api_providers/collaborators_providers.dart';
@@ -95,6 +101,12 @@ void setupServiceLocator() {
       userStorageService: getIt<UserStorageService>(),
     ),
   );
+  getIt.registerLazySingleton<BusinessKybProvider>(
+    () => BusinessKybProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
   getIt.registerLazySingleton<JarApiProvider>(
     () => JarApiProvider(
       dio: getIt<Dio>(),
@@ -121,6 +133,12 @@ void setupServiceLocator() {
   );
   getIt.registerLazySingleton<UserAccountApiProvider>(
     () => UserAccountApiProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<WithdrawalAccountsApiProvider>(
+    () => WithdrawalAccountsApiProvider(
       dio: getIt<Dio>(),
       userStorageService: getIt<UserStorageService>(),
     ),
@@ -157,6 +175,11 @@ void setupServiceLocator() {
       verificationProvider: getIt<VerificationProvider>(),
     ),
   );
+  getIt.registerLazySingleton<BusinessKybRepository>(
+    () => BusinessKybRepository(
+      businessKybProvider: getIt<BusinessKybProvider>(),
+    ),
+  );
   getIt.registerLazySingleton<WalkthroughRepository>(
     () => WalkthroughRepository(
       localStorageService: getIt<LocalStorageService>(),
@@ -180,6 +203,11 @@ void setupServiceLocator() {
     () => UserAccountRepository(
       apiProvider: getIt<UserAccountApiProvider>(),
       userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<WithdrawalAccountsRepository>(
+    () => WithdrawalAccountsRepository(
+      apiProvider: getIt<WithdrawalAccountsApiProvider>(),
     ),
   );
   getIt.registerLazySingleton<NotificationsRepository>(
@@ -256,6 +284,11 @@ void setupServiceLocator() {
       verificationRepository: getIt<VerificationRepository>(),
     ),
   );
+  getIt.registerLazySingleton<BusinessKybBloc>(
+    () => BusinessKybBloc(
+      businessKybRepository: getIt<BusinessKybRepository>(),
+    ),
+  );
   getIt.registerLazySingleton<NotificationsBloc>(
     () => NotificationsBloc(
       notificationsRepository: getIt<NotificationsRepository>(),
@@ -273,6 +306,11 @@ void setupServiceLocator() {
   );
   getIt.registerLazySingleton<MomoPaymentBloc>(
     () => MomoPaymentBloc(momoRepository: getIt<MomoRepository>()),
+  );
+  getIt.registerLazySingleton<WithdrawalAccountsBloc>(
+    () => WithdrawalAccountsBloc(
+      repository: getIt<WithdrawalAccountsRepository>(),
+    ),
   );
   getIt.registerLazySingleton<JarInviteActionBloc>(
     () => JarInviteActionBloc(

@@ -258,6 +258,20 @@ export default class Eganow {
   }
 
   /**
+   * Paypartner Search
+   * Returns available payment partners for a country, each with a transType
+   * (MOMO | CARD | BANK). Used to list supported banks.
+   */
+  async searchPaypartners(
+    countryCode = 'GH0233',
+    languageId = 'en',
+  ): Promise<Array<{ paypartnerCode: string; transType: string }>> {
+    return this.request('POST', '/api/partners/search', {
+      body: { countryCode, languageId },
+    })
+  }
+
+  /**
    * Get Transaction Charges
    * Check the fees/charges for a transaction before initiating it
    */

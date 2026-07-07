@@ -3,8 +3,6 @@ import { addDataAndFileToRequest } from 'payload'
 
 const MAX_OTP_ATTEMPTS = 5
 
-const MOMO_PROVIDERS = new Set(['mtn', 'telecel'])
-
 export const confirmWithdrawal: PayloadHandler = async (req) => {
   const user = req.user
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -89,9 +87,46 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
     return Response.json({ success: false, message: 'No balance to withdraw' }, { status: 400 })
   }
 
-  const accountSuffix = (fullUser.accountNumber ?? '').slice(-4)
-  const bankName = fullUser.bank ?? ''
-  const isMoMo = MOMO_PROVIDERS.has(bankName.toLowerCase())
+  // Resolve the user's default withdrawal-accounts record (momo or bank),
+  // falling back to the most recent account if no default is flagged.
+  let account = (
+    await req.payload.find({
+      collection: 'withdrawal-accounts',
+      where: {
+        and: [{ user: { equals: user.id } }, { isDefault: { equals: true } }],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+  ).docs[0]
+
+  if (!account) {
+    account = (
+      await req.payload.find({
+        collection: 'withdrawal-accounts',
+        where: { user: { equals: user.id } },
+        sort: '-createdAt',
+        limit: 1,
+        overrideAccess: true,
+      })
+    ).docs[0]
+  }
+
+  if (!account || !account.provider || !account.accountNumber) {
+    return Response.json(
+      {
+        success: false,
+        message: 'Please set your withdrawal account first',
+        code: 'WITHDRAWAL_ACCOUNT_REQUIRED',
+      },
+      { status: 403 },
+    )
+  }
+
+  const accountSuffix = (account.accountNumber ?? '').slice(-4)
+  const accountHolder = account.accountHolder || fullUser.firstName || fullUser.username || ''
+  // Display label: bank code for bank accounts, provider name for momo.
+  const destinationLabel = account.provider
 
   // Get a referral reference from the most recent earned bonus
   const earnedBonus = allBonuses.docs.find((b) => (b.amount ?? 0) > 0)
@@ -105,37 +140,30 @@ export const confirmWithdrawal: PayloadHandler = async (req) => {
       bonusType: earnedBonus?.bonusType ?? 'fee_share',
       amount: -netAmount,
       status: 'pending',
-      description: `Withdrawal of GHS ${netAmount.toFixed(2)} → ${bankName} ****${accountSuffix}`,
+      description: `Withdrawal of GHS ${netAmount.toFixed(2)} → ${destinationLabel} ****${accountSuffix}`,
     },
     overrideAccess: true,
   })
 
-  if (isMoMo && fullUser.accountNumber) {
-    // Queue payout — sequential processing via the payout queue prevents race conditions
-    await req.payload.jobs.queue({
-      task: 'process-referral-withdrawal' as any,
-      input: {
-        withdrawalRecordId: withdrawalRecord.id,
-        userId: user.id,
-        bank: bankName,
-        accountNumber: fullUser.accountNumber,
-        accountHolder: fullUser.accountHolder ?? fullUser.firstName ?? fullUser.username ?? '',
-        amount: String(netAmount),
-      },
-      queue: 'payout',
-    })
+  // Queue payout — sequential processing via the payout queue prevents race
+  // conditions. Both momo and bank payouts are supported.
+  await req.payload.jobs.queue({
+    task: 'process-referral-withdrawal' as any,
+    input: {
+      withdrawalRecordId: withdrawalRecord.id,
+      userId: user.id,
+      type: account.type,
+      provider: account.provider,
+      accountNumber: account.accountNumber,
+      accountHolder,
+      amount: String(netAmount),
+    },
+    queue: 'payout',
+  })
 
-    return Response.json({
-      success: true,
-      message: `GHS ${netAmount.toFixed(2)} is being sent to your ${bankName.toUpperCase()} account ending ${accountSuffix}.`,
-      amount: netAmount,
-    })
-  }
-
-  // Non-MoMo — manual processing by admin
   return Response.json({
     success: true,
-    message: `Withdrawal request of GHS ${netAmount.toFixed(2)} submitted. Our team will process it to your ${bankName} account ending ${accountSuffix}.`,
+    message: `GHS ${netAmount.toFixed(2)} is being sent to your ${destinationLabel} account ending ${accountSuffix}.`,
     amount: netAmount,
   })
 }

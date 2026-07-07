@@ -11,14 +11,20 @@ class ChargesApiProvider extends BaseApiProvider {
   });
 
   /// Returns the charge breakdown for [amount] for the given [jarId].
+  /// [paymentMethod] selects the fee schedule (mobile-money vs card) on the server.
   /// Throws if the request fails — callers should handle errors.
   Future<ChargesModel> getCharges({
     required double amount,
     required String jarId,
+    String paymentMethod = 'mobile-money',
   }) async {
     final response = await dio.get(
       '${BackendConfig.apiBaseUrl}/transactions/get-charges',
-      queryParameters: {'amount': amount, 'jarId': jarId},
+      queryParameters: {
+        'amount': amount,
+        'jarId': jarId,
+        'paymentMethod': paymentMethod,
+      },
     );
 
     return ChargesModel.fromJson(response.data as Map<String, dynamic>);

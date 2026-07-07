@@ -11,4 +11,9 @@ enum MediaUploadContext {
 
   // Upload from jar details home screen
   jarImageHome,
+
+  /// Upload for a business KYB document (goes to the private
+  /// `business-documents` collection). The specific slot is identified via the
+  /// `contextId` carried on the upload event/state.
+  businessDocument,
 }

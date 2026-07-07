@@ -21,11 +21,13 @@ class AppRoutes {
   static const String personalDetails = '/personal_details';
   static const String changePhoneNumber = '/change_phone_number';
   static const String withdrawalAccount = '/withdrawal_account';
+  static const String withdrawalAccounts = '/withdrawal_accounts';
   static const String awaitMomoPayment = '/await_momo_payment';
   static const String contributionsList = '/contributions_list';
   static const String themeSettings = '/theme_settings';
   static const String languageSettings = '/language_settings';
   static const String kycView = '/kycView';
+  static const String businessKyb = '/businessKyb';
   static const String notifications = '/notifications';
   static const String walkthrough = '/walkthrough';
   static const String withdraw = '/withdraw';

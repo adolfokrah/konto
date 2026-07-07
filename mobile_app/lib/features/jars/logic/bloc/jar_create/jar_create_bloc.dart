@@ -39,6 +39,7 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
         deadline: event.deadline,
         currency: event.currency,
         invitedCollectors: event.invitedCollectors,
+        withdrawalAccount: event.withdrawalAccount,
       );
 
       if (result['success'] == true) {

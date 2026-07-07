@@ -4,9 +4,9 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
  * Settle Contributions Task
  *
  * Scheduled every 5 minutes via Payload's autoRun.
- * Marks mobile money contributions as settled if they are:
+ * Marks mobile money AND card contributions as settled if they are:
  * - type: 'contribution'
- * - paymentMethod: 'mobile-money'
+ * - paymentMethod: 'mobile-money' | 'card'
  * - paymentStatus: 'completed'
  * - isSettled: false
  * - createdAt is older than the configured settlement delay
@@ -40,12 +40,12 @@ export const settleContributionsTask = {
 
       console.log(`Settlement delay: ${settlementDelayHours} hours (${settlementDelayMs}ms)`)
 
-      // Find all unsettled completed mobile money contributions older than cutoff time
+      // Find all unsettled completed mobile-money + card contributions older than cutoff
       const unsettledContributions = await payload.find({
         collection: 'transactions',
         where: {
           type: { equals: 'contribution' },
-          paymentMethod: { equals: 'mobile-money' },
+          paymentMethod: { in: ['mobile-money', 'card'] },
           paymentStatus: { equals: 'completed' },
           isSettled: { equals: false },
           createdAt: { less_than: cutoffTime },

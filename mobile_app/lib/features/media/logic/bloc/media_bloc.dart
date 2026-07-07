@@ -30,6 +30,7 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
       final response = await _mediaRepository.uploadImage(
         imageFile: event.imageFile,
         alt: event.alt ?? 'Uploaded Image',
+        collection: event.collection,
       );
 
       print('DEBUG: Full response: $response');
@@ -41,7 +42,13 @@ class MediaBloc extends Bloc<MediaEvent, MediaState> {
         print('DEBUG: Media data: $mediaData');
         final mediaModel = MediaModel.fromJson(mediaData);
 
-        emit(MediaLoaded(media: mediaModel, context: event.context));
+        emit(
+          MediaLoaded(
+            media: mediaModel,
+            context: event.context,
+            contextId: event.contextId,
+          ),
+        );
       } else {
         // Handle upload failure
         final errorMessage = response['message'] ?? 'Failed to upload image';

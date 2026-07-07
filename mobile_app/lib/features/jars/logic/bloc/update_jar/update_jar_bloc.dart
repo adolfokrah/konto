@@ -80,6 +80,7 @@ class UpdateJarBloc extends Bloc<UpdateJarEvent, UpdateJarState> {
       showRecentContributions: event.updates['showRecentContributions'],
       allowAnonymousContributions: event.updates['allowAnonymousContributions'],
       requiredApprovals: event.updates['requiredApprovals'],
+      withdrawalAccount: event.updates['withdrawalAccount'],
     );
     if (response['success'] == true) {
       emit(UpdateJarSuccess(silent: images != null));

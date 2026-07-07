@@ -39,6 +39,9 @@ import { LedgerTopups } from './collections/LedgerTopups'
 import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
+import { BusinessVerifications } from './collections/BusinessVerifications'
+import { BusinessDocuments } from './collections/BusinessDocuments'
+import { WithdrawalAccounts } from './collections/WithdrawalAccounts'
 import { Emails } from './collections/Emails'
 import { Cashbacks } from './collections/Cashbacks'
 import { SmsCampaigns } from './collections/SmsCampaigns'
@@ -105,6 +108,9 @@ export default buildConfig({
     Referrals,
     ReferralBonuses,
     Disputes,
+    BusinessVerifications,
+    BusinessDocuments,
+    WithdrawalAccounts,
     Emails,
     Cashbacks,
     SmsCampaigns,
@@ -134,6 +140,7 @@ export default buildConfig({
           s3Storage({
             collections: {
               media: true,
+              'business-documents': true,
             },
             bucket: process.env.BUCKET || process.env.RAILWAY_BUCKET_NAME || '',
             config: {

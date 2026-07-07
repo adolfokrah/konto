@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
@@ -23,16 +24,35 @@ class ImageUploaderBottomSheet extends StatelessWidget {
   final MediaUploadContext uploadContext;
   final int maxImages;
 
+  /// Target Payload collection endpoint. Defaults to `media`. Pass
+  /// `business-documents` to upload to the private business documents
+  /// collection instead.
+  final String collection;
+
+  /// Optional identifier for the specific upload slot, echoed back on
+  /// [MediaLoaded] so the caller can tell which upload finished.
+  final String? contextId;
+
+  /// When true, also offer a "Choose file" option (PDF or image) via the
+  /// system file picker. Used for document uploads (e.g. KYB). Default false.
+  final bool allowFiles;
+
   const ImageUploaderBottomSheet({
     super.key,
     this.uploadContext = MediaUploadContext.general,
     this.maxImages = 1,
+    this.collection = 'media',
+    this.contextId,
+    this.allowFiles = false,
   });
 
   static void show(
     BuildContext context, {
     MediaUploadContext uploadContext = MediaUploadContext.general,
     int maxImages = 1,
+    String collection = 'media',
+    String? contextId,
+    bool allowFiles = false,
   }) {
     HapticUtils.light();
     showModalBottomSheet(
@@ -42,6 +62,9 @@ class ImageUploaderBottomSheet extends StatelessWidget {
           (context) => ImageUploaderBottomSheet(
             uploadContext: uploadContext,
             maxImages: maxImages,
+            collection: collection,
+            contextId: contextId,
+            allowFiles: allowFiles,
           ),
     );
   }
@@ -150,6 +173,17 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                                 ImageSource.gallery,
                               ),
                         ),
+
+                        if (allowFiles) ...[
+                          const SizedBox(height: AppSpacing.spacingS),
+                          _buildOptionTile(
+                            context,
+                            icon: Icons.description_outlined,
+                            title: 'Choose file',
+                            subtitle: 'Upload a PDF or image',
+                            onTap: () => _handleFileSelection(context),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -201,6 +235,8 @@ class ImageUploaderBottomSheet extends StatelessWidget {
                   imageFile: image,
                   alt: altText,
                   context: uploadContext,
+                  collection: collection,
+                  contextId: contextId,
                 ),
               );
             }
@@ -229,6 +265,8 @@ class ImageUploaderBottomSheet extends StatelessWidget {
               imageFile: image,
               alt: generatedAltText,
               context: uploadContext,
+              collection: collection,
+              contextId: contextId,
             ),
           );
         } else if (context.mounted) {
@@ -241,6 +279,51 @@ class ImageUploaderBottomSheet extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error selecting image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Pick a PDF or image file via the system file picker and upload it.
+  void _handleFileSelection(BuildContext context) async {
+    HapticUtils.light();
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        withData: false,
+      );
+
+      final path = result?.files.single.path;
+      if (path == null) {
+        if (context.mounted) Navigator.pop(context);
+        return;
+      }
+
+      final file = XFile(path);
+      String altText = file.name.replaceAll(' ', '-');
+      if (altText.contains('.')) {
+        altText = altText.substring(0, altText.lastIndexOf('.'));
+      }
+      if (context.mounted) {
+        context.read<MediaBloc>().add(
+          RequestUploadMedia(
+            imageFile: file,
+            alt: altText,
+            context: uploadContext,
+            collection: collection,
+            contextId: contextId,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting file: $e'),
             backgroundColor: Colors.red,
           ),
         );

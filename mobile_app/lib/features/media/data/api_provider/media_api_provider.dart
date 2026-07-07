@@ -21,6 +21,7 @@ class MediaApiProvider extends BaseApiProvider {
   Future<Map<String, dynamic>> uploadImage({
     required XFile imageFile,
     String? alt,
+    String collection = 'media',
   }) async {
     try {
       // Get authenticated headers
@@ -36,19 +37,45 @@ class MediaApiProvider extends BaseApiProvider {
       print('DEBUG: Image name: "${imageFile.name}"');
       print('DEBUG: Generated alt: "$imageAlt"');
 
+      // Derive content type from the file extension so non-image files (e.g. PDF)
+      // aren't mislabelled as images (which makes PayloadCMS image-size detection fail).
+      final ext = imageFile.name.contains('.')
+          ? imageFile.name.split('.').last.toLowerCase()
+          : '';
+      final MediaType contentType;
+      switch (ext) {
+        case 'pdf':
+          contentType = MediaType('application', 'pdf');
+          break;
+        case 'png':
+          contentType = MediaType('image', 'png');
+          break;
+        case 'heic':
+          contentType = MediaType('image', 'heic');
+          break;
+        case 'webp':
+          contentType = MediaType('image', 'webp');
+          break;
+        case 'jpg':
+        case 'jpeg':
+          contentType = MediaType('image', 'jpeg');
+          break;
+        default:
+          contentType = MediaType('image', 'jpeg');
+      }
+
       // Create multipart form data using PayloadCMS format
       final multipartFile = await MultipartFile.fromFile(
         imageFile.path,
         filename: imageFile.name,
-        contentType: MediaType.parse('image/jpeg'), // Explicit content type
+        contentType: contentType,
       );
 
-      // PayloadCMS requires additional fields to be sent in a _payload JSON field
-      final payloadData = {'alt': imageAlt};
-
+      // PayloadCMS requires additional fields to be sent in a _payload JSON
+      // field. The private `business-documents` collection only expects `file`.
       final formData = FormData.fromMap({
         'file': multipartFile,
-        '_payload': jsonEncode(payloadData), // PayloadCMS format
+        if (collection == 'media') '_payload': jsonEncode({'alt': imageAlt}),
       });
 
       print(
@@ -59,9 +86,9 @@ class MediaApiProvider extends BaseApiProvider {
       );
       print('DEBUG: Alt text being sent: "$imageAlt"');
 
-      // Upload to PayloadCMS media endpoint
+      // Upload to the target PayloadCMS collection endpoint
       final response = await dio.post(
-        '${BackendConfig.apiBaseUrl}/media',
+        '${BackendConfig.apiBaseUrl}/$collection',
         data: formData,
         options: Options(
           headers: headers,

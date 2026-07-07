@@ -14,6 +14,7 @@ import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 import { capRequiredApprovals } from './hooks/capRequiredApprovals'
+import { validateWithdrawalAccount } from './hooks/validateWithdrawalAccount'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -131,6 +132,15 @@ export const Jars: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'User who created the jar',
+      },
+    },
+    {
+      name: 'withdrawalAccount',
+      type: 'relationship',
+      relationTo: 'withdrawal-accounts',
+      hasMany: false,
+      admin: {
+        description: "The withdrawal account this jar's payouts are sent to",
       },
     },
     {
@@ -337,6 +347,7 @@ export const Jars: CollectionConfig = {
       validateJarUpdatePermission,
       validateJarBalanceBeforeBreak,
       capRequiredApprovals,
+      validateWithdrawalAccount,
     ],
     afterChange: [
       sendInviteNotificationToUser,

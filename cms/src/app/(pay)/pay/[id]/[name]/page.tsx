@@ -286,6 +286,7 @@ export default async function Page({
               allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
               transactionFeePercentage={systemSettings?.collectionFee || 1.95}
               customFields={jarWithBalance.customFields || []}
+              acceptingContributions={jarWithBalance.acceptingContributions !== false}
             />
 
             <Separator />

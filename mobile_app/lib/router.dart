@@ -27,9 +27,11 @@ import 'package:Hoga/features/user_account/presentation/views/user_account_view.
 import 'package:Hoga/features/user_account/presentation/views/personal_details_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/change_phone_number_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/withdrawal_account_view.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/views/withdrawal_accounts_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/theme_settings_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/language_settings_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:Hoga/features/business_kyb/presentation/pages/business_kyb_view.dart';
 import 'package:Hoga/features/notifications/presentation/views/notficiations_list_view.dart';
 import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_custom_fields_view.dart';
@@ -163,6 +165,10 @@ GoRouter createRouter(AuthBloc authBloc) {
         builder: (context, state) => const WithdrawalAccountView(),
       ),
       GoRoute(
+        path: '/withdrawal_accounts',
+        builder: (context, state) => const WithdrawalAccountsView(),
+      ),
+      GoRoute(
         path: '/await_momo_payment',
         builder: (context, state) {
           final provider = state.uri.queryParameters['provider'] ?? 'mtn';
@@ -184,6 +190,10 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/kycView',
         builder: (context, state) => const KycView(),
+      ),
+      GoRoute(
+        path: '/businessKyb',
+        builder: (context, state) => const BusinessKybView(),
       ),
       GoRoute(
         path: '/notifications',
