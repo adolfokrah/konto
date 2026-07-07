@@ -415,9 +415,16 @@ export default function ContributionInput({
     if (paymentChannel === 'card') {
       const digits = cardNumber.replace(/\s+/g, '')
       const expiryMatch = cardExpiry.match(/^(\d{2})\s*\/\s*(\d{2})$/)
-      // Amex is 15 digits, others 16-19; require at least the brand's expected length.
-      const minLen = cardBrand.key === 'amex' ? 15 : 16
-      if (digits.length < minLen || digits.length > 19 || !/^\d+$/.test(digits)) {
+      // Only Visa and Mastercard are supported for now.
+      if (cardBrand.key !== 'visa' && cardBrand.key !== 'mastercard') {
+        toast.error('Card not supported', {
+          description: 'Only Visa and Mastercard are accepted.',
+          duration: 4000,
+        })
+        return
+      }
+      // Visa/Mastercard: 16 digits, 3-digit CVV.
+      if (digits.length !== 16 || !/^\d+$/.test(digits)) {
         toast.error('Invalid card', { description: 'Enter a valid card number', duration: 4000 })
         return
       }
@@ -425,9 +432,9 @@ export default function ContributionInput({
         toast.error('Invalid card', { description: 'Enter expiry as MM/YY', duration: 4000 })
         return
       }
-      if (cardCvv.length !== cardBrand.cvvLength) {
+      if (cardCvv.length !== 3) {
         toast.error('Invalid card', {
-          description: `Enter the ${cardBrand.cvvLength}-digit ${cardBrand.key === 'amex' ? 'CID' : 'CVV'}`,
+          description: 'Enter the 3-digit CVV',
           duration: 4000,
         })
         return
@@ -643,7 +650,7 @@ export default function ContributionInput({
           >
             <span>Card</span>
             <span className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5">
-              {(['visa', 'mastercard', 'amex', 'verve', 'discover'] as const).map((b) => (
+              {(['visa', 'mastercard'] as const).map((b) => (
                 <CardBrandMark key={b} brand={b} />
               ))}
             </span>
