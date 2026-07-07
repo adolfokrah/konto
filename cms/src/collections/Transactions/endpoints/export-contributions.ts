@@ -24,18 +24,11 @@ export const exportContributions = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: error }, { status: 404 })
     }
 
-    // Apply transaction type filter, always excluding refunds
+    // Apply transaction type filter
     const { transactionTypes } = req.query as Record<string, string>
     const typeList = parseList(transactionTypes)
     if (typeList?.length) {
-      const filtered = typeList.filter((t) => t !== 'refund')
-      if (filtered.length) {
-        where.type = { in: filtered }
-      } else {
-        where.type = { not_equals: 'refund' }
-      }
-    } else {
-      where.type = { not_equals: 'refund' }
+      where.type = { in: typeList }
     }
 
     // Fetch all matching contributions (pagination: false)
@@ -55,33 +48,6 @@ export const exportContributions = async (req: PayloadRequest) => {
         { success: false, message: 'No contributions found for export' },
         { status: 404 },
       )
-    }
-
-    // Fetch refunds linked to these transactions to populate the "Reason" column
-    const docIds = docs.map((d: any) => d.id)
-    const refundsResult = await req.payload.find({
-      collection: 'refunds' as any,
-      where: { linkedTransaction: { in: docIds } },
-      pagination: false,
-      depth: 0,
-      overrideAccess: true,
-    })
-    const refundsByTransaction = new Map<string, string>()
-    for (const r of refundsResult.docs as any[]) {
-      const txId =
-        typeof r.linkedTransaction === 'string' ? r.linkedTransaction : r.linkedTransaction?.id
-      if (!txId) continue
-      const statusLabel =
-        r.status === 'pending'
-          ? 'Refund Initiated'
-          : r.status === 'in-progress'
-            ? 'Refund In Progress'
-            : r.status === 'completed'
-              ? 'Refunded'
-              : r.status === 'failed'
-                ? 'Refund Failed'
-                : ''
-      if (statusLabel) refundsByTransaction.set(txId, statusLabel)
     }
 
     // Gather jar details if possible
@@ -122,8 +88,8 @@ export const exportContributions = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Reason, Contribution, Payout, [custom fields], Date
-    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.09, 0.1]
+    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Contribution, Payout, [custom fields], Date
+    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.1]
     const customFieldPercent = 0.09
     const numCustomFields = exportableCustomFields.length
     const scaleFactor = numCustomFields > 0 ? 1 - customFieldPercent * numCustomFields : 1
@@ -131,7 +97,7 @@ export const exportContributions = async (req: PayloadRequest) => {
       basePercents[0], // # (no scale)
       ...basePercents.slice(1).map((p) => p * scaleFactor),
       ...exportableCustomFields.map(() => customFieldPercent * scaleFactor),
-      basePercents[10] * scaleFactor, // Date last
+      basePercents[9] * scaleFactor, // Date last
     ]
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
@@ -142,7 +108,6 @@ export const exportContributions = async (req: PayloadRequest) => {
       'Payment Method',
       'Type',
       'Status',
-      'Reason',
       'Contribution',
       'Payout',
       ...exportableCustomFields.map((f) => f.label),
@@ -404,8 +369,6 @@ export const exportContributions = async (req: PayloadRequest) => {
       if (typeLower === 'contribution') total += amountNum
       if (typeLower === 'payout') totalPayout += amountNum
 
-      const reason = refundsByTransaction.get(String(c.id)) || '-'
-
       // Build lookup maps: by fieldId and by label for fallback
       const cfvById: Record<string, any> = {}
       const cfvByLabel: Record<string, any> = {}
@@ -426,7 +389,6 @@ export const exportContributions = async (req: PayloadRequest) => {
         payment,
         type,
         statusVal,
-        reason,
         contributionAmt,
         payoutAmt,
         ...exportableCustomFields.map((f) => {

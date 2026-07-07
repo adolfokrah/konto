@@ -3,6 +3,7 @@ import { addDataAndFileToRequest } from 'payload'
 
 import { getEganow } from '@/utilities/initalise'
 import { sanitizeNarration } from '@/utilities/eganow'
+import { getWebhookBaseURL } from '@/utilities/getURL'
 
 // Eganow mobile money response data structure based on documentation
 interface EganowChargeResponseData {
@@ -186,7 +187,7 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-webhook`, // Webhook endpoint
+      callback: `${getWebhookBaseURL()}/api/transactions/eganow-webhook`, // Webhook endpoint
     }
 
     // Initiate mobile money collection via Eganow

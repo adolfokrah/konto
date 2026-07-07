@@ -2,16 +2,6 @@
 
 import { useState } from 'react'
 import { useIsAdmin } from './dashboard-user-context'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -46,7 +36,6 @@ import {
   Clock,
   Receipt,
   Container,
-  RotateCcw,
   Loader2,
   ShieldAlert,
 } from 'lucide-react'
@@ -55,7 +44,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
 
 function formatFullDate(dateString: string) {
@@ -97,20 +85,6 @@ const approvalStatusLabels: Record<string, string> = {
   rejected: 'Rejected',
 }
 
-const refundStatusStyles: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  failed: 'bg-red-100 text-red-800 border-red-200',
-}
-
-const refundStatusLabels: Record<string, string> = {
-  pending: 'Awaiting Approval',
-  'in-progress': 'In Progress',
-  completed: 'Completed',
-  failed: 'Failed',
-}
-
 function DetailRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
   if (!value && value !== 0) return null
   return (
@@ -133,8 +107,6 @@ export function TransactionDetailSheet({
 }) {
   const router = useRouter()
   const isAdmin = useIsAdmin()
-  const [refunded, setRefunded] = useState(false)
-  const [showRefundDialog, setShowRefundDialog] = useState(false)
   const [showDisputeDialog, setShowDisputeDialog] = useState(false)
   const [disputeDescription, setDisputeDescription] = useState('')
   const [disputeFiles, setDisputeFiles] = useState<File[]>([])
@@ -156,30 +128,6 @@ export function TransactionDetailSheet({
       const res = await fetch(url)
       const data = await res.json()
       return data.docs || []
-    },
-  )
-
-  // Fetch related refunds from the refunds collection
-  const { data: relatedRefunds } = useSWR<any[]>(
-    selected?.type === 'contribution' ? `/api/refunds?where[linkedTransaction][equals]=${selected.id}&depth=1` : null,
-    async (url: string) => {
-      const res = await fetch(url)
-      const data = await res.json()
-      return data.docs || []
-    },
-  )
-
-  const { trigger: triggerRefund, isMutating: refunding } = useSWRMutation(
-    '/api/transactions/refund-contribution',
-    async (url: string, { arg }: { arg: { transactionId: string } }) => {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(arg),
-      })
-      const data = await res.json()
-      if (!data.success) throw new Error(data.message || 'Failed to initiate refund')
-      return data
     },
   )
 
@@ -217,32 +165,6 @@ export function TransactionDetailSheet({
       toast.error('Failed to submit dispute')
     } finally {
       setSubmittingDispute(false)
-    }
-  }
-
-  const hasActiveRefund = relatedRefunds?.some(
-    (r: any) => r.status === 'pending' || r.status === 'in-progress' || r.status === 'completed',
-  )
-
-  const canRefund =
-    isAdmin &&
-    selected?.type === 'contribution' &&
-    selected?.paymentStatus === 'completed' &&
-    selected?.paymentMethod === 'mobile-money' &&
-    !selected?.isSettled &&
-    !refunded &&
-    !hasActiveRefund
-
-  const handleRefund = async () => {
-    if (!selected || !canRefund) return
-
-    try {
-      await triggerRefund({ transactionId: selected.id })
-      toast.success('Refund requested successfully')
-      setRefunded(true)
-      router.refresh()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to initiate refund')
     }
   }
 
@@ -479,30 +401,6 @@ export function TransactionDetailSheet({
                 </div>
               )}
 
-              {/* Related Refunds */}
-              {relatedRefunds && relatedRefunds.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Refunds</h4>
-                  <Separator className="mb-2" />
-                  <div className="space-y-2">
-                    {relatedRefunds.map((refund: any) => (
-                      <div key={refund.id} className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-2">
-                          <RotateCcw className="h-3.5 w-3.5 text-orange-400" />
-                          <div>
-                            <p className="text-sm font-medium">{formatAmount(refund.amount)}</p>
-                            <p className="text-xs text-muted-foreground">{formatFullDate(refund.createdAt)}</p>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className={cn('capitalize', refundStatusStyles[refund.status] || '')}>
-                          {refundStatusLabels[refund.status] || refund.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Payout Approvals */}
               {payoutApprovals && payoutApprovals.length > 0 && (
                 <div>
@@ -529,26 +427,6 @@ export function TransactionDetailSheet({
                       )
                     })}
                   </div>
-                </div>
-              )}
-
-              {/* Refund Action */}
-              {canRefund && (
-                <div>
-                  <Separator className="mb-4" />
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    disabled={refunding}
-                    onClick={() => setShowRefundDialog(true)}
-                  >
-                    {refunding ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                    )}
-                    {refunding ? 'Requesting Refund...' : 'Request Refund'}
-                  </Button>
                 </div>
               )}
 
@@ -607,25 +485,6 @@ export function TransactionDetailSheet({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-    <AlertDialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirm Request</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to refund{' '}
-            <span className="font-semibold">{selected ? formatAmount(selected.amountContributed) : ''}</span>{' '}
-            to {selected?.contributor || 'the contributor'}? This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleRefund}>
-            Confirm Request
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
     </>
   )
 }

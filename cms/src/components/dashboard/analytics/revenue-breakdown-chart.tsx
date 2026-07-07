@@ -37,7 +37,7 @@ export function RevenueBreakdownChart({ data }: RevenueBreakdownChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Revenue Breakdown</CardTitle>
-        <CardDescription>Collection fees vs transfer fees vs refund fees</CardDescription>
+        <CardDescription>Collection fees vs transfer fees</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>

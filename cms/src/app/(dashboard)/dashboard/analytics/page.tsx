@@ -13,7 +13,6 @@ import {
   Smartphone,
   Banknote,
   TrendingDown,
-  RefreshCw,
   Users2,
   Percent,
   Target,
@@ -36,8 +35,6 @@ import { NewJarsTrendChart } from '@/components/dashboard/analytics/new-jars-tre
 import { PayoutVolumeTrendChart } from '@/components/dashboard/analytics/payout-volume-trend-chart'
 import { TransactionCountTrendChart } from '@/components/dashboard/analytics/transaction-count-trend-chart'
 import { FailedTransactionsTrendChart } from '@/components/dashboard/analytics/failed-transactions-trend-chart'
-import { RefundVolumeTrendChart } from '@/components/dashboard/analytics/refund-volume-trend-chart'
-import { RefundCountTrendChart } from '@/components/dashboard/analytics/refund-count-trend-chart'
 import { ProviderSplitChart } from '@/components/dashboard/analytics/provider-split-chart'
 import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-breakdown-chart'
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
@@ -113,10 +110,6 @@ export default async function AnalyticsPage({
     totalTransactionCount,
     // KPI: Payouts volume (completed)
     payoutsVolume,
-    // KPI: Refund revenue
-    refundRevenueResult,
-    // Chart: Refund revenue (last 30 days)
-    last30DaysRefundRevenue,
     momoContributionsResult,
     cashContributionsResult,
     // Chart: Contribution volume by payment method (last 30 days)
@@ -127,10 +120,6 @@ export default async function AnalyticsPage({
     payoutsInRange,
     // Chart: Failed transactions in range (trend)
     failedInRange,
-    // Chart + KPI: Refunds in range (amount + createdAt)
-    refundsInRange,
-    // KPI: All refunds count (for refund rate)
-    allRefundsCount,
     // Chart: MTN contributions
     mtnContributions,
     // Chart: Telecel contributions
@@ -362,29 +351,6 @@ export default async function AnalyticsPage({
       overrideAccess: true,
     }),
 
-    // Refund hogapay revenue (completed refunds)
-    payload.find({
-      collection: 'refunds' as any,
-      where: {
-        status: { equals: 'completed' },
-      },
-      pagination: false,
-      select: { hogapayRevenue: true },
-      overrideAccess: true,
-    }),
-
-    // Chart: refund revenue (range-aware)
-    payload.find({
-      collection: 'refunds' as any,
-      where: {
-        status: { equals: 'completed' },
-        createdAt: { greater_than_equal: chartStartDate },
-      },
-      pagination: false,
-      select: { hogapayRevenue: true, createdAt: true },
-      overrideAccess: true,
-    }),
-
     // Mobile money contributions (amounts)
     payload.find({
       collection: 'transactions',
@@ -458,25 +424,6 @@ export default async function AnalyticsPage({
       overrideAccess: true,
     }),
 
-    // Chart + KPI: refunds in range (for refund volume trend)
-    payload.find({
-      collection: 'refunds' as any,
-      where: {
-        status: { equals: 'completed' },
-        createdAt: { greater_than_equal: chartStartDate },
-      },
-      pagination: false,
-      select: { amount: true, createdAt: true },
-      overrideAccess: true,
-    }),
-
-    // KPI: all completed refunds count (for refund rate)
-    payload.count({
-      collection: 'refunds' as any,
-      where: { status: { equals: 'completed' } },
-      overrideAccess: true,
-    }),
-
     // Chart: MTN contributions (volume + count)
     payload.find({
       collection: 'transactions',
@@ -536,11 +483,7 @@ export default async function AnalyticsPage({
     (sum, tx: any) => sum + Math.abs(tx.chargesBreakdown?.hogapayRevenue || 0),
     0,
   )
-  const refundRevenue = refundRevenueResult.docs.reduce(
-    (sum, r: any) => sum + Math.abs(r.hogapayRevenue || 0),
-    0,
-  )
-  const platformRevenue = transactionRevenue + refundRevenue
+  const platformRevenue = transactionRevenue
 
   const totalPayoutsAmount = completedPayouts.docs.reduce(
     (sum, tx: any) => sum + (tx.amountContributed || 0),
@@ -592,7 +535,6 @@ export default async function AnalyticsPage({
   // --- Chart data: Revenue Trend ---
   const revenueTrendData = buildRevenueTrendData(
     last30DaysRevenue.docs as any[],
-    last30DaysRefundRevenue.docs as any[],
     range,
   )
 
@@ -643,9 +585,6 @@ export default async function AnalyticsPage({
 
   const avgContributionsPerJar = jarsWithContributions > 0 ? totalCompleted / jarsWithContributions : 0
 
-  const allRefundsTotal = allRefundsCount.totalDocs
-  const refundRate = totalCompleted > 0 ? (allRefundsTotal / totalCompleted) * 100 : 0
-
   // Repeat contributors = phone numbers that appear in more than one contribution
   const phoneCounts: Record<string, number> = {}
   for (const tx of contributorTransactions.docs as any[]) {
@@ -678,12 +617,6 @@ export default async function AnalyticsPage({
   // --- Chart data: Failed Transactions Trend ---
   const failedTransactionsTrendData = buildCountTrendData(failedInRange.docs as any[], range)
 
-  // --- Chart data: Refund Volume Trend ---
-  const refundVolumeTrendData = buildRefundVolumeTrendData(refundsInRange.docs as any[], range)
-
-  // --- Chart data: Refund Count Trend ---
-  const refundCountTrendData = buildCountTrendData(refundsInRange.docs as any[], range)
-
   // --- Chart data: Provider Split ---
   const mtnVolume = mtnContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
   const telecelVolume = telecelContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
@@ -702,7 +635,6 @@ export default async function AnalyticsPage({
   const revenueBreakdownData = [
     { category: 'Collection Fees', amount: Number(collectionFeeRevenue.toFixed(2)) },
     { category: 'Transfer Fees', amount: Number(transferFeeRevenue.toFixed(2)) },
-    { category: 'Refund Fees', amount: Number(refundRevenue.toFixed(2)) },
   ].filter((d) => d.amount > 0)
 
   // --- Chart data: Collector Performance ---
@@ -723,12 +655,6 @@ export default async function AnalyticsPage({
           value={avgContributionsPerJar.toFixed(1)}
           description="Among jars with at least one contribution"
           icon={Percent}
-        />
-        <MetricCard
-          title="Refund Rate"
-          value={`${refundRate.toFixed(2)}%`}
-          description={`${allRefundsTotal} refunds out of ${totalCompleted} completed`}
-          icon={RefreshCw}
         />
         <MetricCard
           title="Repeat Contributors"
@@ -771,7 +697,7 @@ export default async function AnalyticsPage({
         <MetricCard
           title="Hogapay Revenue"
           value={`GHS ${fmt(platformRevenue)}`}
-          description="0.8% collections + 0.5% transfers + refunds"
+          description="0.8% collections + 0.5% transfers"
           icon={Receipt}
           valueClassName="text-green-400"
         />
@@ -861,12 +787,6 @@ export default async function AnalyticsPage({
         <FailedTransactionsTrendChart data={failedTransactionsTrendData} range={range} />
       </div>
 
-      {/* Refund Volume + Refund Count — 2 columns */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <RefundVolumeTrendChart data={refundVolumeTrendData} range={range} />
-        <RefundCountTrendChart data={refundCountTrendData} range={range} />
-      </div>
-
       {/* Payment Methods + Transaction Status — 2 columns */}
       <div className="grid gap-4 md:grid-cols-2">
         <PaymentMethodChart data={paymentMethodData} />
@@ -935,7 +855,6 @@ function dateKey(createdAt: string, range: Range): string {
 
 function buildRevenueTrendData(
   docs: { chargesBreakdown?: { hogapayRevenue?: number }; createdAt: string }[],
-  refundDocs: { hogapayRevenue?: number; createdAt: string }[],
   range: Range = 'daily',
 ) {
   const buckets = buildBuckets(range)
@@ -943,10 +862,6 @@ function buildRevenueTrendData(
   for (const doc of docs) {
     const key = dateKey(doc.createdAt, range)
     if (key in buckets) buckets[key] += Math.abs(doc.chargesBreakdown?.hogapayRevenue || 0)
-  }
-  for (const doc of refundDocs) {
-    const key = dateKey(doc.createdAt, range)
-    if (key in buckets) buckets[key] += Math.abs(doc.hogapayRevenue || 0)
   }
 
   return Object.entries(buckets).map(([date, revenue]) => ({
@@ -1056,15 +971,6 @@ function buildAmountTrendData(docs: { amountContributed?: number; createdAt: str
   for (const doc of docs) {
     const key = dateKey(doc.createdAt, range)
     if (key in buckets) buckets[key] += Math.abs(doc.amountContributed || 0)
-  }
-  return Object.entries(buckets).map(([date, amount]) => ({ date, amount: Number(amount.toFixed(2)) }))
-}
-
-function buildRefundVolumeTrendData(docs: { amount?: number; createdAt: string }[], range: Range = 'daily') {
-  const buckets = buildBuckets(range)
-  for (const doc of docs) {
-    const key = dateKey(doc.createdAt, range)
-    if (key in buckets) buckets[key] += Math.abs(doc.amount || 0)
   }
   return Object.entries(buckets).map(([date, amount]) => ({ date, amount: Number(amount.toFixed(2)) }))
 }

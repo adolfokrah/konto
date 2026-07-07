@@ -79,6 +79,16 @@ interface EganowCollectionResponse {
   redirectHtml?: string
 }
 
+interface EganowCardCollectionResponse {
+  transactionStatus: string
+  eganowReferenceNo: string
+  message: string
+  isSuccess: boolean
+  // 3D Secure challenge page (full HTML document) to render for the payer.
+  // Named `redirectUrl` by Eganow even though it contains HTML, not a URL.
+  redirectUrl?: string
+}
+
 interface EganowBalanceResponse {
   balance: number
 }
@@ -277,19 +287,19 @@ export default class Eganow {
 
   /**
    * Card Collection
-   * Initiate a card payment collection
-   * Note: Card collection uses Basic Auth per Eganow API docs
+   * Initiate a card payment collection.
+   * Uses the dedicated card endpoint with Bearer + x-Auth (same auth as mobile money).
+   * Returns a `redirectUrl` containing the 3D Secure challenge HTML to render for the payer.
    */
-  async collectCard(params: EganowCollectionRequest): Promise<EganowCollectionResponse> {
+  async collectCard(params: EganowCollectionRequest): Promise<EganowCardCollectionResponse> {
     // For card payments, ensure paypartnerCode is CARDGATEWAY
     const requestBody = {
       ...params,
       paypartnerCode: 'CARDGATEWAY',
     }
 
-    return this.request<EganowCollectionResponse>('POST', '/api/transactions/collection', {
+    return this.request<EganowCardCollectionResponse>('POST', '/api/transactions/card/collect', {
       body: requestBody,
-      useBasicAuth: true,
     })
   }
 

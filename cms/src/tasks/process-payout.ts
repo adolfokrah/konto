@@ -1,5 +1,6 @@
 import { getEganow } from '@/utilities/initalise'
 import { sanitizeNarration } from '@/utilities/eganow'
+import { getWebhookBaseURL } from '@/utilities/getURL'
 import { getJarBalance } from '@/utilities/getJarBalance'
 import type { Transaction } from '@/payload-types'
 
@@ -242,7 +243,7 @@ export const processPayoutTask = {
           expiryDateYear: 0,
           cvv: '',
           languageId: 'en',
-          callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
+          callback: `${getWebhookBaseURL()}/api/transactions/eganow-payout-webhook`,
         }
         console.log('[Eganow] payout request:', JSON.stringify(payoutPayload))
         const payoutResult = await getEganow().payout(payoutPayload)

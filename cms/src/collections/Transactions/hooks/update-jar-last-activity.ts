@@ -3,7 +3,7 @@
  *
  * When a contribution is marked completed, update the jar's lastActivityAt
  * to the transaction's createdAt. This enables efficient DB-level filtering
- * in the withdraw-reminder and auto-refund daily tasks.
+ * in the withdraw-reminder daily task.
  */
 export const updateJarLastActivity = async ({ doc, previousDoc, req }: any) => {
   try {

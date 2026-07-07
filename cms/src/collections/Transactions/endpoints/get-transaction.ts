@@ -3,7 +3,7 @@ import { PayloadRequest } from 'payload'
 /**
  * GET /api/transactions/get-transaction?id=xxx
  *
- * Returns a single transaction with its related refunds from the refunds collection.
+ * Returns a single transaction.
  */
 export const getTransaction = async (req: PayloadRequest) => {
   try {
@@ -33,29 +33,6 @@ export const getTransaction = async (req: PayloadRequest) => {
     if (!transaction) {
       return Response.json({ success: false, message: 'Transaction not found' }, { status: 404 })
     }
-
-    // Fetch related refunds from refunds collection
-    const refundsResult = await req.payload.find({
-      collection: 'refunds' as any,
-      where: {
-        linkedTransaction: { equals: transactionId },
-      },
-      depth: 0,
-      overrideAccess: true,
-    })
-
-    const refunds = refundsResult.docs.map((refund: any) => ({
-      id: refund.id,
-      amount: refund.amount,
-      accountName: refund.accountName,
-      accountNumber: refund.accountNumber,
-      mobileMoneyProvider: refund.mobileMoneyProvider,
-      status: refund.status,
-      transactionReference: refund.transactionReference,
-      eganowFees: refund.eganowFees,
-      hogapayRevenue: refund.hogapayRevenue,
-      createdAt: refund.createdAt,
-    }))
 
     // Fetch payout approvals and jar info for payout transactions
     let approvals: any[] = []
@@ -111,7 +88,6 @@ export const getTransaction = async (req: PayloadRequest) => {
 
     return Response.json({
       ...transaction,
-      refunds,
       approvals,
       requiredApprovals,
     })

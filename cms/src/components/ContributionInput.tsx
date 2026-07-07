@@ -9,9 +9,111 @@ import { Separator } from './ui/separator'
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import PaymentWaitingModal from './PaymentWaitingModal'
+import ThreeDSModal from './ThreeDSModal'
 import { ChevronDown } from 'lucide-react'
 import useSWRMutation from 'swr/mutation'
+import Image from 'next/image'
 import CustomFields from './CustomFields'
+
+type PaymentChannel = 'mobile-money' | 'card'
+
+type CardBrand = {
+  key: 'visa' | 'mastercard' | 'amex' | 'discover' | 'verve' | 'unknown'
+  name: string
+  gaps: number[] // positions to insert a space
+  maxLength: number // max digits (no spaces)
+  cvvLength: number
+}
+
+/**
+ * Detect card brand from the leading digits (IIN/BIN ranges).
+ * Returns formatting rules (grouping + length + CVV length) for the brand.
+ */
+function detectCardBrand(value: string): CardBrand {
+  const d = value.replace(/\D/g, '')
+
+  // American Express: 34, 37 — 15 digits, 4-6-5 grouping, 4-digit CID
+  if (/^3[47]/.test(d)) {
+    return { key: 'amex', name: 'Amex', gaps: [4, 10], maxLength: 15, cvvLength: 4 }
+  }
+  // Visa: starts with 4
+  if (/^4/.test(d)) {
+    return { key: 'visa', name: 'Visa', gaps: [4, 8, 12], maxLength: 16, cvvLength: 3 }
+  }
+  // Mastercard: 51-55 or 2221-2720
+  if (/^5[1-5]/.test(d) || /^2(2[2-9]|[3-6]|7[01]|720)/.test(d)) {
+    return { key: 'mastercard', name: 'Mastercard', gaps: [4, 8, 12], maxLength: 16, cvvLength: 3 }
+  }
+  // Verve (Ghana/Nigeria): 5060, 5061, 650, 5078...
+  if (/^(506[01]|650|5078)/.test(d)) {
+    return { key: 'verve', name: 'Verve', gaps: [4, 8, 12], maxLength: 19, cvvLength: 3 }
+  }
+  // Discover: 6011, 644-649, 65
+  if (/^(6011|64[4-9]|65)/.test(d)) {
+    return { key: 'discover', name: 'Discover', gaps: [4, 8, 12], maxLength: 16, cvvLength: 3 }
+  }
+  return { key: 'unknown', name: '', gaps: [4, 8, 12], maxLength: 19, cvvLength: 4 }
+}
+
+/** Insert spaces into a digit string according to the brand's grouping. */
+function formatCardNumber(value: string, brand: CardBrand): string {
+  const d = value.replace(/\D/g, '').slice(0, brand.maxLength)
+  let out = ''
+  for (let i = 0; i < d.length; i++) {
+    if (brand.gaps.includes(i)) out += ' '
+    out += d[i]
+  }
+  return out
+}
+
+/** Small brand mark shown inside the card number field. */
+function CardBrandMark({ brand }: { brand: CardBrand['key'] }) {
+  const common = { height: 20, className: 'shrink-0' }
+  switch (brand) {
+    case 'visa':
+      return (
+        <svg viewBox="0 0 48 16" width={38} {...common} aria-label="Visa">
+          <text x="0" y="14" fontSize="16" fontWeight="700" fontStyle="italic" fill="#1A1F71">
+            VISA
+          </text>
+        </svg>
+      )
+    case 'mastercard':
+      return (
+        <svg viewBox="0 0 36 24" width={30} {...common} aria-label="Mastercard">
+          <circle cx="14" cy="12" r="10" fill="#EB001B" />
+          <circle cx="22" cy="12" r="10" fill="#F79E1B" fillOpacity="0.85" />
+        </svg>
+      )
+    case 'amex':
+      return (
+        <svg viewBox="0 0 40 16" width={38} {...common} aria-label="American Express">
+          <rect width="40" height="16" rx="2" fill="#2E77BC" />
+          <text x="4" y="12" fontSize="9" fontWeight="700" fill="#fff">
+            AMEX
+          </text>
+        </svg>
+      )
+    case 'discover':
+      return (
+        <svg viewBox="0 0 60 16" width={48} {...common} aria-label="Discover">
+          <text x="0" y="13" fontSize="12" fontWeight="700" fill="#F26E21">
+            DISCOVER
+          </text>
+        </svg>
+      )
+    case 'verve':
+      return (
+        <svg viewBox="0 0 44 16" width={38} {...common} aria-label="Verve">
+          <text x="0" y="13" fontSize="12" fontWeight="700" fill="#00425F">
+            Verve
+          </text>
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 export type CustomField = {
   id: string
@@ -58,6 +160,14 @@ export default function ContributionInput({
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [mobileMoneyProvider, setMobileMoneyProvider] = useState<'mtn' | 'telecel'>('mtn')
+  const [paymentChannel, setPaymentChannel] = useState<PaymentChannel>('mobile-money')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('') // MM/YY
+  const [cardCvv, setCardCvv] = useState('')
+  const cardBrand = detectCardBrand(cardNumber)
+  const [cardHolderName, setCardHolderName] = useState('')
+  const [threeDsHtml, setThreeDsHtml] = useState<string | null>(null)
+  const [showThreeDs, setShowThreeDs] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
   const [charges, setCharges] = useState<{
@@ -91,6 +201,34 @@ export default function ContributionInput({
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to initiate payment')
+      return data
+    },
+  )
+
+  const { trigger: chargeCard } = useSWRMutation(
+    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-card-eganow`,
+    async (
+      url: string,
+      {
+        arg,
+      }: {
+        arg: {
+          contributionId: string
+          cardNumber: string
+          expiryMonth: number
+          expiryYear: number
+          cvv: string
+          cardHolderName: string
+        }
+      },
+    ) => {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(arg),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Failed to initiate card payment')
       return data
     },
   )
@@ -157,6 +295,7 @@ export default function ContributionInput({
         if (pollingInterval) clearInterval(pollingInterval)
         setPollingInterval(null)
         setShowPaymentModal(false)
+        setShowThreeDs(false)
         setIsLoading(false)
         setPaymentStatus('success')
 
@@ -174,6 +313,7 @@ export default function ContributionInput({
         if (pollingInterval) clearInterval(pollingInterval)
         setPollingInterval(null)
         setShowPaymentModal(false)
+        setShowThreeDs(false)
         setIsLoading(false)
         setPaymentStatus('failed')
 
@@ -193,9 +333,10 @@ export default function ContributionInput({
         clearInterval(interval)
         setPollingInterval(null)
         setShowPaymentModal(false)
+        setShowThreeDs(false)
         setIsLoading(false)
         setPaymentStatus('failed')
-        
+
         toast.error('Payment Timeout', {
           description: 'Payment verification timed out. Please check your phone and try again.',
           duration: 5000,
@@ -224,6 +365,7 @@ export default function ContributionInput({
       try {
         const params = new URLSearchParams({ amount: String(selectedAmount) })
         if (jarId) params.set('jarId', jarId)
+        params.set('paymentMethod', paymentChannel)
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/transactions/get-charges?${params}`,
         )
@@ -241,13 +383,14 @@ export default function ContributionInput({
         // fall through to local fallback
       }
       // Fallback: compute locally if API unavailable
-      const fee = contributionAmount * (transactionFeePercentage / 100)
+      const feePercent = paymentChannel === 'card' ? 3 : transactionFeePercentage
+      const fee = contributionAmount * (feePercent / 100)
       setCharges({
         platformCharge: fee,
         amountPaidByContributor: contributionAmount + fee,
       })
     }, 400)
-  }, [selectedAmount, jarId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedAmount, jarId, paymentChannel]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleContribute = async () => {
     if (selectedAmount <= 0) return
@@ -259,12 +402,34 @@ export default function ContributionInput({
       return
     }
 
-    if (!isAnonymous && !contributorPhoneNumber) {
+    if (paymentChannel === 'mobile-money' && !isAnonymous && !contributorPhoneNumber) {
       toast.error('Missing Information', {
         description: 'Please enter your phone number to continue',
         duration: 4000,
       })
       return
+    }
+
+    if (paymentChannel === 'card') {
+      const digits = cardNumber.replace(/\s+/g, '')
+      const expiryMatch = cardExpiry.match(/^(\d{2})\s*\/\s*(\d{2})$/)
+      // Amex is 15 digits, others 16-19; require at least the brand's expected length.
+      const minLen = cardBrand.key === 'amex' ? 15 : 16
+      if (digits.length < minLen || digits.length > 19 || !/^\d+$/.test(digits)) {
+        toast.error('Invalid card', { description: 'Enter a valid card number', duration: 4000 })
+        return
+      }
+      if (!expiryMatch || Number(expiryMatch[1]) < 1 || Number(expiryMatch[1]) > 12) {
+        toast.error('Invalid card', { description: 'Enter expiry as MM/YY', duration: 4000 })
+        return
+      }
+      if (cardCvv.length !== cardBrand.cvvLength) {
+        toast.error('Invalid card', {
+          description: `Enter the ${cardBrand.cvvLength}-digit ${cardBrand.key === 'amex' ? 'CID' : 'CVV'}`,
+          duration: 4000,
+        })
+        return
+      }
     }
 
     // Validate required custom fields
@@ -291,28 +456,52 @@ export default function ContributionInput({
         contributorName: isAnonymous ? 'Anonymous' : contributorName,
         amount: selectedAmount,
         currency,
-        contributorPhoneNumber: contributorPhoneNumber,
-        mobileMoneyProvider: mobileMoneyProvider,
+        paymentMethod: paymentChannel,
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
+        ...(paymentChannel === 'mobile-money'
+          ? { contributorPhoneNumber, mobileMoneyProvider }
+          : {}),
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
         ...(Object.keys(customFieldValues).length > 0 ? { customFieldValues } : {}),
       })
 
       const contributionId = contributionData.data.id
 
-      // Charge mobile money via Eganow
-      const chargeData = await chargeMomo({ contributionId })
+      if (paymentChannel === 'card') {
+        const [mm, yy] = cardExpiry.split('/').map((s) => s.trim())
+        const chargeData = await chargeCard({
+          contributionId,
+          cardNumber: cardNumber.replace(/\s+/g, ''),
+          expiryMonth: Number(mm),
+          expiryYear: Number(yy),
+          cvv: cardCvv,
+          cardHolderName: isAnonymous ? 'Anonymous' : contributorName,
+        })
 
-      // Get transaction reference from charge response
-      const transactionReference = chargeData?.data?.reference
+        const transactionReference = chargeData?.data?.reference
 
+        // Render the 3D Secure challenge only when Eganow returns a real HTML page.
+        // Frictionless payments return no challenge — just poll for the final status.
+        const redirectHtml = chargeData?.data?.redirectHtml
+        if (typeof redirectHtml === 'string' && redirectHtml.includes('<')) {
+          setThreeDsHtml(redirectHtml)
+          setShowThreeDs(true)
+        }
+        // Frictionless (no challenge): keep the button spinner while polling — no modal.
+        startPaymentPolling(transactionReference)
+      } else {
+        // Charge mobile money via Eganow
+        const chargeData = await chargeMomo({ contributionId })
 
-      // Show waiting modal
-      setShowPaymentModal(true)
+        // Get transaction reference from charge response
+        const transactionReference = chargeData?.data?.reference
 
-      // Start polling for payment verification using transactionReference
-      startPaymentPolling(transactionReference)
+        // Show waiting modal
+        setShowPaymentModal(true)
 
+        // Start polling for payment verification using transactionReference
+        startPaymentPolling(transactionReference)
+      }
     } catch (error: any) {
       setIsLoading(false)
       setPaymentStatus('failed')
@@ -405,32 +594,127 @@ export default function ContributionInput({
           />
         </div>
 
-          <div className="relative">
-            <select
-              value={mobileMoneyProvider}
-              onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'telecel')}
-              className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors px-4 pr-10 appearance-none outline-none focus:border-gray-400"
-            >
-              <option value="mtn">MTN Mobile Money</option>
-              <option value="telecel">Telecel Cash</option>
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-          </div>
+        {/* Payment method toggle (vertical, with supported brand logos) */}
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setPaymentChannel('mobile-money')}
+            className={`w-full flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer ${
+              paymentChannel === 'mobile-money'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <span>Mobile Money</span>
+            <span className="flex items-center rounded-lg bg-white px-2 py-1">
+              <Image
+                src="/payment-logos/momo.png"
+                alt="MTN Mobile Money and Telecel Cash"
+                width={92}
+                height={28}
+                className="h-7 w-auto object-contain"
+              />
+            </span>
+          </button>
 
-        {isAnonymous && (<div className='mb-2'>
-          <small className="text-gray-500">We only use your phone number to process your payment. This information is not shared with the organizer.</small>
-        </div>)}
-
-        <div>
-          <input
-            type={'text'}
-            placeholder="Phone number"
-            value={contributorPhoneNumber}
-            onChange={(e) => setContributorPhoneNumber(e.target.value)}
-            className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
-            required
-          />
+          <button
+            type="button"
+            onClick={() => setPaymentChannel('card')}
+            className={`w-full flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border-2 font-supreme font-medium transition-all cursor-pointer ${
+              paymentChannel === 'card'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <span>Card</span>
+            <span className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5">
+              {(['visa', 'mastercard', 'amex', 'verve', 'discover'] as const).map((b) => (
+                <CardBrandMark key={b} brand={b} />
+              ))}
+            </span>
+          </button>
         </div>
+
+        {paymentChannel === 'mobile-money' ? (
+          <>
+            <div className="relative">
+              <select
+                value={mobileMoneyProvider}
+                onChange={(e) => setMobileMoneyProvider(e.target.value as 'mtn' | 'telecel')}
+                className="w-full h-14 border-2 border-gray-300 rounded-2xl font-supreme bg-white text-black hover:border-gray-400 transition-colors px-4 pr-10 appearance-none outline-none focus:border-gray-400"
+              >
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="telecel">Telecel Cash</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+            </div>
+
+            {isAnonymous && (
+              <div className="mb-2">
+                <small className="text-gray-500">
+                  We only use your phone number to process your payment. This information is not
+                  shared with the organizer.
+                </small>
+              </div>
+            )}
+
+            <div>
+              <input
+                type={'text'}
+                placeholder="Phone number"
+                value={contributorPhoneNumber}
+                onChange={(e) => setContributorPhoneNumber(e.target.value)}
+                className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+                required
+              />
+            </div>
+          </>
+        ) : (
+          <div className="space-y-4">
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-number"
+                placeholder="Card number"
+                value={cardNumber}
+                onChange={(e) => {
+                  const brand = detectCardBrand(e.target.value)
+                  setCardNumber(formatCardNumber(e.target.value, brand))
+                }}
+                className="w-full p-4 pr-20 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                <CardBrandMark brand={cardBrand.key} />
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-exp"
+                placeholder="MM/YY"
+                value={cardExpiry}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^\d]/g, '').slice(0, 4)
+                  setCardExpiry(v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v)
+                }}
+                className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-csc"
+                placeholder={cardBrand.cvvLength === 4 ? 'CID (4 digits)' : 'CVV'}
+                value={cardCvv}
+                onChange={(e) =>
+                  setCardCvv(e.target.value.replace(/[^\d]/g, '').slice(0, cardBrand.cvvLength))
+                }
+                className="w-full p-4 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Custom fields defined by the jar creator */}
         <CustomFields
@@ -489,7 +773,11 @@ export default function ContributionInput({
       <button
         onClick={handleContribute}
         disabled={
-          selectedAmount <= 0 || isLoading || paymentStatus === 'pending' || (!isAnonymous && !contributorName) || (!isAnonymous && !contributorPhoneNumber)
+          selectedAmount <= 0 ||
+          isLoading ||
+          paymentStatus === 'pending' ||
+          (!isAnonymous && !contributorName) ||
+          (paymentChannel === 'mobile-money' && !isAnonymous && !contributorPhoneNumber)
         }
         className="w-full bg-black text-white py-4 mt-8 cursor-pointer rounded-full flex items-center justify-center font-supreme font-medium text-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
@@ -523,6 +811,21 @@ export default function ContributionInput({
         }}
         phoneNumber={contributorPhoneNumber}
         provider={mobileMoneyProvider}
+      />
+
+      {/* 3D Secure challenge for card payments */}
+      <ThreeDSModal
+        isOpen={showThreeDs}
+        html={threeDsHtml}
+        onClose={() => {
+          setShowThreeDs(false)
+          setIsLoading(false)
+          setPaymentStatus('failed')
+          if (pollingInterval) {
+            clearInterval(pollingInterval)
+            setPollingInterval(null)
+          }
+        }}
       />
     </div>
   )

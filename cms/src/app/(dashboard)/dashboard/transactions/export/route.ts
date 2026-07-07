@@ -38,7 +38,7 @@ function buildWhere(params: URLSearchParams): Record<string, any> {
     else if (values.length > 1) where.paymentStatus = { in: values }
   }
   if (type) {
-    const valid = ['contribution', 'payout', 'refund']
+    const valid = ['contribution', 'payout']
     const values = type.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) where.type = { equals: values[0] }
     else if (values.length > 1) where.type = { in: values }

@@ -84,6 +84,11 @@ export class FCMPushNotifications {
     data?: Record<string, string>,
   ): Promise<{ success: boolean; successCount: number; failureCount: number }> {
     try {
+      // Skip FCM entirely in local/dev to avoid noisy "no tokens" errors.
+      if (process.env.DISABLE_FCM === 'true') {
+        return { success: true, successCount: 0, failureCount: 0 }
+      }
+
       if (!tokens || tokens.length === 0) {
         throw new Error('No tokens provided')
       }

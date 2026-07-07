@@ -54,6 +54,40 @@ export const SystemSettings: GlobalConfig = {
             },
           ],
         },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'cardCollectionFee',
+              label: 'Card Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 3,
+              min: 0,
+              max: 100,
+              admin: {
+                description: 'Total fee on card contributions (e.g., 3%). Paid by the contributor.',
+                step: 0.01,
+                width: '50%',
+              },
+            },
+            {
+              name: 'hogapayCardCollectionFeePercent',
+              label: 'Card Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.5,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  "Hogapay's share of the card collection fee (e.g., 0.5%). Rest goes to Eganow.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
       ],
     },
 

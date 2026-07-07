@@ -31,8 +31,6 @@ const pageTitles: Record<string, string> = {
   '/dashboard/jars': 'Jars',
   '/dashboard/jar-reports': 'Jar Reports',
   '/dashboard/transactions': 'Transactions',
-  '/dashboard/refunds': 'Refunds',
-  '/dashboard/auto-refunds': 'Auto Refunds',
   '/dashboard/disputes': 'Disputes',
   '/dashboard/cashbacks': 'Cashbacks',
   '/dashboard/analytics': 'Analytics',

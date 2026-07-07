@@ -13,7 +13,6 @@ import {
   BarChart3,
   Flag,
   Bell,
-  RotateCcw,
   Wallet,
   Gift,
   Share2,
@@ -23,7 +22,6 @@ import {
   ShieldAlert,
   Mail,
   UserX,
-  RefreshCcwDot,
   PanelLeftClose,
   PanelLeftOpen,
   Percent,
@@ -70,8 +68,6 @@ const navGroups = [
     label: 'Payments',
     items: [
       { label: 'Transactions', href: '/dashboard/transactions', icon: ArrowLeftRight },
-      { label: 'Refunds', href: '/dashboard/refunds', icon: RotateCcw },
-      { label: 'Auto Refunds', href: '/dashboard/auto-refunds', icon: RefreshCcwDot },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
       { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
     ],
@@ -113,28 +109,12 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const { data: pendingRefunds } = useSWR(
-    '/api/refunds?where[status][equals]=pending&limit=0',
-    fetcher,
-    { refreshInterval: 30000 },
-  )
-  const pendingCount = pendingRefunds?.totalDocs ?? 0
-
   const { data: openDisputes } = useSWR(
     '/api/disputes?where[or][0][status][equals]=open&where[or][1][status][equals]=under-review&limit=0',
     fetcher,
     { refreshInterval: 30000 },
   )
   const openDisputesCount = openDisputes?.totalDocs ?? 0
-
-  const { data: pendingAutoRefunds } = useSWR(
-    '/api/refunds?where[refundType][equals]=auto&where[status][equals]=awaiting_approval&limit=100&depth=0',
-    fetcher,
-    { refreshInterval: 30000 },
-  )
-  const pendingAutoRefundsCount = pendingAutoRefunds?.docs
-    ? new Set(pendingAutoRefunds.docs.map((r: any) => r.jar)).size
-    : 0
 
   const { data: unreadEmails } = useSWR(
     '/api/emails?where[direction][equals]=inbound&where[isRead][equals]=false&limit=0',
@@ -199,10 +179,8 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                     ? pathname === item.href
                     : pathname.startsWith(item.href)
                   const count =
-                    item.href === '/dashboard/refunds' && pendingCount > 0 ? pendingCount :
                     item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
                     item.href === '/dashboard/emails' && unreadEmailsCount > 0 ? unreadEmailsCount :
-                    item.href === '/dashboard/auto-refunds' && pendingAutoRefundsCount > 0 ? pendingAutoRefundsCount :
                     null
 
                   const link = (

@@ -33,9 +33,18 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
     const hogapayCollectionFeePercent = (settings.hogapayCollectionFeePercent ?? 0.8) as number
     const hogapayTransferFeePercent = (settings.hogapayTransferFeePercent ?? 0.5) as number
     const collectionFeePercent = (settings.collectionFee ?? 2) as number
+    const cardCollectionFeePercent = (settings.cardCollectionFee ?? 3) as number
+    const hogapayCardCollectionFeePercent = (settings.hogapayCardCollectionFeePercent ??
+      0.5) as number
 
     if (data.type === 'contribution') {
-      if (data.paymentMethod === 'mobile-money') {
+      if (data.paymentMethod === 'mobile-money' || data.paymentMethod === 'card') {
+        // Card contributions use their own (typically higher) fee rates.
+        const isCard = data.paymentMethod === 'card'
+        const feePercent = isCard ? cardCollectionFeePercent : collectionFeePercent
+        const hogapayFeePercent = isCard
+          ? hogapayCardCollectionFeePercent
+          : hogapayCollectionFeePercent
         // Resolve which user's discount to apply:
         // 1. Explicit contributorUserId on the transaction
         // 2. Fall back to the jar creator (used for public pay-page contributions)
@@ -86,8 +95,8 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
 
         const charges = calculateCharges({
           amountContributed: data.amountContributed,
-          hogapayCollectionFeePercent,
-          collectionFeePercent,
+          hogapayCollectionFeePercent: hogapayFeePercent,
+          collectionFeePercent: feePercent,
           discountPercent,
         })
 
@@ -100,7 +109,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountPercent: charges.discountPercent,
           discountAmount: charges.discountAmount,
           amountToSendToEganow: charges.amountToSendToEganow,
-          collectionFeePercent,
+          collectionFeePercent: feePercent,
         }
       } else {
         // No charges for cash or other payment methods

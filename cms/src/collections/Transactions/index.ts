@@ -2,9 +2,11 @@ import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
+import { chargeCardEganow } from './endpoints/charge-card-eganow'
 import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { eganowWebhook } from './endpoints/eganow-webhook'
+import { eganowCardWebhook } from './endpoints/eganow-card-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { payoutEganow } from './endpoints/payout-eganow'
@@ -20,7 +22,6 @@ import { verifyPendingTransactions } from './endpoints/verify-pending-transactio
 import { exportContributions } from './endpoints/export-contributions'
 import { exportContributionsMobile } from './endpoints/export-contributions-mobile'
 import { recalculateCharges } from './endpoints/recalculate-charges'
-import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
@@ -272,7 +273,8 @@ export const Transactions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Transaction reference for tracking payments',
-        condition: (data) => data?.paymentMethod === 'mobile-money',
+        condition: (data) =>
+          data?.paymentMethod === 'mobile-money' || data?.paymentMethod === 'card',
       },
     },
     {
@@ -408,6 +410,21 @@ export const Transactions: CollectionConfig = {
       handler: chargeMomoEganow,
     },
     {
+      path: '/charge-card-eganow',
+      method: 'post',
+      handler: chargeCardEganow,
+    },
+    {
+      path: '/eganow-card-webhook',
+      method: 'post',
+      handler: eganowCardWebhook,
+    },
+    {
+      path: '/eganow-card-webhook',
+      method: 'options',
+      handler: eganowCardWebhook,
+    },
+    {
       path: '/chango-webhook',
       method: 'post',
       handler: changoWebhook,
@@ -466,11 +483,6 @@ export const Transactions: CollectionConfig = {
       path: '/recalculate-charges',
       method: 'post',
       handler: recalculateCharges,
-    },
-    {
-      path: '/refund-contribution',
-      method: 'post',
-      handler: refundContribution,
     },
     {
       path: '/share-contributions',

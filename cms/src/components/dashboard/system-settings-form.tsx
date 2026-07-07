@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, Percent, Clock, Gift, ArrowRightLeft } from 'lucide-react'
+import { Loader2, Percent, Clock, Gift, ArrowRightLeft, CreditCard } from 'lucide-react'
 import { useIsAdmin } from './dashboard-user-context'
 
 interface Settings {
   collectionFee: number
   hogapayCollectionFeePercent: number
+  cardCollectionFee: number
+  hogapayCardCollectionFeePercent: number
   transferFeePercentage: number
   hogapayTransferFeePercent: number
   settlementDelayHours: number
@@ -66,32 +68,49 @@ function SettingsCard({
   )
 }
 
+const DEFAULTS: Settings = {
+  collectionFee: 1.95,
+  hogapayCollectionFeePercent: 0.8,
+  cardCollectionFee: 3,
+  hogapayCardCollectionFeePercent: 0.5,
+  transferFeePercentage: 1,
+  hogapayTransferFeePercent: 0.5,
+  settlementDelayHours: 0.033,
+  referralFirstContributionBonus: 5,
+  referralFeeSharePercent: 20,
+  referralMinWithdrawalAmount: 20,
+  referralMaxWithdrawalAmount: 500,
+}
+
+type StringSettings = Record<keyof Settings, string>
+
 export function SystemSettingsForm({ settings }: { settings: Settings }) {
   const isAdmin = useIsAdmin()
-  const [values, setValues] = useState<Settings>({
-    collectionFee: settings.collectionFee ?? 1.95,
-    hogapayCollectionFeePercent: settings.hogapayCollectionFeePercent ?? 0.8,
-    transferFeePercentage: settings.transferFeePercentage ?? 1,
-    hogapayTransferFeePercent: settings.hogapayTransferFeePercent ?? 0.5,
-    settlementDelayHours: settings.settlementDelayHours ?? 0.033,
-    referralFirstContributionBonus: settings.referralFirstContributionBonus ?? 5,
-    referralFeeSharePercent: settings.referralFeeSharePercent ?? 20,
-    referralMinWithdrawalAmount: settings.referralMinWithdrawalAmount ?? 20,
-    referralMaxWithdrawalAmount: settings.referralMaxWithdrawalAmount ?? 500,
+  // Keep raw string values in state so partial entries like "0." and "0.5" are typable.
+  const [values, setValues] = useState<StringSettings>(() => {
+    const initial = {} as StringSettings
+    for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
+      initial[key] = String(settings[key] ?? DEFAULTS[key])
+    }
+    return initial
   })
   const [saving, setSaving] = useState(false)
 
-  const set = (name: keyof Settings, value: number) =>
+  const set = (name: keyof Settings, value: string) =>
     setValues((prev) => ({ ...prev, [name]: value }))
 
   const handleSave = async () => {
     setSaving(true)
     try {
+      const payload = {} as Record<keyof Settings, number>
+      for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
+        payload[key] = parseFloat(values[key]) || 0
+      }
       const res = await fetch('/api/globals/system-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -107,27 +126,48 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
 
   const numInput = (name: keyof Settings, step = 0.01) => (
     <Input
-      type="number"
+      type="text"
+      inputMode="decimal"
       step={step}
       value={values[name]}
-      onChange={(e) => set(name, parseFloat(e.target.value) || 0)}
+      onChange={(e) => {
+        const v = e.target.value
+        // Allow only numbers and a single decimal point (and empty while typing)
+        if (v === '' || /^\d*\.?\d*$/.test(v)) set(name, v)
+      }}
       className="h-9 text-right"
     />
   )
 
+  const settlementHours = parseFloat(values.settlementDelayHours) || 0
   const settlementLabel =
-    values.settlementDelayHours < 1
-      ? `${Math.round(values.settlementDelayHours * 60)} min`
-      : `${values.settlementDelayHours}h`
+    settlementHours < 1 ? `${Math.round(settlementHours * 60)} min` : `${settlementHours}h`
 
   return (
     <div className="space-y-4">
-      <SettingsCard icon={Percent} title="Collection" description="Fees charged on contributions">
+      <SettingsCard
+        icon={Percent}
+        title="Collection — Mobile Money"
+        description="Fees charged on mobile money contributions"
+      >
         <SettingRow label="Fee (%)" description="Total fee paid by the contributor">
           {numInput('collectionFee', 0.01)}
         </SettingRow>
         <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the collection fee">
           {numInput('hogapayCollectionFeePercent', 0.01)}
+        </SettingRow>
+      </SettingsCard>
+
+      <SettingsCard
+        icon={CreditCard}
+        title="Collection — Card"
+        description="Fees charged on card contributions"
+      >
+        <SettingRow label="Fee (%)" description="Total fee paid by the contributor">
+          {numInput('cardCollectionFee', 0.01)}
+        </SettingRow>
+        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the card collection fee">
+          {numInput('hogapayCardCollectionFeePercent', 0.01)}
         </SettingRow>
       </SettingsCard>
 

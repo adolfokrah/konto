@@ -14,17 +14,10 @@ export const shareContributions = async (req: PayloadRequest) => {
       return Response.json({ success: false, message: error || 'Jar not found' }, { status: 404 })
     }
 
-    // Add transaction type filter if provided, but always exclude refunds
+    // Add transaction type filter if provided
     const typeList = parseList(transactionTypes)
     if (typeList?.length) {
-      const filtered = typeList.filter((t) => t !== 'refund')
-      if (filtered.length) {
-        where.type = { in: filtered }
-      } else {
-        where.type = { not_equals: 'refund' }
-      }
-    } else {
-      where.type = { not_equals: 'refund' }
+      where.type = { in: typeList }
     }
 
     const contributions = await req.payload.find({

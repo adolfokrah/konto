@@ -1,4 +1,5 @@
 import { getEganow } from '@/utilities/initalise'
+import { getWebhookBaseURL } from '@/utilities/getURL'
 
 const PROVIDER_MAP: Record<string, string> = {
   mtn: 'MTNGH',
@@ -64,7 +65,7 @@ export const processReferralWithdrawalTask = {
         expiryDateYear: 0,
         cvv: '',
         languageId: 'en',
-        callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/transactions/eganow-payout-webhook`,
+        callback: `${getWebhookBaseURL()}/api/transactions/eganow-payout-webhook`,
       }
       console.log('[Eganow] referral payout request:', JSON.stringify(payoutPayload))
       const payoutResult = await getEganow().payout(payoutPayload)

@@ -28,13 +28,13 @@ const REMINDER_COPY: Record<number, { badge: string; badgeColor: string; intro: 
     badge: '2nd Reminder',
     badgeColor: '#D97706',
     intro: 'Your jar balance is still unclaimed — it has now been over 10 days.',
-    urgency: 'Please withdraw your balance within the next 4 days to avoid an automatic refund.',
+    urgency: 'Please withdraw your balance within the next 4 days.',
   },
   12: {
     badge: 'Final Warning',
     badgeColor: '#DC2626',
     intro: 'This is your final reminder. Your jar balance has been unclaimed for over 12 days.',
-    urgency: 'Withdraw your balance within the next 2 days or contributions will automatically be refunded to contributors.',
+    urgency: 'Withdraw your balance within the next 2 days.',
   },
 }
 
@@ -156,13 +156,6 @@ export default function WithdrawalReminder({
       </table>
 
       <p>{copy.urgency}</p>
-
-      {reminderDay >= 12 && (
-        <p style={{ color: '#DC2626', fontSize: '13px' }}>
-          <strong>Note:</strong> Unclaimed balances are subject to our auto-refund policy. Refunds
-          are irreversible once initiated.
-        </p>
-      )}
     </Layout>
   )
 }
