@@ -66,8 +66,11 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     // by polling Eganow's status API directly while the card payment is still pending.
     if (contribution.paymentMethod === 'card' && contribution.paymentStatus === 'pending') {
       try {
+        // Card status must be queried by the Eganow reference number (stored in
+        // transactionReference), NOT our contribution id — Eganow does not recognise
+        // our id for card transactions ("transaction does not exist").
         const statusResp = await getEganow().checkTransactionStatus({
-          transactionId: String(contribution.id),
+          transactionId: String(contribution.transactionReference),
           languageId: 'en',
         })
         if (statusResp.isSuccess) {

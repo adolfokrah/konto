@@ -113,8 +113,8 @@ export const eganowCardWebhook = async (req: PayloadRequest) => {
     }
 
     // Verify against the Eganow status API before trusting the webhook.
-    // Our original transactionId is the contribution id.
-    const newStatus = await verifyCardWithEganow(String(contribution.id), status)
+    // Card status must be queried by the Eganow reference number, not our contribution id.
+    const newStatus = await verifyCardWithEganow(eganowReferenceNo, status)
 
     await req.payload.update({
       collection: 'transactions',

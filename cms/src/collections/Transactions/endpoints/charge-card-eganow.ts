@@ -121,8 +121,10 @@ export const chargeCardEganow = async (req: PayloadRequest) => {
 
     const mappedStatus = statusMap[collectionResult.transactionStatus] || 'pending'
 
-    // Eganow returns the 3D Secure challenge as a full HTML document in `redirectUrl`.
+    // Eganow returns the 3D Secure challenge as an HTML document in `redirectUrl`.
     // A frictionless / already-authorised payment returns "N/A" (or empty) — no challenge.
+    // Per Eganow docs the challenge HTML may be base64-encoded (prod) or raw (sandbox),
+    // so decode when it doesn't already look like HTML.
     const rawRedirect = (
       collectionResult.redirectUrl ||
       (collectionResult as any).redirectHtml ||
@@ -130,8 +132,21 @@ export const chargeCardEganow = async (req: PayloadRequest) => {
     )
       .toString()
       .trim()
-    const challengeHtml =
-      rawRedirect && rawRedirect !== 'N/A' && rawRedirect.includes('<') ? rawRedirect : undefined
+
+    let challengeHtml: string | undefined
+    if (rawRedirect && rawRedirect !== 'N/A') {
+      if (rawRedirect.includes('<')) {
+        challengeHtml = rawRedirect
+      } else {
+        // Try base64 → HTML
+        try {
+          const decoded = Buffer.from(rawRedirect, 'base64').toString('utf8')
+          if (decoded.includes('<')) challengeHtml = decoded
+        } catch {
+          // not valid base64 — leave undefined
+        }
+      }
+    }
 
     // Safe diagnostic (no card data): status + whether a challenge was returned
     console.log(
