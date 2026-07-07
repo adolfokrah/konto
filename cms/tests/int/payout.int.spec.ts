@@ -12,6 +12,7 @@ describe('Payout Endpoint Integration Tests', () => {
   let creatorUser: any
   let otherUser: any
   let testJar: any
+  let creatorAccount: any
 
   beforeAll(async () => {
     const payloadConfig = await config
@@ -23,6 +24,11 @@ describe('Payout Endpoint Integration Tests', () => {
     const transactions = await payload.find({ collection: 'transactions' })
     for (const tx of transactions.docs) {
       await payload.delete({ collection: 'transactions', id: tx.id })
+    }
+
+    const withdrawalAccounts = await payload.find({ collection: 'withdrawal-accounts' })
+    for (const acc of withdrawalAccounts.docs) {
+      await payload.delete({ collection: 'withdrawal-accounts', id: acc.id })
     }
 
     const jars = await payload.find({ collection: 'jars' })
@@ -49,6 +55,7 @@ describe('Payout Endpoint Integration Tests', () => {
         phoneNumber: '+233000000001',
         country: 'gh' as const,
         kycStatus: 'verified',
+        kybStatus: 'approved',
         role: 'user',
         accountNumber: '0000000001',
         bank: 'mtn',
@@ -67,11 +74,25 @@ describe('Payout Endpoint Integration Tests', () => {
         phoneNumber: '+233000000002',
         country: 'gh' as const,
         kycStatus: 'verified',
+        kybStatus: 'approved',
         role: 'user',
         accountNumber: '0000000002',
         bank: 'mtn',
         accountHolder: 'Other User',
       },
+    })
+
+    creatorAccount = await payload.create({
+      collection: 'withdrawal-accounts',
+      data: {
+        user: creatorUser.id,
+        type: 'mobile-money' as const,
+        provider: 'mtn',
+        accountNumber: '0000000001',
+        accountHolder: 'Payout Creator',
+        isDefault: true,
+      },
+      overrideAccess: true,
     })
 
     testJar = await payload.create({
@@ -81,8 +102,10 @@ describe('Payout Endpoint Integration Tests', () => {
         status: 'open',
         currency: 'GHS' as const,
         creator: creatorUser.id,
+        withdrawalAccount: creatorAccount.id,
         isActive: true,
       },
+      overrideAccess: true,
     })
   })
 
@@ -146,6 +169,7 @@ describe('Payout Endpoint Integration Tests', () => {
           phoneNumber: '+233000000003',
           country: 'gh' as const,
           kycStatus: 'verified',
+          kybStatus: 'approved',
           role: 'user',
         },
       })
@@ -167,7 +191,7 @@ describe('Payout Endpoint Integration Tests', () => {
 
       expect(response.status).toBe(400)
       expect(result.success).toBe(false)
-      expect(result.message).toContain('withdrawal account is missing')
+      expect(result.message).toContain('withdrawal account')
     })
 
     it('should return 403 when jar is frozen', async () => {
@@ -282,6 +306,7 @@ describe('Payout Endpoint Integration Tests', () => {
           phoneNumber: '+233000000004',
           country: 'gh' as const,
           kycStatus: 'verified',
+          kybStatus: 'approved',
           role: 'user',
           accountNumber: '0000000004',
           bank: 'vodafone',
@@ -289,10 +314,24 @@ describe('Payout Endpoint Integration Tests', () => {
         },
       })
 
+      const badAccount = await payload.create({
+        collection: 'withdrawal-accounts',
+        data: {
+          user: unsupportedBankUser.id,
+          type: 'mobile-money' as const,
+          provider: 'vodafone',
+          accountNumber: '0000000004',
+          accountHolder: 'Bad Bank User',
+          isDefault: true,
+        },
+        overrideAccess: true,
+      })
+
       await payload.update({
         collection: 'jars',
         id: testJar.id,
-        data: { creator: unsupportedBankUser.id },
+        data: { creator: unsupportedBankUser.id, withdrawalAccount: badAccount.id },
+        overrideAccess: true,
       })
 
       const req = buildMockRequest({ user: unsupportedBankUser })
@@ -452,6 +491,7 @@ describe('Payout Endpoint Integration Tests', () => {
           collector: creatorUser.id,
           type: 'payout' as const,
           paymentStatus: 'pending' as const,
+          withdrawalAccount: creatorAccount.id,
           payoutFeePercentage: feePercentage,
           payoutFeeAmount: fee,
           payoutNetAmount: amount - fee,
@@ -588,17 +628,23 @@ describe('Payout Endpoint Integration Tests', () => {
     })
 
     it('should return error for unsupported provider', async () => {
-      // Update creator's bank to an unsupported provider so the task picks it up
-      await payload.update({
-        collection: 'users',
-        id: creatorUser.id,
-        data: { bank: 'unsupported-bank' as any },
+      // Link the payout to an account with an unsupported momo provider.
+      const badAccount = await payload.create({
+        collection: 'withdrawal-accounts',
+        data: {
+          user: creatorUser.id,
+          type: 'mobile-money' as const,
+          provider: 'unsupported-bank',
+          accountNumber: '0000000001',
+          accountHolder: 'Payout Creator',
+        },
         overrideAccess: true,
       })
 
       await createSettledContribution(testJar.id, 500)
       const pendingTx = await createPendingPayoutTx(testJar.id, 500, {
         mobileMoneyProvider: 'unsupported-bank',
+        withdrawalAccount: badAccount.id,
       })
 
       const result = await processPayoutTask.handler({

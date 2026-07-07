@@ -13,6 +13,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
@@ -181,6 +182,7 @@ void main() {
         BlocProvider.value(value: getIt<JarSummaryBloc>()),
         BlocProvider.value(value: getIt<MediaBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
+        BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
       ],
       child: MaterialApp.router(
         localizationsDelegates: const [
@@ -389,6 +391,7 @@ void main() {
 
         // Create jar with all required parameters
         final jarCreateEvent = JarCreateSubmitted(
+          withdrawalAccount: 'test-account-id',
           name: 'Complete Test Jar',
           description: 'A comprehensive test jar with all parameters',
           jarGroup: 'savings',
@@ -439,6 +442,7 @@ void main() {
 
       // Try to create jar with empty name (should fail validation)
       final invalidJarCreateEvent = JarCreateSubmitted(
+        withdrawalAccount: 'test-account-id',
         name: '', // Empty name should cause validation error
         jarGroup: 'personal',
         currency: 'usd',
@@ -490,6 +494,7 @@ void main() {
       );
 
       final usdJarEvent = JarCreateSubmitted(
+        withdrawalAccount: 'test-account-id',
         name: 'USD Test Jar',
         jarGroup: 'investment',
         currency: 'usd',
@@ -541,6 +546,7 @@ void main() {
       );
 
       final collaborativeJarEvent = JarCreateSubmitted(
+        withdrawalAccount: 'test-account-id',
         name: 'Collaboration Test Jar',
         jarGroup: 'group-savings',
         currency: 'GHS',
