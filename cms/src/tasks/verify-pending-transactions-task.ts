@@ -24,12 +24,13 @@ export const verifyPendingTransactionsTask = {
       // 1 hour ago — transactions older than this are auto-failed
       const maxPendingTime = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-      // Find pending mobile-money and card transactions older than 5 minutes
+      // Find pending mobile-money, card and bank transactions older than 5 minutes
+      // (bank = bank payouts). Covers both contributions and payouts.
       const pendingTransactions = await payload.find({
         collection: 'transactions',
         where: {
           paymentStatus: { equals: 'pending' },
-          paymentMethod: { in: ['mobile-money', 'card'] },
+          paymentMethod: { in: ['mobile-money', 'card', 'bank'] },
           createdAt: { less_than: cutoffTime },
         },
         limit: 500,
