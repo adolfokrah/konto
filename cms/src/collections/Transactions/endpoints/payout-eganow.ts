@@ -167,6 +167,20 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Bank payouts may withdraw a user-chosen amount (fee is charged on that
+    // amount only). Mobile money always pays out the full available balance.
+    const requestedAmount = Number(req.data?.amount)
+    let payoutBase = netBalance
+    if (isBankAccount && Number.isFinite(requestedAmount) && requestedAmount > 0) {
+      if (requestedAmount > netBalance) {
+        return Response.json(
+          { success: false, message: 'Amount exceeds the available balance' },
+          { status: 400 },
+        )
+      }
+      payoutBase = requestedAmount
+    }
+
     // Find all accepted admin collectors in the jar
     const adminCollectors = ((jar.invitedCollectors as any[]) || []).filter(
       (ic: any) => ic.role === 'admin' && ic.status === 'accepted',
@@ -189,9 +203,11 @@ export const payoutEganow = async (req: PayloadRequest) => {
 
       // Jar has admin collectors — create transaction as awaiting-approval and skip Eganow
       const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-      const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-      const transferFee = (netBalance * transferFeePercentage) / 100
-      const expectedNetAmount = netBalance - transferFee
+      const transferFeePercentage = isBankAccount
+        ? (systemSettings as any)?.bankTransferFeePercentage || 1
+        : (systemSettings as any)?.transferFeePercentage || 1
+      const transferFee = (payoutBase * transferFeePercentage) / 100
+      const expectedNetAmount = payoutBase - transferFee
 
       const transaction = await req.payload.create({
         collection: 'transactions',
@@ -202,7 +218,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
           jar: jarId,
           withdrawalAccount: account.id,
           ...(isBankAccount ? {} : { mobileMoneyProvider: account.provider }),
-          amountContributed: -netBalance,
+          amountContributed: -payoutBase,
           collector: creator.id,
           contributorPhoneNumber: account.accountNumber,
           contributor: account.accountHolder,
@@ -215,7 +231,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       })
 
       // Send notification to each admin collector (no approval records created yet)
-      const amount = Math.abs(netBalance).toLocaleString(undefined, {
+      const amount = Math.abs(payoutBase).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })
@@ -235,7 +251,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
                 data: {
                   jarId,
                   transactionId: transaction.id,
-                  amount: netBalance,
+                  amount: payoutBase,
                   type: 'payout-approval',
                 },
               },
@@ -255,9 +271,11 @@ export const payoutEganow = async (req: PayloadRequest) => {
     // subsequent request immediately sees a pending payout and is rejected,
     // eliminating the double-payout race window.
     const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-    const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-    const transferFee = (netBalance * transferFeePercentage) / 100
-    const expectedNetAmount = netBalance - transferFee
+    const transferFeePercentage = isBankAccount
+      ? (systemSettings as any)?.bankTransferFeePercentage || 1
+      : (systemSettings as any)?.transferFeePercentage || 1
+    const transferFee = (payoutBase * transferFeePercentage) / 100
+    const expectedNetAmount = payoutBase - transferFee
 
     const data = {
       paymentStatus: 'pending',
@@ -266,7 +284,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       jar: jarId,
       withdrawalAccount: account.id,
       ...(isBankAccount ? {} : { mobileMoneyProvider: account.provider }),
-      amountContributed: -netBalance,
+      amountContributed: -payoutBase,
       collector: creator.id,
       contributorPhoneNumber: account.accountNumber,
       contributor: account.accountHolder,

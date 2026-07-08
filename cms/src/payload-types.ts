@@ -3929,13 +3929,21 @@ export interface SystemSetting {
    */
   hogapayCardCollectionFeePercent: number;
   /**
-   * Total fee on payouts (e.g., 1%). Deducted from the payout amount.
+   * Total fee on mobile money payouts (e.g., 1%). Deducted from the payout amount.
    */
   transferFeePercentage: number;
   /**
-   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   * Hogapay's share of the mobile money transfer fee (e.g., 0.5%). Rest goes to Eganow.
    */
   hogapayTransferFeePercent: number;
+  /**
+   * Total fee on bank payouts (e.g., 1%). Deducted from the payout amount.
+   */
+  bankTransferFeePercentage: number;
+  /**
+   * Hogapay's share of the bank transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   */
+  hogapayBankTransferFeePercent: number;
   /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
@@ -4058,6 +4066,8 @@ export interface SystemSettingsSelect<T extends boolean = true> {
   hogapayCardCollectionFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
+  bankTransferFeePercentage?: T;
+  hogapayBankTransferFeePercent?: T;
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;

@@ -181,8 +181,13 @@ export const processReferralBonus = async ({
 
       if (jarId !== firstJarId) return
 
-      const transferFeePercentage = settings?.transferFeePercentage ?? 1
-      const hogapayTransferFeePercent = settings?.hogapayTransferFeePercent ?? 0.5
+      const isBankPayout = doc.paymentMethod === 'bank'
+      const transferFeePercentage = isBankPayout
+        ? (settings?.bankTransferFeePercentage ?? 1)
+        : (settings?.transferFeePercentage ?? 1)
+      const hogapayTransferFeePercent = isBankPayout
+        ? (settings?.hogapayBankTransferFeePercent ?? 0.5)
+        : (settings?.hogapayTransferFeePercent ?? 0.5)
       const referralFeeSharePercent = settings?.referralFeeSharePercent ?? 20
 
       // Hogapay's share of the payout fee

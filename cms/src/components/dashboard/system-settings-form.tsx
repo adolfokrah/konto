@@ -4,7 +4,16 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, Percent, Clock, Gift, ArrowRightLeft, CreditCard } from 'lucide-react'
+import {
+  Loader2,
+  Smartphone,
+  CreditCard,
+  Landmark,
+  Clock,
+  Gift,
+  Wallet,
+  Receipt,
+} from 'lucide-react'
 import { useIsAdmin } from './dashboard-user-context'
 
 interface Settings {
@@ -14,58 +23,13 @@ interface Settings {
   hogapayCardCollectionFeePercent: number
   transferFeePercentage: number
   hogapayTransferFeePercent: number
+  bankTransferFeePercentage: number
+  hogapayBankTransferFeePercent: number
   settlementDelayHours: number
   referralFirstContributionBonus: number
   referralFeeSharePercent: number
   referralMinWithdrawalAmount: number
   referralMaxWithdrawalAmount: number
-}
-
-function SettingRow({
-  label,
-  description,
-  children,
-}: {
-  label: string
-  description?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex items-center justify-between gap-6 py-4 border-b border-border/50 last:border-0">
-      <div className="min-w-0">
-        <p className="text-sm font-medium">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
-      </div>
-      <div className="shrink-0 w-36">{children}</div>
-    </div>
-  )
-}
-
-function SettingsCard({
-  icon: Icon,
-  title,
-  description,
-  children,
-}: {
-  icon: React.ElementType
-  title: string
-  description: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <div className="px-5">{children}</div>
-    </div>
-  )
 }
 
 const DEFAULTS: Settings = {
@@ -75,6 +39,8 @@ const DEFAULTS: Settings = {
   hogapayCardCollectionFeePercent: 0.5,
   transferFeePercentage: 1,
   hogapayTransferFeePercent: 0.5,
+  bankTransferFeePercentage: 1,
+  hogapayBankTransferFeePercent: 0.5,
   settlementDelayHours: 0.033,
   referralFirstContributionBonus: 5,
   referralFeeSharePercent: 20,
@@ -83,10 +49,46 @@ const DEFAULTS: Settings = {
 }
 
 type StringSettings = Record<keyof Settings, string>
+type TabKey = 'fees' | 'payouts' | 'referrals'
+
+const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
+  { key: 'fees', label: 'Collection fees', icon: Receipt },
+  { key: 'payouts', label: 'Payouts', icon: Wallet },
+  { key: 'referrals', label: 'Referrals', icon: Gift },
+]
+
+/** A titled sub-group with an icon and a responsive grid of fields. */
+function Group({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType
+  title: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-muted/30">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-tight">{title}</p>
+          {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        </div>
+      </div>
+      <div className="grid gap-x-6 gap-y-5 p-5 sm:grid-cols-2">{children}</div>
+    </div>
+  )
+}
 
 export function SystemSettingsForm({ settings }: { settings: Settings }) {
   const isAdmin = useIsAdmin()
-  // Keep raw string values in state so partial entries like "0." and "0.5" are typable.
+  const [tab, setTab] = useState<TabKey>('fees')
+  // Keep raw string values so partial entries like "0." and "0.5" are typable.
   const [values, setValues] = useState<StringSettings>(() => {
     const initial = {} as StringSettings
     for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
@@ -124,19 +126,43 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
     }
   }
 
-  const numInput = (name: keyof Settings, step = 0.01) => (
-    <Input
-      type="text"
-      inputMode="decimal"
-      step={step}
-      value={values[name]}
-      onChange={(e) => {
-        const v = e.target.value
-        // Allow only numbers and a single decimal point (and empty while typing)
-        if (v === '' || /^\d*\.?\d*$/.test(v)) set(name, v)
-      }}
-      className="h-9 text-right"
-    />
+  /** Stacked field: label, input, helper text. Rendered via a function call
+   *  (not a nested component) so inputs keep focus across re-renders. */
+  const field = ({
+    name,
+    label,
+    hint,
+    suffix,
+    step = 0.01,
+  }: {
+    name: keyof Settings
+    label: string
+    hint?: string
+    suffix?: string
+    step?: number
+  }) => (
+    <div key={name} className="min-w-0">
+      <label className="text-sm font-medium">{label}</label>
+      <div className="relative mt-1.5">
+        <Input
+          type="text"
+          inputMode="decimal"
+          step={step}
+          value={values[name]}
+          onChange={(e) => {
+            const v = e.target.value
+            if (v === '' || /^\d*\.?\d*$/.test(v)) set(name, v)
+          }}
+          className="h-10 pr-10 tabular-nums"
+        />
+        {suffix && (
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+            {suffix}
+          </span>
+        )}
+      </div>
+      {hint && <p className="text-xs text-muted-foreground mt-1.5">{hint}</p>}
+    </div>
   )
 
   const settlementHours = parseFloat(values.settlementDelayHours) || 0
@@ -144,79 +170,142 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
     settlementHours < 1 ? `${Math.round(settlementHours * 60)} min` : `${settlementHours}h`
 
   return (
-    <div className="space-y-4">
-      <SettingsCard
-        icon={Percent}
-        title="Collection — Mobile Money"
-        description="Fees charged on mobile money contributions"
-      >
-        <SettingRow label="Fee (%)" description="Total fee paid by the contributor">
-          {numInput('collectionFee', 0.01)}
-        </SettingRow>
-        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the collection fee">
-          {numInput('hogapayCollectionFeePercent', 0.01)}
-        </SettingRow>
-      </SettingsCard>
+    <div className="space-y-5">
+      {/* Tabs */}
+      <div className="inline-flex flex-wrap gap-1 rounded-xl border bg-muted/40 p-1">
+        {TABS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              tab === key
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <SettingsCard
-        icon={CreditCard}
-        title="Collection — Card"
-        description="Fees charged on card contributions"
-      >
-        <SettingRow label="Fee (%)" description="Total fee paid by the contributor">
-          {numInput('cardCollectionFee', 0.01)}
-        </SettingRow>
-        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the card collection fee">
-          {numInput('hogapayCardCollectionFeePercent', 0.01)}
-        </SettingRow>
-      </SettingsCard>
+      {/* Collection fees */}
+      {tab === 'fees' && (
+        <div className="space-y-5">
+          <Group
+            icon={Smartphone}
+            title="Mobile money"
+            description="Fees on mobile money contributions"
+          >
+            {field({ name: 'collectionFee', label: 'Fee', suffix: '%', hint: 'Total fee paid by the contributor' })}
+            {field({
+              name: 'hogapayCollectionFeePercent',
+              label: 'Hogapay split',
+              suffix: '%',
+              hint: "Hogapay's share of the fee",
+            })}
+          </Group>
 
-      <SettingsCard icon={ArrowRightLeft} title="Transfer (Payout)" description="Fees charged on withdrawals">
-        <SettingRow label="Fee (%)" description="Deducted from payout amount">
-          {numInput('transferFeePercentage', 0.1)}
-        </SettingRow>
-        <SettingRow label="Hogapay Split (%)" description="Hogapay's share of the transfer fee">
-          {numInput('hogapayTransferFeePercent', 0.01)}
-        </SettingRow>
-      </SettingsCard>
+          <Group icon={CreditCard} title="Card" description="Fees on card contributions">
+            {field({ name: 'cardCollectionFee', label: 'Fee', suffix: '%', hint: 'Total fee paid by the contributor' })}
+            {field({
+              name: 'hogapayCardCollectionFeePercent',
+              label: 'Hogapay split',
+              suffix: '%',
+              hint: "Hogapay's share of the fee",
+            })}
+          </Group>
+        </div>
+      )}
 
-      <SettingsCard icon={Clock} title="Payout Settings" description="Timing for contribution settlement">
-        <SettingRow
-          label="Settlement Delay (hours)"
-          description={`Current: ${settlementLabel} — 0.033 ≈ 2 min`}
-        >
-          {numInput('settlementDelayHours', 0.001)}
-        </SettingRow>
-      </SettingsCard>
+      {/* Payouts */}
+      {tab === 'payouts' && (
+        <div className="space-y-5">
+          <Group
+            icon={Smartphone}
+            title="Mobile money payout"
+            description="Fee deducted from mobile money withdrawals"
+          >
+            {field({ name: 'transferFeePercentage', label: 'Fee', suffix: '%', step: 0.1, hint: 'Deducted from the payout' })}
+            {field({
+              name: 'hogapayTransferFeePercent',
+              label: 'Hogapay split',
+              suffix: '%',
+              hint: "Hogapay's share of the fee",
+            })}
+          </Group>
 
-      <SettingsCard icon={Gift} title="Referral Bonus" description="Rewards paid to referrers">
-        <SettingRow
-          label="First Contribution Bonus (GHS)"
-          description="Paid when referred user's jar gets its first contribution"
-        >
-          {numInput('referralFirstContributionBonus', 0.5)}
-        </SettingRow>
-        <SettingRow label="Fee Share (%)" description="% of Hogapay's transfer fee shared with referrer">
-          {numInput('referralFeeSharePercent', 1)}
-        </SettingRow>
-        <SettingRow label="Min Withdrawal (GHS)" description="Minimum balance to initiate a withdrawal">
-          {numInput('referralMinWithdrawalAmount', 1)}
-        </SettingRow>
-        <SettingRow label="Max Withdrawal (GHS)" description="Max per withdrawal (0 = no limit)">
-          {numInput('referralMaxWithdrawalAmount', 10)}
-        </SettingRow>
-      </SettingsCard>
+          <Group
+            icon={Landmark}
+            title="Bank payout"
+            description="Fee deducted from bank withdrawals"
+          >
+            {field({ name: 'bankTransferFeePercentage', label: 'Fee', suffix: '%', step: 0.1, hint: 'Deducted from the payout' })}
+            {field({
+              name: 'hogapayBankTransferFeePercent',
+              label: 'Hogapay split',
+              suffix: '%',
+              hint: "Hogapay's share of the fee",
+            })}
+          </Group>
+
+          <Group icon={Clock} title="Settlement" description="When contributions become available">
+            {field({
+              name: 'settlementDelayHours',
+              label: 'Settlement delay',
+              suffix: 'hrs',
+              step: 0.001,
+              hint: `Currently ${settlementLabel} · 0.033 ≈ 2 min`,
+            })}
+          </Group>
+        </div>
+      )}
+
+      {/* Referrals */}
+      {tab === 'referrals' && (
+        <Group icon={Gift} title="Referral bonus" description="Rewards paid to referrers">
+          {field({
+            name: 'referralFirstContributionBonus',
+            label: 'First contribution bonus',
+            suffix: 'GHS',
+            step: 0.5,
+            hint: "Paid on the referred jar's first contribution",
+          })}
+          {field({
+            name: 'referralFeeSharePercent',
+            label: 'Fee share',
+            suffix: '%',
+            step: 1,
+            hint: "Share of Hogapay's transfer fee given to the referrer",
+          })}
+          {field({
+            name: 'referralMinWithdrawalAmount',
+            label: 'Min withdrawal',
+            suffix: 'GHS',
+            step: 1,
+            hint: 'Minimum balance to withdraw',
+          })}
+          {field({
+            name: 'referralMaxWithdrawalAmount',
+            label: 'Max withdrawal',
+            suffix: 'GHS',
+            step: 10,
+            hint: 'Max per withdrawal (0 = no limit)',
+          })}
+        </Group>
+      )}
 
       {isAdmin && (
-        <div className="flex justify-end pt-2">
-          <Button onClick={handleSave} disabled={saving} className="min-w-28">
+        <div className="sticky bottom-0 flex justify-end border-t bg-background/80 py-3 backdrop-blur">
+          <Button onClick={handleSave} disabled={saving} className="min-w-32">
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving…
               </>
             ) : (
-              'Save Settings'
+              'Save settings'
             )}
           </Button>
         </div>

@@ -200,7 +200,11 @@ export const processPayoutTask = {
       }
 
       const isBankAccount = account.type === 'bank'
-      const grossAmount = payoutAmount
+      // Bank: we deduct our fee first and send the NET amount to Eganow.
+      // Mobile money: send the full amount — Eganow deducts the fee itself.
+      const grossAmount = isBankAccount
+        ? Math.abs(transaction.payoutNetAmount ?? payoutAmount)
+        : payoutAmount
       let paypartner: string
       let accountNoOrCardNoOrMSISDN: string
       let accountName: string = account.accountHolder

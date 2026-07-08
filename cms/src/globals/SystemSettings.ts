@@ -105,21 +105,22 @@ export const SystemSettings: GlobalConfig = {
           fields: [
             {
               name: 'transferFeePercentage',
-              label: 'Fee (%)',
+              label: 'Mobile Money Fee (%)',
               type: 'number',
               required: true,
               defaultValue: 1,
               min: 0,
               max: 100,
               admin: {
-                description: 'Total fee on payouts (e.g., 1%). Deducted from the payout amount.',
+                description:
+                  'Total fee on mobile money payouts (e.g., 1%). Deducted from the payout amount.',
                 step: 0.1,
                 width: '50%',
               },
             },
             {
               name: 'hogapayTransferFeePercent',
-              label: 'Hogapay Split (%)',
+              label: 'Mobile Money Hogapay Split (%)',
               type: 'number',
               required: true,
               defaultValue: 0.5,
@@ -127,7 +128,42 @@ export const SystemSettings: GlobalConfig = {
               max: 100,
               admin: {
                 description:
-                  "Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.",
+                  "Hogapay's share of the mobile money transfer fee (e.g., 0.5%). Rest goes to Eganow.",
+                step: 0.01,
+                width: '50%',
+              },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'bankTransferFeePercentage',
+              label: 'Bank Fee (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 1,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  'Total fee on bank payouts (e.g., 1%). Deducted from the payout amount.',
+                step: 0.1,
+                width: '50%',
+              },
+            },
+            {
+              name: 'hogapayBankTransferFeePercent',
+              label: 'Bank Hogapay Split (%)',
+              type: 'number',
+              required: true,
+              defaultValue: 0.5,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  "Hogapay's share of the bank transfer fee (e.g., 0.5%). Rest goes to Eganow.",
                 step: 0.01,
                 width: '50%',
               },
