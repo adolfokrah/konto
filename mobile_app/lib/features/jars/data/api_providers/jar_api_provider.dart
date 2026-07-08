@@ -194,6 +194,7 @@ class JarApiProvider extends BaseApiProvider {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    String? donationLabel,
     int? requiredApprovals,
     List<Map<String, dynamic>>? customFields,
     String? withdrawalAccount,
@@ -293,6 +294,9 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (showRecentContributions != null) {
         paymentPageData['showRecentContributions'] = showRecentContributions;
+      }
+      if (donationLabel != null) {
+        paymentPageData['donationLabel'] = donationLabel;
       }
       if (paymentPageData.isNotEmpty) {
         jarData['paymentPage'] = paymentPageData;

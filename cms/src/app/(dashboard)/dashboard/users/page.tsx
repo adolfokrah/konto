@@ -129,9 +129,6 @@ export default async function UsersPage({ searchParams }: Props) {
       kycSessionId: u.kycSessionId || null,
       role: u.role || 'user',
       demoUser: u.demoUser ?? false,
-      bank: u.bank || null,
-      accountNumber: u.accountNumber || null,
-      accountHolder: u.accountHolder || null,
       platform: u.platform || null,
       createdAt: u.createdAt,
     }

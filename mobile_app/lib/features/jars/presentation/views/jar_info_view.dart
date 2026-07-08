@@ -936,6 +936,45 @@ class _JarInfoViewState extends State<JarInfoView> {
                                         },
                                       ),
                                     ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        "Use 'Donate' label",
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        "Show 'Donate' instead of 'Contribute' on the payment button",
+                                      ),
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
+                                            jarData.donationLabel == 'donate',
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          final updates = <String, dynamic>{
+                                            'donationLabel':
+                                                value ? 'donate' : 'contribute',
+                                          };
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

@@ -24,7 +24,7 @@ function getInitials(name: string): string {
 
 function formatAmount(amount: number, currency: string = 'GHS'): string {
   const symbol = currency === 'GHS' ? '₵' : '₦'
-  return `${symbol}${amount.toFixed(2)}`
+  return `${symbol}${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -94,70 +94,64 @@ export default async function RecentContributions({ jarId, currency, limit = 5, 
     }
 
     return (
-      <div className="bg-white font-supreme">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Contributions</h3>
-          <span className="text-sm text-gray-500">{totalDocs} total</span>
+      <div className="font-supreme">
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-gray-900">Words of support</h3>
+          <p className="text-sm text-gray-500">{totalDocs} people have contributed</p>
         </div>
 
-        <div className="space-y-4">
-          {contributions.map((contribution: any) => {
+        <div>
+          {contributions.map((contribution: any, index: number) => {
             const contributorName = contribution.contributor || 'Anonymous'
             const initials = getInitials(contributorName)
             const amount = contribution.amountContributed || 0
             const timeAgo = formatTimeAgo(contribution.createdAt)
+            const isAnon = contributorName === 'Anonymous'
+            const avatarColors = [
+              'bg-[#B45309]',
+              'bg-[#15803D]',
+              'bg-[#1D4ED8]',
+              'bg-[#7C3AED]',
+              'bg-[#BE185D]',
+            ]
+            const avatarColor = isAnon ? 'bg-gray-500' : avatarColors[index % avatarColors.length]
 
             return (
               <div
                 key={contribution.id}
-                className='border-b border-gray-100 last:border-b-0 pb-0.5'
-                >
+                className="flex gap-3 py-3 border-t border-gray-200 first:border-t-0"
+              >
+                <Avatar className="w-10 h-10 shrink-0">
+                  <AvatarFallback className={`${avatarColor} text-white font-semibold`}>
+                    {isAnon ? '?' : initials}
+                  </AvatarFallback>
+                </Avatar>
 
-                <div
-                className="flex items-center justify-between py-3 "
-                >
-                  <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-primary-light font-medium">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="flex flex-col">
-                    <span className="font-medium text-gray-900">{contributorName}</span>
-                    <span className="text-xs text-gray-500">{timeAgo}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-gray-900">{contributorName}</div>
+                  <div className="text-sm text-gray-500 tabular-nums">
+                    <b className="text-black font-bold">{formatAmount(amount, jarCurrency)}</b>
+                    {' · '}
+                    {timeAgo}
                   </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatAmount(amount, jarCurrency)}
-                    </div>
-                  </div>
-                </div>
-                </div>
-
-                 {contribution.remarks && (
-                     <div className='mb-2'> <span className="text-sm text-gray-600 mt-0.5 mb-2">"{contribution.remarks}"</span></div>
+                  {contribution.remarks && (
+                    <p className="text-sm text-gray-700 mt-1">{contribution.remarks}</p>
                   )}
-
+                </div>
               </div>
             )
           })}
         </div>
 
-        {/* Load More */}
+        {/* See all */}
         {hasMore && (
-          <div className="flex justify-center pt-4 mt-2">
-            <Link
-              href={`?cPage=${page + 1}`}
-              scroll={false}
-              className="text-sm text-gray-600 hover:text-black transition-colors font-medium"
-            >
-              Load more
-            </Link>
-          </div>
+          <Link
+            href={`?cPage=${page + 1}`}
+            scroll={false}
+            className="block w-full text-center mt-4 bg-white border-2 border-gray-300 rounded-full py-3 font-medium text-black hover:border-gray-400 transition-colors"
+          >
+            See all {totalDocs} contributions
+          </Link>
         )}
       </div>
     )

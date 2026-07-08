@@ -5,6 +5,7 @@ import { cn } from '@/utilities/ui'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import Ring from '@/components/ui/ring'
+import Image from 'next/image'
 
 type Feature = {
   feature: string

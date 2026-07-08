@@ -26,9 +26,6 @@ export type UserRow = {
   kycSessionId: string | null
   role: 'user' | 'admin'
   demoUser: boolean
-  bank: string | null
-  accountNumber: string | null
-  accountHolder: string | null
   platform: 'android' | 'ios' | null
   createdAt: string
 }

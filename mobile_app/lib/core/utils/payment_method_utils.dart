@@ -20,6 +20,8 @@ class PaymentMethodUtils {
         return localizations.paymentMethodCash;
       case 'bank':
         return localizations.paymentMethodBankTransfer;
+      case 'card':
+        return localizations.cardPayment;
       default:
         // Return the original value with proper formatting if not found
         return paymentMethod

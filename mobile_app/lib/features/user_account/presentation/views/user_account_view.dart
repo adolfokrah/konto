@@ -21,6 +21,8 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:Hoga/core/config/app_config.dart';
 
 /// User account view - profile screen with settings and account management
 class UserAccountView extends StatelessWidget {
@@ -190,11 +192,28 @@ class UserAccountView extends StatelessWidget {
                 context.push(AppRoutes.changePhoneNumber);
               },
             ),
-            _buildMenuItem(
-              context: context,
-              title: 'Business verification',
-              onTap: () => context.push(AppRoutes.businessKyb),
-            ),
+            if (user?.kybStatus == 'approved')
+              _buildMenuItem(
+                context: context,
+                title: 'Share contribution pages',
+                onTap: () {
+                  final url =
+                      '${AppConfig.contributionPage}/organizations/${user!.id}';
+                  final box = context.findRenderObject() as RenderBox?;
+                  Share.share(
+                    'Support our campaigns on Hoga: $url',
+                    sharePositionOrigin: box == null
+                        ? null
+                        : box.localToGlobal(Offset.zero) & box.size,
+                  );
+                },
+              )
+            else
+              _buildMenuItem(
+                context: context,
+                title: 'Business verification',
+                onTap: () => context.push(AppRoutes.businessKyb),
+              ),
             _buildMenuItem(
               context: context,
               title: 'Refer & Earn',

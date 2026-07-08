@@ -223,6 +223,7 @@ class JarSummaryModel {
   final String? link;
   final bool? showGoal;
   final bool? showRecentContributions;
+  final String? donationLabel;
   final bool? allowAnonymousContributions;
   final String? jarGroup;
   final MediaModel? image;
@@ -261,6 +262,7 @@ class JarSummaryModel {
     this.link,
     this.showGoal,
     this.showRecentContributions,
+    this.donationLabel,
     this.allowAnonymousContributions,
     this.jarGroup,
     this.image,
@@ -419,6 +421,10 @@ class JarSummaryModel {
           json['paymentPage'] != null
               ? json['paymentPage']['showRecentContributions'] as bool?
               : null,
+      donationLabel:
+          json['paymentPage'] != null
+              ? json['paymentPage']['donationLabel'] as String?
+              : null,
       allowAnonymousContributions: json['allowAnonymousContributions'] as bool?,
       jarGroup: json['jarGroup'] as String?,
       image:
@@ -549,6 +555,7 @@ class JarSummaryModel {
         'link': link,
         'showGoal': showGoal,
         'showRecentContributions': showRecentContributions,
+        'donationLabel': donationLabel,
       },
       'allowAnonymousContributions': allowAnonymousContributions,
       'jarGroup': jarGroup,

@@ -42,6 +42,7 @@ import 'package:Hoga/route.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class JarDetailView extends StatefulWidget {
@@ -68,6 +69,10 @@ class _JarDetailViewState extends State<JarDetailView> {
 
     _requestFCMPermissionAndUpdateToken();
     _fetchUserNotifications();
+
+    // Preload the user's withdrawal accounts so the withdraw flow can route to
+    // the add-account screen when none exist.
+    context.read<WithdrawalAccountsBloc>().add(LoadWithdrawalAccounts());
   }
 
   void _scrollListener() {
@@ -145,8 +150,19 @@ class _JarDetailViewState extends State<JarDetailView> {
         return;
       }
 
-      // The jar now carries its own linked withdrawal account, so there is no
-      // longer a per-user withdrawal-account existence check here.
+      // The jar carries its own linked withdrawal account, but if the user has
+      // no withdrawal accounts at all, route them to add one before payout.
+      final waState = context.read<WithdrawalAccountsBloc>().state;
+      if (waState.status == WithdrawalAccountsStatus.loaded &&
+          waState.accounts.isEmpty) {
+        AppSnackBar.show(
+          context,
+          message: 'Add a withdrawal account to receive your payout.',
+          type: SnackBarType.info,
+        );
+        context.push(AppRoutes.withdrawalAccounts);
+        return;
+      }
     }
 
     context.push(
@@ -160,22 +176,41 @@ class _JarDetailViewState extends State<JarDetailView> {
     );
   }
 
-  /// Business verification (KYB) gate. Returns true if the user is approved and the
-  /// action may proceed; otherwise routes to the KYB screen and returns false.
+  /// Verification gate: the user must have BOTH personal KYC verified AND business
+  /// verification (KYB) approved. Returns true if allowed; otherwise shows a message,
+  /// routes to the appropriate screen, and returns false.
   bool _requireKyb(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated && authState.user.kybStatus != 'approved') {
-      final status = authState.user.kybStatus;
+    if (authState is! AuthAuthenticated) return false;
+
+    final kyc = authState.user.kycStatus;
+    final kyb = authState.user.kybStatus;
+
+    // 1) Personal KYC first.
+    if (kyc != 'verified') {
       final message =
-          (status == 'in_review' || status == 'pending')
+          kyc == 'in_review'
+              ? 'Your identity verification (KYC) is under review. Please wait for approval.'
+              : 'Complete identity verification (KYC) to continue.';
+      AppSnackBar.show(context, message: message, type: SnackBarType.info);
+      // in_review users have nothing to do on the KYC screen, but it shows the pending state.
+      context.push(AppRoutes.kycView);
+      return false;
+    }
+
+    // 2) Business verification (KYB).
+    if (kyb != 'approved') {
+      final message =
+          (kyb == 'in_review' || kyb == 'pending')
               ? 'Your business verification is under review. Please wait for approval.'
-              : status == 'rejected'
+              : kyb == 'rejected'
                   ? 'Your business verification was rejected. Please review and resubmit.'
                   : 'Complete business verification to continue.';
       AppSnackBar.show(context, message: message, type: SnackBarType.info);
       context.push(AppRoutes.businessKyb);
       return false;
     }
+
     return true;
   }
 

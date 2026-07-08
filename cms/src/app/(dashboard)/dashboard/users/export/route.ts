@@ -68,9 +68,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
     { header: 'Country', key: 'country', width: 14 },
     { header: 'KYC Status', key: 'kycStatus', width: 14 },
     { header: 'Role', key: 'role', width: 10 },
-    { header: 'Bank', key: 'bank', width: 18 },
-    { header: 'Account Number', key: 'accountNumber', width: 18 },
-    { header: 'Account Holder', key: 'accountHolder', width: 20 },
     { header: 'Joined', key: 'joined', width: 16 },
   ]
 
@@ -93,9 +90,6 @@ async function generateExcel(docs: any[]): Promise<Buffer> {
       country: u.country || '',
       kycStatus: kycStatusLabels[u.kycStatus] || u.kycStatus || '',
       role: u.role || 'user',
-      bank: u.bank || '',
-      accountNumber: u.accountNumber || '',
-      accountHolder: u.accountHolder || '',
       joined: fmtDate(u.createdAt),
     })
 

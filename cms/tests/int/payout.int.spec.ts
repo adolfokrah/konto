@@ -57,9 +57,6 @@ describe('Payout Endpoint Integration Tests', () => {
         kycStatus: 'verified',
         kybStatus: 'approved',
         role: 'user',
-        accountNumber: '0000000001',
-        bank: 'mtn',
-        accountHolder: 'Payout Creator',
       },
     })
 
@@ -76,9 +73,6 @@ describe('Payout Endpoint Integration Tests', () => {
         kycStatus: 'verified',
         kybStatus: 'approved',
         role: 'user',
-        accountNumber: '0000000002',
-        bank: 'mtn',
-        accountHolder: 'Other User',
       },
     })
 
@@ -308,9 +302,6 @@ describe('Payout Endpoint Integration Tests', () => {
           kycStatus: 'verified',
           kybStatus: 'approved',
           role: 'user',
-          accountNumber: '0000000004',
-          bank: 'vodafone',
-          accountHolder: 'Bad Bank User',
         },
       })
 

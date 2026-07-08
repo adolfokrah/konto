@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { submitBusinessVerification } from './endpoints/submit-business-verification'
 import { getMyBusinessVerification } from './endpoints/get-my-business-verification'
+import { getPublicBusiness } from './endpoints/get-public-business'
 import { emailService } from '@/utilities/emailService'
 
 const STATUS_OPTIONS = [
@@ -42,6 +43,7 @@ export const BusinessVerifications: CollectionConfig = {
   endpoints: [
     { path: '/submit', method: 'post', handler: submitBusinessVerification },
     { path: '/mine', method: 'get', handler: getMyBusinessVerification },
+    { path: '/public/:id', method: 'get', handler: getPublicBusiness },
   ],
   fields: [
     {

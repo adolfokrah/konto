@@ -221,6 +221,19 @@ export const Jars: CollectionConfig = {
           type: 'checkbox',
           defaultValue: true,
         },
+        {
+          name: 'donationLabel',
+          type: 'select',
+          label: 'Action button label',
+          defaultValue: 'contribute',
+          options: [
+            { label: 'Contribute', value: 'contribute' },
+            { label: 'Donate', value: 'donate' },
+          ],
+          admin: {
+            description: 'Word shown on the payment button and campaign cards.',
+          },
+        },
       ],
     },
     {

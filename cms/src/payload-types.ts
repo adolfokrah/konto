@@ -99,7 +99,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    users: {
+      businessVerifications: 'business-verifications';
+    };
+  };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -512,6 +516,14 @@ export interface User {
    */
   kybStatus?: ('none' | 'in_review' | 'approved' | 'rejected') | null;
   /**
+   * Business verification submitted by this user. Open a row to review or edit.
+   */
+  businessVerifications?: {
+    docs?: (string | BusinessVerification)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * User role - admins have full access, auditors have read-only access to the dashboard
    */
   role: 'user' | 'admin' | 'auditor';
@@ -531,9 +543,6 @@ export interface User {
    * Last time the user made an authenticated request (used for DAU tracking)
    */
   lastActiveAt?: string | null;
-  bank?: string | null;
-  accountNumber?: string | null;
-  accountHolder?: string | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;
     theme?: ('light' | 'dark' | 'system') | null;
@@ -561,6 +570,84 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-verifications".
+ */
+export interface BusinessVerification {
+  id: string;
+  /**
+   * The user/organization owner submitting business verification
+   */
+  user: string | User;
+  /**
+   * Registered business/organization name
+   */
+  businessName?: string | null;
+  /**
+   * Company registration certificate/document
+   */
+  companyRegistrationDoc: string | BusinessDocument;
+  /**
+   * Proof of business address (utility bill, lease, etc.)
+   */
+  proofOfBusinessAddress: string | BusinessDocument;
+  /**
+   * Each director and their government-issued ID
+   */
+  directors?:
+    | {
+        fullName: string;
+        /**
+         * Government-issued ID (front)
+         */
+        idDocument: string | BusinessDocument;
+        /**
+         * Government-issued ID (back)
+         */
+        idDocumentBack: string | BusinessDocument;
+        id?: string | null;
+      }[]
+    | null;
+  status: 'pending' | 'under-review' | 'approved' | 'rejected';
+  /**
+   * Reason shown to the user when rejected
+   */
+  rejectionReason?: string | null;
+  reviewedBy?: (string | null) | User;
+  reviewedAt?: string | null;
+  statusHistory?:
+    | {
+        from?: ('pending' | 'under-review' | 'approved' | 'rejected') | null;
+        to: 'pending' | 'under-review' | 'approved' | 'rejected';
+        reason?: string | null;
+        changedBy?: (string | null) | User;
+        changedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-documents".
+ */
+export interface BusinessDocument {
+  id: string;
+  uploadedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1614,6 +1701,10 @@ export interface Jar {
   paymentPage?: {
     showGoal?: boolean | null;
     showRecentContributions?: boolean | null;
+    /**
+     * Word shown on the payment button and campaign cards.
+     */
+    donationLabel?: ('contribute' | 'donate') | null;
   };
   thankYouMessage?: string | null;
   /**
@@ -1965,84 +2056,6 @@ export interface Dispute {
     | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "business-verifications".
- */
-export interface BusinessVerification {
-  id: string;
-  /**
-   * The user/organization owner submitting business verification
-   */
-  user: string | User;
-  /**
-   * Registered business/organization name
-   */
-  businessName?: string | null;
-  /**
-   * Company registration certificate/document
-   */
-  companyRegistrationDoc: string | BusinessDocument;
-  /**
-   * Proof of business address (utility bill, lease, etc.)
-   */
-  proofOfBusinessAddress: string | BusinessDocument;
-  /**
-   * Each director and their government-issued ID
-   */
-  directors?:
-    | {
-        fullName: string;
-        /**
-         * Government-issued ID (front)
-         */
-        idDocument: string | BusinessDocument;
-        /**
-         * Government-issued ID (back)
-         */
-        idDocumentBack: string | BusinessDocument;
-        id?: string | null;
-      }[]
-    | null;
-  status: 'pending' | 'under-review' | 'approved' | 'rejected';
-  /**
-   * Reason shown to the user when rejected
-   */
-  rejectionReason?: string | null;
-  reviewedBy?: (string | null) | User;
-  reviewedAt?: string | null;
-  statusHistory?:
-    | {
-        from?: ('pending' | 'under-review' | 'approved' | 'rejected') | null;
-        to: 'pending' | 'under-review' | 'approved' | 'rejected';
-        reason?: string | null;
-        changedBy?: (string | null) | User;
-        changedAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "business-documents".
- */
-export interface BusinessDocument {
-  id: string;
-  uploadedBy?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3103,14 +3116,12 @@ export interface UsersSelect<T extends boolean = true> {
   otpAttempts?: T;
   kycStatus?: T;
   kybStatus?: T;
+  businessVerifications?: T;
   role?: T;
   referralCode?: T;
   hogapayDiscountPercent?: T;
   demoUser?: T;
   lastActiveAt?: T;
-  bank?: T;
-  accountNumber?: T;
-  accountHolder?: T;
   appSettings?:
     | T
     | {
@@ -3226,6 +3237,7 @@ export interface JarsSelect<T extends boolean = true> {
     | {
         showGoal?: T;
         showRecentContributions?: T;
+        donationLabel?: T;
       };
   thankYouMessage?: T;
   status?: T;

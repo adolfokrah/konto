@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft, Building2, FileText, User as UserIcon, Users } from 'lucide-react'
+import { ArrowLeft, Building2, Check, FileText, Phone, User as UserIcon, Users } from 'lucide-react'
 import { PlatformBadge } from '@/components/dashboard/platform-badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/utilities/ui'
 import { kycStatusLabels } from '@/components/dashboard/table-constants'
+import { bankName } from '@/utilities/eganowBanks'
 import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
 import { UserKycActions } from '@/components/dashboard/user-kyc-actions'
 import { UserDiscountEditor } from '@/components/dashboard/user-discount-editor'
@@ -19,8 +20,22 @@ import { BusinessVerificationStatusForm } from '@/components/dashboard/business-
 
 const TX_DEFAULT_LIMIT = 20
 
-const VALID_TABS = ['kyc', 'kyb', 'transactions', 'jars'] as const
+const VALID_TABS = ['profile', 'accounts', 'kyc', 'kyb', 'transactions', 'jars'] as const
 type TabValue = (typeof VALID_TABS)[number]
+
+/** momo provider → display label; falls back to uppercased provider. */
+function momoLabel(provider: string): string {
+  if (provider === 'mtn') return 'MTN Mobile Money'
+  if (provider === 'telecel') return 'Telecel Cash'
+  return provider.toUpperCase()
+}
+
+/** Show only the last 4 digits, e.g. •••• 1631 */
+function maskAccountNumber(value: string): string {
+  const digits = (value || '').replace(/\s+/g, '')
+  if (digits.length <= 4) return digits
+  return `•••• ${digits.slice(-4)}`
+}
 
 type Props = {
   params: Promise<{ id: string }>
@@ -49,6 +64,25 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-right max-w-[60%]">{value}</span>
     </div>
+  )
+}
+
+function QuickFact({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
+    </div>
+  )
+}
+
+function TabCount({ value }: { value: number }) {
+  return (
+    <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
+      {value}
+    </span>
   )
 }
 
@@ -106,7 +140,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   const txTo = typeof sp.to === 'string' ? sp.to : ''
   const activeTab: TabValue = VALID_TABS.includes(sp.tab as TabValue)
     ? (sp.tab as TabValue)
-    : 'kyc'
+    : 'profile'
 
   const payload = await getPayload({ config: configPromise })
 
@@ -127,7 +161,13 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
 
   // Fetch user's jars (created by user) and jars where user is invited collector,
   // transactions, plus latest business verification in parallel
-  const [createdJarsResult, collectorJarsResult, transactionsResult, businessVerificationResult] =
+  const [
+    createdJarsResult,
+    collectorJarsResult,
+    transactionsResult,
+    businessVerificationResult,
+    withdrawalAccountsResult,
+  ] =
     await Promise.all([
       payload.find({
         collection: 'jars',
@@ -220,6 +260,14 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         depth: 3,
         overrideAccess: true,
       }),
+      payload.find({
+        collection: 'withdrawal-accounts',
+        where: { user: { equals: id } },
+        sort: '-isDefault',
+        limit: 50,
+        depth: 0,
+        overrideAccess: true,
+      }),
     ])
 
   // Fetch Didit KYC decision if session exists
@@ -284,6 +332,9 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   const bvDirectors: any[] = bv && Array.isArray(bv.directors) ? bv.directors : []
   const bvStatusHistory: any[] = bv && Array.isArray(bv.statusHistory) ? bv.statusHistory : []
 
+  // Withdrawal accounts (mobile money / bank)
+  const withdrawalAccounts: any[] = withdrawalAccountsResult.docs || []
+
   const jarStatusStyles: Record<string, string> = {
     open: 'bg-green-900/40 text-green-300 border-green-700',
     frozen: 'bg-blue-900/40 text-blue-300 border-blue-700',
@@ -304,117 +355,233 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </Link>
       </div>
 
-      {/* Main header: identity + quick badges */}
-      <div className="flex flex-wrap items-center gap-4">
-        {photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoUrl}
-            alt={fullName}
-            className="h-14 w-14 rounded-full border border-border object-cover"
-          />
-        ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted text-lg font-semibold text-muted-foreground">
-            {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
-          </div>
-        )}
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">{fullName || 'Unknown User'}</h1>
-            <Badge
-              variant="outline"
-              className={cn(
-                user.role === 'admin'
-                  ? 'bg-purple-100 text-purple-800 border-purple-200'
-                  : 'bg-gray-100 text-gray-800 border-gray-200',
-              )}
-            >
-              {user.role}
-            </Badge>
-            {user.demoUser && (
-              <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
-                Demo
-              </Badge>
-            )}
-            <Badge
-              variant="outline"
-              className={cn(
-                user.kycStatus === 'verified' && 'bg-green-900/40 text-green-300 border-green-700',
-                user.kycStatus === 'in_review' && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
-              )}
-            >
-              KYC: {kycStatusLabels[user.kycStatus] || user.kycStatus}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column: profile summary facts */}
-        <div className="space-y-6 lg:col-span-1">
-          {/* Personal Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              <InfoRow label="Name" value={fullName} />
-              <InfoRow label="Username" value={user.username} />
-              <InfoRow label="Email" value={user.email} />
-              <InfoRow
-                label="Phone"
-                value={`${user.countryCode || ''} ${user.phoneNumber}`}
-              />
-              <InfoRow label="Country" value={user.country} />
-              <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
-              <InfoRow label="Referral Code" value={user.referralCode ? <span className="font-mono text-xs tracking-widest">{user.referralCode}</span> : <span className="text-muted-foreground text-xs">Not generated</span>} />
-              <InfoRow label="Fee Discount" value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />} />
-              <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
-            </CardContent>
-          </Card>
-
-          {/* Withdrawal Account */}
-          {(user.bank || user.accountNumber || user.accountHolder) && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Withdrawal Account</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-0">
-                <InfoRow label="Bank" value={user.bank} />
-                <InfoRow label="Account Number" value={user.accountNumber} />
-                <InfoRow label="Account Holder" value={user.accountHolder} />
-              </CardContent>
-            </Card>
+      {/* ── Full-width identity header ── */}
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-5 py-6">
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photoUrl}
+              alt={fullName}
+              className="h-16 w-16 rounded-full border border-border object-cover shrink-0"
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xl font-semibold text-muted-foreground">
+              {(user.firstName?.[0] || '').toUpperCase()}
+              {(user.lastName?.[0] || '').toUpperCase()}
+            </div>
           )}
 
-          {/* App Settings */}
+          {/* Identity: name, chips, contact line */}
+          <div className="flex min-w-[260px] flex-1 flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-tight">{fullName || 'Unknown User'}</h1>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'capitalize',
+                  user.role === 'admin'
+                    ? 'bg-purple-100 text-purple-800 border-purple-200'
+                    : 'bg-gray-100 text-gray-800 border-gray-200',
+                )}
+              >
+                {user.role}
+              </Badge>
+              {user.demoUser && (
+                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                  Demo
+                </Badge>
+              )}
+              <Badge
+                variant="outline"
+                className={cn(
+                  user.kycStatus === 'verified' && 'bg-green-900/40 text-green-300 border-green-700',
+                  user.kycStatus === 'in_review' &&
+                    'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                  user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
+                )}
+              >
+                KYC: {kycStatusLabels[user.kycStatus] || user.kycStatus}
+              </Badge>
+              {bv && <BusinessVerificationStatusBadge status={bv.status} />}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {[
+                user.email,
+                user.phoneNumber ? `${user.countryCode || ''} ${user.phoneNumber}`.trim() : null,
+                user.country,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
+
+          {/* Quick-facts strip */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-8">
+            <QuickFact label="Joined" value={formatFullDate(user.createdAt).split(',').slice(0, 2).join(',')} />
+            <QuickFact
+              label="Fee discount"
+              value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />}
+            />
+            <QuickFact label="Accounts" value={withdrawalAccounts.length} />
+            <QuickFact label="Jars" value={createdJarsResult.totalDocs} />
+            <QuickFact
+              label="Referral"
+              value={
+                user.referralCode ? (
+                  <span className="font-mono tracking-widest">{user.referralCode}</span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )
+              }
+            />
+            <QuickFact label="Platform" value={<PlatformBadge platform={user.platform} />} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Full-width tab bar ── */}
+      <Tabs defaultValue={activeTab} className="space-y-4">
+        <TabsList className="flex w-full flex-wrap justify-start">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="accounts">
+            Withdrawal Accounts
+            <TabCount value={withdrawalAccounts.length} />
+          </TabsTrigger>
+          <TabsTrigger value="kyc">KYC</TabsTrigger>
+          <TabsTrigger value="kyb">KYB</TabsTrigger>
+          <TabsTrigger value="transactions">
+            Transactions
+            <TabCount value={transactionsResult.totalDocs} />
+          </TabsTrigger>
+          <TabsTrigger value="jars">
+            Jars
+            <TabCount value={createdJarsResult.totalDocs} />
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── PROFILE TAB ── */}
+        <TabsContent value="profile" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Personal Info */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Personal Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                <InfoRow label="Name" value={fullName} />
+                <InfoRow label="Username" value={user.username} />
+                <InfoRow label="Email" value={user.email} />
+                <InfoRow label="Phone" value={`${user.countryCode || ''} ${user.phoneNumber}`} />
+                <InfoRow label="Country" value={user.country} />
+                <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
+                <InfoRow
+                  label="Referral Code"
+                  value={
+                    user.referralCode ? (
+                      <span className="font-mono text-xs tracking-widest">{user.referralCode}</span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">Not generated</span>
+                    )
+                  }
+                />
+                <InfoRow
+                  label="Fee Discount"
+                  value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />}
+                />
+                <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
+              </CardContent>
+            </Card>
+
+            {/* App Settings */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">App Settings</CardTitle>
+                  <PlatformBadge platform={user.platform} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
+                <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
+                <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />
+                <InfoRow label="Push Notifications" value={user.appSettings?.notificationsSettings?.pushNotificationsEnabled !== false ? 'On' : 'Off'} />
+                <InfoRow label="Email Notifications" value={user.appSettings?.notificationsSettings?.emailNotificationsEnabled !== false ? 'On' : 'Off'} />
+                <InfoRow label="SMS Notifications" value={user.appSettings?.notificationsSettings?.smsNotificationsEnabled ? 'On' : 'Off'} />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ── WITHDRAWAL ACCOUNTS TAB ── */}
+        <TabsContent value="accounts" className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">App Settings</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Withdrawal Accounts</CardTitle>
+                <CardDescription>Used for jar payouts &amp; referral withdrawals</CardDescription>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-0">
-              <InfoRow label="Platform" value={<PlatformBadge platform={user.platform} />} />
-              <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
-              <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
-              <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />
-              <InfoRow label="Push Notifications" value={user.appSettings?.notificationsSettings?.pushNotificationsEnabled !== false ? 'On' : 'Off'} />
-              <InfoRow label="Email Notifications" value={user.appSettings?.notificationsSettings?.emailNotificationsEnabled !== false ? 'On' : 'Off'} />
-              <InfoRow label="SMS Notifications" value={user.appSettings?.notificationsSettings?.smsNotificationsEnabled ? 'On' : 'Off'} />
+            <CardContent>
+              {withdrawalAccounts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No withdrawal accounts</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {withdrawalAccounts.map((acct: any) => {
+                    const isBank = acct.type === 'bank'
+                    const title = isBank ? bankName(acct.provider) : momoLabel(acct.provider)
+                    return (
+                      <div
+                        key={acct.id}
+                        className="flex items-center gap-3.5 rounded-lg border bg-muted/30 p-3.5"
+                      >
+                        <div
+                          className={cn(
+                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                            isBank
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-blue-900/30 text-blue-300',
+                          )}
+                        >
+                          {isBank ? (
+                            <Building2 className="h-5 w-5" />
+                          ) : (
+                            <Phone className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 text-sm font-medium">
+                            <span className="truncate">{title}</span>
+                            {acct.verified && (
+                              <span className="inline-flex items-center gap-1 text-xs text-green-400">
+                                <Check className="h-3.5 w-3.5" />
+                                verified
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {[acct.accountHolder, maskAccountNumber(acct.accountNumber)]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                        </div>
+                        {acct.isDefault && (
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-900/40 text-blue-300 border-blue-700"
+                          >
+                            Default
+                          </Badge>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        {/* Right column: tabbed detail */}
-        <div className="lg:col-span-2">
-          <Tabs defaultValue={activeTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="kyc">KYC</TabsTrigger>
-              <TabsTrigger value="kyb">KYB</TabsTrigger>
-              <TabsTrigger value="transactions">Transactions</TabsTrigger>
-              <TabsTrigger value="jars">Jars</TabsTrigger>
-            </TabsList>
 
             {/* ── KYC TAB ── */}
             <TabsContent value="kyc" className="space-y-6">
@@ -1163,9 +1330,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
                 </Card>
               )}
             </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+      </Tabs>
     </div>
   )
 }
