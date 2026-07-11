@@ -27,6 +27,7 @@ dependencies:
   screen_brightness: ^2.1.7
   permission_handler: ^11.3.1
   image_picker: ^1.0.7
+  file_picker: ^8.1.6
   url_launcher: ^6.3.1
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2

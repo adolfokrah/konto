@@ -1,6 +1,7 @@
 // Models for the Jar Summary API response
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
+import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 
 /// Enum representing the type of contribution
 enum ContributionType {
@@ -222,6 +223,7 @@ class JarSummaryModel {
   final String? link;
   final bool? showGoal;
   final bool? showRecentContributions;
+  final String? donationLabel;
   final bool? allowAnonymousContributions;
   final String? jarGroup;
   final MediaModel? image;
@@ -236,6 +238,11 @@ class JarSummaryModel {
   final BalanceBreakDown balanceBreakDown; // Financial breakdown
   final bool isCreator; // Whether the current user is the creator of this jar
   final List<CustomFieldModel>? customFields;
+
+  /// The withdrawal (payout) account linked to this jar, if any.
+  /// Populated as a full object when the backend returns it with depth; may be
+  /// null if not set.
+  final WithdrawalAccountModel? withdrawalAccount;
 
   const JarSummaryModel({
     required this.id,
@@ -255,6 +262,7 @@ class JarSummaryModel {
     this.link,
     this.showGoal,
     this.showRecentContributions,
+    this.donationLabel,
     this.allowAnonymousContributions,
     this.jarGroup,
     this.image,
@@ -268,6 +276,7 @@ class JarSummaryModel {
     required this.balanceBreakDown,
     required this.isCreator,
     this.customFields,
+    this.withdrawalAccount,
   });
 
   /// Utility function to calculate total contributions from completed contributions
@@ -412,6 +421,10 @@ class JarSummaryModel {
           json['paymentPage'] != null
               ? json['paymentPage']['showRecentContributions'] as bool?
               : null,
+      donationLabel:
+          json['paymentPage'] != null
+              ? json['paymentPage']['donationLabel'] as String?
+              : null,
       allowAnonymousContributions: json['allowAnonymousContributions'] as bool?,
       jarGroup: json['jarGroup'] as String?,
       image:
@@ -495,7 +508,29 @@ class JarSummaryModel {
                 (e) => CustomFieldModel.fromJson(e as Map<String, dynamic>),
               )
               .toList(),
+      withdrawalAccount: _parseWithdrawalAccount(json['withdrawalAccount']),
     );
+  }
+
+  /// Parse the `withdrawalAccount` relationship which can be:
+  /// - null (not set)
+  /// - a populated object (when returned with depth)
+  /// - a String id (when returned without depth) — kept as a minimal model
+  static WithdrawalAccountModel? _parseWithdrawalAccount(dynamic value) {
+    if (value == null) return null;
+    if (value is Map<String, dynamic>) {
+      return WithdrawalAccountModel.fromJson(value);
+    }
+    if (value is String && value.isNotEmpty) {
+      return WithdrawalAccountModel(
+        id: value,
+        type: '',
+        provider: '',
+        accountNumber: '',
+        accountHolder: '',
+      );
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -520,6 +555,7 @@ class JarSummaryModel {
         'link': link,
         'showGoal': showGoal,
         'showRecentContributions': showRecentContributions,
+        'donationLabel': donationLabel,
       },
       'allowAnonymousContributions': allowAnonymousContributions,
       'jarGroup': jarGroup,
@@ -537,6 +573,7 @@ class JarSummaryModel {
               .toList(),
       'balanceBreakDown': balanceBreakDown.toJson(),
       'isCreator': isCreator,
+      'withdrawalAccount': withdrawalAccount?.toJson(),
     };
   }
 }

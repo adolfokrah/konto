@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cn } from '@/utilities/ui'
 import { AdminBar } from '@/components/AdminBar'
 import { draftMode } from 'next/headers'
+import NextTopLoader from 'nextjs-toploader'
 import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { GoogleAnalytics } from '@next/third-parties/google'
@@ -61,6 +62,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <GoogleAnalytics gaId="G-V14P9R71JY" />
       </head>
       <body className="bg-primary-light text-black font-supreme" data-theme="light">
+        <NextTopLoader color="#141414" height={3} showSpinner={false} shadow="0 0 10px #141414,0 0 5px #141414" />
         <div className="fixed top-0 left-0 w-full z-40">
           <AdminBar
             adminBarProps={{

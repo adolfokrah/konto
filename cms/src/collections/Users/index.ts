@@ -293,6 +293,38 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'kybStatus',
+      type: 'select',
+      label: 'KYB Status',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'In Review', value: 'in_review' },
+        { label: 'Approved', value: 'approved' },
+        { label: 'Rejected', value: 'rejected' },
+      ],
+      defaultValue: 'none',
+      required: false,
+      admin: {
+        readOnly: true,
+        description: 'Business verification status — synced from Business Verifications.',
+      },
+    },
+    {
+      // Reverse relation → the business verification(s) this user submitted.
+      // Renders a table on the user edit page; each row opens the full
+      // verification doc (business name, registration docs, directors, status).
+      name: 'businessVerifications',
+      type: 'join',
+      collection: 'business-verifications',
+      on: 'user',
+      maxDepth: 2,
+      admin: {
+        allowCreate: true,
+        defaultColumns: ['businessName', 'status', 'createdAt'],
+        description: 'Business verification submitted by this user. Open a row to review or edit.',
+      },
+    },
+    {
       name: 'role',
       type: 'select',
       options: [
@@ -344,24 +376,6 @@ export const Users: CollectionConfig = {
         description: 'Last time the user made an authenticated request (used for DAU tracking)',
         readOnly: true,
       },
-    },
-    {
-      label: 'Withdrawal Account',
-      type: 'group',
-      fields: [
-        {
-          name: 'bank',
-          type: 'text',
-        },
-        {
-          name: 'accountNumber',
-          type: 'text',
-        },
-        {
-          name: 'accountHolder',
-          type: 'text',
-        },
-      ],
     },
     {
       name: 'appSettings',

@@ -47,7 +47,7 @@ export const checkEganowPayoutBalanceTask = {
         if (tx.type === 'contribution' && tx.paymentStatus === 'completed') {
           if (tx.isSettled) {
             totalSettledContributions += tx.amountContributed || 0
-          } else if (tx.paymentMethod === 'mobile-money') {
+          } else if (['mobile-money', 'card'].includes(tx.paymentMethod)) {
             totalUpcoming += tx.amountContributed || 0
           }
         } else if (

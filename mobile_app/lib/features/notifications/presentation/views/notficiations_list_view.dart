@@ -37,7 +37,28 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        actions: [
+          BlocBuilder<NotificationsBloc, NotificationsState>(
+            builder: (context, state) {
+              final hasUnread =
+                  state is NotificationsLoaded &&
+                  state.notifications.any(
+                    (n) => n.status == NotificationStatus.unread,
+                  );
+              if (!hasUnread) return const SizedBox.shrink();
+              return TextButton(
+                onPressed:
+                    () => context.read<NotificationsBloc>().add(
+                      MarkAllNotificationsRead(),
+                    ),
+                child: const Text('Mark all read'),
+              );
+            },
+          ),
+        ],
+      ),
       body: MultiBlocListener(
         listeners: [
           BlocListener<JarInviteActionBloc, JarInviteActionState>(
@@ -119,13 +140,26 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
                     ),
                     itemBuilder: (context, index) {
                       final n = notifications[index];
-                      return AppCard(
-                        variant: CardVariant.secondary,
-                        margin: EdgeInsets.only(
-                          top: index == 0 ? AppSpacing.spacingM : 0,
-                          bottom: AppSpacing.spacingM,
+                      final isUnread = n.status == NotificationStatus.unread;
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap:
+                            isUnread
+                                ? () => context.read<NotificationsBloc>().add(
+                                  MarkjarInviteAsRead(notificationId: n.id),
+                                )
+                                : null,
+                        child: Opacity(
+                          opacity: isUnread ? 1.0 : 0.6,
+                          child: AppCard(
+                            variant: CardVariant.secondary,
+                            margin: EdgeInsets.only(
+                              top: index == 0 ? AppSpacing.spacingM : 0,
+                              bottom: AppSpacing.spacingM,
+                            ),
+                            child: BuildNotificationType(notification: n),
+                          ),
                         ),
-                        child: BuildNotificationType(notification: n),
                       );
                     },
                   );

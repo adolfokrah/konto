@@ -10,9 +10,19 @@ export const Notifications: CollectionConfig = {
     useAsTitle: 'message',
   },
   access: {
-    read: authenticated,
+    // Users can only read/update their own notifications; admins/auditors see all.
+    read: ({ req: { user } }) => {
+      const role = (user as any)?.role
+      if (role === 'admin' || role === 'auditor') return true
+      if (user) return { user: { equals: user.id } }
+      return false
+    },
     create: authenticated,
-    update: authenticated,
+    update: ({ req: { user } }) => {
+      if ((user as any)?.role === 'admin') return true
+      if (user) return { user: { equals: user.id } }
+      return false
+    },
     delete: authenticated,
   },
   fields: [
@@ -25,6 +35,7 @@ export const Notifications: CollectionConfig = {
         { label: 'Jar Invitation', value: 'jarInvite' },
         { label: 'Info', value: 'info' },
         { label: 'KYC', value: 'kyc' },
+        { label: 'KYB', value: 'kyb' },
         { label: 'Jar Frozen', value: 'jarFrozen' },
         { label: 'Payout Approval', value: 'payout-approval' },
       ],

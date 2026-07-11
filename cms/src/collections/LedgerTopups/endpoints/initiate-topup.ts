@@ -1,6 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { getEganow } from '@/utilities/initalise'
+import { getWebhookBaseURL } from '@/utilities/getURL'
 
 export const initiateTopup = async (req: PayloadRequest) => {
   try {
@@ -94,7 +95,7 @@ export const initiateTopup = async (req: PayloadRequest) => {
       expiryDateYear: 0,
       cvv: '',
       languageId: 'en',
-      callback: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ledger-topups/eganow-topup-webhook`,
+      callback: `${getWebhookBaseURL()}/api/ledger-topups/eganow-topup-webhook`,
     })
 
     // Update record with Eganow reference

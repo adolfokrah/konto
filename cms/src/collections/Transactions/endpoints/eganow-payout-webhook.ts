@@ -49,20 +49,8 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       return Response.json({ error: 'Invalid webhook data' }, { status: 400 })
     }
 
-    // Determine if this is a refund, referral withdrawal, or payout based on transactionId format
-    const isRefund = transactionId.startsWith('refund-')
+    // Determine if this is a referral withdrawal or payout based on transactionId format
     const isReferralWithdrawal = transactionId.startsWith('referral-withdrawal-')
-
-    if (isRefund) {
-      return handleRefundWebhook(
-        req,
-        transactionId,
-        eganowReferenceNo,
-        transactionStatus,
-        message,
-        webhookData,
-      )
-    }
 
     if (isReferralWithdrawal) {
       return handleReferralWithdrawalWebhook(
@@ -93,78 +81,6 @@ export const eganowPayoutWebhook = async (req: PayloadRequest) => {
       { status: 500 },
     )
   }
-}
-
-async function handleRefundWebhook(
-  req: PayloadRequest,
-  transactionId: string,
-  eganowReferenceNo: string,
-  transactionStatus: string,
-  message: string,
-  webhookData: Record<string, any>,
-) {
-  // Look up refund by Eganow reference number
-  let refundResult = await req.payload.find({
-    collection: 'refunds' as any,
-    where: {
-      transactionReference: { equals: eganowReferenceNo },
-    },
-    limit: 1,
-    overrideAccess: true,
-  })
-
-  // Fallback: search by refund ID from transactionId format "refund-{refundId}"
-  if (refundResult.docs.length === 0 && transactionId) {
-    const match = transactionId.match(/^refund-([a-f0-9]+)$/)
-    if (match) {
-      const refundId = match[1]
-      console.log(`Searching for refund by ID: ${refundId}`)
-      refundResult = await req.payload.find({
-        collection: 'refunds' as any,
-        where: { id: { equals: refundId } },
-        limit: 1,
-        overrideAccess: true,
-      })
-    }
-  }
-
-  if (refundResult.docs.length === 0) {
-    console.error(`Refund not found for transactionId: ${transactionId}, ref: ${eganowReferenceNo}`)
-    return Response.json({ error: 'Refund not found' }, { status: 404 })
-  }
-
-  const refund = refundResult.docs[0] as any
-
-  // Only process if refund is in-progress
-  if (refund.status !== 'in-progress') {
-    console.log(`Refund ${refund.id} status is ${refund.status}, not in-progress. Skipping.`)
-    return new Response(null, { status: 200 })
-  }
-
-  // Verify with Eganow API
-  const newStatus = await verifyWithEganow(transactionId, eganowReferenceNo, transactionStatus)
-
-  const refundStatusMap: Record<string, string> = {
-    completed: 'completed',
-    failed: 'failed',
-    pending: 'in-progress',
-  }
-  const mappedStatus = refundStatusMap[newStatus] || 'failed'
-
-  console.log(`Updating refund ${refund.id} to status: ${mappedStatus}`)
-
-  // Update refund status (syncLinkedTransaction hook handles marking original tx as failed)
-  await req.payload.update({
-    collection: 'refunds' as any,
-    id: refund.id,
-    data: { status: mappedStatus, webhookResponse: webhookData },
-    overrideAccess: true,
-  })
-
-  // Send FCM notification
-  await sendRefundNotification(req, refund, mappedStatus, message)
-
-  return new Response(null, { status: 200 })
 }
 
 async function handleReferralWithdrawalWebhook(
@@ -413,51 +329,6 @@ async function verifyWithEganow(
   }
 
   return statusMap[verifiedStatus?.toUpperCase() || 'FAILED'] || 'failed'
-}
-
-async function sendRefundNotification(
-  req: PayloadRequest,
-  refund: any,
-  status: string,
-  message: string,
-) {
-  try {
-    const jarId = typeof refund.jar === 'string' ? refund.jar : refund.jar?.id
-    if (!jarId) return
-
-    const jar = await req.payload.findByID({
-      collection: 'jars',
-      id: jarId,
-      depth: 1,
-      overrideAccess: true,
-    })
-
-    if (!jar || typeof jar.creator !== 'object' || !jar.creator) return
-
-    const creatorToken = (jar.creator as any)?.fcmToken
-    if (!creatorToken) return
-
-    const fcm = new FCMPushNotifications()
-    const amount = `${jar.currency || 'GHS'} ${Number(refund.amount).toFixed(2)}`
-
-    if (status === 'completed') {
-      await fcm.sendNotification(
-        [creatorToken],
-        `Refund of ${amount} for "${jar.name}" was successfully sent to the contributor.`,
-        'Refund Processed',
-        { type: 'refund', jarId: jar.id, refundId: refund.id },
-      )
-    } else if (status === 'failed') {
-      await fcm.sendNotification(
-        [creatorToken],
-        `Refund of ${amount} for "${jar.name}" failed${message ? `: ${message}` : ''}.`,
-        'Refund Failed',
-        { type: 'refund-failed', jarId: jar.id, refundId: refund.id },
-      )
-    }
-  } catch (error: any) {
-    console.error('Failed to send refund notification:', error.message)
-  }
 }
 
 async function sendPayoutNotification(

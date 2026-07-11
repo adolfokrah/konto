@@ -22,6 +22,8 @@ import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/di/service_locator.dart';
+import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
@@ -92,6 +94,8 @@ void main() {
             BlocProvider.value(value: getIt<KycBloc>()),
             BlocProvider.value(value: getIt<JarSummaryBloc>()),
             BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
             BlocProvider.value(value: getIt<MediaBloc>()),
             BlocProvider.value(value: getIt<UserAccountBloc>()),
             BlocProvider.value(value: getIt<UpdateJarBloc>()),
@@ -261,6 +265,8 @@ void main() {
             BlocProvider.value(value: getIt<KycBloc>()),
             BlocProvider.value(value: getIt<JarSummaryBloc>()),
             BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -324,6 +330,8 @@ void main() {
             BlocProvider.value(value: getIt<KycBloc>()),
             BlocProvider.value(value: getIt<JarSummaryBloc>()),
             BlocProvider.value(value: getIt<JarListBloc>()),
+            BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [

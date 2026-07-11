@@ -2,16 +2,6 @@
 
 import { useState } from 'react'
 import { useIsAdmin } from './dashboard-user-context'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,7 +27,6 @@ import {
   Clock,
   Receipt,
   Container,
-  RotateCcw,
   Loader2,
   ShieldAlert,
   Banknote,
@@ -49,7 +38,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
 import { type TransactionRow } from './data-table/columns/transaction-columns'
 
 function formatFullDate(dateString: string) {
@@ -65,20 +53,6 @@ function formatFullDate(dateString: string) {
 
 function formatAmount(amount: number) {
   return `GHS ${Math.abs(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-const refundStatusStyles: Record<string, string> = {
-  pending: 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-  'in-progress': 'bg-blue-900/40 text-blue-300 border-blue-700',
-  completed: 'bg-green-900/40 text-green-300 border-green-700',
-  failed: 'bg-red-900/40 text-red-300 border-red-700',
-}
-
-const refundStatusLabels: Record<string, string> = {
-  pending: 'Awaiting Approval',
-  'in-progress': 'In Progress',
-  completed: 'Completed',
-  failed: 'Failed',
 }
 
 const disputeStatusStyles: Record<string, string> = {
@@ -131,8 +105,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function TransactionDetailView({ transaction }: { transaction: TransactionRow }) {
   const router = useRouter()
   const isAdmin = useIsAdmin()
-  const [refunded, setRefunded] = useState(false)
-  const [showRefundDialog, setShowRefundDialog] = useState(false)
   const [showDisputeDialog, setShowDisputeDialog] = useState(false)
   const [disputeDescription, setDisputeDescription] = useState('')
   const [disputeFiles, setDisputeFiles] = useState<File[]>([])
@@ -149,37 +121,12 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
     },
   )
 
-  const { data: relatedRefunds } = useSWR<any[]>(
-    transaction.type === 'contribution'
-      ? `/api/refunds?where[linkedTransaction][equals]=${transaction.id}&depth=1`
-      : null,
-    async (url: string) => {
-      const res = await fetch(url)
-      const data = await res.json()
-      return data.docs || []
-    },
-  )
-
   const { data: relatedDisputes, mutate: mutateDisputes } = useSWR<any[]>(
     `/api/disputes?where[transaction][equals]=${transaction.id}&depth=1`,
     async (url: string) => {
       const res = await fetch(url)
       const data = await res.json()
       return data.docs || []
-    },
-  )
-
-  const { trigger: triggerRefund, isMutating: refunding } = useSWRMutation(
-    '/api/transactions/refund-contribution',
-    async (url: string, { arg }: { arg: { transactionId: string } }) => {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(arg),
-      })
-      const data = await res.json()
-      if (!data.success) throw new Error(data.message || 'Failed to initiate refund')
-      return data
     },
   )
 
@@ -215,31 +162,6 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
       toast.error('Failed to submit dispute')
     } finally {
       setSubmittingDispute(false)
-    }
-  }
-
-  const hasActiveRefund = relatedRefunds?.some(
-    (r: any) => r.status === 'pending' || r.status === 'in-progress' || r.status === 'completed',
-  )
-
-  const canRefund =
-    isAdmin &&
-    transaction.type === 'contribution' &&
-    transaction.paymentStatus === 'completed' &&
-    transaction.paymentMethod === 'mobile-money' &&
-    !transaction.isSettled &&
-    !refunded &&
-    !hasActiveRefund
-
-  const handleRefund = async () => {
-    if (!canRefund) return
-    try {
-      await triggerRefund({ transactionId: transaction.id })
-      toast.success('Refund requested successfully')
-      setRefunded(true)
-      router.refresh()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to initiate refund')
     }
   }
 
@@ -441,17 +363,8 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
         <div className="lg:sticky lg:top-6">
           <Card>
             <CardContent className="p-0">
-              <Tabs defaultValue="refunds">
+              <Tabs defaultValue="disputes">
                 <TabsList className="w-full rounded-none border-b border-border/60 bg-transparent h-auto p-0">
-                  <TabsTrigger
-                    value="refunds"
-                    className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-3 text-sm"
-                  >
-                    Refunds
-                    {relatedRefunds && relatedRefunds.length > 0 && (
-                      <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs">{relatedRefunds.length}</span>
-                    )}
-                  </TabsTrigger>
                   <TabsTrigger
                     value="disputes"
                     className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-3 text-sm"
@@ -468,41 +381,6 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
                     Referral Bonuses
                   </TabsTrigger>
                 </TabsList>
-
-                {/* Refunds */}
-                <TabsContent value="refunds" className="m-0 p-4 space-y-3">
-                  {relatedRefunds && relatedRefunds.length > 0 ? (
-                    relatedRefunds.map((refund: any) => (
-                      <div key={refund.id} className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-900/30 border border-orange-800/50">
-                            <RotateCcw className="h-3.5 w-3.5 text-orange-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{formatAmount(refund.amount)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(refund.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className={cn('text-xs', refundStatusStyles[refund.status] || '')}>
-                          {refundStatusLabels[refund.status] || refund.status}
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-center">
-                      <RotateCcw className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                      <p className="text-sm text-muted-foreground">No refunds</p>
-                    </div>
-                  )}
-                  {canRefund && (
-                    <Button variant="destructive" className="w-full" disabled={refunding} onClick={() => setShowRefundDialog(true)}>
-                      {refunding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RotateCcw className="h-4 w-4 mr-2" />}
-                      {refunding ? 'Requesting...' : 'Request Refund'}
-                    </Button>
-                  )}
-                </TabsContent>
 
                 {/* Disputes */}
                 <TabsContent value="disputes" className="m-0 p-4 space-y-3">
@@ -631,24 +509,6 @@ export function TransactionDetailView({ transaction }: { transaction: Transactio
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Refund Confirm */}
-      <AlertDialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Refund Request</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to refund{' '}
-              <span className="font-semibold">{formatAmount(transaction.amountContributed)}</span>{' '}
-              to {transaction.contributor || 'the contributor'}? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRefund}>Confirm Request</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

@@ -58,28 +58,84 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    // Validate the jar creator's withdrawal account
-    if (!creator.bank || !creator.accountNumber || !creator.accountHolder) {
+    // KYB gate: jar creator must be business-verified before any payout
+    if ((creator.kybStatus ?? 'none') !== 'approved') {
+      return Response.json(
+        {
+          success: false,
+          message: 'You must complete business verification (KYB) before requesting a payout.',
+        },
+        { status: 403 },
+      )
+    }
+
+    // Resolve the destination: the jar's linked withdrawal account, else the
+    // creator's default account (momo or bank).
+    const accountId =
+      typeof jar.withdrawalAccount === 'object'
+        ? (jar.withdrawalAccount as any)?.id
+        : jar.withdrawalAccount
+
+    let account: any = accountId
+      ? await req.payload
+          .findByID({
+            collection: 'withdrawal-accounts',
+            id: accountId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          .catch(() => null)
+      : null
+
+    // Fallback to the creator's default (then most recent) account.
+    if (!account || String(account.user) !== String(creator.id)) {
+      const found = await req.payload.find({
+        collection: 'withdrawal-accounts',
+        where: {
+          and: [{ user: { equals: creator.id } }, { isDefault: { equals: true } }],
+        },
+        limit: 1,
+        overrideAccess: true,
+      })
+      account =
+        found.docs[0] ??
+        (
+          await req.payload.find({
+            collection: 'withdrawal-accounts',
+            where: { user: { equals: creator.id } },
+            sort: '-createdAt',
+            limit: 1,
+            overrideAccess: true,
+          })
+        ).docs[0] ??
+        null
+    }
+
+    if (!account) {
       return Response.json(
         {
           success: false,
           message:
-            "Jar creator's withdrawal account is missing. The creator must set up a withdrawal account first.",
+            'No withdrawal account found. Link one to this jar or set a default withdrawal account.',
         },
         { status: 400 },
       )
     }
-
-    const providerMap: Record<string, string> = {
-      mtn: 'MTNGH',
-      telecel: 'TCELGH',
-    }
-
-    if (!providerMap[creator.bank.toLowerCase()]) {
+    if (!account.provider || !account.accountNumber || !account.accountHolder) {
       return Response.json(
-        { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
+        { success: false, message: 'Withdrawal account is incomplete.' },
         { status: 400 },
       )
+    }
+    const isBankAccount = account.type === 'bank'
+    if (!isBankAccount) {
+      const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
+      if (!providerMap[String(account.provider).toLowerCase()]) {
+        return Response.json(
+          { success: false, message: 'Unsupported mobile money provider for Eganow payout' },
+          { status: 400 },
+        )
+      }
     }
 
     // Check for pending payout and calculate balance in parallel
@@ -111,6 +167,20 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Bank payouts may withdraw a user-chosen amount (fee is charged on that
+    // amount only). Mobile money always pays out the full available balance.
+    const requestedAmount = Number(req.data?.amount)
+    let payoutBase = netBalance
+    if (isBankAccount && Number.isFinite(requestedAmount) && requestedAmount > 0) {
+      if (requestedAmount > netBalance) {
+        return Response.json(
+          { success: false, message: 'Amount exceeds the available balance' },
+          { status: 400 },
+        )
+      }
+      payoutBase = requestedAmount
+    }
+
     // Find all accepted admin collectors in the jar
     const adminCollectors = ((jar.invitedCollectors as any[]) || []).filter(
       (ic: any) => ic.role === 'admin' && ic.status === 'accepted',
@@ -133,22 +203,25 @@ export const payoutEganow = async (req: PayloadRequest) => {
 
       // Jar has admin collectors — create transaction as awaiting-approval and skip Eganow
       const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-      const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-      const transferFee = (netBalance * transferFeePercentage) / 100
-      const expectedNetAmount = netBalance - transferFee
+      const transferFeePercentage = isBankAccount
+        ? (systemSettings as any)?.bankTransferFeePercentage || 1
+        : (systemSettings as any)?.transferFeePercentage || 1
+      const transferFee = (payoutBase * transferFeePercentage) / 100
+      const expectedNetAmount = payoutBase - transferFee
 
       const transaction = await req.payload.create({
         collection: 'transactions',
         data: {
           paymentStatus: 'awaiting-approval',
-          paymentMethod: 'mobile-money',
+          paymentMethod: account.type,
           transactionReference: '',
           jar: jarId,
-          mobileMoneyProvider: creator.bank,
-          amountContributed: -netBalance,
+          withdrawalAccount: account.id,
+          ...(isBankAccount ? {} : { mobileMoneyProvider: account.provider }),
+          amountContributed: -payoutBase,
           collector: creator.id,
-          contributorPhoneNumber: creator.accountNumber,
-          contributor: creator.accountHolder,
+          contributorPhoneNumber: account.accountNumber,
+          contributor: account.accountHolder,
           type: 'payout',
           payoutFeePercentage: transferFeePercentage,
           payoutFeeAmount: transferFee,
@@ -158,7 +231,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
       })
 
       // Send notification to each admin collector (no approval records created yet)
-      const amount = Math.abs(netBalance).toLocaleString(undefined, {
+      const amount = Math.abs(payoutBase).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })
@@ -178,7 +251,7 @@ export const payoutEganow = async (req: PayloadRequest) => {
                 data: {
                   jarId,
                   transactionId: transaction.id,
-                  amount: netBalance,
+                  amount: payoutBase,
                   type: 'payout-approval',
                 },
               },
@@ -198,20 +271,23 @@ export const payoutEganow = async (req: PayloadRequest) => {
     // subsequent request immediately sees a pending payout and is rejected,
     // eliminating the double-payout race window.
     const systemSettings = await req.payload.findGlobal({ slug: 'system-settings' })
-    const transferFeePercentage = (systemSettings as any)?.transferFeePercentage || 1
-    const transferFee = (netBalance * transferFeePercentage) / 100
-    const expectedNetAmount = netBalance - transferFee
+    const transferFeePercentage = isBankAccount
+      ? (systemSettings as any)?.bankTransferFeePercentage || 1
+      : (systemSettings as any)?.transferFeePercentage || 1
+    const transferFee = (payoutBase * transferFeePercentage) / 100
+    const expectedNetAmount = payoutBase - transferFee
 
     const data = {
       paymentStatus: 'pending',
-      paymentMethod: 'mobile-money',
+      paymentMethod: account.type,
       transactionReference: '',
       jar: jarId,
-      mobileMoneyProvider: creator.bank,
-      amountContributed: -netBalance,
+      withdrawalAccount: account.id,
+      ...(isBankAccount ? {} : { mobileMoneyProvider: account.provider }),
+      amountContributed: -payoutBase,
       collector: creator.id,
-      contributorPhoneNumber: creator.accountNumber,
-      contributor: creator.accountHolder,
+      contributorPhoneNumber: account.accountNumber,
+      contributor: account.accountHolder,
       type: 'payout',
       payoutFeePercentage: transferFeePercentage,
       payoutFeeAmount: transferFee,

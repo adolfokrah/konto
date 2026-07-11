@@ -19,6 +19,15 @@ export const getServerSideURL = () => {
   return url
 }
 
+/**
+ * Base URL used for Eganow webhook/callback URLs.
+ * Set WEBHOOK_BASE_URL to a public tunnel (e.g. Cloudflare) when developing locally so
+ * Eganow can reach the callback server-side. Falls back to the normal server URL.
+ */
+export const getWebhookBaseURL = () => {
+  return (process.env.WEBHOOK_BASE_URL || getServerSideURL()).replace(/\/+$/, '')
+}
+
 export const getClientSideURL = () => {
   if (canUseDOM) {
     const protocol = window.location.protocol

@@ -88,7 +88,6 @@ export const getJarSummary = async (req: PayloadRequest) => {
       collection: 'transactions',
       where: {
         jar: { equals: jar.id },
-        type: { not_equals: 'refund' },
         ...(hasFullAccess ? {} : { collector: { equals: user } }),
       },
       limit: 5,
@@ -171,7 +170,7 @@ export const getJarSummary = async (req: PayloadRequest) => {
         tx.type === 'contribution' &&
         tx.paymentStatus === 'completed' &&
         tx.isSettled === false &&
-        tx.paymentMethod === 'mobile-money',
+        ['mobile-money', 'card'].includes(tx.paymentMethod),
     )
     .reduce((s: number, tx: any) => s + tx.amountContributed, 0)
 

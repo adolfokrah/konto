@@ -123,7 +123,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     else if (values.length > 1) txWhere.paymentStatus = { in: values }
   }
   if (txType) {
-    const valid = ['contribution', 'payout', 'refund']
+    const valid = ['contribution', 'payout']
     const values = txType.split(',').filter((v) => valid.includes(v))
     if (values.length === 1) txWhere.type = { equals: values[0] }
     else if (values.length > 1) txWhere.type = { in: values }

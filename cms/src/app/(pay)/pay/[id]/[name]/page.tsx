@@ -1,11 +1,14 @@
-import Image from 'next/image'
-import JarImageCarousel from '@/components/JarImageCarousel'
+import JarGallery from '@/components/JarGallery'
 import ExpandableDescription from '@/components/ExpandableDescription'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  AvatarGroup,
+  AvatarGroupCount,
+} from '@/components/ui/avatar'
 import { ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
-import Goal from '@/components/Goal'
 import ContributionInput from '@/components/ContributionInput'
 import RecentContributions from '@/components/RecentContributions'
 import ReportJarButton from '@/components/ReportJarButton'
@@ -178,129 +181,199 @@ export default async function Page({
         : jarWithBalance?.creator
     const effectiveCollectorId = collectorIdFromQuery || creatorId
 
+    // ---- Goal / progress (only when creator enabled it) ----
+    const currencySymbol = jarWithBalance.currency === 'GHS' ? '₵' : '₦'
+    const showGoal =
+      !!jarWithBalance.goalAmount &&
+      jarWithBalance.goalAmount > 0 &&
+      jarWithBalance.paymentPage?.showGoal === true
+    const raisedAmount = jarWithBalance.balanceBreakDown?.totalContributedAmount || 0
+    const goalPct = showGoal
+      ? Math.min((raisedAmount / jarWithBalance.goalAmount) * 100, 100)
+      : 0
+    const deadlineDate = jarWithBalance.deadline ? new Date(jarWithBalance.deadline) : null
+    const daysLeft = deadlineDate
+      ? Math.max(Math.ceil((deadlineDate.getTime() - Date.now()) / 86400000), 0)
+      : null
+    const fmtMoney = (n: number) =>
+      n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
     return (
       <div className="min-h-screen bg-primary-light text-black">
-        <div className="max-w-2xl mx-auto md:p-4 md:rounded-3xl m-5 bg-white">
-          {/* Jar Details */}
-          <div>
-            {/* Jar Image Carousel */}
-            {carouselImages.length > 0 && (
-              <JarImageCarousel
-                images={carouselImages}
-                alt={jarWithBalance.name || 'Jar image'}
-                description={jarWithBalance.description || null}
-                donorCount={donorCount}
-                showDonors={jarWithBalance.paymentPage?.showRecentContributions ?? true}
-                contributorAvatars={contributorAvatars}
-              />
-            )}
-          <div className="p-6">
-            <h1 className="font-bold mb-4 text-2xl lg:text-4xl">{jarWithBalance.name}</h1>
+        <div className="container mx-auto px-4 md:px-8 py-6 sm:py-8">
+          {/* Title */}
+          <h1 className="font-supreme font-bold text-2xl lg:text-4xl tracking-tight text-balance mb-5">
+            {jarWithBalance.name}
+          </h1>
 
-            {jarWithBalance.description && (
-              <ExpandableDescription
-                description={jarWithBalance.description}
-                className="text-gray-700 mb-4 font-supreme text-base"
-              />
-            )}
+          <div className="grid gap-8 lg:gap-9 lg:grid-cols-[minmax(0,1fr)_400px] lg:grid-rows-[auto_1fr] lg:items-start">
+            {/* ============ DONATE PANEL — after the story top on mobile, sticky right on desktop ============ */}
+            <aside className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 self-start">
+              <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_1px_2px_rgba(27,35,46,0.06),0_12px_32px_-16px_rgba(27,35,46,0.18)]">
+                {/* Goal progress — only when creator enabled it */}
+                {showGoal && (
+                  <div className="mb-5 font-supreme">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-2xl font-bold tabular-nums">
+                        {currencySymbol}
+                        {fmtMoney(raisedAmount)}
+                      </span>
+                      <span className="text-sm text-gray-600 tabular-nums">
+                        raised of {currencySymbol}
+                        {fmtMoney(jarWithBalance.goalAmount)} goal
+                      </span>
+                    </div>
+                    <div className="mt-3 h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-green-700 transition-all duration-300 ease-out"
+                        style={{ width: `${goalPct}%` }}
+                      />
+                    </div>
+                    <div className="mt-2 flex justify-between text-xs text-gray-500">
+                      <span>
+                        <b className="text-green-700">{Math.round(goalPct)}%</b> funded
+                      </span>
+                      <span className="tabular-nums">
+                        {donorCount} {donorCount === 1 ? 'contribution' : 'contributions'}
+                        {daysLeft !== null && ` · ${daysLeft} days left`}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-            {/* Safety tip */}
-            <Alert className="my-4 font-supreme bg-[#FDF7EC] border-[#F5E6C8] rounded-2xl [&>svg]:text-orange-400">
-              <TriangleAlert className="h-4 w-4" />
-              <AlertTitle className="text-orange-900">Stay safe</AlertTitle>
-              <AlertDescription className="text-orange-800/80">
-                Before contributing, make sure you know and trust the organizer. Check their username and look for the <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" /> verified badge.
-              </AlertDescription>
-            </Alert>
+                {/* Contributor avatar stack */}
+                {(contributorAvatars.length > 0 || donorCount > 0) && (
+                  <div className="flex items-center gap-2.5 mb-5 font-supreme">
+                    <AvatarGroup>
+                      {contributorAvatars
+                        .slice(0, 3)
+                        .map((a: { initials: string; photoUrl: string | null }, i: number) => (
+                          <Avatar key={i} className="w-7 h-7 border-2 border-white">
+                            <AvatarImage src={a.photoUrl || undefined} className="object-cover" />
+                            <AvatarFallback
+                              className={`text-[10px] font-semibold text-white ${
+                                ['bg-[#B45309]', 'bg-[#15803D]', 'bg-[#1D4ED8]'][i % 3]
+                              }`}
+                            >
+                              {a.initials}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      {donorCount > 3 && (
+                        <AvatarGroupCount className="w-7 h-7 text-[10px] bg-gray-700 text-white">
+                          +{donorCount - 3}
+                        </AvatarGroupCount>
+                      )}
+                    </AvatarGroup>
+                    <p className="text-xs text-gray-600">
+                      <b className="text-black">{donorCount}</b>{' '}
+                      {donorCount === 1 ? 'person has' : 'people have'} contributed
+                    </p>
+                  </div>
+                )}
 
-            <Separator className="my-6" />
+                {/* Contribution Input — all payment logic + conditions live here */}
+                <div id="contribution-section" />
+                <ContributionInput
+                  currency={jarWithBalance.currency}
+                  isFixedAmount={jarWithBalance.isFixedContribution || false}
+                  fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
+                  jarId={jarId}
+                  jarName={jarWithBalance.name}
+                  collectorId={effectiveCollectorId}
+                  allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
+                  transactionFeePercentage={systemSettings?.collectionFee || 1.95}
+                  customFields={jarWithBalance.customFields || []}
+                  acceptingContributions={jarWithBalance.acceptingContributions !== false}
+                  actionLabel={jarWithBalance.paymentPage?.donationLabel === 'donate' ? 'donate' : 'contribute'}
+                />
+              </div>
+            </aside>
 
-            {/* Organizer Section */}
-            <div className="bg-gray-50 rounded-2xl p-5 mb-6 font-supreme">
-              <div className="flex gap-4 items-start">
-                <Avatar className="w-16 h-16 ring-2 ring-white shadow-sm">
+            {/* ===== TOP-LEFT: gallery, organizer, story, safety (above panel on mobile) ===== */}
+            <div className="order-1 min-w-0 lg:col-start-1 lg:row-start-1">
+              {/* Jar image gallery — hero + thumbnail strip */}
+              {carouselImages.length > 0 && (
+                <JarGallery images={carouselImages} alt={jarWithBalance.name || 'Jar image'} />
+              )}
+
+              {/* Organizer row */}
+              <div className="flex items-center gap-3 py-4 border-b border-gray-200 mt-4 font-supreme">
+                <Avatar className="w-11 h-11 shrink-0">
                   <AvatarImage src={creatorPhotoUrl || undefined} className="object-cover" />
-                  <AvatarFallback className="bg-primary text-white text-lg font-semibold">
+                  <AvatarFallback className="bg-black text-white font-semibold">
                     {creatorInitials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <p className="font-bold text-xl mb-1">
-                    {typeof jarWithBalance?.creator === 'object'
-                      ? `${jarWithBalance?.creator?.firstName || ''} ${jarWithBalance?.creator?.lastName || ''}`.trim()
-                      : jarWithBalance?.creator}
+                <div className="min-w-0">
+                  <p className="text-sm">
+                    <b className="font-bold">
+                      {typeof jarWithBalance?.creator === 'object'
+                        ? `${jarWithBalance?.creator?.firstName || ''} ${jarWithBalance?.creator?.lastName || ''}`.trim()
+                        : jarWithBalance?.creator}
+                    </b>{' '}
+                    is organizing this fundraiser
                   </p>
-                  {creatorUsername && (
-                    <p className="text-gray-500 text-sm mb-2">@{creatorUsername}</p>
-                  )}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-medium text-gray-600 bg-white px-2.5 py-1 rounded-full">
-                      Organizer
-                    </span>
+                  <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap mt-0.5">
+                    {creatorUsername && <span>@{creatorUsername}</span>}
                     {jarWithBalance?.creator &&
                       typeof jarWithBalance.creator === 'object' &&
                       jarWithBalance.creator.country && (
-                        <span className="text-xs font-medium text-gray-600 bg-white px-2.5 py-1 rounded-full capitalize">
-                          {jarWithBalance.creator.country}
-                        </span>
+                        <span className="capitalize">· {jarWithBalance.creator.country}</span>
                       )}
                     {creatorKycStatus === 'verified' && (
-                      <span className="text-xs font-medium text-green-700 bg-green-100 px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <ShieldCheck className="h-3.5 w-3.5" />
+                      <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2 py-0.5 rounded-full font-medium">
+                        <ShieldCheck className="h-3 w-3" />
                         Verified
                       </span>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Story */}
+              {jarWithBalance.description && (
+                <div className="py-5 border-b border-gray-200">
+                  <ExpandableDescription
+                    description={jarWithBalance.description}
+                    className="text-gray-700 font-supreme text-base"
+                  />
+                </div>
+              )}
+
+              {/* Safety tip */}
+              <Alert className="mt-5 font-supreme bg-[#FCEFD3] border-[#EBD59B] rounded-2xl [&>svg]:text-orange-500">
+                <TriangleAlert className="h-4 w-4" />
+                <AlertTitle className="text-orange-900">Stay safe</AlertTitle>
+                <AlertDescription className="text-orange-800/80">
+                  Before contributing, make sure you know and trust the organizer. Check their
+                  username and look for the{' '}
+                  <ShieldCheck className="inline h-3.5 w-3.5 text-green-600 mx-0.5 align-middle" />{' '}
+                  verified badge.
+                </AlertDescription>
+              </Alert>
             </div>
 
-            <Separator className="my-6" />
+            {/* ===== BOTTOM-LEFT: contributions + report (below panel) ===== */}
+            <div className="order-3 min-w-0 lg:col-start-1 lg:row-start-2">
+              {/* Words of support */}
+              {jarWithBalance.paymentPage?.showRecentContributions && (
+                <div className="pt-2 lg:pt-6">
+                  <RecentContributions
+                    jarId={jarId}
+                    currency={jarWithBalance.currency}
+                    limit={5}
+                    page={Number(resolvedSearchParams.cPage) || 1}
+                  />
+                </div>
+              )}
 
-            {/* Goal Section - Show if jar has goal amount and showGoal is enabled */}
-            {jarWithBalance.goalAmount &&
-            jarWithBalance.goalAmount > 0 &&
-            jarWithBalance.paymentPage?.showGoal === true ? (
-              <Goal
-                currentAmount={jarWithBalance.balanceBreakDown?.totalContributedAmount || 0}
-                targetAmount={jarWithBalance.goalAmount}
-                deadline={
-                  jarWithBalance.deadline ||
-                  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-                }
-                currency={jarWithBalance.currency === 'GHS' ? '₵' : '₦'}
-                className="my-6"
-              />
-            ) : null}
-
-            {/* Contribution Input */}
-            <div id="contribution-section" />
-            <ContributionInput
-              currency={jarWithBalance.currency}
-              isFixedAmount={jarWithBalance.isFixedContribution || false}
-              fixedAmount={jarWithBalance.acceptedContributionAmount || 0}
-              className="my-6"
-              jarId={jarId}
-              jarName={jarWithBalance.name}
-              collectorId={effectiveCollectorId}
-              allowAnonymousContributions={jarWithBalance.allowAnonymousContributions || false}
-              transactionFeePercentage={systemSettings?.collectionFee || 1.95}
-              customFields={jarWithBalance.customFields || []}
-            />
-
-            <Separator />
-
-            {/* Recent Contributions */}
-            {jarWithBalance.paymentPage?.showRecentContributions && (
-              <RecentContributions jarId={jarId} currency={jarWithBalance.currency} limit={5} page={Number(resolvedSearchParams.cPage) || 1} />
-            )}
-
-            {/* Report Jar */}
-            <div className="flex justify-center py-4">
-              <ReportJarButton jarId={jarId} />
+              {/* Report Jar */}
+              <div className="flex justify-center py-4">
+                <ReportJarButton jarId={jarId} />
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     )

@@ -2,9 +2,12 @@ import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
+import { chargeCardEganow } from './endpoints/charge-card-eganow'
+import { getBanks } from './endpoints/get-banks'
 import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
 import { eganowWebhook } from './endpoints/eganow-webhook'
+import { eganowCardWebhook } from './endpoints/eganow-card-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { payoutEganow } from './endpoints/payout-eganow'
@@ -20,7 +23,6 @@ import { verifyPendingTransactions } from './endpoints/verify-pending-transactio
 import { exportContributions } from './endpoints/export-contributions'
 import { exportContributionsMobile } from './endpoints/export-contributions-mobile'
 import { recalculateCharges } from './endpoints/recalculate-charges'
-import { refundContribution } from './endpoints/refund-contribution'
 import { shareContributions } from './endpoints/share-contributions'
 import { getTransaction } from './endpoints/get-transaction'
 import { approveRejectPayout } from './endpoints/approve-reject-payout'
@@ -120,8 +122,10 @@ export const Transactions: CollectionConfig = {
       hooks: {
         beforeChange: [
           ({ data }) => {
-            // Account number is only required for bank payments
-            if (data?.paymentMethod === 'bank' && !data?.accountNumber) {
+            // Account number is only required for bank CONTRIBUTIONS (pay-in).
+            // Bank payouts store the destination account on contributorPhoneNumber /
+            // the linked withdrawalAccount, so they are exempt.
+            if (data?.paymentMethod === 'bank' && data?.type !== 'payout' && !data?.accountNumber) {
               throw new APIError('Account number is required for bank payments', 400)
             }
           },
@@ -236,7 +240,7 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: 'Whether this contribution has been settled',
         condition: (data) =>
-          data?.type === 'contribution' && data?.paymentMethod === 'mobile-money',
+          data?.type === 'contribution' && ['mobile-money', 'card'].includes(data?.paymentMethod),
       },
     },
     {
@@ -272,7 +276,8 @@ export const Transactions: CollectionConfig = {
       required: false,
       admin: {
         description: 'Transaction reference for tracking payments',
-        condition: (data) => data?.paymentMethod === 'mobile-money',
+        condition: (data) =>
+          data?.paymentMethod === 'mobile-money' || data?.paymentMethod === 'card',
       },
     },
     {
@@ -282,6 +287,16 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: "Eganow's PayPartnerTransactionId received in webhook callback",
         readOnly: true,
+      },
+    },
+    {
+      name: 'withdrawalAccount',
+      type: 'relationship',
+      relationTo: 'withdrawal-accounts',
+      hasMany: false,
+      admin: {
+        description: 'Destination withdrawal account for a payout',
+        condition: (data) => data?.type === 'payout',
       },
     },
     {
@@ -408,6 +423,21 @@ export const Transactions: CollectionConfig = {
       handler: chargeMomoEganow,
     },
     {
+      path: '/charge-card-eganow',
+      method: 'post',
+      handler: chargeCardEganow,
+    },
+    {
+      path: '/eganow-card-webhook',
+      method: 'post',
+      handler: eganowCardWebhook,
+    },
+    {
+      path: '/eganow-card-webhook',
+      method: 'options',
+      handler: eganowCardWebhook,
+    },
+    {
       path: '/chango-webhook',
       method: 'post',
       handler: changoWebhook,
@@ -468,11 +498,6 @@ export const Transactions: CollectionConfig = {
       handler: recalculateCharges,
     },
     {
-      path: '/refund-contribution',
-      method: 'post',
-      handler: refundContribution,
-    },
-    {
       path: '/share-contributions',
       method: 'get',
       handler: shareContributions,
@@ -486,6 +511,11 @@ export const Transactions: CollectionConfig = {
       path: '/reconcile-momo-status',
       method: 'get',
       handler: reconcileMomoStatus,
+    },
+    {
+      path: '/banks',
+      method: 'get',
+      handler: getBanks,
     },
     {
       path: '/get-charges',

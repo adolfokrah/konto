@@ -19,8 +19,6 @@ const REMINDER_WINDOWS = [
  * Reference date (start of countdown):
  *   - jar.deadline if it exists and is in the past
  *   - otherwise: date of the most recent completed contribution
- *
- * Day 14 auto-refund is handled by the separate auto-refund-daily task.
  */
 export const withdrawReminderDailyTask = {
   slug: 'withdraw-reminder-daily',

@@ -2,19 +2,40 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Building2, Check, FileText, Phone, User as UserIcon, Users } from 'lucide-react'
 import { PlatformBadge } from '@/components/dashboard/platform-badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/utilities/ui'
 import { kycStatusLabels } from '@/components/dashboard/table-constants'
+import { bankName } from '@/utilities/eganowBanks'
 import { createDiditKYC, type DiditSessionDecision } from '@/utilities/diditKyc'
 import { UserKycActions } from '@/components/dashboard/user-kyc-actions'
 import { UserDiscountEditor } from '@/components/dashboard/user-discount-editor'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
+import { BusinessVerificationStatusBadge } from '@/components/dashboard/business-verification-status-badge'
+import { BusinessVerificationStatusForm } from '@/components/dashboard/business-verification-status-form'
 
 const TX_DEFAULT_LIMIT = 20
+
+const VALID_TABS = ['profile', 'accounts', 'kyc', 'kyb', 'transactions', 'jars'] as const
+type TabValue = (typeof VALID_TABS)[number]
+
+/** momo provider → display label; falls back to uppercased provider. */
+function momoLabel(provider: string): string {
+  if (provider === 'mtn') return 'MTN Mobile Money'
+  if (provider === 'telecel') return 'Telecel Cash'
+  return provider.toUpperCase()
+}
+
+/** Show only the last 4 digits, e.g. •••• 1631 */
+function maskAccountNumber(value: string): string {
+  const digits = (value || '').replace(/\s+/g, '')
+  if (digits.length <= 4) return digits
+  return `•••• ${digits.slice(-4)}`
+}
 
 type Props = {
   params: Promise<{ id: string }>
@@ -46,6 +67,64 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+function QuickFact({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
+    </div>
+  )
+}
+
+function TabCount({ value }: { value: number }) {
+  return (
+    <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
+      {value}
+    </span>
+  )
+}
+
+// Row + DocLink helpers for the KYB tab (mirrors business-verifications/[id]/page.tsx)
+function KybRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string
+  value: React.ReactNode
+  icon?: React.ReactNode
+}) {
+  if (!value && value !== 0) return null
+  return (
+    <div className="flex items-start justify-between py-2">
+      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        {icon}
+        {label}
+      </span>
+      <span className="text-sm font-medium text-right max-w-[60%]">{value}</span>
+    </div>
+  )
+}
+
+function DocLink({ doc, label }: { doc: any; label: string }) {
+  const file = typeof doc === 'object' && doc ? doc : null
+  const url = file?.url
+  if (!url) return <span className="text-muted-foreground">—</span>
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:underline"
+    >
+      <FileText className="h-3.5 w-3.5" />
+      {label}
+    </a>
+  )
+}
+
 export default async function UserDetailPage({ params, searchParams }: Props) {
   const { id } = await params
   const sp = await searchParams
@@ -59,6 +138,9 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   const txSettled = typeof sp.settled === 'string' ? sp.settled : ''
   const txFrom = typeof sp.from === 'string' ? sp.from : ''
   const txTo = typeof sp.to === 'string' ? sp.to : ''
+  const activeTab: TabValue = VALID_TABS.includes(sp.tab as TabValue)
+    ? (sp.tab as TabValue)
+    : 'profile'
 
   const payload = await getPayload({ config: configPromise })
 
@@ -77,92 +159,116 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
 
   if (!user) notFound()
 
-  // Fetch user's jars (created by user) and jars where user is invited collector, plus transactions in parallel
-  const [createdJarsResult, collectorJarsResult, transactionsResult] = await Promise.all([
-    payload.find({
-      collection: 'jars',
-      where: { creator: { equals: id } },
-      sort: '-createdAt',
-      limit: 50,
-      depth: 1,
-      overrideAccess: true,
-      select: {
-        name: true,
-        status: true,
-        goalAmount: true,
-        currency: true,
-        image: true,
-        createdAt: true,
-      },
-    }),
-    payload.find({
-      collection: 'jars',
-      where: { 'invitedCollectors.collector': { equals: id } },
-      sort: '-createdAt',
-      limit: 50,
-      depth: 1,
-      overrideAccess: true,
-      select: {
-        name: true,
-        status: true,
-        goalAmount: true,
-        currency: true,
-        image: true,
-        createdAt: true,
-      },
-    }),
-    (() => {
-      // Build transaction filter where clause (always scoped to this user)
-      const txWhere: Record<string, any> = {
-        or: [
-          { collector: { equals: id } },
-          { contributorPhoneNumber: { equals: user.phoneNumber } },
-        ],
-      }
-      if (txSearch) txWhere.contributor = { like: txSearch }
-      if (txStatus) {
-        const valid = ['pending', 'completed', 'failed']
-        const values = txStatus.split(',').filter((v) => valid.includes(v))
-        if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
-        else if (values.length > 1) txWhere.paymentStatus = { in: values }
-      }
-      if (txType) {
-        const valid = ['contribution', 'payout']
-        const values = txType.split(',').filter((v) => valid.includes(v))
-        if (values.length === 1) txWhere.type = { equals: values[0] }
-        else if (values.length > 1) txWhere.type = { in: values }
-      }
-      if (txMethod) {
-        const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
-        const values = txMethod.split(',').filter((v) => valid.includes(v))
-        if (values.length === 1) txWhere.paymentMethod = { equals: values[0] }
-        else if (values.length > 1) txWhere.paymentMethod = { in: values }
-      }
-      if (txLink && ['yes', 'no'].includes(txLink)) {
-        txWhere.viaPaymentLink = { equals: txLink === 'yes' }
-      }
-      if (txSettled && ['yes', 'no'].includes(txSettled)) {
-        txWhere.isSettled = { equals: txSettled === 'yes' }
-      }
-      if (txFrom) {
-        txWhere.createdAt = { ...txWhere.createdAt, greater_than_equal: new Date(txFrom).toISOString() }
-      }
-      if (txTo) {
-        const toDate = new Date(txTo)
-        toDate.setHours(23, 59, 59, 999)
-        txWhere.createdAt = { ...txWhere.createdAt, less_than_equal: toDate.toISOString() }
-      }
-      return payload.find({
-        collection: 'transactions',
-        where: txWhere,
+  // Fetch user's jars (created by user) and jars where user is invited collector,
+  // transactions, plus latest business verification in parallel
+  const [
+    createdJarsResult,
+    collectorJarsResult,
+    transactionsResult,
+    businessVerificationResult,
+    withdrawalAccountsResult,
+  ] =
+    await Promise.all([
+      payload.find({
+        collection: 'jars',
+        where: { creator: { equals: id } },
         sort: '-createdAt',
-        page: txPage,
-        limit: txLimit,
+        limit: 50,
         depth: 1,
         overrideAccess: true,
-      })
-    })(),
-  ])
+        select: {
+          name: true,
+          status: true,
+          goalAmount: true,
+          currency: true,
+          image: true,
+          createdAt: true,
+        },
+      }),
+      payload.find({
+        collection: 'jars',
+        where: { 'invitedCollectors.collector': { equals: id } },
+        sort: '-createdAt',
+        limit: 50,
+        depth: 1,
+        overrideAccess: true,
+        select: {
+          name: true,
+          status: true,
+          goalAmount: true,
+          currency: true,
+          image: true,
+          createdAt: true,
+        },
+      }),
+      (() => {
+        // Build transaction filter where clause (always scoped to this user)
+        const txWhere: Record<string, any> = {
+          or: [
+            { collector: { equals: id } },
+            { contributorPhoneNumber: { equals: user.phoneNumber } },
+          ],
+        }
+        if (txSearch) txWhere.contributor = { like: txSearch }
+        if (txStatus) {
+          const valid = ['pending', 'completed', 'failed']
+          const values = txStatus.split(',').filter((v) => valid.includes(v))
+          if (values.length === 1) txWhere.paymentStatus = { equals: values[0] }
+          else if (values.length > 1) txWhere.paymentStatus = { in: values }
+        }
+        if (txType) {
+          const valid = ['contribution', 'payout']
+          const values = txType.split(',').filter((v) => valid.includes(v))
+          if (values.length === 1) txWhere.type = { equals: values[0] }
+          else if (values.length > 1) txWhere.type = { in: values }
+        }
+        if (txMethod) {
+          const valid = ['mobile-money', 'cash', 'bank', 'card', 'apple-pay']
+          const values = txMethod.split(',').filter((v) => valid.includes(v))
+          if (values.length === 1) txWhere.paymentMethod = { equals: values[0] }
+          else if (values.length > 1) txWhere.paymentMethod = { in: values }
+        }
+        if (txLink && ['yes', 'no'].includes(txLink)) {
+          txWhere.viaPaymentLink = { equals: txLink === 'yes' }
+        }
+        if (txSettled && ['yes', 'no'].includes(txSettled)) {
+          txWhere.isSettled = { equals: txSettled === 'yes' }
+        }
+        if (txFrom) {
+          txWhere.createdAt = { ...txWhere.createdAt, greater_than_equal: new Date(txFrom).toISOString() }
+        }
+        if (txTo) {
+          const toDate = new Date(txTo)
+          toDate.setHours(23, 59, 59, 999)
+          txWhere.createdAt = { ...txWhere.createdAt, less_than_equal: toDate.toISOString() }
+        }
+        return payload.find({
+          collection: 'transactions',
+          where: txWhere,
+          sort: '-createdAt',
+          page: txPage,
+          limit: txLimit,
+          depth: 1,
+          overrideAccess: true,
+        })
+      })(),
+      payload.find({
+        collection: 'business-verifications' as any,
+        where: { user: { equals: id } },
+        sort: '-createdAt',
+        limit: 1,
+        depth: 3,
+        overrideAccess: true,
+      }),
+      payload.find({
+        collection: 'withdrawal-accounts',
+        where: { user: { equals: id } },
+        sort: '-isDefault',
+        limit: 50,
+        depth: 0,
+        overrideAccess: true,
+      }),
+    ])
 
   // Fetch Didit KYC decision if session exists
   let diditDecision: DiditSessionDecision | null = null
@@ -219,6 +325,16 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   const amlScreening = diditDecision?.aml_screenings?.[0]
   const ipAnalysis = diditDecision?.ip_analyses?.[0]
 
+  // Business verification (KYB) data
+  const bv = (businessVerificationResult.docs[0] as any) || null
+  const bvUser = bv && typeof bv.user === 'object' && bv.user ? bv.user : null
+  const bvReviewedBy = bv && typeof bv.reviewedBy === 'object' && bv.reviewedBy ? bv.reviewedBy : null
+  const bvDirectors: any[] = bv && Array.isArray(bv.directors) ? bv.directors : []
+  const bvStatusHistory: any[] = bv && Array.isArray(bv.statusHistory) ? bv.statusHistory : []
+
+  // Withdrawal accounts (mobile money / bank)
+  const withdrawalAccounts: any[] = withdrawalAccountsResult.docs || []
+
   const jarStatusStyles: Record<string, string> = {
     open: 'bg-green-900/40 text-green-300 border-green-700',
     frozen: 'bg-blue-900/40 text-blue-300 border-blue-700',
@@ -228,7 +344,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Back link */}
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard/users"
@@ -239,694 +355,982 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        {photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoUrl}
-            alt={fullName}
-            className="h-14 w-14 rounded-full border border-border object-cover"
-          />
-        ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted text-lg font-semibold text-muted-foreground">
-            {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
-          </div>
-        )}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{fullName || 'Unknown User'}</h1>
-            <Badge
-              variant="outline"
-              className={cn(
-                user.role === 'admin'
-                  ? 'bg-purple-100 text-purple-800 border-purple-200'
-                  : 'bg-gray-100 text-gray-800 border-gray-200',
-              )}
-            >
-              {user.role}
-            </Badge>
-            {user.demoUser && (
-              <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
-                Demo
-              </Badge>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column: User info + Withdrawal */}
-        <div className="space-y-6 lg:col-span-1">
-          {/* Personal Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              <InfoRow label="Name" value={fullName} />
-              <InfoRow label="Username" value={user.username} />
-              <InfoRow label="Email" value={user.email} />
-              <InfoRow
-                label="Phone"
-                value={`${user.countryCode || ''} ${user.phoneNumber}`}
-              />
-              <InfoRow label="Country" value={user.country} />
-              <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
-              <InfoRow label="Referral Code" value={user.referralCode ? <span className="font-mono text-xs tracking-widest">{user.referralCode}</span> : <span className="text-muted-foreground text-xs">Not generated</span>} />
-              <InfoRow label="Fee Discount" value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />} />
-              <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
-            </CardContent>
-          </Card>
-
-          {/* Withdrawal Account */}
-          {(user.bank || user.accountNumber || user.accountHolder) && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Withdrawal Account</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-0">
-                <InfoRow label="Bank" value={user.bank} />
-                <InfoRow label="Account Number" value={user.accountNumber} />
-                <InfoRow label="Account Holder" value={user.accountHolder} />
-              </CardContent>
-            </Card>
+      {/* ── Full-width identity header ── */}
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-5 py-6">
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photoUrl}
+              alt={fullName}
+              className="h-16 w-16 rounded-full border border-border object-cover shrink-0"
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xl font-semibold text-muted-foreground">
+              {(user.firstName?.[0] || '').toUpperCase()}
+              {(user.lastName?.[0] || '').toUpperCase()}
+            </div>
           )}
 
-          {/* App Settings */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">App Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              <InfoRow label="Platform" value={<PlatformBadge platform={user.platform} />} />
-              <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
-              <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
-              <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />
-              <InfoRow label="Push Notifications" value={user.appSettings?.notificationsSettings?.pushNotificationsEnabled !== false ? 'On' : 'Off'} />
-              <InfoRow label="Email Notifications" value={user.appSettings?.notificationsSettings?.emailNotificationsEnabled !== false ? 'On' : 'Off'} />
-              <InfoRow label="SMS Notifications" value={user.appSettings?.notificationsSettings?.smsNotificationsEnabled ? 'On' : 'Off'} />
-            </CardContent>
-          </Card>
-        </div>
+          {/* Identity: name, chips, contact line */}
+          <div className="flex min-w-[260px] flex-1 flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-tight">{fullName || 'Unknown User'}</h1>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'capitalize',
+                  user.role === 'admin'
+                    ? 'bg-purple-100 text-purple-800 border-purple-200'
+                    : 'bg-gray-100 text-gray-800 border-gray-200',
+                )}
+              >
+                {user.role}
+              </Badge>
+              {user.demoUser && (
+                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                  Demo
+                </Badge>
+              )}
+              <Badge
+                variant="outline"
+                className={cn(
+                  user.kycStatus === 'verified' && 'bg-green-900/40 text-green-300 border-green-700',
+                  user.kycStatus === 'in_review' &&
+                    'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                  user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
+                )}
+              >
+                KYC: {kycStatusLabels[user.kycStatus] || user.kycStatus}
+              </Badge>
+              {bv && <BusinessVerificationStatusBadge status={bv.status} />}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {[
+                user.email,
+                user.phoneNumber ? `${user.countryCode || ''} ${user.phoneNumber}`.trim() : null,
+                user.country,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
 
-        {/* Right column: KYC + Didit details */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* KYC Status & Actions */}
+          {/* Quick-facts strip */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-8">
+            <QuickFact label="Joined" value={formatFullDate(user.createdAt).split(',').slice(0, 2).join(',')} />
+            <QuickFact
+              label="Fee discount"
+              value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />}
+            />
+            <QuickFact label="Accounts" value={withdrawalAccounts.length} />
+            <QuickFact label="Jars" value={createdJarsResult.totalDocs} />
+            <QuickFact
+              label="Referral"
+              value={
+                user.referralCode ? (
+                  <span className="font-mono tracking-widest">{user.referralCode}</span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )
+              }
+            />
+            <QuickFact label="Platform" value={<PlatformBadge platform={user.platform} />} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Full-width tab bar ── */}
+      <Tabs defaultValue={activeTab} className="space-y-4">
+        <TabsList className="flex w-full flex-wrap justify-start">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="accounts">
+            Withdrawal Accounts
+            <TabCount value={withdrawalAccounts.length} />
+          </TabsTrigger>
+          <TabsTrigger value="kyc">KYC</TabsTrigger>
+          <TabsTrigger value="kyb">KYB</TabsTrigger>
+          <TabsTrigger value="transactions">
+            Transactions
+            <TabCount value={transactionsResult.totalDocs} />
+          </TabsTrigger>
+          <TabsTrigger value="jars">
+            Jars
+            <TabCount value={createdJarsResult.totalDocs} />
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── PROFILE TAB ── */}
+        <TabsContent value="profile" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Personal Info */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Personal Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                <InfoRow label="Name" value={fullName} />
+                <InfoRow label="Username" value={user.username} />
+                <InfoRow label="Email" value={user.email} />
+                <InfoRow label="Phone" value={`${user.countryCode || ''} ${user.phoneNumber}`} />
+                <InfoRow label="Country" value={user.country} />
+                <InfoRow label="Joined" value={formatFullDate(user.createdAt)} />
+                <InfoRow
+                  label="Referral Code"
+                  value={
+                    user.referralCode ? (
+                      <span className="font-mono text-xs tracking-widest">{user.referralCode}</span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">Not generated</span>
+                    )
+                  }
+                />
+                <InfoRow
+                  label="Fee Discount"
+                  value={<UserDiscountEditor userId={user.id} currentDiscount={user.hogapayDiscountPercent ?? 0} />}
+                />
+                <InfoRow label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
+              </CardContent>
+            </Card>
+
+            {/* App Settings */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">App Settings</CardTitle>
+                  <PlatformBadge platform={user.platform} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                <InfoRow label="Language" value={user.appSettings?.language === 'fr' ? 'French' : 'English'} />
+                <InfoRow label="Theme" value={user.appSettings?.theme || 'system'} />
+                <InfoRow label="Biometric Auth" value={user.appSettings?.biometricAuthEnabled ? 'Enabled' : 'Disabled'} />
+                <InfoRow label="Push Notifications" value={user.appSettings?.notificationsSettings?.pushNotificationsEnabled !== false ? 'On' : 'Off'} />
+                <InfoRow label="Email Notifications" value={user.appSettings?.notificationsSettings?.emailNotificationsEnabled !== false ? 'On' : 'Off'} />
+                <InfoRow label="SMS Notifications" value={user.appSettings?.notificationsSettings?.smsNotificationsEnabled ? 'On' : 'Off'} />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ── WITHDRAWAL ACCOUNTS TAB ── */}
+        <TabsContent value="accounts" className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">KYC Verification</CardTitle>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    user.kycStatus === 'verified' && 'bg-green-900/40 text-green-300 border-green-700',
-                    user.kycStatus === 'in_review' && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                    user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
-                  )}
-                >
-                  {kycStatusLabels[user.kycStatus] || user.kycStatus}
-                </Badge>
+                <CardTitle className="text-sm">Withdrawal Accounts</CardTitle>
+                <CardDescription>Used for jar payouts &amp; referral withdrawals</CardDescription>
               </div>
-              {user.kycSessionId && (
-                <CardDescription className="font-mono text-xs">
-                  Session: {user.kycSessionId}
-                </CardDescription>
-              )}
             </CardHeader>
             <CardContent>
-              <UserKycActions
-                userId={user.id}
-                kycSessionId={user.kycSessionId}
-                currentStatus={user.kycStatus}
-              />
+              {withdrawalAccounts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No withdrawal accounts</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {withdrawalAccounts.map((acct: any) => {
+                    const isBank = acct.type === 'bank'
+                    const title = isBank ? bankName(acct.provider) : momoLabel(acct.provider)
+                    return (
+                      <div
+                        key={acct.id}
+                        className="flex items-center gap-3.5 rounded-lg border bg-muted/30 p-3.5"
+                      >
+                        <div
+                          className={cn(
+                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                            isBank
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-blue-900/30 text-blue-300',
+                          )}
+                        >
+                          {isBank ? (
+                            <Building2 className="h-5 w-5" />
+                          ) : (
+                            <Phone className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 text-sm font-medium">
+                            <span className="truncate">{title}</span>
+                            {acct.verified && (
+                              <span className="inline-flex items-center gap-1 text-xs text-green-400">
+                                <Check className="h-3.5 w-3.5" />
+                                verified
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {[acct.accountHolder, maskAccountNumber(acct.accountNumber)]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                        </div>
+                        {acct.isDefault && (
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-900/40 text-blue-300 border-blue-700"
+                          >
+                            Default
+                          </Badge>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Didit Decision Details */}
-          {diditDecision && (
-            <>
-              {/* ID Verification */}
-              {idVerification && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">ID Verification</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          idVerification.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                          idVerification.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                          !['Approved', 'Declined'].includes(idVerification.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+
+            {/* ── KYC TAB ── */}
+            <TabsContent value="kyc" className="space-y-6">
+              {/* KYC Status & Actions */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm">KYC Verification</CardTitle>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        user.kycStatus === 'verified' && 'bg-green-900/40 text-green-300 border-green-700',
+                        user.kycStatus === 'in_review' && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                        user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
+                      )}
+                    >
+                      {kycStatusLabels[user.kycStatus] || user.kycStatus}
+                    </Badge>
+                  </div>
+                  {user.kycSessionId && (
+                    <CardDescription className="font-mono text-xs">
+                      Session: {user.kycSessionId}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <UserKycActions
+                    userId={user.id}
+                    kycSessionId={user.kycSessionId}
+                    currentStatus={user.kycStatus}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Didit Decision Details */}
+              {diditDecision && (
+                <>
+                  {/* ID Verification */}
+                  {idVerification && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm">ID Verification</CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              idVerification.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                              idVerification.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                              !['Approved', 'Declined'].includes(idVerification.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                            )}
+                          >
+                            {idVerification.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Document Images */}
+                        {(idVerification.portrait_image || idVerification.front_image || idVerification.back_image) && (
+                          <div className="space-y-3">
+                            <p className="text-xs font-medium text-muted-foreground">Documents</p>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              {idVerification.portrait_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Portrait</p>
+                                  <a href={idVerification.portrait_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={idVerification.portrait_image}
+                                      alt="Portrait"
+                                      className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                              {idVerification.front_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">ID Front</p>
+                                  <a href={idVerification.front_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={idVerification.front_image}
+                                      alt="ID Front"
+                                      className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                              {idVerification.back_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">ID Back</p>
+                                  <a href={idVerification.back_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={idVerification.back_image}
+                                      alt="ID Back"
+                                      className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <Separator />
+                          </div>
                         )}
-                      >
-                        {idVerification.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Document Images */}
-                    {(idVerification.portrait_image || idVerification.front_image || idVerification.back_image) && (
-                      <div className="space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground">Documents</p>
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          {idVerification.portrait_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Portrait</p>
-                              <a href={idVerification.portrait_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={idVerification.portrait_image}
-                                  alt="Portrait"
-                                  className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
-                                />
-                              </a>
+
+                        {/* Full document scans */}
+                        {(idVerification.full_front_image || idVerification.full_back_image) && (
+                          <div className="space-y-3">
+                            <p className="text-xs font-medium text-muted-foreground">Full Document Scans</p>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {idVerification.full_front_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Full Front</p>
+                                  <a href={idVerification.full_front_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={idVerification.full_front_image}
+                                      alt="Full front scan"
+                                      className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                              {idVerification.full_back_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Full Back</p>
+                                  <a href={idVerification.full_back_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={idVerification.full_back_image}
+                                      alt="Full back scan"
+                                      className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {idVerification.front_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">ID Front</p>
-                              <a href={idVerification.front_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={idVerification.front_image}
-                                  alt="ID Front"
-                                  className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
-                                />
-                              </a>
+                            <Separator />
+                          </div>
+                        )}
+
+                        {/* Video captures */}
+                        {(idVerification.front_video || idVerification.back_video) && (
+                          <div className="space-y-3">
+                            <p className="text-xs font-medium text-muted-foreground">Video Captures</p>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {idVerification.front_video && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Front Video</p>
+                                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                  <video
+                                    src={idVerification.front_video}
+                                    controls
+                                    className="rounded-md border border-border w-full aspect-3/2"
+                                  />
+                                </div>
+                              )}
+                              {idVerification.back_video && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Back Video</p>
+                                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                  <video
+                                    src={idVerification.back_video}
+                                    controls
+                                    className="rounded-md border border-border w-full aspect-3/2"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {idVerification.back_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">ID Back</p>
-                              <a href={idVerification.back_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={idVerification.back_image}
-                                  alt="ID Back"
-                                  className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
+                            <Separator />
+                          </div>
+                        )}
+
+                        {/* Extracted Info */}
+                        <div className="space-y-0">
+                          <InfoRow label="Full Name" value={idVerification.full_name} />
+                          <InfoRow label="First Name" value={idVerification.first_name} />
+                          <InfoRow label="Last Name" value={idVerification.last_name} />
+                          <InfoRow label="Date of Birth" value={idVerification.date_of_birth} />
+                          <InfoRow label="Age" value={idVerification.age} />
+                          <InfoRow label="Gender" value={idVerification.gender} />
+                          <InfoRow label="Nationality" value={idVerification.nationality} />
+                          <InfoRow label="Document Type" value={idVerification.document_type} />
+                          <InfoRow label="Document Number" value={idVerification.document_number} />
+                          {idVerification.personal_number && <InfoRow label="Personal Number" value={idVerification.personal_number} />}
+                          <InfoRow label="Expiration Date" value={idVerification.expiration_date} />
+                          <InfoRow label="Date of Issue" value={idVerification.date_of_issue} />
+                          <InfoRow label="Issuing State" value={idVerification.issuing_state_name} />
+                          <InfoRow label="Place of Birth" value={idVerification.place_of_birth} />
+                          <InfoRow label="Address" value={idVerification.formatted_address || idVerification.address} />
+                          {idVerification.marital_status && <InfoRow label="Marital Status" value={idVerification.marital_status} />}
                         </div>
-                        <Separator />
-                      </div>
-                    )}
 
-                    {/* Full document scans */}
-                    {(idVerification.full_front_image || idVerification.full_back_image) && (
-                      <div className="space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground">Full Document Scans</p>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {idVerification.full_front_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Full Front</p>
-                              <a href={idVerification.full_front_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={idVerification.full_front_image}
-                                  alt="Full front scan"
-                                  className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
-                                />
-                              </a>
+                        {/* ID Verification Warnings */}
+                        {idVerification.warnings && idVerification.warnings.length > 0 && (
+                          <>
+                            <Separator />
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Warnings</p>
+                              {idVerification.warnings.map((w, i) => (
+                                <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
+                                  <p className="font-medium text-yellow-300">{w.risk}</p>
+                                  <p className="text-yellow-400/80">{w.short_description}</p>
+                                  {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
+                                </div>
+                              ))}
                             </div>
-                          )}
-                          {idVerification.full_back_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Full Back</p>
-                              <a href={idVerification.full_back_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={idVerification.full_back_image}
-                                  alt="Full back scan"
-                                  className="rounded-md border border-border object-cover w-full aspect-3/2 hover:opacity-80 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Liveness Check */}
+                  {livenessCheck && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm">Liveness Check</CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              livenessCheck.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                              livenessCheck.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                              !['Approved', 'Declined'].includes(livenessCheck.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                            )}
+                          >
+                            {livenessCheck.status}
+                          </Badge>
                         </div>
-                        <Separator />
-                      </div>
-                    )}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Reference Image & Liveness Video */}
+                        {(livenessCheck.reference_image || livenessCheck.video_url) && (
+                          <div className="space-y-3">
+                            <div className="grid gap-3 grid-cols-2 max-w-sm">
+                              {livenessCheck.reference_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Reference Image</p>
+                                  <a href={livenessCheck.reference_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={livenessCheck.reference_image}
+                                      alt="Reference face"
+                                      className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                              {livenessCheck.video_url && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Liveness Video</p>
+                                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                  <video
+                                    src={livenessCheck.video_url}
+                                    controls
+                                    className="rounded-md border border-border w-full aspect-square"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <Separator />
+                          </div>
+                        )}
 
-                    {/* Video captures */}
-                    {(idVerification.front_video || idVerification.back_video) && (
-                      <div className="space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground">Video Captures</p>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {idVerification.front_video && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Front Video</p>
-                              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                              <video
-                                src={idVerification.front_video}
-                                controls
-                                className="rounded-md border border-border w-full aspect-3/2"
-                              />
-                            </div>
-                          )}
-                          {idVerification.back_video && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Back Video</p>
-                              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                              <video
-                                src={idVerification.back_video}
-                                controls
-                                className="rounded-md border border-border w-full aspect-3/2"
-                              />
-                            </div>
-                          )}
+                        <div className="space-y-0">
+                          <InfoRow label="Method" value={livenessCheck.method} />
+                          <InfoRow label="Score" value={livenessCheck.score != null ? `${livenessCheck.score}%` : null} />
+                          <InfoRow label="Age Estimation" value={livenessCheck.age_estimation != null ? `${livenessCheck.age_estimation.toFixed(1)} years` : null} />
+                          <InfoRow label="Face Quality" value={livenessCheck.face_quality != null ? `${livenessCheck.face_quality}%` : null} />
                         </div>
-                        <Separator />
-                      </div>
-                    )}
 
-                    {/* Extracted Info */}
-                    <div className="space-y-0">
-                      <InfoRow label="Full Name" value={idVerification.full_name} />
-                      <InfoRow label="First Name" value={idVerification.first_name} />
-                      <InfoRow label="Last Name" value={idVerification.last_name} />
-                      <InfoRow label="Date of Birth" value={idVerification.date_of_birth} />
-                      <InfoRow label="Age" value={idVerification.age} />
-                      <InfoRow label="Gender" value={idVerification.gender} />
-                      <InfoRow label="Nationality" value={idVerification.nationality} />
-                      <InfoRow label="Document Type" value={idVerification.document_type} />
-                      <InfoRow label="Document Number" value={idVerification.document_number} />
-                      {idVerification.personal_number && <InfoRow label="Personal Number" value={idVerification.personal_number} />}
-                      <InfoRow label="Expiration Date" value={idVerification.expiration_date} />
-                      <InfoRow label="Date of Issue" value={idVerification.date_of_issue} />
-                      <InfoRow label="Issuing State" value={idVerification.issuing_state_name} />
-                      <InfoRow label="Place of Birth" value={idVerification.place_of_birth} />
-                      <InfoRow label="Address" value={idVerification.formatted_address || idVerification.address} />
-                      {idVerification.marital_status && <InfoRow label="Marital Status" value={idVerification.marital_status} />}
-                    </div>
+                        {/* Liveness Warnings */}
+                        {livenessCheck.warnings && livenessCheck.warnings.length > 0 && (
+                          <>
+                            <Separator />
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Warnings</p>
+                              {livenessCheck.warnings.map((w, i) => (
+                                <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
+                                  <p className="font-medium text-yellow-300">{w.risk}</p>
+                                  <p className="text-yellow-400/80">{w.short_description}</p>
+                                  {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
 
-                    {/* ID Verification Warnings */}
-                    {idVerification.warnings && idVerification.warnings.length > 0 && (
-                      <>
-                        <Separator />
+                  {/* Face Match */}
+                  {faceMatch && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm">Face Match</CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              faceMatch.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                              faceMatch.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                              !['Approved', 'Declined'].includes(faceMatch.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                            )}
+                          >
+                            {faceMatch.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Face Comparison Images */}
+                        {(faceMatch.source_image || faceMatch.target_image) && (
+                          <div className="space-y-3">
+                            <p className="text-xs font-medium text-muted-foreground">Face Comparison</p>
+                            <div className="grid gap-3 grid-cols-2 max-w-xs">
+                              {faceMatch.source_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">ID Photo</p>
+                                  <a href={faceMatch.source_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={faceMatch.source_image}
+                                      alt="Source face"
+                                      className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                              {faceMatch.target_image && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-muted-foreground">Selfie</p>
+                                  <a href={faceMatch.target_image} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={faceMatch.target_image}
+                                      alt="Target face"
+                                      className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
+                                    />
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <Separator />
+                          </div>
+                        )}
+
+                        <div className="space-y-0">
+                          <InfoRow label="Similarity Score" value={faceMatch.score != null ? `${faceMatch.score.toFixed(1)}%` : null} />
+                        </div>
+
+                        {/* Face Match Warnings */}
+                        {faceMatch.warnings && faceMatch.warnings.length > 0 && (
+                          <>
+                            <Separator />
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Warnings</p>
+                              {faceMatch.warnings.map((w, i) => (
+                                <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
+                                  <p className="font-medium text-yellow-300">{w.risk}</p>
+                                  <p className="text-yellow-400/80">{w.short_description}</p>
+                                  {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* AML Screening */}
+                  {amlScreening && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm">AML Screening</CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              amlScreening.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                              amlScreening.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                              !['Approved', 'Declined'].includes(amlScreening.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                            )}
+                          >
+                            {amlScreening.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-0">
+                        <InfoRow label="Total Hits" value={amlScreening.total_hits} />
+                        {amlScreening.score != null && <InfoRow label="Score" value={`${(amlScreening.score * 100).toFixed(1)}%`} />}
+                        {amlScreening.hits && amlScreening.hits.length > 0 && (
+                          <div className="pt-2">
+                            <p className="text-xs text-muted-foreground mb-1">Hits</p>
+                            {amlScreening.hits.map((hit, i) => (
+                              <div key={i} className="text-xs border rounded p-2 mb-1 border-border">
+                                <p>Name: {hit.full_name || hit.caption || '—'}</p>
+                                {hit.score != null && <p>Score: {(hit.score * 100).toFixed(1)}%</p>}
+                                {hit.datasets && <p>Datasets: {hit.datasets.join(', ')}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* IP Analysis */}
+                  {ipAnalysis && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm">IP Analysis</CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              ipAnalysis.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                              ipAnalysis.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                              !['Approved', 'Declined'].includes(ipAnalysis.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
+                            )}
+                          >
+                            {ipAnalysis.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-0">
+                        <InfoRow label="IP Address" value={ipAnalysis.ip_address} />
+                        <InfoRow label="Country" value={ipAnalysis.ip_country} />
+                        <InfoRow label="State" value={ipAnalysis.ip_state} />
+                        <InfoRow label="City" value={ipAnalysis.ip_city} />
+                        <InfoRow label="ISP" value={ipAnalysis.isp} />
+                        <InfoRow label="VPN/Tor" value={ipAnalysis.is_vpn_or_tor ? 'Yes' : 'No'} />
+                        <InfoRow label="Data Center" value={ipAnalysis.is_data_center ? 'Yes' : 'No'} />
+                        <InfoRow label="Browser" value={ipAnalysis.browser_family} />
+                        <InfoRow label="Timezone" value={ipAnalysis.time_zone} />
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Reviews */}
+                  {diditDecision.reviews && diditDecision.reviews.length > 0 && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Reviews</CardTitle>
+                      </CardHeader>
+                      <CardContent>
                         <div className="space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Warnings</p>
-                          {idVerification.warnings.map((w, i) => (
-                            <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
-                              <p className="font-medium text-yellow-300">{w.risk}</p>
-                              <p className="text-yellow-400/80">{w.short_description}</p>
-                              {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
+                          {diditDecision.reviews.map((r, i) => (
+                            <div key={i} className="text-xs border rounded p-2 border-border">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">{r.user}</span>
+                                <Badge variant="outline" className={cn(
+                                  r.new_status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
+                                  r.new_status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
+                                )}>
+                                  {r.new_status}
+                                </Badge>
+                              </div>
+                              {r.comment && <p className="mt-1">{r.comment}</p>}
+                              <p className="text-muted-foreground mt-1">{formatFullDate(r.created_at)}</p>
                             </div>
                           ))}
                         </div>
-                      </>
-                    )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* No decision data available */}
+                  {!idVerification && !livenessCheck && !faceMatch && !amlScreening && (
+                    <Card>
+                      <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                        Didit session exists but no verification data is available yet.
+                        The user may not have completed the verification process.
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
+            {/* ── KYB TAB ── */}
+            <TabsContent value="kyb" className="space-y-6">
+              {!bv ? (
+                <Card>
+                  <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                    No business verification submitted.
                   </CardContent>
                 </Card>
-              )}
-
-              {/* Liveness Check */}
-              {livenessCheck && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">Liveness Check</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          livenessCheck.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                          livenessCheck.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                          !['Approved', 'Declined'].includes(livenessCheck.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                        )}
-                      >
-                        {livenessCheck.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Reference Image & Liveness Video */}
-                    {(livenessCheck.reference_image || livenessCheck.video_url) && (
-                      <div className="space-y-3">
-                        <div className="grid gap-3 grid-cols-2 max-w-sm">
-                          {livenessCheck.reference_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Reference Image</p>
-                              <a href={livenessCheck.reference_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={livenessCheck.reference_image}
-                                  alt="Reference face"
-                                  className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
-                          {livenessCheck.video_url && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Liveness Video</p>
-                              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                              <video
-                                src={livenessCheck.video_url}
-                                controls
-                                className="rounded-md border border-border w-full aspect-square"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <Separator />
+              ) : (
+                <>
+                  {/* Business Info */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm">Business Details</CardTitle>
+                        <BusinessVerificationStatusBadge status={bv.status} />
                       </div>
-                    )}
-
-                    <div className="space-y-0">
-                      <InfoRow label="Method" value={livenessCheck.method} />
-                      <InfoRow label="Score" value={livenessCheck.score != null ? `${livenessCheck.score}%` : null} />
-                      <InfoRow label="Age Estimation" value={livenessCheck.age_estimation != null ? `${livenessCheck.age_estimation.toFixed(1)} years` : null} />
-                      <InfoRow label="Face Quality" value={livenessCheck.face_quality != null ? `${livenessCheck.face_quality}%` : null} />
-                    </div>
-
-                    {/* Liveness Warnings */}
-                    {livenessCheck.warnings && livenessCheck.warnings.length > 0 && (
-                      <>
-                        <Separator />
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Warnings</p>
-                          {livenessCheck.warnings.map((w, i) => (
-                            <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
-                              <p className="font-medium text-yellow-300">{w.risk}</p>
-                              <p className="text-yellow-400/80">{w.short_description}</p>
-                              {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
-                            </div>
-                          ))}
+                      <CardDescription className="font-mono text-xs">{bv.id}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <KybRow
+                        label="Business Name"
+                        icon={<Building2 className="h-3.5 w-3.5" />}
+                        value={bv.businessName || '—'}
+                      />
+                      <KybRow
+                        label="Submitted By"
+                        icon={<UserIcon className="h-3.5 w-3.5" />}
+                        value={
+                          bvUser ? (
+                            [bvUser.firstName, bvUser.lastName].filter(Boolean).join(' ') || bvUser.email
+                          ) : (
+                            '—'
+                          )
+                        }
+                      />
+                      <KybRow label="Date Submitted" value={formatFullDate(bv.createdAt)} />
+                      <Separator className="my-2" />
+                      <div className="pt-1 space-y-2">
+                        <p className="text-xs text-muted-foreground mb-1">Documents</p>
+                        <div className="flex flex-col gap-2">
+                          <DocLink doc={bv.companyRegistrationDoc} label="Company Registration Document" />
+                          <DocLink doc={bv.proofOfBusinessAddress} label="Proof of Business Address" />
                         </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Face Match */}
-              {faceMatch && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">Face Match</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          faceMatch.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                          faceMatch.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                          !['Approved', 'Declined'].includes(faceMatch.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                        )}
-                      >
-                        {faceMatch.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Face Comparison Images */}
-                    {(faceMatch.source_image || faceMatch.target_image) && (
-                      <div className="space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground">Face Comparison</p>
-                        <div className="grid gap-3 grid-cols-2 max-w-xs">
-                          {faceMatch.source_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">ID Photo</p>
-                              <a href={faceMatch.source_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={faceMatch.source_image}
-                                  alt="Source face"
-                                  className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
-                          {faceMatch.target_image && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground">Selfie</p>
-                              <a href={faceMatch.target_image} target="_blank" rel="noopener noreferrer">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={faceMatch.target_image}
-                                  alt="Target face"
-                                  className="rounded-md border border-border object-cover w-full aspect-square hover:opacity-80 transition-opacity"
-                                />
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                        <Separator />
                       </div>
-                    )}
+                    </CardContent>
+                  </Card>
 
-                    <div className="space-y-0">
-                      <InfoRow label="Similarity Score" value={faceMatch.score != null ? `${faceMatch.score.toFixed(1)}%` : null} />
-                    </div>
-
-                    {/* Face Match Warnings */}
-                    {faceMatch.warnings && faceMatch.warnings.length > 0 && (
-                      <>
-                        <Separator />
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Warnings</p>
-                          {faceMatch.warnings.map((w, i) => (
-                            <div key={i} className="text-xs border rounded p-2 border-yellow-700 bg-yellow-900/20">
-                              <p className="font-medium text-yellow-300">{w.risk}</p>
-                              <p className="text-yellow-400/80">{w.short_description}</p>
-                              {w.long_description && <p className="text-muted-foreground mt-1">{w.long_description}</p>}
+                  {/* Directors */}
+                  {bvDirectors.length > 0 && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Users className="h-3.5 w-3.5" />
+                          Directors ({bvDirectors.length})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {bvDirectors.map((dir: any, i: number) => (
+                          <div key={dir.id ?? i}>
+                            {i > 0 && <Separator className="mb-4" />}
+                            <p className="text-sm font-medium mb-2">{dir.fullName || `Director ${i + 1}`}</p>
+                            <div className="flex flex-col gap-2">
+                              <DocLink doc={dir.idDocument} label="ID Document (Front)" />
+                              {dir.idDocumentBack && (
+                                <DocLink doc={dir.idDocumentBack} label="ID Document (Back)" />
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* AML Screening */}
-              {amlScreening && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">AML Screening</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          amlScreening.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                          amlScreening.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                          !['Approved', 'Declined'].includes(amlScreening.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                        )}
-                      >
-                        {amlScreening.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-0">
-                    <InfoRow label="Total Hits" value={amlScreening.total_hits} />
-                    {amlScreening.score != null && <InfoRow label="Score" value={`${(amlScreening.score * 100).toFixed(1)}%`} />}
-                    {amlScreening.hits && amlScreening.hits.length > 0 && (
-                      <div className="pt-2">
-                        <p className="text-xs text-muted-foreground mb-1">Hits</p>
-                        {amlScreening.hits.map((hit, i) => (
-                          <div key={i} className="text-xs border rounded p-2 mb-1 border-border">
-                            <p>Name: {hit.full_name || hit.caption || '—'}</p>
-                            {hit.score != null && <p>Score: {(hit.score * 100).toFixed(1)}%</p>}
-                            {hit.datasets && <p>Datasets: {hit.datasets.join(', ')}</p>}
                           </div>
                         ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                      </CardContent>
+                    </Card>
+                  )}
 
-              {/* IP Analysis */}
-              {ipAnalysis && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">IP Analysis</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          ipAnalysis.status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                          ipAnalysis.status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                          !['Approved', 'Declined'].includes(ipAnalysis.status || '') && 'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                        )}
-                      >
-                        {ipAnalysis.status}
-                      </Badge>
+                  {/* Status History */}
+                  {bvStatusHistory.length > 0 && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Status History</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {bvStatusHistory
+                          .slice()
+                          .reverse()
+                          .map((h: any, i: number) => {
+                            const changedBy =
+                              typeof h.changedBy === 'object' && h.changedBy ? h.changedBy : null
+                            return (
+                              <div key={h.id ?? i} className="text-sm">
+                                {i > 0 && <Separator className="mb-3" />}
+                                <div className="flex items-center gap-2">
+                                  {h.from && (
+                                    <>
+                                      <BusinessVerificationStatusBadge status={h.from} />
+                                      <span className="text-muted-foreground">→</span>
+                                    </>
+                                  )}
+                                  <BusinessVerificationStatusBadge status={h.to} />
+                                </div>
+                                {h.reason && (
+                                  <p className="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap">
+                                    {h.reason}
+                                  </p>
+                                )}
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {changedBy
+                                    ? [changedBy.firstName, changedBy.lastName]
+                                        .filter(Boolean)
+                                        .join(' ') || changedBy.email
+                                    : 'System'}
+                                  {h.changedAt ? ` • ${formatFullDate(h.changedAt)}` : ''}
+                                </p>
+                              </div>
+                            )
+                          })}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Update Status */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">Update Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <BusinessVerificationStatusForm
+                        verificationId={bv.id}
+                        currentStatus={bv.status}
+                        rejectionReason={bv.rejectionReason ?? ''}
+                        reviewedBy={
+                          bvReviewedBy
+                            ? {
+                                id: bvReviewedBy.id,
+                                name:
+                                  [bvReviewedBy.firstName, bvReviewedBy.lastName].filter(Boolean).join(' ') ||
+                                  bvReviewedBy.email,
+                              }
+                            : null
+                        }
+                      />
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </TabsContent>
+
+            {/* ── TRANSACTIONS TAB ── */}
+            <TabsContent value="transactions" className="space-y-6">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">
+                    Transactions ({transactionsResult.totalDocs})
+                  </CardTitle>
+                  <CardDescription>
+                    Transactions involving this user
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {transactions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No transactions found</p>
+                  ) : (
+                    <TransactionsDataTable
+                      transactions={transactions}
+                      pagination={{
+                        currentPage: txPage,
+                        totalPages: transactionsResult.totalPages,
+                        totalRows: transactionsResult.totalDocs,
+                        rowsPerPage: txLimit,
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── JARS TAB ── */}
+            <TabsContent value="jars" className="space-y-6">
+              {/* User's Jars */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">
+                    Jars Created ({createdJarsResult.totalDocs})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {createdJarsResult.docs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No jars created</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {createdJarsResult.docs.map((jar: any) => {
+                        const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
+                          ? jar.image.url
+                          : null
+                        return (
+                          <Link
+                            key={jar.id}
+                            href={`/dashboard/jars/${jar.id}`}
+                            className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
+                              {jarImageUrl ? (
+                                <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{jar.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
+                              </p>
+                            </div>
+                            <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
+                              {jar.status}
+                            </Badge>
+                          </Link>
+                        )
+                      })}
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-0">
-                    <InfoRow label="IP Address" value={ipAnalysis.ip_address} />
-                    <InfoRow label="Country" value={ipAnalysis.ip_country} />
-                    <InfoRow label="State" value={ipAnalysis.ip_state} />
-                    <InfoRow label="City" value={ipAnalysis.ip_city} />
-                    <InfoRow label="ISP" value={ipAnalysis.isp} />
-                    <InfoRow label="VPN/Tor" value={ipAnalysis.is_vpn_or_tor ? 'Yes' : 'No'} />
-                    <InfoRow label="Data Center" value={ipAnalysis.is_data_center ? 'Yes' : 'No'} />
-                    <InfoRow label="Browser" value={ipAnalysis.browser_family} />
-                    <InfoRow label="Timezone" value={ipAnalysis.time_zone} />
-                  </CardContent>
-                </Card>
-              )}
+                  )}
+                </CardContent>
+              </Card>
 
-              {/* Reviews */}
-              {diditDecision.reviews && diditDecision.reviews.length > 0 && (
+              {/* Jars as Collector */}
+              {collectorJarsResult.totalDocs > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Reviews</CardTitle>
+                    <CardTitle className="text-sm">
+                      Jars as Collector ({collectorJarsResult.totalDocs})
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {diditDecision.reviews.map((r, i) => (
-                        <div key={i} className="text-xs border rounded p-2 border-border">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">{r.user}</span>
-                            <Badge variant="outline" className={cn(
-                              r.new_status === 'Approved' && 'bg-green-900/40 text-green-300 border-green-700',
-                              r.new_status === 'Declined' && 'bg-red-900/40 text-red-300 border-red-700',
-                            )}>
-                              {r.new_status}
+                      {collectorJarsResult.docs.map((jar: any) => {
+                        const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
+                          ? jar.image.url
+                          : null
+                        return (
+                          <Link
+                            key={jar.id}
+                            href={`/dashboard/jars/${jar.id}`}
+                            className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
+                              {jarImageUrl ? (
+                                <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{jar.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
+                              </p>
+                            </div>
+                            <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
+                              {jar.status}
                             </Badge>
-                          </div>
-                          {r.comment && <p className="mt-1">{r.comment}</p>}
-                          <p className="text-muted-foreground mt-1">{formatFullDate(r.created_at)}</p>
-                        </div>
-                      ))}
+                          </Link>
+                        )
+                      })}
                     </div>
                   </CardContent>
                 </Card>
               )}
-
-              {/* No decision data available */}
-              {!idVerification && !livenessCheck && !faceMatch && !amlScreening && (
-                <Card>
-                  <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                    Didit session exists but no verification data is available yet.
-                    The user may not have completed the verification process.
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-
-          {/* User's Jars */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">
-                Jars Created ({createdJarsResult.totalDocs})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {createdJarsResult.docs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No jars created</p>
-              ) : (
-                <div className="space-y-2">
-                  {createdJarsResult.docs.map((jar: any) => {
-                    const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
-                      ? jar.image.url
-                      : null
-                    return (
-                      <Link
-                        key={jar.id}
-                        href={`/dashboard/jars/${jar.id}`}
-                        className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
-                          {jarImageUrl ? (
-                            <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{jar.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
-                          {jar.status}
-                        </Badge>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Jars as Collector */}
-          {collectorJarsResult.totalDocs > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">
-                  Jars as Collector ({collectorJarsResult.totalDocs})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {collectorJarsResult.docs.map((jar: any) => {
-                    const jarImageUrl = typeof jar.image === 'object' && jar.image?.url
-                      ? jar.image.url
-                      : null
-                    return (
-                      <Link
-                        key={jar.id}
-                        href={`/dashboard/jars/${jar.id}`}
-                        className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
-                          {jarImageUrl ? (
-                            <img src={jarImageUrl} alt={jar.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-lg">🏺</div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{jar.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Goal: {formatAmount(jar.goalAmount || 0, jar.currency || 'GHS')}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className={cn(jarStatusStyles[jar.status] || '')}>
-                          {jar.status}
-                        </Badge>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* User's Transactions */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">
-                Transactions ({transactionsResult.totalDocs})
-              </CardTitle>
-              <CardDescription>
-                Transactions involving this user
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {transactions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No transactions found</p>
-              ) : (
-                <TransactionsDataTable
-                  transactions={transactions}
-                  pagination={{
-                    currentPage: txPage,
-                    totalPages: transactionsResult.totalPages,
-                    totalRows: transactionsResult.totalDocs,
-                    rowsPerPage: txLimit,
-                  }}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </TabsContent>
+      </Tabs>
     </div>
   )
 }

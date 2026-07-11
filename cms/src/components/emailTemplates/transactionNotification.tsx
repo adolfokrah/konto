@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Layout } from './layout'
 
 interface TransactionNotificationProps {
-  type: 'contribution' | 'payout' | 'refund'
+  type: 'contribution' | 'payout'
   status: string
   contributor: string
   amount: string
@@ -16,9 +16,6 @@ interface TransactionNotificationProps {
 }
 
 function getTitle(type: string, status: string): string {
-  if (type === 'refund') {
-    return status === 'completed' ? 'Refund Completed' : 'New Refund Requested'
-  }
   if (type === 'payout') {
     return 'Payout Completed'
   }

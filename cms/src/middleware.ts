@@ -8,6 +8,7 @@ const BYPASS_PREFIXES = [
   '/dashboard',
   '/api',
   '/pay',
+  '/organizations',
   '/congratulations',
   '/email',
   '/_next',

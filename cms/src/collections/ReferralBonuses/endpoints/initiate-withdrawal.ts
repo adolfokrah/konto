@@ -23,8 +23,33 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     )
   }
 
-  // Guard: withdrawal account must be set
-  if (!fullUser.accountNumber || !fullUser.bank) {
+  // Guard: withdrawal account must be set — resolve the user's default
+  // withdrawal-accounts record (momo or bank), falling back to the most
+  // recent account if no default is flagged.
+  let account = (
+    await req.payload.find({
+      collection: 'withdrawal-accounts',
+      where: {
+        and: [{ user: { equals: user.id } }, { isDefault: { equals: true } }],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+  ).docs[0]
+
+  if (!account) {
+    account = (
+      await req.payload.find({
+        collection: 'withdrawal-accounts',
+        where: { user: { equals: user.id } },
+        sort: '-createdAt',
+        limit: 1,
+        overrideAccess: true,
+      })
+    ).docs[0]
+  }
+
+  if (!account || !account.provider || !account.accountNumber) {
     return Response.json(
       {
         success: false,
@@ -110,8 +135,8 @@ export const initiateWithdrawal: PayloadHandler = async (req) => {
     success: true,
     amount,
     maskedPhone,
-    bank: fullUser.bank,
-    accountNumber: `****${(fullUser.accountNumber ?? '').slice(-4)}`,
+    bank: account.provider,
+    accountNumber: `****${(account.accountNumber ?? '').slice(-4)}`,
     message: `OTP sent to ${maskedPhone}`,
   })
 }

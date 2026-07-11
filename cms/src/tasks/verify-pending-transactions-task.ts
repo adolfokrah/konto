@@ -24,12 +24,13 @@ export const verifyPendingTransactionsTask = {
       // 1 hour ago — transactions older than this are auto-failed
       const maxPendingTime = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-      // Find pending mobile-money transactions older than 5 minutes
+      // Find pending mobile-money, card and bank transactions older than 5 minutes
+      // (bank = bank payouts). Covers both contributions and payouts.
       const pendingTransactions = await payload.find({
         collection: 'transactions',
         where: {
           paymentStatus: { equals: 'pending' },
-          paymentMethod: { equals: 'mobile-money' },
+          paymentMethod: { in: ['mobile-money', 'card', 'bank'] },
           createdAt: { less_than: cutoffTime },
         },
         limit: 500,
@@ -54,14 +55,17 @@ export const verifyPendingTransactionsTask = {
       let failedCount = 0
 
       for (const transaction of pendingTransactions.docs) {
-        const { transactionReference, id, collector, jar, type } = transaction as any
+        const { transactionReference, id, collector, jar, type, paymentMethod } = transaction as any
 
         const collectorId = typeof collector === 'string' ? collector : collector?.id
         const jarId = typeof jar === 'string' ? jar : jar?.id
 
-        // Reconstruct the transactionId we originally sent to Eganow
-        // Contributions use raw id, payouts use "payout-{id}"
-        const eganowTransactionId = type === 'payout' ? `payout-${id}` : id
+        // Reconstruct the id Eganow recognises for status lookup:
+        // - payouts: "payout-{id}"
+        // - card contributions: the Eganow reference (Eganow does not recognise our id for cards)
+        // - mobile money contributions: raw id
+        const eganowTransactionId =
+          type === 'payout' ? `payout-${id}` : paymentMethod === 'card' ? transactionReference : id
 
         // No collector or no transaction reference → mark as failed
         if (!collector || !transactionReference) {
@@ -127,7 +131,11 @@ export const verifyPendingTransactionsTask = {
           const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
             SUCCESSFUL: 'completed',
             SUCCESS: 'completed',
+            APPROVED: 'completed',
+            DECLINED: 'failed',
             FAILED: 'failed',
+            EXPIRED: 'failed',
+            CANCELLED: 'failed',
             PENDING: 'pending',
           }
 

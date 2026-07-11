@@ -7,64 +7,65 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
   try {
     // Use Payload's helper function to add data to the request
     await addDataAndFileToRequest(req)
-    const { phoneNumber, bank } = req.data || {}
+    // `type`: 'mobile-money' (default) | 'bank'.
+    // For momo: `bank` is the provider (mtn|telecel) and `phoneNumber` the wallet number.
+    // For bank: `bank` is the Eganow bank paypartner code and `accountNumber` the bank account.
+    const { phoneNumber, bank, type, accountNumber } = req.data || {}
+    const isBank = type === 'bank'
 
-    if (!phoneNumber) {
-      return Response.json(
-        {
-          success: false,
-          message: 'Phone number is required',
-          valid: false,
-        },
-        { status: 401 },
-      )
-    }
     if (!bank) {
       return Response.json(
-        {
-          success: false,
-          message: 'Bank is required',
-          valid: false,
-        },
+        { success: false, message: 'Bank/provider is required', valid: false },
         { status: 400 },
       )
     }
 
-    // Map mobile money provider to Eganow paypartner code
-    const providerMap: Record<string, string> = {
-      mtn: 'MTNGH',
-      telecel: 'TCELGH',
-    }
+    let paypartnerCode: string
+    let accountNoOrCardNoOrMSISDN: string
+    const rawAccount = isBank ? accountNumber : phoneNumber
 
-    const paypartnerCode = providerMap[bank.toLowerCase()]
-    if (!paypartnerCode) {
+    if (!rawAccount) {
       return Response.json(
         {
           success: false,
-          message: 'Unsupported mobile money provider',
+          message: isBank ? 'Account number is required' : 'Phone number is required',
           valid: false,
         },
         { status: 400 },
       )
     }
 
-    // Format phone number to international format (233...)
-    let formattedPhoneNumber = phoneNumber.replace(/\s+/g, '')
-    if (formattedPhoneNumber.startsWith('0')) {
-      formattedPhoneNumber = '233' + formattedPhoneNumber.substring(1)
-    } else if (!formattedPhoneNumber.startsWith('233')) {
-      formattedPhoneNumber = '233' + formattedPhoneNumber
+    if (isBank) {
+      // Bank code is passed through directly (e.g. STANBICGH).
+      paypartnerCode = String(bank)
+      accountNoOrCardNoOrMSISDN = String(accountNumber).replace(/\s+/g, '')
+    } else {
+      const providerMap: Record<string, string> = { mtn: 'MTNGH', telecel: 'TCELGH' }
+      const mapped = providerMap[String(bank).toLowerCase()]
+      if (!mapped) {
+        return Response.json(
+          { success: false, message: 'Unsupported mobile money provider', valid: false },
+          { status: 400 },
+        )
+      }
+      paypartnerCode = mapped
+      // Format phone number to international format (233...)
+      let formatted = String(phoneNumber).replace(/\s+/g, '')
+      if (formatted.startsWith('0')) formatted = '233' + formatted.substring(1)
+      else if (!formatted.startsWith('233')) formatted = '233' + formatted
+      accountNoOrCardNoOrMSISDN = formatted
     }
 
     // Get token (automatically cached by Eganow class)
     await getEganow().getToken()
 
-    // Verify KYC using Eganow
+    // Name enquiry via Eganow. Bank name-enquiry requires the full 'GH0233' country
+    // code (plain 'GH' returns isSuccess:false for banks); momo works with 'GH'.
     const kycResponse = await getEganow().verifyKYC({
       paypartnerCode,
-      accountNoOrCardNoOrMSISDN: formattedPhoneNumber,
+      accountNoOrCardNoOrMSISDN,
       languageId: 'en',
-      countryCode: 'GH',
+      countryCode: isBank ? 'GH0233' : 'GH',
     })
 
     if (kycResponse.isSuccess && kycResponse.accountName) {
@@ -74,7 +75,7 @@ export const verifyAccountDetails = async (req: PayloadRequest) => {
           message: 'Account details verified successfully',
           data: {
             account_name: kycResponse.accountName,
-            account_number: phoneNumber,
+            account_number: rawAccount,
           },
         },
         { status: 200 },

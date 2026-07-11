@@ -21,6 +21,7 @@ import 'package:Hoga/features/media/data/models/media_model.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
 import 'package:Hoga/core/config/backend_config.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/withdrawal_account_picker.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -98,6 +99,28 @@ class _JarInfoViewState extends State<JarInfoView> {
             updates: {'jarGroup': selectedGroup},
           ),
         );
+      },
+    );
+  }
+
+  /// Opens the shared account picker to change the jar's linked payout account.
+  Future<void> _openPayoutAccountPicker(
+    String jarId,
+    String? currentId,
+  ) async {
+    await WithdrawalAccountPicker.show(
+      context,
+      currentId: currentId,
+      onSelected: (selectedId) {
+        if (!mounted) return;
+        if (selectedId != currentId) {
+          context.read<UpdateJarBloc>().add(
+                UpdateJarRequested(
+                  jarId: jarId,
+                  updates: {'withdrawalAccount': selectedId},
+                ),
+              );
+        }
       },
     );
   }
@@ -913,6 +936,45 @@ class _JarInfoViewState extends State<JarInfoView> {
                                         },
                                       ),
                                     ),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      dense: true,
+                                      title: Text(
+                                        "Use 'Donate' label",
+                                        style: AppTextStyles.titleMediumS
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .color
+                                                  ?.withValues(alpha: 0.5),
+                                            ),
+                                      ),
+                                      subtitle: Text(
+                                        "Show 'Donate' instead of 'Contribute' on the payment button",
+                                      ),
+                                      trailing: CustomCupertinoSwitch(
+                                        defaultValue:
+                                            jarData.donationLabel == 'donate',
+                                        onChanged: (value) {
+                                          if (state is UpdateJarInProgress) {
+                                            return;
+                                          }
+
+                                          final updates = <String, dynamic>{
+                                            'donationLabel':
+                                                value ? 'donate' : 'contribute',
+                                          };
+
+                                          context.read<UpdateJarBloc>().add(
+                                            UpdateJarRequested(
+                                              jarId: jarData.id,
+                                              updates: updates,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -937,6 +999,44 @@ class _JarInfoViewState extends State<JarInfoView> {
                                     ),
                                     subtitle: Text(
                                       '${jarData.customFields?.length ?? 0} field${(jarData.customFields?.length ?? 0) == 1 ? '' : 's'}',
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                  ),
+                                ),
+                              ],
+
+                              // Payout account (creator only)
+                              if (jarData.isCreator) ...[
+                                const SizedBox(height: AppSpacing.spacingXs),
+                                AppCard(
+                                  variant: CardVariant.secondary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.spacingM,
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
+                                    onTap: () => _openPayoutAccountPicker(
+                                      jarData.id,
+                                      jarData.withdrawalAccount?.id,
+                                    ),
+                                    title: Text(
+                                      'Payout account',
+                                      style: AppTextStyles.titleMediumS.copyWith(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .color
+                                            ?.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      jarData.withdrawalAccount == null
+                                          ? 'Not set'
+                                          : '${jarData.withdrawalAccount!.label?.isNotEmpty == true ? jarData.withdrawalAccount!.label! : withdrawalAccountLabel(jarData.withdrawalAccount!)}  •  ${jarData.withdrawalAccount!.maskedAccountNumber}',
+                                      style: AppTextStyles.titleMediumS,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     trailing: const Icon(Icons.chevron_right),
                                   ),

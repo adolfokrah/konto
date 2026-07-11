@@ -19,6 +19,7 @@ import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -183,6 +184,7 @@ void main() {
             BlocProvider.value(value: getIt<FetchContributionBloc>()),
             BlocProvider.value(value: getIt<MomoPaymentBloc>()),
             BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -430,6 +432,7 @@ void main() {
             BlocProvider.value(value: getIt<FetchContributionBloc>()),
             BlocProvider.value(value: getIt<MomoPaymentBloc>()),
             BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           ],
           child: MaterialApp.router(
             localizationsDelegates: const [
@@ -505,6 +508,7 @@ void main() {
                   BlocProvider.value(value: getIt<FetchContributionBloc>()),
                   BlocProvider.value(value: getIt<MomoPaymentBloc>()),
                   BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
                 ],
                 child: MaterialApp.router(
                   localizationsDelegates: const [
@@ -687,6 +691,7 @@ void main() {
             BlocProvider.value(value: getIt<OnboardingBloc>()),
             BlocProvider.value(value: getIt<VerificationBloc>()),
             BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
             BlocProvider.value(value: getIt<JarSummaryBloc>()),
             BlocProvider.value(value: getIt<JarListBloc>()),
             BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),

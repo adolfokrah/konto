@@ -18,6 +18,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_rel
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
@@ -221,6 +222,7 @@ void main() {
         BlocProvider.value(value: getIt<UpdateJarBloc>()),
         BlocProvider.value(value: getIt<MediaBloc>()),
         BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
       ],
@@ -413,6 +415,7 @@ void main() {
           BlocProvider.value(value: getIt<UpdateJarBloc>()),
           BlocProvider.value(value: getIt<MediaBloc>()),
           BlocProvider.value(value: getIt<NotificationsBloc>()),
+            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           BlocProvider.value(value: getIt<UserAccountBloc>()),
           BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
         ],

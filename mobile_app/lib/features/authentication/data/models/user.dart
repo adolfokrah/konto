@@ -12,6 +12,7 @@ class User {
   final String countryCode;
   final String country;
   final String kycStatus;
+  final String kybStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<UserSession> sessions;
@@ -40,6 +41,7 @@ class User {
     required this.countryCode,
     required this.country,
     required this.kycStatus,
+    this.kybStatus = 'none',
     required this.createdAt,
     required this.updatedAt,
     required this.sessions,
@@ -65,6 +67,7 @@ class User {
       countryCode: json['countryCode'] as String,
       country: json['country'] as String,
       kycStatus: json['kycStatus'] as String? ?? 'none',
+      kybStatus: json['kybStatus'] as String? ?? 'none',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       sessions:
@@ -113,6 +116,7 @@ class User {
       'countryCode': countryCode,
       'country': country,
       'kycStatus': kycStatus,
+      'kybStatus': kybStatus,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
@@ -139,6 +143,7 @@ class User {
     String? countryCode,
     String? country,
     String? kycStatus,
+    String? kybStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<UserSession>? sessions,
@@ -162,6 +167,7 @@ class User {
       countryCode: countryCode ?? this.countryCode,
       country: country ?? this.country,
       kycStatus: kycStatus ?? this.kycStatus,
+      kybStatus: kybStatus ?? this.kybStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       sessions: sessions ?? this.sessions,

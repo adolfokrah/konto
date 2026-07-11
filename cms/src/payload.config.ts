@@ -29,29 +29,28 @@ import { jarCreationReminderDailyTask } from './tasks/jar-creation-reminder-dail
 import { processPayoutTask } from './tasks/process-payout'
 import { processReferralWithdrawalTask } from './tasks/process-referral-withdrawal'
 import { checkEganowPayoutBalanceTask } from './tasks/check-eganow-payout-balance'
-import { processRefundTask } from './tasks/process-refund'
 import { getSystemSettings } from './endpoints/get-system-settings'
 import { DeletedUserAccounts } from './collections/DeletedUserAccounts'
 import { DailyActiveUsers } from './collections/DailyActiveUsers'
 import { JarReports } from './collections/JarReports'
 import { PushCampaigns } from './collections/PushCampaigns'
-import { Refunds } from './collections/Refunds'
 import { PayoutApprovals } from './collections/PayoutApprovals'
 import { LedgerTopups } from './collections/LedgerTopups'
 import { Referrals } from './collections/Referrals'
 import { ReferralBonuses } from './collections/ReferralBonuses'
 import { Disputes } from './collections/Disputes'
+import { BusinessVerifications } from './collections/BusinessVerifications'
+import { BusinessDocuments } from './collections/BusinessDocuments'
+import { WithdrawalAccounts } from './collections/WithdrawalAccounts'
 import { Emails } from './collections/Emails'
 import { Cashbacks } from './collections/Cashbacks'
 import { SmsCampaigns } from './collections/SmsCampaigns'
 import { sendPushCampaignTask } from './tasks/send-push-campaign'
 import { sendSmsCampaignTask } from './tasks/send-sms-campaign'
 import { sendScheduledCampaignsTask } from './tasks/send-scheduled-campaigns'
-import { verifyPendingRefundsTask } from './tasks/verify-pending-refunds-task'
 import { verifyPendingTopupsTask } from './tasks/verify-pending-topups-task'
 import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
-import { autoRefundDailyTask } from './tasks/auto-refund-daily'
 import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
 import { sealInactiveJarsDailyTask } from './tasks/seal-inactive-jars-daily'
 
@@ -104,12 +103,14 @@ export default buildConfig({
     DailyActiveUsers,
     JarReports,
     PushCampaigns,
-    Refunds,
     PayoutApprovals,
     LedgerTopups,
     Referrals,
     ReferralBonuses,
     Disputes,
+    BusinessVerifications,
+    BusinessDocuments,
+    WithdrawalAccounts,
     Emails,
     Cashbacks,
     SmsCampaigns,
@@ -119,6 +120,8 @@ export default buildConfig({
     'https://hogapay.com',
     'https://www.usehoga.com',
     'https://usehoga.com',
+    // Extra origins from env (comma-separated) — e.g. local LAN IP / tunnels for dev.
+    ...(process.env.EXTRA_CORS_ORIGINS?.split(',').map((o) => o.trim()) ?? []),
   ].filter(Boolean),
   globals: [Header, Footer, SystemSettings],
   db: mongooseAdapter({
@@ -137,6 +140,7 @@ export default buildConfig({
           s3Storage({
             collections: {
               media: true,
+              'business-documents': true,
             },
             bucket: process.env.BUCKET || process.env.RAILWAY_BUCKET_NAME || '',
             config: {
@@ -195,15 +199,12 @@ export default buildConfig({
       processPayoutTask as any,
       processReferralWithdrawalTask as any,
       checkEganowPayoutBalanceTask as any,
-      processRefundTask as any,
       sendPushCampaignTask as any,
       sendScheduledCampaignsTask as any,
       sendSmsCampaignTask as any,
-      verifyPendingRefundsTask as any,
       verifyPendingTopupsTask as any,
       weeklyAccountSummaryTask as any,
       withdrawReminderDailyTask as any,
-      autoRefundDailyTask as any,
       cleanupOldNotificationsTask as any,
       sealInactiveJarsDailyTask as any,
     ],
@@ -211,11 +212,6 @@ export default buildConfig({
       {
         cron: '* * * * *', // Every minute — picks up queued payout jobs
         queue: 'payout',
-        limit: 1,
-      },
-      {
-        cron: '* * * * *', // Every minute — picks up queued refund jobs
-        queue: 'refund',
         limit: 1,
       },
       {
@@ -247,10 +243,6 @@ export default buildConfig({
         queue: 'send-scheduled-campaigns',
       },
       {
-        cron: '*/25 * * * *', // Every 25 minutes
-        queue: 'verify-pending-refunds',
-      },
-      {
         cron: '*/15 * * * *', // Every 15 minutes
         queue: 'verify-pending-topups',
       },
@@ -261,10 +253,6 @@ export default buildConfig({
       {
         cron: '2 9 * * *', // Every day at 9:02 AM
         queue: 'withdraw-reminder-daily',
-      },
-      {
-        cron: '2 9 * * *', // Every day at 9:02 AM
-        queue: 'auto-refund-daily',
       },
       {
         cron: '2 3 * * *', // Every day at 3:02 AM

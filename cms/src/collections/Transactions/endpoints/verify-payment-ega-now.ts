@@ -1,4 +1,20 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { getEganow } from '@/utilities/initalise'
+
+// Eganow transaction status → internal payment status
+const CARD_STATUS_MAP: Record<string, 'completed' | 'failed' | 'pending'> = {
+  SUCCESSFUL: 'completed',
+  SUCCESS: 'completed',
+  APPROVED: 'completed',
+  FAILED: 'failed',
+  DECLINED: 'failed',
+  EXPIRED: 'failed',
+  CANCELLED: 'failed',
+  PENDING: 'pending',
+  AUTHENTICATION_IN_PROGRESS: 'pending',
+  INITIATED: 'pending',
+  PROCESSING: 'pending',
+}
 
 export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
   try {
@@ -43,6 +59,42 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
         },
         { status: 404 },
       )
+    }
+
+    // Card payments have no reliable webhook when the transaction is frictionless
+    // (no 3DS challenge page renders, so nothing calls our callback). Resolve the status
+    // by polling Eganow's status API directly while the card payment is still pending.
+    if (contribution.paymentMethod === 'card' && contribution.paymentStatus === 'pending') {
+      try {
+        // Card status must be queried by the Eganow reference number (stored in
+        // transactionReference), NOT our contribution id — Eganow does not recognise
+        // our id for card transactions ("transaction does not exist").
+        const statusResp = await getEganow().checkTransactionStatus({
+          transactionId: String(contribution.transactionReference),
+          languageId: 'en',
+        })
+        if (statusResp.isSuccess) {
+          const apiStatus = (
+            statusResp.transStatus ||
+            statusResp.transactionstatus ||
+            ''
+          ).toUpperCase()
+          const newStatus = CARD_STATUS_MAP[apiStatus]
+          if (newStatus && newStatus !== 'pending') {
+            await req.payload.update({
+              collection: 'transactions',
+              id: contribution.id,
+              data: { paymentStatus: newStatus },
+              overrideAccess: true,
+              context: { skipCharges: true },
+            })
+            contribution.paymentStatus = newStatus
+          }
+        }
+      } catch (err: any) {
+        // Keep pending; the next poll (or the verify-pending task) will retry.
+        console.warn(`[verify-payment] card status check failed: ${err?.message}`)
+      }
     }
 
     // Map payment status to mobile app expected format

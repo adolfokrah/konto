@@ -4,9 +4,9 @@ import { FCMPushNotifications } from '@/utilities/fcmPushNotifications'
  * Settle Contributions Task
  *
  * Scheduled every 5 minutes via Payload's autoRun.
- * Marks mobile money contributions as settled if they are:
+ * Marks mobile money AND card contributions as settled if they are:
  * - type: 'contribution'
- * - paymentMethod: 'mobile-money'
+ * - paymentMethod: 'mobile-money' | 'card'
  * - paymentStatus: 'completed'
  * - isSettled: false
  * - createdAt is older than the configured settlement delay
@@ -40,12 +40,12 @@ export const settleContributionsTask = {
 
       console.log(`Settlement delay: ${settlementDelayHours} hours (${settlementDelayMs}ms)`)
 
-      // Find all unsettled completed mobile money contributions older than cutoff time
+      // Find all unsettled completed mobile-money + card contributions older than cutoff
       const unsettledContributions = await payload.find({
         collection: 'transactions',
         where: {
           type: { equals: 'contribution' },
-          paymentMethod: { equals: 'mobile-money' },
+          paymentMethod: { in: ['mobile-money', 'card'] },
           paymentStatus: { equals: 'completed' },
           isSettled: { equals: false },
           createdAt: { less_than: cutoffTime },
@@ -64,38 +64,7 @@ export const settleContributionsTask = {
         }
       }
 
-      // Exclude contributions that have a pending or in-progress refund
-      const contributionIds = unsettledContributions.docs.map((c: any) => c.id)
-      const pendingRefunds = await payload.find({
-        collection: 'refunds' as any,
-        where: {
-          status: { in: ['pending', 'in-progress'] },
-          linkedTransaction: { in: contributionIds },
-        },
-        limit: 500,
-        depth: 0,
-        overrideAccess: true,
-        select: { linkedTransaction: true },
-      })
-
-      const refundingIds = new Set(
-        pendingRefunds.docs.map((r: any) =>
-          typeof r.linkedTransaction === 'object' ? r.linkedTransaction?.id : r.linkedTransaction,
-        ),
-      )
-
-      const eligibleContributions = unsettledContributions.docs.filter(
-        (c: any) => !refundingIds.has(c.id),
-      )
-
-      if (eligibleContributions.length === 0) {
-        return {
-          output: {
-            settled: 0,
-            message: `No contributions to settle (${refundingIds.size} skipped due to pending refunds)`,
-          },
-        }
-      }
+      const eligibleContributions = unsettledContributions.docs
 
       // Group contributions by jar for notifications
       const contributionsByJar = new Map<string, any[]>()

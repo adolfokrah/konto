@@ -4,6 +4,7 @@ import 'package:Hoga/features/collaborators/logic/bloc/reminder_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
+import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,7 @@ import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/router.dart';
 import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
@@ -193,11 +195,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider.value(value: getIt<ManageCustomFieldsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<WithdrawalAccountVerificationBloc>()),
+        BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
         BlocProvider.value(value: getIt<MomoPaymentBloc>()),
         BlocProvider.value(value: getIt<FilterContributionsBloc>()),
         BlocProvider.value(value: getIt<ContributionsListBloc>()),
         BlocProvider.value(value: getIt<ExportContributionsBloc>()),
         BlocProvider.value(value: getIt<KycBloc>()),
+        BlocProvider.value(value: getIt<BusinessKybBloc>()),
         BlocProvider.value(value: getIt<NotificationsBloc>()),
         BlocProvider.value(value: getIt<JarInviteActionBloc>()),
         BlocProvider.value(value: getIt<ReminderBloc>()),

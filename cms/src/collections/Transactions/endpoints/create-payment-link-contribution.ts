@@ -1,4 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { isCreatorKybApproved, KYB_NOT_APPROVED_MESSAGE } from '@/utilities/kyb'
 
 export const createPaymentLinkContribution = async (req: PayloadRequest) => {
   try {
@@ -12,15 +13,22 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       mobileMoneyProvider,
       remarks,
       customFieldValues,
+      paymentMethod: requestedPaymentMethod,
     } = req.data || {}
 
-    // Validate required fields
-    if (!jarId || !contributorName || !contributorPhoneNumber || !amount) {
+    // Normalize payment method; only mobile-money and card are supported for payment links
+    const paymentMethod = requestedPaymentMethod === 'card' ? 'card' : 'mobile-money'
+    const isCard = paymentMethod === 'card'
+
+    // Validate required fields. Card payments collect the phone/provider on the payment
+    // gateway side, so they are not required here.
+    if (!jarId || !contributorName || !amount || (!isCard && !contributorPhoneNumber)) {
       return Response.json(
         {
           success: false,
-          message:
-            'All fields are required: jarId, contributorName, contributorPhoneNumber, amount',
+          message: isCard
+            ? 'All fields are required: jarId, contributorName, amount'
+            : 'All fields are required: jarId, contributorName, contributorPhoneNumber, amount',
         },
         { status: 400 },
       )
@@ -68,6 +76,11 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       }
     }
 
+    // KYB gate: the jar creator must have an approved business verification to collect
+    if (!(await isCreatorKybApproved(req.payload, jar.creator))) {
+      return Response.json({ success: false, message: KYB_NOT_APPROVED_MESSAGE }, { status: 403 })
+    }
+
     // Check if jar is frozen (AML compliance)
     if (jar.status === 'frozen') {
       return Response.json(
@@ -85,9 +98,11 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
       data: {
         jar: jarId,
         contributor: contributorName,
-        contributorPhoneNumber, // Using phone number field as identifier for anonymous contributions
-        paymentMethod: 'mobile-money', // Paystack payment
-        mobileMoneyProvider: mobileMoneyProvider || 'MTN', // Use the provider from request, default to MTN
+        // Using phone number field as identifier for anonymous contributions (mobile money only)
+        ...(contributorPhoneNumber ? { contributorPhoneNumber } : {}),
+        paymentMethod,
+        // Mobile money provider only applies to mobile-money contributions
+        ...(isCard ? {} : { mobileMoneyProvider: mobileMoneyProvider || 'MTN' }),
         amountContributed: amount,
         paymentStatus: 'pending',
         type: 'contribution',

@@ -17,6 +17,7 @@ final class JarCreateSubmitted extends JarCreateEvent {
   final bool acceptAnonymousContributions;
   final List<Map<String, dynamic>>? invitedCollectors;
   final String jarGroup;
+  final String withdrawalAccount;
 
   JarCreateSubmitted({
     required this.name,
@@ -32,5 +33,6 @@ final class JarCreateSubmitted extends JarCreateEvent {
     this.acceptAnonymousContributions = false,
     this.invitedCollectors,
     required this.jarGroup,
+    required this.withdrawalAccount,
   });
 }

@@ -15,6 +15,49 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
        super(NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
     on<MarkjarInviteAsRead>(_markJarInviteAsRead);
+    on<MarkAllNotificationsRead>(_markAllAsRead);
+  }
+
+  Future<void> _markAllAsRead(
+    MarkAllNotificationsRead event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    final current = state;
+    if (current is! NotificationsLoaded) return;
+    final unread =
+        current.notifications
+            .where((n) => n.status == NotificationStatus.unread)
+            .toList();
+    if (unread.isEmpty) return;
+
+    try {
+      await Future.wait(
+        unread.map(
+          (n) => _notificationsRepository.markNotificationAsRead(
+            notificationId: n.id,
+          ),
+        ),
+      );
+    } catch (_) {
+      // ignore individual failures; refetch reflects what actually changed
+    }
+
+    try {
+      final response = await _notificationsRepository.fetchUserNotifications(
+        limit: 20,
+        page: 1,
+      );
+      if (response['success'] == true) {
+        emit(
+          NotificationsLoaded(
+            notifications: response['data'] as List<NotificationModel>,
+            pagination: response['pagination'] as Map<String, dynamic>? ?? {},
+          ),
+        );
+      }
+    } catch (_) {
+      // silent; marks already applied
+    }
   }
 
   Future<void> _fetchNotifications(

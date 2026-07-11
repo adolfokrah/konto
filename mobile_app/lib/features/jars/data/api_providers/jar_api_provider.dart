@@ -66,6 +66,7 @@ class JarApiProvider extends BaseApiProvider {
     DateTime? deadline,
     required String currency,
     List<Map<String, dynamic>>? invitedCollectors,
+    required String withdrawalAccount,
   }) async {
     try {
       // Get authenticated headers
@@ -101,6 +102,7 @@ class JarApiProvider extends BaseApiProvider {
         'currency': currency.trim(),
         'creator': user.id,
         'invitedCollectors': invitedCollectors,
+        'withdrawalAccount': withdrawalAccount,
       };
 
       // Only add optional fields if they have valid values
@@ -192,8 +194,10 @@ class JarApiProvider extends BaseApiProvider {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    String? donationLabel,
     int? requiredApprovals,
     List<Map<String, dynamic>>? customFields,
+    String? withdrawalAccount,
   }) async {
     try {
       // Get authenticated headers
@@ -279,6 +283,9 @@ class JarApiProvider extends BaseApiProvider {
       if (customFields != null) {
         jarData['customFields'] = customFields;
       }
+      if (withdrawalAccount != null) {
+        jarData['withdrawalAccount'] = withdrawalAccount;
+      }
 
       // Handle paymentPage fields together to avoid overwriting
       final paymentPageData = <String, dynamic>{};
@@ -287,6 +294,9 @@ class JarApiProvider extends BaseApiProvider {
       }
       if (showRecentContributions != null) {
         paymentPageData['showRecentContributions'] = showRecentContributions;
+      }
+      if (donationLabel != null) {
+        paymentPageData['donationLabel'] = donationLabel;
       }
       if (paymentPageData.isNotEmpty) {
         jarData['paymentPage'] = paymentPageData;

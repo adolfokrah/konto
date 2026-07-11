@@ -95,6 +95,7 @@ class JarRepository {
     DateTime? deadline,
     required String currency,
     List<Map<String, dynamic>>? invitedCollectors,
+    required String withdrawalAccount,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.createJar(
@@ -110,6 +111,7 @@ class JarRepository {
         deadline: deadline,
         currency: currency,
         invitedCollectors: invitedCollectors,
+        withdrawalAccount: withdrawalAccount,
       );
 
       if (apiResponse['doc'] != null) {
@@ -159,8 +161,10 @@ class JarRepository {
     bool? showGoal,
     bool? showRecentContributions,
     bool? allowAnonymousContributions,
+    String? donationLabel,
     int? requiredApprovals,
     List<Map<String, dynamic>>? customFields,
+    String? withdrawalAccount,
   }) async {
     try {
       final apiResponse = await _jarApiProvider.updateJar(
@@ -183,8 +187,10 @@ class JarRepository {
         showGoal: showGoal,
         showRecentContributions: showRecentContributions,
         allowAnonymousContributions: allowAnonymousContributions,
+        donationLabel: donationLabel,
         requiredApprovals: requiredApprovals,
         customFields: customFields,
+        withdrawalAccount: withdrawalAccount,
       );
 
       if (apiResponse['doc'] != null) {

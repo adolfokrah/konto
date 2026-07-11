@@ -42,8 +42,8 @@ class FilterOptions {
       Icons.phone_android,
     ),
     PaymentMethodOption('cash', 'cashPayment', Icons.money),
-    // PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
-    // PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
+    PaymentMethodOption('card', 'cardPayment', Icons.credit_card),
+    PaymentMethodOption('bank', 'bankTransferPayment', Icons.account_balance),
     // PaymentMethodOption('apple-pay', 'applePayPayment', Icons.apple),
   ];
 

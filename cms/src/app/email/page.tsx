@@ -5,7 +5,6 @@ import ContributionsRepport from '@/components/emailTemplates/contributionReport
 import AccountDeletion from '@/components/emailTemplates/accountDeletion'
 import Otp from '@/components/emailTemplates/otp'
 import WithdrawalReminder from '@/components/emailTemplates/withdrawalReminder'
-import AutoRefundNotice from '@/components/emailTemplates/autoRefundNotice'
 
 export default function Email() {
   // Only allow this route in development
@@ -23,7 +22,6 @@ export default function Email() {
       {/* <WithdrawalReminder reminderDay={7} /> */}
       {/* <WithdrawalReminder reminderDay={10} /> */}
       {/* <WithdrawalReminder reminderDay={12} /> */}
-      {/* <AutoRefundNotice firstName="Adolphus" jarName="Test Jar" totalAmount={50} currency="GHS" contributorsCount={3} /> */}
     </div>
   )
 }

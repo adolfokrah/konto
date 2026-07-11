@@ -15,6 +15,7 @@ export const getCharges = async (req: PayloadRequest) => {
     const amountParam = url.searchParams.get('amount')
     const jarId = url.searchParams.get('jarId')
     const userId = url.searchParams.get('userId')
+    const isCard = url.searchParams.get('paymentMethod') === 'card'
 
     if (!amountParam) {
       return Response.json({ success: false, message: 'amount is required' }, { status: 400 })
@@ -34,8 +35,12 @@ export const getCharges = async (req: PayloadRequest) => {
       overrideAccess: true,
     })
 
-    const hogapayCollectionFeePercent = (settings.hogapayCollectionFeePercent ?? 0.8) as number
-    const collectionFeePercent = (settings.collectionFee ?? 2) as number
+    const hogapayCollectionFeePercent = isCard
+      ? ((settings.hogapayCardCollectionFeePercent ?? 0.5) as number)
+      : ((settings.hogapayCollectionFeePercent ?? 0.8) as number)
+    const collectionFeePercent = isCard
+      ? ((settings.cardCollectionFee ?? 3) as number)
+      : ((settings.collectionFee ?? 2) as number)
 
     // Resolve the user ID: from jarId (look up creator) or directly from userId param
     let resolvedUserId: string | null = userId

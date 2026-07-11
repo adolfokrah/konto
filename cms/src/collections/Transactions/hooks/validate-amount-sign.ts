@@ -13,7 +13,7 @@ export const validateAmountSign: CollectionBeforeValidateHook = async ({
   // 2. Else from existing doc (on update)
   const type = data.type ?? (originalDoc as any)?.type
 
-  // Payouts may be negative (outflow). Contributions and refunds must be positive.
+  // Payouts may be negative (outflow). Contributions must be positive.
   if (type !== 'payout' && data.amountContributed < 0) {
     throw new APIError('Amount Contributed must be a positive number', 400)
   }

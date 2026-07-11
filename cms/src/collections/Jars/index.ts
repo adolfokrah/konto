@@ -14,6 +14,7 @@ import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 import { capRequiredApprovals } from './hooks/capRequiredApprovals'
+import { validateWithdrawalAccount } from './hooks/validateWithdrawalAccount'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -134,6 +135,15 @@ export const Jars: CollectionConfig = {
       },
     },
     {
+      name: 'withdrawalAccount',
+      type: 'relationship',
+      relationTo: 'withdrawal-accounts',
+      hasMany: false,
+      admin: {
+        description: "The withdrawal account this jar's payouts are sent to",
+      },
+    },
+    {
       name: 'invitedCollectors',
       type: 'array',
       required: false,
@@ -210,6 +220,19 @@ export const Jars: CollectionConfig = {
           name: 'showRecentContributions',
           type: 'checkbox',
           defaultValue: true,
+        },
+        {
+          name: 'donationLabel',
+          type: 'select',
+          label: 'Action button label',
+          defaultValue: 'contribute',
+          options: [
+            { label: 'Contribute', value: 'contribute' },
+            { label: 'Donate', value: 'donate' },
+          ],
+          admin: {
+            description: 'Word shown on the payment button and campaign cards.',
+          },
         },
       ],
     },
@@ -337,6 +360,7 @@ export const Jars: CollectionConfig = {
       validateJarUpdatePermission,
       validateJarBalanceBeforeBreak,
       capRequiredApprovals,
+      validateWithdrawalAccount,
     ],
     afterChange: [
       sendInviteNotificationToUser,

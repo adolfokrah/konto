@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
@@ -36,6 +37,7 @@ class _WithdrawViewState extends State<WithdrawView> {
   String? jarId;
   double? payoutBalance;
   String? currency;
+  WithdrawalAccountModel? withdrawalAccount;
 
   SystemSettingsModel _systemSettings = SystemSettingsModel.defaultSettings;
 
@@ -78,6 +80,8 @@ class _WithdrawViewState extends State<WithdrawView> {
       jarId = arguments['jarId'] as String?;
       payoutBalance = arguments['payoutBalance'] as double?;
       currency = arguments['currency'] as String?;
+      final acct = arguments['withdrawalAccount'];
+      if (acct is WithdrawalAccountModel) withdrawalAccount = acct;
     }
   }
 
@@ -232,16 +236,16 @@ class _WithdrawViewState extends State<WithdrawView> {
       return const KycView();
     }
 
+    // Prefer the jar's linked withdrawal account; fall back to the user's legacy account.
     final accountHolder =
-        authState is AuthAuthenticated
-            ? authState.user.accountHolder
-            : null;
+        withdrawalAccount?.accountHolder ??
+        (authState is AuthAuthenticated ? authState.user.accountHolder : null);
     final accountNumber =
-        authState is AuthAuthenticated
-            ? authState.user.accountNumber
-            : null;
+        withdrawalAccount?.accountNumber ??
+        (authState is AuthAuthenticated ? authState.user.accountNumber : null);
     final bank =
-        authState is AuthAuthenticated ? authState.user.bank : null;
+        withdrawalAccount?.provider ??
+        (authState is AuthAuthenticated ? authState.user.bank : null);
 
     return Scaffold(
       appBar: AppBar(

@@ -79,12 +79,14 @@ export interface Config {
     dailyActiveUsers: DailyActiveUser;
     'jar-reports': JarReport;
     'push-campaigns': PushCampaign;
-    refunds: Refund;
     'payout-approvals': PayoutApproval;
     'ledger-topups': LedgerTopup;
     referrals: Referral;
     'referral-bonuses': ReferralBonus;
     disputes: Dispute;
+    'business-verifications': BusinessVerification;
+    'business-documents': BusinessDocument;
+    'withdrawal-accounts': WithdrawalAccount;
     emails: Email;
     cashbacks: Cashback;
     'sms-campaigns': SmsCampaign;
@@ -97,7 +99,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    users: {
+      businessVerifications: 'business-verifications';
+    };
+  };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -111,12 +117,14 @@ export interface Config {
     dailyActiveUsers: DailyActiveUsersSelect<false> | DailyActiveUsersSelect<true>;
     'jar-reports': JarReportsSelect<false> | JarReportsSelect<true>;
     'push-campaigns': PushCampaignsSelect<false> | PushCampaignsSelect<true>;
-    refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payout-approvals': PayoutApprovalsSelect<false> | PayoutApprovalsSelect<true>;
     'ledger-topups': LedgerTopupsSelect<false> | LedgerTopupsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'referral-bonuses': ReferralBonusesSelect<false> | ReferralBonusesSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
+    'business-verifications': BusinessVerificationsSelect<false> | BusinessVerificationsSelect<true>;
+    'business-documents': BusinessDocumentsSelect<false> | BusinessDocumentsSelect<true>;
+    'withdrawal-accounts': WithdrawalAccountsSelect<false> | WithdrawalAccountsSelect<true>;
     emails: EmailsSelect<false> | EmailsSelect<true>;
     cashbacks: CashbacksSelect<false> | CashbacksSelect<true>;
     'sms-campaigns': SmsCampaignsSelect<false> | SmsCampaignsSelect<true>;
@@ -158,15 +166,12 @@ export interface Config {
       'process-payout': TaskProcessPayout;
       'process-referral-withdrawal': TaskProcessReferralWithdrawal;
       'check-eganow-payout-balance': TaskCheckEganowPayoutBalance;
-      'process-refund': TaskProcessRefund;
       'send-push-campaign': TaskSendPushCampaign;
       'send-scheduled-campaigns': TaskSendScheduledCampaigns;
       'send-sms-campaign': TaskSendSmsCampaign;
-      'verify-pending-refunds': TaskVerifyPendingRefunds;
       'verify-pending-topups': TaskVerifyPendingTopups;
       'weekly-account-summary': TaskWeeklyAccountSummary;
       'withdraw-reminder-daily': TaskWithdrawReminderDaily;
-      'auto-refund-daily': TaskAutoRefundDaily;
       'cleanup-old-notifications': TaskCleanupOldNotifications;
       'seal-inactive-jars-daily': TaskSealInactiveJarsDaily;
       schedulePublish: TaskSchedulePublish;
@@ -507,6 +512,18 @@ export interface User {
   otpAttempts?: number | null;
   kycStatus?: ('none' | 'in_review' | 'verified') | null;
   /**
+   * Business verification status — synced from Business Verifications.
+   */
+  kybStatus?: ('none' | 'in_review' | 'approved' | 'rejected') | null;
+  /**
+   * Business verification submitted by this user. Open a row to review or edit.
+   */
+  businessVerifications?: {
+    docs?: (string | BusinessVerification)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * User role - admins have full access, auditors have read-only access to the dashboard
    */
   role: 'user' | 'admin' | 'auditor';
@@ -526,9 +543,6 @@ export interface User {
    * Last time the user made an authenticated request (used for DAU tracking)
    */
   lastActiveAt?: string | null;
-  bank?: string | null;
-  accountNumber?: string | null;
-  accountHolder?: string | null;
   appSettings?: {
     language?: ('en' | 'fr') | null;
     theme?: ('light' | 'dark' | 'system') | null;
@@ -556,6 +570,84 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-verifications".
+ */
+export interface BusinessVerification {
+  id: string;
+  /**
+   * The user/organization owner submitting business verification
+   */
+  user: string | User;
+  /**
+   * Registered business/organization name
+   */
+  businessName?: string | null;
+  /**
+   * Company registration certificate/document
+   */
+  companyRegistrationDoc: string | BusinessDocument;
+  /**
+   * Proof of business address (utility bill, lease, etc.)
+   */
+  proofOfBusinessAddress: string | BusinessDocument;
+  /**
+   * Each director and their government-issued ID
+   */
+  directors?:
+    | {
+        fullName: string;
+        /**
+         * Government-issued ID (front)
+         */
+        idDocument: string | BusinessDocument;
+        /**
+         * Government-issued ID (back)
+         */
+        idDocumentBack: string | BusinessDocument;
+        id?: string | null;
+      }[]
+    | null;
+  status: 'pending' | 'under-review' | 'approved' | 'rejected';
+  /**
+   * Reason shown to the user when rejected
+   */
+  rejectionReason?: string | null;
+  reviewedBy?: (string | null) | User;
+  reviewedAt?: string | null;
+  statusHistory?:
+    | {
+        from?: ('pending' | 'under-review' | 'approved' | 'rejected') | null;
+        to: 'pending' | 'under-review' | 'approved' | 'rejected';
+        reason?: string | null;
+        changedBy?: (string | null) | User;
+        changedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-documents".
+ */
+export interface BusinessDocument {
+  id: string;
+  uploadedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1483,6 +1575,10 @@ export interface Transaction {
    */
   eganowPayPartnerTransactionId?: string | null;
   /**
+   * Destination withdrawal account for a payout
+   */
+  withdrawalAccount?: (string | null) | WithdrawalAccount;
+  /**
    * User who collected the contribution
    */
   collector?: (string | null) | User;
@@ -1580,6 +1676,10 @@ export interface Jar {
    * User who created the jar
    */
   creator: string | User;
+  /**
+   * The withdrawal account this jar's payouts are sent to
+   */
+  withdrawalAccount?: (string | null) | WithdrawalAccount;
   invitedCollectors?:
     | {
         /**
@@ -1601,6 +1701,10 @@ export interface Jar {
   paymentPage?: {
     showGoal?: boolean | null;
     showRecentContributions?: boolean | null;
+    /**
+     * Word shown on the payment button and campaign cards.
+     */
+    donationLabel?: ('contribute' | 'donate') | null;
   };
   thankYouMessage?: string | null;
   /**
@@ -1653,11 +1757,43 @@ export interface Jar {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-accounts".
+ */
+export interface WithdrawalAccount {
+  id: string;
+  user: string | User;
+  type: 'mobile-money' | 'bank';
+  /**
+   * Mobile money: mtn|telecel. Bank: Eganow bank paypartner code (e.g. STANBICGH).
+   */
+  provider: string;
+  /**
+   * Phone number (mobile money) or bank account number.
+   */
+  accountNumber: string;
+  accountHolder: string;
+  /**
+   * Optional nickname shown in pickers.
+   */
+  label?: string | null;
+  /**
+   * Default account for user-level payouts (e.g. referral bonuses).
+   */
+  isDefault?: boolean | null;
+  /**
+   * True when the account name was verified via name enquiry.
+   */
+  verified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "notifications".
  */
 export interface Notification {
   id: string;
-  type: 'jarInvite' | 'info' | 'kyc' | 'jarFrozen' | 'payout-approval';
+  type: 'jarInvite' | 'info' | 'kyc' | 'kyb' | 'jarFrozen' | 'payout-approval';
   title: string;
   message: string;
   data?:
@@ -1742,67 +1878,6 @@ export interface PushCampaign {
   recipientCount?: number | null;
   successCount?: number | null;
   failureCount?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "refunds".
- */
-export interface Refund {
-  id: string;
-  refundType: 'manual' | 'auto';
-  jar: string | Jar;
-  /**
-   * Admin who initiated the refund. Null when triggered by the system.
-   */
-  initiatedBy?: (string | null) | User;
-  /**
-   * Refund amount (stored as negative)
-   */
-  amount: number;
-  /**
-   * Contributor phone number
-   */
-  accountNumber: string;
-  /**
-   * Contributor name
-   */
-  accountName?: string | null;
-  /**
-   * e.g. mtn, telecel
-   */
-  mobileMoneyProvider: string;
-  /**
-   * The original contribution being refunded
-   */
-  linkedTransaction: string | Transaction;
-  eganowFees?: number | null;
-  hogapayRevenue?: number | null;
-  /**
-   * Eganow transaction reference
-   */
-  transactionReference?: string | null;
-  webhookResponse?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * When the cron job created this auto refund
-   */
-  triggeredAt?: string | null;
-  /**
-   * Admin who approved or rejected this auto refund
-   */
-  reviewedBy?: (string | null) | User;
-  reviewedAt?: string | null;
-  updatedBy?: (string | null) | User;
-  status: 'awaiting_approval' | 'pending' | 'in-progress' | 'completed' | 'failed' | 'rejected';
   updatedAt: string;
   createdAt: string;
 }
@@ -2242,15 +2317,12 @@ export interface PayloadJob {
           | 'process-payout'
           | 'process-referral-withdrawal'
           | 'check-eganow-payout-balance'
-          | 'process-refund'
           | 'send-push-campaign'
           | 'send-scheduled-campaigns'
           | 'send-sms-campaign'
-          | 'verify-pending-refunds'
           | 'verify-pending-topups'
           | 'weekly-account-summary'
           | 'withdraw-reminder-daily'
-          | 'auto-refund-daily'
           | 'cleanup-old-notifications'
           | 'seal-inactive-jars-daily'
           | 'schedulePublish';
@@ -2297,15 +2369,12 @@ export interface PayloadJob {
         | 'process-payout'
         | 'process-referral-withdrawal'
         | 'check-eganow-payout-balance'
-        | 'process-refund'
         | 'send-push-campaign'
         | 'send-scheduled-campaigns'
         | 'send-sms-campaign'
-        | 'verify-pending-refunds'
         | 'verify-pending-topups'
         | 'weekly-account-summary'
         | 'withdraw-reminder-daily'
-        | 'auto-refund-daily'
         | 'cleanup-old-notifications'
         | 'seal-inactive-jars-daily'
         | 'schedulePublish'
@@ -2382,10 +2451,6 @@ export interface PayloadLockedDocument {
         value: string | PushCampaign;
       } | null)
     | ({
-        relationTo: 'refunds';
-        value: string | Refund;
-      } | null)
-    | ({
         relationTo: 'payout-approvals';
         value: string | PayoutApproval;
       } | null)
@@ -2404,6 +2469,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'disputes';
         value: string | Dispute;
+      } | null)
+    | ({
+        relationTo: 'business-verifications';
+        value: string | BusinessVerification;
+      } | null)
+    | ({
+        relationTo: 'business-documents';
+        value: string | BusinessDocument;
+      } | null)
+    | ({
+        relationTo: 'withdrawal-accounts';
+        value: string | WithdrawalAccount;
       } | null)
     | ({
         relationTo: 'emails';
@@ -3038,14 +3115,13 @@ export interface UsersSelect<T extends boolean = true> {
   otpExpiry?: T;
   otpAttempts?: T;
   kycStatus?: T;
+  kybStatus?: T;
+  businessVerifications?: T;
   role?: T;
   referralCode?: T;
   hogapayDiscountPercent?: T;
   demoUser?: T;
   lastActiveAt?: T;
-  bank?: T;
-  accountNumber?: T;
-  accountHolder?: T;
   appSettings?:
     | T
     | {
@@ -3110,6 +3186,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
+  withdrawalAccount?: T;
   collector?: T;
   collectorSnapshot?:
     | T
@@ -3145,6 +3222,7 @@ export interface JarsSelect<T extends boolean = true> {
   deadline?: T;
   currency?: T;
   creator?: T;
+  withdrawalAccount?: T;
   invitedCollectors?:
     | T
     | {
@@ -3159,6 +3237,7 @@ export interface JarsSelect<T extends boolean = true> {
     | {
         showGoal?: T;
         showRecentContributions?: T;
+        donationLabel?: T;
       };
   thankYouMessage?: T;
   status?: T;
@@ -3251,31 +3330,6 @@ export interface PushCampaignsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "refunds_select".
- */
-export interface RefundsSelect<T extends boolean = true> {
-  refundType?: T;
-  jar?: T;
-  initiatedBy?: T;
-  amount?: T;
-  accountNumber?: T;
-  accountName?: T;
-  mobileMoneyProvider?: T;
-  linkedTransaction?: T;
-  eganowFees?: T;
-  hogapayRevenue?: T;
-  transactionReference?: T;
-  webhookResponse?: T;
-  triggeredAt?: T;
-  reviewedBy?: T;
-  reviewedAt?: T;
-  updatedBy?: T;
-  status?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payout-approvals_select".
  */
 export interface PayoutApprovalsSelect<T extends boolean = true> {
@@ -3356,6 +3410,74 @@ export interface DisputesSelect<T extends boolean = true> {
         changedAt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-verifications_select".
+ */
+export interface BusinessVerificationsSelect<T extends boolean = true> {
+  user?: T;
+  businessName?: T;
+  companyRegistrationDoc?: T;
+  proofOfBusinessAddress?: T;
+  directors?:
+    | T
+    | {
+        fullName?: T;
+        idDocument?: T;
+        idDocumentBack?: T;
+        id?: T;
+      };
+  status?: T;
+  rejectionReason?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  statusHistory?:
+    | T
+    | {
+        from?: T;
+        to?: T;
+        reason?: T;
+        changedBy?: T;
+        changedAt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "business-documents_select".
+ */
+export interface BusinessDocumentsSelect<T extends boolean = true> {
+  uploadedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-accounts_select".
+ */
+export interface WithdrawalAccountsSelect<T extends boolean = true> {
+  user?: T;
+  type?: T;
+  provider?: T;
+  accountNumber?: T;
+  accountHolder?: T;
+  label?: T;
+  isDefault?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3799,13 +3921,29 @@ export interface SystemSetting {
    */
   hogapayCollectionFeePercent: number;
   /**
-   * Total fee on payouts (e.g., 1%). Deducted from the payout amount.
+   * Total fee on card contributions (e.g., 3%). Paid by the contributor.
+   */
+  cardCollectionFee: number;
+  /**
+   * Hogapay's share of the card collection fee (e.g., 0.5%). Rest goes to Eganow.
+   */
+  hogapayCardCollectionFeePercent: number;
+  /**
+   * Total fee on mobile money payouts (e.g., 1%). Deducted from the payout amount.
    */
   transferFeePercentage: number;
   /**
-   * Hogapay's share of the transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   * Hogapay's share of the mobile money transfer fee (e.g., 0.5%). Rest goes to Eganow.
    */
   hogapayTransferFeePercent: number;
+  /**
+   * Total fee on bank payouts (e.g., 1%). Deducted from the payout amount.
+   */
+  bankTransferFeePercentage: number;
+  /**
+   * Hogapay's share of the bank transfer fee (e.g., 0.5%). Rest goes to Eganow.
+   */
+  hogapayBankTransferFeePercent: number;
   /**
    * Delay before contributions are settled (e.g., 0.033 = ~2 min).
    */
@@ -3924,8 +4062,12 @@ export interface FooterSelect<T extends boolean = true> {
 export interface SystemSettingsSelect<T extends boolean = true> {
   collectionFee?: T;
   hogapayCollectionFeePercent?: T;
+  cardCollectionFee?: T;
+  hogapayCardCollectionFeePercent?: T;
   transferFeePercentage?: T;
   hogapayTransferFeePercent?: T;
+  bankTransferFeePercentage?: T;
+  hogapayBankTransferFeePercent?: T;
   settlementDelayHours?: T;
   referralFirstContributionBonus?: T;
   referralFeeSharePercent?: T;
@@ -4003,7 +4145,8 @@ export interface TaskProcessReferralWithdrawal {
   input: {
     withdrawalRecordId: string;
     userId: string;
-    bank: string;
+    type?: string | null;
+    provider: string;
     accountNumber: string;
     accountHolder: string;
     amount: string;
@@ -4016,16 +4159,6 @@ export interface TaskProcessReferralWithdrawal {
  */
 export interface TaskCheckEganowPayoutBalance {
   input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskProcess-refund".
- */
-export interface TaskProcessRefund {
-  input: {
-    refundId: string;
-  };
   output?: unknown;
 }
 /**
@@ -4058,14 +4191,6 @@ export interface TaskSendSmsCampaign {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskVerify-pending-refunds".
- */
-export interface TaskVerifyPendingRefunds {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskVerify-pending-topups".
  */
 export interface TaskVerifyPendingTopups {
@@ -4085,14 +4210,6 @@ export interface TaskWeeklyAccountSummary {
  * via the `definition` "TaskWithdraw-reminder-daily".
  */
 export interface TaskWithdrawReminderDaily {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskAuto-refund-daily".
- */
-export interface TaskAutoRefundDaily {
   input?: unknown;
   output?: unknown;
 }
