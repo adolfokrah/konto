@@ -16,7 +16,7 @@ export default function ThreeDSModal({ isOpen, html, onClose }: ThreeDSModalProp
   if (!isOpen || !html) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/60">
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-black/60">
       <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
         <span className="font-supreme font-medium text-black">Secure card verification</span>
         <button
