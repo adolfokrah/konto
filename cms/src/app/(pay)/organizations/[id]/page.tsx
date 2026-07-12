@@ -63,10 +63,53 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { id } = await params
   const b = await getBusiness(id)
-  if (!b) return { title: 'Organization not found · Hoga' }
+
+  if (!b) {
+    return {
+      title: 'Organization not found · Hoga',
+      description: 'This organization could not be found on Hoga.',
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const title = `Support ${b.businessName} on Hoga`
+  const description =
+    `Browse and contribute to ${b.businessName}'s ` +
+    `${b.campaignCount} ${b.campaignCount === 1 ? 'campaign' : 'campaigns'} on Hoga` +
+    (b.country ? ` · ${b.country}.` : '.')
+
+  // Prefer the organizer photo, else the first campaign image.
+  const ogImage = b.photoUrl || b.campaigns.find((c) => c.imageUrl)?.imageUrl || null
+  const canonical = `/organizations/${id}`
+
   return {
-    title: `${b.businessName} · Campaigns on Hoga`,
-    description: `Support ${b.businessName}'s campaigns. ${b.campaignCount} active on Hoga.`,
+    title,
+    description,
+    keywords: [
+      'fundraising',
+      'donation',
+      'contribution',
+      'Hoga',
+      b.businessName,
+      b.username || '',
+      b.country || '',
+    ].filter(Boolean),
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      type: 'profile',
+      url: canonical,
+      siteName: 'Hoga',
+      images: ogImage ? [{ url: ogImage, alt: b.businessName }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ogImage ? [ogImage] : [],
+    },
   }
 }
 
