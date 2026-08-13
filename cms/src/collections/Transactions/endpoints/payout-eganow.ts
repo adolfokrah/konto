@@ -58,6 +58,18 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
+    // Verification gate: a payout needs both personal KYC and business KYB.
+    // Saving a withdrawal account is deliberately ungated, so KYC is checked here.
+    if ((creator.kycStatus ?? 'none') !== 'verified') {
+      return Response.json(
+        {
+          success: false,
+          message: 'You must complete identity verification (KYC) before requesting a payout.',
+        },
+        { status: 403 },
+      )
+    }
+
     // KYB gate: jar creator must be business-verified before any payout
     if ((creator.kybStatus ?? 'none') !== 'approved') {
       return Response.json(

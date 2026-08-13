@@ -11,6 +11,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
 
 class ReferralView extends StatelessWidget {
@@ -367,6 +368,11 @@ class _EarningsSectionState extends State<_EarningsSection> {
   void initState() {
     super.initState();
     _bonusesFuture = getIt<ReferralApiProvider>().fetchMyBonuses();
+    // Needed by the withdraw pre-flight below, which checks the saved accounts.
+    final waBloc = context.read<WithdrawalAccountsBloc>();
+    if (waBloc.state.status == WithdrawalAccountsStatus.initial) {
+      waBloc.add(LoadWithdrawalAccounts());
+    }
   }
 
   void _reload() {
@@ -390,12 +396,18 @@ class _EarningsSectionState extends State<_EarningsSection> {
       return;
     }
 
-    if (user.accountNumber == null || user.bank == null) {
+    // Source of truth is the saved withdrawal accounts, not the legacy flat
+    // accountNumber/bank fields on the user — nothing writes those any more, so
+    // reading them blocked every referral withdrawal.
+    final waState = context.read<WithdrawalAccountsBloc>().state;
+    if (waState.status == WithdrawalAccountsStatus.loaded &&
+        waState.accounts.isEmpty) {
       AppSnackBar.show(
         context,
-        message: 'Set your withdrawal account first (Account settings).',
+        message: 'Add a withdrawal account first (Account settings).',
         type: SnackBarType.error,
       );
+      context.push(AppRoutes.withdrawalAccounts);
       return;
     }
 
