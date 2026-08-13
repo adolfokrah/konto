@@ -4,8 +4,16 @@ import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 
-/// A custom OTP (One-Time Password) input widget that follows the app's design system
-/// with enhanced SMS autofill support for iPhone
+/// A custom OTP (One-Time Password) input widget that follows the app's design system.
+///
+/// The digits are rendered as decorative boxes on top of a single, invisible text
+/// field that holds the whole code. Focus therefore never moves while the user
+/// types, which is what keeps the software keyboard attached — an earlier version
+/// used one field per digit and hopped focus after every keystroke, which tore
+/// down and rebuilt the platform text input connection mid-entry and left iPadOS
+/// without a keyboard from the second digit onwards.
+///
+/// A single field also gives us SMS autofill, paste, and backspace for free.
 class AppOtpInput extends StatefulWidget {
   /// Number of OTP digits (typically 4, 5, or 6)
   final int length;
@@ -19,7 +27,7 @@ class AppOtpInput extends StatefulWidget {
   /// Whether the input is enabled
   final bool enabled;
 
-  /// Whether to auto-focus the first field
+  /// Whether to auto-focus the input
   final bool autoFocus;
 
   /// Whether to obscure the text (for security)
@@ -40,9 +48,6 @@ class AppOtpInput extends StatefulWidget {
   /// Error state
   final bool hasError;
 
-  /// Custom input decoration
-  final InputDecoration? decoration;
-
   const AppOtpInput({
     super.key,
     this.length = 6,
@@ -56,7 +61,6 @@ class AppOtpInput extends StatefulWidget {
     this.spacing = AppSpacing.spacingS,
     this.initialValue,
     this.hasError = false,
-    this.decoration,
   });
 
   @override
@@ -64,236 +68,90 @@ class AppOtpInput extends StatefulWidget {
 }
 
 class _AppOtpInputState extends State<AppOtpInput> {
-  late List<TextEditingController> _controllers;
-  late List<FocusNode> _focusNodes;
-  String _otpValue = '';
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-    _initializeFocusNodes();
-    _setInitialValue();
-  }
+    _controller = TextEditingController(text: _sanitize(widget.initialValue));
+    _focusNode = FocusNode();
+    // The boxes render the focused/filled state, so they need to repaint when
+    // focus changes even though no text changed.
+    _focusNode.addListener(_onFocusChanged);
 
-  void _initializeControllers() {
-    _controllers = List.generate(
-      widget.length,
-      (index) => TextEditingController(),
-    );
-  }
-
-  void _initializeFocusNodes() {
-    _focusNodes = List.generate(widget.length, (index) => FocusNode());
-  }
-
-  void _setInitialValue() {
-    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
-      final value = widget.initialValue!;
-      for (int i = 0; i < widget.length && i < value.length; i++) {
-        _controllers[i].text = value[i];
-      }
-      _updateOtpValue();
+    if (_controller.text.isNotEmpty) {
+      // Report the seeded value once the first frame is up, so callers can read
+      // it without being called during their own build.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _notify());
     }
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    for (final focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
+    _focusNode.removeListener(_onFocusChanged);
+    _focusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  void _updateOtpValue() {
-    _otpValue = _controllers.map((controller) => controller.text).join();
-    widget.onChanged?.call(_otpValue);
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
-    if (_otpValue.length == widget.length) {
-      widget.onCompleted?.call(_otpValue);
+  /// Strip anything that is not a digit and cap at [AppOtpInput.length].
+  String _sanitize(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.length > widget.length
+        ? digits.substring(0, widget.length)
+        : digits;
+  }
+
+  void _notify() {
+    final value = _controller.text;
+    widget.onChanged?.call(value);
+    if (value.length == widget.length) {
+      widget.onCompleted?.call(value);
     }
   }
 
-  void _onFieldChanged(String value, int index) {
-    // Handle pasting multiple digits (e.g., from iPhone SMS autofill)
-    if (value.length > 1) {
-      _handlePastedOtp(value, index);
-      return;
-    }
-
-    // Handle single character input (normal typing)
-    if (value.isNotEmpty) {
-      // For single character input, ensure only one digit
-      final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
-      if (digitsOnly.isNotEmpty) {
-        final singleChar = digitsOnly[0];
-        if (_controllers[index].text != singleChar) {
-          _controllers[index].text = singleChar;
-          _controllers[index].selection = TextSelection.fromPosition(
-            TextPosition(offset: 1),
-          );
-        }
-
-        // Auto-focus next field when entering a digit
-        if (index < widget.length - 1) {
-          _focusNodes[index + 1].requestFocus();
-        }
-      } else {
-        // No valid digits, clear the field
-        _controllers[index].clear();
-      }
-    }
-
-    // Handle deletion - if field becomes empty, move to previous field
-    if (value.isEmpty && index > 0) {
-      // Delay to avoid conflicts with key event handler
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_controllers[index].text.isEmpty && _focusNodes[index].hasFocus) {
-          _focusNodes[index - 1].requestFocus();
-        }
-      });
-    }
-
-    _updateOtpValue();
+  void _onChanged(String _) {
+    setState(() {});
+    _notify();
   }
 
-  /// Handle pasted OTP code from iPhone SMS autofill or manual paste
-  void _handlePastedOtp(String pastedValue, int startIndex) {
-    // Remove any non-digit characters
-    final digitsOnly = pastedValue.replaceAll(RegExp(r'[^0-9]'), '');
-
-    // Clear all fields first
-    for (final controller in _controllers) {
-      controller.clear();
-    }
-
-    // Fill fields with pasted digits
-    for (int i = 0; i < widget.length && i < digitsOnly.length; i++) {
-      _controllers[i].text = digitsOnly[i];
-    }
-
-    // Update OTP value and trigger callbacks
-    _updateOtpValue();
-
-    // Focus the last filled field or the last field if all are filled
-    final lastFilledIndex = (digitsOnly.length - 1).clamp(0, widget.length - 1);
-    if (lastFilledIndex < widget.length - 1 &&
-        digitsOnly.length < widget.length) {
-      // Not all fields filled, focus the next empty field
-      _focusNodes[lastFilledIndex + 1].requestFocus();
-    } else {
-      // All fields filled or last field reached, unfocus
-      _focusNodes[lastFilledIndex].unfocus();
-    }
-  }
-
-  void _onFieldSubmitted(String value, int index) {
-    // Move to next field or complete
-    if (index < widget.length - 1) {
-      _focusNodes[index + 1].requestFocus();
-    } else {
-      _focusNodes[index].unfocus();
-    }
-  }
-
-  void _onFieldTap(int index) async {
-    // Focus and place cursor at end
-    _focusNodes[index].requestFocus();
-    _controllers[index].selection = TextSelection.fromPosition(
-      TextPosition(offset: _controllers[index].text.length),
+  /// Keep entry append-only: tapping a box should not drop the caret between
+  /// digits, otherwise the next keystroke would land in the middle of the code.
+  void _moveCaretToEnd() {
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
     );
-
-    // Check clipboard for potential OTP paste when tapping the first field
-    if (index == 0 && _controllers[index].text.isEmpty) {
-      try {
-        final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-        final clipboardText = clipboardData?.text ?? '';
-
-        // If clipboard contains only digits and looks like an OTP, suggest pasting
-        final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
-        if (digitsOnly.length >= widget.length && digitsOnly.length <= 10) {
-          // Automatically handle as pasted OTP
-          _handlePastedOtp(digitsOnly, 0);
-        }
-      } catch (e) {
-        // Clipboard access failed, ignore silently
-      }
-    }
-  }
-
-  void _onFieldLongPress(int index) async {
-    // Show paste option on long press
-    try {
-      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-      final clipboardText = clipboardData?.text ?? '';
-
-      if (clipboardText.isNotEmpty) {
-        final digitsOnly = clipboardText.replaceAll(RegExp(r'[^0-9]'), '');
-        if (digitsOnly.isNotEmpty) {
-          _handlePastedOtp(digitsOnly, index);
-        }
-      }
-    } catch (e) {
-      // Clipboard access failed, ignore silently
-    }
-  }
-
-  bool _onFieldKeyEvent(KeyEvent event, int index) {
-    // Handle backspace key
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.backspace) {
-      if (_controllers[index].text.isNotEmpty) {
-        // Clear current field if it has content
-        _controllers[index].clear();
-        _updateOtpValue();
-        return true;
-      } else if (index > 0) {
-        // Current field is empty, move to previous field and clear it if it has content
-        _focusNodes[index - 1].requestFocus();
-        if (_controllers[index - 1].text.isNotEmpty) {
-          _controllers[index - 1].clear();
-          _updateOtpValue();
-        }
-        return true;
-      }
-    }
-    return false;
   }
 
   /// Clear all OTP fields
   void clear() {
-    for (final controller in _controllers) {
-      controller.clear();
-    }
-    _otpValue = '';
-    widget.onChanged?.call(_otpValue);
+    _controller.clear();
+    setState(() {});
+    widget.onChanged?.call('');
     if (widget.autoFocus) {
-      _focusNodes[0].requestFocus();
+      _focusNode.requestFocus();
     }
   }
 
   /// Set OTP value programmatically
   void setValue(String value) {
-    for (int i = 0; i < widget.length; i++) {
-      _controllers[i].text = i < value.length ? value[i] : '';
-    }
-    _updateOtpValue();
+    _controller.text = _sanitize(value);
+    _moveCaretToEnd();
+    setState(() {});
+    _notify();
   }
 
   /// Get current OTP value
-  String get value => _otpValue;
+  String get value => _controller.text;
 
   @override
   Widget build(BuildContext context) {
-    // Always use custom implementation for consistent design and better control
-    return _buildCustomOtpInput(context);
-  }
-
-  /// Build custom OTP input with enhanced paste handling
-  Widget _buildCustomOtpInput(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate available width and adjust field size if needed
@@ -320,97 +178,109 @@ class _AppOtpInputState extends State<AppOtpInput> {
                 ? (widget.spacing * 0.6).clamp(8.0, widget.spacing)
                 : widget.spacing;
 
+        // Give the stack a definite width so the input can be sized to cover
+        // every box; it sits inside a horizontal scroll view, so it would
+        // otherwise be laid out unbounded.
+        final totalWidth =
+            effectiveFieldWidth * widget.length +
+            effectiveSpacing * (widget.length - 1);
+
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(widget.length, (index) {
-              return Container(
-                margin: EdgeInsets.only(
-                  right: index < widget.length - 1 ? effectiveSpacing : 0,
+          child: SizedBox(
+            width: totalWidth,
+            height: widget.fieldHeight,
+            child: Stack(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(widget.length, (index) {
+                    return Container(
+                      margin: EdgeInsets.only(
+                        right: index < widget.length - 1 ? effectiveSpacing : 0,
+                      ),
+                      child: _buildBox(index, effectiveFieldWidth),
+                    );
+                  }),
                 ),
-                child: _buildOtpField(index, effectiveFieldWidth),
-              );
-            }),
+                // The real input, stretched over the boxes so a tap anywhere on
+                // the row focuses it. Invisible, because the boxes above draw
+                // the digits.
+                Positioned.fill(child: _buildHiddenField()),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildOtpField(int index, [double? customWidth]) {
-    final fieldWidth = customWidth ?? widget.fieldWidth;
+  Widget _buildHiddenField() {
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      enabled: widget.enabled,
+      autofocus: widget.autoFocus,
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      // One field for the whole code, so SMS autofill fills it in a single shot
+      // instead of having to spread across per-digit fields.
+      autofillHints: const [AutofillHints.oneTimeCode],
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(widget.length),
+      ],
+      // Hidden: the digits are painted by the boxes underneath. Transparent text
+      // rather than obscured, so nothing double-renders.
+      showCursor: false,
+      cursorWidth: 0,
+      style: const TextStyle(color: Colors.transparent, fontSize: 1),
+      decoration: const InputDecoration(
+        border: InputBorder.none,
+        counterText: '',
+        contentPadding: EdgeInsets.zero,
+        isCollapsed: true,
+      ),
+      onChanged: _onChanged,
+      onTap: _moveCaretToEnd,
+    );
+  }
+
+  Widget _buildBox(int index, double fieldWidth) {
+    final code = _controller.text;
+    final hasDigit = index < code.length;
+    // The next empty box is the active one; once the code is full, keep the
+    // highlight on the last box rather than running off the end.
+    final isActive =
+        _focusNode.hasFocus &&
+        index == code.length.clamp(0, widget.length - 1) &&
+        code.length < widget.length;
+
+    Border? border;
+    if (widget.hasError) {
+      border = Border.all(color: Theme.of(context).colorScheme.error, width: 2);
+    } else if (isActive) {
+      border = Border.all(
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+        width: 2,
+      );
+    }
 
     return Container(
       width: fieldWidth,
       height: widget.fieldHeight,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color:
             widget.enabled
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        border:
-            widget.hasError
-                ? Border.all(
-                  color: Theme.of(context).colorScheme.error,
-                  width: 2,
-                )
-                : _focusNodes[index].hasFocus
-                ? Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.3),
-                  width: 2,
-                )
-                : null,
+        border: border,
       ),
-      child: Focus(
-        onKeyEvent: (node, event) {
-          return _onFieldKeyEvent(event, index)
-              ? KeyEventResult.handled
-              : KeyEventResult.ignored;
-        },
-        child: Center(
-          child: GestureDetector(
-            onLongPress: () => _onFieldLongPress(index),
-            child: TextFormField(
-              controller: _controllers[index],
-              focusNode: _focusNodes[index],
-              enabled: widget.enabled,
-              obscureText: widget.obscureText,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              maxLength: null, // Remove maxLength to allow paste detection
-              autofocus: widget.autoFocus && index == 0,
-              // Enable SMS autofill for the first field only
-              autofillHints: index == 0 ? [AutofillHints.oneTimeCode] : null,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                // Remove LengthLimitingTextInputFormatter to allow paste detection
-              ],
-              style: AppTextStyles.titleBoldLg,
-              cursorColor: Theme.of(context).colorScheme.onSurface,
-              decoration:
-                  widget.decoration ??
-                  InputDecoration(
-                    border: InputBorder.none,
-                    counterText: '', // Hide character counter
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                    hintStyle: AppTextStyles.titleMediumM.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.4),
-                    ),
-                  ),
-              onChanged: (value) => _onFieldChanged(value, index),
-              onFieldSubmitted: (value) => _onFieldSubmitted(value, index),
-              onTap: () => _onFieldTap(index),
-            ),
-          ),
-        ),
+      child: Text(
+        hasDigit ? (widget.obscureText ? '•' : code[index]) : '',
+        style: AppTextStyles.titleBoldLg,
       ),
     );
   }

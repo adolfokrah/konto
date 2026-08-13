@@ -236,16 +236,12 @@ class _WithdrawViewState extends State<WithdrawView> {
       return const KycView();
     }
 
-    // Prefer the jar's linked withdrawal account; fall back to the user's legacy account.
-    final accountHolder =
-        withdrawalAccount?.accountHolder ??
-        (authState is AuthAuthenticated ? authState.user.accountHolder : null);
-    final accountNumber =
-        withdrawalAccount?.accountNumber ??
-        (authState is AuthAuthenticated ? authState.user.accountNumber : null);
-    final bank =
-        withdrawalAccount?.provider ??
-        (authState is AuthAuthenticated ? authState.user.bank : null);
+    // The jar's linked withdrawal account is the only source now. The old fallback
+    // to the user's flat accountHolder/accountNumber/bank fields is gone — nothing
+    // writes those any more, so it always resolved to null.
+    final accountHolder = withdrawalAccount?.accountHolder;
+    final accountNumber = withdrawalAccount?.accountNumber;
+    final bank = withdrawalAccount?.provider;
 
     return Scaffold(
       appBar: AppBar(

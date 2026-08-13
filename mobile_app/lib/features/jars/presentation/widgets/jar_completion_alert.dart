@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/widgets/alert_banner.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
 import 'package:go_router/go_router.dart';
 
@@ -60,18 +61,18 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 3. No withdrawal account set
-        if (user.accountNumber == null ||
-            user.accountNumber!.trim().isEmpty ||
-            user.bank == null ||
-            user.bank!.trim().isEmpty ||
-            user.accountHolder == null ||
-            user.accountHolder!.trim().isEmpty) {
+        // 3. No withdrawal account set. Source of truth is the user's withdrawal
+        // accounts list, not the legacy flat accountNumber/bank/accountHolder
+        // fields on the user. Only alert once the list has actually loaded so a
+        // cold bloc doesn't flash a false alert.
+        final waState = context.watch<WithdrawalAccountsBloc>().state;
+        if (waState.status == WithdrawalAccountsStatus.loaded &&
+            waState.accounts.isEmpty) {
           return Alert(
             message:
                 'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
             onTap: () {
-              context.push(AppRoutes.withdrawalAccount);
+              context.push(AppRoutes.withdrawalAccounts);
             },
           );
         }

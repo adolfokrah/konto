@@ -2174,11 +2174,11 @@ abstract class AppLocalizations {
   /// **'Personal details'**
   String get personalDetails;
 
-  /// Withdrawal account menu item
+  /// Withdrawal accounts menu item, opening the list of saved payout destinations
   ///
   /// In en, this message translates to:
-  /// **'Withdrawal account'**
-  String get withdrawalAccount;
+  /// **'Withdrawal accounts'**
+  String get withdrawalAccounts;
 
   /// Change phone number menu item
   ///
@@ -2395,12 +2395,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select a bank'**
   String get pleaseSelectBank;
-
-  /// Success message when withdrawal account is updated
-  ///
-  /// In en, this message translates to:
-  /// **'Withdrawal account updated successfully'**
-  String get withdrawalAccountUpdatedSuccessfully;
 
   /// Info text about automatic transfer of contributions
   ///

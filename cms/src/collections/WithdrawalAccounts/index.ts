@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { APIError } from 'payload'
 
 /**
  * A user's saved withdrawal destinations. Each is either mobile money or bank.
@@ -92,21 +91,10 @@ export const WithdrawalAccounts: CollectionConfig = {
           data.user = req.user.id
         }
 
-        // KYC gate: a real user (not admin/migration) must be KYC-verified to add/edit.
-        if (req.user && (req.user as any).role !== 'admin') {
-          const fresh = await req.payload.findByID({
-            collection: 'users',
-            id: req.user.id,
-            depth: 0,
-            overrideAccess: true,
-          })
-          if ((fresh as any)?.kycStatus !== 'verified') {
-            throw new APIError(
-              'You must complete KYC verification before adding a withdrawal account',
-              403,
-            )
-          }
-        }
+        // No verification gate here on purpose. Saving a payout destination moves
+        // no money, so a user can set one up before starting KYC/KYB. Verification
+        // is enforced where value actually moves: contributing, receiving
+        // contributions, and payouts (see the payout-eganow endpoint).
         return data
       },
     ],

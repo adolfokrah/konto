@@ -9,6 +9,7 @@ import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/views/save_contribution_view.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/core/enums/app_language.dart';
@@ -97,6 +98,9 @@ void main() {
                     BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
                     BlocProvider.value(value: getIt<AddContributionBloc>()),
                     BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+                    // SaveContributionView reads this to check whether the jar
+                    // creator has a payout destination; provided app-wide in main.dart.
+                    BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
                     BlocProvider.value(
                       value: getIt<AuthBloc>()..add(
                         UpdateUserData(
@@ -635,6 +639,7 @@ void main() {
                     providers: [
                       BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
                       BlocProvider.value(value: getIt<AddContributionBloc>()),
+                      BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
                     ],
                     child: const SaveContributionView(),
                   ),

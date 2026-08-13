@@ -20,7 +20,6 @@ class AppRoutes {
   static const String userAccountView = '/user_account_view';
   static const String personalDetails = '/personal_details';
   static const String changePhoneNumber = '/change_phone_number';
-  static const String withdrawalAccount = '/withdrawal_account';
   static const String withdrawalAccounts = '/withdrawal_accounts';
   static const String awaitMomoPayment = '/await_momo_payment';
   static const String contributionsList = '/contributions_list';

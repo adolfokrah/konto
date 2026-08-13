@@ -123,47 +123,28 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
-  /// Navigate to withdraw page, checking KYC and withdrawal account first
+  /// Navigate to withdraw page, checking the payout destination and verification first
   void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
-    // Business verification (KYB) is required before any payout
-    if (!_requireKyb(context)) return;
-
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      final user = authState.user;
-
-      // Check KYC status first
-      if (user.kycStatus == 'none') {
-        // User hasn't completed KYC - navigate to KYC page
-        context.push(AppRoutes.kycView);
-        return;
-      }
-
-      if (user.kycStatus == 'in_review') {
-        // KYC verification is in review
-        AppSnackBar.show(
-          context,
-          message:
-              'Your KYC verification is in review. Please wait for approval before making withdrawals.',
-          type: SnackBarType.info,
-        );
-        return;
-      }
-
-      // The jar carries its own linked withdrawal account, but if the user has
-      // no withdrawal accounts at all, route them to add one before payout.
-      final waState = context.read<WithdrawalAccountsBloc>().state;
-      if (waState.status == WithdrawalAccountsStatus.loaded &&
-          waState.accounts.isEmpty) {
-        AppSnackBar.show(
-          context,
-          message: 'Add a withdrawal account to receive your payout.',
-          type: SnackBarType.info,
-        );
-        context.push(AppRoutes.withdrawalAccounts);
-        return;
-      }
+    // Setting up a payout destination needs no KYC or KYB — it moves no money —
+    // so this runs before the verification gate. Otherwise an unverified user is
+    // sent to KYC and can never reach account setup from here.
+    //
+    // The jar carries its own linked withdrawal account, but if the user has no
+    // withdrawal accounts at all, route them to add one.
+    final waState = context.read<WithdrawalAccountsBloc>().state;
+    if (waState.status == WithdrawalAccountsStatus.loaded &&
+        waState.accounts.isEmpty) {
+      AppSnackBar.show(
+        context,
+        message: 'Add a withdrawal account to receive your payout.',
+        type: SnackBarType.info,
+      );
+      context.push(AppRoutes.withdrawalAccounts);
+      return;
     }
+
+    // The payout itself needs both personal KYC and business KYB.
+    if (!_requireKyb(context)) return;
 
     context.push(
       AppRoutes.withdraw,
@@ -413,15 +394,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 key: const Key('request_button_qr_code'),
                                 opacity: 0.8,
                                 onPressed: () {
-                                  final authState =
-                                      context.read<AuthBloc>().state;
-                                  if (authState is AuthAuthenticated) {
-                                    final kyb = authState.user.kybStatus;
-                                    if (kyb != 'approved') {
-                                      context.push(AppRoutes.businessKyb);
-                                      return;
-                                    }
-                                  }
+                                  // Receiving contributions needs KYC and KYB,
+                                  // same as the other request entry point.
+                                  if (!_requireKyb(context)) return;
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {

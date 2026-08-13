@@ -1952,9 +1952,9 @@
     "description": "Personal details menu item"
   },
 
-  "withdrawalAccount": "Withdrawal account",
-  "@withdrawalAccount": {
-    "description": "Withdrawal account menu item"
+  "withdrawalAccounts": "Withdrawal accounts",
+  "@withdrawalAccounts": {
+    "description": "Withdrawal accounts menu item, opening the list of saved payout destinations"
   },
 
   "changePhoneNumber": "Change phone number",
@@ -2145,11 +2145,6 @@
   "pleaseSelectBank": "Please select a bank",
   "@pleaseSelectBank": {
     "description": "Error message for missing bank selection"
-  },
-
-  "withdrawalAccountUpdatedSuccessfully": "Withdrawal account updated successfully",
-  "@withdrawalAccountUpdatedSuccessfully": {
-    "description": "Success message when withdrawal account is updated"
   },
 
   "contributionsTransferredAutomatically": "Note: Mobile money contributions will be automatically transferred to this account.",

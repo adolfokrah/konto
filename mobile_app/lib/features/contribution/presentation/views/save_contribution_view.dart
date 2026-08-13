@@ -20,6 +20,7 @@ import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/contribution/data/api_providers/charges_api_provider.dart';
 import 'package:Hoga/features/contribution/data/models/charges_model.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -64,6 +65,12 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   @override
   void initState() {
     super.initState();
+    // Preload the creator's withdrawal accounts so the mobile-money guard in
+    // _handlePaymentRequest has a loaded list to check against.
+    final waBloc = context.read<WithdrawalAccountsBloc>();
+    if (waBloc.state.status == WithdrawalAccountsStatus.initial) {
+      waBloc.add(LoadWithdrawalAccounts());
+    }
   }
 
   Future<void> _loadCharges() async {
@@ -531,16 +538,16 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         return;
       }
 
-      // Check if user has set up withdrawal account using AuthBloc
+      // Check if the creator has set up a withdrawal account. Source of truth is
+      // the withdrawal accounts list, not the legacy accountHolder field on the user.
       final authState = context.read<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
-        // Only check account holder if the current user is the creator of the jar
-        if (authState.user.id == jarCreatorId) {
-          if (authState.user.accountHolder == null ||
-              authState.user.accountHolder!.isEmpty) {
-            context.push(AppRoutes.withdrawalAccount);
-            return;
-          }
+      if (authState is AuthAuthenticated &&
+          authState.user.id == jarCreatorId) {
+        final waState = context.read<WithdrawalAccountsBloc>().state;
+        if (waState.status == WithdrawalAccountsStatus.loaded &&
+            waState.accounts.isEmpty) {
+          context.push(AppRoutes.withdrawalAccounts);
+          return;
         }
       }
     }

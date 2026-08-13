@@ -1146,7 +1146,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalDetails => 'Personal details';
 
   @override
-  String get withdrawalAccount => 'Withdrawal account';
+  String get withdrawalAccounts => 'Withdrawal accounts';
 
   @override
   String get changePhoneNumber => 'Change phone number';
@@ -1264,10 +1264,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseSelectBank => 'Please select a bank';
-
-  @override
-  String get withdrawalAccountUpdatedSuccessfully =>
-      'Withdrawal account updated successfully';
 
   @override
   String get contributionsTransferredAutomatically =>
