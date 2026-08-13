@@ -1164,7 +1164,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get personalDetails => 'Détails personnels';
 
   @override
-  String get withdrawalAccount => 'Compte de retrait';
+  String get withdrawalAccounts => 'Comptes de retrait';
 
   @override
   String get changePhoneNumber => 'Changer le numéro de téléphone';
@@ -1282,10 +1282,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pleaseSelectBank => 'Veuillez sélectionner une banque';
-
-  @override
-  String get withdrawalAccountUpdatedSuccessfully =>
-      'Compte de retrait mis à jour avec succès';
 
   @override
   String get contributionsTransferredAutomatically =>

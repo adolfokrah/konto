@@ -176,29 +176,17 @@ void main() {
         // Wait a moment for the OTP input to be ready
         await tester.pump(const Duration(milliseconds: 500));
 
-        // Find the OTP input fields
-        final otpFields = find.byType(TextFormField);
-        expect(otpFields, findsWidgets, reason: 'Should find OTP input fields');
+        // AppOtpInput holds the whole code in one field behind the digit boxes,
+        // so there is a single editable widget to type into.
+        final otpField = find.byType(EditableText);
+        expect(otpField, findsOneWidget, reason: 'Should find the OTP input');
 
         // Enter the test OTP (which should match the generated OTP in test mode: 123456)
         const testOtp = '123456';
 
-        // Try entering the complete OTP in the first field
-        try {
-          await tester.enterText(otpFields.first, testOtp);
-          await tester.pumpAndSettle();
-          print('🔧 Entered OTP: $testOtp in first field');
-        } catch (e) {
-          // Enter digits individually in each field
-          final fieldCount = tester.widgetList(otpFields).length;
-          for (int i = 0; i < fieldCount && i < testOtp.length; i++) {
-            final fieldFinder = otpFields.at(i);
-            await tester.enterText(fieldFinder, testOtp[i]);
-            await tester.pump(const Duration(milliseconds: 100));
-            print('🔧 Entered digit: ${testOtp[i]} in field $i');
-          }
-          await tester.pumpAndSettle();
-        }
+        await tester.enterText(otpField, testOtp);
+        await tester.pumpAndSettle();
+        print('🔧 Entered OTP: $testOtp');
 
         // Allow time for VerificationSuccess -> RequestLogin -> AuthAuthenticated -> navigation
         bool navigated = false;

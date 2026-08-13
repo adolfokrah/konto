@@ -26,7 +26,6 @@ import 'package:Hoga/features/contribution/presentation/views/request_contributi
 import 'package:Hoga/features/user_account/presentation/views/user_account_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/personal_details_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/change_phone_number_view.dart';
-import 'package:Hoga/features/user_account/presentation/views/withdrawal_account_view.dart';
 import 'package:Hoga/features/withdrawal_accounts/presentation/views/withdrawal_accounts_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/theme_settings_view.dart';
 import 'package:Hoga/features/user_account/presentation/views/language_settings_view.dart';
@@ -159,10 +158,6 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/change_phone_number',
         builder: (context, state) => const ChangePhoneNumberView(),
-      ),
-      GoRoute(
-        path: '/withdrawal_account',
-        builder: (context, state) => const WithdrawalAccountView(),
       ),
       GoRoute(
         path: '/withdrawal_accounts',
