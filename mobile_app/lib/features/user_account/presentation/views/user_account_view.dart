@@ -192,7 +192,7 @@ class UserAccountView extends StatelessWidget {
                 context.push(AppRoutes.changePhoneNumber);
               },
             ),
-            if (user?.kybStatus == 'approved')
+            if (user?.isOrganization == true && user?.kybStatus == 'approved')
               _buildMenuItem(
                 context: context,
                 title: 'Share contribution pages',
@@ -202,16 +202,24 @@ class UserAccountView extends StatelessWidget {
                   final box = context.findRenderObject() as RenderBox?;
                   Share.share(
                     'Support our campaigns on Hoga: $url',
-                    sharePositionOrigin: box == null
-                        ? null
-                        : box.localToGlobal(Offset.zero) & box.size,
+                    sharePositionOrigin:
+                        box == null
+                            ? null
+                            : box.localToGlobal(Offset.zero) & box.size,
                   );
                 },
               )
-            else
+            else if (user?.isOrganization == true)
               _buildMenuItem(
                 context: context,
                 title: 'Business verification',
+                onTap: () => context.push(AppRoutes.businessKyb),
+              )
+            else
+              // Individuals become organizations by completing business verification.
+              _buildMenuItem(
+                context: context,
+                title: 'Upgrade to organization',
                 onTap: () => context.push(AppRoutes.businessKyb),
               ),
             _buildMenuItem(

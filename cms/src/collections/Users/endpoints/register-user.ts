@@ -1,5 +1,7 @@
+import { randomBytes } from 'crypto'
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
+import { consumePreRegistration, phoneKey } from '@/utilities/phoneVerification'
 
 export const registerUser = async (req: PayloadRequest) => {
   try {
@@ -14,6 +16,7 @@ export const registerUser = async (req: PayloadRequest) => {
       username,
       email,
       referralCode,
+      accountType,
     } = req.data || {}
     // Normalize phone number: strip leading 0 (e.g. 0245... → 245...)
     const formattedPhoneNumber =
@@ -29,6 +32,18 @@ export const registerUser = async (req: PayloadRequest) => {
           message:
             'Missing required fields: phoneNumber, countryCode, country, firstName, lastName, username are required',
           errors: [],
+        },
+        { status: 400 },
+      )
+    }
+
+    // Older app versions don't send an account type; they register individuals.
+    if (accountType !== undefined && !['individual', 'organization'].includes(accountType)) {
+      return Response.json(
+        {
+          success: false,
+          message: 'accountType must be "individual" or "organization"',
+          errors: [{ field: 'accountType', message: 'Invalid account type' }],
         },
         { status: 400 },
       )
@@ -97,9 +112,22 @@ export const registerUser = async (req: PayloadRequest) => {
       }
     }
 
+    // Only a number that just passed OTP (verify-otp) can be registered.
+    if (!consumePreRegistration(phoneKey(countryCode, formattedPhoneNumber))) {
+      return Response.json(
+        {
+          success: false,
+          message: 'Please verify your phone number with the OTP code first.',
+          errors: [{ field: 'phoneNumber', message: 'Phone number not verified' }],
+        },
+        { status: 401 },
+      )
+    }
+
     // Create the new user - Include email and password for auth
     const userEmail = email || `${formattedPhoneNumber.replace(/\+/g, '')}@konto.app` // Generate email if not provided
-    const defaultPassword = '123456' // Default password for all users
+    // App users log in by phone + OTP; the password is random and never used directly.
+    const defaultPassword = randomBytes(24).toString('base64url')
 
     const newUser = await req.payload.create({
       collection: 'users',
@@ -113,6 +141,9 @@ export const registerUser = async (req: PayloadRequest) => {
         lastName,
         username,
         kycStatus: 'none',
+        accountType: accountType ?? 'individual',
+        // The app logs in right after registering; this is that login's OTP proof.
+        otpVerifiedAt: new Date().toISOString(),
         appSettings: {
           language: 'en',
           darkMode: false,

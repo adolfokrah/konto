@@ -20,6 +20,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { SystemSettings } from './globals/SystemSettings'
 import { resendAdapter } from '@payloadcms/email-resend'
+import { runBackfills } from './endpoints/run-backfills'
 import { Notifications } from './collections/Notifications'
 import { settleContributionsTask } from './tasks/settle-contributions'
 import { checkEmptyJarsDailyTask } from './tasks/check-empty-jars-daily'
@@ -270,6 +271,12 @@ export default buildConfig({
       path: '/system-settings',
       method: 'get',
       handler: getSystemSettings,
+    },
+    {
+      // Admin-only: release data backfills (jar short codes, account types).
+      path: '/run-backfills',
+      method: 'post',
+      handler: runBackfills,
     },
   ],
   hooks: {

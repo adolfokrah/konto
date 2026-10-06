@@ -144,7 +144,7 @@ class _JarDetailViewState extends State<JarDetailView> {
     }
 
     // The payout itself needs both personal KYC and business KYB.
-    if (!_requireKyb(context)) return;
+    if (!_requireVerification(context)) return;
 
     context.push(
       AppRoutes.withdraw,
@@ -157,10 +157,10 @@ class _JarDetailViewState extends State<JarDetailView> {
     );
   }
 
-  /// Verification gate: the user must have BOTH personal KYC verified AND business
-  /// verification (KYB) approved. Returns true if allowed; otherwise shows a message,
-  /// routes to the appropriate screen, and returns false.
-  bool _requireKyb(BuildContext context) {
+  /// Verification gate by account type: individuals need personal KYC; organizations
+  /// need KYC plus business verification (KYB). Returns true if allowed; otherwise shows
+  /// a message, routes to the appropriate screen, and returns false.
+  bool _requireVerification(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return false;
 
@@ -179,14 +179,14 @@ class _JarDetailViewState extends State<JarDetailView> {
       return false;
     }
 
-    // 2) Business verification (KYB).
-    if (kyb != 'approved') {
+    // 2) Business verification (KYB): organizations only.
+    if (authState.user.isOrganization && kyb != 'approved') {
       final message =
           (kyb == 'in_review' || kyb == 'pending')
               ? 'Your business verification is under review. Please wait for approval.'
               : kyb == 'rejected'
-                  ? 'Your business verification was rejected. Please review and resubmit.'
-                  : 'Complete business verification to continue.';
+              ? 'Your business verification was rejected. Please review and resubmit.'
+              : 'Complete business verification to continue.';
       AppSnackBar.show(context, message: message, type: SnackBarType.info);
       context.push(AppRoutes.businessKyb);
       return false;
@@ -278,8 +278,9 @@ class _JarDetailViewState extends State<JarDetailView> {
           },
         ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
-          listenWhen: (previous, current) =>
-              current is LeaveJarSuccess || current is LeaveJarFailure,
+          listenWhen:
+              (previous, current) =>
+                  current is LeaveJarSuccess || current is LeaveJarFailure,
           listener: (context, state) {
             if (state is LeaveJarSuccess) {
               AppSnackBar.show(
@@ -289,9 +290,9 @@ class _JarDetailViewState extends State<JarDetailView> {
               );
               // Refresh jar list and jar details
               context.read<JarListBloc>().add(LoadJarList());
-              context
-                  .read<JarSummaryReloadBloc>()
-                  .add(ReloadJarSummaryRequested());
+              context.read<JarSummaryReloadBloc>().add(
+                ReloadJarSummaryRequested(),
+              );
             } else if (state is LeaveJarFailure) {
               AppSnackBar.show(
                 context,
@@ -396,7 +397,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 onPressed: () {
                                   // Receiving contributions needs KYC and KYB,
                                   // same as the other request entry point.
-                                  if (!_requireKyb(context)) return;
+                                  if (!_requireVerification(context)) return;
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -583,7 +584,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
-                                  if (!_requireKyb(context)) return;
+                                  if (!_requireVerification(context)) return;
                                   context.push(AppRoutes.addContribution);
                                 },
                                 icon: Icons.add,
@@ -618,7 +619,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
-                                  if (!_requireKyb(context)) return;
+                                  if (!_requireVerification(context)) return;
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -658,40 +659,43 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 children: [
                                   AppIconButton(
                                     key: const Key('info_button'),
-                                    onPressed: isCreator
-                                        ? () {
-                                            context.push(AppRoutes.jarInfo);
-                                          }
-                                        : () async {
-                                            final result =
-                                                await JarInfoSheet.show(
-                                              context: context,
-                                              jarData: jarData,
-                                            );
-                                            if (!context.mounted) return;
-                                            if (result == 'leave') {
-                                              context
-                                                  .read<UpdateJarBloc>()
-                                                  .add(LeaveJarRequested(
-                                                    jarId: jarData.id,
-                                                  ));
-                                            } else if (result == 'report') {
-                                              final reported =
-                                                  await JarReportSheet.show(
-                                                context: context,
-                                                jarId: jarData.id,
-                                              );
-                                              if (reported == true &&
-                                                  context.mounted) {
-                                                AppSnackBar.show(
-                                                  context,
-                                                  message:
-                                                      'Report submitted successfully',
-                                                  type: SnackBarType.success,
-                                                );
-                                              }
+                                    onPressed:
+                                        isCreator
+                                            ? () {
+                                              context.push(AppRoutes.jarInfo);
                                             }
-                                          },
+                                            : () async {
+                                              final result =
+                                                  await JarInfoSheet.show(
+                                                    context: context,
+                                                    jarData: jarData,
+                                                  );
+                                              if (!context.mounted) return;
+                                              if (result == 'leave') {
+                                                context
+                                                    .read<UpdateJarBloc>()
+                                                    .add(
+                                                      LeaveJarRequested(
+                                                        jarId: jarData.id,
+                                                      ),
+                                                    );
+                                              } else if (result == 'report') {
+                                                final reported =
+                                                    await JarReportSheet.show(
+                                                      context: context,
+                                                      jarId: jarData.id,
+                                                    );
+                                                if (reported == true &&
+                                                    context.mounted) {
+                                                  AppSnackBar.show(
+                                                    context,
+                                                    message:
+                                                        'Report submitted successfully',
+                                                    type: SnackBarType.success,
+                                                  );
+                                                }
+                                              }
+                                            },
                                     icon: Icons.info_outline,
                                   ),
                                   const SizedBox(height: AppSpacing.spacingXs),
@@ -1047,7 +1051,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppButton.filled(
                                         text: localizations.contribute,
                                         onPressed: () {
-                                          if (!_requireKyb(context)) return;
+                                          if (!_requireVerification(context)) {
+                                            return;
+                                          }
                                           context.push(
                                             AppRoutes.addContribution,
                                           );
@@ -1096,8 +1102,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                                     contribution.paymentStatus,
                                                 isTransfer:
                                                     contribution.isTransfer,
-                                                isRefund:
-                                                    contribution.isRefund,
+                                                isRefund: contribution.isRefund,
                                               ),
                                             ],
                                           )

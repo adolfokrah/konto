@@ -2,6 +2,11 @@ import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { fcmNotifications } from '@/utilities/fcmPushNotifications'
 
 export const testPushNotification = async (req: PayloadRequest) => {
+  // Admin-only: sends push notifications.
+  if ((req.user as { role?: string } | null)?.role !== 'admin') {
+    return Response.json({ success: false, message: 'Forbidden' }, { status: 403 })
+  }
+
   try {
     await addDataAndFileToRequest(req)
 

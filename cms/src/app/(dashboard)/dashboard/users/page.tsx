@@ -1,13 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import {
-  Users,
-  ShieldCheck,
-  ShieldAlert,
-  Clock,
-  ShieldX,
-  Activity,
-} from 'lucide-react'
+import { Users, ShieldCheck, ShieldAlert, Clock, ShieldX, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { UsersDataTable } from '@/components/dashboard/users-data-table'
@@ -29,6 +22,7 @@ export default async function UsersPage({ searchParams }: Props) {
   const kyc = typeof params.kyc === 'string' ? params.kyc : ''
   const role = typeof params.role === 'string' ? params.role : ''
   const platform = typeof params.platform === 'string' ? params.platform : ''
+  const accountType = typeof params.accountType === 'string' ? params.accountType : ''
 
   const payload = await getPayload({ config: configPromise })
 
@@ -55,6 +49,12 @@ export default async function UsersPage({ searchParams }: Props) {
   }
   if (role && ['user', 'admin'].includes(role)) {
     where.role = { equals: role }
+  }
+  if (accountType === 'organization') {
+    where.accountType = { equals: 'organization' }
+  } else if (accountType === 'individual') {
+    // Users created before account types existed count as individuals.
+    where.accountType = { not_equals: 'organization' }
   }
   if (platform && ['android', 'ios'].includes(platform)) {
     where.platform = { equals: platform }
@@ -125,6 +125,7 @@ export default async function UsersPage({ searchParams }: Props) {
       countryCode: u.countryCode || null,
       country: u.country || '',
       photoUrl: photoObj?.url || null,
+      accountType: u.accountType === 'organization' ? 'organization' : 'individual',
       kycStatus: u.kycStatus || 'none',
       kycSessionId: u.kycSessionId || null,
       role: u.role || 'user',

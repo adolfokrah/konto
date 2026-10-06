@@ -13,6 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { type DataTableColumnMeta } from '../types'
 import { PlatformBadge } from '@/components/dashboard/platform-badge'
 
+const accountTypeLabels: Record<string, string> = {
+  individual: 'Individual',
+  organization: 'Organization',
+}
+
 export type UserRow = {
   id: string
   firstName: string
@@ -22,6 +27,7 @@ export type UserRow = {
   countryCode: string | null
   country: string
   photoUrl: string | null
+  accountType: 'individual' | 'organization'
   kycStatus: 'none' | 'in_review' | 'verified'
   kycSessionId: string | null
   role: 'user' | 'admin'
@@ -37,9 +43,12 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Avatar className="h-8 w-8">
-          {row.original.photoUrl && <AvatarImage src={row.original.photoUrl} alt={row.original.firstName} />}
+          {row.original.photoUrl && (
+            <AvatarImage src={row.original.photoUrl} alt={row.original.firstName} />
+          )}
           <AvatarFallback className="text-xs">
-            {row.original.firstName?.charAt(0)}{row.original.lastName?.charAt(0)}
+            {row.original.firstName?.charAt(0)}
+            {row.original.lastName?.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <span className="font-medium">
@@ -79,13 +88,41 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     cell: ({ row }) => <span>{row.original.country || '\u2014'}</span>,
   },
   {
-    accessorKey: 'kycStatus',
-    header: 'KYC',
+    accessorKey: 'accountType',
+    header: 'Account',
+    size: 120,
     cell: ({ row }) => (
       <Badge
         variant="outline"
-        className={cn(kycStatusStyles[row.original.kycStatus] || '')}
+        className={cn(
+          row.original.accountType === 'organization'
+            ? 'bg-blue-100 text-blue-800 border-blue-200'
+            : 'bg-gray-100 text-gray-800 border-gray-200',
+        )}
       >
+        {accountTypeLabels[row.original.accountType] || row.original.accountType}
+      </Badge>
+    ),
+    meta: {
+      filter: {
+        type: 'select',
+        paramKey: 'accountType',
+        options: [
+          { label: 'All', value: 'all' },
+          { label: 'Individual', value: 'individual' },
+          { label: 'Organization', value: 'organization' },
+        ],
+        popoverWidth: 'w-40',
+        displayMap: accountTypeLabels,
+      },
+      filterLabel: 'Account type',
+    } satisfies DataTableColumnMeta,
+  },
+  {
+    accessorKey: 'kycStatus',
+    header: 'KYC',
+    cell: ({ row }) => (
+      <Badge variant="outline" className={cn(kycStatusStyles[row.original.kycStatus] || '')}>
         {kycStatusLabels[row.original.kycStatus] || row.original.kycStatus}
       </Badge>
     ),

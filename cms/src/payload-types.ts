@@ -510,7 +510,12 @@ export interface User {
   otpCode?: string | null;
   otpExpiry?: string | null;
   otpAttempts?: number | null;
+  otpVerifiedAt?: string | null;
   kycStatus?: ('none' | 'in_review' | 'verified') | null;
+  /**
+   * Individual (KYC) or Organization (KYB + owner KYC).
+   */
+  accountType?: ('individual' | 'organization') | null;
   /**
    * Business verification status — synced from Business Verifications.
    */
@@ -3118,7 +3123,9 @@ export interface UsersSelect<T extends boolean = true> {
   otpCode?: T;
   otpExpiry?: T;
   otpAttempts?: T;
+  otpVerifiedAt?: T;
   kycStatus?: T;
+  accountType?: T;
   kybStatus?: T;
   businessVerifications?: T;
   role?: T;

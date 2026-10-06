@@ -35,13 +35,14 @@ class _RegisterViewState extends State<RegisterView> {
   String _countryCode = '+233'; // Default to Ghana
   String _selectedPhoneCountry = 'Ghana';
   String _selectedCountry = 'ghana';
+  // 'individual' collects after KYC; 'organization' also needs business verification.
+  String _accountType = 'individual';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args =
-          GoRouterState.of(context).extra as Map<String, dynamic>?;
+      final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
       // Set initial values from widget parameters
       setState(() {
         _countryCode = args?['initialCountryCode'] ?? '+233';
@@ -56,18 +57,12 @@ class _RegisterViewState extends State<RegisterView> {
     final localizations = AppLocalizations.of(context)!;
 
     if (_firstNameController.text.isEmpty) {
-      AppSnackBar.showError(
-        context,
-        message: 'Please enter your first name',
-      );
+      AppSnackBar.showError(context, message: 'Please enter your first name');
       return;
     }
 
     if (_lastNameController.text.isEmpty) {
-      AppSnackBar.showError(
-        context,
-        message: 'Please enter your last name',
-      );
+      AppSnackBar.showError(context, message: 'Please enter your last name');
       return;
     }
 
@@ -94,10 +89,7 @@ class _RegisterViewState extends State<RegisterView> {
     // Validate username (required)
     final username = _usernameController.text.trim();
     if (username.isEmpty) {
-      AppSnackBar.showError(
-        context,
-        message: 'Please enter a username',
-      );
+      AppSnackBar.showError(context, message: 'Please enter a username');
       return;
     }
     if (username.length < 3 || username.length > 30) {
@@ -168,10 +160,7 @@ class _RegisterViewState extends State<RegisterView> {
 
             if (state is AuthError) {
               // Show error message from registration
-              AppSnackBar.showError(
-                context,
-                message: state.error,
-              );
+              AppSnackBar.showError(context, message: state.error);
             }
 
             if (state is PhoneNumberAvailable) {
@@ -188,6 +177,7 @@ class _RegisterViewState extends State<RegisterView> {
                   'lastName': _lastNameController.text.trim(),
                   'username': _usernameController.text.trim(),
                   'referralCode': _referralCodeController.text.trim(),
+                  'accountType': _accountType,
                 },
               );
             } else if (state is PhoneNumberNotAvailable) {
@@ -220,6 +210,42 @@ class _RegisterViewState extends State<RegisterView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.spacingL),
+              const Text(
+                'Who are you collecting for?',
+                style: AppTextStyles.titleRegularXs,
+              ),
+              const SizedBox(height: AppSpacing.spacingXs),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<String>(
+                  key: const Key('accountType'),
+                  segments: const [
+                    ButtonSegment(
+                      value: 'individual',
+                      label: Text('Myself / family'),
+                      icon: Icon(Icons.person_outline),
+                    ),
+                    ButtonSegment(
+                      value: 'organization',
+                      label: Text('Organization'),
+                      icon: Icon(Icons.apartment_outlined),
+                    ),
+                  ],
+                  selected: {_accountType},
+                  showSelectedIcon: false,
+                  onSelectionChanged:
+                      (selection) =>
+                          setState(() => _accountType = selection.first),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                _accountType == 'organization'
+                    ? 'Churches, schools, associations and businesses. You\'ll verify your ID and your business before collecting.'
+                    : 'Weddings, funerals, birthdays and personal causes. You\'ll verify your ID before collecting.',
+                style: AppTextStyles.titleRegularXs,
+              ),
+              const SizedBox(height: AppSpacing.spacingM),
               AppTextInput(
                 label: 'First name',
                 keyboardType: TextInputType.name,
@@ -254,7 +280,8 @@ class _RegisterViewState extends State<RegisterView> {
                 controller: _usernameController,
                 onChanged: (value) {
                   // Convert to lowercase for case-insensitive username
-                  final cursorPosition = _usernameController.selection.baseOffset;
+                  final cursorPosition =
+                      _usernameController.selection.baseOffset;
                   _usernameController.value = TextEditingValue(
                     text: value.toLowerCase(),
                     selection: TextSelection.collapsed(offset: cursorPosition),

@@ -13,6 +13,11 @@ class User {
   final String country;
   final String kycStatus;
   final String kybStatus;
+
+  /// 'individual' (needs KYC) or 'organization' (needs KYB + owner KYC).
+  final String accountType;
+
+  bool get isOrganization => accountType == 'organization';
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<UserSession> sessions;
@@ -42,6 +47,7 @@ class User {
     required this.country,
     required this.kycStatus,
     this.kybStatus = 'none',
+    this.accountType = 'individual',
     required this.createdAt,
     required this.updatedAt,
     required this.sessions,
@@ -68,6 +74,7 @@ class User {
       country: json['country'] as String,
       kycStatus: json['kycStatus'] as String? ?? 'none',
       kybStatus: json['kybStatus'] as String? ?? 'none',
+      accountType: json['accountType'] as String? ?? 'individual',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       sessions:
@@ -117,6 +124,7 @@ class User {
       'country': country,
       'kycStatus': kycStatus,
       'kybStatus': kybStatus,
+      'accountType': accountType,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
@@ -144,6 +152,7 @@ class User {
     String? country,
     String? kycStatus,
     String? kybStatus,
+    String? accountType,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<UserSession>? sessions,
@@ -168,6 +177,7 @@ class User {
       country: country ?? this.country,
       kycStatus: kycStatus ?? this.kycStatus,
       kybStatus: kybStatus ?? this.kybStatus,
+      accountType: accountType ?? this.accountType,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       sessions: sessions ?? this.sessions,

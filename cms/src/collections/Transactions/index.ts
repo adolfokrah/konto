@@ -12,8 +12,6 @@ import { eganowCardWebhook } from './endpoints/eganow-card-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { payoutEganow } from './endpoints/payout-eganow'
-import { testPayoutEganow } from './endpoints/test-payout-eganow'
-import { testHostedCheckoutEganow } from './endpoints/test-hosted-checkout-eganow'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
@@ -470,16 +468,6 @@ export const Transactions: CollectionConfig = {
       handler: payoutEganow,
     },
     {
-      path: '/test-payout-eganow',
-      method: 'post',
-      handler: testPayoutEganow,
-    },
-    {
-      path: '/test-hosted-checkout-eganow',
-      method: 'post',
-      handler: testHostedCheckoutEganow,
-    },
-    {
       path: '/approve-reject-payout',
       method: 'post',
       handler: approveRejectPayout,
@@ -535,6 +523,15 @@ export const Transactions: CollectionConfig = {
       handler: getChargesEndpoint,
     },
   ],
+  access: {
+    // Contributions are recorded by logged-in app users (validated per jar in
+    // validateJarCreatorAccount). Status changes come from webhooks and server jobs (local
+    // API), so nobody edits or deletes a transaction over the API except admins.
+    create: ({ req: { user } }) => Boolean(user),
+    read: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin',
+    delete: ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin',
+  },
   hooks: {
     beforeChange: [setPaymentStatus, getCharges, snapshotCollector],
     afterChange: [

@@ -3,7 +3,18 @@ import { describe, it, beforeAll, expect, beforeEach } from 'vitest'
 
 import config from '../../src/payload.config'
 import { clearAllCollections } from '../utils/testCleanup'
-import { registerUser } from '@collections/Users/endpoints/register-user'
+import { registerUser as registerUserEndpoint } from '@collections/Users/endpoints/register-user'
+import { grantPreRegistration, phoneKey } from '@/utilities/phoneVerification'
+
+// The app always verifies the OTP before registering; mirror that (verify-otp grants the number).
+const normalizePhone = (phone: string) =>
+  phone?.startsWith('0') && phone.length > 1 ? phone.substring(1) : phone
+const registerUser = (req: any) => {
+  const { phoneNumber, countryCode } = req.data || {}
+  if (phoneNumber && countryCode)
+    grantPreRegistration(phoneKey(countryCode, normalizePhone(phoneNumber)))
+  return registerUserEndpoint(req)
+}
 
 let payload: Payload
 
@@ -51,6 +62,20 @@ describe('Register User Endpoint Integration Tests', () => {
   })
 
   describe('POST /api/users/register-user', () => {
+    it('should reject registration when the number has not passed OTP', async () => {
+      const response = await registerUserEndpoint(
+        createMockRequest({
+          phoneNumber: generateUniquePhone('+233'),
+          username: generateUsername(),
+          countryCode: '+233',
+          country: 'ghana',
+          firstName: 'No',
+          lastName: 'Otp',
+        }),
+      )
+      expect(response.status).toBe(401)
+    })
+
     it('should be a valid test file', () => {
       expect(true).toBe(true)
     })
