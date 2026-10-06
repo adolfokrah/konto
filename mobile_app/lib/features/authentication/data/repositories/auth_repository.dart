@@ -45,9 +45,9 @@ class AuthRepository {
           'exists': exists,
           'conflictField': conflictField,
           'email': userData['email'],
-          'message': apiResponse['message'] ?? (exists
-                  ? 'User already exists'
-                  : 'Available for registration'),
+          'message':
+              apiResponse['message'] ??
+              (exists ? 'User already exists' : 'Available for registration'),
         };
       } else {
         return {
@@ -128,6 +128,7 @@ class AuthRepository {
     required String username,
     required String email,
     String? referralCode,
+    String accountType = 'individual',
   }) async {
     try {
       final apiResponse = await _authApiProvider.registerUser(
@@ -139,6 +140,7 @@ class AuthRepository {
         username: username,
         email: email,
         referralCode: referralCode,
+        accountType: accountType,
       );
 
       if (apiResponse['success'] == true) {

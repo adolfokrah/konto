@@ -4,7 +4,7 @@ import { addDataAndFileToRequest } from 'payload'
 import { getEganow } from '@/utilities/initalise'
 import { sanitizeNarration } from '@/utilities/eganow'
 import { getWebhookBaseURL } from '@/utilities/getURL'
-import { isCreatorKybApproved, KYB_NOT_APPROVED_MESSAGE } from '@/utilities/kyb'
+import { isCreatorVerified, CREATOR_NOT_VERIFIED_MESSAGE } from '@/utilities/kyb'
 
 // Eganow mobile money response data structure based on documentation
 interface EganowChargeResponseData {
@@ -96,8 +96,11 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
     }
 
     // KYB gate: jar creator must be business-verified to collect contributions
-    if (!(await isCreatorKybApproved(req.payload, jar.creator))) {
-      return Response.json({ success: false, message: KYB_NOT_APPROVED_MESSAGE }, { status: 403 })
+    if (!(await isCreatorVerified(req.payload, jar.creator))) {
+      return Response.json(
+        { success: false, message: CREATOR_NOT_VERIFIED_MESSAGE },
+        { status: 403 },
+      )
     }
 
     // Validate mobile money specific fields

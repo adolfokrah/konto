@@ -31,7 +31,8 @@ export const getPublicBusiness = async (req: PayloadRequest) => {
     }
 
     const user = typeof b.user === 'object' ? b.user : null
-    if (!user) {
+    // The public organization page is for organization accounts only.
+    if (!user || (user as any).accountType !== 'organization') {
       return Response.json({ success: false, message: 'Business owner not found' }, { status: 404 })
     }
 

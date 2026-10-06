@@ -18,8 +18,7 @@ class OtpView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Extract phone number from route arguments
-    final args =
-        GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final phoneNumber = args?['phoneNumber'] as String?;
     final email = args?['email'] as String?;
     final countryCode = args?['countryCode'] as String?;
@@ -80,7 +79,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
       // Guard against duplicate OTP sends (e.g. GoRouter refresh rebuilding the widget)
       if (!isResend) {
         final currentState = context.read<VerificationBloc>().state;
-        if (currentState is VerificationLoading || currentState is VerificationCodeSent) {
+        if (currentState is VerificationLoading ||
+            currentState is VerificationCodeSent) {
           return;
         }
       }
@@ -91,12 +91,12 @@ class _OtpViewContentState extends State<_OtpViewContent> {
       final email = args?['email'] as String?;
 
       context.read<VerificationBloc>().add(
-            PhoneNumberVerificationRequested(
-              phoneNumber: phoneNumber ?? '',
-              email: email ?? '',
-              countryCode: countryCode ?? '',
-            ),
-          );
+        PhoneNumberVerificationRequested(
+          phoneNumber: phoneNumber ?? '',
+          email: email ?? '',
+          countryCode: countryCode ?? '',
+        ),
+      );
     }
 
     _startResendTimer();
@@ -181,7 +181,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           BlocListener<VerificationBloc, VerificationState>(
             listener: (context, state) {
               if (state is VerificationSuccess) {
-                final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
+                final args =
+                    GoRouterState.of(context).extra as Map<String, dynamic>?;
                 if (widget.isRegistering == false) {
                   // Login flow: dispatch RequestLogin directly
                   context.read<AuthBloc>().add(
@@ -202,6 +203,8 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                       username: args?['username'] ?? '',
                       email: widget.email ?? '',
                       referralCode: args?['referralCode'] as String?,
+                      accountType:
+                          args?['accountType'] as String? ?? 'individual',
                     ),
                   );
                 } else {

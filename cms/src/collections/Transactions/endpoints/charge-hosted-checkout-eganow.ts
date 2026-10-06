@@ -3,7 +3,7 @@ import { addDataAndFileToRequest } from 'payload'
 
 import { getEganow } from '@/utilities/initalise'
 import { getServerSideURL, getWebhookBaseURL } from '@/utilities/getURL'
-import { isCreatorKybApproved, KYB_NOT_APPROVED_MESSAGE } from '@/utilities/kyb'
+import { isCreatorVerified, CREATOR_NOT_VERIFIED_MESSAGE } from '@/utilities/kyb'
 
 /** Eganow's country code for Ghana. Only market we collect in today. */
 const SENDER_COUNTRY_CODE = 'GH0233'
@@ -110,8 +110,11 @@ export const chargeHostedCheckoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    if (!(await isCreatorKybApproved(req.payload, jar.creator))) {
-      return Response.json({ success: false, message: KYB_NOT_APPROVED_MESSAGE }, { status: 403 })
+    if (!(await isCreatorVerified(req.payload, jar.creator))) {
+      return Response.json(
+        { success: false, message: CREATOR_NOT_VERIFIED_MESSAGE },
+        { status: 403 },
+      )
     }
 
     if (!contribution.chargesBreakdown?.amountPaidByContributor) {

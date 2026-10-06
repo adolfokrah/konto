@@ -1,5 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
-import { isCreatorKybApproved, KYB_NOT_APPROVED_MESSAGE } from '@/utilities/kyb'
+import { isCreatorVerified, CREATOR_NOT_VERIFIED_MESSAGE } from '@/utilities/kyb'
 
 export const createPaymentLinkContribution = async (req: PayloadRequest) => {
   try {
@@ -77,8 +77,11 @@ export const createPaymentLinkContribution = async (req: PayloadRequest) => {
     }
 
     // KYB gate: the jar creator must have an approved business verification to collect
-    if (!(await isCreatorKybApproved(req.payload, jar.creator))) {
-      return Response.json({ success: false, message: KYB_NOT_APPROVED_MESSAGE }, { status: 403 })
+    if (!(await isCreatorVerified(req.payload, jar.creator))) {
+      return Response.json(
+        { success: false, message: CREATOR_NOT_VERIFIED_MESSAGE },
+        { status: 403 },
+      )
     }
 
     // Check if jar is frozen (AML compliance)

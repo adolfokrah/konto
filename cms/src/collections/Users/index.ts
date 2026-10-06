@@ -333,6 +333,25 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      // Individuals verify with KYC; organizations with KYB plus the owner's KYC
+      // (see utilities/kyb.ts). Chosen at sign-up; an approved KYB upgrades a user to
+      // organization. Only admins can change it directly.
+      name: 'accountType',
+      type: 'select',
+      options: [
+        { label: 'Individual', value: 'individual' },
+        { label: 'Organization', value: 'organization' },
+      ],
+      defaultValue: 'individual',
+      required: false, // defaults to individual; users from before account types have none
+      index: true,
+      access: { create: adminOnlyField, update: adminOnlyField },
+      admin: {
+        position: 'sidebar',
+        description: 'Individual (KYC) or Organization (KYB + owner KYC).',
+      },
+    },
+    {
       name: 'kybStatus',
       access: { create: adminOnlyField, update: adminOnlyField },
       type: 'select',
