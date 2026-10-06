@@ -28,7 +28,13 @@ export const sendContributionReceipt: CollectionAfterChangeHook = async ({
 
       if (jar) {
         const amount = data.amountContributed
-        const receipt = `Your contribution of ${jar.currency} ${Number(amount).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
+        // Greet by first name ("Hello Kelven, your contribution of ..."). An update hook's `data`
+        // can be partial, so fall back to the saved doc; anonymous contributors get no greeting.
+        const contributorName = String(doc?.contributor ?? data.contributor ?? '').trim()
+        const firstName = contributorName.split(/\s+/)[0]
+        const greeting =
+          firstName && firstName.toLowerCase() !== 'anonymous' ? `Hello ${firstName}, your` : 'Your'
+        const receipt = `${greeting} contribution of ${jar.currency} ${Number(amount).toFixed(2)} to "${jar.name}" was successful. ${jar.thankYouMessage || ''}`
 
         if (data.contributorPhoneNumber) {
           try {

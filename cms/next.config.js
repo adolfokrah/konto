@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { withSentryConfig } from '@sentry/nextjs'
 
 // Helper function to clean environment variables (remove extra quotes)
 const cleanEnvVar = (envVar) => {
@@ -125,4 +126,23 @@ const nextConfig = {
   },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Source maps are only uploaded when an auth token is present (CI / Vercel).
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Route browser events through a rewrite so ad blockers don't drop them.
+  tunnelRoute: '/monitoring',
+  // Skip the build-time upload entirely when Sentry isn't configured.
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+  webpack: {
+    treeshake: {
+      // Drop the SDK's own logger statements from the bundle.
+      removeDebugLogging: true,
+    },
+  },
+})

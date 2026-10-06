@@ -3,6 +3,18 @@
 @config '../../../tailwind.config.mjs';
 
 /* Custom Fonts */
+
+/* Cedi sign (U+20B5) fallback. Supreme has no ₵ glyph and many Android system fonts lack
+   it too, so it rendered as a box. This file holds only that one glyph (subset of Inter,
+   OFL), and unicode-range means browsers download it only when a ₵ is on the page. */
+@font-face {
+  font-family: 'Cedi';
+  src: url('/fonts/cedi/Cedi-Inter.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+20B5;
+}
 /* Supreme Font Family */
 @font-face {
   font-family: 'Supreme';

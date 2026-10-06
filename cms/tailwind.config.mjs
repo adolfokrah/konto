@@ -121,11 +121,12 @@ const config = {
         warning: 'hsl(var(--warning))',
       },
       fontFamily: {
-        mono: ['Supreme', 'monospace'],
-        sans: ['Supreme', 'system-ui', 'sans-serif'],
-        supreme: ['Supreme', 'system-ui', 'sans-serif'],
-        chubbo: ['Chubbo', 'system-ui', 'sans-serif'],
-        chillax: ['Chillax', 'system-ui', 'sans-serif'],
+        // 'Cedi' only covers ₵, which none of our brand fonts include.
+        mono: ['Supreme', 'Cedi', 'monospace'],
+        sans: ['Supreme', 'Cedi', 'system-ui', 'sans-serif'],
+        supreme: ['Supreme', 'Cedi', 'system-ui', 'sans-serif'],
+        chubbo: ['Chubbo', 'Cedi', 'system-ui', 'sans-serif'],
+        chillax: ['Chillax', 'Cedi', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

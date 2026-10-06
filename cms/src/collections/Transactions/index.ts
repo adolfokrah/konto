@@ -3,6 +3,7 @@ import { APIError } from 'payload'
 
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { chargeCardEganow } from './endpoints/charge-card-eganow'
+import { chargeHostedCheckoutEganow } from './endpoints/charge-hosted-checkout-eganow'
 import { getBanks } from './endpoints/get-banks'
 import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
@@ -426,6 +427,11 @@ export const Transactions: CollectionConfig = {
       path: '/charge-card-eganow',
       method: 'post',
       handler: chargeCardEganow,
+    },
+    {
+      path: '/charge-hosted-checkout-eganow',
+      method: 'post',
+      handler: chargeHostedCheckoutEganow,
     },
     {
       path: '/eganow-card-webhook',

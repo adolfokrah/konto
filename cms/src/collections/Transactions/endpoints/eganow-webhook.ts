@@ -3,6 +3,7 @@ import Eganow from '@/utilities/eganow'
 
 const statusMap: Record<string, 'completed' | 'failed' | 'pending'> = {
   SUCCESSFUL: 'completed',
+  SUCCESS: 'completed',
   FAILED: 'failed',
   PENDING: 'pending',
   AUTHENTICATION_IN_PROGRESS: 'pending',
@@ -56,17 +57,31 @@ async function verifyCollectionWithEganow(
 /**
  * Normalizes Eganow webhook payload to handle both camelCase and PascalCase field names.
  * The Eganow API responses use camelCase but the webhook callback format is undocumented.
+ *
+ * `transactionId` is our own contribution id. Direct collections echo it as `TransactionId`.
+ * Hosted checkout echoes it as `merchantReference` and uses `transactionId` for Eganow's own
+ * id, so `merchantReference` wins whenever it is present:
+ *   { transactionId: "<eganow id>", merchantReference: "<contribution id>", status: "success" }
  */
-function normalizeWebhookPayload(data: Record<string, any>) {
+export function normalizeWebhookPayload(data: Record<string, any>) {
+  const merchantReference = data['MerchantReference'] || data['merchantReference'] || ''
+  const callbackTransactionId = data['TransactionId'] || data['transactionId'] || ''
+
   return {
-    transactionId: data['TransactionId'] || data['transactionId'] || '',
+    transactionId: merchantReference || callbackTransactionId,
     eganowReferenceNo:
       data['EganowReferenceNo'] ||
       data['eganowReferenceNo'] ||
       data['EganowTransRefNo'] ||
       data['eganowTransRefNo'] ||
+      (merchantReference ? callbackTransactionId : '') ||
       '',
-    transactionStatus: data['TransactionStatus'] || data['transactionStatus'] || '',
+    transactionStatus:
+      data['TransactionStatus'] ||
+      data['transactionStatus'] ||
+      data['Status'] ||
+      data['status'] ||
+      '',
     payPartnerTransactionId:
       data['PayPartnerTransactionId'] || data['payPartnerTransactionId'] || '',
   }
@@ -84,7 +99,7 @@ export const eganowWebhook = async (req: PayloadRequest) => {
 
     console.log('Eganow Webhook Received:', webhookData)
 
-    const { transactionId, transactionStatus, payPartnerTransactionId } =
+    const { transactionId, transactionStatus, payPartnerTransactionId, eganowReferenceNo } =
       normalizeWebhookPayload(webhookData)
 
     // Validate required fields
@@ -93,17 +108,26 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       return Response.json({ error: 'Invalid webhook data' }, { status: 400 })
     }
 
-    // Find contribution by transactionId (which is the contribution ID)
-    const contributionResult = await req.payload.find({
+    // Hosted checkout sends two callbacks: its own (with our id as `merchantReference`) and
+    // then the underlying collection's, whose `TransactionId` is Eganow's hosted checkout id.
+    // That id was saved on the contribution when the checkout was created, so fall back to it.
+    const isHostedCallback = Boolean(
+      webhookData['merchantReference'] || webhookData['MerchantReference'],
+    )
+    let contributionResult = await req.payload.find({
       collection: 'transactions',
-      where: {
-        id: {
-          equals: transactionId,
-        },
-      },
+      where: { id: { equals: transactionId } },
       limit: 1,
       overrideAccess: true,
     })
+    if (contributionResult.docs.length === 0) {
+      contributionResult = await req.payload.find({
+        collection: 'transactions',
+        where: { eganowPayPartnerTransactionId: { equals: transactionId } },
+        limit: 1,
+        overrideAccess: true,
+      })
+    }
 
     if (contributionResult.docs.length === 0) {
       console.error(`Contribution not found for transactionId: ${transactionId}`)
@@ -116,8 +140,12 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       JSON.stringify(contribution.chargesBreakdown),
     )
 
-    // Only process webhook if contribution status is pending
-    if (contribution.paymentStatus !== 'pending') {
+    // Pending contributions are always processed. A failed one may still be completed: hosted
+    // checkout can report a failed attempt and then a successful one for the same payment.
+    const canRecover =
+      contribution.paymentStatus === 'failed' &&
+      statusMap[transactionStatus.toUpperCase()] === 'completed'
+    if (contribution.paymentStatus !== 'pending' && !canRecover) {
       console.log(
         `Contribution ${contribution.id} status is ${contribution.paymentStatus}, not pending. Skipping update.`,
       )
@@ -125,9 +153,18 @@ export const eganowWebhook = async (req: PayloadRequest) => {
     }
 
     // Verify with Eganow API before trusting webhook status
-    const newStatus = await verifyCollectionWithEganow(transactionId, transactionStatus)
+    let newStatus = await verifyCollectionWithEganow(transactionId, transactionStatus)
 
-    console.log(`Updating contribution ${transactionId} to status: ${newStatus}`)
+    // The payer can retry on Eganow's page, so a failed hosted attempt is not final: keep the
+    // contribution pending and let a later success (or the pending-transactions job) settle it.
+    if (isHostedCallback && newStatus === 'failed') {
+      console.log(
+        `Hosted checkout attempt failed for ${contribution.id} (${webhookData['message'] || 'no message'}); keeping it pending.`,
+      )
+      newStatus = 'pending'
+    }
+
+    console.log(`Updating contribution ${contribution.id} to status: ${newStatus}`)
 
     // Update contribution status
     // Do NOT update transactionReference - it should remain consistent for mobile app verification
@@ -137,13 +174,17 @@ export const eganowWebhook = async (req: PayloadRequest) => {
       data: {
         paymentStatus: newStatus,
         webhookResponse: webhookData,
-        ...(payPartnerTransactionId && { eganowPayPartnerTransactionId: payPartnerTransactionId }),
+        // Keep an id saved earlier: for hosted checkout it is the id later callbacks use.
+        ...(!contribution.eganowPayPartnerTransactionId &&
+          (payPartnerTransactionId || eganowReferenceNo) && {
+            eganowPayPartnerTransactionId: payPartnerTransactionId || eganowReferenceNo,
+          }),
       },
       overrideAccess: true,
       context: { skipCharges: true },
     })
 
-    console.log(`Successfully updated contribution ${transactionId} to ${newStatus}`)
+    console.log(`Successfully updated contribution ${contribution.id} to ${newStatus}`)
     console.log(`Original reference maintained: ${contribution.transactionReference}`)
 
     return new Response(null, { status: 200 })

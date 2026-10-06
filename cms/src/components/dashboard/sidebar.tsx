@@ -27,6 +27,7 @@ import {
   Percent,
   MessageSquare,
   BadgeCheck,
+  Bug,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -35,21 +36,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json())
 
 const navGroups = [
   {
     label: 'Home',
-    items: [
-      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    ],
+    items: [{ label: 'Overview', href: '/dashboard', icon: LayoutDashboard }],
   },
   {
     label: 'People',
@@ -70,7 +64,11 @@ const navGroups = [
     items: [
       { label: 'Transactions', href: '/dashboard/transactions', icon: ArrowLeftRight },
       { label: 'Disputes', href: '/dashboard/disputes', icon: ShieldAlert },
-      { label: 'Business Verifications', href: '/dashboard/business-verifications', icon: BadgeCheck },
+      {
+        label: 'Business Verifications',
+        href: '/dashboard/business-verifications',
+        icon: BadgeCheck,
+      },
       { label: 'Cashbacks', href: '/dashboard/cashbacks', icon: Percent },
     ],
   },
@@ -132,9 +130,8 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
   )
   const unreadEmailsCount = unreadEmails?.totalDocs ?? 0
 
-  const { trigger: logout } = useSWRMutation(
-    '/api/users/logout',
-    (url: string) => fetch(url, { method: 'POST', credentials: 'include' }),
+  const { trigger: logout } = useSWRMutation('/api/users/logout', (url: string) =>
+    fetch(url, { method: 'POST', credentials: 'include' }),
   )
 
   const handleLogout = async () => {
@@ -143,11 +140,17 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
   }
 
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'
-  const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Admin'
+  const displayName =
+    [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Admin'
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className={cn('flex h-full flex-col border-r bg-card transition-all duration-200', className)}>
+      <aside
+        className={cn(
+          'flex h-full flex-col border-r bg-card transition-all duration-200',
+          className,
+        )}
+      >
         {/* Logo + toggle */}
         <div className="flex h-12 items-center border-b px-3 gap-2">
           {!collapsed && (
@@ -184,14 +187,19 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
               {collapsed && gi > 0 && <div className="my-2 border-t" />}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive = item.href === '/dashboard'
-                    ? pathname === item.href
-                    : pathname.startsWith(item.href)
+                  const isActive =
+                    item.href === '/dashboard'
+                      ? pathname === item.href
+                      : pathname.startsWith(item.href)
                   const count =
-                    item.href === '/dashboard/disputes' && openDisputesCount > 0 ? openDisputesCount :
-                    item.href === '/dashboard/business-verifications' && pendingVerificationsCount > 0 ? pendingVerificationsCount :
-                    item.href === '/dashboard/emails' && unreadEmailsCount > 0 ? unreadEmailsCount :
-                    null
+                    item.href === '/dashboard/disputes' && openDisputesCount > 0
+                      ? openDisputesCount
+                      : item.href === '/dashboard/business-verifications' &&
+                          pendingVerificationsCount > 0
+                        ? pendingVerificationsCount
+                        : item.href === '/dashboard/emails' && unreadEmailsCount > 0
+                          ? unreadEmailsCount
+                          : null
 
                   const link = (
                     <Link
@@ -279,7 +287,9 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                     {initials}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold leading-tight">{displayName}</p>
+                    <p className="truncate text-[13px] font-semibold leading-tight">
+                      {displayName}
+                    </p>
                     <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
@@ -294,6 +304,12 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                   <Link href="/dashboard/settings" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     System Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/sentry-test" className="flex items-center gap-2">
+                    <Bug className="h-4 w-4" />
+                    Error Tracking Test
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

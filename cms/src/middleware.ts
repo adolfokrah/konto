@@ -11,6 +11,9 @@ const BYPASS_PREFIXES = [
   '/organizations',
   '/congratulations',
   '/email',
+  // Sentry browser events are tunnelled through this route (see next.config.js)
+  '/monitoring',
+  '/sentry-test',
   '/_next',
   '/favicon',
   '/media',
