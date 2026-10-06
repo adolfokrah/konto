@@ -128,6 +128,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         username: event.username,
         email: event.email,
         referralCode: event.referralCode,
+        accountType: event.accountType,
       );
 
       if (result['success'] == true) {
@@ -145,7 +146,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(
         AuthError(
-          error: _translationService.registrationFailedWithDetails(e.toString()),
+          error: _translationService.registrationFailedWithDetails(
+            e.toString(),
+          ),
         ),
       );
     }

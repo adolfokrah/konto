@@ -33,6 +33,7 @@ final class RequestRegistration extends AuthEvent {
   final String username;
   final String email;
   final String? referralCode;
+  final String accountType;
 
   RequestRegistration({
     required this.phoneNumber,
@@ -43,6 +44,7 @@ final class RequestRegistration extends AuthEvent {
     required this.username,
     required this.email,
     this.referralCode,
+    this.accountType = 'individual',
   });
 }
 
