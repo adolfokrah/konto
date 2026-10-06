@@ -3,6 +3,7 @@ import { addDataAndFileToRequest } from 'payload'
 
 import { getEganow } from '@/utilities/initalise'
 import { getServerSideURL, getWebhookBaseURL } from '@/utilities/getURL'
+import { applyEganowCharges, momoPaypartnerForPhone } from '@/utilities/eganowCharges'
 import { isCreatorVerified, CREATOR_NOT_VERIFIED_MESSAGE } from '@/utilities/kyb'
 
 /** Eganow's country code for Ghana. Only market we collect in today. */
@@ -123,6 +124,15 @@ export const chargeHostedCheckoutEganow = async (req: PayloadRequest) => {
         { status: 400 },
       )
     }
+
+    // Eganow's actual fee for this collection, split by our settings, before it starts. The
+    // payer picks the method on Eganow's page, so quote mobile money on their number.
+    const msisdn = String(contribution.contributorPhoneNumber || '').replace(/\D/g, '')
+    await applyEganowCharges(req, contribution, {
+      paypartnerCode: momoPaypartnerForPhone(msisdn) ?? 'MTNGH',
+      msisdn: msisdn.startsWith('0') ? `233${msisdn.slice(1)}` : msisdn,
+      currency: jar.currency as string,
+    })
 
     // Amount after discount: send the reduced amount so Eganow's fee brings the total
     // back to what the contributor was quoted (same logic as mobile money and card).

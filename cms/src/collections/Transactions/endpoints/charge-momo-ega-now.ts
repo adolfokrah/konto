@@ -4,6 +4,7 @@ import { addDataAndFileToRequest } from 'payload'
 import { getEganow } from '@/utilities/initalise'
 import { sanitizeNarration } from '@/utilities/eganow'
 import { getWebhookBaseURL } from '@/utilities/getURL'
+import { applyEganowCharges } from '@/utilities/eganowCharges'
 import { isCreatorVerified, CREATOR_NOT_VERIFIED_MESSAGE } from '@/utilities/kyb'
 
 // Eganow mobile money response data structure based on documentation
@@ -178,6 +179,13 @@ export const chargeMomoEganow = async (req: PayloadRequest) => {
         (kycError as any)?.message,
       )
     }
+
+    // Eganow's actual fee for this collection, split by our settings, before it starts.
+    await applyEganowCharges(req, contribution, {
+      paypartnerCode,
+      msisdn: phoneNumber,
+      currency: jar.currency as string,
+    })
 
     // Prepare collection request data
     const collectionData = {
