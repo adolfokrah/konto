@@ -125,6 +125,8 @@ const nextConfig = {
     return [
       // Payload preview/seed routes are outside [locale] — strip the locale prefix
       { source: '/:locale/next/:path*', destination: '/next/:path*' },
+      // Static redesign preview (public/redesign/index.html)
+      { source: '/redesign', destination: '/redesign/index.html' },
     ]
   },
 }
