@@ -523,6 +523,15 @@ export const Transactions: CollectionConfig = {
       handler: getChargesEndpoint,
     },
   ],
+  access: {
+    // Contributions are recorded by logged-in app users (validated per jar in
+    // validateJarCreatorAccount). Status changes come from webhooks and server jobs (local
+    // API), so nobody edits or deletes a transaction over the API except admins.
+    create: ({ req: { user } }) => Boolean(user),
+    read: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin',
+    delete: ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin',
+  },
   hooks: {
     beforeChange: [setPaymentStatus, getCharges, snapshotCollector],
     afterChange: [
