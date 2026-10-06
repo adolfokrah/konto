@@ -4,6 +4,11 @@ import { sendSMS } from '@/utilities/sms'
 import { emailService } from '@/utilities/emailService'
 
 export const updateKYC = async (req: PayloadRequest) => {
+  // Manual KYC override (admin panel). Users are verified by Didit, never by this endpoint.
+  if ((req.user as { role?: string } | null)?.role !== 'admin') {
+    return Response.json({ success: false, message: 'Forbidden' }, { status: 403 })
+  }
+
   try {
     await addDataAndFileToRequest(req)
     const { userId, kycStatus } = req.data || {}

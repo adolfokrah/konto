@@ -12,8 +12,6 @@ import { eganowCardWebhook } from './endpoints/eganow-card-webhook'
 import { eganowPayoutWebhook } from './endpoints/eganow-payout-webhook'
 import { verifyTransfer } from './endpoints/verify-transfer'
 import { payoutEganow } from './endpoints/payout-eganow'
-import { testPayoutEganow } from './endpoints/test-payout-eganow'
-import { testHostedCheckoutEganow } from './endpoints/test-hosted-checkout-eganow'
 import { verifyPaymentEgaNow } from './endpoints/verify-payment-ega-now'
 import { setPaymentStatus } from './hooks'
 import { getCharges } from './hooks/getCharges'
@@ -468,16 +466,6 @@ export const Transactions: CollectionConfig = {
       path: '/payout-eganow',
       method: 'post',
       handler: payoutEganow,
-    },
-    {
-      path: '/test-payout-eganow',
-      method: 'post',
-      handler: testPayoutEganow,
-    },
-    {
-      path: '/test-hosted-checkout-eganow',
-      method: 'post',
-      handler: testHostedCheckoutEganow,
     },
     {
       path: '/approve-reject-payout',

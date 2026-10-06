@@ -2,6 +2,11 @@ import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
 export const getJobStatus = async (req: PayloadRequest) => {
+  // Admin-only debug tool: it can run the job queue (payouts included).
+  if ((req.user as { role?: string } | null)?.role !== 'admin') {
+    return Response.json({ success: false, message: 'Forbidden' }, { status: 403 })
+  }
+
   try {
     await addDataAndFileToRequest(req)
 

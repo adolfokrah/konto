@@ -1,6 +1,7 @@
 import type { PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 import { otpStore } from './send-otp'
+import { grantPreRegistration, phoneKey } from '@/utilities/phoneVerification'
 
 const MAX_OTP_ATTEMPTS = 5
 
@@ -97,11 +98,16 @@ export const verifyOTP = async (req: PayloadRequest) => {
         )
       }
 
-      // OTP is valid — clear it
+      // OTP is valid — clear it and record the proof login-with-phone requires
       await req.payload.update({
         collection: 'users',
         id: user.id,
-        data: { otpCode: '', otpExpiry: '', otpAttempts: 0 },
+        data: {
+          otpCode: '',
+          otpExpiry: '',
+          otpAttempts: 0,
+          otpVerifiedAt: new Date().toISOString(),
+        },
       })
 
       return Response.json(
@@ -164,8 +170,9 @@ export const verifyOTP = async (req: PayloadRequest) => {
       )
     }
 
-    // OTP is valid — clear it
+    // OTP is valid — clear it and let register-user create this number's account
     otpStore.delete(key)
+    grantPreRegistration(phoneKey(countryCode, formattedPhoneNumber))
 
     return Response.json(
       { success: true, verified: true, message: 'OTP verified successfully' },

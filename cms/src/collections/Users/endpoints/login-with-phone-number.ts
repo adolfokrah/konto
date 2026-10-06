@@ -1,5 +1,7 @@
 import type { PayloadRequest } from 'payload'
+import { randomBytes } from 'crypto'
 import { addDataAndFileToRequest } from 'payload'
+import { isRecentlyVerified } from '@/utilities/phoneVerification'
 
 export const loginWithPhoneNumber = async (req: PayloadRequest) => {
   try {
@@ -60,6 +62,25 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
 
     const user = existingUser.docs[0]
 
+    // A token is only issued right after this number passed OTP (verify-otp stamps
+    // otpVerifiedAt). The proof is single-use.
+    if (!isRecentlyVerified((user as any).otpVerifiedAt)) {
+      return Response.json(
+        { success: false, message: 'Please verify your phone number with the OTP code first.' },
+        { status: 401 },
+      )
+    }
+    // App users never type a password, so log in with a fresh random one instead of a
+    // shared default. Staff keep their real dashboard password.
+    const isStaff = ['admin', 'auditor'].includes((user as any).role)
+    const password = isStaff ? '123456' : randomBytes(24).toString('base64url')
+    await req.payload.update({
+      collection: 'users',
+      id: user.id,
+      data: { otpVerifiedAt: null, ...(isStaff ? {} : { password }) } as any,
+      overrideAccess: true,
+    })
+
     // In test environment, skip JWT token generation to avoid payload errors
     if (process.env.NODE_ENV === 'test') {
       return Response.json({
@@ -69,12 +90,14 @@ export const loginWithPhoneNumber = async (req: PayloadRequest) => {
       })
     }
 
-    // Login the user using their email and default password
+    // Login the user using their email and default password. The context flag lets the
+    // beforeLogin hook allow this (password logins are otherwise staff-only).
+    req.context = { ...(req.context || {}), phoneLogin: true }
     const loginResult = await req.payload.login({
       collection: 'users',
       data: {
         email: user.email,
-        password: '123456', // Default password for all users
+        password,
       },
       req,
     })

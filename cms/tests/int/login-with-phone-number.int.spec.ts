@@ -3,7 +3,30 @@ import { describe, it, beforeAll, expect, beforeEach } from 'vitest'
 
 import config from '../../src/payload.config'
 import { clearAllCollections } from '../utils/testCleanup'
-import { loginWithPhoneNumber } from '@collections/Users/endpoints/login-with-phone-number'
+import { loginWithPhoneNumber as loginEndpoint } from '@collections/Users/endpoints/login-with-phone-number'
+
+// The app always verifies the OTP before logging in; mirror that by stamping the proof
+// verify-otp leaves on the user.
+const loginWithPhoneNumber = async (req: any) => {
+  const { phoneNumber, countryCode } = req.data || {}
+  const phone =
+    phoneNumber?.startsWith('0') && phoneNumber.length > 1 ? phoneNumber.substring(1) : phoneNumber
+  if (phone && countryCode) {
+    const found = await req.payload.find({
+      collection: 'users',
+      where: { phoneNumber: { equals: phone }, countryCode: { equals: countryCode } },
+      limit: 1,
+    })
+    if (found.docs[0]) {
+      await req.payload.update({
+        collection: 'users',
+        id: found.docs[0].id,
+        data: { otpVerifiedAt: new Date().toISOString() },
+      })
+    }
+  }
+  return loginEndpoint(req)
+}
 
 let payload: Payload
 
@@ -62,6 +85,20 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
           role: 'user',
         },
       })
+    })
+
+    it('should refuse to log in without a recent OTP verification', async () => {
+      const response = await loginEndpoint({
+        payload,
+        data: { phoneNumber: '+233541234567', countryCode: '+233' },
+      } as any)
+      expect(response.status).toBe(401)
+    })
+
+    it('should not accept the same OTP proof twice', async () => {
+      const req = { payload, data: { phoneNumber: '+233541234567', countryCode: '+233' } } as any
+      expect((await loginWithPhoneNumber(req)).status).toBe(200)
+      expect((await loginEndpoint(req)).status).toBe(401)
     })
 
     it('should login user successfully with correct phone number and country code', async () => {
@@ -217,7 +254,7 @@ describe('Login with Phone Number Endpoint Integration Tests', () => {
         },
       } as any
 
-      const response = await loginWithPhoneNumber(mockRequest)
+      const response = await loginEndpoint(mockRequest)
       const responseData = await response.json()
 
       expect(response.status).toBe(500)

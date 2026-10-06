@@ -21,6 +21,12 @@ import { deleteUserAccount } from './endpoints/delete-user-account'
 import { testPushNotification } from './endpoints/test-push-notification'
 import { backfillReferralCodes } from './endpoints/backfill-referral-codes'
 import { changePassword } from './endpoints/change-password'
+import {
+  adminOnly,
+  adminOnlyField,
+  queryableSelfOrAdminField,
+  selfOrAdminField,
+} from '@/access/users'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -36,10 +42,12 @@ export const Users: CollectionConfig = {
     admin: ({ req: { user } }) => {
       return user?.role === 'admin'
     },
-    // Allow public registration
-    create: () => true,
-    // Logged in users can read themselves, admins can read all
-    read: () => true,
+    // Sign-up goes through /users/register-user (local API); direct REST creates are admin-only
+    // so nobody can create an account with a chosen role or verification status.
+    create: adminOnly,
+    // Logged-in users can look each other up (e.g. inviting collectors); contact details,
+    // tokens and staff fields are field-restricted below.
+    read: ({ req: { user } }) => Boolean(user),
     // Users can update themselves, admins can update all
     update: ({ req: { user } }) => {
       if (user?.role === 'admin') {
@@ -149,6 +157,19 @@ export const Users: CollectionConfig = {
     },
   ],
   fields: [
+    // Same-named fields are merged into Payload's auth fields, adding read access to them.
+    {
+      name: 'email',
+      type: 'email',
+      // Searchable (collaborator search) but only readable by the user or an admin.
+      access: { read: queryableSelfOrAdminField },
+    },
+    {
+      name: 'sessions',
+      type: 'array',
+      access: { read: selfOrAdminField },
+      fields: [],
+    },
     {
       name: 'photo',
       type: 'upload',
@@ -198,6 +219,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'countryCode',
+      access: { read: selfOrAdminField },
       type: 'text',
       admin: {
         description: 'Country code for the phone number, e.g., +233 for Ghana',
@@ -205,6 +227,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'phoneNumber',
+      access: { read: selfOrAdminField },
       type: 'text',
       required: true,
     },
@@ -215,6 +238,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'kycSessionId',
+      access: { read: selfOrAdminField, create: adminOnlyField, update: adminOnlyField },
       type: 'text',
       required: false,
       admin: {
@@ -224,6 +248,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'fcmToken',
+      access: { read: selfOrAdminField },
       type: 'text',
       required: false,
       admin: {
@@ -233,6 +258,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'platform',
+      access: { read: selfOrAdminField },
       type: 'select',
       required: false,
       options: [
@@ -246,6 +272,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'otpCode',
+      access: { read: adminOnlyField, create: adminOnlyField, update: adminOnlyField },
       type: 'text',
       required: false,
       admin: {
@@ -254,6 +281,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'otpExpiry',
+      access: { read: adminOnlyField, create: adminOnlyField, update: adminOnlyField },
       type: 'text',
       required: false,
       admin: {
@@ -262,6 +290,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'otpAttempts',
+      access: { read: adminOnlyField, create: adminOnlyField, update: adminOnlyField },
       type: 'number',
       required: false,
       defaultValue: 0,
@@ -270,7 +299,18 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      // Set by verify-otp, consumed by login-with-phone: proof the number just passed OTP.
+      name: 'otpVerifiedAt',
+      type: 'date',
+      required: false,
+      access: { read: adminOnlyField, create: adminOnlyField, update: adminOnlyField },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
       name: 'kycStatus',
+      access: { create: adminOnlyField, update: adminOnlyField },
       type: 'select',
       options: [
         { label: 'None', value: 'none' },
@@ -294,6 +334,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'kybStatus',
+      access: { create: adminOnlyField, update: adminOnlyField },
       type: 'select',
       label: 'KYB Status',
       options: [
@@ -326,6 +367,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'role',
+      access: { read: selfOrAdminField, create: adminOnlyField, update: adminOnlyField },
       type: 'select',
       options: [
         { label: 'User', value: 'user' },
@@ -341,6 +383,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'referralCode',
+      access: { create: adminOnlyField, update: adminOnlyField },
       type: 'text',
       unique: true,
       index: true,
@@ -351,6 +394,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'hogapayDiscountPercent',
+      access: { read: selfOrAdminField, create: adminOnlyField, update: adminOnlyField },
       type: 'number',
       defaultValue: 0,
       min: 0,
@@ -362,6 +406,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'demoUser',
+      access: { read: adminOnlyField, create: adminOnlyField, update: adminOnlyField },
       type: 'checkbox',
       defaultValue: false,
       admin: {
@@ -370,6 +415,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'lastActiveAt',
+      access: { read: selfOrAdminField, create: adminOnlyField, update: adminOnlyField },
       type: 'date',
       required: false,
       admin: {
@@ -379,6 +425,7 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'appSettings',
+      access: { read: selfOrAdminField },
       type: 'group',
       fields: [
         {
@@ -430,6 +477,17 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeLogin: [
+      ({ user, req }) => {
+        // App users authenticate with phone + OTP (login-with-phone). Direct email/password
+        // logins are for staff on the dashboard only.
+        const isStaff = ['admin', 'auditor'].includes((user as { role?: string }).role ?? '')
+        if (!isStaff && !req.context?.phoneLogin) {
+          throw new APIError('Please log in with your phone number.', 403)
+        }
+        return user
+      },
+    ],
     beforeValidate: [
       checkUsernameUniqueness,
       async ({ data, originalDoc, operation, req }) => {
