@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
 import configPromise from '@payload-config'
+import { publicOrigin } from '@/utilities/publicOrigin'
 
 /**
  * Short share links: /j/<code> and /j/<code>/<username>.
@@ -15,6 +16,7 @@ export async function GET(
   { params }: { params: Promise<{ code: string; username?: string[] }> },
 ): Promise<Response> {
   const { code, username } = await params
+  const origin = publicOrigin(req)
   const payload = await getPayload({ config: configPromise })
 
   const jarResult = await payload.find({
@@ -26,12 +28,12 @@ export async function GET(
   })
   const jar = jarResult.docs[0]
   if (!jar) {
-    return NextResponse.redirect(new URL('/', req.url))
+    return NextResponse.redirect(new URL('/', origin))
   }
 
   const target = new URL(
     `/pay/${jar.id}/${encodeURIComponent(String(jar.name).trim().replace(/\s+/g, '-'))}`,
-    req.url,
+    origin,
   )
   // Keep any extra query params (e.g. utm tags) the link was shared with.
   req.nextUrl.searchParams.forEach((value, key) => target.searchParams.set(key, value))
