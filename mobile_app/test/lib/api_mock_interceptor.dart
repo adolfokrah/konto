@@ -7,25 +7,35 @@ typedef MockResponseBuilder = Response Function(RequestOptions options);
 class MockInterceptor extends Interceptor {
   // Map to store endpoint overrides
   static final Map<String, MockResponseBuilder> _endpointOverrides = {};
+  static final Map<String, Duration> _endpointDelays = {};
 
-  /// Override a specific endpoint with custom response
+  /// Override a specific endpoint with custom response. A [delay] holds the response
+  /// back (on the test's fake clock), so a test can assert on in-flight/loading UI.
   static void overrideEndpoint(
     String endpoint,
-    MockResponseBuilder responseBuilder,
-  ) {
+    MockResponseBuilder responseBuilder, {
+    Duration? delay,
+  }) {
     _endpointOverrides[endpoint] = responseBuilder;
+    if (delay != null) {
+      _endpointDelays[endpoint] = delay;
+    } else {
+      _endpointDelays.remove(endpoint);
+    }
     print('🔧 MockInterceptor: Override set for endpoint: $endpoint');
   }
 
   /// Clear all endpoint overrides
   static void clearOverrides() {
     _endpointOverrides.clear();
+    _endpointDelays.clear();
     print('🧹 MockInterceptor: All overrides cleared');
   }
 
   /// Clear specific endpoint override
   static void clearEndpointOverride(String endpoint) {
     _endpointOverrides.remove(endpoint);
+    _endpointDelays.remove(endpoint);
     print('🧹 MockInterceptor: Override cleared for endpoint: $endpoint');
   }
 
@@ -48,7 +58,12 @@ class MockInterceptor extends Interceptor {
         '🎯 MockInterceptor: Using override for endpoint: $matchingEndpoint',
       );
       final response = _endpointOverrides[matchingEndpoint]!(options);
-      handler.resolve(response);
+      final delay = _endpointDelays[matchingEndpoint];
+      if (delay != null) {
+        Future.delayed(delay, () => handler.resolve(response));
+      } else {
+        handler.resolve(response);
+      }
       return;
     }
 
@@ -133,7 +148,8 @@ class MockInterceptor extends Interceptor {
           'user': {
             'id': 'test-user-id',
             'email': 'test@example.com',
-            'firstName': 'Test', 'lastName': 'User',
+            'firstName': 'Test',
+            'lastName': 'User',
             'phoneNumber': '+1234567890',
             'countryCode': '+1',
             'country': 'US',
@@ -179,7 +195,8 @@ class MockInterceptor extends Interceptor {
           'user': {
             'id': 'test-user-id',
             'email': 'test@example.com',
-            'firstName': 'Test', 'lastName': 'User',
+            'firstName': 'Test',
+            'lastName': 'User',
             'phoneNumber': '+1234567890',
             'countryCode': '+1',
             'country': 'US',

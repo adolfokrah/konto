@@ -59,9 +59,7 @@ void main() {
           locale: const Locale('en'),
           routerConfig: createTestRouter(
             initialRoute: '/',
-            routes: {
-              '/': (context) => const ContributionView(),
-            },
+            routes: {'/': (context) => const ContributionView()},
           ),
         ),
       );
@@ -76,6 +74,18 @@ void main() {
     testWidgets('should show loading state when fetching data', (
       WidgetTester tester,
     ) async {
+      // Hold the response back so the loading state is still showing when we check.
+      // (With an instant mock the fetch could finish first and the test was flaky.)
+      MockInterceptor.overrideEndpoint(
+        '/transactions/get-transaction',
+        (options) => Response(
+          requestOptions: options,
+          data: {'success': false, 'message': 'not found'},
+          statusCode: 404,
+        ),
+        delay: const Duration(seconds: 2),
+      );
+
       final testWidget = MultiBlocProvider(
         providers: [
           BlocProvider.value(
@@ -96,9 +106,7 @@ void main() {
           locale: const Locale('en'),
           routerConfig: createTestRouter(
             initialRoute: '/',
-            routes: {
-              '/': (context) => const ContributionView(),
-            },
+            routes: {'/': (context) => const ContributionView()},
           ),
         ),
       );
@@ -107,6 +115,9 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // Let the delayed response land so no timer is left pending.
+      await tester.pump(const Duration(seconds: 3));
     });
 
     testWidgets('should show error state when fetch fails', (
@@ -148,9 +159,7 @@ void main() {
           locale: const Locale('en'),
           routerConfig: createTestRouter(
             initialRoute: '/',
-            routes: {
-              '/': (context) => const ContributionView(),
-            },
+            routes: {'/': (context) => const ContributionView()},
           ),
         ),
       );
@@ -181,25 +190,26 @@ void main() {
           routerConfig: createTestRouter(
             initialRoute: '/',
             routes: {
-              '/': (context) => Scaffold(
-                appBar: AppBar(title: const Text('Test')),
-                body: Builder(
-                  builder: (context) {
-                    final localizations = AppLocalizations.of(context)!;
-                    return Center(
-                      child: Column(
-                        children: [
-                          Text(localizations.paymentMethod),
-                          Text(localizations.status),
-                          Text(localizations.charges),
-                          Text(localizations.contributor),
-                          Text(localizations.collector),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
+              '/':
+                  (context) => Scaffold(
+                    appBar: AppBar(title: const Text('Test')),
+                    body: Builder(
+                      builder: (context) {
+                        final localizations = AppLocalizations.of(context)!;
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(localizations.paymentMethod),
+                              Text(localizations.status),
+                              Text(localizations.charges),
+                              Text(localizations.contributor),
+                              Text(localizations.collector),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
             },
           ),
         ),
@@ -237,25 +247,26 @@ void main() {
           routerConfig: createTestRouter(
             initialRoute: '/',
             routes: {
-              '/': (context) => Scaffold(
-                appBar: AppBar(title: const Text('Test')),
-                body: Builder(
-                  builder: (context) {
-                    final localizations = AppLocalizations.of(context)!;
-                    return Center(
-                      child: Column(
-                        children: [
-                          Text(localizations.paymentMethod),
-                          Text(localizations.status),
-                          Text(localizations.charges),
-                          Text(localizations.contributor),
-                          Text(localizations.collector),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
+              '/':
+                  (context) => Scaffold(
+                    appBar: AppBar(title: const Text('Test')),
+                    body: Builder(
+                      builder: (context) {
+                        final localizations = AppLocalizations.of(context)!;
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(localizations.paymentMethod),
+                              Text(localizations.status),
+                              Text(localizations.charges),
+                              Text(localizations.contributor),
+                              Text(localizations.collector),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
             },
           ),
         ),
@@ -297,9 +308,7 @@ void main() {
           locale: const Locale('en'),
           routerConfig: createTestRouter(
             initialRoute: '/',
-            routes: {
-              '/': (context) => const ContributionView(),
-            },
+            routes: {'/': (context) => const ContributionView()},
           ),
         ),
       );
