@@ -59,8 +59,8 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    // Verification gate (by account type): individuals need KYC; organizations need KYB plus
-    // the owner's KYC. Saving a withdrawal account is deliberately ungated, so it's checked here.
+    // Verification gate (by account type): individuals need KYC; organizations need KYB.
+    // Saving a withdrawal account is deliberately ungated, so it's checked here.
     const verification = await getCreatorVerification(req.payload, creator)
     if (!verification.verified) {
       return Response.json(

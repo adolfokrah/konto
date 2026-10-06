@@ -14,7 +14,7 @@ class User {
   final String kycStatus;
   final String kybStatus;
 
-  /// 'individual' (needs KYC) or 'organization' (needs KYB + owner KYC).
+  /// 'individual' (needs KYC) or 'organization' (needs KYB).
   final String accountType;
 
   bool get isOrganization => accountType == 'organization';

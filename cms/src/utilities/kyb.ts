@@ -36,8 +36,8 @@ export interface CreatorVerification {
 
 /**
  * Verification requirements by account type:
- * - individual: personal KYC
- * - organization: business KYB, plus the owner's personal KYC
+ * - individual: personal KYC only
+ * - organization: business KYB only (no personal KYC)
  * Accepts a user id or a populated user object.
  */
 export async function getCreatorVerification(
@@ -60,11 +60,8 @@ export async function getCreatorVerification(
     creator?.accountType === 'organization' ? 'organization' : 'individual'
   const kycVerified = creator?.kycStatus === 'verified'
   const kybApproved = creator?.kybStatus === 'approved'
-  const missing = !kycVerified
-    ? 'kyc'
-    : accountType === 'organization' && !kybApproved
-      ? 'kyb'
-      : null
+  const missing =
+    accountType === 'organization' ? (kybApproved ? null : 'kyb') : kycVerified ? null : 'kyc'
 
   return { accountType, kycVerified, kybApproved, verified: missing === null, missing }
 }

@@ -600,17 +600,18 @@ class UserModel {
   final String kycStatus;
   final String kybStatus;
 
-  /// 'individual' (needs KYC) or 'organization' (needs KYB + owner KYC).
+  /// 'individual' (needs KYC) or 'organization' (needs KYB).
   final String accountType;
   final MediaModel? photo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   /// Whether this user's jars can collect contributions: KYC for individuals,
-  /// KYC + KYB for organizations (mirrors the server's getCreatorVerification).
+  /// KYB for organizations (mirrors the server's getCreatorVerification).
   bool get canCollect =>
-      kycStatus == 'verified' &&
-      (accountType != 'organization' || kybStatus == 'approved');
+      accountType == 'organization'
+          ? kybStatus == 'approved'
+          : kycStatus == 'verified';
 
   const UserModel({
     required this.id,

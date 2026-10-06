@@ -21,7 +21,7 @@ describe('getCreatorVerification', () => {
     expect(v).toMatchObject({ verified: false, missing: 'kyc' })
   })
 
-  it('organizations need KYB as well as the owner KYC', async () => {
+  it('organizations need KYB', async () => {
     const v = await verify({
       accountType: 'organization',
       kycStatus: 'verified',
@@ -30,7 +30,7 @@ describe('getCreatorVerification', () => {
     expect(v).toMatchObject({ accountType: 'organization', verified: false, missing: 'kyb' })
   })
 
-  it('organizations with KYC and KYB are verified', async () => {
+  it('organizations with KYB are verified', async () => {
     const v = await verify({
       accountType: 'organization',
       kycStatus: 'verified',
@@ -39,13 +39,22 @@ describe('getCreatorVerification', () => {
     expect(v.verified).toBe(true)
   })
 
-  it('organizations without owner KYC report KYC first', async () => {
+  it('organizations do not need KYC', async () => {
     const v = await verify({
       accountType: 'organization',
       kycStatus: 'none',
       kybStatus: 'approved',
     })
-    expect(v).toMatchObject({ verified: false, missing: 'kyc' })
+    expect(v).toMatchObject({ verified: true, missing: null })
+  })
+
+  it('organizations without KYB report KYB, not KYC', async () => {
+    const v = await verify({
+      accountType: 'organization',
+      kycStatus: 'none',
+      kybStatus: 'none',
+    })
+    expect(v).toMatchObject({ verified: false, missing: 'kyb' })
   })
 
   it('treats users without an account type as individuals', async () => {

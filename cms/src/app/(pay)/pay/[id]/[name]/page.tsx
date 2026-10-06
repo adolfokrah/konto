@@ -161,8 +161,12 @@ export default async function Page({
         : jarWithBalance?.creator
     const creatorUsername =
       typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.username : null
-    const creatorKycStatus =
-      typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator?.kycStatus : null
+    // Verified badge by account type: KYC for individuals, KYB for organizations.
+    const creatorObj = typeof jarWithBalance?.creator === 'object' ? jarWithBalance?.creator : null
+    const creatorVerified =
+      creatorObj?.accountType === 'organization'
+        ? creatorObj?.kybStatus === 'approved'
+        : creatorObj?.kycStatus === 'verified'
     const creatorInitials = creatorName
       ? creatorName
           .split(' ')
@@ -341,7 +345,7 @@ export default async function Page({
                       jarWithBalance.creator.country && (
                         <span className="capitalize">· {jarWithBalance.creator.country}</span>
                       )}
-                    {creatorKycStatus === 'verified' && (
+                    {creatorVerified && (
                       <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2 py-0.5 rounded-full font-medium">
                         <ShieldCheck className="h-3 w-3" />
                         Verified

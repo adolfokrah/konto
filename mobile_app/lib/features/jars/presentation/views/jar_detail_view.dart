@@ -158,7 +158,7 @@ class _JarDetailViewState extends State<JarDetailView> {
   }
 
   /// Verification gate by account type: individuals need personal KYC; organizations
-  /// need KYC plus business verification (KYB). Returns true if allowed; otherwise shows
+  /// need business verification (KYB) only. Returns true if allowed; otherwise shows
   /// a message, routes to the appropriate screen, and returns false.
   bool _requireVerification(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
@@ -167,20 +167,9 @@ class _JarDetailViewState extends State<JarDetailView> {
     final kyc = authState.user.kycStatus;
     final kyb = authState.user.kybStatus;
 
-    // 1) Personal KYC first.
-    if (kyc != 'verified') {
-      final message =
-          kyc == 'in_review'
-              ? 'Your identity verification (KYC) is under review. Please wait for approval.'
-              : 'Complete identity verification (KYC) to continue.';
-      AppSnackBar.show(context, message: message, type: SnackBarType.info);
-      // in_review users have nothing to do on the KYC screen, but it shows the pending state.
-      context.push(AppRoutes.kycView);
-      return false;
-    }
-
-    // 2) Business verification (KYB): organizations only.
-    if (authState.user.isOrganization && kyb != 'approved') {
+    // Organizations: business verification (KYB) only.
+    if (authState.user.isOrganization) {
+      if (kyb == 'approved') return true;
       final message =
           (kyb == 'in_review' || kyb == 'pending')
               ? 'Your business verification is under review. Please wait for approval.'
@@ -189,6 +178,18 @@ class _JarDetailViewState extends State<JarDetailView> {
               : 'Complete business verification to continue.';
       AppSnackBar.show(context, message: message, type: SnackBarType.info);
       context.push(AppRoutes.businessKyb);
+      return false;
+    }
+
+    // Individuals: personal KYC only.
+    if (kyc != 'verified') {
+      final message =
+          kyc == 'in_review'
+              ? 'Your identity verification (KYC) is under review. Please wait for approval.'
+              : 'Complete identity verification (KYC) to continue.';
+      AppSnackBar.show(context, message: message, type: SnackBarType.info);
+      // in_review users have nothing to do on the KYC screen, but it shows the pending state.
+      context.push(AppRoutes.kycView);
       return false;
     }
 
