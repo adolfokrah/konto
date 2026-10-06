@@ -8,6 +8,7 @@ const BYPASS_PREFIXES = [
   '/dashboard',
   '/api',
   '/pay',
+  '/j/', // short jar links → redirect to /pay
   '/organizations',
   '/congratulations',
   '/email',

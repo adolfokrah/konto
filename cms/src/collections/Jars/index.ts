@@ -14,6 +14,7 @@ import { validateJarUpdatePermission } from './hooks/validateJarUpdatePermission
 import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeBreak'
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 import { capRequiredApprovals } from './hooks/capRequiredApprovals'
+import { assignShortCode } from './hooks/assignShortCode'
 import { validateWithdrawalAccount } from './hooks/validateWithdrawalAccount'
 
 export const Jars: CollectionConfig = {
@@ -28,6 +29,17 @@ export const Jars: CollectionConfig = {
       required: true,
       admin: {
         description: 'Name of the jar',
+      },
+    },
+    {
+      name: 'shortCode',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Short share link code: hogapay.com/j/<code>. Assigned automatically.',
       },
     },
     {
@@ -361,6 +373,7 @@ export const Jars: CollectionConfig = {
       validateJarBalanceBeforeBreak,
       capRequiredApprovals,
       validateWithdrawalAccount,
+      assignShortCode,
     ],
     afterChange: [
       sendInviteNotificationToUser,

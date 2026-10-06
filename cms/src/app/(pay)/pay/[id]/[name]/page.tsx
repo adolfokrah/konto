@@ -286,6 +286,7 @@ export default async function Page({
                   customFields={jarWithBalance.customFields || []}
                   acceptingContributions={jarWithBalance.acceptingContributions !== false}
                   actionLabel={jarWithBalance.paymentPage?.donationLabel === 'donate' ? 'donate' : 'contribute'}
+                  shortCode={jarWithBalance.shortCode || undefined}
                 />
               </div>
             </aside>

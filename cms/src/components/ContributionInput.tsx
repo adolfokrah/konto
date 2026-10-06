@@ -33,6 +33,8 @@ interface ContributionInputProps {
   customFields?: CustomField[]
   acceptingContributions?: boolean
   actionLabel?: 'contribute' | 'donate'
+  /** Jar short code, for the short share link hogapay.com/j/<code>. */
+  shortCode?: string
 }
 
 export default function ContributionInput({
@@ -47,6 +49,7 @@ export default function ContributionInput({
   customFields = [],
   acceptingContributions = true,
   actionLabel = 'contribute',
+  shortCode,
 }: ContributionInputProps) {
   const actionWord = actionLabel === 'donate' ? 'Donate' : 'Contribute'
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
@@ -286,7 +289,17 @@ export default function ContributionInput({
   }
 
   const handleShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : ''
+    // Prefer the short link. A page opened through a collector's link keeps the full URL so
+    // the collector stays attributed (the short form needs their username, not their id).
+    const hasCollector =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).has('collectorId')
+    const url =
+      typeof window === 'undefined'
+        ? ''
+        : shortCode && !hasCollector
+          ? `${window.location.origin}/j/${shortCode}`
+          : window.location.href
     try {
       if (navigator.share) {
         await navigator.share({ title: jarName, url })
