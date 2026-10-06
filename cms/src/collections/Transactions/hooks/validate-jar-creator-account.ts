@@ -1,5 +1,7 @@
 import { CollectionBeforeValidateHook, APIError } from 'payload'
 
+import { getCreatorVerification } from '@/utilities/kyb'
+
 export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
   data,
   req,
@@ -40,9 +42,9 @@ export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
       throw new APIError('This jar is currently broken and cannot accept transactions', 403)
     }
 
-    // Requests made as an app user (REST): only contributions, and only to a jar the user
-    // creates or collects for. Server code (local API, no user) and admins aren't
-    // restricted here.
+    // Requests made as an app user (REST): only contributions, only to a jar the user
+    // creates or collects for, and only once the jar's creator is verified for their
+    // account type. Server code (local API, no user) and admins aren't restricted here.
     const user = req.user as { id: string; role?: string } | null | undefined
     if (user && user.role !== 'admin') {
       if (data.type && data.type !== 'contribution') {
@@ -56,6 +58,18 @@ export const validateJarCreatorAccount: CollectionBeforeValidateHook = async ({
       })
       if (creatorId !== user.id && !isCollector) {
         throw new APIError('Only the jar creator or its collectors can record contributions', 403)
+      }
+
+      const verification = await getCreatorVerification(req.payload, jar.creator)
+      if (!verification.verified) {
+        throw new APIError(
+          creatorId === user.id
+            ? verification.missing === 'kyb'
+              ? 'Complete business verification (KYB) before recording contributions.'
+              : 'Complete identity verification (KYC) before recording contributions.'
+            : 'This jar’s organizer is completing verification and cannot accept contributions yet.',
+          403,
+        )
       }
     }
   } catch (error) {

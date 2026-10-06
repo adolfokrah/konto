@@ -1,4 +1,5 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
+import { getCreatorVerification, verificationRequiredMessage } from '@/utilities/kyb'
 import { getJarBalance } from '@/utilities/getJarBalance'
 
 export const payoutEganow = async (req: PayloadRequest) => {
@@ -58,24 +59,14 @@ export const payoutEganow = async (req: PayloadRequest) => {
       )
     }
 
-    // Verification gate: a payout needs both personal KYC and business KYB.
-    // Saving a withdrawal account is deliberately ungated, so KYC is checked here.
-    if ((creator.kycStatus ?? 'none') !== 'verified') {
+    // Verification gate (by account type): individuals need KYC; organizations need KYB plus
+    // the owner's KYC. Saving a withdrawal account is deliberately ungated, so it's checked here.
+    const verification = await getCreatorVerification(req.payload, creator)
+    if (!verification.verified) {
       return Response.json(
         {
           success: false,
-          message: 'You must complete identity verification (KYC) before requesting a payout.',
-        },
-        { status: 403 },
-      )
-    }
-
-    // KYB gate: jar creator must be business-verified before any payout
-    if ((creator.kybStatus ?? 'none') !== 'approved') {
-      return Response.json(
-        {
-          success: false,
-          message: 'You must complete business verification (KYB) before requesting a payout.',
+          message: verificationRequiredMessage(verification.missing, 'requesting a payout'),
         },
         { status: 403 },
       )

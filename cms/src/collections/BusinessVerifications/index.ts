@@ -189,7 +189,13 @@ export const BusinessVerifications: CollectionConfig = {
           await req.payload.update({
             collection: 'users',
             id: userId,
-            data: { kybStatus },
+            // An approved KYB is the upgrade path from individual to organization. Not on
+            // submission: an individual who is already collecting keeps collecting while the
+            // review is pending.
+            data: {
+              kybStatus,
+              ...(doc.status === 'approved' ? { accountType: 'organization' } : {}),
+            },
             overrideAccess: true,
           })
         } catch (e: any) {
