@@ -231,9 +231,15 @@ class _RequestContributionViewState extends State<RequestContributionView> {
             // server redirects it to the full page with the collector attributed. Older
             // jars without a code keep the long link.
             final shortCode = state.jarData.shortCode;
+            final hasUsername =
+                currentUsername != null && currentUsername.isNotEmpty;
+            // The collector always travels with the link: as the username segment, or as
+            // ?collectorId= when there's no username (the /j route keeps query params).
             final paymentLink =
                 shortCode != null && shortCode.isNotEmpty
-                    ? "${AppConfig.contributionPage}/j/$shortCode${currentUsername != null && currentUsername.isNotEmpty ? '/$currentUsername' : ''}"
+                    ? hasUsername
+                        ? "${AppConfig.contributionPage}/j/$shortCode/$currentUsername"
+                        : "${AppConfig.contributionPage}/j/$shortCode${currentUserId != null ? '?collectorId=$currentUserId' : ''}"
                     : "${AppConfig.contributionPage}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectorId=${currentUserId ?? ''}";
             return SizedBox(
               width: double.infinity,

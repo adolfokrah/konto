@@ -597,9 +597,20 @@ class UserModel {
   final String countryCode;
   final String country;
   final bool isKYCVerified;
+  final String kycStatus;
+  final String kybStatus;
+
+  /// 'individual' (needs KYC) or 'organization' (needs KYB + owner KYC).
+  final String accountType;
   final MediaModel? photo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// Whether this user's jars can collect contributions: KYC for individuals,
+  /// KYC + KYB for organizations (mirrors the server's getCreatorVerification).
+  bool get canCollect =>
+      kycStatus == 'verified' &&
+      (accountType != 'organization' || kybStatus == 'approved');
 
   const UserModel({
     required this.id,
@@ -609,6 +620,9 @@ class UserModel {
     required this.countryCode,
     required this.country,
     required this.isKYCVerified,
+    this.kycStatus = 'none',
+    this.kybStatus = 'none',
+    this.accountType = 'individual',
     this.photo,
     this.createdAt,
     this.updatedAt,
@@ -655,6 +669,9 @@ class UserModel {
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String,
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
+      kycStatus: json['kycStatus'] as String? ?? 'none',
+      kybStatus: json['kybStatus'] as String? ?? 'none',
+      accountType: json['accountType'] as String? ?? 'individual',
       photo: _parsePhotoField(json['photo']),
       createdAt:
           json['createdAt'] != null
@@ -682,6 +699,9 @@ class UserModel {
       'countryCode': countryCode,
       'country': country,
       'isKYCVerified': isKYCVerified,
+      'kycStatus': kycStatus,
+      'kybStatus': kybStatus,
+      'accountType': accountType,
       'photo': photo?.toJson(),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
