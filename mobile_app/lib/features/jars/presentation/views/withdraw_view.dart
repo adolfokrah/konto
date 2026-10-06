@@ -19,6 +19,7 @@ import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
+import 'package:Hoga/features/business_kyb/presentation/pages/business_kyb_view.dart';
 import 'package:go_router/go_router.dart';
 
 class WithdrawView extends StatefulWidget {
@@ -229,11 +230,15 @@ class _WithdrawViewState extends State<WithdrawView> {
     final double transferCharges = _systemSettings.calculateTransferFee(balance);
     final double total = _systemSettings.calculateNetPayout(balance);
 
-    // Check KYC before allowing transfer
+    // Verification before a transfer, by account type: KYC for everyone, plus business
+    // verification (KYB) for organizations.
     final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated &&
-        authState.user.kycStatus != 'verified') {
-      return const KycView();
+    if (authState is AuthAuthenticated) {
+      if (authState.user.kycStatus != 'verified') return const KycView();
+      if (authState.user.isOrganization &&
+          authState.user.kybStatus != 'approved') {
+        return const BusinessKybView();
+      }
     }
 
     // The jar's linked withdrawal account is the only source now. The old fallback

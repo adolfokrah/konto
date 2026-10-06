@@ -143,7 +143,7 @@ class _JarDetailViewState extends State<JarDetailView> {
       return;
     }
 
-    // The payout itself needs both personal KYC and business KYB.
+    // Payouts are the creator's: they need their own verification for their account type.
     if (!_requireVerification(context)) return;
 
     context.push(
@@ -193,6 +193,21 @@ class _JarDetailViewState extends State<JarDetailView> {
     }
 
     return true;
+  }
+
+  /// Gate for collecting (record a contribution, request link, QR). The server checks the
+  /// jar creator's verification, so: the creator is sent to finish their own verification;
+  /// a collector is told the organizer isn't verified yet (nothing for them to do).
+  bool _requireCollecting(BuildContext context, JarSummaryModel jarData) {
+    if (jarData.isCreator) return _requireVerification(context);
+    if (jarData.creator.canCollect) return true;
+    AppSnackBar.show(
+      context,
+      message:
+          'This jar\'s organizer is still completing verification, so it can\'t collect contributions yet.',
+      type: SnackBarType.info,
+    );
+    return false;
   }
 
   /// Request FCM permissions and update user token
@@ -395,9 +410,13 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 key: const Key('request_button_qr_code'),
                                 opacity: 0.8,
                                 onPressed: () {
-                                  // Receiving contributions needs KYC and KYB,
-                                  // same as the other request entry point.
-                                  if (!_requireVerification(context)) return;
+                                  // Collecting needs the jar's creator to be verified.
+                                  if (!_requireCollecting(
+                                    context,
+                                    state.jarData,
+                                  )) {
+                                    return;
+                                  }
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -584,7 +603,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
-                                  if (!_requireVerification(context)) return;
+                                  if (!_requireCollecting(context, jarData)) {
+                                    return;
+                                  }
                                   context.push(AppRoutes.addContribution);
                                 },
                                 icon: Icons.add,
@@ -619,7 +640,9 @@ class _JarDetailViewState extends State<JarDetailView> {
                                     jarData.status != JarStatus.sealed &&
                                     jarData.status != JarStatus.frozen,
                                 onPressed: () {
-                                  if (!_requireVerification(context)) return;
+                                  if (!_requireCollecting(context, jarData)) {
+                                    return;
+                                  }
                                   context.push(
                                     AppRoutes.contributionRequest,
                                     extra: {
@@ -1051,7 +1074,10 @@ class _JarDetailViewState extends State<JarDetailView> {
                                       AppButton.filled(
                                         text: localizations.contribute,
                                         onPressed: () {
-                                          if (!_requireVerification(context)) {
+                                          if (!_requireCollecting(
+                                            context,
+                                            jarData,
+                                          )) {
                                             return;
                                           }
                                           context.push(

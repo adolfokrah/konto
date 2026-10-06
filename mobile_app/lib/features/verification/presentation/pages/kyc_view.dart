@@ -1,4 +1,5 @@
 import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
@@ -51,8 +52,13 @@ class KycView extends StatelessWidget {
             builder: (context, authState) {
               // Check user's KYC status
               String? kycStatus;
+              // Organizations also need business verification (KYB) after KYC.
+              bool needsKyb = false;
               if (authState is AuthAuthenticated) {
                 kycStatus = authState.user.kycStatus;
+                needsKyb =
+                    authState.user.isOrganization &&
+                    authState.user.kybStatus != 'approved';
               }
 
               // If user is already KYC verified, don't show any KYC screens
@@ -73,10 +79,22 @@ class KycView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Your identity has been successfully verified. You can now create jars and use all app features.',
+                          needsKyb
+                              ? 'Your identity has been verified. Next, verify your organization so your jars can start collecting.'
+                              : 'Your identity has been successfully verified. You can now create jars and use all app features.',
                           style: TextStyles.titleRegularSm,
                           textAlign: TextAlign.center,
                         ),
+                        if (needsKyb) ...[
+                          const SizedBox(height: 24),
+                          AppButton.filled(
+                            text: 'Continue to business verification',
+                            onPressed:
+                                () => context.pushReplacement(
+                                  AppRoutes.businessKyb,
+                                ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

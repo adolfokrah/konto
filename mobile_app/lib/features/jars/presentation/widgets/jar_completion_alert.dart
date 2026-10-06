@@ -81,7 +81,7 @@ class JarCompletionAlert extends StatelessWidget {
         if (user.kycStatus == 'none') {
           return Alert(
             message:
-                'Verify your identity to transfer funds from your jar. Tap to start verification.',
+                'Verify your identity to start collecting and transferring funds. Tap to start verification.',
             onTap: () {
               context.push(AppRoutes.kycView);
             },
@@ -97,7 +97,28 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 6. No profile photo
+        // 6. Organizations: business verification (KYB) after KYC
+        if (user.isOrganization && user.kybStatus != 'approved') {
+          final kyb = user.kybStatus;
+          if (kyb == 'in_review' || kyb == 'pending' || kyb == 'under-review') {
+            return Alert(
+              message:
+                  'Your business verification is under review. We\'ll notify you once it\'s approved.',
+              onTap: null, // Non-clickable, just informational
+            );
+          }
+          return Alert(
+            message:
+                kyb == 'rejected'
+                    ? 'Your business verification was not approved. Tap to review and resubmit.'
+                    : 'Verify your organization so your jar can start collecting. Tap to start business verification.',
+            onTap: () {
+              context.push(AppRoutes.businessKyb);
+            },
+          );
+        }
+
+        // 7. No profile photo
         if (user.photo == null) {
           return Alert(
             message:
@@ -108,7 +129,7 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 7. No additional jar photos
+        // 8. No additional jar photos
         if (jarData.images.isEmpty) {
           return Alert(
             message:
