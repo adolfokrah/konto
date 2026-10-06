@@ -23,6 +23,7 @@ const BYPASS_PREFIXES = [
   '/fonts',
   '/icons',
   '/images',
+  '/redesign',
 ]
 
 export function middleware(request: NextRequest) {
