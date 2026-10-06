@@ -18,10 +18,9 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { id: jarId } = await params
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
-      { cache: 'no-store' },
-    )
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`, {
+      cache: 'no-store',
+    })
 
     const data = await res.json()
 
@@ -41,7 +40,10 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     const imageForMeta = jarImageThumbnail?.url || imageUrl || null
 
     // Get creator name
-    const creatorName = typeof jar.creator === 'object' ? `${jar.creator.firstName || ''} ${jar.creator.lastName || ''}`.trim() : jar.creator
+    const creatorName =
+      typeof jar.creator === 'object'
+        ? `${jar.creator.firstName || ''} ${jar.creator.lastName || ''}`.trim()
+        : jar.creator
 
     return {
       title: `Contribute to ${jar.name}`,
@@ -97,10 +99,10 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   }
 }
 
-export default async function Page({ 
-  params, 
-  searchParams 
-}: { 
+export default async function Page({
+  params,
+  searchParams,
+}: {
   params: Promise<{ id: string; name: string }>
   searchParams: Promise<{ collectorId?: string; cPage?: string }>
 }) {
@@ -113,7 +115,6 @@ export default async function Page({
       `${process.env.NEXT_PUBLIC_API_URL}/jars/${jarId}/contribution-page`,
       { cache: 'no-store' },
     )
-
 
     const jarData = await jarRes.json()
     const jarWithBalance = jarData?.data
@@ -139,10 +140,7 @@ export default async function Page({
           )
           .filter(Boolean)
       : []
-    const carouselImages: string[] = [
-      ...(imageUrl ? [imageUrl] : []),
-      ...galleryUrls,
-    ]
+    const carouselImages: string[] = [...(imageUrl ? [imageUrl] : []), ...galleryUrls]
 
     // Get the creator photo URL if it exists
     const creatorPhotoUrl =
@@ -173,13 +171,29 @@ export default async function Page({
       : 'UN' // Unknown if no name
 
     // Resolve collector id from query param or fallback to jar creator
-    const collectorIdFromQuery =
-      (resolvedSearchParams?.collectorId as string) || null
+    const collectorIdFromQuery = (resolvedSearchParams?.collectorId as string) || null
     const creatorId =
       typeof jarWithBalance?.creator === 'object'
         ? jarWithBalance?.creator?.id
         : jarWithBalance?.creator
     const effectiveCollectorId = collectorIdFromQuery || creatorId
+
+    // Short share link for this page: /j/<code>, plus the collector's username when the page
+    // was opened through a collector's link, so sharing keeps their attribution.
+    const usernameOf = (userId: string | null) => {
+      if (!userId) return null
+      const creator = typeof jarWithBalance?.creator === 'object' ? jarWithBalance.creator : null
+      if (creator?.id === userId) return creator.username ?? null
+      const invited = (jarWithBalance?.invitedCollectors ?? []).find((ic: any) => {
+        const id = typeof ic.collector === 'object' ? ic.collector?.id : ic.collector
+        return id === userId
+      })
+      return typeof invited?.collector === 'object' ? (invited.collector.username ?? null) : null
+    }
+    const collectorUsername = usernameOf(collectorIdFromQuery)
+    const sharePath = jarWithBalance.shortCode
+      ? `/j/${jarWithBalance.shortCode}${collectorUsername ? `/${collectorUsername}` : ''}`
+      : null
 
     // ---- Goal / progress (only when creator enabled it) ----
     const currencySymbol = jarWithBalance.currency === 'GHS' ? '₵' : '₦'
@@ -188,9 +202,7 @@ export default async function Page({
       jarWithBalance.goalAmount > 0 &&
       jarWithBalance.paymentPage?.showGoal === true
     const raisedAmount = jarWithBalance.balanceBreakDown?.totalContributedAmount || 0
-    const goalPct = showGoal
-      ? Math.min((raisedAmount / jarWithBalance.goalAmount) * 100, 100)
-      : 0
+    const goalPct = showGoal ? Math.min((raisedAmount / jarWithBalance.goalAmount) * 100, 100) : 0
     const deadlineDate = jarWithBalance.deadline ? new Date(jarWithBalance.deadline) : null
     const daysLeft = deadlineDate
       ? Math.max(Math.ceil((deadlineDate.getTime() - Date.now()) / 86400000), 0)
@@ -285,8 +297,10 @@ export default async function Page({
                   transactionFeePercentage={systemSettings?.collectionFee || 1.95}
                   customFields={jarWithBalance.customFields || []}
                   acceptingContributions={jarWithBalance.acceptingContributions !== false}
-                  actionLabel={jarWithBalance.paymentPage?.donationLabel === 'donate' ? 'donate' : 'contribute'}
-                  shortCode={jarWithBalance.shortCode || undefined}
+                  actionLabel={
+                    jarWithBalance.paymentPage?.donationLabel === 'donate' ? 'donate' : 'contribute'
+                  }
+                  sharePath={sharePath ?? undefined}
                 />
               </div>
             </aside>
