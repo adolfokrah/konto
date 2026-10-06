@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { apiMediaUrl } from '@/utilities/apiMediaUrl'
 import { Metadata } from 'next'
 import { ShieldCheck, ArrowRight } from 'lucide-react'
 
@@ -56,7 +57,14 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
       { cache: 'no-store' },
     )
     const json = await res.json()
-    return json?.success ? (json.data as BusinessDetail) : null
+    if (!json?.success) return null
+    const b = json.data as BusinessDetail
+    // Media is served by the API (see apiMediaUrl), like the business data itself.
+    return {
+      ...b,
+      photoUrl: apiMediaUrl(b.photoUrl),
+      campaigns: b.campaigns.map((c) => ({ ...c, imageUrl: apiMediaUrl(c.imageUrl) })),
+    }
   } catch {
     return null
   }

@@ -228,7 +228,7 @@ class _RegisterViewState extends State<RegisterView> {
                     ButtonSegment(
                       value: 'organization',
                       label: Text('Organization'),
-                      icon: Icon(Icons.apartment_outlined),
+                      icon: Icon(Icons.account_balance),
                     ),
                   ],
                   selected: {_accountType},

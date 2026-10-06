@@ -19,6 +19,9 @@ const NEXT_PUBLIC_SERVER_URL =
 // Allow images from multiple domains to handle staging/production
 const allowedImageDomains = [
   NEXT_PUBLIC_SERVER_URL,
+  // Media is served by the API (see src/utilities/apiMediaUrl.ts)
+  cleanEnvVar(process.env.NEXT_PUBLIC_API_URL),
+  'https://hoga-production.up.railway.app',
   // Explicit staging domain
   'https://konto-env-staging-ui-ninjas-projects.vercel.app',
   'https://staging.hogapay.com',
