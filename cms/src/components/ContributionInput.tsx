@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { Spinner } from "@/components/ui/spinner"
-import { Switch } from "@/components/ui/switch"
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import useSWRMutation from 'swr/mutation'
 import CustomFields from './CustomFields'
 
@@ -33,8 +33,8 @@ interface ContributionInputProps {
   customFields?: CustomField[]
   acceptingContributions?: boolean
   actionLabel?: 'contribute' | 'donate'
-  /** Jar short code, for the short share link hogapay.com/j/<code>. */
-  shortCode?: string
+  /** Short share path for this page (/j/<code>[/<username>]); falls back to the page URL. */
+  sharePath?: string
 }
 
 export default function ContributionInput({
@@ -49,7 +49,7 @@ export default function ContributionInput({
   customFields = [],
   acceptingContributions = true,
   actionLabel = 'contribute',
-  shortCode,
+  sharePath,
 }: ContributionInputProps) {
   const actionWord = actionLabel === 'donate' ? 'Donate' : 'Contribute'
   const [selectedAmount, setSelectedAmount] = useState<number>(isFixedAmount ? fixedAmount : 50)
@@ -60,9 +60,19 @@ export default function ContributionInput({
   const [contributorPhoneNumber, setContributorPhoneNumber] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [remarks, setRemarks] = useState('')
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle')
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>(
+    'idle',
+  )
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
   const router = useRouter()
+
+  /** The link to share for this jar: the short link when there is one, else this page. */
+  const shareUrl = () =>
+    typeof window === 'undefined'
+      ? ''
+      : sharePath
+        ? `${window.location.origin}${sharePath}`
+        : window.location.href
 
   const { trigger: createContribution } = useSWRMutation(
     `${process.env.NEXT_PUBLIC_API_URL}/transactions/create-payment-link-contribution`,
@@ -124,15 +134,18 @@ export default function ContributionInput({
 
   const verifyPayment = async (reference: string) => {
     try {
-      const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/verify-payment-ega-now`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const verifyResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/transactions/verify-payment-ega-now`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            reference: reference,
+          }),
         },
-        body: JSON.stringify({
-          reference: reference,
-        }),
-      })
+      )
 
       const verifyData = await verifyResponse.json()
       console.log('Verify response:', { ok: verifyResponse.ok, data: verifyData })
@@ -180,7 +193,7 @@ export default function ContributionInput({
         if (data.amount != null) params.set('amount', String(data.amount))
         params.set('jarName', data.jarName || jarName)
         if (data.contributor) params.set('contributorName', data.contributor)
-        params.set('paymentLink', `${window.location.origin}${window.location.pathname}`)
+        params.set('paymentLink', shareUrl())
         router.replace(`/congratulations?${params.toString()}`)
         return
       }
@@ -289,17 +302,7 @@ export default function ContributionInput({
   }
 
   const handleShare = async () => {
-    // Prefer the short link. A page opened through a collector's link keeps the full URL so
-    // the collector stays attributed (the short form needs their username, not their id).
-    const hasCollector =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).has('collectorId')
-    const url =
-      typeof window === 'undefined'
-        ? ''
-        : shortCode && !hasCollector
-          ? `${window.location.origin}/j/${shortCode}`
-          : window.location.href
+    const url = shareUrl()
     try {
       if (navigator.share) {
         await navigator.share({ title: jarName, url })
@@ -382,22 +385,23 @@ export default function ContributionInput({
 
       {/* Contributor Information */}
       <div className="space-y-4 mb-6">
-
         {allowAnonymousContributions && (
           <div>
-           <label className='flex items-center'>
-            <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
-            <span className="ml-3 text-sm font-supreme text-gray-700">
-              {isAnonymous ? 'You are contributing anonymously' : 'Turn on to contribute anonymously'}
-            </span>
-          </label>
-        </div>
+            <label className="flex items-center">
+              <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
+              <span className="ml-3 text-sm font-supreme text-gray-700">
+                {isAnonymous
+                  ? 'You are contributing anonymously'
+                  : 'Turn on to contribute anonymously'}
+              </span>
+            </label>
+          </div>
         )}
         <div>
           <input
             type={isAnonymous ? 'hidden' : 'text'}
             placeholder="Your name"
-            value={isAnonymous ? 'Anonymous' :  contributorName}
+            value={isAnonymous ? 'Anonymous' : contributorName}
             onChange={(e) => setContributorName(e.target.value)}
             className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors"
             required
@@ -407,8 +411,8 @@ export default function ContributionInput({
         {isAnonymous && (
           <div className="mb-2">
             <small className="text-gray-500">
-              We only use your phone number to process your payment. This information is not
-              shared with the organizer.
+              We only use your phone number to process your payment. This information is not shared
+              with the organizer.
             </small>
           </div>
         )}
@@ -435,7 +439,7 @@ export default function ContributionInput({
           <textarea
             placeholder="Leave a message for this jar (optional)"
             value={remarks}
-            onChange={(e) => setRemarks(()=>e.target.value)}
+            onChange={(e) => setRemarks(() => e.target.value)}
             maxLength={800}
             rows={3}
             className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-2xl font-supreme outline-none focus:border-gray-400 transition-colors resize-none"
@@ -463,11 +467,7 @@ export default function ContributionInput({
         }
         className="w-full bg-black text-white py-4 mt-5 cursor-pointer rounded-full flex items-center justify-center gap-2 font-supreme font-medium text-base hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? (
-          <Spinner className="w-5 h-5" />
-        ) : (
-          actionWord
-        )}
+        {isLoading ? <Spinner className="w-5 h-5" /> : actionWord}
       </button>
 
       {/* Share */}
@@ -500,7 +500,6 @@ export default function ContributionInput({
         </Link>
         .
       </p>
-
     </div>
   )
 }

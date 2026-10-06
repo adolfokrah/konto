@@ -15,6 +15,7 @@ import { validateJarBalanceBeforeBreak } from './hooks/validateJarBalanceBeforeB
 import { sendFreezeNotificationToCreator } from './hooks/sendFreezeNotificationToCreator'
 import { capRequiredApprovals } from './hooks/capRequiredApprovals'
 import { assignShortCode } from './hooks/assignShortCode'
+import { resolveShortLink } from './endpoints/resolve-short-link'
 import { validateWithdrawalAccount } from './hooks/validateWithdrawalAccount'
 
 export const Jars: CollectionConfig = {
@@ -385,6 +386,12 @@ export const Jars: CollectionConfig = {
     beforeDelete: [validateJarBalanceBeforeDelete],
   },
   endpoints: [
+    {
+      // Must come before '/:id/...' routes. Public: resolves /j/<code> share links.
+      method: 'get',
+      path: '/short/:code',
+      handler: resolveShortLink,
+    },
     {
       method: 'get',
       path: '/:id/summary',
