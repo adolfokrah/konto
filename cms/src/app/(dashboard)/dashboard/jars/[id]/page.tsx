@@ -49,7 +49,6 @@ function formatDate(dateString: string) {
   })
 }
 
-
 function formatAmount(amount: number, currency: string) {
   return `${currency.toUpperCase()} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
@@ -164,7 +163,13 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
         paymentStatus: { in: ['completed', 'pending', 'awaiting-approval'] },
       },
       pagination: false,
-      select: { amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
+      select: {
+        amountContributed: true,
+        type: true,
+        isSettled: true,
+        paymentMethod: true,
+        paymentStatus: true,
+      },
       overrideAccess: true,
     }),
     payload.find({
@@ -264,6 +269,11 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     }
   })
 
+  // Short link when the jar has one (it redirects to the full pay page).
+  const contributionPageUrl = jar.shortCode
+    ? `/j/${jar.shortCode}`
+    : `/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`
+
   return (
     <div className="space-y-6">
       {/* Back link */}
@@ -313,7 +323,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                 <div className="flex items-center gap-2 mt-3">
                   <JarActions jarId={jar.id} status={jar.status} />
                   <Link
-                    href={`/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                    href={contributionPageUrl}
                     target="_blank"
                     className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
@@ -350,7 +360,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               <div className="flex items-center gap-2">
                 <JarActions jarId={jar.id} status={jar.status} />
                 <Link
-                  href={`/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                  href={contributionPageUrl}
                   target="_blank"
                   className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
@@ -428,18 +438,17 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
                 <Separator />
               </>
             )}
-            <DetailRow
-              label="Jar Balance"
-              icon={Wallet}
-              value={formatAmount(balance, currency)}
-            />
+            <DetailRow label="Jar Balance" icon={Wallet} value={formatAmount(balance, currency)} />
             <Separator />
             <DetailRow
               label="Total Withdrawn"
               icon={ArrowDownToLine}
-              value={totalWithdrawn > 0
-                ? <span className="text-red-400">{formatAmount(totalWithdrawn, currency)}</span>
-                : formatAmount(0, currency)
+              value={
+                totalWithdrawn > 0 ? (
+                  <span className="text-red-400">{formatAmount(totalWithdrawn, currency)}</span>
+                ) : (
+                  formatAmount(0, currency)
+                )
               }
             />
             <Separator />
@@ -498,10 +507,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               icon={UserCircle}
               value={
                 creatorObj ? (
-                  <Link
-                    href={`/dashboard/users/${creatorObj.id}`}
-                    className="hover:underline"
-                  >
+                  <Link href={`/dashboard/users/${creatorObj.id}`} className="hover:underline">
                     {creatorName}
                   </Link>
                 ) : (
@@ -546,10 +552,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               }
             />
             <Separator />
-            <DetailRow
-              label="Fixed Contribution"
-              value={jar.isFixedContribution ? 'Yes' : 'No'}
-            />
+            <DetailRow label="Fixed Contribution" value={jar.isFixedContribution ? 'Yes' : 'No'} />
             <Separator />
             <DetailRow
               label="Anonymous Contributions"
@@ -572,10 +575,7 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
               </>
             )}
             <Separator />
-            <DetailRow
-              label="Jar ID"
-              value={<span className="font-mono text-xs">{jar.id}</span>}
-            />
+            <DetailRow label="Jar ID" value={<span className="font-mono text-xs">{jar.id}</span>} />
           </CardContent>
         </Card>
       </div>
@@ -631,13 +631,19 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
         <CardHeader>
           <CardTitle className="text-base">Transactions</CardTitle>
           <CardDescription>
-            {transactionsResult.totalDocs} transaction{transactionsResult.totalDocs !== 1 ? 's' : ''} found
+            {transactionsResult.totalDocs} transaction
+            {transactionsResult.totalDocs !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
         <CardContent>
           <TransactionsDataTable
             transactions={transactions}
-            pagination={{ currentPage: txPage, totalPages: transactionsResult.totalPages, totalRows: transactionsResult.totalDocs, rowsPerPage: txLimit }}
+            pagination={{
+              currentPage: txPage,
+              totalPages: transactionsResult.totalPages,
+              totalRows: transactionsResult.totalDocs,
+              rowsPerPage: txLimit,
+            }}
           />
         </CardContent>
       </Card>

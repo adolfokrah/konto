@@ -5,6 +5,8 @@ import { ShieldCheck, ArrowRight } from 'lucide-react'
 interface Campaign {
   id: string
   name: string
+  /** Short share code, when the jar has one (/j/<code>). */
+  shortCode: string | null
   imageUrl: string | null
   goalAmount: number | null
   currency: string
@@ -205,7 +207,11 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
               return (
                 <Link
                   key={c.id}
-                  href={`/pay/${c.id}/${encodeURIComponent(c.name || 'jar')}`}
+                  href={
+                    c.shortCode
+                      ? `/j/${c.shortCode}`
+                      : `/pay/${c.id}/${encodeURIComponent(c.name || 'jar')}`
+                  }
                   className="group flex flex-col bg-white border border-[#E9E3D6] rounded-[20px] overflow-hidden shadow-[0_1px_2px_rgba(27,35,46,0.05)] transition-all duration-150 hover:-translate-y-1 hover:shadow-[0_18px_36px_-22px_rgba(27,35,46,0.4)]"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">

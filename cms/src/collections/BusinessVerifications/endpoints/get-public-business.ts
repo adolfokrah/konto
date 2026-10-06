@@ -69,6 +69,7 @@ export const getPublicBusiness = async (req: PayloadRequest) => {
         return {
           id: j.id,
           name: j.name,
+          shortCode: j.shortCode ?? null,
           imageUrl,
           goalAmount: j.goalAmount ?? null,
           currency: j.currency ?? 'GHS',
