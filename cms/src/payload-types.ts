@@ -1552,6 +1552,10 @@ export interface Transaction {
      * Base collection fee rate (%) from system settings at time of transaction
      */
     collectionFeePercent?: number | null;
+    /**
+     * Where the fees came from
+     */
+    feeSource?: ('settings' | 'eganow') | null;
   };
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
@@ -3188,6 +3192,7 @@ export interface TransactionsSelect<T extends boolean = true> {
         discountAmount?: T;
         amountToSendToEganow?: T;
         collectionFeePercent?: T;
+        feeSource?: T;
       };
   paymentStatus?: T;
   type?: T;

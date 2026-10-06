@@ -1,7 +1,13 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 import { calculateCharges } from '../../../utilities/calculateCharges'
 
-export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, req, context }) => {
+export const getCharges: CollectionBeforeChangeHook = async ({
+  data,
+  operation,
+  req,
+  context,
+  originalDoc,
+}) => {
   if (context?.skipCharges) return data
 
   if (data.paymentStatus === 'failed') {
@@ -36,6 +42,19 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
     const cardCollectionFeePercent = (settings.cardCollectionFee ?? 3) as number
     const hogapayCardCollectionFeePercent = (settings.hogapayCardCollectionFeePercent ??
       0.5) as number
+
+    // Fees quoted by Eganow before the collection started (utilities/eganowCharges) stand
+    // unless the amount or method changes.
+    if (
+      data.type === 'contribution' &&
+      operation === 'update' &&
+      originalDoc?.chargesBreakdown?.feeSource === 'eganow' &&
+      Number(data.amountContributed) === Number(originalDoc.amountContributed) &&
+      data.paymentMethod === originalDoc.paymentMethod
+    ) {
+      data.chargesBreakdown = originalDoc.chargesBreakdown
+      return data
+    }
 
     if (data.type === 'contribution') {
       if (data.paymentMethod === 'mobile-money' || data.paymentMethod === 'card') {
@@ -110,6 +129,7 @@ export const getCharges: CollectionBeforeChangeHook = async ({ data, operation, 
           discountAmount: charges.discountAmount,
           amountToSendToEganow: charges.amountToSendToEganow,
           collectionFeePercent: feePercent,
+          feeSource: 'settings',
         }
       } else {
         // No charges for cash or other payment methods

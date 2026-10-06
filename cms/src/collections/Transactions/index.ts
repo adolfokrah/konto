@@ -206,6 +206,20 @@ export const Transactions: CollectionConfig = {
             readOnly: true,
           },
         },
+        {
+          // 'eganow': platformCharge is Eganow's quoted fee, split by our settings.
+          // 'settings' (or empty): fees computed from the percentages in system settings.
+          name: 'feeSource',
+          type: 'select',
+          options: [
+            { label: 'System settings', value: 'settings' },
+            { label: 'Eganow quote', value: 'eganow' },
+          ],
+          admin: {
+            description: 'Where the fees came from',
+            readOnly: true,
+          },
+        },
       ],
     },
     {
