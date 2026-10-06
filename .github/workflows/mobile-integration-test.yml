@@ -27,6 +27,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      # The "Comment test results on PR" step posts an issue comment.
+      issues: write
+      pull-requests: write
     
     env:
       FLUTTER_CHANNEL: 'stable'
@@ -142,6 +145,8 @@ jobs:
 
       - name: Comment test results on PR
         if: github.event_name == 'pull_request'
+        # Reporting only: never fail the job because the comment couldn't be posted.
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |

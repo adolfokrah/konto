@@ -1,5 +1,20 @@
 import { getPayload, Payload } from 'payload'
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
+
+// The payout task calls Eganow (name lookup + payout). Stub it so the tests never hit the
+// real API and don't depend on Eganow credentials being present.
+vi.mock('@/utilities/initalise', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utilities/initalise')>()
+  const eganow = {
+    verifyKYC: async () => ({ isSuccess: true, accountName: 'Payout Creator' }),
+    payout: async () => ({
+      transactionStatus: 'PENDING',
+      eganowReferenceNo: 'MOCK-REF-123',
+      message: 'Payout initiated',
+    }),
+  }
+  return { ...actual, getEganow: () => eganow }
+})
 
 import config from '@/payload.config'
 import { payoutEganow } from '../../src/collections/Transactions/endpoints/payout-eganow'

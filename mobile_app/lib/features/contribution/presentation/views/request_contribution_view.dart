@@ -81,9 +81,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
               ? localizations.contributeToJar(jarName)
               : localizations.requestContribution,
       sharePositionOrigin:
-          box != null
-              ? box.localToGlobal(Offset.zero) & box.size
-              : null,
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null,
     );
   }
 
@@ -204,8 +202,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
     final localizations = AppLocalizations.of(context)!;
 
     // Extract arguments from the route
-    final args =
-        GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final args = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final String? jarName = args?['jarName'];
 
     return Scaffold(
@@ -224,12 +221,20 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           if (state is JarSummaryLoaded) {
             // Use current authenticated user ID instead of collectionId in the query param
             String? currentUserId;
+            String? currentUsername;
             final authState = context.read<AuthBloc>().state;
             if (authState is AuthAuthenticated) {
               currentUserId = authState.user.id;
+              currentUsername = authState.user.username;
             }
+            // Short link (<site>/j/<code>/<username>) when the jar has a short code; the
+            // server redirects it to the full page with the collector attributed. Older
+            // jars without a code keep the long link.
+            final shortCode = state.jarData.shortCode;
             final paymentLink =
-                "${AppConfig.contributionPage}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectorId=${currentUserId ?? ''}";
+                shortCode != null && shortCode.isNotEmpty
+                    ? "${AppConfig.contributionPage}/j/$shortCode${currentUsername != null && currentUsername.isNotEmpty ? '/$currentUsername' : ''}"
+                    : "${AppConfig.contributionPage}/pay/${state.jarData.id}/${state.jarData.name.replaceAll(' ', '-')}?collectorId=${currentUserId ?? ''}";
             return SizedBox(
               width: double.infinity,
               child: SingleChildScrollView(
@@ -300,7 +305,10 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                             ],
                           ),
                           onPressed:
-                              () => _downloadQRImage(context, jarName ?? 'QR_Code'),
+                              () => _downloadQRImage(
+                                context,
+                                jarName ?? 'QR_Code',
+                              ),
                         ),
                       ],
                     ),

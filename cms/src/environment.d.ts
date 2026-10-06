@@ -6,6 +6,17 @@ declare global {
       NEXT_PUBLIC_SERVER_URL: string
       VERCEL_PROJECT_PRODUCTION_URL: string
       VERCEL_URL: string
+      VERCEL_ENV: string
+      NEXT_PUBLIC_VERCEL_ENV: string
+      SENTRY_DSN: string
+      NEXT_PUBLIC_SENTRY_DSN: string
+      BETTER_STACK_DSN: string
+      NEXT_PUBLIC_BETTER_STACK_DSN: string
+      SENTRY_ENVIRONMENT: string
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: string
+      SENTRY_ORG: string
+      SENTRY_PROJECT: string
+      SENTRY_AUTH_TOKEN: string
     }
   }
 }

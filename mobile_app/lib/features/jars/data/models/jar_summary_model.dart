@@ -206,6 +206,10 @@ class BalanceBreakDown {
 class JarSummaryModel {
   final String id;
   final String name;
+
+  /// Short share code: the jar's link is `<contributionPage>/j/<shortCode>`.
+  /// Null for jars created before short codes existed and not yet backfilled.
+  final String? shortCode;
   final String? description;
 
   /// Optional thank you message to display to contributors
@@ -247,6 +251,7 @@ class JarSummaryModel {
   const JarSummaryModel({
     required this.id,
     required this.name,
+    this.shortCode,
     this.description,
     this.thankYouMessage,
     required this.goalAmount,
@@ -389,6 +394,7 @@ class JarSummaryModel {
     return JarSummaryModel(
       id: json['id'] as String,
       name: json['name'] as String,
+      shortCode: json['shortCode'] as String?,
       description: json['description'] as String?,
       thankYouMessage: json['thankYouMessage'] as String?,
       goalAmount: (json['goalAmount'] as num? ?? 0).toDouble(),
@@ -433,8 +439,14 @@ class JarSummaryModel {
               : null,
       images:
           (json['images'] as List<dynamic>?)
-              ?.where((e) => e is Map<String, dynamic> && e['image'] is Map<String, dynamic>)
-              .map((e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>))
+              ?.where(
+                (e) =>
+                    e is Map<String, dynamic> &&
+                    e['image'] is Map<String, dynamic>,
+              )
+              .map(
+                (e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       deadline:
@@ -504,9 +516,7 @@ class JarSummaryModel {
       isCreator: json['isCreator'] as bool? ?? false,
       customFields:
           (json['customFields'] as List<dynamic>?)
-              ?.map(
-                (e) => CustomFieldModel.fromJson(e as Map<String, dynamic>),
-              )
+              ?.map((e) => CustomFieldModel.fromJson(e as Map<String, dynamic>))
               .toList(),
       withdrawalAccount: _parseWithdrawalAccount(json['withdrawalAccount']),
     );
@@ -537,6 +547,7 @@ class JarSummaryModel {
     return {
       'id': id,
       'name': name,
+      'shortCode': shortCode,
       'description': description,
       'thankYouMessage': thankYouMessage,
       'goalAmount': goalAmount,
@@ -632,7 +643,8 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     // Support both fullName (from CMS afterRead hook) and firstName/lastName
-    final fullName = json['fullName'] as String? ??
+    final fullName =
+        json['fullName'] as String? ??
         '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim();
 
     return UserModel(
@@ -850,8 +862,7 @@ class ContributionModel {
   final String? accountNumber; // Account number for bank transfers
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
-  final String
-  paymentStatus; // 'pending' | 'completed' | 'failed'
+  final String paymentStatus; // 'pending' | 'completed' | 'failed'
   final UserModel? collector;
   final bool? viaPaymentLink;
   final ContributionType type; // contribution | payout

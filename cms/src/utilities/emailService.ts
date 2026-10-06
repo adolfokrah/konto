@@ -27,8 +27,20 @@ interface EmailOptions {
   }>
 }
 
+/**
+ * Without a Resend key (tests, CI, local setups without email) sending is skipped with a
+ * warning, so hooks that send email (welcome, account deletion, ...) don't fail the request.
+ */
+function emailDisabled(): boolean {
+  if (process.env.RESEND_API_KEY) return false
+  console.warn('[email] RESEND_API_KEY is not set; skipping email send')
+  return true
+}
+
 class EmailService {
   private async sendEmail(options: EmailOptions) {
+    if (emailDisabled()) return false
+
     const emailData: any = {
       from: this.getFromEmail(),
       to: Array.isArray(options.to) ? options.to : [options.to],
@@ -44,6 +56,8 @@ class EmailService {
   }
 
   async sendBatch(emails: EmailOptions[]): Promise<{ sent: number; failed: number }> {
+    if (emailDisabled()) return { sent: 0, failed: 0 }
+
     const from = this.getFromEmail()
     const CHUNK_SIZE = 100
     let sent = 0

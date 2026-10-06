@@ -227,25 +227,31 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
       currentIndex++;
 
       if (index == currentIndex) {
-        // Selected item
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
+        // Selected item. Material (not a decorated Container) so the item's ListTile can
+        // paint its ink splash on this background.
+        return Material(
+          color: Theme.of(context).colorScheme.primary,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.radiusM),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-          child:
-              _searchQuery.isEmpty
-                  ? widget.recentItemBuilder(
-                    selectedItem,
-                    true,
-                    () => _onItemSelected(selectedItem),
-                  )
-                  : widget.searchResultBuilder(
-                    selectedItem,
-                    true,
-                    () => _onItemSelected(selectedItem),
-                  ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.spacingXs,
+            ),
+            child:
+                _searchQuery.isEmpty
+                    ? widget.recentItemBuilder(
+                      selectedItem,
+                      true,
+                      () => _onItemSelected(selectedItem),
+                    )
+                    : widget.searchResultBuilder(
+                      selectedItem,
+                      true,
+                      () => _onItemSelected(selectedItem),
+                    ),
+          ),
         );
       }
       currentIndex++;
@@ -273,9 +279,9 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
         final isFirst = otherItemIndex == 0;
         final isLast = otherItemIndex == otherItems.length - 1;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
+        return Material(
+          color: Theme.of(context).colorScheme.primary,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(isFirst ? AppRadius.radiusM : 0),
               topRight: Radius.circular(isFirst ? AppRadius.radiusM : 0),
@@ -283,15 +289,24 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
               bottomRight: Radius.circular(isLast ? AppRadius.radiusM : 0),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingXs),
-          child:
-              _searchQuery.isEmpty
-                  ? widget.itemBuilder(item, false, () => _onItemSelected(item))
-                  : widget.searchResultBuilder(
-                    item,
-                    false,
-                    () => _onItemSelected(item),
-                  ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.spacingXs,
+            ),
+            child:
+                _searchQuery.isEmpty
+                    ? widget.itemBuilder(
+                      item,
+                      false,
+                      () => _onItemSelected(item),
+                    )
+                    : widget.searchResultBuilder(
+                      item,
+                      false,
+                      () => _onItemSelected(item),
+                    ),
+          ),
         );
       }
     }

@@ -43,6 +43,7 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
         transactionReference: { equals: reference },
       },
       limit: 1,
+      depth: 1, // populate the jar so the return page can show its name
     })
 
     console.log(`Verify Payment Eganow - Found ${foundContribution.docs.length} contributions`)
@@ -61,6 +62,30 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
       )
     }
 
+    // Log-only: what Eganow's status API says about a pending non-card contribution.
+    // Hosted checkout is settled by the webhook, so this never changes the status.
+    if (contribution.paymentMethod !== 'card' && contribution.paymentStatus === 'pending') {
+      const ids = [contribution.id, (contribution as any).eganowPayPartnerTransactionId].filter(
+        Boolean,
+      ) as string[]
+      for (const transactionId of ids) {
+        try {
+          const statusResp = await getEganow().checkTransactionStatus({
+            transactionId,
+            languageId: 'en',
+          })
+          console.log(
+            `[verify-payment] Eganow status for ${contribution.id} (looked up as ${transactionId}):`,
+            JSON.stringify(statusResp),
+          )
+        } catch (err: any) {
+          console.warn(
+            `[verify-payment] Eganow status lookup failed for ${transactionId}: ${err?.message}`,
+          )
+        }
+      }
+    }
+
     // Card payments have no reliable webhook when the transaction is frictionless
     // (no 3DS challenge page renders, so nothing calls our callback). Resolve the status
     // by polling Eganow's status API directly while the card payment is still pending.
@@ -73,6 +98,10 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
           transactionId: String(contribution.transactionReference),
           languageId: 'en',
         })
+        console.log(
+          `[verify-payment] Eganow status for card ${contribution.id}:`,
+          JSON.stringify(statusResp),
+        )
         if (statusResp.isSuccess) {
           const apiStatus = (
             statusResp.transStatus ||
@@ -108,12 +137,21 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     const mappedStatus =
       (contribution.paymentStatus && statusMap[contribution.paymentStatus]) || 'failed'
 
+    // Enough detail for the hosted-checkout return page to build the receipt without a
+    // second authenticated call. All of it is either public (jar) or the payer's own input.
+    const jar = contribution.jar
+    const jarId = typeof jar === 'object' ? jar?.id : jar
+
     const responseData = {
       success: true,
       data: {
         status: mappedStatus,
         reference: contribution.transactionReference,
         contributionId: contribution.id,
+        amount: contribution.amountContributed ?? null,
+        contributor: contribution.contributor ?? null,
+        jarId: jarId ?? null,
+        jarName: typeof jar === 'object' ? (jar?.name ?? null) : null,
       },
       message:
         contribution.paymentStatus === 'completed'

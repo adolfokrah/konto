@@ -3,6 +3,11 @@ interface EganowOptions {
   password: string
   xAuth: string
   baseUrl?: string
+  /**
+   * Host serving the hosted-checkout API. Defaults to `baseUrl`; override only if
+   * Eganow serves hosted checkout from a different domain than the core API.
+   */
+  hostedCheckoutBaseUrl?: string
 }
 
 /**
@@ -93,6 +98,59 @@ interface EganowBalanceResponse {
   balance: number
 }
 
+/**
+ * Hosted checkout: Eganow hosts the payment page, so we never touch card data.
+ * We hand it the amount and branding, it hands back a URL to send the payer to.
+ *
+ * No payment method or gateway is sent, because the payer chooses one on the hosted page.
+ * Credentials travel in the headers like every other call on this client.
+ */
+interface EganowHostedCheckoutRequest {
+  /** Payer's name, shown on the hosted page. */
+  accountName: string
+  amount: string
+  /** Server-to-server callback Eganow posts the final status to. */
+  callback: string
+  /** Eganow reads the currency from `currency`; `currencyIso` is kept alongside it. */
+  currency: string
+  currencyIso: string
+  /** Eganow service the collection runs under, e.g. `biz-collect`. */
+  serviceId: string
+  /** Our merchant id on Eganow. */
+  merchantServiceId: string
+  /** Business name shown to the payer on the hosted page. */
+  merchantDisplayName: string
+  /** Absolute, publicly reachable logo URL (lowercase `url` is Eganow's spelling). */
+  merchantlogourl: string
+  /** Our own reference — Eganow echoes it back on the callback. */
+  merchantReference: string
+  /** Eganow country code, e.g. `GH0233` for Ghana. */
+  senderCountryCode: string
+  /** Where the browser lands once the payer finishes on the hosted page. */
+  redirectUrl: string
+}
+
+/**
+ * Hosted checkout answers in an `{ isSuccess, statusCode, data, errorMessage }` envelope
+ * and returns HTTP 200 even when it failed, so `isSuccess` is the thing to branch on.
+ * Where the checkout URL sits inside `data` is undocumented, hence the spread of spellings.
+ */
+interface EganowHostedCheckoutResponse {
+  isSuccess?: boolean
+  statusCode?: number
+  errorMessage?: string | null
+  message?: string
+  redirectUrl?: string
+  checkoutUrl?: string
+  paymentUrl?: string
+  url?: string
+  eganowReferenceNo?: string
+  transactionId?: string
+  referenceNo?: string
+  data?: Record<string, any>
+  [key: string]: any
+}
+
 interface EganowStatusRequest {
   transactionId: string
   languageId: string
@@ -133,6 +191,7 @@ export default class Eganow {
   private readonly password: string
   private readonly xAuth: string
   private readonly baseUrl: string
+  private readonly hostedCheckoutBaseUrl: string
   private cachedToken: string | null = null
   private tokenExpiry: Date | null = null
 
@@ -141,6 +200,7 @@ export default class Eganow {
     password,
     xAuth,
     baseUrl = 'https://developer.deveganowapi.com',
+    hostedCheckoutBaseUrl,
   }: EganowOptions) {
     if (!username || !password || !xAuth) {
       throw new Error('username, password, and xAuth are required')
@@ -150,6 +210,7 @@ export default class Eganow {
     this.password = password
     this.xAuth = xAuth
     this.baseUrl = baseUrl.replace(/\/+$/, '')
+    this.hostedCheckoutBaseUrl = (hostedCheckoutBaseUrl || baseUrl).replace(/\/+$/, '')
   }
 
   // ------------------ Internal helpers ------------------
@@ -157,8 +218,9 @@ export default class Eganow {
   private url(
     path: string,
     query?: Record<string, string | number | boolean | undefined | null>,
+    base: string = this.baseUrl,
   ): string {
-    const u = new URL(path.startsWith('/') ? path : `/${path}`, this.baseUrl)
+    const u = new URL(path.startsWith('/') ? path : `/${path}`, base)
     if (query) {
       for (const [k, v] of Object.entries(query)) {
         if (v !== undefined && v !== null) u.searchParams.set(k, String(v))
@@ -175,9 +237,10 @@ export default class Eganow {
       body?: unknown
       headers?: Record<string, string>
       useBasicAuth?: boolean
+      baseUrl?: string
     } = {},
   ): Promise<T> {
-    const url = this.url(path, opts.query)
+    const url = this.url(path, opts.query, opts.baseUrl)
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...opts.headers,
@@ -315,6 +378,23 @@ export default class Eganow {
     return this.request<EganowCardCollectionResponse>('POST', '/api/transactions/card/collect', {
       body: requestBody,
     })
+  }
+
+  /**
+   * Hosted Checkout Payment Request
+   * Asks Eganow to open a checkout session and return the URL of its hosted payment
+   * page. The payer enters their card or wallet details on Eganow's page, so no card
+   * data ever reaches us. The final status arrives on the `callback` webhook, and the
+   * browser comes back to `redirectUrl`.
+   */
+  async createHostedCheckout(
+    params: EganowHostedCheckoutRequest,
+  ): Promise<EganowHostedCheckoutResponse> {
+    return this.request<EganowHostedCheckoutResponse>(
+      'POST',
+      '/api/hosted-checkout/paymentRequest',
+      { body: params, baseUrl: this.hostedCheckoutBaseUrl },
+    )
   }
 
   /**

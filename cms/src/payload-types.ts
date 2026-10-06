@@ -1631,6 +1631,10 @@ export interface Jar {
    */
   name: string;
   /**
+   * Short share link code: hogapay.com/j/<code>. Assigned automatically.
+   */
+  shortCode?: string | null;
+  /**
    * Description of the jar
    */
   description?: string | null;
@@ -3206,6 +3210,7 @@ export interface TransactionsSelect<T extends boolean = true> {
  */
 export interface JarsSelect<T extends boolean = true> {
   name?: T;
+  shortCode?: T;
   description?: T;
   jarGroup?: T;
   image?: T;

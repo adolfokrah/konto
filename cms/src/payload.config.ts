@@ -53,6 +53,7 @@ import { weeklyAccountSummaryTask } from './tasks/weekly-account-summary'
 import { withdrawReminderDailyTask } from './tasks/withdraw-reminder-daily'
 import { cleanupOldNotificationsTask } from './tasks/cleanup-old-notifications-task'
 import { sealInactiveJarsDailyTask } from './tasks/seal-inactive-jars-daily'
+import { reportErrorToSentry } from './utilities/sentryPayloadError'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -271,4 +272,7 @@ export default buildConfig({
       handler: getSystemSettings,
     },
   ],
+  hooks: {
+    afterError: [reportErrorToSentry],
+  },
 })

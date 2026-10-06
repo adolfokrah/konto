@@ -8,9 +8,13 @@ const BYPASS_PREFIXES = [
   '/dashboard',
   '/api',
   '/pay',
+  '/j/', // short jar links → redirect to /pay
   '/organizations',
   '/congratulations',
   '/email',
+  // Sentry browser events are tunnelled through this route (see next.config.js)
+  '/monitoring',
+  '/sentry-test',
   '/_next',
   '/favicon',
   '/media',

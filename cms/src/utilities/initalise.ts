@@ -10,6 +10,7 @@ export function getEganow(): Eganow {
       username: process.env.EGANOW_SECRET_USERNAME!,
       password: process.env.EGANOW_SECRET_PASSWORD!,
       xAuth: process.env.EGANOW_X_AUTH_TOKEN!,
+      hostedCheckoutBaseUrl: process.env.EGANOW_HOSTED_CHECKOUT_BASE_URL,
     })
   }
   return _eganow
