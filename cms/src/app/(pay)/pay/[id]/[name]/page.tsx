@@ -13,6 +13,7 @@ import ContributionInput from '@/components/ContributionInput'
 import RecentContributions from '@/components/RecentContributions'
 import ReportJarButton from '@/components/ReportJarButton'
 import { Metadata } from 'next'
+import { apiMediaUrl } from '@/utilities/apiMediaUrl'
 
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { id: jarId } = await params
@@ -34,10 +35,10 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     }
 
     // Get the image URL for og:image
-    const imageUrl = jar.image && typeof jar.image === 'object' ? jar.image.url : null
+    const imageUrl = apiMediaUrl(jar.image && typeof jar.image === 'object' ? jar.image.url : null)
     const jarImageThumbnail =
       jar.image && typeof jar.image === 'object' ? jar.image.sizes?.thumbnail : null
-    const imageForMeta = jarImageThumbnail?.url || imageUrl || null
+    const imageForMeta = apiMediaUrl(jarImageThumbnail?.url) || imageUrl || null
 
     // Get creator name
     const creatorName =
@@ -126,30 +127,31 @@ export default async function Page({
       throw new Error('Jar not found')
     }
 
-    // Get the image URL if it exists
-    const imageUrl =
+    // Media is served by the API (see apiMediaUrl), like the jar data itself.
+    const imageUrl = apiMediaUrl(
       jarWithBalance.image && typeof jarWithBalance.image === 'object'
         ? jarWithBalance.image.url
-        : null
+        : null,
+    )
 
     // Build carousel: main image first, then additional gallery photos
     const galleryUrls: string[] = Array.isArray(jarWithBalance.images)
       ? jarWithBalance.images
           .map((item: any) =>
-            item?.image && typeof item.image === 'object' ? item.image.url : null,
+            apiMediaUrl(item?.image && typeof item.image === 'object' ? item.image.url : null),
           )
           .filter(Boolean)
       : []
     const carouselImages: string[] = [...(imageUrl ? [imageUrl] : []), ...galleryUrls]
 
     // Get the creator photo URL if it exists
+    const creatorPhoto =
+      jarWithBalance?.creator && typeof jarWithBalance.creator === 'object'
+        ? jarWithBalance.creator.photo
+        : null
     const creatorPhotoUrl =
-      jarWithBalance?.creator &&
-      typeof jarWithBalance.creator === 'object' &&
-      jarWithBalance.creator.photo
-        ? typeof jarWithBalance.creator.photo === 'object'
-          ? jarWithBalance.creator.photo.sizes?.thumbnail?.url
-          : jarWithBalance.creator.photo
+      creatorPhoto && typeof creatorPhoto === 'object'
+        ? apiMediaUrl(creatorPhoto.sizes?.thumbnail?.url ?? creatorPhoto.url)
         : null
 
     // Get creator name, username, and initials
@@ -261,7 +263,10 @@ export default async function Page({
                         .slice(0, 3)
                         .map((a: { initials: string; photoUrl: string | null }, i: number) => (
                           <Avatar key={i} className="w-7 h-7 border-2 border-white">
-                            <AvatarImage src={a.photoUrl || undefined} className="object-cover" />
+                            <AvatarImage
+                              src={apiMediaUrl(a.photoUrl) || undefined}
+                              className="object-cover"
+                            />
                             <AvatarFallback
                               className={`text-[10px] font-semibold text-white ${
                                 ['bg-[#B45309]', 'bg-[#15803D]', 'bg-[#1D4ED8]'][i % 3]
