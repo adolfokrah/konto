@@ -93,16 +93,16 @@ describe('Account types', () => {
   it('blocks an organization until KYB is approved', async () => {
     const { user, jar } = await makeCreatorWithJar('org', {
       accountType: 'organization',
-      kycStatus: 'verified',
+      kycStatus: 'none',
       kybStatus: 'in_review',
     })
     await expect(recordCash(user, jar)).rejects.toThrow(/business verification/)
   })
 
-  it('lets an organization with KYB and owner KYC collect', async () => {
+  it('lets an organization with KYB collect without KYC', async () => {
     const { user, jar } = await makeCreatorWithJar('orgok', {
       accountType: 'organization',
-      kycStatus: 'verified',
+      kycStatus: 'none',
       kybStatus: 'approved',
     })
     const tx = await recordCash(user, jar)

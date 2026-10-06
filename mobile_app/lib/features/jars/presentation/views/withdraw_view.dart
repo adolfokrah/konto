@@ -230,14 +230,16 @@ class _WithdrawViewState extends State<WithdrawView> {
     final double transferCharges = _systemSettings.calculateTransferFee(balance);
     final double total = _systemSettings.calculateNetPayout(balance);
 
-    // Verification before a transfer, by account type: KYC for everyone, plus business
+    // Verification before a transfer, by account type: KYC for individuals, business
     // verification (KYB) for organizations.
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      if (authState.user.kycStatus != 'verified') return const KycView();
-      if (authState.user.isOrganization &&
-          authState.user.kybStatus != 'approved') {
-        return const BusinessKybView();
+      if (authState.user.isOrganization) {
+        if (authState.user.kybStatus != 'approved') {
+          return const BusinessKybView();
+        }
+      } else if (authState.user.kycStatus != 'verified') {
+        return const KycView();
       }
     }
 

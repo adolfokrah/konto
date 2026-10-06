@@ -77,8 +77,8 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 4. KYC not verified
-        if (user.kycStatus == 'none') {
+        // 4. Individuals: KYC not verified
+        if (!user.isOrganization && user.kycStatus == 'none') {
           return Alert(
             message:
                 'Verify your identity to start collecting and transferring funds. Tap to start verification.',
@@ -88,8 +88,8 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 5. KYC in review
-        if (user.kycStatus == 'in_review') {
+        // 5. Individuals: KYC in review
+        if (!user.isOrganization && user.kycStatus == 'in_review') {
           return Alert(
             message:
                 'Your identity verification is under review. This usually takes 24 hours. We\'ll notify you once complete.',
@@ -97,7 +97,7 @@ class JarCompletionAlert extends StatelessWidget {
           );
         }
 
-        // 6. Organizations: business verification (KYB) after KYC
+        // 6. Organizations: business verification (KYB) only
         if (user.isOrganization && user.kybStatus != 'approved') {
           final kyb = user.kybStatus;
           if (kyb == 'in_review' || kyb == 'pending' || kyb == 'under-review') {

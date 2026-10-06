@@ -22,7 +22,7 @@ void main() {
       expect(_creator({'kycStatus': 'in_review'}).canCollect, isFalse);
     });
 
-    test('organization needs KYB as well as KYC', () {
+    test('organization needs KYB', () {
       expect(
         _creator({
           'accountType': 'organization',
@@ -35,6 +35,17 @@ void main() {
         _creator({
           'accountType': 'organization',
           'kycStatus': 'verified',
+          'kybStatus': 'approved',
+        }).canCollect,
+        isTrue,
+      );
+    });
+
+    test('organization does not need KYC', () {
+      expect(
+        _creator({
+          'accountType': 'organization',
+          'kycStatus': 'none',
           'kybStatus': 'approved',
         }).canCollect,
         isTrue,
