@@ -27,7 +27,7 @@ class _AddContributionViewState extends State<AddContributionView> {
   String _input = '';
 
   // Predefined quick amount options
-  final List<double> _quickAmounts = [10, 25, 50, 100];
+  final List<double> _quickAmounts = [50, 100, 200, 500];
 
   double get _selectedAmount => double.tryParse(_input) ?? 0.0;
 

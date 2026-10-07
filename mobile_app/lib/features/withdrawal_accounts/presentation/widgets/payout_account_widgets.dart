@@ -34,11 +34,24 @@ String payoutAccountTitle(WithdrawalAccountModel account) =>
         ? account.label!.trim()
         : account.accountHolder;
 
-/// "MTN MoMo · •••• 4567"
+/// Masked number as the mockups write it: "024 ••• 4567" for wallets,
+/// "••• 2210" for bank accounts.
+String payoutMaskedNumber(WithdrawalAccountModel account) {
+  final digits = account.accountNumber.replaceAll(RegExp(r'\s'), '');
+  if (digits.length <= 4) return digits;
+  final last = digits.substring(digits.length - 4);
+  if (account.isMobileMoney && digits.length >= 10) {
+    final local = digits.startsWith('233') ? '0${digits.substring(3)}' : digits;
+    return '${local.substring(0, 3)} ••• $last';
+  }
+  return '••• $last';
+}
+
+/// "MTN MoMo · 024 ••• 4567"
 String payoutAccountSubtitle(
   WithdrawalAccountModel account, [
   List<BankModel> banks = const [],
-]) => '${payoutProviderName(account, banks)} · ${account.maskedAccountNumber}';
+]) => '${payoutProviderName(account, banks)} · ${payoutMaskedNumber(account)}';
 
 /// Network logo for mobile money, blue bank tile for banks.
 class PayoutAccountLogo extends StatelessWidget {

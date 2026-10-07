@@ -12,6 +12,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:flutter/rendering.dart';
@@ -236,7 +237,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
         if (state is! JarSummaryLoaded) {
           return Scaffold(
             appBar: CollectTopBar(
-              title: localizations.requestContribution,
+              title: 'Request money',
               leadingIcon: Icons.close_rounded,
               onBack: () => context.pop(),
             ),
@@ -275,7 +276,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
 
         return Scaffold(
           appBar: CollectTopBar(
-            title: localizations.requestContribution,
+            title: 'Request money',
             leadingIcon: Icons.close_rounded,
             onBack: () => context.pop(),
           ),
@@ -423,7 +424,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
               Text(jarName, style: DsText.section, textAlign: TextAlign.center),
               const SizedBox(height: 2),
               Text(
-                localizations.scanTheQRCodeToContribute,
+                'Scan to pay with MoMo or card',
                 style: DsText.caption,
                 textAlign: TextAlign.center,
               ),
@@ -482,8 +483,40 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           children: [
             Expanded(
               child: _shareTarget(
+                icon: Icons.chat_rounded,
+                label: 'WhatsApp',
+                background: const Color(0xFF25D366),
+                foreground: Colors.white,
+                onTap:
+                    () => _openWith(
+                      Uri.parse(
+                        'whatsapp://send?text=${Uri.encodeComponent(_shareText(paymentLink, jarName, localizations))}',
+                      ),
+                      paymentLink,
+                      jarName,
+                      localizations,
+                    ),
+              ),
+            ),
+            Expanded(
+              child: _shareTarget(
+                icon: Icons.mail_outline_rounded,
+                label: 'SMS',
+                onTap:
+                    () => _openWith(
+                      Uri.parse(
+                        'sms:?body=${Uri.encodeComponent(_shareText(paymentLink, jarName, localizations))}',
+                      ),
+                      paymentLink,
+                      jarName,
+                      localizations,
+                    ),
+              ),
+            ),
+            Expanded(
+              child: _shareTarget(
                 icon: Icons.copy_rounded,
-                label: localizations.copyLink,
+                label: 'Copy',
                 onTap: () => _copyLink(paymentLink, localizations),
               ),
             ),
@@ -491,8 +524,8 @@ class _RequestContributionViewState extends State<RequestContributionView> {
               child: Builder(
                 builder:
                     (btnContext) => _shareTarget(
-                      icon: Icons.ios_share_rounded,
-                      label: localizations.share,
+                      icon: Icons.more_horiz_rounded,
+                      label: 'More',
                       onTap:
                           () => _sharePaymentLink(
                             btnContext,
@@ -503,18 +536,33 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                     ),
               ),
             ),
-            const Spacer(),
-            const Spacer(),
           ],
         ),
       ],
     );
   }
 
+  /// Opens WhatsApp / Messages with the message ready; falls back to the
+  /// system share sheet when the app isn't there.
+  Future<void> _openWith(
+    Uri uri,
+    String paymentLink,
+    String jarName,
+    AppLocalizations localizations,
+  ) async {
+    try {
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
+    } catch (_) {}
+    if (!mounted) return;
+    _sharePaymentLink(context, paymentLink, jarName, localizations);
+  }
+
   Widget _shareTarget({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color background = AppColors.surfaceWhite,
+    Color foreground = AppColors.navy,
   }) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -524,11 +572,11 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           Container(
             width: 48,
             height: 48,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceWhite,
+            decoration: BoxDecoration(
+              color: background,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: AppColors.navy),
+            child: Icon(icon, size: 20, color: foreground),
           ),
           const SizedBox(height: 6),
           Text(

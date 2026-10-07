@@ -41,6 +41,14 @@ class _RegisterViewState extends State<RegisterView> {
   /// 0 = who you're collecting for, 1 = about you.
   int _step = 0;
 
+  /// True when the number came from the phone step (login), so sign-up
+  /// doesn't ask for it again.
+  bool _phoneFromLogin = false;
+
+  /// The username the server just rejected as taken (mockup: Details ·
+  /// username taken). Cleared as soon as the username changes.
+  String? _takenUsername;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +60,7 @@ class _RegisterViewState extends State<RegisterView> {
         _phoneNumber = args?['initialPhoneNumber'] ?? '';
         _selectedPhoneCountry =
             args?['initialSelectedCountry'] ?? 'Ghana'; // Fixed key name
+        _phoneFromLogin = _phoneNumber.isNotEmpty;
       });
     });
   }
@@ -138,18 +147,69 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  /// Top progress: the account type is half the job, the details the rest.
-  double get _progress {
-    final filled =
-        [
-          _firstNameController.text,
-          _lastNameController.text,
-          _emailController.text,
-          _usernameController.text,
-          _phoneNumber,
-        ].where((v) => v.trim().isNotEmpty).length;
-    return _step == 0 ? 0.5 : 0.5 + 0.5 * filled / 5;
+  /// Top progress: step 1 of 2, then 2 of 2.
+  double get _progress => _step == 0 ? 0.5 : 1.0;
+
+  bool get _usernameTaken =>
+      _takenUsername != null &&
+      _usernameController.text.trim() == _takenUsername;
+
+  /// One-tap alternatives built from the name (format-valid; the server
+  /// still checks them on submit).
+  List<String> get _usernameSuggestions {
+    String clean(String v) =>
+        v.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
+    final first = clean(_firstNameController.text);
+    final last = clean(_lastNameController.text);
+    final taken = _takenUsername ?? '';
+    final year = (DateTime.now().year % 100).toString().padLeft(2, '0');
+    final options = <String>[
+      if (first.isNotEmpty && last.isNotEmpty) '$first$last',
+      if (first.isNotEmpty && last.isNotEmpty) '${first}_$last',
+      if (taken.isNotEmpty) '$taken$year',
+    ];
+    final seen = <String>{};
+    return options
+        .where(
+          (o) => o != taken && o.length >= 3 && o.length <= 30 && seen.add(o),
+        )
+        .toList();
   }
+
+  void _useUsername(String value) {
+    _usernameController.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
+    setState(() => _takenUsername = null);
+  }
+
+  Widget _usernameField() => AuthField(
+    key: const Key('username'),
+    label: 'Username',
+    prefixText: '@',
+    keyboardType: TextInputType.text,
+    controller: _usernameController,
+    standalone: _usernameTaken,
+    error: _usernameTaken,
+    suffix:
+        _usernameTaken
+            ? const Icon(
+              Icons.close_rounded,
+              size: 18,
+              color: AppColors.negative,
+            )
+            : null,
+    onChanged: (value) {
+      // Convert to lowercase for case-insensitive username
+      final cursorPosition = _usernameController.selection.baseOffset;
+      _usernameController.value = TextEditingValue(
+        text: value.toLowerCase(),
+        selection: TextSelection.collapsed(offset: cursorPosition),
+      );
+      setState(() {});
+    },
+  );
 
   static const _linkStyle = TextStyle(
     fontWeight: FontWeight.w700,
@@ -183,8 +243,15 @@ class _RegisterViewState extends State<RegisterView> {
             }
 
             if (state is AuthError) {
-              // Show error message from registration
-              AppSnackBar.showError(context, message: state.error);
+              if (state.conflictField == 'username' && _step == 1) {
+                // Shown inline under the username with suggestions.
+                setState(
+                  () => _takenUsername = _usernameController.text.trim(),
+                );
+              } else {
+                // Show error message from registration
+                AppSnackBar.showError(context, message: state.error);
+              }
             }
 
             if (state is PhoneNumberAvailable) {
@@ -272,10 +339,7 @@ class _RegisterViewState extends State<RegisterView> {
                                   setState(() => _accountType = 'organization'),
                         ),
                       ] else ...[
-                        const AuthHeader(
-                          title: 'About you',
-                          subtitle: 'Use your name as it appears on your ID.',
-                        ),
+                        const AuthHeader(title: 'About you'),
                         const SizedBox(height: 18),
                         AuthFieldGroup(
                           children: [
@@ -297,78 +361,87 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                           ],
                         ),
-                        const AuthHelp('As on your Ghana Card or ID'),
+                        const AuthHelp('As on your Ghana Card'),
                         const SizedBox(height: 14),
-                        AuthFieldGroup(
-                          children: [
-                            AuthField(
-                              key: const Key('email'),
-                              label: localizations.email,
-                              keyboardType: TextInputType.emailAddress,
-                              controller: _emailController,
-                              onChanged: (_) => setState(() {}),
-                            ),
-                            AuthField(
-                              key: const Key('username'),
-                              label: 'Username',
-                              prefixText: '@',
-                              keyboardType: TextInputType.text,
-                              controller: _usernameController,
-                              onChanged: (value) {
-                                // Convert to lowercase for case-insensitive username
-                                final cursorPosition =
-                                    _usernameController.selection.baseOffset;
-                                _usernameController.value = TextEditingValue(
-                                  text: value.toLowerCase(),
-                                  selection: TextSelection.collapsed(
-                                    offset: cursorPosition,
-                                  ),
-                                );
-                                setState(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                        const AuthHelp(
-                          'Your username identifies you or your organization. It can\'t be changed once set.',
-                        ),
-                        const SizedBox(height: 14),
-                        SelectInput<String>(
-                          key: const Key('country'),
-                          label: localizations.country,
-                          options: AppSelectOptions.getCountryOptions(
-                            localizations,
+                        if (_usernameTaken) ...[
+                          AuthField(
+                            key: const Key('email'),
+                            label: localizations.email,
+                            keyboardType: TextInputType.emailAddress,
+                            controller: _emailController,
+                            standalone: true,
+                            onChanged: (_) => setState(() {}),
                           ),
-                          value: _selectedCountry,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCountry = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        NumberInput(
-                          key: const Key('phoneNumber'),
-                          selectedCountry: _selectedPhoneCountry,
-                          countryCode: _countryCode,
-                          phoneNumber:
-                              _phoneNumber, // Pre-fill with passed phone number
-                          placeholder: localizations.phoneNumberPlaceholder,
-                          onCountryChanged: (country, code) {
-                            setState(() {
-                              _selectedPhoneCountry = country;
-                              _countryCode = code;
-                            });
-                          },
-                          onPhoneNumberChanged: (phoneNumber) {
-                            setState(() {
-                              _phoneNumber = phoneNumber;
-                            });
-                          },
-                        ),
-                        const AuthHelp(
-                          'Enter your number without the leading 0. e.g. 241234567',
-                        ),
+                          const SizedBox(height: 12),
+                          _usernameField(),
+                          AuthHelp(
+                            '@$_takenUsername is taken. Try one of these:',
+                            color: AppColors.negative,
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final u in _usernameSuggestions)
+                                _UsernameChip(
+                                  '@$u',
+                                  onTap: () => _useUsername(u),
+                                ),
+                            ],
+                          ),
+                        ] else
+                          AuthFieldGroup(
+                            children: [
+                              AuthField(
+                                key: const Key('email'),
+                                label: localizations.email,
+                                keyboardType: TextInputType.emailAddress,
+                                controller: _emailController,
+                                onChanged: (_) => setState(() {}),
+                              ),
+                              _usernameField(),
+                            ],
+                          ),
+                        if (!_phoneFromLogin) ...[
+                          const SizedBox(height: 14),
+                          SelectInput<String>(
+                            key: const Key('country'),
+                            label: localizations.country,
+                            options: AppSelectOptions.getCountryOptions(
+                              localizations,
+                            ),
+                            value: _selectedCountry,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCountry = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          NumberInput(
+                            key: const Key('phoneNumber'),
+                            selectedCountry: _selectedPhoneCountry,
+                            countryCode: _countryCode,
+                            phoneNumber:
+                                _phoneNumber, // Pre-fill with passed phone number
+                            placeholder: localizations.phoneNumberPlaceholder,
+                            onCountryChanged: (country, code) {
+                              setState(() {
+                                _selectedPhoneCountry = country;
+                                _countryCode = code;
+                              });
+                            },
+                            onPhoneNumberChanged: (phoneNumber) {
+                              setState(() {
+                                _phoneNumber = phoneNumber;
+                              });
+                            },
+                          ),
+                          const AuthHelp(
+                            'Enter your number without the leading 0. e.g. 241234567',
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         AuthField(
                           key: const Key('referralCode'),
@@ -397,9 +470,11 @@ class _RegisterViewState extends State<RegisterView> {
                           text: TextSpan(
                             style: DsText.caption,
                             children: [
-                              TextSpan(text: localizations.bySigningUpYouAgree),
+                              const TextSpan(
+                                text: 'By continuing you agree to the ',
+                              ),
                               TextSpan(
-                                text: localizations.termsAndConditions,
+                                text: 'Terms',
                                 style: _linkStyle,
                                 recognizer:
                                     TapGestureRecognizer()
@@ -407,9 +482,9 @@ class _RegisterViewState extends State<RegisterView> {
                                         UrlLauncherUtils.launch(AppLinks.terms);
                                       },
                               ),
-                              TextSpan(text: localizations.and),
+                              const TextSpan(text: ' and '),
                               TextSpan(
-                                text: localizations.privacyPolicy,
+                                text: 'Privacy Policy',
                                 style: _linkStyle,
                                 recognizer:
                                     TapGestureRecognizer()
@@ -419,6 +494,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         );
                                       },
                               ),
+                              const TextSpan(text: '.'),
                             ],
                           ),
                         ),
@@ -435,10 +511,12 @@ class _RegisterViewState extends State<RegisterView> {
                     children: [
                       AppButton.filled(
                         key: const Key('register_continue'),
+                        // Both steps say Continue (owner's call), not "Create account".
                         text: localizations.continueText,
                         isLoading: state is AuthLoading,
                         onPressed:
-                            state is AuthLoading
+                            state is AuthLoading ||
+                                    (_step == 1 && _usernameTaken)
                                 ? null
                                 : () {
                                   if (_step == 0) {
@@ -448,7 +526,7 @@ class _RegisterViewState extends State<RegisterView> {
                                   }
                                 },
                       ),
-                      if (_step == 0)
+                      if (_step == 0 && !_phoneFromLogin)
                         AppButton.outlined(
                           key: const Key('login_button'),
                           text: 'I have an account',
@@ -462,6 +540,40 @@ class _RegisterViewState extends State<RegisterView> {
                 },
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One-tap username suggestion (mockup chip).
+class _UsernameChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _UsernameChip(this.label, {required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: AppColors.line),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: DsText.rowTitle.copyWith(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),

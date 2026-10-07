@@ -128,9 +128,23 @@ class _HomeViewState extends State<HomeView> {
   ) async {
     final eligible =
         action == _HomeAction.transfer
-            ? jars.where((j) => j.creator.id == userId).toList()
-            : jars.where((j) => j.isActive).toList();
-    if (eligible.isEmpty) return;
+            ? jars
+                .where(
+                  (j) => j.creator.id == userId && !j.isClosed && !j.isFrozen,
+                )
+                .toList()
+            : jars.where((j) => j.canCollect).toList();
+    if (eligible.isEmpty) {
+      AppSnackBar.show(
+        context,
+        message:
+            action == _HomeAction.transfer
+                ? 'None of your jars can transfer right now.'
+                : 'None of your jars is open for payments. Sealed and frozen jars can\'t collect.',
+        type: SnackBarType.info,
+      );
+      return;
+    }
 
     final summaryBloc = context.read<JarSummaryBloc>();
     final current =
@@ -283,8 +297,18 @@ class _HomeViewState extends State<HomeView> {
     _lastJars = jars;
     final userId = user?.id;
     final own = jars.where((j) => j.creator.id == userId).toList();
-    final openJars = jars.where((j) => j.isActive).toList();
-    final ownOpen = own.where((j) => j.isActive).toList();
+    // Sealed and frozen jars still hold money, so they stay on Home (tagged);
+    // only closed jars drop off.
+    final openJars = jars.where((j) => !j.isClosed).toList();
+    final ownOpen = own.where((j) => !j.isClosed).toList();
+    // Open jars swipe as cards; sealed and frozen ones get their own list.
+    final activeJars =
+        openJars.where((j) => !j.isSealed && !j.isFrozen).toList();
+    // Below Recent activity: sealed, frozen and closed jars.
+    final sealedJars = [
+      ...openJars.where((j) => j.isSealed || j.isFrozen),
+      ...jars.where((j) => j.isClosed),
+    ];
 
     if (jars.isEmpty) return _firstDay(context, user);
     if (openJars.isEmpty) return _allClosed(context, jars);
@@ -307,37 +331,39 @@ class _HomeViewState extends State<HomeView> {
       const SizedBox(height: 14),
       _quickActions(context, jars, userId, collectorOnly, noPaymentsYet),
       const SizedBox(height: 18),
-      DsSectionHeader(
-        collectorOnly ? 'Jars you collect for' : 'Your jars',
-        action: 'See all',
-        onAction: () => context.go(AppRoutes.jars),
-      ),
-      if (openJars.length == 1)
-        _JarRow(
-          jar: openJars.first,
-          imageUrl: _imageUrl(openJars.first),
-          isOwner: openJars.first.creator.id == userId,
-          onTap: () => _openJar(openJars.first),
-        )
-      else
-        SizedBox(
-          height: 168,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            itemCount: openJars.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, i) {
-              final jar = openJars[i];
-              return _JarCard(
-                jar: jar,
-                imageUrl: _imageUrl(jar),
-                isOwner: jar.creator.id == userId,
-                onTap: () => _openJar(jar),
-              );
-            },
-          ),
+      if (activeJars.isNotEmpty) ...[
+        DsSectionHeader(
+          collectorOnly ? 'Jars you collect for' : 'Your jars',
+          action: 'See all',
+          onAction: () => context.go(AppRoutes.jars),
         ),
+        if (activeJars.length == 1)
+          _JarRow(
+            jar: activeJars.first,
+            imageUrl: _imageUrl(activeJars.first),
+            isOwner: activeJars.first.creator.id == userId,
+            onTap: () => _openJar(activeJars.first),
+          )
+        else
+          SizedBox(
+            height: 168,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              itemCount: activeJars.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final jar = activeJars[i];
+                return _JarCard(
+                  jar: jar,
+                  imageUrl: _imageUrl(jar),
+                  isOwner: jar.creator.id == userId,
+                  onTap: () => _openJar(jar),
+                );
+              },
+            ),
+          ),
+      ],
       if (noPaymentsYet) ...[
         const SizedBox(height: 14),
         DsNote(
@@ -364,6 +390,34 @@ class _HomeViewState extends State<HomeView> {
       ],
       const SizedBox(height: 18),
       _recentActivity(context, jars, userId),
+      if (sealedJars.isNotEmpty) ...[
+        const SizedBox(height: 18),
+        DsSectionHeader(
+          sealedJars.any((j) => j.isClosed)
+              ? 'Sealed & closed jars'
+              : 'Sealed jars',
+          action: 'All',
+          onAction: () => context.go(AppRoutes.jars),
+        ),
+        DsListCard(
+          children: [
+            for (final jar in sealedJars)
+              DsRow(
+                leading: JarThumb(imageUrl: _imageUrl(jar), size: 40),
+                title: jar.name,
+                subtitle:
+                    '${jar.currency.toUpperCase()} ${_short(jar.totalContributions)}'
+                    '${jar.isClosed
+                        ? ''
+                        : jar.isFrozen
+                        ? ' · Contact support'
+                        : ' · No new payments'}',
+                trailing: _statusTag(jar, jar.creator.id == userId),
+                onTap: () => _openJar(jar),
+              ),
+          ],
+        ),
+      ],
     ];
   }
 
@@ -724,6 +778,14 @@ class _TotalBlock extends StatelessWidget {
   }
 }
 
+/// Sealed / Frozen when the jar isn't open, otherwise the user's role.
+Widget _statusTag(JarListItem jar, bool isOwner) {
+  if (jar.isClosed) return const DsTag('Closed');
+  if (jar.isFrozen) return const DsTag('Frozen', tone: DsTone.negative);
+  if (jar.isSealed) return const DsTag('Sealed', tone: DsTone.pending);
+  return DsTag(isOwner ? 'Owner' : 'Collector');
+}
+
 String _daysLeft(String? deadline) {
   if (deadline == null) return '';
   final d = DateTime.tryParse(deadline);
@@ -768,7 +830,7 @@ class _JarCard extends StatelessWidget {
               children: [
                 JarThumb(imageUrl: imageUrl, size: 34),
                 const Spacer(),
-                DsTag(isOwner ? 'Owner' : 'Collector'),
+                _statusTag(jar, isOwner),
               ],
             ),
             const SizedBox(height: 12),
@@ -854,13 +916,15 @@ class _JarRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          DsTag(
-            !isOwner
-                ? 'Collector'
-                : jar.totalContributions == 0
-                ? 'New'
-                : 'Owner',
-          ),
+          jar.isSealed || jar.isFrozen
+              ? _statusTag(jar, isOwner)
+              : DsTag(
+                !isOwner
+                    ? 'Collector'
+                    : jar.totalContributions == 0
+                    ? 'New'
+                    : 'Owner',
+              ),
         ],
       ),
     );

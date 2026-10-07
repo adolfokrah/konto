@@ -65,5 +65,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'hoga-2e89a.firebasestorage.app',
     iosBundleId: 'com.hoganame.hogapay',
   );
-
 }

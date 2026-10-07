@@ -32,6 +32,10 @@ final class FetchContributions extends ContributionsListEvent {
   final String? jarCreatorId; // Jar creator ID
   final bool isAdminCollector; // Whether user is an admin collector on this jar
 
+  /// When set, the feed spans every jar in the scope instead of [jarId]
+  /// (which is then ignored).
+  final AllJarsScope? allJarsScope;
+
   FetchContributions({
     required this.jarId,
     this.page = 1,
@@ -40,5 +44,22 @@ final class FetchContributions extends ContributionsListEvent {
     this.currentUserId,
     this.jarCreatorId,
     this.isAdminCollector = false,
+    this.allJarsScope,
   });
+}
+
+/// The user's jars for the all-jars feed, split by what they may see:
+/// every payment on jars they own or are an accepted admin collector on,
+/// only the payments they collected on the rest.
+@immutable
+class AllJarsScope {
+  final List<String> fullAccessJarIds;
+  final List<String> collectorOnlyJarIds;
+
+  const AllJarsScope({
+    required this.fullAccessJarIds,
+    required this.collectorOnlyJarIds,
+  });
+
+  bool get isEmpty => fullAccessJarIds.isEmpty && collectorOnlyJarIds.isEmpty;
 }

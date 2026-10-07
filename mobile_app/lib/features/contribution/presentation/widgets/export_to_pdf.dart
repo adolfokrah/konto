@@ -30,7 +30,7 @@ class ExportToPdf extends StatelessWidget {
               return const SizedBox.shrink();
             }
             return CollectBoxButton(
-              icon: Icons.ios_share_rounded,
+              icon: Icons.download_rounded,
               loading: isLoading,
               onTap: () => ExportOptionsSheet.show(context),
             );

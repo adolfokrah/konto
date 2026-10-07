@@ -7,6 +7,10 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/widgets/otp_input.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/features/contribution/data/models/momo_charge_model.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
@@ -29,6 +33,52 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
   Timer? _verificationTimer;
 
   bool get _isMtn => widget.provider == 'mtn';
+
+  // Who is paying and how much, passed by the payer step (route extra).
+  double? _amount;
+  double? _contribution;
+  String? _currency;
+  String? _payerName;
+  String? _phone;
+  String? _network;
+  bool _argsRead = false;
+
+  // The success state can arrive twice (charge, then verify); handle it once.
+  bool _completed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_argsRead) return;
+    _argsRead = true;
+    Object? extra;
+    try {
+      extra = GoRouterState.of(context).extra;
+    } catch (_) {}
+    if (extra is Map) {
+      _amount = (extra['amount'] as num?)?.toDouble();
+      _contribution = (extra['contribution'] as num?)?.toDouble();
+      _currency = extra['currency'] as String?;
+      _payerName = extra['name'] as String?;
+      _phone = extra['phone'] as String?;
+      _network = extra['network'] as String?;
+    }
+  }
+
+  String? get _firstName {
+    final n = _payerName?.trim() ?? '';
+    return n.isEmpty ? null : n.split(RegExp(r'\s+')).first;
+  }
+
+  String get _networkName => _network ?? (_isMtn ? 'MTN' : 'Telecel');
+
+  String? get _numberLine =>
+      (_phone == null || _phone!.isEmpty) ? null : '$_networkName · $_phone';
+
+  String _money(double v) =>
+      CurrencyUtils.formatAmount(v, (_currency ?? '').toUpperCase());
+
+  void _close() => context.go(AppRoutes.jarDetail);
 
   @override
   void initState() {
@@ -93,6 +143,8 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
       final localizations = AppLocalizations.of(context)!;
 
       if (charge.status == 'success') {
+        if (_completed) return;
+        _completed = true;
         if (_verificationTimer == null) {
           context.read<MomoPaymentBloc>().add(
             VerifyPaymentRequested(charge.reference!),
@@ -102,7 +154,6 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         }
         context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
         RatingService.instance.maybeRequestReview();
-        context.go(AppRoutes.jarDetail);
       } else if (charge.status == 'pay_offline') {
         // Start periodic verification for offline payment (only once)
         if (_verificationTimer == null && charge.reference != null) {
@@ -132,14 +183,27 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     return BlocConsumer<MomoPaymentBloc, MomoPaymentState>(
       listener: _listener,
       builder: (context, state) {
-        final isVoucher =
-            state is MomoPaymentSuccess && state.charge.status == 'send_otp';
+        final status = state is MomoPaymentSuccess ? state.charge.status : null;
+        final isVoucher = status == 'send_otp';
+        final isWaiting =
+            state is MomoPaymentLoading ||
+            status == 'pay_offline' ||
+            status == 'ongoing';
+        final bg = isVoucher ? AppColors.cream : AppColors.surfaceWhite;
         return Scaffold(
-          backgroundColor: isVoucher ? AppColors.cream : AppColors.surfaceWhite,
+          backgroundColor: bg,
           appBar: CollectTopBar(
-            showBack: false,
-            background: isVoucher ? AppColors.cream : AppColors.surfaceWhite,
+            background: bg,
+            showBack: isVoucher,
             title: isVoucher ? 'Voucher code' : null,
+            actions: [
+              if (isWaiting)
+                CollectBoxButton(
+                  icon: Icons.close_rounded,
+                  filled: true,
+                  onTap: _close,
+                ),
+            ],
           ),
           body: SafeArea(top: false, child: _buildBody(context, state)),
           bottomNavigationBar: _buildFooter(context, state),
@@ -156,7 +220,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
       final charge = state.charge;
       switch (charge.status) {
         case 'success':
-          return _received(context);
+          return _received(context, charge);
         case 'pay_offline':
         case 'ongoing':
           return _waiting(context, charge, current: 1);
@@ -177,9 +241,14 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         case 'success':
           return CollectFooter(
             children: [
-              AppButton.filled(
-                text: localizations.done,
-                onPressed: () => context.go(AppRoutes.jarDetail),
+              AppButton.filled(text: localizations.done, onPressed: _close),
+              Builder(
+                builder:
+                    (btnContext) => CollectButton(
+                      label: 'Share receipt',
+                      style: CollectButtonStyle.ghost,
+                      onTap: () => _shareReceipt(btnContext, state.charge),
+                    ),
               ),
             ],
           );
@@ -187,11 +256,29 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         case 'ongoing':
           return null;
         case 'send_otp':
-          return CollectFooter(
+          return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              AppButton.filled(
-                text: localizations.momoSubmitVoucher,
-                onPressed: () => _submitVoucher(state.charge.reference!),
+              AuthKeypad(
+                onDigit: (d) {
+                  if (_otpController.text.length >= 6) return;
+                  _otpController.text = '${_otpController.text}$d';
+                },
+                onBackspace: () {
+                  final t = _otpController.text;
+                  if (t.isNotEmpty) {
+                    _otpController.text = t.substring(0, t.length - 1);
+                  }
+                },
+              ),
+              CollectFooter(
+                background: AppColors.cream,
+                children: [
+                  AppButton.filled(
+                    text: localizations.momoSubmitVoucher,
+                    onPressed: () => _submitVoucher(state.charge.reference!),
+                  ),
+                ],
               ),
             ],
           );
@@ -208,20 +295,64 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go(AppRoutes.jarDetail);
+              _close();
             }
           },
         ),
         CollectButton(
-          label: 'Back to jar',
+          label: 'Change number',
           style: CollectButtonStyle.ghost,
-          onTap: () => context.go(AppRoutes.jarDetail),
+          onTap: () {
+            if (context.canPop()) {
+              context.pop('change_number');
+            } else {
+              _close();
+            }
+          },
         ),
       ],
     );
   }
 
+  void _shareReceipt(BuildContext context, MomoChargeModel charge) {
+    final amount = _contribution ?? _amount;
+    final lines = [
+      'Hogapay receipt',
+      if (amount != null) 'Payment received: ${_money(amount)}',
+      if (_payerName != null && _payerName!.isNotEmpty) 'From: $_payerName',
+      if (charge.reference != null) 'Reference: ${charge.reference}',
+    ];
+    final box = context.findRenderObject() as RenderBox?;
+    Share.share(
+      lines.join('\n'),
+      sharePositionOrigin:
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+    );
+  }
+
   // ---------------------------------------------------------------- states
+
+  /// Big state icon, heading and one line, left-aligned as in the mockups.
+  Widget _stateHeader({
+    required IconData icon,
+    required DsTone tone,
+    required String title,
+    String? body,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        DsIconTile(icon, tone: tone, size: 72),
+        const SizedBox(height: 16),
+        Text(title, style: DsText.title.copyWith(fontSize: 27)),
+        if (body != null) ...[
+          const SizedBox(height: 6),
+          Text(body, style: DsText.body),
+        ],
+      ],
+    );
+  }
 
   Widget _waiting(
     BuildContext context,
@@ -229,28 +360,26 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     required int current,
   }) {
     final localizations = AppLocalizations.of(context)!;
+    final first = _firstName;
+    final detail = [
+      if (_amount != null) _money(_amount!),
+      if (_phone != null && _phone!.isNotEmpty) '$_networkName $_phone',
+    ].join(' · ');
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 24),
       children: [
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: DsIconTile(
-            Icons.hourglass_top_rounded,
-            tone: DsTone.pending,
-            size: 72,
-          ),
+        _stateHeader(
+          icon: Icons.phone_iphone_rounded,
+          tone: DsTone.pending,
+          title:
+              first != null
+                  ? 'Waiting for $first to approve'
+                  : localizations.momoCompleteAuthorization,
+          body:
+              detail.isNotEmpty
+                  ? detail
+                  : (charge?.displayText ?? localizations.momoDontClosePage),
         ),
-        const SizedBox(height: 16),
-        Text(localizations.momoCompleteAuthorization, style: DsText.title),
-        const SizedBox(height: 6),
-        Text(
-          charge?.displayText ?? localizations.momoDontClosePage,
-          style: DsText.body,
-        ),
-        if (charge?.displayText != null) ...[
-          const SizedBox(height: 4),
-          Text(localizations.momoDontClosePage, style: DsText.small),
-        ],
         const SizedBox(height: 24),
         DsSteps(
           current: current,
@@ -265,135 +394,69 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
             ('Added to jar', null),
           ],
         ),
-        const SizedBox(height: 24),
-        if (current > 0) _buildApprovalInstructions(),
       ],
-    );
-  }
-
-  Widget _buildApprovalInstructions() {
-    final localizations = AppLocalizations.of(context)!;
-    return DsCard(
-      color: AppColors.fill,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            localizations.momoContributorNoPrompt,
-            style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          Text(localizations.momoAskContributorAuthorize, style: DsText.small),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DsNetworkLogo(
-                _isMtn ? DsNetwork.mtn : DsNetwork.telecel,
-                size: 32,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: _isMtn ? 'MTN MoMo: ' : 'Telecel Cash: ',
-                        style: DsText.small.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy,
-                        ),
-                      ),
-                      TextSpan(
-                        text:
-                            _isMtn
-                                ? 'Dial *170# → My Wallet → My Approvals → Select the pending request → Enter PIN'
-                                : 'Dial *110# → Telecel Cash → Approvals → Select the request → Enter PIN',
-                        style: DsText.small,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
   Widget _voucher(BuildContext context, MomoChargeModel charge) {
-    final localizations = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
-        Text(
-          charge.displayText ?? localizations.momoCompleteAuthorization,
-          style: DsText.body,
-        ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceWhite,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.navy, width: 2),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: TextField(
-            controller: _otpController,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            cursorColor: AppColors.navy,
-            style: const TextStyle(
-              fontFamily: 'Chillax',
-              fontWeight: FontWeight.w600,
-              fontSize: 28,
-              letterSpacing: 6,
-              color: AppColors.navy,
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              filled: false,
-              hintText: localizations.momoEnterVoucherCode,
-              hintStyle: DsText.body.copyWith(
-                color: AppColors.faint,
-                letterSpacing: 0,
+        Text.rich(
+          TextSpan(
+            style: DsText.body,
+            children: [
+              const TextSpan(
+                text:
+                    'Telecel Cash and AirtelTigo Money payers can approve with a voucher. Dial ',
               ),
-            ),
-            onSubmitted: (_) => _submitVoucher(charge.reference!),
+              TextSpan(
+                text: '*110#',
+                style: DsText.body.copyWith(
+                  color: AppColors.navy,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const TextSpan(text: ' → Make payments → Generate voucher.'),
+            ],
           ),
+        ),
+        const SizedBox(height: 14),
+        AppOtpInput(
+          length: 6,
+          controller: _otpController,
+          useSystemKeyboard: false,
+          onCompleted: (_) {},
         ),
       ],
     );
   }
 
-  Widget _received(BuildContext context) {
+  Widget _received(BuildContext context, MomoChargeModel charge) {
+    final amount = _contribution ?? _amount;
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const DsIconTile(
-              Icons.check_rounded,
+            _stateHeader(
+              icon: Icons.check_rounded,
               tone: DsTone.positive,
-              size: 72,
+              title: 'Payment received',
             ),
-            const SizedBox(height: 14),
-            Text(
-              'Payment received',
-              style: DsText.title,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'It has been added to the jar.',
-              style: DsText.body,
-              textAlign: TextAlign.center,
-            ),
+            if (amount != null) ...[
+              const SizedBox(height: 6),
+              DsMoney(amount, currency: null, size: 44, signed: true),
+            ],
+            const SizedBox(height: 22),
+            _fillCard([
+              if (_payerName != null && _payerName!.isNotEmpty)
+                DsKeyValue('From', _payerName!),
+              if (charge.reference != null)
+                DsKeyValue('Reference', charge.reference!),
+            ]),
           ],
         ),
       ),
@@ -401,32 +464,47 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
   }
 
   Widget _failed(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final first = _firstName;
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const DsIconTile(
-              Icons.close_rounded,
+            _stateHeader(
+              icon: Icons.close_rounded,
               tone: DsTone.negative,
-              size: 72,
+              title: "Payment didn't go through",
+              body:
+                  '${first ?? 'The payer'} declined the prompt or it timed out. Nothing was charged.',
             ),
             const SizedBox(height: 14),
-            Text(
-              "Payment didn't go through",
-              style: DsText.title,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              localizations.momoPaymentFailedTryAgain,
-              style: DsText.body,
-              textAlign: TextAlign.center,
-            ),
+            _fillCard([
+              if (_amount != null) DsKeyValue('Amount', _money(_amount!)),
+              if (_numberLine != null) DsKeyValue('Number', _numberLine!),
+            ]),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Grey key/value card (`card fill`); nothing when there are no rows.
+  Widget _fillCard(List<Widget> rows) {
+    if (rows.isEmpty) return const SizedBox.shrink();
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.fill,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.line),
+            rows[i],
+          ],
+        ],
       ),
     );
   }

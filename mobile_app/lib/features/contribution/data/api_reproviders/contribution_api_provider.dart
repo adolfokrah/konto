@@ -158,6 +158,10 @@ class ContributionApiProvider extends BaseApiProvider {
     bool? hasAnyFilters, // Whether any filters are applied
     String?
     linkedTransactionId, // Filter refunds linked to a specific transaction
+    // All-jars feed: when either list is given, [jarId] and the collector
+    // rules above are replaced by a per-jar OR (see below).
+    List<String>? fullAccessJarIds, // jars the user owns / is admin on
+    List<String>? collectorOnlyJarIds, // jars the user only collects for
   }) async {
     try {
       // Get authenticated headers
@@ -236,8 +240,30 @@ class ContributionApiProvider extends BaseApiProvider {
         };
       }
 
+      final allJars = fullAccessJarIds != null || collectorOnlyJarIds != null;
+
       // Apply collector filtering logic
-      if (isCurrentUserJarCreator == true) {
+      if (allJars) {
+        // Each jar keeps its own visibility rule, ORed together (Payload ANDs
+        // this with the other top-level filters):
+        //   (jar in fullAccess) OR (jar in collectorOnly AND collector = me)
+        var i = 0;
+        if (fullAccessJarIds != null && fullAccessJarIds.isNotEmpty) {
+          queryParams['where[or][$i][jar][in]'] = fullAccessJarIds.join(',');
+          i++;
+        }
+        if (collectorOnlyJarIds != null && collectorOnlyJarIds.isNotEmpty) {
+          queryParams['where[or][$i][and][0][jar][in]'] = collectorOnlyJarIds
+              .join(',');
+          queryParams['where[or][$i][and][1][collector][equals]'] = user.id;
+          i++;
+        }
+        if (i == 0) {
+          // No jars in scope: match nothing rather than everything visible.
+          queryParams['where[collector][equals]'] = user.id;
+          queryParams['where[jar][exists]'] = 'false';
+        }
+      } else if (isCurrentUserJarCreator == true) {
         // User IS the jar creator
         if (collectors != null && collectors.isNotEmpty) {
           // Collector filter is explicitly applied - use it

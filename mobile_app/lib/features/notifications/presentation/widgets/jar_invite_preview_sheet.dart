@@ -41,9 +41,12 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
   bool _isLoading = true;
   String? _jarName;
   String? _jarImage;
-  String? _jarDescription;
+  String? _jarGroup;
   String? _creatorName;
-  String? _creatorPhoto;
+
+  /// 'business' / 'person' when the organizer is verified, 'none' when not,
+  /// null when the preview didn't say.
+  String? _verification;
 
   @override
   void initState() {
@@ -75,16 +78,19 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
 
         // Resolve creator name and photo from populated creator object
         String? creatorName;
-        String? creatorPhoto;
+        String? verification;
         final creator = jar['creator'];
         if (creator is Map<String, dynamic>) {
           final firstName = creator['firstName'] as String? ?? '';
           final lastName = creator['lastName'] as String? ?? '';
           creatorName = '$firstName $lastName'.trim();
 
-          final photo = creator['photo'];
-          if (photo is Map<String, dynamic>) {
-            creatorPhoto = photo['url'] as String?;
+          final isOrg = creator['accountType'] == 'organization';
+          final status =
+              (isOrg ? creator['kybStatus'] : creator['kycStatus']) as String?;
+          if (status != null) {
+            verification =
+                status == 'verified' ? (isOrg ? 'business' : 'person') : 'none';
           }
         }
 
@@ -92,9 +98,9 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
           setState(() {
             _jarName = jar['name'] as String?;
             _jarImage = imageUrl;
-            _jarDescription = jar['description'] as String?;
+            _jarGroup = jar['jarGroup'] as String?;
             _creatorName = creatorName;
-            _creatorPhoto = creatorPhoto;
+            _verification = verification;
             _isLoading = false;
           });
         }
@@ -165,7 +171,12 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    const Text('Jar invitation', style: DsText.caption),
+                    Text(
+                      _jarGroup?.isNotEmpty == true
+                          ? _jarGroup!
+                          : 'Jar invitation',
+                      style: DsText.caption,
+                    ),
                   ],
                 ),
               ),
@@ -178,69 +189,44 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
             ),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Organizer',
-                        style: DsText.small.copyWith(color: AppColors.muted),
-                      ),
-                      const Spacer(),
-                      CircleAvatar(
-                        radius: 11,
-                        backgroundColor: AppColors.limeSoft,
-                        backgroundImage:
-                            _creatorPhoto != null
-                                ? NetworkImage(
-                                  ImageUtils.constructImageUrl(_creatorPhoto!),
-                                )
-                                : null,
-                        child:
-                            _creatorPhoto == null
-                                ? Text(
-                                  (_creatorName?.isNotEmpty == true
-                                          ? _creatorName!
-                                          : 'S')
-                                      .characters
-                                      .first
-                                      .toUpperCase(),
-                                  style: const TextStyle(
-                                    fontFamily: 'Supreme',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.navy,
-                                  ),
-                                )
-                                : null,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          _creatorName?.isNotEmpty == true
-                              ? _creatorName!
-                              : 'Someone',
-                          style: DsText.rowTitle.copyWith(fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+                DsKeyValue(
+                  'Organizer',
+                  _creatorName?.isNotEmpty == true ? _creatorName! : 'Someone',
                 ),
+                if (_verification != null) ...[
+                  const Divider(height: 1, color: AppColors.line),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Status',
+                          style: DsText.small.copyWith(color: AppColors.muted),
+                        ),
+                        const Spacer(),
+                        switch (_verification) {
+                          'business' => const DsTag(
+                            'Verified business',
+                            tone: DsTone.positive,
+                          ),
+                          'person' => const DsTag(
+                            'Verified',
+                            tone: DsTone.positive,
+                          ),
+                          _ => const DsTag('Not verified'),
+                        },
+                      ],
+                    ),
+                  ),
+                ],
                 const Divider(height: 1, color: AppColors.line),
                 const DsKeyValue('Your role', 'Collector'),
               ],
             ),
           ),
-          if (_jarDescription != null && _jarDescription!.isNotEmpty)
-            Flexible(
-              child: SingleChildScrollView(
-                child: Text(_jarDescription!, style: DsText.small),
-              ),
-            ),
           AccHelp(
             'Only accept if you know this organizer.',
             linkText: 'Report',

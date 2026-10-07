@@ -23,7 +23,11 @@ final class AuthAuthenticated extends AuthState {
 final class AuthError extends AuthState {
   final String error;
 
-  const AuthError({required this.error});
+  /// Which sign-up field clashed with an existing account ('username' or
+  /// 'email'), when the server says so.
+  final String? conflictField;
+
+  const AuthError({required this.error, this.conflictField});
 }
 
 final class PhoneNumberAvailable extends AuthState {

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/select_options.dart';
+import 'package:Hoga/core/constants/app_links.dart';
+import 'package:Hoga/core/utils/url_launcher_utils.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
@@ -133,28 +136,16 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                 final localizations = AppLocalizations.of(context)!;
 
                 return Scaffold(
-                  appBar: AppBar(
-                    title: Text(localizations.personalDetails),
+                  backgroundColor: AppColors.cream,
+                  appBar: JarTopBar(
+                    title: localizations.personalDetails,
                     actions: [
-                      if (canEdit)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Center(
-                            child:
-                                isLoading
-                                    ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.navy,
-                                      ),
-                                    )
-                                    : DsLink(
-                                      localizations.save,
-                                      onTap: _handleUpdateAccount,
-                                    ),
-                          ),
+                      // Email and country stay editable after ID checks, so
+                      // Save is always there (mockup).
+                      JarBarLink(
+                          localizations.save,
+                          loading: isLoading,
+                          onTap: _handleUpdateAccount,
                         ),
                     ],
                   ),
@@ -209,7 +200,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
         ),
         const SizedBox(height: 12),
       ],
-      if (canEdit)
+      if (canEdit) ...[
         AccFieldGroup(
           children: [
             AccField(
@@ -227,8 +218,19 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
               textCapitalization: TextCapitalization.words,
             ),
           ],
-        )
-      else
+        ),
+        const SizedBox(height: 12),
+        AccField(
+          label: 'Username',
+          controller: _usernameController,
+          locked: usernameLocked,
+          enabled: !isLoading && !usernameLocked,
+          hint: 'Choose a username',
+        ),
+        const SizedBox(height: 8),
+        const AccHelp('Username cannot be changed once set'),
+      ] else ...[
+        // Mockup "Personal details": name and username locked together.
         AccFieldGroup(
           children: [
             AccField(
@@ -237,22 +239,24 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
               locked: true,
               grouped: true,
             ),
+            AccField(
+              label: 'Username',
+              controller: _usernameController,
+              locked: true,
+              enabled: false,
+              grouped: true,
+            ),
           ],
         ),
-      const SizedBox(height: 12),
-      AccField(
-        label: 'Username',
-        controller: _usernameController,
-        locked: usernameLocked,
-        enabled: !isLoading && !usernameLocked,
-        hint: 'Choose a username',
-      ),
-      const SizedBox(height: 8),
-      AccHelp(
-        locked
-            ? localizations.kycVerifiedDetailsLocked
-            : 'Username cannot be changed once set',
-      ),
+        const SizedBox(height: 8),
+        AccHelp(
+          user.kycStatus == 'verified'
+              ? 'Name is locked after ID verification.'
+              : 'Name is locked during ID verification.',
+          linkText: 'Request a change',
+          onLink: () => UrlLauncherUtils.launch(AppLinks.contact),
+        ),
+      ],
       const SizedBox(height: 12),
       AccFieldGroup(
         children: [
@@ -260,17 +264,16 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
             label: localizations.email,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            enabled: !isLoading && canEdit,
-            locked: !canEdit,
+            enabled: !isLoading,
             grouped: true,
           ),
           AccSelectField(
             label: localizations.country,
             value: countryLabel,
             grouped: true,
-            showChevron: canEdit,
+            showChevron: true,
             onTap:
-                !isLoading && canEdit
+                !isLoading
                     ? () async {
                       final picked = await showAccOptionSheet<String>(
                         context,

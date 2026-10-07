@@ -83,14 +83,12 @@ class _StartView extends StatelessWidget {
               tone: DsTone.info,
               size: 64,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             const AuthHeader(
               title: 'Verify your ID to start collecting',
-              subtitle:
-                  'You need a verified account to transfer your jar balance. '
-                  'You also get a verified badge that builds trust with contributors.',
+              subtitle: 'Required by Bank of Ghana rules for payment apps.',
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.fill,
@@ -143,7 +141,7 @@ class _StartView extends StatelessWidget {
               SizedBox(width: 6),
               Flexible(
                 child: Text(
-                  'We send a secure link to your email and phone',
+                  'Encrypted and handled by our ID partner',
                   style: DsText.caption,
                   textAlign: TextAlign.center,
                 ),
@@ -211,12 +209,12 @@ class _InReviewView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                DsSteps(
-                  current: 1,
-                  steps: const [
-                    ('ID and selfie submitted', null),
+                const DsSteps(
+                  current: 2,
+                  steps: [
+                    ('Ghana Card uploaded', null),
+                    ('Selfie matched', null),
                     ('Manual review', 'Usually under 24 hours'),
-                    ('Verified', null),
                   ],
                 ),
               ],
@@ -226,8 +224,8 @@ class _InReviewView extends StatelessWidget {
           const DsNote(
             tone: DsTone.neutral,
             text:
-                'You can set up jars now. We\'ll notify you once your '
-                'verification is complete.',
+                "You can set up jars now. Payments open as soon as you're "
+                'approved.',
           ),
           const SizedBox(height: 12),
           DsCard(
@@ -284,29 +282,30 @@ class _VerifiedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceWhite,
-      appBar: const AuthTopBar(close: true, background: AppColors.surfaceWhite),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const DsIconTile(
-              Icons.verified_user_outlined,
-              tone: DsTone.positive,
-              size: 64,
-            ),
-            const SizedBox(height: 18),
-            AuthHeader(
-              title: "You're verified",
-              subtitle:
-                  needsKyb
-                      ? 'Your identity has been verified. Next, verify your '
-                          'organization so your jars can start collecting.'
-                      : 'Your jars can take payments and transfer money. '
-                          'Thanks for keeping Hogapay safe.',
-            ),
-          ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const DsIconTile(
+                Icons.verified_user_outlined,
+                tone: DsTone.positive,
+                size: 64,
+              ),
+              const SizedBox(height: 14),
+              AuthHeader(
+                title: "You're verified",
+                subtitle:
+                    needsKyb
+                        ? 'Your identity has been verified. Next, verify your '
+                            'organization so your jars can start collecting.'
+                        : 'Your jars can take payments and transfer money. '
+                            'Thanks for keeping Hogapay safe.',
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: AuthFooter(

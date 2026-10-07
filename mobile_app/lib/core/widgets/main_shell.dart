@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
 
-/// App shell for the signed-in tabs: Home, Jars, Activity, Profile.
+/// App shell for the signed-in tabs: Home, Jars, Activity,
+/// Insights, Profile.
 ///
 /// A floating navy bar sits under the content. The active tab expands into a
 /// lime pill with its label; the others show only their icon.
@@ -16,6 +17,7 @@ class MainShell extends StatelessWidget {
     _TabSpec('Home', Icons.home_outlined, Icons.home_rounded),
     _TabSpec('Jars', Icons.savings_outlined, Icons.savings_rounded),
     _TabSpec('Activity', Icons.receipt_long_outlined, Icons.receipt_long),
+    _TabSpec('Insights', Icons.insights_outlined, Icons.insights_rounded),
     _TabSpec('Profile', Icons.person_outline_rounded, Icons.person_rounded),
   ];
 
@@ -93,7 +95,8 @@ class _TabButton extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           height: 48,
-          padding: EdgeInsets.symmetric(horizontal: selected ? 16 : 14),
+          // Five tabs must fit a 375pt phone: icon-only tabs stay narrow.
+          padding: EdgeInsets.symmetric(horizontal: selected ? 14 : 12),
           decoration: BoxDecoration(
             color: selected ? AppColors.lime : Colors.transparent,
             borderRadius: BorderRadius.circular(17),
@@ -110,7 +113,7 @@ class _TabButton extends StatelessWidget {
                         : AppColors.cream.withValues(alpha: 0.6),
               ),
               if (selected) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   spec.label,
                   style: const TextStyle(

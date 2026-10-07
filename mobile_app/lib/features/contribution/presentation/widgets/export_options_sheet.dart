@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/button.dart';
@@ -16,7 +17,10 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class ExportOptionsSheet extends StatefulWidget {
-  const ExportOptionsSheet({super.key});
+  /// "Edit" on the period card: closes this sheet and opens the filters.
+  final VoidCallback? onEditPeriod;
+
+  const ExportOptionsSheet({super.key, this.onEditPeriod});
 
   static void show(BuildContext context) {
     showModalBottomSheet(
@@ -35,7 +39,9 @@ class ExportOptionsSheet extends StatefulWidget {
                 value: context.read<FilterContributionsBloc>(),
               ),
             ],
-            child: const ExportOptionsSheet(),
+            child: ExportOptionsSheet(
+              onEditPeriod: () => ContributionsListFilter.show(context),
+            ),
           ),
     );
   }
@@ -57,8 +63,13 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
     final filterState = context.read<FilterContributionsBloc>().state;
     final listState = context.read<ContributionsListBloc>().state;
     final jarName = jarState is JarSummaryLoaded ? jarState.jarData.name : '';
+    final fmt = DateFormat('d MMM');
     final dateLabel =
         filterState is FilterContributionsLoaded &&
+                filterState.startDate != null &&
+                filterState.endDate != null
+            ? '${fmt.format(filterState.startDate!)} – ${fmt.format(filterState.endDate!)}'
+            : filterState is FilterContributionsLoaded &&
                 filterState.selectedDate != null
             ? FilterLabels.date(localizations, filterState.selectedDate!)
             : localizations.dateAll;
@@ -74,7 +85,7 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
       ),
       children: [
         DsCard(
-          color: AppColors.fill,
+          color: AppColors.cream,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
@@ -92,6 +103,16 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                   style: DsText.small.copyWith(color: AppColors.navy),
                 ),
               ),
+              if (widget.onEditPeriod != null) ...[
+                const SizedBox(width: 8),
+                DsLink(
+                  'Edit',
+                  onTap: () {
+                    Navigator.pop(context);
+                    widget.onEditPeriod!();
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -99,14 +120,14 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
           index: 0,
           icon: Icons.picture_as_pdf_outlined,
           tone: DsTone.negative,
-          title: localizations.exportToPdf,
-          subtitle: 'PDF with totals, payments and answers',
+          title: 'PDF statement',
+          subtitle: 'Totals, payments, answers',
         ),
         _option(
           index: 1,
-          icon: Icons.format_list_bulleted_rounded,
-          tone: DsTone.positive,
-          title: localizations.shareAsList,
+          icon: Icons.chat_bubble_outline_rounded,
+          tone: DsTone.info,
+          title: 'WhatsApp list',
           subtitle: 'Names and amounts only',
         ),
         AppButton.filled(

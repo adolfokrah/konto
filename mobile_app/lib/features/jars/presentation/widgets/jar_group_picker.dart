@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/jar_groups.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
-import 'package:Hoga/l10n/app_localizations.dart';
 
 /// Emoji shown next to a jar category, as in the redesign pickers.
 String jarGroupEmoji(String group) {
@@ -67,7 +66,8 @@ class JarGroupPicker {
       searchFilter: (String group) => group,
       isItemSelected:
           (String group, String selectedValue) => group == selectedValue,
-      title: AppLocalizations.of(context)!.selectJarGroup,
+      title: 'Category',
+      searchHint: 'Search ${JarGroups.groups.length} categories',
     );
   }
 }

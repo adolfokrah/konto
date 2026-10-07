@@ -12,6 +12,7 @@ import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/referral/data/referral_api_provider.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
@@ -173,7 +174,8 @@ class _ReferralContentState extends State<_ReferralContent> {
     final name = widget.user?.firstName ?? 'You';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Invite & earn')),
+      backgroundColor: AppColors.cream,
+      appBar: const JarTopBar(title: 'Invite & earn'),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _bonusesFuture,
         builder: (context, snapshot) {
@@ -513,18 +515,20 @@ class _BonusRow extends StatelessWidget {
   }
 }
 
-// ── Withdraw review sheet ────────────────────────────────────────────────────
+// ── Withdraw earnings page ───────────────────────────────────────────────────
 
+/// Mockup "Referral · withdraw": what you'll receive, where it goes, then a
+/// code. Resolves true when the user taps Withdraw.
 class _WithdrawSheet extends StatelessWidget {
   final double balance;
   const _WithdrawSheet({required this.balance});
 
   static Future<bool?> show(BuildContext context, {required double balance}) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _WithdrawSheet(balance: balance),
+    return Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        fullscreenDialog: true,
+        builder: (_) => _WithdrawSheet(balance: balance),
+      ),
     );
   }
 
@@ -538,66 +542,86 @@ class _WithdrawSheet extends StatelessWidget {
         }
         destination ??= state.accounts.isNotEmpty ? state.accounts.first : null;
 
-        return AccSheet(
-          children: [
-            const AccSheetHeader('Withdraw earnings'),
-            Center(
-              child: Column(
-                children: [
-                  const Text('Referral balance', style: DsText.caption),
-                  const SizedBox(height: 4),
-                  DsMoney(balance, size: 40),
-                ],
+        return Scaffold(
+          backgroundColor: AppColors.cream,
+          appBar: JarTopBar(
+            title: 'Withdraw earnings',
+            leadingIcon: Icons.close_rounded,
+            onLeading: () => Navigator.of(context).pop(false),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            children: [
+              const SizedBox(height: 10),
+              const Text(
+                "You'll receive",
+                style: DsText.caption,
+                textAlign: TextAlign.center,
               ),
-            ),
-            if (destination != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.cream,
-                  borderRadius: BorderRadius.circular(AppRadius.radiusCard),
-                ),
-                child: Row(
-                  children: [
-                    PayoutAccountLogo(account: destination, size: 32),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('To', style: DsText.caption),
-                          Text(
-                            '${payoutAccountTitle(destination)} · ${destination.maskedAccountNumber}',
-                            style: AccText.h3.copyWith(fontSize: 14),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+              const SizedBox(height: 4),
+              Center(child: DsMoney(balance, size: 44)),
+              const SizedBox(height: 4),
+              const Text(
+                'No fee on referral earnings',
+                style: DsText.caption,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (destination != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.fill,
+                    borderRadius: BorderRadius.circular(AppRadius.radiusCard),
+                  ),
+                  child: Row(
+                    children: [
+                      PayoutAccountLogo(account: destination, size: 32),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('To', style: DsText.caption),
+                            Text(
+                              '${payoutAccountTitle(destination)} · ${payoutMaskedNumber(destination)}',
+                              style: AccText.h3.copyWith(fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    DsLink(
-                      'Change',
-                      onTap: () {
-                        final router = GoRouter.of(context);
-                        Navigator.of(context).pop(false);
-                        router.push(AppRoutes.withdrawalAccounts);
-                      },
-                    ),
-                  ],
+                      DsLink(
+                        'Change',
+                        onTap: () {
+                          final router = GoRouter.of(context);
+                          Navigator.of(context).pop(false);
+                          router.push(AppRoutes.withdrawalAccounts);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 12),
+              ],
+              const DsNote(
+                tone: DsTone.neutral,
+                text: "You'll confirm with a code sent to your phone.",
               ),
-            const Text(
-              "You'll confirm with a code sent to your phone.",
-              style: DsText.caption,
-            ),
-            AppButton.filled(
-              text: 'Withdraw GHS ${balance.toStringAsFixed(2)}',
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
+            ],
+          ),
+          bottomNavigationBar: JarFooter(
+            children: [
+              AppButton.filled(
+                text: 'Withdraw GHS ${balance.toStringAsFixed(2)}',
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
+          ),
         );
       },
     );

@@ -61,7 +61,8 @@ void main() {
               'id': 'test_user_123',
               'phoneNumber': '245301631',
               'countryCode': '+233',
-              'firstName': 'Test', 'lastName': 'User',
+              'firstName': 'Test',
+              'lastName': 'User',
               'email': 'test@example.com',
               'country': 'Ghana',
               'kycStatus': 'none',
@@ -334,9 +335,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const LoginView(),
-              },
+              routes: {'/': (context) => const LoginView()},
             ),
           ),
         ),

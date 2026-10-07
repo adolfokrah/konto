@@ -112,10 +112,14 @@ class ContributionRepository {
     bool? isCurrentUserJarCreator,
     bool? hasAnyFilters,
     String? linkedTransactionId,
+    List<String>? fullAccessJarIds,
+    List<String>? collectorOnlyJarIds,
   }) async {
     try {
       final apiResponse = await _contributionApiProvider.getContributions(
         jarId: jarId,
+        fullAccessJarIds: fullAccessJarIds,
+        collectorOnlyJarIds: collectorOnlyJarIds,
         paymentMethods: paymentMethods,
         statuses: statuses,
         collectors: collectors,

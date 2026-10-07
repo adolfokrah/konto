@@ -7,6 +7,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_settings_widgets.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 
 /// "Paste a list" sheet: paste options separated by commas or new lines.
@@ -274,14 +275,49 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
     }
   }
 
-  static const _typeChips = [
+  /// Four answer types; phone and email live under Text as a format.
+  static const _types = [
     ('text', 'Text'),
     ('number', 'Number'),
     ('select', 'Choice'),
     ('checkbox', 'Yes/No'),
+  ];
+
+  static const _textFormats = [
+    ('text', 'Any text'),
     ('phone', 'Phone'),
     ('email', 'Email'),
   ];
+
+  bool get _isTextType =>
+      _fieldType == 'text' || _fieldType == 'phone' || _fieldType == 'email';
+
+  void _delete() async {
+    final ok = await JarConfirmSheet.show(
+      context: context,
+      icon: Icons.delete_outline_rounded,
+      tone: DsTone.negative,
+      title: 'Delete this question?',
+      message:
+          '"${widget.existingField!.label}" will be removed from your payment page. This cannot be undone.',
+      confirmText: 'Delete',
+    );
+    if (ok != true || !mounted) return;
+    final summaryState = context.read<JarSummaryBloc>().state;
+    final currentFields =
+        summaryState is JarSummaryLoaded
+            ? (summaryState.jarData.customFields ?? [])
+                .map((f) => f.toJson())
+                .toList()
+            : <Map<String, dynamic>>[];
+    context.read<ManageCustomFieldsBloc>().add(
+      DeleteCustomFieldRequested(
+        jarId: widget.jarId,
+        index: widget.existingIndex!,
+        currentFields: currentFields,
+      ),
+    );
+  }
 
   void _setType(String value) {
     setState(() {
@@ -316,45 +352,43 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
           children: [
             JarField(
               label: 'Question',
+              focused: true,
               child: JarBareInput(
                 controller: _labelController,
                 hintText: 'e.g. Which side are you from?',
               ),
             ),
-            const SizedBox(height: 14),
-            const DsGroupLabel('Answer type'),
-            const SizedBox(height: 8),
-            Opacity(
-              opacity: widget.isEditMode ? 0.6 : 1,
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final t in _typeChips)
-                    JarChip(
-                      label: t.$2,
-                      selected: _fieldType == t.$1,
-                      onTap: widget.isEditMode ? null : () => _setType(t.$1),
-                    ),
-                ],
-              ),
+            const SizedBox(height: 12),
+            JarSegmented<String>(
+              options: _types,
+              value: _isTextType ? 'text' : _fieldType,
+              onChanged: widget.isEditMode ? null : _setType,
             ),
-            const SizedBox(height: 14),
+            if (_isTextType) ...[
+              const SizedBox(height: 12),
+              const DsGroupLabel('Format'),
+              const SizedBox(height: 8),
+              JarSegmented<String>(
+                options: _textFormats,
+                value: _fieldType,
+                onChanged: widget.isEditMode ? null : _setType,
+              ),
+            ],
+            const SizedBox(height: 12),
 
             if (_fieldType == 'select') ...[
-              DsGroupLabel('Options · ${_optionControllers.length}'),
-              const SizedBox(height: 8),
               DsListCard(
                 children: [
                   for (var i = 0; i < _optionControllers.length; i++)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 22,
+                            width: 16,
                             child: Text('${i + 1}', style: DsText.caption),
                           ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: JarBareInput(
                               controller: _optionControllers[i],
@@ -383,29 +417,43 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                         children: [
                           const Icon(
                             Icons.add_rounded,
-                            size: 20,
+                            size: 18,
                             color: AppColors.navy,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Add option',
                               style: DsText.rowTitle.copyWith(
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          DsLink('Paste list', onTap: _openPasteSheet),
+                          GestureDetector(
+                            onTap: _openPasteSheet,
+                            child: const Text(
+                              'Paste list',
+                              style: TextStyle(
+                                fontFamily: 'Supreme',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: AppColors.navy,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppColors.lime,
+                                decorationThickness: 3,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
             ],
 
-            if (_fieldType != 'checkbox') ...[
+            if (_fieldType != 'checkbox' && _fieldType != 'select') ...[
               JarField(
                 label: 'Placeholder (optional)',
                 child: JarBareInput(
@@ -413,14 +461,13 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                   hintText: 'e.g. Enter your year group',
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
             ],
 
             DsListCard(
               children: [
                 DsRow(
                   title: 'Required',
-                  subtitle: 'Contributors must answer this',
                   trailing: JarToggle(
                     value: _required,
                     onChanged: (v) => setState(() => _required = v),
@@ -428,7 +475,6 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                 ),
                 DsRow(
                   title: 'Include in PDF',
-                  subtitle: 'Show answers in exported reports',
                   trailing: JarToggle(
                     value: _includeInExport,
                     onChanged: (v) => setState(() => _includeInExport = v),
@@ -442,10 +488,23 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
           children: [
             BlocBuilder<ManageCustomFieldsBloc, ManageCustomFieldsState>(
               builder: (context, state) {
-                return JarPrimaryButton(
-                  label: widget.isEditMode ? 'Save changes' : 'Add question',
-                  loading: state is ManageCustomFieldsInProgress,
-                  onTap: state is ManageCustomFieldsInProgress ? null : _submit,
+                final busy = state is ManageCustomFieldsInProgress;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    JarPrimaryButton(
+                      label:
+                          widget.isEditMode ? 'Save changes' : 'Add question',
+                      loading: busy,
+                      onTap: busy ? null : _submit,
+                    ),
+                    if (widget.isEditMode)
+                      JarGhostButton(
+                        label: 'Delete question',
+                        color: AppColors.negative,
+                        onTap: busy ? null : _delete,
+                      ),
+                  ],
                 );
               },
             ),

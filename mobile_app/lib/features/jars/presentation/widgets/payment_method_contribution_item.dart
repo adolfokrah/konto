@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 
 /// One payment-method line in a breakdown: colour dot, method, count, amount.
 class PaymentMethodContributionItem extends StatelessWidget {
@@ -38,7 +39,8 @@ class PaymentMethodContributionItem extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.fill,
+              // White tile on the cream list inside the breakdown sheet.
+              color: AppColors.surfaceWhite,
               borderRadius: BorderRadius.circular(11),
             ),
             child: Icon(icon, size: 18, color: AppColors.navy),
@@ -103,7 +105,7 @@ class JarStackedBar extends StatelessWidget {
       return Container(
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.fill,
+          color: SheetSurface.fillOf(context),
           borderRadius: BorderRadius.circular(6),
         ),
       );

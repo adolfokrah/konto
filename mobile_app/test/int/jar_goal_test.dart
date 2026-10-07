@@ -6,8 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Hoga/core/config/backend_config.dart';
-import 'package:Hoga/core/widgets/currency_text_field.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/fetch_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
@@ -28,6 +28,22 @@ import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
+
+/// Types [digits] on the goal screen's keypad, clearing what's there first.
+Future<void> typeOnKeypad(WidgetTester tester, String digits) async {
+  final keypad = find.byType(AuthKeypad);
+  final backspace = find.descendant(
+    of: keypad,
+    matching: find.byIcon(Icons.backspace_outlined),
+  );
+  for (var i = 0; i < 12; i++) {
+    await tester.tap(backspace);
+  }
+  for (final d in digits.split('')) {
+    await tester.tap(find.descendant(of: keypad, matching: find.text(d)));
+  }
+  await tester.pumpAndSettle();
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -80,7 +96,8 @@ void main() {
                 'isFixedContribution': false,
                 'creator': {
                   'id': 'test-user-id',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
@@ -239,12 +256,9 @@ void main() {
       // Test amount input - wait for the form to be ready
       await tester.pumpAndSettle();
 
-      // Look for the CurrencyTextField used in JarGoalView
-      final amountFields = find.byType(CurrencyTextField);
-      expect(amountFields, findsAtLeastNWidgets(1));
-
-      await tester.enterText(amountFields.first, '1000');
-      await tester.pumpAndSettle();
+      // The goal screen types the target on an in-app keypad
+      expect(find.byType(AuthKeypad), findsOneWidget);
+      await typeOnKeypad(tester, '1000');
 
       // Test date picker interaction
       final selectDateButton = find.text('Select Date');
@@ -268,9 +282,7 @@ void main() {
         'Available texts after form input: ${tester.allWidgets.whereType<Text>().map((w) => w.data).toList()}',
       );
 
-      final saveButton = find.text(
-        'Continue',
-      ); // The actual button text is "Continue"
+      final saveButton = find.text('Save goal');
       expect(saveButton, findsOneWidget);
       await tester.tap(saveButton);
 
@@ -327,7 +339,8 @@ void main() {
                 'isFixedContribution': false,
                 'creator': {
                   'id': 'test-user-id',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
@@ -508,7 +521,7 @@ void main() {
                   BlocProvider.value(value: getIt<FetchContributionBloc>()),
                   BlocProvider.value(value: getIt<MomoPaymentBloc>()),
                   BlocProvider.value(value: getIt<NotificationsBloc>()),
-            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+                  BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
                 ],
                 child: MaterialApp.router(
                   localizationsDelegates: const [
@@ -539,16 +552,14 @@ void main() {
       // Test amount input - wait for the form to be ready
       await tester.pumpAndSettle();
 
-      // Look for the CurrencyTextField used in JarGoalView (should be pre-filled)
-      final amountFields = find.byType(CurrencyTextField);
-      expect(amountFields, findsAtLeastNWidgets(1));
+      // The goal screen types the target on an in-app keypad
+      expect(find.byType(AuthKeypad), findsOneWidget);
 
       // Clear and enter new amount
-      await tester.enterText(amountFields.first, '2000');
-      await tester.pumpAndSettle();
+      await typeOnKeypad(tester, '2000');
 
       // Save the updated goal
-      final saveButton = find.text('Continue'); // Use correct button text
+      final saveButton = find.text('Save goal');
       expect(saveButton, findsOneWidget);
 
       await tester.tap(saveButton);
@@ -598,7 +609,8 @@ void main() {
                 'isFixedContribution': false,
                 'creator': {
                   'id': 'test-user-id',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
@@ -783,7 +795,7 @@ void main() {
       expect(find.byType(JarGoalView), findsOneWidget);
 
       // Look for the remove goal button
-      final removeGoalButton = find.text('Remove Goal');
+      final removeGoalButton = find.text('Remove');
       if (removeGoalButton.evaluate().isNotEmpty) {
         await tester.ensureVisible(removeGoalButton);
         await tester.pumpAndSettle();
@@ -800,12 +812,10 @@ void main() {
       } else {
         // Alternative: try to clear the goal amount and save
         print('Remove Goal button not found, trying alternative approach');
-        final amountFields = find.byType(CurrencyTextField);
-        if (amountFields.evaluate().isNotEmpty) {
-          await tester.enterText(amountFields.first, '0');
-          await tester.pumpAndSettle();
+        if (find.byType(AuthKeypad).evaluate().isNotEmpty) {
+          await typeOnKeypad(tester, '0');
 
-          final saveButton = find.text('Continue');
+          final saveButton = find.text('Save goal');
           if (saveButton.evaluate().isNotEmpty) {
             await tester.tap(saveButton, warnIfMissed: false);
             await tester.pumpAndSettle();

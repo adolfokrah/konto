@@ -26,8 +26,8 @@ import 'package:Hoga/features/contribution/data/repositories/contribution_reposi
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:go_router/go_router.dart';
 
-/// Payment detail sheet: amount header, receipt rows, answers, refunds and,
-/// for payouts, the approvals with Approve / Reject.
+/// Payment detail page: amount header, receipt rows, answers, refunds and,
+/// for payouts awaiting your approval, Approve / Reject.
 class ContributionView extends StatelessWidget {
   const ContributionView({super.key});
 
@@ -49,18 +49,11 @@ class ContributionView extends StatelessWidget {
     context.read<FetchContributionBloc>().add(
       FetchContributionById(contributionId),
     );
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const ContributionView(),
-    );
-  }
-
-  static String _signedAmount(ContributionModel c) {
-    final a = c.amountContributed.abs();
-    final cents = ((a * 100).round() % 100).toString().padLeft(2, '0');
-    return '${c.isTransfer ? '−' : '+'}${DsMoney.group(a)}.$cents';
+    // A full page, not a sheet (mockup: "Payment detail page").
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const ContributionView()));
   }
 
   static void _shareReceipt(
@@ -98,64 +91,145 @@ class ContributionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        maxChildSize: 0.9,
-        expand: false,
-        snap: true,
-        builder: (context, scrollController) {
-          return BlocBuilder<FetchContributionBloc, FetchContributionState>(
-            builder: (context, state) {
-              final localizations = AppLocalizations.of(context)!;
-              if (state is FetchContributionLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.navy),
-                );
-              } else if (state is FetchContributionError) {
-                return Center(
-                  child: DsEmptyState(
-                    icon: Icons.error_outline_rounded,
-                    tone: DsTone.negative,
-                    title: localizations.failedToFetchContribution,
-                    message: '',
-                  ),
-                );
-              } else if (state is FetchContributionLoaded) {
-                return BlocBuilder<JarSummaryBloc, JarSummaryState>(
-                  builder: (context, jarState) {
-                    if (jarState is! JarSummaryLoaded) return Container();
-                    return _ContributionDetail(
-                      state: state,
-                      jarData: jarState.jarData,
-                      scrollController: scrollController,
-                    );
-                  },
+    return BlocBuilder<FetchContributionBloc, FetchContributionState>(
+      builder: (context, state) {
+        final localizations = AppLocalizations.of(context)!;
+        Widget body;
+        if (state is FetchContributionLoading) {
+          body = const Center(
+            child: CircularProgressIndicator(color: AppColors.navy),
+          );
+        } else if (state is FetchContributionError) {
+          body = Center(
+            child: DsEmptyState(
+              icon: Icons.error_outline_rounded,
+              tone: DsTone.negative,
+              title: localizations.failedToFetchContribution,
+              message: '',
+            ),
+          );
+        } else if (state is FetchContributionLoaded) {
+          return BlocBuilder<JarSummaryBloc, JarSummaryState>(
+            builder: (context, jarState) {
+              if (jarState is! JarSummaryLoaded) {
+                return const Scaffold(
+                  backgroundColor: AppColors.cream,
+                  appBar: CollectTopBar(),
                 );
               }
-              return Container();
+              return _ContributionDetail(
+                state: state,
+                jarData: jarState.jarData,
+              );
             },
           );
-        },
-      ),
+        } else {
+          body = const SizedBox.shrink();
+        }
+        return Scaffold(
+          backgroundColor: AppColors.cream,
+          appBar: const CollectTopBar(),
+          body: body,
+        );
+      },
     );
   }
+}
+
+/// "055 ••• 6543" for phone numbers, "••• 2210" for account numbers.
+String _masked(String value, {bool phone = true}) {
+  final digits = value.replaceAll(RegExp(r'\s'), '');
+  if (digits.length < 7) return value;
+  final last = digits.substring(digits.length - 4);
+  return phone ? '${digits.substring(0, 3)} ••• $last' : '••• $last';
+}
+
+String _methodName(ContributionModel c, AppLocalizations localizations) {
+  final net = networkFromPhone(c.contributorPhoneNumber);
+  if (c.isMobileMoney && net != null) {
+    return switch (net) {
+      DsNetwork.mtn => 'MTN MoMo',
+      DsNetwork.telecel => 'Telecel Cash',
+      DsNetwork.airtelTigo => 'AirtelTigo Money',
+    };
+  }
+  return PaymentMethodUtils.getPaymentMethodLabel(
+    c.paymentMethod,
+    localizations,
+  );
 }
 
 class _ContributionDetail extends StatelessWidget {
   final FetchContributionLoaded state;
   final JarSummaryModel jarData;
-  final ScrollController scrollController;
 
-  const _ContributionDetail({
-    required this.state,
-    required this.jarData,
-    required this.scrollController,
-  });
+  const _ContributionDetail({required this.state, required this.jarData});
+
+  void _openMore(
+    BuildContext context,
+    ContributionModel contribution,
+    AppLocalizations localizations,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder:
+          (sheetContext) => CollectSheet(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cream,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    if (!contribution.isPayout) ...[
+                      DsRow(
+                        leading: const _SheetIcon(Icons.receipt_long_outlined),
+                        title: 'Receipt',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _ReceiptPage.open(context, contribution, jarData);
+                        },
+                      ),
+                      const Divider(height: 1, color: AppColors.line),
+                    ],
+                    if (contribution.transactionReference != null) ...[
+                      DsRow(
+                        leading: const _SheetIcon(Icons.copy_rounded),
+                        title: 'Copy reference',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _copyReference(context, contribution);
+                        },
+                      ),
+                      const Divider(height: 1, color: AppColors.line),
+                    ],
+                    DsRow(
+                      leading: const _SheetIcon(Icons.help_outline_rounded),
+                      title: localizations.help,
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        _openHelp();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  static void _copyReference(BuildContext context, ContributionModel c) {
+    Clipboard.setData(ClipboardData(text: c.transactionReference!));
+    AppSnackBar.showSuccess(context, message: 'Reference copied!');
+  }
+
+  static void _openHelp() {
+    launchUrl(Uri.parse(AppLinks.support), mode: LaunchMode.inAppBrowserView);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,10 +251,12 @@ class _ContributionDetail extends StatelessWidget {
     final hasValidCollector =
         contribution.collector?.fullName != 'Unknown User' &&
         (contribution.collector?.id.isNotEmpty ?? false);
+    final awaitingApproval =
+        contribution.isPayout &&
+        contribution.paymentStatus == 'awaiting-approval';
 
     final canApprove =
-        contribution.isPayout &&
-        contribution.paymentStatus == 'awaiting-approval' &&
+        awaitingApproval &&
         currentUserId != null &&
         jarData.invitedCollectors != null &&
         jarData.invitedCollectors!.any(
@@ -195,25 +271,92 @@ class _ContributionDetail extends StatelessWidget {
           return actionById == currentUserId;
         });
 
-    final methodLabel = PaymentMethodUtils.getPaymentMethodLabel(
-      contribution.paymentMethod,
+    final methodName = _methodName(contribution, localizations);
+    final phone = contribution.contributorPhoneNumber;
+    final hasPhone = phone != null && phone.isNotEmpty;
+    final approvedCount =
+        approvalDocs.where((a) => a['status'] == 'approved').length;
+    final collectorLabel =
+        '${(contribution.collector?.fullName.isNotEmpty ?? false) ? contribution.collector!.fullName : localizations.unknown}${contribution.viaPaymentLink ? ' · link' : ''}';
+    final dateLabel = AppDateUtils.formatExactDateTime(
+      contribution.createdAt,
       localizations,
     );
-    final net = networkFromPhone(contribution.contributorPhoneNumber);
-    final methodValue = [
-      if (contribution.isMobileMoney && net != null)
-        switch (net) {
-          DsNetwork.mtn => 'MTN MoMo',
-          DsNetwork.telecel => 'Telecel Cash',
-          DsNetwork.airtelTigo => 'AirtelTigo Money',
-        }
-      else
-        methodLabel,
-      if (!contribution.isPayout &&
-          contribution.contributorPhoneNumber != null &&
-          contribution.contributorPhoneNumber!.isNotEmpty)
-        contribution.contributorPhoneNumber!,
-    ].join(' · ');
+    final fee =
+        contribution.charges != null && contribution.charges! > 0
+            ? CurrencyUtils.formatAmount(
+              contribution.charges!,
+              jarData.currency,
+            )
+            : null;
+
+    final referenceRow =
+        contribution.transactionReference != null
+            ? _TapValueRow(
+              label: 'Reference',
+              value: contribution.transactionReference!,
+              icon: Icons.copy_rounded,
+              onTap: () => _copyReference(context, contribution),
+            )
+            : null;
+
+    // ---------------------------------------------------------------- rows
+    final List<Widget> rows;
+    if (contribution.isPayout) {
+      final approvers = [
+        for (final a in approvalDocs)
+          '${(a['actionBy'] is Map ? (a['actionBy']['fullName'] as String? ?? 'Unknown') : 'Unknown').split(' ').first} ${a['status'] == 'rejected' ? '✗' : '✓'}',
+        if (canApprove) 'You (waiting)',
+      ];
+      rows = [
+        if (hasValidCollector)
+          DsKeyValue('Requested by', contribution.collector!.fullName),
+        DsKeyValue(
+          'To',
+          hasPhone ? '$methodName ${_masked(phone, phone: false)}' : methodName,
+        ),
+        if (fee != null) DsKeyValue('Fee', fee),
+        DsKeyValue(localizations.date, dateLabel),
+        if (referenceRow != null) referenceRow,
+        if (approvers.isNotEmpty)
+          DsKeyValue('Approved by', approvers.join(' · ')),
+      ];
+    } else if (refunded) {
+      rows = [
+        DsKeyValue(
+          'Paid',
+          [
+            AppDateUtils.formatDateOnly(contribution.createdAt, localizations),
+            hasPhone ? '$methodName ${_masked(phone)}' : methodName,
+          ].join(' · '),
+        ),
+        DsKeyValue(localizations.jar, contribution.jar.name),
+        if (referenceRow != null) referenceRow,
+      ];
+    } else {
+      rows = [
+        DsKeyValue(localizations.jar, contribution.jar.name),
+        DsKeyValue('Method', hasPhone ? '$methodName · $phone' : methodName),
+        if (contribution.accountNumber != null)
+          DsKeyValue(localizations.accountNumber, contribution.accountNumber!),
+        if (fee != null) DsKeyValue('Fee (paid by payer)', fee),
+        if (!contribution.isRefund)
+          _TapValueRow(
+            label: 'Collected by',
+            value: collectorLabel,
+            highlight: hasValidCollector,
+            onTap:
+                () => _filterByCollector(
+                  context,
+                  contribution,
+                  hasValidCollector,
+                  localizations,
+                ),
+          ),
+        DsKeyValue(localizations.date, dateLabel),
+        if (referenceRow != null) referenceRow,
+      ];
+    }
 
     final answers = <Widget>[
       ...?contribution.customFieldValues?.map(
@@ -231,7 +374,7 @@ class _ContributionDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Message from contributor',
+                'Message',
                 style: DsText.small.copyWith(color: AppColors.muted),
               ),
               const SizedBox(height: 4),
@@ -244,282 +387,175 @@ class _ContributionDetail extends StatelessWidget {
         ),
     ];
 
-    return Column(
-      children: [
-        CollectSheet.grab(),
-        // Header buttons
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              CollectBoxButton(
-                icon: Icons.close_rounded,
-                onTap: () => Navigator.pop(context),
-              ),
-              const Spacer(),
-              if (!contribution.isPayout)
-                Builder(
-                  builder:
-                      (btnContext) => CollectBoxButton(
-                        icon: Icons.ios_share_rounded,
-                        onTap:
-                            () => ContributionView._shareReceipt(
-                              btnContext,
-                              contribution,
-                              jarData,
-                              localizations,
-                            ),
-                      ),
-                ),
-            ],
-          ),
+    // ---------------------------------------------------------------- header
+    final Widget tag;
+    if (refunded) {
+      tag = const DsTag('Refunded', tone: DsTone.info);
+    } else if (awaitingApproval) {
+      tag = DsTag(
+        '$approvedCount of $requiredApprovals approvals',
+        tone: DsTone.pending,
+      );
+    } else {
+      tag = paymentStatusTag(
+        contribution.paymentStatus,
+        PaymentStatusUtils.getPaymentStatusLabel(
+          contribution.paymentStatus,
+          localizations,
         ),
-        Expanded(
-          child: ListView(
-            controller: scrollController,
-            padding: EdgeInsets.fromLTRB(
-              16,
-              6,
-              16,
-              MediaQuery.of(context).padding.bottom + 24,
+      );
+    }
+
+    final amount = contribution.amountContributed.abs();
+    final cents = ((amount * 100).round() % 100).toString().padLeft(2, '0');
+    final struck = failed || refunded;
+    final amountStyle = TextStyle(
+      fontFamily: 'Chillax',
+      fontWeight: FontWeight.w600,
+      fontSize: contribution.isPayout ? 38 : 40,
+      letterSpacing: -0.4,
+      color: struck ? AppColors.muted : AppColors.navy,
+      decoration: struck ? TextDecoration.lineThrough : null,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: CollectTopBar(
+        title: canApprove ? 'Approve transfer' : null,
+        actions: [
+          if (!canApprove)
+            CollectBoxButton(
+              icon: Icons.more_horiz_rounded,
+              onTap: () => _openMore(context, contribution, localizations),
             ),
+        ],
+      ),
+      bottomNavigationBar:
+          canApprove
+              ? CollectFooter(
+                children: [_ApprovalActions(transactionId: contribution.id)],
+              )
+              : null,
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          6,
+          16,
+          MediaQuery.of(context).padding.bottom + 24,
+        ),
+        children: [
+          // Amount header
+          Column(
             children: [
-              // Amount header
-              Column(
-                children: [
-                  PaymentMethodTile(
-                    paymentMethod: contribution.paymentMethod,
-                    phone: contribution.contributorPhoneNumber,
-                    isPayout: contribution.isPayout,
-                    isRefund: contribution.isRefund,
-                    size: 52,
-                  ),
-                  const SizedBox(height: 10),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      ContributionView._signedAmount(contribution),
-                      style: TextStyle(
-                        fontFamily: 'Chillax',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 40,
-                        letterSpacing: -0.4,
-                        color:
-                            (failed || refunded)
-                                ? AppColors.muted
-                                : AppColors.navy,
-                        decoration:
-                            (failed || refunded)
-                                ? TextDecoration.lineThrough
-                                : null,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    contribution.contributor ?? 'Hogapay',
-                    style: DsText.small,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  if (refunded)
-                    DsTag(localizations.typeRefund, tone: DsTone.info)
-                  else if (contribution.isPayout &&
-                      contribution.paymentStatus == 'awaiting-approval')
-                    DsTag(
-                      '${approvalDocs.where((a) => a['status'] == 'approved').length} of $requiredApprovals approvals',
-                      tone: DsTone.pending,
-                    )
-                  else
-                    paymentStatusTag(
-                      contribution.paymentStatus,
-                      PaymentStatusUtils.getPaymentStatusLabel(
-                        contribution.paymentStatus,
-                        localizations,
-                      ),
-                    ),
-                ],
+              PaymentMethodTile(
+                paymentMethod: contribution.paymentMethod,
+                phone: contribution.contributorPhoneNumber,
+                isPayout: contribution.isPayout,
+                isRefund: contribution.isRefund,
+                size: 52,
               ),
-              const SizedBox(height: 18),
-
-              // Receipt rows
-              DsListCard(
-                children: [
-                  DsKeyValue(localizations.jar, contribution.jar.name),
-                  DsKeyValue(
-                    localizations.transactionType,
-                    ContributionView._getTransactionTypeLabel(
-                      contribution.type,
-                      localizations,
-                    ),
-                  ),
-                  DsKeyValue(localizations.paymentMethod, methodValue),
-                  if (contribution.isPayout)
-                    DsKeyValue(
-                      localizations.accountNumber,
-                      contribution.contributorPhoneNumber ??
-                          localizations.unknown,
-                    )
-                  else if (contribution.accountNumber != null)
-                    DsKeyValue(
-                      localizations.accountNumber,
-                      contribution.accountNumber!,
-                    ),
-                  if (contribution.type.value ==
-                      ContributionType.contribution.value)
-                    DsKeyValue(
-                      localizations.contributor,
-                      contribution.contributor ?? localizations.unknown,
-                    ),
-                  if (contribution.charges != null && contribution.charges! > 0)
-                    DsKeyValue(
-                      'Fee',
-                      CurrencyUtils.formatAmount(
-                        contribution.charges!,
-                        jarData.currency,
-                      ),
-                    ),
-                  if (contribution.type != ContributionType.payout)
-                    _TapValueRow(
-                      label: localizations.collector,
-                      value:
-                          '${(contribution.collector?.fullName.isNotEmpty ?? false) ? contribution.collector!.fullName : localizations.unknown}${contribution.viaPaymentLink ? ' · link' : ''}',
-                      highlight: hasValidCollector,
-                      onTap:
-                          () => _filterByCollector(
-                            context,
-                            contribution,
-                            hasValidCollector,
-                            localizations,
-                          ),
-                    ),
-                  DsKeyValue(
-                    localizations.date,
-                    AppDateUtils.formatExactDateTime(
-                      contribution.createdAt,
-                      localizations,
-                    ),
-                  ),
-                  if (contribution.transactionReference != null)
-                    _TapValueRow(
-                      label: 'Reference',
-                      value: contribution.transactionReference!,
-                      icon: Icons.copy_rounded,
-                      onTap: () {
-                        Clipboard.setData(
-                          ClipboardData(
-                            text: contribution.transactionReference!,
-                          ),
-                        );
-                        AppSnackBar.showSuccess(
-                          context,
-                          message: 'Reference copied!',
-                        );
-                      },
-                    ),
-                ],
-              ),
-
-              // Answers
-              if (answers.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                const CollectCap('Answers'),
-                const SizedBox(height: 6),
-                DsListCard(children: answers),
-              ],
-
-              // Related refunds
-              if (relatedRefunds.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                const CollectCap('Refunds'),
-                const SizedBox(height: 6),
-                DsListCard(
-                  children: [
-                    for (final refund in relatedRefunds)
-                      _refundRow(refund, localizations),
-                  ],
-                ),
-                if (refunded) ...[
-                  const SizedBox(height: 12),
-                  const DsNote(
-                    tone: DsTone.neutral,
-                    text: "Refunded payments don't count toward the jar total.",
-                  ),
-                ],
-              ],
-
-              // Payout approvals
-              if (contribution.isPayout &&
-                  (contribution.paymentStatus == 'awaiting-approval' ||
-                      approvalDocs.isNotEmpty)) ...[
-                const SizedBox(height: 16),
-                CollectCap(
-                  localizations.payoutApprovals,
-                  trailing:
-                      contribution.paymentStatus == 'awaiting-approval'
-                          ? '${approvalDocs.where((a) => a['status'] == 'approved').length} of $requiredApprovals'
-                          : null,
-                ),
-                const SizedBox(height: 6),
-                if (approvalDocs.isEmpty)
-                  const DsNote(
-                    tone: DsTone.neutral,
-                    icon: Icons.hourglass_empty_rounded,
-                    text: 'No one has approved this transfer yet.',
-                  )
-                else
-                  DsListCard(
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text.rich(
+                  TextSpan(
                     children: [
-                      for (final approval in approvalDocs)
-                        _approvalRow(approval, localizations),
+                      TextSpan(
+                        text:
+                            '${contribution.isPayout ? '' : (contribution.isTransfer ? '−' : '+')}${DsMoney.group(amount)}',
+                      ),
+                      TextSpan(
+                        text: '.$cents',
+                        style:
+                            struck
+                                ? null
+                                : const TextStyle(color: AppColors.faint),
+                      ),
                     ],
                   ),
-              ],
-
-              const SizedBox(height: 16),
-              if (canApprove)
-                _ApprovalActions(transactionId: contribution.id)
-              else
-                Row(
-                  children: [
-                    if (!contribution.isPayout) ...[
-                      Expanded(
-                        child: Builder(
-                          builder:
-                              (btnContext) => CollectButton(
-                                label: 'Receipt',
-                                icon: Icons.receipt_long_outlined,
-                                onTap:
-                                    () => ContributionView._shareReceipt(
-                                      btnContext,
-                                      contribution,
-                                      jarData,
-                                      localizations,
-                                    ),
-                              ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: CollectButton(
-                        label: localizations.help,
-                        icon: Icons.help_outline_rounded,
-                        onTap: () {
-                          launchUrl(
-                            Uri.parse(AppLinks.support),
-                            mode: LaunchMode.inAppBrowserView,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                  style: amountStyle,
                 ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                contribution.isPayout
+                    ? 'from ${contribution.jar.name}'
+                    : (contribution.contributor ?? 'Hogapay'),
+                style: DsText.small,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              tag,
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 18),
+
+          DsListCard(children: rows),
+
+          // Answers
+          if (answers.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const CollectCap('Answers'),
+            const SizedBox(height: 6),
+            DsListCard(children: answers),
+          ],
+
+          // Related refunds
+          if (relatedRefunds.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const CollectCap('Refunds'),
+            const SizedBox(height: 6),
+            DsListCard(
+              children: [
+                for (final refund in relatedRefunds)
+                  _refundRow(refund, localizations),
+              ],
+            ),
+            if (refunded) ...[
+              const SizedBox(height: 12),
+              const DsNote(
+                tone: DsTone.neutral,
+                text: "Refunded payments don't count toward the jar total.",
+              ),
+            ],
+          ],
+
+          // Approvals still waiting on others (you can't act on this one)
+          if (awaitingApproval && !canApprove && approvalDocs.isEmpty) ...[
+            const SizedBox(height: 12),
+            const DsNote(
+              tone: DsTone.neutral,
+              icon: Icons.hourglass_empty_rounded,
+              text: 'No one has approved this transfer yet.',
+            ),
+          ],
+
+          if (!contribution.isPayout && !refunded) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: CollectButton(
+                    label: 'Receipt',
+                    icon: Icons.receipt_long_outlined,
+                    onTap:
+                        () => _ReceiptPage.open(context, contribution, jarData),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: CollectButton(
+                    label: localizations.help,
+                    icon: Icons.help_outline_rounded,
+                    onTap: _openHelp,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -550,7 +586,7 @@ class _ContributionDetail extends StatelessWidget {
 
       if (!context.mounted) return;
 
-      // Close current modal
+      // Close the detail page
       Navigator.of(context).pop();
 
       // Navigate to contributions list
@@ -568,6 +604,7 @@ class _ContributionDetail extends StatelessWidget {
     final refundAmount = ((refund['amount'] as num?)?.abs() ?? 0).toDouble();
     final refundName = refund['accountName'] as String? ?? 'Refund';
     final refundDate = refund['createdAt'] as String?;
+    final reason = refund['reason'] as String?;
 
     // Map refund status to payment status labels
     final statusLabel = switch (refundStatus) {
@@ -581,61 +618,225 @@ class _ContributionDetail extends StatelessWidget {
       2,
       '0',
     );
+    final parsedDate =
+        refundDate != null ? DateTime.tryParse(refundDate) : null;
 
+    final amountText = Text(
+      '−${DsMoney.group(refundAmount)}.$cents',
+      style: DsText.rowTitle.copyWith(
+        fontFamily: 'Chillax',
+        fontWeight: FontWeight.w600,
+        fontSize: 14,
+      ),
+    );
     return DsRow(
       leading: const DsIconTile(
-        Icons.undo_rounded,
+        Icons.south_west_rounded,
         tone: DsTone.info,
         size: 32,
       ),
       title: 'Refund to $refundName',
-      subtitle:
-          refundDate != null
-              ? AppDateUtils.formatTimestampSafe(
-                DateTime.tryParse(refundDate),
-                localizations,
-              )
-              : null,
-      trailing: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            '−${DsMoney.group(refundAmount)}.$cents',
-            style: DsText.rowTitle.copyWith(
-              fontFamily: 'Chillax',
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 3),
-          paymentStatusTag(refundStatus, statusLabel),
-        ],
+      subtitle: [
+        if (parsedDate != null)
+          AppDateUtils.formatDateOnly(parsedDate, localizations),
+        if (reason != null && reason.isNotEmpty) reason,
+      ].join(' · '),
+      trailing:
+          refundStatus == 'completed'
+              ? amountText
+              : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  amountText,
+                  const SizedBox(height: 3),
+                  paymentStatusTag(refundStatus, statusLabel),
+                ],
+              ),
+    );
+  }
+}
+
+/// White 32px icon box used in the "more" sheet rows.
+class _SheetIcon extends StatelessWidget {
+  final IconData icon;
+  const _SheetIcon(this.icon);
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 32,
+    height: 32,
+    decoration: BoxDecoration(
+      color: AppColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Icon(icon, size: 17, color: AppColors.navy),
+  );
+}
+
+/// The shareable receipt: a ticket with the amount on top and the details
+/// below a dashed tear line, plus the jar's thank-you message.
+class _ReceiptPage extends StatelessWidget {
+  final ContributionModel contribution;
+  final JarSummaryModel jar;
+
+  const _ReceiptPage({required this.contribution, required this.jar});
+
+  static void open(
+    BuildContext context,
+    ContributionModel contribution,
+    JarSummaryModel jar,
+  ) {
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _ReceiptPage(contribution: contribution, jar: jar),
       ),
     );
   }
 
-  Widget _approvalRow(
-    Map<String, dynamic> approval,
-    AppLocalizations localizations,
-  ) {
-    final approvalStatus = approval['status'] as String? ?? 'approved';
-    final actionBy = approval['actionBy'];
-    final actionByName =
-        actionBy is Map
-            ? actionBy['fullName'] as String? ?? 'Unknown'
-            : 'Unknown';
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final c = contribution;
+    final phone = c.contributorPhoneNumber;
+    final method = _methodName(c, localizations);
+    void share(BuildContext ctx) =>
+        ContributionView._shareReceipt(ctx, c, jar, localizations);
 
-    final statusLabel = switch (approvalStatus) {
-      'approved' => localizations.statusCompleted,
-      'rejected' => localizations.statusRejected,
-      _ => approvalStatus,
-    };
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: CollectTopBar(
+        title: 'Receipt',
+        leadingIcon: Icons.close_rounded,
+        actions: [
+          Builder(
+            builder:
+                (btnContext) => CollectBoxButton(
+                  icon: Icons.ios_share_rounded,
+                  onTap: () => share(btnContext),
+                ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: CollectFooter(
+        children: [
+          Builder(
+            builder:
+                (btnContext) => AppButton.filled(
+                  text: localizations.share,
+                  icon: const Icon(
+                    Icons.ios_share_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => share(btnContext),
+                ),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+                bottom: Radius.circular(6),
+              ),
+            ),
+            child: Column(
+              children: [
+                Image.asset('assets/images/logo.png', height: 18),
+                const SizedBox(height: 16),
+                const Text('Payment received', style: DsText.caption),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: DsMoney(
+                    c.amountContributed.abs(),
+                    currency: jar.currency.toUpperCase(),
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                paymentStatusTag(
+                  c.paymentStatus,
+                  PaymentStatusUtils.getPaymentStatusLabel(
+                    c.paymentStatus,
+                    localizations,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: _DashedLine(),
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(6),
+                bottom: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              children: [
+                if (c.contributor != null) DsKeyValue('From', c.contributor!),
+                DsKeyValue('To jar', jar.name),
+                DsKeyValue(
+                  'Paid with',
+                  phone != null && phone.isNotEmpty
+                      ? '$method · ${_masked(phone)}'
+                      : method,
+                ),
+                DsKeyValue(
+                  localizations.date,
+                  AppDateUtils.formatExactDateTime(c.createdAt, localizations),
+                ),
+                if (c.transactionReference != null)
+                  DsKeyValue('Reference', c.transactionReference!),
+              ],
+            ),
+          ),
+          if (jar.thankYouMessage != null &&
+              jar.thankYouMessage!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              jar.thankYouMessage!,
+              style: DsText.caption,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
-    return DsRow(
-      leading: CollectAvatar(name: actionByName, size: 32),
-      title: actionByName,
-      trailing: paymentStatusTag(approvalStatus, statusLabel),
+/// Dashed tear line between the two halves of the receipt.
+class _DashedLine extends StatelessWidget {
+  const _DashedLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dash = 6.0, gap = 4.0;
+        final count = (constraints.maxWidth / (dash + gap)).floor();
+        return Row(
+          children: [
+            for (var i = 0; i < count; i++) ...[
+              Container(width: dash, height: 2, color: AppColors.line),
+              const SizedBox(width: gap),
+            ],
+          ],
+        );
+      },
     );
   }
 }

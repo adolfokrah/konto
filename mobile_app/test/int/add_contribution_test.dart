@@ -56,7 +56,8 @@ void main() {
       'currency': 'USD',
       'creator': {
         'id': 'test-user-123',
-        'firstName': 'Test', 'lastName': 'User',
+        'firstName': 'Test',
+        'lastName': 'User',
         'email': 'test@example.com',
       },
     };
@@ -109,43 +110,45 @@ void main() {
                     // creator has a payout destination; provided app-wide in main.dart.
                     BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
                     BlocProvider.value(
-                      value: getIt<AuthBloc>()..add(
-                        UpdateUserData(
-                          updatedUser: User(
-                            id: 'test-user-123',
-                            email: 'test@example.com',
-                            firstName: 'Test', lastName: 'User',
-                            username: 'testuser',
-                            phoneNumber: '+1234567890',
-                            countryCode: 'US',
-                            country: 'United States',
-                            kycStatus: "verified",
-                            createdAt: DateTime.now(),
-                            updatedAt: DateTime.now(),
-                            accountHolder: 'Test Account Holder',
-                            sessions: [
-                              UserSession(
-                                id: 'test-session-id',
+                      value:
+                          getIt<AuthBloc>()..add(
+                            UpdateUserData(
+                              updatedUser: User(
+                                id: 'test-user-123',
+                                email: 'test@example.com',
+                                firstName: 'Test',
+                                lastName: 'User',
+                                username: 'testuser',
+                                phoneNumber: '+1234567890',
+                                countryCode: 'US',
+                                country: 'United States',
+                                kycStatus: "verified",
                                 createdAt: DateTime.now(),
-                                expiresAt: DateTime.now().add(
-                                  const Duration(days: 30),
+                                updatedAt: DateTime.now(),
+                                accountHolder: 'Test Account Holder',
+                                sessions: [
+                                  UserSession(
+                                    id: 'test-session-id',
+                                    createdAt: DateTime.now(),
+                                    expiresAt: DateTime.now().add(
+                                      const Duration(days: 30),
+                                    ),
+                                  ),
+                                ],
+                                appSettings: const AppSettings(
+                                  language: AppLanguage.english,
+                                  theme: AppTheme.light,
+                                  biometricAuthEnabled: false,
+                                  notificationsSettings: NotificationSettings(
+                                    pushNotificationsEnabled: true,
+                                    emailNotificationsEnabled: true,
+                                    smsNotificationsEnabled: false,
+                                  ),
                                 ),
                               ),
-                            ],
-                            appSettings: const AppSettings(
-                              language: AppLanguage.english,
-                              theme: AppTheme.light,
-                              biometricAuthEnabled: false,
-                              notificationsSettings: NotificationSettings(
-                                pushNotificationsEnabled: true,
-                                emailNotificationsEnabled: true,
-                                smsNotificationsEnabled: false,
-                              ),
+                              token: 'test-jwt-token-123456',
                             ),
                           ),
-                          token: 'test-jwt-token-123456',
-                        ),
-                      ),
                     ),
                   ],
                   child: const SaveContributionView(),
@@ -177,11 +180,10 @@ void main() {
       GoRouter.of(element).push('/add_contribution');
       await tester.pumpAndSettle();
       final element2 = tester.element(find.byType(Scaffold));
-      GoRouter.of(element2).push('/save_contribution', extra: {
-        'amount': amount,
-        'currency': currency,
-        'jar': sampleJar,
-      });
+      GoRouter.of(element2).push(
+        '/save_contribution',
+        extra: {'amount': amount, 'currency': currency, 'jar': sampleJar},
+      );
       await tester.pumpAndSettle();
     }
 
@@ -255,17 +257,20 @@ void main() {
 
       // Verify the form is displayed
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+      expect(
+        find.text('₵ 100.00'),
+        findsWidgets,
+      ); // Multiple instances due to fee breakdown
 
       // Fill in phone number and contributor name (mobile money is default)
       await fillMomoPayer(tester);
 
       // Review step shows the summary and the request button
       await openReview(tester);
-      expect(find.text('Total due to pay'), findsOneWidget);
+      expect(find.text('Processing fee'), findsOneWidget);
       final submitButton = find.byKey(const Key('submit_contribution_button'));
       expect(submitButton, findsOneWidget);
-      expect(find.textContaining('Request · USD'), findsOneWidget);
+      expect(find.textContaining('Send request · USD'), findsOneWidget);
 
       // Submit the request
       await tester.tap(submitButton);
@@ -345,7 +350,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify the save contribution view is loaded with proper data
-        expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+        expect(
+          find.text('₵ 100.00'),
+          findsWidgets,
+        ); // Multiple instances due to fee breakdown
 
         // Leave contributor name empty and try to continue to review
         await openReview(tester);
@@ -428,9 +436,15 @@ void main() {
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
       // The review summary (which replaced the old "Amount" breakdown) stays up.
-      expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
-      expect(find.text('Total due to pay'), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+      expect(
+        find.byKey(const Key('submit_contribution_button')),
+        findsOneWidget,
+      );
+      expect(find.text('Processing fee'), findsOneWidget);
+      expect(
+        find.text('₵ 100.00'),
+        findsWidgets,
+      ); // Multiple instances due to fee breakdown
       expect(find.text('Await Momo Payment View'), findsNothing);
     });
 
@@ -471,9 +485,15 @@ void main() {
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
       // The review summary (which replaced the old "Amount" breakdown) stays up.
-      expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
-      expect(find.text('Total due to pay'), findsOneWidget);
-      expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+      expect(
+        find.byKey(const Key('submit_contribution_button')),
+        findsOneWidget,
+      );
+      expect(find.text('Processing fee'), findsOneWidget);
+      expect(
+        find.text('₵ 100.00'),
+        findsWidgets,
+      ); // Multiple instances due to fee breakdown
       expect(find.text('Await Momo Payment View'), findsNothing);
     });
 
@@ -517,7 +537,10 @@ void main() {
         expect(processingText, findsOneWidget);
       } else {
         // If loading was too brief to catch, verify submission was attempted
-        expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
+        expect(
+          find.byKey(const Key('submit_contribution_button')),
+          findsOneWidget,
+        );
       }
 
       await tester.pumpAndSettle();
@@ -574,7 +597,8 @@ void main() {
                 'isFixedContribution': false,
                 'creator': {
                   'id': 'test-user-123',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'email': 'test@example.com',
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
@@ -647,7 +671,9 @@ void main() {
                     providers: [
                       BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
                       BlocProvider.value(value: getIt<AddContributionBloc>()),
-                      BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+                      BlocProvider.value(
+                        value: getIt<WithdrawalAccountsBloc>(),
+                      ),
                       // Provided app-wide in main.dart; read by the momo flow.
                       BlocProvider.value(value: getIt<MomoPaymentBloc>()),
                       BlocProvider.value(value: getIt<AuthBloc>()),
@@ -691,7 +717,9 @@ void main() {
 
         // Review, then submit the contribution
         await openReview(tester);
-        final submitButton = find.byKey(const Key('submit_contribution_button'));
+        final submitButton = find.byKey(
+          const Key('submit_contribution_button'),
+        );
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
 
@@ -753,7 +781,8 @@ void main() {
                 'isFixedContribution': false,
                 'creator': {
                   'id': 'test-user-123',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'email': 'test@example.com',
                 },
                 'invitedCollectors': [],
@@ -790,7 +819,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navigate to save contribution page
-        await navigateToSaveContribution(tester, amount: contributionAmount.toString());
+        await navigateToSaveContribution(
+          tester,
+          amount: contributionAmount.toString(),
+        );
         await tester.pumpAndSettle();
 
         // Select Cash payment method to test different payment flow
@@ -801,7 +833,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Submit the form
-        final submitButton = find.byKey(const Key('submit_contribution_button'));
+        final submitButton = find.byKey(
+          const Key('submit_contribution_button'),
+        );
         if (submitButton.evaluate().isNotEmpty) {
           await tester.ensureVisible(submitButton); // Scroll button into view
           await tester.pumpAndSettle();

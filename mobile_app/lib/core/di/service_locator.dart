@@ -15,6 +15,9 @@ import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
 import 'package:Hoga/features/onboarding/data/repositories/walkthrough_repository.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
+import 'package:Hoga/features/insights/data/api_providers/insights_api_provider.dart';
+import 'package:Hoga/features/insights/data/repositories/insights_repository.dart';
+import 'package:Hoga/features/insights/logic/bloc/insights_bloc.dart';
 import 'package:Hoga/features/media/data/api_provider/media_api_provider.dart';
 import 'package:Hoga/features/media/data/repository_provider/media_repository.dart';
 import 'package:Hoga/features/contribution/data/api_reproviders/contribution_api_provider.dart';
@@ -186,6 +189,15 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<JarRepository>(
     () => JarRepository(jarApiProvider: getIt<JarApiProvider>()),
   );
+  getIt.registerLazySingleton<InsightsApiProvider>(
+    () => InsightsApiProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<InsightsRepository>(
+    () => InsightsRepository(apiProvider: getIt<InsightsApiProvider>()),
+  );
   getIt.registerLazySingleton<MediaRepository>(
     () => MediaRepository(mediaApiProvider: getIt<MediaApiProvider>()),
   );
@@ -336,5 +348,8 @@ void setupServiceLocator() {
     () => CollectorsBloc(
       collaboratorsRepository: getIt<CollaboratorsRepository>(),
     ),
+  );
+  getIt.registerFactory<InsightsBloc>(
+    () => InsightsBloc(insightsRepository: getIt<InsightsRepository>()),
   );
 }

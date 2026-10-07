@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 import 'package:go_router/go_router.dart';
 
 // ---------------------------------------------------------------- nav
@@ -31,7 +32,7 @@ class JarNavButton extends StatelessWidget {
     return Opacity(
       opacity: onTap == null ? 0.35 : 1,
       child: Material(
-        color: fill ? AppColors.fill : AppColors.surfaceWhite,
+        color: fill ? SheetSurface.fillOf(context) : AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -225,7 +226,7 @@ class JarThumb extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.fill,
+        color: SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
       clipBehavior: Clip.antiAlias,
@@ -545,7 +546,7 @@ class JarBareInput extends StatelessWidget {
 
 // ---------------------------------------------------------------- lists
 
-/// Fill-coloured list used inside white sheets (mockup `.card.fill.list`).
+/// Fill-coloured list (mockup `.card.fill.list`); cream inside white sheets.
 class JarFillList extends StatelessWidget {
   final List<Widget> children;
   const JarFillList({super.key, required this.children});
@@ -559,7 +560,7 @@ class JarFillList extends StatelessWidget {
     }
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.fill,
+        color: SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
@@ -625,6 +626,10 @@ class JarSheetFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return SheetSurface(child: _frame(context));
+  }
+
+  Widget _frame(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -815,7 +820,7 @@ class JarGhostButton extends StatelessWidget {
       height: 52,
       width: double.infinity,
       child: Material(
-        color: filled ? AppColors.fill : Colors.transparent,
+        color: filled ? SheetSurface.fillOf(context) : Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.radiusButton),

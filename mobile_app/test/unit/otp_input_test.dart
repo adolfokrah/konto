@@ -56,7 +56,8 @@ void main() {
         expect(
           tester.binding.focusManager.primaryFocus,
           same(focusAtStart),
-          reason: 'focus moved after entering digit $i, which drops the keyboard',
+          reason:
+              'focus moved after entering digit $i, which drops the keyboard',
         );
       }
     });
@@ -106,9 +107,7 @@ void main() {
       String? completed;
 
       await tester.pumpWidget(
-        wrap(
-          AppOtpInput(length: 6, onCompleted: (value) => completed = value),
-        ),
+        wrap(AppOtpInput(length: 6, onCompleted: (value) => completed = value)),
       );
 
       // SMS autofill and paste arrive as one multi-character insertion.
@@ -166,15 +165,10 @@ void main() {
       final changes = <String>[];
 
       await tester.pumpWidget(
-        wrap(
-          AppOtpInput(length: 6, enabled: false, onChanged: changes.add),
-        ),
+        wrap(AppOtpInput(length: 6, enabled: false, onChanged: changes.add)),
       );
 
-      expect(
-        tester.widget<TextField>(find.byType(TextField)).enabled,
-        isFalse,
-      );
+      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
       expect(changes, isEmpty);
     });
   });

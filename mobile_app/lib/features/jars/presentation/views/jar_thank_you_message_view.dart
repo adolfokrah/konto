@@ -10,7 +10,7 @@ import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-const int _maxChars = 200;
+const int _maxChars = 250;
 
 class _CharLimitFormatter extends TextInputFormatter {
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
@@ -81,7 +82,8 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
           }
 
           return Scaffold(
-            appBar: AppBar(title: Text(localizations.phoneNumber)),
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(title: localizations.phoneNumber),
             body: MultiBlocListener(
               listeners: [
                 BlocListener<VerificationBloc, VerificationState>(
@@ -162,7 +164,7 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
                 child: AppButton(
                   onPressed:
                       _isPhoneNumberChanged() ? _handleChangePhoneNumber : null,
-                  text: localizations.changePhoneNumber,
+                  text: 'Send code',
                   isLoading: state is UserAccountLoading,
                 ),
               ),
@@ -172,7 +174,8 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
 
         // Show loading or error state
         return Scaffold(
-          appBar: AppBar(title: Text(localizations.phoneNumber)),
+          backgroundColor: AppColors.cream,
+          appBar: JarTopBar(title: localizations.phoneNumber),
           body: const Center(
             child: CircularProgressIndicator(color: AppColors.navy),
           ),

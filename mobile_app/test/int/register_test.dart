@@ -214,16 +214,17 @@ void main() {
             routerConfig: createTestRouter(
               initialRoute: '/start',
               routes: {
-                '/start': (context) => Scaffold(
-                  body: Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        GoRouter.of(context).push('/register');
-                      },
-                      child: const Text('Navigate to Register'),
+                '/start':
+                    (context) => Scaffold(
+                      body: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            GoRouter.of(context).push('/register');
+                          },
+                          child: const Text('Navigate to Register'),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
                 '/register': (context) => const RegisterView(),
                 '/otp': (context) => const OtpView(),
               },
@@ -313,9 +314,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -373,9 +372,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -436,9 +433,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -518,9 +513,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -591,9 +584,9 @@ void main() {
             routerConfig: createTestRouter(
               initialRoute: '/login',
               routes: {
-                '/login': (context) => const Scaffold(
-                  body: Center(child: Text('Login Page')),
-                ),
+                '/login':
+                    (context) =>
+                        const Scaffold(body: Center(child: Text('Login Page'))),
                 '/register': (context) => const RegisterView(),
               },
             ),
@@ -645,9 +638,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -690,9 +681,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
@@ -733,9 +722,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),

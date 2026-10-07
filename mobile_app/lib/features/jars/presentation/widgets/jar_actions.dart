@@ -145,7 +145,9 @@ class JarActions {
         title: jar.name,
         subtitle: [
           jar.creator.id == userId ? 'Owner' : 'Collector',
-          if (!jar.isActive) 'Closed',
+          if (jar.isSealed) 'Sealed',
+          if (jar.isFrozen) 'Frozen',
+          if (jar.isClosed) 'Closed',
         ].join(' · '),
         trailing: DsRadio(selected: selected),
         onTap: onTap,

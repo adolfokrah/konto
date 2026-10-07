@@ -90,13 +90,13 @@ class UserAccountView extends StatelessWidget {
           DsListCard(
             children: [
               DsRow(
-                title: l10n.logout,
+                title: 'Log out',
                 onTap: () => _confirmLogout(context, l10n),
               ),
               DsRow(
-                title: l10n.closeAccount,
+                title: 'Close account',
                 titleColor: AppColors.negative,
-                onTap: () => _confirmCloseAccount(context, l10n),
+                onTap: () => DeleteAccountReasonsBottomSheet.show(context),
               ),
             ],
           ),
@@ -119,7 +119,10 @@ class UserAccountView extends StatelessWidget {
             return DsRow(
               leading: const AccRowIcon(Icons.account_balance_wallet_outlined),
               title: 'Payout accounts',
-              value: loaded ? '${waState.accounts.length}' : null,
+              trailing:
+                  loaded && waState.accounts.isNotEmpty
+                      ? DsTag('${waState.accounts.length}')
+                      : null,
               chevron: true,
               // Navigate to the withdrawal accounts manager (multi-account)
               onTap: () => context.push(AppRoutes.withdrawalAccounts),
@@ -137,145 +140,189 @@ class UserAccountView extends StatelessWidget {
     final isOrg = user.isOrganization;
     final kybApproved = user.kybStatus == 'approved';
 
-    // Organizations get an organization block instead of "Upgrade".
-    final orgRow =
-        isOrg && kybApproved
-            ? DsRow(
-              leading: const AccRowIcon(Icons.public_rounded),
-              title: 'Share contribution pages',
-              chevron: true,
-              onTap: () {
-                final url =
-                    '${AppConfig.contributionPage}/organizations/${user.id}';
-                final box = context.findRenderObject() as RenderBox?;
-                Share.share(
-                  'Support our campaigns on Hoga: $url',
-                  sharePositionOrigin:
-                      box == null
-                          ? null
-                          : box.localToGlobal(Offset.zero) & box.size,
-                );
-              },
-            )
-            : isOrg
-            ? DsRow(
-              leading: const AccRowIcon(Icons.description_outlined),
-              title: 'Business verification',
-              trailing: _kybTag(user.kybStatus),
-              chevron: true,
-              onTap: () => context.push(AppRoutes.businessKyb),
-            )
-            // Individuals become organizations by completing business verification.
-            : DsRow(
-              leading: const AccRowIcon(Icons.apartment_rounded),
-              title: 'Upgrade to organization',
-              chevron: true,
-              onTap: () => context.push(AppRoutes.businessKyb),
-            );
+    final phoneRow = DsRow(
+      leading: const AccRowIcon(Icons.phone_iphone_rounded),
+      title: 'Phone number',
+      value: isOrg ? null : _maskPhone(user.phoneNumber),
+      chevron: true,
+      onTap: () => context.push(AppRoutes.changePhoneNumber),
+    );
 
-    return [
-      if (isOrg) ...[
-        const DsGroupLabel('Organization'),
-        const SizedBox(height: 8),
-        DsListCard(children: [orgRow, payoutRow]),
-        const SizedBox(height: 12),
-        const DsGroupLabel('Account'),
-        const SizedBox(height: 8),
-        DsListCard(children: [personalRow]),
-      ] else ...[
-        const DsGroupLabel('Account'),
-        const SizedBox(height: 8),
-        DsListCard(children: [personalRow, payoutRow, orgRow]),
-      ],
-      const SizedBox(height: 12),
-      DsGroupLabel(l10n.security),
-      const SizedBox(height: 8),
-      DsListCard(
-        children: [
-          DsRow(
-            leading: const AccRowIcon(Icons.phone_iphone_rounded),
-            title: 'Phone number',
-            value: _maskPhone(user.phoneNumber),
-            chevron: true,
-            onTap: () => context.push(AppRoutes.changePhoneNumber),
-          ),
-        ],
-      ),
+    final languageRow = BlocBuilder<UserAccountBloc, UserAccountState>(
+      builder: (context, uaState) {
+        final language =
+            uaState is UserAccountSuccess
+                ? uaState.updatedUser.appSettings.language
+                : user.appSettings.language;
+        return DsRow(
+          leading: const AccRowIcon(Icons.language_rounded),
+          title: l10n.language,
+          value: language.displayName,
+          chevron: true,
+          onTap: () => context.push(AppRoutes.languageSettings),
+        );
+      },
+    );
+
+    final appGroup = [
       const SizedBox(height: 12),
       const DsGroupLabel('App'),
       const SizedBox(height: 8),
       DsListCard(
         children: [
-          BlocBuilder<UserAccountBloc, UserAccountState>(
-            builder: (context, uaState) {
-              final language =
-                  uaState is UserAccountSuccess
-                      ? uaState.updatedUser.appSettings.language
-                      : user.appSettings.language;
-              return DsRow(
-                leading: const AccRowIcon(Icons.language_rounded),
-                title: l10n.language,
-                value: language.displayName,
-                chevron: true,
-                onTap: () => context.push(AppRoutes.languageSettings),
-              );
-            },
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      DsGroupLabel(l10n.help),
-      const SizedBox(height: 8),
-      DsListCard(
-        children: [
+          languageRow,
           DsRow(
             leading: const AccRowIcon(Icons.help_outline_rounded),
-            title: l10n.help,
+            title: 'Help & contact',
             chevron: true,
-            onTap: () => UrlLauncherUtils.launch(AppLinks.support),
+            onTap: () => _showHelp(context, l10n),
           ),
           DsRow(
-            leading: const AccRowIcon(Icons.mail_outline_rounded),
-            title: l10n.contactUs,
+            leading: const AccRowIcon(Icons.description_outlined),
+            title: 'Legal',
             chevron: true,
-            onTap: () => UrlLauncherUtils.launch(AppLinks.contact),
-          ),
-          DsRow(
-            leading: const AccRowIcon(Icons.star_outline_rounded),
-            title: l10n.appRating,
-            chevron: true,
-            onTap: () => UrlLauncherUtils.launch(AppLinks.appStore),
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      DsGroupLabel(l10n.about),
-      const SizedBox(height: 8),
-      DsListCard(
-        children: [
-          _externalRow(
-            Icons.info_outline_rounded,
-            l10n.aboutKonto,
-            AppLinks.about,
-          ),
-          _externalRow(
-            Icons.shield_outlined,
-            l10n.privacyPolicy,
-            AppLinks.privacy,
-          ),
-          _externalRow(
-            Icons.description_outlined,
-            l10n.termsOfServices,
-            AppLinks.terms,
+            onTap: () => _showLegal(context, l10n),
           ),
         ],
       ),
     ];
+
+    if (isOrg) {
+      // Organizations get an organization block instead of "Upgrade".
+      return [
+        const DsGroupLabel('Organization'),
+        const SizedBox(height: 8),
+        DsListCard(
+          children: [
+            if (kybApproved)
+              DsRow(
+                leading: const AccRowIcon(Icons.public_rounded),
+                title: 'Share organization page',
+                chevron: true,
+                onTap: () {
+                  final url =
+                      '${AppConfig.contributionPage}/organizations/${user.id}';
+                  final box = context.findRenderObject() as RenderBox?;
+                  Share.share(
+                    'Support our campaigns on Hoga: $url',
+                    sharePositionOrigin:
+                        box == null
+                            ? null
+                            : box.localToGlobal(Offset.zero) & box.size,
+                  );
+                },
+              ),
+            DsRow(
+              leading: const AccRowIcon(Icons.description_outlined),
+              title: 'Business verification',
+              trailing: _kybTag(user.kybStatus),
+              chevron: !kybApproved,
+              onTap:
+                  kybApproved
+                      ? null
+                      : () => context.push(AppRoutes.businessKyb),
+            ),
+            payoutRow,
+          ],
+        ),
+        const SizedBox(height: 12),
+        const DsGroupLabel('Account'),
+        const SizedBox(height: 8),
+        DsListCard(children: [personalRow, phoneRow]),
+        ...appGroup,
+      ];
+    }
+
+    return [
+      const DsGroupLabel('Account'),
+      const SizedBox(height: 8),
+      DsListCard(
+        children: [
+          personalRow,
+          payoutRow,
+          // Individuals become organizations by completing business verification.
+          DsRow(
+            leading: const AccRowIcon(Icons.apartment_rounded),
+            title: 'Upgrade to organization',
+            chevron: true,
+            onTap: () => context.push(AppRoutes.businessKyb),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      const DsGroupLabel('Security'),
+      const SizedBox(height: 8),
+      DsListCard(children: [phoneRow]),
+      ...appGroup,
+    ];
   }
 
-  Widget _externalRow(IconData icon, String title, String url) {
+  /// Help & contact: support centre, contact form and store rating.
+  void _showHelp(BuildContext context, AppLocalizations l10n) {
+    _showLinksSheet(context, 'Help & contact', [
+      (Icons.help_outline_rounded, 'Help centre', AppLinks.support),
+      (Icons.mail_outline_rounded, l10n.contactUs, AppLinks.contact),
+      (Icons.star_outline_rounded, 'Rate Hogapay', AppLinks.appStore),
+    ]);
+  }
+
+  /// Legal: about, privacy policy and terms (external pages).
+  void _showLegal(BuildContext context, AppLocalizations l10n) {
+    _showLinksSheet(context, 'Legal', [
+      (Icons.info_outline_rounded, l10n.aboutKonto, AppLinks.about),
+      (Icons.shield_outlined, l10n.privacyPolicy, AppLinks.privacy),
+      (Icons.description_outlined, l10n.termsOfServices, AppLinks.terms),
+    ]);
+  }
+
+  void _showLinksSheet(
+    BuildContext context,
+    String title,
+    List<(IconData, String, String)> links,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (sheetContext) => AccSheet(
+            children: [
+              AccSheetHeader(title),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cream,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < links.length; i++) ...[
+                      if (i > 0)
+                        const Divider(height: 1, color: AppColors.line),
+                      _externalRow(
+                        links[i].$1,
+                        links[i].$2,
+                        links[i].$3,
+                        background: AppColors.surfaceWhite,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _externalRow(
+    IconData icon,
+    String title,
+    String url, {
+    Color? background,
+  }) {
     return DsRow(
-      leading: AccRowIcon(icon),
+      leading: AccRowIcon(icon, background: background),
       title: title,
       trailing: const Icon(
         Icons.open_in_new_rounded,
@@ -312,29 +359,15 @@ class UserAccountView extends StatelessWidget {
     ConfirmationBottomSheet.show(
       context,
       icon: Icons.logout_rounded,
-      title: l10n.doYouWantToLogout,
-      description: l10n.logoutDescription,
-      confirmButtonText: l10n.logout,
+      title: 'Log out of Hogapay?',
+      description:
+          'Your jars keep collecting. Log back in with your phone number.',
+      confirmButtonText: 'Log out',
       cancelButtonText: l10n.cancel,
       onConfirm: () {
         // Trigger the SignOutRequested event in AuthBloc
         context.read<AuthBloc>().add(SignOutRequested());
       },
-    );
-  }
-
-  void _confirmCloseAccount(BuildContext context, AppLocalizations l10n) {
-    ConfirmationBottomSheet.show(
-      context,
-      icon: Icons.delete_outline_rounded,
-      title: l10n.doYouWantToCloseAccount,
-      description: l10n.closeAccountDescription,
-      confirmButtonText: l10n.continueText,
-      cancelButtonText: l10n.cancel,
-      onConfirm: () {
-        DeleteAccountReasonsBottomSheet.show(context);
-      },
-      isDangerous: true,
     );
   }
 }
@@ -361,10 +394,20 @@ class _UserCard extends StatelessWidget {
           'in_review' => const DsTag('ID in review', tone: DsTone.pending),
           _ => const DsTag('ID not verified', tone: DsTone.neutral),
         };
+        // Organizations verify with KYB, individuals with KYC.
         final orgTag =
-            u.isOrganization && u.kybStatus == 'approved'
-                ? const DsTag('Business verified', tone: DsTone.positive)
-                : null;
+            !u.isOrganization
+                ? null
+                : switch (u.kybStatus) {
+                  'approved' => const DsTag(
+                    'Business verified',
+                    tone: DsTone.positive,
+                  ),
+                  'pending' || 'in_review' || 'submitted' || 'under-review' =>
+                    const DsTag('Business in review', tone: DsTone.pending),
+                  _ => const DsTag('Business not verified'),
+                };
+        final showOrgTile = u.isOrganization && u.photo?.thumbnailURL == null;
         return DsCard(
           onTap: () => context.push(AppRoutes.personalDetails),
           child: Row(
@@ -374,13 +417,20 @@ class _UserCard extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    ContributorAvatar(
-                      contributorName: u.fullName,
-                      backgroundColor: AppColors.limeSoft,
-                      radius: 28,
-                      avatarUrl: u.photo?.thumbnailURL,
-                      showStatusOverlay: false,
-                    ),
+                    if (showOrgTile)
+                      const DsIconTile(
+                        Icons.apartment_rounded,
+                        tone: DsTone.dark,
+                        size: 56,
+                      )
+                    else
+                      ContributorAvatar(
+                        contributorName: u.fullName,
+                        backgroundColor: AppColors.limeSoft,
+                        radius: 28,
+                        avatarUrl: u.photo?.thumbnailURL,
+                        showStatusOverlay: false,
+                      ),
                     Positioned(
                       right: -3,
                       bottom: -3,
@@ -520,7 +570,7 @@ class _VersionLabel extends StatelessWidget {
         final v = snap.data;
         if (v == null) return const SizedBox(height: 16);
         return Text(
-          'Hogapay ${v.version} (${v.buildNumber})',
+          'Hogapay ${v.version}',
           textAlign: TextAlign.center,
           style: DsText.caption,
         );

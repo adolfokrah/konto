@@ -13,7 +13,11 @@ import 'package:Hoga/l10n/app_localizations.dart';
 class JarActivityRow extends StatelessWidget {
   final ContributionModel contribution;
 
-  const JarActivityRow({super.key, required this.contribution});
+  /// The jar owner's id. When set, payments taken by someone else show
+  /// "via [first name]" (mockup statement).
+  final String? creatorId;
+
+  const JarActivityRow({super.key, required this.contribution, this.creatorId});
 
   String _name(AppLocalizations l) {
     final c = contribution;
@@ -71,10 +75,20 @@ class JarActivityRow extends StatelessWidget {
         c.isTransfer
             ? null
             : PaymentMethodUtils.getPaymentMethodLabel(c.paymentMethod, l);
+    final collector = c.collector;
+    final viaName =
+        creatorId != null &&
+                !c.isTransfer &&
+                collector != null &&
+                collector.id != creatorId &&
+                collector.fullName.trim().isNotEmpty
+            ? collector.fullName.trim().split(' ').first
+            : null;
     final subtitle = [
       if (method != null && c.paymentMethod != null) method,
       if (time.isNotEmpty) time,
       if (c.viaPaymentLink == true) 'Link',
+      if (viaName != null) 'via $viaName',
     ].join(' · ');
 
     final amountText =

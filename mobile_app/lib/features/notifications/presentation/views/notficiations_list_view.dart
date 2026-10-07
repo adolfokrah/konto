@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 import 'package:Hoga/features/notifications/presentation/widgets/jar_invite_preview_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_report_sheet.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/core/services/navigation_service.dart';
 
 // NOTE: Class name has a typo (Notficiations). Retained to avoid breaking existing references.
@@ -47,8 +48,9 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inbox'),
+      backgroundColor: AppColors.cream,
+      appBar: JarTopBar(
+        title: 'Inbox',
         actions: [
           BlocBuilder<NotificationsBloc, NotificationsState>(
             builder: (context, state) {
@@ -58,17 +60,12 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
                     (n) => n.status == NotificationStatus.unread,
                   );
               if (!hasUnread) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Center(
-                  child: DsLink(
-                    'Mark all read',
-                    onTap:
-                        () => context.read<NotificationsBloc>().add(
-                          MarkAllNotificationsRead(),
-                        ),
-                  ),
-                ),
+              return DsLink(
+                'Read',
+                onTap:
+                    () => context.read<NotificationsBloc>().add(
+                      MarkAllNotificationsRead(),
+                    ),
               );
             },
           ),
@@ -489,7 +486,7 @@ class _UpdateRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _formatTimestamp(notification.createdAt),
+                    _formatUpdateTime(notification.createdAt),
                     style: DsText.caption,
                   ),
                 ],
@@ -520,6 +517,21 @@ class _UpdateRow extends StatelessWidget {
   }
 }
 
+/// Updates list: clock time today, "Yesterday", then "3 Oct".
+String _formatUpdateTime(DateTime? dt) {
+  if (dt == null) return '';
+  final local = dt.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(local.year, local.month, local.day);
+  final days = today.difference(day).inDays;
+  if (days == 0) {
+    return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+  }
+  if (days == 1) return 'Yesterday';
+  return _formatDate(local, now);
+}
+
 String _formatTimestamp(DateTime? dt) {
   if (dt == null) return '';
   final now = DateTime.now();
@@ -528,7 +540,10 @@ String _formatTimestamp(DateTime? dt) {
   if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
   if (diff.inHours < 24) return '${diff.inHours} h ago';
   if (diff.inDays < 7) return '${diff.inDays} d ago';
-  final local = dt.toLocal();
+  return _formatDate(dt.toLocal(), now);
+}
+
+String _formatDate(DateTime local, DateTime now) {
   const months = [
     'Jan',
     'Feb',

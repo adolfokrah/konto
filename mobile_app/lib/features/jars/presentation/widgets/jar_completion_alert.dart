@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
@@ -73,19 +74,46 @@ class JarCompletionAlert extends StatelessWidget {
           String? title,
           DsTone tone = DsTone.pending,
           IconData icon = Icons.edit_outlined,
-        }) => DsNote(
-          title: title ?? heading,
-          text: text,
-          tone: tone,
-          icon: icon,
+        }) => DsCard(
+          // White row card (mockup): tinted icon tile, title, one line, chevron.
+          padding: const EdgeInsets.all(14),
           onTap: onTap,
+          child: Row(
+            children: [
+              DsIconTile(icon, tone: tone),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title ?? heading,
+                      style: DsText.rowTitle.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(text, style: DsText.caption),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.faint,
+                ),
+              ],
+            ],
+          ),
         );
 
         // 1. No jar description (Highest Priority)
         if (!hasDescription) {
           return note(
-            text:
-                'Every jar holds a story worth sharing. Add a short description to tell yours.',
+            text: 'Add a description so people know what it\'s for',
             onTap: () => context.push(AppRoutes.jarDescriptionEdit),
           );
         }
@@ -93,8 +121,7 @@ class JarCompletionAlert extends StatelessWidget {
         // 2. No thank you message
         if (!hasThankYou) {
           return note(
-            text:
-                'Add a personal thank-you message that contributors see after they pay.',
+            text: 'Add a thank-you note contributors see after paying',
             onTap: () => context.push(AppRoutes.jarThankYouMessageEdit),
           );
         }
@@ -102,8 +129,7 @@ class JarCompletionAlert extends StatelessWidget {
         // 3. No withdrawal account set.
         if (missingPayout) {
           return note(
-            text:
-                'Add a payout account so you can receive the money in your jar.',
+            text: 'Add a payout account to receive your money',
             icon: Icons.account_balance_wallet_outlined,
             onTap: () => context.push(AppRoutes.withdrawalAccounts),
           );
@@ -113,7 +139,7 @@ class JarCompletionAlert extends StatelessWidget {
         if (!user.isOrganization && user.kycStatus == 'none') {
           return note(
             text:
-                'Verify your identity to start collecting and transferring money. It takes about 3 minutes.',
+                'Verify your identity to collect and transfer · about 3 minutes',
             icon: Icons.verified_user_outlined,
             onTap: () => context.push(AppRoutes.kycView),
           );
@@ -123,8 +149,7 @@ class JarCompletionAlert extends StatelessWidget {
         if (!user.isOrganization && user.kycStatus == 'in_review') {
           return note(
             title: 'Verification in review',
-            text:
-                'This usually takes 24 hours. We\'ll notify you once it\'s complete.',
+            text: 'Usually takes 24 hours. We\'ll let you know.',
             tone: DsTone.info,
             icon: Icons.hourglass_top_rounded,
           );
@@ -155,8 +180,7 @@ class JarCompletionAlert extends StatelessWidget {
         // 7. No profile photo
         if (!hasPhoto) {
           return note(
-            text:
-                'Add a profile photo so contributors know who they\'re supporting.',
+            text: 'Add a profile photo so contributors know it\'s you',
             icon: Icons.account_circle_outlined,
             onTap: () => context.go(AppRoutes.userAccountView),
           );
@@ -165,8 +189,7 @@ class JarCompletionAlert extends StatelessWidget {
         // 8. No additional jar photos
         if (!hasJarPhotos) {
           return note(
-            text:
-                'Add photos so contributors can see what you\'re collecting for.',
+            text: 'Add photos of what you\'re collecting for',
             icon: Icons.add_photo_alternate_outlined,
             onTap: () => context.push(AppRoutes.jarInfo),
           );

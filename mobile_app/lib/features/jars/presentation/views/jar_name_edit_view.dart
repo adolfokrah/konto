@@ -9,6 +9,9 @@ import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+/// Short names read best on the contribution page (mockup counter).
+const int _suggestedMax = 40;
+
 /// Focused edit screen for the jar name, saved from the header.
 class JarNameEditView extends StatefulWidget {
   const JarNameEditView({super.key});
@@ -61,7 +64,7 @@ class _JarNameEditViewState extends State<JarNameEditView> {
             return Scaffold(
               backgroundColor: AppColors.cream,
               appBar: JarTopBar(
-                title: localizations.jarName,
+                title: 'Jar name',
                 leadingIcon: Icons.close_rounded,
               ),
               body: const SizedBox.shrink(),
@@ -76,7 +79,7 @@ class _JarNameEditViewState extends State<JarNameEditView> {
           return Scaffold(
             backgroundColor: AppColors.cream,
             appBar: JarTopBar(
-              title: localizations.jarName,
+              title: 'Jar name',
               leadingIcon: Icons.close_rounded,
               actions: [
                 BlocBuilder<UpdateJarBloc, UpdateJarState>(
@@ -101,7 +104,7 @@ class _JarNameEditViewState extends State<JarNameEditView> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 JarField(
-                  label: localizations.jarName,
+                  label: 'Name',
                   focused: true,
                   child: JarBareInput(
                     controller: _textController,
@@ -121,8 +124,13 @@ class _JarNameEditViewState extends State<JarNameEditView> {
                         ),
                       ),
                       Text(
-                        '${_textController.text.length}',
-                        style: DsText.caption,
+                        '${_textController.text.length} / $_suggestedMax',
+                        style: DsText.caption.copyWith(
+                          color:
+                              _textController.text.length > _suggestedMax
+                                  ? AppColors.negative
+                                  : AppColors.muted,
+                        ),
                       ),
                     ],
                   ),

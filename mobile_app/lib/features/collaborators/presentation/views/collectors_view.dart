@@ -11,19 +11,17 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
-/// Team sheet: the owner, active collectors with their role, and invited
+/// Team page: the owner, active collectors with their role, and invited
 /// people who haven't accepted yet (with Remind).
 class CollectorsView extends StatefulWidget {
   const CollectorsView({super.key});
 
-  /// Shows the collectors bottom sheet
+  /// Opens the Team page (a full page in the mockups, not a sheet).
   static void show(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const CollectorsView(),
-    );
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const CollectorsView()));
   }
 
   @override
@@ -33,21 +31,24 @@ class CollectorsView extends StatefulWidget {
 class _CollectorsViewState extends State<CollectorsView> {
   List<Map<String, dynamic>>? _pendingNewCollectors;
 
-  BoxDecoration get _sheetDecoration => const BoxDecoration(
-    color: AppColors.cream,
-    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-  );
+  bool _hasTeam(JarSummaryModel jarData) =>
+      jarData.invitedCollectors?.any(
+        (c) =>
+            c.status == 'active' ||
+            c.status == 'accepted' ||
+            c.status == 'pending',
+      ) ??
+      false;
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 0.9;
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
-          return Container(
-            height: height,
-            decoration: _sheetDecoration,
-            child: const Center(
+          return const Scaffold(
+            backgroundColor: AppColors.cream,
+            appBar: CollectTopBar(title: 'Team'),
+            body: Center(
               child: CircularProgressIndicator(color: AppColors.navy),
             ),
           );
@@ -56,10 +57,19 @@ class _CollectorsViewState extends State<CollectorsView> {
         final jarData = state.jarData;
         final localizations = AppLocalizations.of(context)!;
 
-        return Container(
-          height: height,
-          decoration: _sheetDecoration,
-          child: BlocListener<ReminderBloc, ReminderState>(
+        return Scaffold(
+          backgroundColor: AppColors.cream,
+          appBar: CollectTopBar(
+            title: 'Team',
+            actions: [
+              if (_hasTeam(jarData))
+                CollectBoxButton(
+                  icon: Icons.add_rounded,
+                  onTap: () => _openInvite(context, jarData),
+                ),
+            ],
+          ),
+          body: BlocListener<ReminderBloc, ReminderState>(
             listener: (context, state) {
               if (state is ReminderSuccess) {
                 AppSnackBar.showSuccess(context, message: state.message);
@@ -77,37 +87,19 @@ class _CollectorsViewState extends State<CollectorsView> {
               builder: (context, updateState) {
                 return Stack(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        CollectSheet.grab(),
-                        _buildHeader(context, localizations, jarData),
-                        Expanded(
-                          child: ListView(
-                            padding: EdgeInsets.fromLTRB(
-                              16,
-                              8,
-                              16,
-                              MediaQuery.of(context).padding.bottom + 24,
-                            ),
-                            children: _buildBody(
-                              context,
-                              localizations,
-                              jarData,
-                            ),
-                          ),
-                        ),
-                      ],
+                    ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        4,
+                        16,
+                        MediaQuery.of(context).padding.bottom + 24,
+                      ),
+                      children: _buildBody(context, localizations, jarData),
                     ),
                     if (updateState is UpdateJarInProgress)
                       Positioned.fill(
                         child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.6),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(24),
-                            ),
-                          ),
+                          color: AppColors.cream.withValues(alpha: 0.6),
                           child: const Center(
                             child: CircularProgressIndicator(
                               color: AppColors.navy,
@@ -253,35 +245,6 @@ class _CollectorsViewState extends State<CollectorsView> {
 
   // ---------------------------------------------------------------- layout
 
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    JarSummaryModel jarData,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          CollectBoxButton(
-            icon: Icons.close_rounded,
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: Text(
-              localizations.collectors,
-              textAlign: TextAlign.center,
-              style: DsText.section,
-            ),
-          ),
-          CollectBoxButton(
-            icon: Icons.person_add_alt_1_rounded,
-            onTap: () => _openInvite(context, jarData),
-          ),
-        ],
-      ),
-    );
-  }
-
   List<Widget> _buildBody(
     BuildContext context,
     AppLocalizations localizations,
@@ -317,15 +280,33 @@ class _CollectorsViewState extends State<CollectorsView> {
         DsListCard(children: [ownerRow]),
         const SizedBox(height: 12),
         DsCard(
-          padding: EdgeInsets.zero,
-          child: DsEmptyState(
-            icon: Icons.groups_2_outlined,
-            tone: DsTone.lime,
-            title: 'Collect with friends and family',
-            message:
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+          child: Column(
+            children: [
+              const DsIconTile(
+                Icons.groups_2_outlined,
+                tone: DsTone.lime,
+                size: 52,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Collect with friends and family',
+                style: DsText.section.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              const Text(
                 "Collectors share their own link and take MoMo or cash for this jar. They can't move money out.",
-            actionLabel: 'Invite collectors',
-            onAction: () => _openInvite(context, jarData),
+                style: DsText.small,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              DsSmallButton(
+                label: 'Invite collectors',
+                icon: Icons.add_rounded,
+                onTap: () => _openInvite(context, jarData),
+              ),
+            ],
           ),
         ),
       ];
@@ -362,7 +343,7 @@ class _CollectorsViewState extends State<CollectorsView> {
       ),
       if (pendingCollectors.isNotEmpty) ...[
         const SizedBox(height: 16),
-        CollectCap('${localizations.pending} · ${pendingCollectors.length}'),
+        CollectCap('Invited · ${pendingCollectors.length}'),
         const SizedBox(height: 6),
         DsListCard(
           children: [
@@ -390,13 +371,6 @@ class _CollectorsViewState extends State<CollectorsView> {
           ],
         ),
       ],
-      const SizedBox(height: 16),
-      const DsNote(
-        tone: DsTone.neutral,
-        icon: Icons.lock_outline_rounded,
-        text:
-            "Collectors can take payments for this jar. They can't move money out.",
-      ),
     ];
   }
 
@@ -449,9 +423,7 @@ class _CollectorsViewState extends State<CollectorsView> {
               () => _sendReminder(context, jarData, collector),
             ),
           action(
-            isPending
-                ? Icons.person_remove_alt_1_outlined
-                : Icons.block_rounded,
+            isPending ? Icons.close_rounded : Icons.block_rounded,
             isPending ? 'Cancel invitation' : 'Remove access',
             () => _removeInvitedCollector(context, jarData, collector),
             danger: true,
@@ -490,7 +462,7 @@ class _CollectorsViewState extends State<CollectorsView> {
             ),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.fill,
+                color: AppColors.cream,
                 borderRadius: BorderRadius.circular(20),
               ),
               clipBehavior: Clip.antiAlias,

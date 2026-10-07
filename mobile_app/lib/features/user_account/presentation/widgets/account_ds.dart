@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 
 // ---------------------------------------------------------------- sheet
 
@@ -24,7 +25,7 @@ class AccSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    return Container(
+    final sheet = Container(
       decoration: const BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.vertical(
@@ -44,6 +45,7 @@ class AccSheet extends StatelessWidget {
         children: [const Center(child: AccGrab()), ...children],
       ),
     );
+    return SheetSurface(child: sheet);
   }
 }
 
@@ -86,7 +88,9 @@ class AccSheetHeader extends StatelessWidget {
 class AccRoundButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
-  final Color background;
+
+  /// Defaults to the fill colour (cream inside sheets).
+  final Color? background;
   final Color foreground;
   final double size;
 
@@ -94,7 +98,7 @@ class AccRoundButton extends StatelessWidget {
     super.key,
     required this.icon,
     this.onTap,
-    this.background = AppColors.fill,
+    this.background,
     this.foreground = AppColors.navy,
     this.size = 36,
   });
@@ -102,7 +106,7 @@ class AccRoundButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: background,
+      color: background ?? SheetSurface.fillOf(context),
       borderRadius: BorderRadius.circular(size * 0.33),
       child: InkWell(
         borderRadius: BorderRadius.circular(size * 0.33),
@@ -177,7 +181,8 @@ class AccFieldGroup extends StatelessWidget {
   }
 }
 
-BoxDecoration _fieldDecoration({
+BoxDecoration _fieldDecoration(
+  BuildContext context, {
   required bool grouped,
   required bool focused,
   required bool error,
@@ -185,7 +190,7 @@ BoxDecoration _fieldDecoration({
 }) {
   if (locked) {
     return BoxDecoration(
-      color: AppColors.fill,
+      color: SheetSurface.fillOf(context),
       borderRadius:
           grouped ? null : BorderRadius.circular(AppRadius.radiusButton),
     );
@@ -283,6 +288,7 @@ class _AccFieldState extends State<AccField> {
         constraints: const BoxConstraints(minHeight: 58),
         padding: const EdgeInsets.fromLTRB(14, 9, 14, 10),
         decoration: _fieldDecoration(
+          context,
           grouped: widget.grouped,
           focused: _focus.hasFocus,
           error: widget.error,
@@ -388,6 +394,7 @@ class AccSelectField extends StatelessWidget {
             grouped ? null : BorderRadius.circular(AppRadius.radiusButton),
         child: Ink(
           decoration: _fieldDecoration(
+            context,
             grouped: grouped,
             focused: false,
             error: false,
@@ -504,7 +511,7 @@ class AccSegmented<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.fill,
+        color: SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -629,13 +636,15 @@ class AccGhostButton extends StatelessWidget {
 /// Small rounded leading tile for list rows (32px, 10 radius).
 class AccRowIcon extends StatelessWidget {
   final IconData icon;
-  final Color background;
+
+  /// Defaults to the fill colour (cream inside sheets).
+  final Color? background;
   final Color foreground;
 
   const AccRowIcon(
     this.icon, {
     super.key,
-    this.background = AppColors.fill,
+    this.background,
     this.foreground = AppColors.navy,
   });
 
@@ -645,7 +654,7 @@ class AccRowIcon extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: background,
+        color: background ?? SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, size: 17, color: foreground),

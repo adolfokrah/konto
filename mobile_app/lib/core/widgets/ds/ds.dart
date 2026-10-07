@@ -8,6 +8,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 
 // ---------------------------------------------------------------- type
 
@@ -265,7 +266,10 @@ class DsRow extends StatelessWidget {
               ),
               if (value != null) ...[
                 const SizedBox(width: 8),
-                Flexible(
+                // Capped, not Flexible: a Flexible here split the row 50/50
+                // with the title and left the value mid-row.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 170),
                   child: Text(
                     value!,
                     style: DsText.caption,
@@ -419,7 +423,8 @@ class DsTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg) = colors(tone);
+    final (toneBg, fg) = colors(tone);
+    final bg = tone == DsTone.neutral ? SheetSurface.fillOf(context) : toneBg;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -464,7 +469,7 @@ class DsIconTile extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: tone == DsTone.neutral ? AppColors.fill : bg,
+        color: tone == DsTone.neutral ? SheetSurface.fillOf(context) : bg,
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
       child: Icon(
@@ -757,7 +762,7 @@ class DsSmallButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final fg = secondary ? AppColors.navy : AppColors.surfaceWhite;
     return Material(
-      color: secondary ? AppColors.fill : AppColors.navy,
+      color: secondary ? SheetSurface.fillOf(context) : AppColors.navy,
       borderRadius: BorderRadius.circular(11),
       child: InkWell(
         borderRadius: BorderRadius.circular(11),

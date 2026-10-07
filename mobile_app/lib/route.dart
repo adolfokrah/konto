@@ -36,4 +36,6 @@ class AppRoutes {
   static const String referral = '/referral';
   static const String jarCustomFields = '/jar_custom_fields';
   static const String jarCustomFieldAdd = '/jar_custom_field_add';
+  static const String insights = '/insights';
+  static const String goalForecast = '/goal_forecast';
 }

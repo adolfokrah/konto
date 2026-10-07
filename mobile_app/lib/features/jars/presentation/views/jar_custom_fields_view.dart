@@ -18,7 +18,17 @@ IconData customFieldIcon(String type) => switch (type) {
   'checkbox' => Icons.check_box_outlined,
   'phone' => Icons.phone_outlined,
   'email' => Icons.alternate_email_rounded,
-  _ => Icons.short_text_rounded,
+  _ => Icons.text_fields_rounded,
+};
+
+/// Type tag text: four answer types, phone and email being Text formats.
+String customFieldTypeTag(CustomFieldModel field) => switch (field.fieldType) {
+  'select' => 'Choice · ${field.options?.length ?? 0}',
+  'checkbox' => 'Yes/No',
+  'number' => 'Number',
+  'phone' => 'Text · Phone',
+  'email' => 'Text · Email',
+  _ => 'Text',
 };
 
 class JarCustomFieldsView extends StatelessWidget {
@@ -67,16 +77,24 @@ class JarCustomFieldsView extends StatelessWidget {
                 }
 
                 if (fields.isEmpty) {
-                  return Center(
-                    child: DsEmptyState(
-                      icon: Icons.format_list_bulleted_rounded,
-                      tone: DsTone.lime,
-                      title: 'No questions yet',
-                      message:
-                          'Ask contributors something when they pay, like "Which side are you from?" or their table number.',
-                      actionLabel: 'Add a question',
-                      onAction: () => _add(context),
-                    ),
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 72, 16, 32),
+                    children: [
+                      const DsEmptyState(
+                        icon: Icons.format_list_bulleted_rounded,
+                        tone: DsTone.lime,
+                        title: 'No questions yet',
+                        message:
+                            'Ask contributors something when they pay, like "Which side are you from?" or their table number.',
+                      ),
+                      Center(
+                        child: DsSmallButton(
+                          label: 'Add a question',
+                          icon: Icons.add_rounded,
+                          onTap: () => _add(context),
+                        ),
+                      ),
+                    ],
                   );
                 }
 
@@ -85,7 +103,7 @@ class JarCustomFieldsView extends StatelessWidget {
                   header: Padding(
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
                     child: Text(
-                      'Contributors answer these when they pay. Answers show on each payment and in exports. Hold and drag to reorder.',
+                      'Contributors answer these when they pay. Answers show on each payment and in exports.',
                       style: DsText.small,
                     ),
                   ),
@@ -107,24 +125,29 @@ class JarCustomFieldsView extends StatelessWidget {
                     );
                   },
                   itemBuilder: (context, index) {
-                    return Padding(
+                    // One white list card: round the outer corners and
+                    // draw hairlines between rows.
+                    const r = Radius.circular(AppRadius.radiusCard);
+                    return Container(
                       key: ValueKey(fields[index].label + index.toString()),
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _CustomFieldCard(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.vertical(
+                          top: index == 0 ? r : Radius.zero,
+                          bottom: index == fields.length - 1 ? r : Radius.zero,
+                        ),
+                        border:
+                            index == 0
+                                ? null
+                                : const Border(
+                                  top: BorderSide(color: AppColors.line),
+                                ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: _CustomFieldRow(
                         field: fields[index],
                         index: index,
                         jarId: jarId,
-                        onDelete: () {
-                          final currentFields =
-                              fields.map((f) => f.toJson()).toList();
-                          context.read<ManageCustomFieldsBloc>().add(
-                            DeleteCustomFieldRequested(
-                              jarId: jarId,
-                              index: index,
-                              currentFields: currentFields,
-                            ),
-                          );
-                        },
                       ),
                     );
                   },
@@ -138,46 +161,22 @@ class JarCustomFieldsView extends StatelessWidget {
   }
 }
 
-class _CustomFieldCard extends StatelessWidget {
+class _CustomFieldRow extends StatelessWidget {
   final CustomFieldModel field;
   final int index;
   final String jarId;
-  final VoidCallback onDelete;
 
-  const _CustomFieldCard({
+  const _CustomFieldRow({
     required this.field,
     required this.index,
     required this.jarId,
-    required this.onDelete,
   });
-
-  Future<void> _confirmDelete(BuildContext context) async {
-    final ok = await JarConfirmSheet.show(
-      context: context,
-      icon: Icons.delete_outline_rounded,
-      tone: DsTone.negative,
-      title: 'Delete this question?',
-      message:
-          '"${field.label}" will be removed from your payment page. This cannot be undone.',
-      confirmText: 'Delete',
-    );
-    if (ok == true) onDelete();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final typeLabel =
-        field.fieldType == 'select'
-            ? 'Choice · ${field.options?.length ?? 0}'
-            : field.fieldType == 'checkbox'
-            ? 'Yes/No'
-            : field.fieldTypeLabel;
-
     return Material(
-      color: AppColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(AppRadius.radiusCard),
+      color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.radiusCard),
         onTap: () {
           context.push(
             '${AppRoutes.jarCustomFieldAdd}?jarId=$jarId',
@@ -185,7 +184,7 @@ class _CustomFieldCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               DsIconTile(customFieldIcon(field.fieldType), tone: DsTone.lime),
@@ -200,12 +199,12 @@ class _CustomFieldCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Wrap(
-                      spacing: 6,
+                      spacing: 4,
                       runSpacing: 4,
                       children: [
-                        DsTag(typeLabel),
+                        DsTag(customFieldTypeTag(field)),
                         if (field.required)
                           const DsTag('Required', tone: DsTone.negative),
                         if (field.includeInExport)
@@ -215,13 +214,11 @@ class _CustomFieldCard extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () => _confirmDelete(context),
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: AppColors.muted,
-                  size: 20,
-                ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.faint,
               ),
             ],
           ),

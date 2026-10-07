@@ -1,5 +1,8 @@
+import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,6 +10,7 @@ import 'package:Hoga/core/enums/media_upload_context.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
@@ -61,6 +65,12 @@ class _BusinessKybViewState extends State<BusinessKybView> {
   _UploadedDoc? _companyReg;
   _UploadedDoc? _proofOfAddress;
   int _directorSeq = 0;
+
+  /// Personal accounts upgrading see "Collect as an organization" first.
+  bool _showUpgradeIntro = true;
+
+  /// The director whose fields are open below their row.
+  int? _openDirector;
   late final List<_DirectorForm> _directors = [_newDirector()];
 
   _DirectorForm _newDirector() => _DirectorForm('${_directorSeq++}');
@@ -127,13 +137,17 @@ class _BusinessKybViewState extends State<BusinessKybView> {
   }
 
   void _addDirector() {
-    setState(() => _directors.add(_newDirector()));
+    setState(() {
+      _directors.add(_newDirector());
+      _openDirector = _directors.length - 1;
+    });
   }
 
   void _removeDirector(int index) {
     setState(() {
       _directors[index].dispose();
       _directors.removeAt(index);
+      _openDirector = null;
     });
   }
 
@@ -225,13 +239,20 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               // kybStatus.
               String kybStatus = 'none';
               String? rejectionReason;
+              String? businessName;
+              User? user;
 
               if (authState is AuthAuthenticated) {
+                user = authState.user;
                 kybStatus = authState.user.kybStatus;
               }
               if (state is BusinessKybStatusLoaded) {
                 kybStatus = state.status;
                 rejectionReason = state.rejectionReason;
+                businessName = state.businessName;
+              }
+              if (businessName != null && businessName.trim().isEmpty) {
+                businessName = null;
               }
 
               if (state is BusinessKybLoadingStatus) {
@@ -248,13 +269,22 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               }
 
               if (kybStatus == 'approved') {
-                return _buildApproved();
+                return _buildApproved(businessName, user);
               }
 
               if (kybStatus == 'in_review' ||
                   kybStatus == 'pending' ||
                   kybStatus == 'under-review') {
-                return _buildInReview();
+                return _buildInReview(businessName);
+              }
+
+              // Personal accounts arrive here from "Upgrade to organization"
+              // on Profile: explain what changes before the checklist.
+              if (_showUpgradeIntro &&
+                  kybStatus == 'none' &&
+                  user != null &&
+                  !user.isOrganization) {
+                return _buildUpgradeIntro();
               }
 
               // 'rejected' shows the reason above the form; 'none' shows the
@@ -272,41 +302,190 @@ class _BusinessKybViewState extends State<BusinessKybView> {
     );
   }
 
-  Widget _buildApproved() {
+  /// Mockup: Upgrade to organization (from Profile).
+  Widget _buildUpgradeIntro() {
+    Widget perk(String text) => DsRow(
+      leading: const DsIconTile(
+        Icons.check_rounded,
+        tone: DsTone.positive,
+        size: 32,
+      ),
+      title: text,
+    );
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceWhite,
-      appBar: const AuthTopBar(close: true, background: AppColors.surfaceWhite),
-      body: const Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DsIconTile(
-              Icons.account_balance_outlined,
-              tone: DsTone.positive,
+      backgroundColor: AppColors.cream,
+      appBar: const AuthTopBar(),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: DsIconTile(
+              Icons.apartment_rounded,
+              tone: DsTone.lime,
               size: 64,
             ),
-            SizedBox(height: 18),
-            AuthHeader(
-              title: 'Your business is verified',
-              subtitle:
-                  'You can now use all business features, and your jars can '
-                  'take payments.',
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 14),
+          const AuthHeader(
+            title: 'Collect as an organization',
+            subtitle: 'For churches, schools, associations and businesses.',
+          ),
+          const SizedBox(height: 14),
+          DsListCard(
+            children: [
+              perk('A public organization page'),
+              perk("Payouts to the organization's account"),
+              perk('Your existing jars keep working'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            "You'll need the certificate of registration, proof of address "
+            "and directors' IDs.",
+            style: DsText.caption,
+          ),
+        ],
       ),
       bottomNavigationBar: AuthFooter(
-        background: AppColors.surfaceWhite,
         children: [
-          AppButton.filled(text: 'Done', onPressed: () => context.pop()),
+          AppButton.filled(
+            text: 'Start business verification',
+            onPressed: () => setState(() => _showUpgradeIntro = false),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInReview() {
+  /// Mockup: Business · approved.
+  Widget _buildApproved(String? businessName, User? user) {
+    final isOrg = user?.isOrganization ?? false;
+    final pageUrl =
+        user == null
+            ? null
+            : '${AppConfig.contributionPage}/organizations/${user.id}';
+    final shortName = businessName?.split(RegExp(r'\s+')).take(2).join(' ');
+
+    return Scaffold(
+      backgroundColor: AppColors.surfaceWhite,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const DsIconTile(
+                Icons.apartment_rounded,
+                tone: DsTone.positive,
+                size: 64,
+              ),
+              const SizedBox(height: 14),
+              AuthHeader(
+                title:
+                    shortName != null
+                        ? '$shortName is verified'
+                        : 'Your organization is verified',
+                subtitle:
+                    isOrg
+                        ? 'Your organization page is live and your jars can '
+                            'take payments.'
+                        : 'Your jars can take payments.',
+              ),
+              if (isOrg && pageUrl != null) ...[
+                const SizedBox(height: 14),
+                DsCard(
+                  color: AppColors.fill,
+                  padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Your organization page',
+                              style: DsText.caption,
+                            ),
+                            Text(
+                              pageUrl.replaceFirst(RegExp(r'^https?://'), ''),
+                              style: DsText.rowTitle.copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Material(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: pageUrl));
+                            AppSnackBar.showSuccess(
+                              context,
+                              message: 'Link copied',
+                            );
+                          },
+                          child: const SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.copy_rounded,
+                              size: 18,
+                              color: AppColors.navy,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: AuthFooter(
+        background: AppColors.surfaceWhite,
+        children: [
+          if (isOrg && pageUrl != null)
+            Builder(
+              builder:
+                  (context) => AppButton.filled(
+                    text: 'Share organization page',
+                    icon: const Icon(
+                      Icons.ios_share_rounded,
+                      size: 18,
+                      color: AppColors.surfaceWhite,
+                    ),
+                    onPressed: () {
+                      final box = context.findRenderObject() as RenderBox?;
+                      Share.share(
+                        'Support our campaigns on Hoga: $pageUrl',
+                        sharePositionOrigin:
+                            box == null
+                                ? null
+                                : box.localToGlobal(Offset.zero) & box.size,
+                      );
+                    },
+                  ),
+            ),
+          AppButton.outlined(text: 'Done', onPressed: () => context.pop()),
+        ],
+      ),
+    );
+  }
+
+  /// Mockup: Business · in review.
+  Widget _buildInReview(String? businessName) {
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const AuthTopBar(close: true, title: 'Business verification'),
@@ -317,18 +496,24 @@ class _BusinessKybViewState extends State<BusinessKybView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Expanded(
-                      child: Text('Your business', style: DsText.section),
+                      child: Text(
+                        businessName ?? 'Your business',
+                        style: DsText.section,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    DsTag('In review', tone: DsTone.pending),
+                    const SizedBox(width: 8),
+                    const DsTag('In review', tone: DsTone.pending),
                   ],
                 ),
                 const SizedBox(height: 16),
-                DsSteps(
+                const DsSteps(
                   current: 1,
-                  steps: const [
+                  steps: [
                     ('Submitted', null),
                     ('Documents being checked', '2–3 business days'),
                     ('Approved', null),
@@ -341,14 +526,16 @@ class _BusinessKybViewState extends State<BusinessKybView> {
           const DsNote(
             tone: DsTone.neutral,
             text:
-                'Your jars can be set up now. We\'ll notify you once the '
-                'review is complete.',
+                "Your jars can be set up now. Payments open once you're "
+                'approved.',
           ),
         ],
       ),
     );
   }
 
+  /// Mockup: Business verification (and Business · action needed when
+  /// [isRejected]).
   Widget _buildForm(
     BuildContext context,
     BusinessKybState state, {
@@ -392,7 +579,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                     const Text('2–3 day review', style: DsText.caption),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 DsProgress(done / 4),
               ],
             ),
@@ -407,7 +594,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
             controller: _businessNameController,
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           const DsGroupLabel('Documents'),
           const SizedBox(height: 8),
@@ -427,34 +614,56 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           const DsGroupLabel('Directors'),
           const SizedBox(height: 8),
-          ...List.generate(_directors.length, _buildDirectorCard),
-          DsCard(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            onTap: _addDirector,
-            child: Row(
-              children: [
-                const Icon(Icons.add_rounded, size: 20, color: AppColors.navy),
-                const SizedBox(width: 10),
-                Text(
-                  'Add director',
-                  style: DsText.rowTitle.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+          DsListCard(
+            children: [
+              for (var i = 0; i < _directors.length; i++)
+                ..._buildDirectorRows(i),
+              InkWell(
+                onTap: _addDirector,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.add_rounded,
+                        size: 20,
+                        color: AppColors.navy,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Add director',
+                        style: DsText.rowTitle.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const DsNote(
+            tone: DsTone.info,
+            text:
+                "Organizations don't need personal ID checks. This is the "
+                'only step.',
           ),
         ],
       ),
       bottomNavigationBar: AuthFooter(
         children: [
           AppButton.filled(
-            onPressed: isSubmitting ? null : _submit,
+            // Unlocks at 4 of 4.
+            onPressed: isSubmitting || !_isFormValid ? null : _submit,
             text:
                 isSubmitting
                     ? 'Submitting...'
@@ -468,9 +677,12 @@ class _BusinessKybViewState extends State<BusinessKybView> {
     );
   }
 
-  Widget _buildDirectorCard(int index) {
+  /// One director as a list row (initials, name, ID status, "n left" tag).
+  /// Tapping the row opens its fields inline below it.
+  List<Widget> _buildDirectorRows(int index) {
     final director = _directors[index];
     final complete = _directorComplete(director);
+    final open = _openDirector == index;
     final missing =
         [
           director.nameController.text.trim().isEmpty,
@@ -488,78 +700,74 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                 .map((p) => p[0].toUpperCase())
                 .join();
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: DsListCard(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: AppColors.limeSoft,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    initials,
-                    style: DsText.rowTitle.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Director ${index + 1}',
-                    style: DsText.rowTitle.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                complete
-                    ? const DsTag('Complete', tone: DsTone.positive)
-                    : DsTag('$missing left', tone: DsTone.pending),
-                if (_directors.length > 1)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: AppColors.negative,
-                      size: 20,
-                    ),
-                    onPressed: () => _removeDirector(index),
-                  )
-                else
-                  const SizedBox(width: 8),
-              ],
+    final String status;
+    if (director.idFront == null && director.idBack == null) {
+      status = name.isEmpty ? 'Add name and ID' : 'ID front and back missing';
+    } else {
+      final front = director.idFront != null ? '✓' : 'missing';
+      final back = director.idBack != null ? '✓' : 'missing';
+      status = 'ID front $front · back $back';
+    }
+
+    return [
+      DsRow(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: AppColors.limeSoft,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            initials,
+            style: DsText.rowTitle.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          AuthField(
-            label: 'Full name',
-            hintText: 'As on their ID',
-            textCapitalization: TextCapitalization.words,
-            controller: director.nameController,
-            onChanged: (_) => setState(() {}),
-          ),
-          _buildDocumentRow(
-            title: 'ID front',
-            hint: 'Ghana Card or passport',
-            doc: director.idFront,
-            onPick: () => _pickDocument(director.frontContextId),
-          ),
-          _buildDocumentRow(
-            title: 'ID back',
-            hint: 'Back of the same ID',
-            doc: director.idBack,
-            onPick: () => _pickDocument(director.backContextId),
-          ),
-        ],
+        ),
+        title: name.isEmpty ? 'Director ${index + 1}' : name,
+        subtitle: status,
+        onTap: () => setState(() => _openDirector = open ? null : index),
+        trailing:
+            complete
+                ? const DsTag('Complete', tone: DsTone.positive)
+                : DsTag('$missing left', tone: DsTone.pending),
       ),
-    );
+      if (open) ...[
+        AuthField(
+          label: 'Full name',
+          hintText: 'As on their ID',
+          textCapitalization: TextCapitalization.words,
+          controller: director.nameController,
+          onChanged: (_) => setState(() {}),
+        ),
+        _buildDocumentRow(
+          title: 'ID front',
+          hint: 'Ghana Card or passport',
+          doc: director.idFront,
+          onPick: () => _pickDocument(director.frontContextId),
+        ),
+        _buildDocumentRow(
+          title: 'ID back',
+          hint: 'Back of the same ID',
+          doc: director.idBack,
+          onPick: () => _pickDocument(director.backContextId),
+        ),
+        if (_directors.length > 1)
+          DsRow(
+            leading: const DsIconTile(
+              Icons.delete_outline_rounded,
+              tone: DsTone.negative,
+              size: 32,
+            ),
+            title: 'Remove director',
+            titleColor: AppColors.negative,
+            onTap: () => _removeDirector(index),
+          ),
+      ],
+    ];
   }
 
   /// Document list row: status tile, title, filename or hint, and an
@@ -571,34 +779,11 @@ class _BusinessKybViewState extends State<BusinessKybView> {
     required VoidCallback onPick,
   }) {
     final hasFile = doc != null;
-    final previewUrl = doc?.url;
-    final isImage =
-        previewUrl != null &&
-        previewUrl.isNotEmpty &&
-        !(doc?.filename ?? '').toLowerCase().endsWith('.pdf');
-
-    Widget leading;
-    if (hasFile && isImage) {
-      leading = ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          previewUrl,
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-          errorBuilder:
-              (context, error, stackTrace) =>
-                  const DsIconTile(Icons.check_rounded, tone: DsTone.positive),
-        ),
-      );
-    } else if (hasFile) {
-      leading = const DsIconTile(Icons.check_rounded, tone: DsTone.positive);
-    } else {
-      leading = const DsIconTile(Icons.description_outlined);
-    }
-
     return DsRow(
-      leading: leading,
+      leading:
+          hasFile
+              ? const DsIconTile(Icons.check_rounded, tone: DsTone.positive)
+              : const DsIconTile(Icons.description_outlined),
       title: title,
       subtitle: hasFile ? (doc.filename ?? 'Uploaded') : hint,
       onTap: onPick,

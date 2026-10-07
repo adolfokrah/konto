@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
-import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/currency_text_field.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_settings_widgets.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-/// Fixed amount: the amount every contributor pays.
+/// Fixed amount: turn "Everyone pays the same" on or off and set the amount
+/// per person on the keypad.
 class JarFixedContributionAmountEditView extends StatefulWidget {
   const JarFixedContributionAmountEditView({super.key});
 
@@ -22,25 +23,10 @@ class JarFixedContributionAmountEditView extends StatefulWidget {
 
 class _JarFixedContributionAmountEditViewState
     extends State<JarFixedContributionAmountEditView> {
-  final TextEditingController _amountController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  /// What the user has typed, e.g. "100". Empty means 0.
+  String _input = '';
+  bool _fixed = true;
   bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Auto-focus the input field when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,66 +52,92 @@ class _JarFixedContributionAmountEditViewState
             );
           }
           final jarData = state.jarData;
-          final symbol = CurrencyUtils.getCurrencySymbol(jarData.currency);
 
-          // Initialize the controller with the formatted amount if not already done
-          if (_isInitialized == false) {
-            _amountController.text =
-                '$symbol${jarData.acceptedContributionAmount}';
+          if (!_isInitialized) {
+            _fixed = jarData.isFixedContribution;
+            _input = JarAmountInput.fromAmount(
+              jarData.acceptedContributionAmount,
+            );
             _isInitialized = true;
           }
+
+          final busy =
+              context.watch<UpdateJarBloc>().state is UpdateJarInProgress;
 
           return Scaffold(
             backgroundColor: AppColors.cream,
             appBar: const JarTopBar(title: 'Fixed amount'),
-            body: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-              children: [
-                DsListCard(
-                  children: [
-                    DsRow(
-                      title: 'Everyone pays the same',
-                      subtitle: 'e.g. dues, tickets, susu',
-                      trailing: const DsTag('On', tone: DsTone.lime),
+            body: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                      child: Column(
+                        children: [
+                          DsListCard(
+                            children: [
+                              DsRow(
+                                title: 'Everyone pays the same',
+                                subtitle: 'e.g. dues, tickets, susu',
+                                trailing: JarToggle(
+                                  value: _fixed,
+                                  onChanged:
+                                      busy
+                                          ? null
+                                          : (v) => setState(() => _fixed = v),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_fixed) ...[
+                            const SizedBox(height: 20),
+                            Text('Amount per person', style: DsText.caption),
+                            const SizedBox(height: 8),
+                            JarAmountDisplay(
+                              input: _input,
+                              currency: jarData.currency.toUpperCase(),
+                              size: 52,
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  'Amount per person',
-                  style: DsText.caption,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                CurrencyTextField(
-                  controller: _amountController,
-                  focusNode: _focusNode,
-                  currencySymbol: symbol,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  jarData.name,
-                  style: DsText.small,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            bottomNavigationBar: JarFooter(
-              children: [
-                BlocBuilder<UpdateJarBloc, UpdateJarState>(
-                  builder: (context, updateState) {
-                    return JarPrimaryButton(
+                  ),
+                  if (_fixed)
+                    AuthKeypad(
+                      decimal: true,
+                      onDigit:
+                          (d) => setState(
+                            () => _input = JarAmountInput.digit(_input, d),
+                          ),
+                      onBackspace:
+                          () => setState(
+                            () => _input = JarAmountInput.backspace(_input),
+                          ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: JarPrimaryButton(
                       label: localizations.save,
-                      loading: updateState is UpdateJarInProgress,
+                      loading: busy,
                       onTap: () {
-                        // Get the numeric value directly from the currency text field
-                        final amount =
-                            CurrencyTextField(
-                              controller: _amountController,
-                              currencySymbol: symbol,
-                            ).getNumericValue();
-
-                        // Validate amount
+                        if (busy) return;
+                        if (!_fixed) {
+                          // Turning it off clears the amount.
+                          context.read<UpdateJarBloc>().add(
+                            UpdateJarRequested(
+                              jarId: jarData.id,
+                              updates: {
+                                'isFixedContribution': false,
+                                'acceptedContributionAmount': null,
+                              },
+                            ),
+                          );
+                          return;
+                        }
+                        final amount = JarAmountInput.toAmount(_input);
                         if (amount <= 0) {
                           AppSnackBar.show(
                             context,
@@ -137,14 +149,18 @@ class _JarFixedContributionAmountEditViewState
                         context.read<UpdateJarBloc>().add(
                           UpdateJarRequested(
                             jarId: jarData.id,
-                            updates: {'acceptedContributionAmount': amount},
+                            updates: {
+                              if (!jarData.isFixedContribution)
+                                'isFixedContribution': true,
+                              'acceptedContributionAmount': amount,
+                            },
                           ),
                         );
                       },
-                    );
-                  },
-                ),
-              ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

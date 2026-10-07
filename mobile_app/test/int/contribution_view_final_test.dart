@@ -68,7 +68,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(ContributionView), findsOneWidget);
-      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      expect(find.byType(Scaffold), findsOneWidget);
     });
 
     testWidgets('should show loading state when fetching data', (
@@ -319,8 +319,8 @@ void main() {
       // Initial state: should not be loading since no event was triggered
       expect(find.byType(CircularProgressIndicator), findsNothing);
 
-      // Should show the DraggableScrollableSheet structure
-      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      // The detail is a full page (Scaffold), not a sheet
+      expect(find.byType(Scaffold), findsOneWidget);
     });
   });
 }

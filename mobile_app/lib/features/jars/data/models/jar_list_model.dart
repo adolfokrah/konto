@@ -123,6 +123,10 @@ class JarListItem {
   final String? description;
   final JarImage? image;
   final bool isActive;
+
+  /// 'open' | 'sealed' | 'frozen' | 'broken' (closed). Older servers don't
+  /// send it; treat those jars as open.
+  final String status;
   final bool isFixedContribution;
   final double? acceptedContributionAmount;
   final double goalAmount;
@@ -142,6 +146,7 @@ class JarListItem {
     this.description,
     this.image,
     required this.isActive,
+    this.status = 'open',
     required this.isFixedContribution,
     this.acceptedContributionAmount,
     required this.goalAmount,
@@ -156,6 +161,13 @@ class JarListItem {
     required this.totalContributions,
   });
 
+  bool get isSealed => status == 'sealed';
+  bool get isFrozen => status == 'frozen';
+  bool get isClosed => status == 'broken' || !isActive;
+
+  /// Open for new payments.
+  bool get canCollect => !isClosed && !isSealed && !isFrozen;
+
   factory JarListItem.fromJson(Map<String, dynamic> json) {
     return JarListItem(
       id: json['id'] ?? '',
@@ -166,6 +178,7 @@ class JarListItem {
               ? JarImage.fromJson(json['image'] as Map<String, dynamic>)
               : null,
       isActive: json['isActive'] ?? true,
+      status: json['status'] as String? ?? 'open',
       isFixedContribution: json['isFixedContribution'] ?? false,
       acceptedContributionAmount:
           json['acceptedContributionAmount']?.toDouble(),
@@ -197,6 +210,7 @@ class JarListItem {
       'description': description,
       'image': image?.toJson(),
       'isActive': isActive,
+      'status': status,
       'isFixedContribution': isFixedContribution,
       'acceptedContributionAmount': acceptedContributionAmount,
       'goalAmount': goalAmount,

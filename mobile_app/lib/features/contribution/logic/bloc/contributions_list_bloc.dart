@@ -136,11 +136,36 @@ class ContributionsListBloc
           (startDate != null) ||
           (endDate != null);
 
+      final scope = event.allJarsScope;
+      final allJars = scope != null;
+
+      // No jars to look in: nothing to fetch.
+      if (scope != null && scope.isEmpty) {
+        emit(
+          ContributionsListLoaded(
+            const [],
+            totalDocs: 0,
+            limit: event.limit,
+            totalPages: 1,
+            page: 1,
+            pagingCounter: 1,
+            hasPrevPage: false,
+            hasNextPage: false,
+            contributorSearch: event.contributor,
+            allJars: true,
+          ),
+        );
+        return;
+      }
+
       final result = await _contributionRepository.getContributions(
-        jarId: event.jarId,
+        jarId: allJars ? null : event.jarId,
+        fullAccessJarIds: scope?.fullAccessJarIds,
+        collectorOnlyJarIds: scope?.collectorOnlyJarIds,
         paymentMethods: paymentMethodStrings,
         statuses: statusStrings,
-        collectors: collectors,
+        // Collector filters are per jar; they don't apply across jars.
+        collectors: allJars ? null : collectors,
         transactionTypes: transactionTypes,
         startDate: startDate,
         endDate: endDate,
@@ -205,6 +230,7 @@ class ContributionsListBloc
             prevPage: prevPage,
             nextPage: nextPage,
             contributorSearch: event.contributor,
+            allJars: allJars,
           ),
         );
       } else {

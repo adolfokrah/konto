@@ -64,7 +64,8 @@ void main() {
         'status': 'open',
         'creator': {
           'id': 'test-user-123',
-          'firstName': 'Test', 'lastName': 'User',
+          'firstName': 'Test',
+          'lastName': 'User',
           'email': 'test@example.com',
           'phoneNumber': '+1234567890',
           'countryCode': 'GH',
@@ -131,9 +132,7 @@ void main() {
             supportedLocales: const [Locale('en')],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const JarNameEditView(),
-              },
+              routes: {'/': (context) => const JarNameEditView()},
             ),
           ),
         ),

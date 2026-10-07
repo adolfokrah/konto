@@ -7,6 +7,7 @@ import 'package:Hoga/core/utils/payment_method_utils.dart';
 import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
@@ -245,12 +246,11 @@ class _AddWithdrawalAccountViewState extends State<AddWithdrawalAccountView> {
         final isMomo = _type == _AccountType.mobileMoney;
 
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.close_rounded),
-              onPressed: () => Navigator.of(context).maybePop(),
-            ),
-            title: const Text('Add account'),
+          backgroundColor: AppColors.cream,
+          appBar: JarTopBar(
+            title: 'Add account',
+            leadingIcon: Icons.close_rounded,
+            onLeading: () => Navigator.of(context).maybePop(),
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

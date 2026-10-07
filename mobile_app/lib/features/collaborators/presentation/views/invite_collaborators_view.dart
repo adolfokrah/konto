@@ -245,7 +245,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                                         : null,
                               ),
                               title: collector.displayName,
-                              subtitle: collector.fullPhoneNumber,
+                              subtitle: _maskedPhone(collector),
                               trailing: CollectCheck(
                                 _isCollectorSelected(collector),
                               ),
@@ -255,7 +255,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                       const SizedBox(height: 12),
                       const DsNote(
                         tone: DsTone.neutral,
-                        icon: Icons.lock_outline_rounded,
+                        icon: Icons.info_outline_rounded,
                         text:
                             "Collectors can take payments for this jar. They can't move money out.",
                       ),
@@ -315,6 +315,15 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
         ],
       ),
     );
+  }
+
+  /// "024 ••• 8812": enough to tell people apart without showing the number.
+  String _maskedPhone(CollectorModel c) {
+    var local = c.phoneNumber.replaceAll(RegExp(r'\D'), '');
+    if (local.isEmpty) return c.fullPhoneNumber;
+    if (!local.startsWith('0')) local = '0$local';
+    if (local.length < 7) return local;
+    return '${local.substring(0, 3)} ••• ${local.substring(local.length - 4)}';
   }
 
   Widget _scrollableCenter(Widget child) => LayoutBuilder(

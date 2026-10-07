@@ -3,6 +3,7 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class GenericPicker<T> extends StatelessWidget {
@@ -51,25 +52,27 @@ class GenericPicker<T> extends StatelessWidget {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return _GenericPickerContent<T>(
-          selectedValue: selectedValue,
-          items: items,
-          onItemSelected: onItemSelected,
-          itemBuilder: itemBuilder,
-          recentItemBuilder: recentItemBuilder,
-          searchResultBuilder: searchResultBuilder,
-          searchFilter: searchFilter,
-          isItemSelected: isItemSelected,
-          title: title,
-          searchHint: searchHint,
-          recentSectionTitle: recentSectionTitle,
-          otherSectionTitle: otherSectionTitle,
-          searchResultsTitle: searchResultsTitle,
-          noResultsMessage: noResultsMessage,
-          showSearch: showSearch,
-          maxHeight: maxHeight,
-          minHeight: minHeight,
-          initialHeight: initialHeight,
+        return SheetSurface(
+          child: _GenericPickerContent<T>(
+            selectedValue: selectedValue,
+            items: items,
+            onItemSelected: onItemSelected,
+            itemBuilder: itemBuilder,
+            recentItemBuilder: recentItemBuilder,
+            searchResultBuilder: searchResultBuilder,
+            searchFilter: searchFilter,
+            isItemSelected: isItemSelected,
+            title: title,
+            searchHint: searchHint,
+            recentSectionTitle: recentSectionTitle,
+            otherSectionTitle: otherSectionTitle,
+            searchResultsTitle: searchResultsTitle,
+            noResultsMessage: noResultsMessage,
+            showSearch: showSearch,
+            maxHeight: maxHeight,
+            minHeight: minHeight,
+            initialHeight: initialHeight,
+          ),
         );
       },
     );
@@ -194,7 +197,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
     const radius = Radius.circular(AppRadius.radiusCard);
     // Material (not a decorated Container) so rows can paint ink splashes.
     return Material(
-      color: AppColors.fill,
+      color: AppColors.cream,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: isFirst ? radius : Radius.zero,
@@ -293,7 +296,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
                   button: true,
                   label: localizations.close,
                   child: Material(
-                    color: AppColors.fill,
+                    color: AppColors.cream,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -332,7 +335,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
   }
 }
 
-/// Search field in the picker sheet (mockup `.search`): fill, 44 tall.
+/// Search field in the picker sheet (mockup `.search`): cream, 44 tall.
 class _PickerSearch extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
@@ -355,7 +358,7 @@ class _PickerSearchState extends State<_PickerSearch> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.fill,
+        color: AppColors.cream,
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.only(left: 12),

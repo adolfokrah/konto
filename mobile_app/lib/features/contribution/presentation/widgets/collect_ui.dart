@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 
 // ---------------------------------------------------------------- top bar
 
@@ -28,7 +29,7 @@ class CollectBoxButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: filled ? AppColors.fill : AppColors.surfaceWhite,
+      color: filled ? SheetSurface.fillOf(context) : AppColors.surfaceWhite,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -178,7 +179,11 @@ class CollectButton extends StatelessWidget {
         AppColors.navy,
         Border.all(color: AppColors.line),
       ),
-      CollectButtonStyle.fill => (AppColors.fill, AppColors.navy, null),
+      CollectButtonStyle.fill => (
+        SheetSurface.fillOf(context),
+        AppColors.navy,
+        null,
+      ),
       CollectButtonStyle.ghost => (Colors.transparent, AppColors.navy, null),
       CollectButtonStyle.danger => (
         AppColors.negativeSoft,
@@ -262,7 +267,7 @@ class CollectSegment<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.fill,
+        color: SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -591,7 +596,7 @@ class CollectSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: body,
             );
-    return Container(
+    final sheet = Container(
       height: height,
       decoration: const BoxDecoration(
         color: AppColors.surfaceWhite,
@@ -626,6 +631,7 @@ class CollectSheet extends StatelessWidget {
         ],
       ),
     );
+    return SheetSurface(child: sheet);
   }
 }
 

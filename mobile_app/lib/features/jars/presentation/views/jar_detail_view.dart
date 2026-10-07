@@ -1,9 +1,7 @@
-import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/contribution_chart.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
@@ -28,6 +26,7 @@ import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 /// Home tab: the dashboard of the current jar (switch jars from the name row).
 class JarDetailView extends StatefulWidget {
@@ -392,56 +391,87 @@ class _JarDetailViewState extends State<JarDetailView> {
           icon: Icons.lock_outline_rounded,
           text: 'Only the organizer can transfer money or change settings.',
         ),
-      if (isCreator) JarCompletionAlert(jarData: jarData),
-      if (isCreator)
+      if (isCreator && !blocked)
         JarGoalCard(
           currentAmount: b.totalContributedAmount,
           goalAmount: jarData.goalAmount,
           currency: jarData.currency,
           deadline: jarData.deadline,
+          createdAt: jarData.createdAt,
         ),
-      if (isCreator) _summaryTiles(context, jarData),
+      if (isCreator && !blocked) JarCompletionAlert(jarData: jarData),
       DsSectionHeader(
-        localizations.recentContributions,
+        isCreator ? 'Statement' : 'Your collections',
         action: jarData.contributions.isNotEmpty ? localizations.seeAll : null,
         onAction: () => _openContributionsList(context),
       ),
       if (jarData.contributions.isEmpty)
         DsCard(
           padding: EdgeInsets.zero,
-          child: DsEmptyState(
-            icon: Icons.receipt_long_outlined,
-            title: localizations.noContributionsYet,
-            message: localizations.beTheFirstToContribute,
-            actionLabel: localizations.contribute,
-            onAction: blocked ? null : () => _contribute(context, jarData),
-          ),
+          child: _emptyStatement(context, jarData, blocked),
         )
       else
         DsListCard(
           children: [
             for (final c in jarData.contributions)
-              JarActivityRow(contribution: c),
+              JarActivityRow(contribution: c, creatorId: jarData.creator.id),
           ],
         ),
-      if (isCreator) _breakdownCard(context, jarData),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
+          if (i > 0) const SizedBox(height: 14),
           children[i],
         ],
-        // Keeps the jar-photo upload listener alive when the More tile is
-        // replaced (sealed jars show Reopen instead).
-        if (isCreator && sealed) JarMoreMenu(jarId: jarData.id, hidden: true),
+        // Keeps the jar-photo upload listener alive (the More tile became
+        // Team; photos are changed from jar settings).
+        if (isCreator) JarMoreMenu(jarId: jarData.id, hidden: true),
       ],
     );
   }
 
-  /// Photo, name and status; tapping the name opens the jar switcher.
+  /// "No payments yet" card with a Share link action (mockup `.es`).
+  Widget _emptyStatement(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool blocked,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 18),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DsIconTile(Icons.format_list_bulleted_rounded, size: 56),
+          const SizedBox(height: 12),
+          Text(
+            'No payments yet',
+            style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Record cash, send a MoMo request, or share your link to get started.',
+            style: DsText.small,
+            textAlign: TextAlign.center,
+          ),
+          if (!blocked) ...[
+            const SizedBox(height: 14),
+            DsSmallButton(
+              label: 'Share link',
+              icon: Icons.ios_share_rounded,
+              onTap: () => _request(context, jarData),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Photo, name, status tag and "category · currency"; tapping it opens the
+  /// jar switcher.
   Widget _identityRow(
     BuildContext context,
     JarSummaryModel jarData,
@@ -464,73 +494,68 @@ class _JarDetailViewState extends State<JarDetailView> {
       };
     }
 
+    final now = DateTime.now();
+    final createdToday =
+        jarData.createdAt.year == now.year &&
+        jarData.createdAt.month == now.month &&
+        jarData.createdAt.day == now.day;
     final subtitle =
-        isCreator
-            ? [
+        !isCreator
+            ? 'Organized by ${jarData.creator.fullName}'
+            : jarData.contributions.isEmpty && createdToday
+            ? 'Created today'
+            : [
               if (jarData.jarGroup != null && jarData.jarGroup!.isNotEmpty)
                 jarData.jarGroup!,
               jarData.currency.toUpperCase(),
-            ].join(' · ')
-            : 'Organized by ${jarData.creator.fullName}';
+            ].join(' · ');
 
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => JarsListView.showModal(context),
-            child: Row(
-              children: [
-                JarThumb(imageUrl: imageUrl, size: 52),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => JarsListView.showModal(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: [
+            JarThumb(imageUrl: imageUrl, size: 48),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    jarData.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DsText.section.copyWith(fontSize: 19),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              jarData.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: DsText.section.copyWith(fontSize: 20),
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          const Icon(
-                            Icons.unfold_more_rounded,
-                            size: 18,
-                            color: AppColors.muted,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          tag,
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              subtitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: DsText.caption,
-                            ),
-                          ),
-                        ],
+                      tag,
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: DsText.caption,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
+  /// Balance card. Owner: balance, Available / Clearing, a 10-day chart
+  /// (the summary's chartData is daily totals for the last 10 days).
+  /// Collector: what they've collected and how many payments.
   Widget _balanceCard(
     BuildContext context,
     JarSummaryModel jarData,
@@ -538,17 +563,21 @@ class _JarDetailViewState extends State<JarDetailView> {
   ) {
     final b = jarData.balanceBreakDown;
     final cur = jarData.currency;
+    final blocked =
+        jarData.status == JarStatus.sealed ||
+        jarData.status == JarStatus.frozen;
     final points = jarData.chartData ?? const <double>[];
     final hasChart = points.length >= 2 && points.any((p) => p > 0);
 
     Widget figure(String label, double value, {Color? color}) => Text.rich(
       TextSpan(
         children: [
-          TextSpan(text: '$label ', style: DsText.small),
+          TextSpan(text: '$label ', style: DsText.small.copyWith(fontSize: 13)),
           TextSpan(
             text: CurrencyUtils.formatAmount(value, cur),
             style: DsText.small.copyWith(
-              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
               color: color ?? AppColors.navy,
             ),
           ),
@@ -556,36 +585,50 @@ class _JarDetailViewState extends State<JarDetailView> {
       ),
     );
 
+    if (!isCreator) {
+      final payments =
+          b.cash.totalCount + b.mobileMoney.totalCount + b.card.totalCount;
+      return DsCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You\'ve collected', style: DsText.caption),
+            const SizedBox(height: 4),
+            DsMoney(
+              b.totalContributedAmount,
+              currency: cur.toUpperCase(),
+              size: 36,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$payments ${payments == 1 ? 'payment' : 'payments'}',
+              style: DsText.caption,
+            ),
+          ],
+        ),
+      );
+    }
+
+    final hasMoney = b.totalContributedAmount > 0;
+    final today = DateTime.now();
+    final firstDay = today.subtract(Duration(days: points.length - 1));
+
     return DsCard(
-      onTap: isCreator ? () => JarBalanceBreakdown.show(context) : null,
+      onTap: () => JarBalanceBreakdown.show(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                isCreator ? 'Total collected' : 'Jar total',
-                style: DsText.caption,
-              ),
-              const Spacer(),
-              if (isCreator)
-                const Icon(
-                  Icons.info_outline_rounded,
-                  size: 16,
-                  color: AppColors.muted,
-                ),
-            ],
-          ),
+          Text('Balance', style: DsText.caption),
           const SizedBox(height: 4),
           DsMoney(
             b.totalContributedAmount,
             currency: cur.toUpperCase(),
-            size: 36,
+            size: 38,
           ),
-          if (isCreator) ...[
-            const SizedBox(height: 6),
+          if (hasMoney) ...[
+            const SizedBox(height: 4),
             Wrap(
-              spacing: 14,
+              spacing: 12,
               runSpacing: 4,
               children: [
                 figure('Available', b.totalAmountTobeTransferred),
@@ -593,31 +636,42 @@ class _JarDetailViewState extends State<JarDetailView> {
               ],
             ),
           ],
-          const SizedBox(height: 14),
-          if (hasChart)
-            ContributionChart(
-              dataPoints: points,
-              chartColor: AppColors.navy,
-              height: 70,
-            )
-          else
-            Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: CustomPaint(
-                    size: const Size(double.infinity, 40),
-                    painter: _DashedLinePainter(),
+          // Sealed and frozen jars show the balance only (mockup).
+          if (!blocked) ...[
+            const SizedBox(height: 10),
+            if (hasChart) ...[
+              SizedBox(
+                height: 110,
+                width: double.infinity,
+                child: CustomPaint(painter: _BalanceChartPainter(points)),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text(
+                    DateFormat('d MMM').format(firstDay),
+                    style: DsText.caption,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
+                  const Spacer(),
+                  Text('Today', style: DsText.caption),
+                ],
+              ),
+            ] else if (!hasMoney) ...[
+              SizedBox(
+                height: 70,
+                width: double.infinity,
+                child: CustomPaint(painter: _DashedLinePainter()),
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
                   'Your chart starts with the first payment',
                   style: DsText.caption,
                   textAlign: TextAlign.center,
                 ),
-              ],
-            ),
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -636,10 +690,10 @@ class _JarDetailViewState extends State<JarDetailView> {
     final transferable =
         !frozen && (b.totalAmountTobeTransferred > 0 || b.upcomingBalance > 0);
 
-    final contribute = DsQuickAction(
+    final collect = DsQuickAction(
       key: const Key('contribute_button'),
       icon: Icons.add_rounded,
-      label: l.contribute,
+      label: 'Collect',
       primary: !sealed,
       onTap: blocked ? null : () => _contribute(context, jarData),
     );
@@ -653,7 +707,7 @@ class _JarDetailViewState extends State<JarDetailView> {
     final List<Widget> tiles;
     if (!isCreator) {
       tiles = [
-        contribute,
+        collect,
         request,
         DsQuickAction(
           icon: Icons.info_outline_rounded,
@@ -662,17 +716,16 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
       ];
     } else {
-      final transfer = DsQuickAction(
-        key: const Key('withdraw_button'),
-        icon: Icons.north_east_rounded,
-        label: l.withdraw,
-        primary: sealed,
-        onTap: transferable ? () => _handleWithdraw(context, jarData) : null,
-      );
       tiles = [
-        contribute,
+        collect,
         request,
-        transfer,
+        DsQuickAction(
+          key: const Key('withdraw_button'),
+          icon: Icons.send_rounded,
+          label: 'Transfer',
+          primary: sealed,
+          onTap: transferable ? () => _handleWithdraw(context, jarData) : null,
+        ),
         if (sealed)
           DsQuickAction(
             icon: Icons.lock_open_rounded,
@@ -680,7 +733,12 @@ class _JarDetailViewState extends State<JarDetailView> {
             onTap: () => _confirmReopen(context, jarData),
           )
         else
-          JarMoreMenu(jarId: jarData.id),
+          DsQuickAction(
+            key: const Key('team_button'),
+            icon: Icons.group_outlined,
+            label: 'Team',
+            onTap: frozen ? null : () => CollectorsView.show(context),
+          ),
       ];
     }
 
@@ -693,159 +751,77 @@ class _JarDetailViewState extends State<JarDetailView> {
       ],
     );
   }
+}
 
-  /// Collectors and payments count tiles (creator only).
-  Widget _summaryTiles(BuildContext context, JarSummaryModel jarData) {
-    final l = AppLocalizations.of(context)!;
-    final collectors =
-        jarData.invitedCollectors
-            ?.where((collector) => collector.status == 'accepted')
-            .length ??
-        0;
-    final b = jarData.balanceBreakDown;
-    final payments =
-        b.cash.totalCount + b.mobileMoney.totalCount + b.card.totalCount;
+/// Cumulative takings over the chart window (chartData is completed
+/// contributions per day for the last 10 days), drawn as a straight-segment
+/// line with a soft fill and a lime end dot.
+class _BalanceChartPainter extends CustomPainter {
+  final List<double> daily;
+  _BalanceChartPainter(this.daily);
 
-    Widget tile({
-      required IconData icon,
-      required String label,
-      required String value,
-      required VoidCallback onTap,
-      IconData trailing = Icons.chevron_right_rounded,
-    }) {
-      return DsCard(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                DsIconTile(icon, size: 36),
-                const Spacer(),
-                Icon(trailing, size: 20, color: AppColors.faint),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(label, style: DsText.caption),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                fontFamily: 'Chillax',
-                fontWeight: FontWeight.w600,
-                fontSize: 24,
-                color: AppColors.navy,
-              ),
-            ),
-          ],
-        ),
-      );
+  @override
+  void paint(Canvas canvas, Size size) {
+    final values = <double>[];
+    var running = 0.0;
+    for (final d in daily) {
+      running += d;
+      values.add(running);
     }
+    final maxV = values.last <= 0 ? 1.0 : values.last;
+    const top = 8.0;
+    final bottom = size.height - 4;
+    final dx = size.width / (values.length - 1);
+    Offset at(int i) => Offset(
+      (i * dx).clamp(0, size.width - 7),
+      bottom - (values[i] / maxV) * (bottom - top),
+    );
 
-    return Row(
-      children: [
-        Expanded(
-          child: tile(
-            icon: Icons.group_outlined,
-            label: l.collectors,
-            value: '$collectors',
-            trailing: Icons.add_rounded,
-            onTap: () => CollectorsView.show(context),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: tile(
-            icon: Icons.receipt_long_outlined,
-            label: l.contributions,
-            value: '$payments',
-            onTap: () => _openContributionsList(context),
-          ),
-        ),
-      ],
+    final line = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < values.length; i++) {
+      line.lineTo(at(i).dx, at(i).dy);
+    }
+    final fill =
+        Path.from(line)
+          ..lineTo(at(values.length - 1).dx, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+    canvas.drawPath(
+      fill,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.navy.withValues(alpha: 0.14),
+            AppColors.navy.withValues(alpha: 0),
+          ],
+        ).createShader(Offset.zero & size),
+    );
+    canvas.drawPath(
+      line,
+      Paint()
+        ..color = AppColors.navy
+        ..strokeWidth = 2.4
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
+    final end = at(values.length - 1);
+    canvas.drawCircle(end, 6, Paint()..color = AppColors.lime);
+    canvas.drawCircle(
+      end,
+      6,
+      Paint()
+        ..color = AppColors.navy
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
     );
   }
 
-  /// Payment-method split as a stacked bar with a legend (creator only).
-  Widget _breakdownCard(BuildContext context, JarSummaryModel jarData) {
-    final l = AppLocalizations.of(context)!;
-    final b = jarData.balanceBreakDown;
-    return DsCard(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 6),
-      onTap: () => JarBalanceBreakdown.show(context),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'By payment method',
-                        style: DsText.rowTitle.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: AppColors.faint,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                DsMoney(
-                  b.totalContributedAmount,
-                  currency: jarData.currency.toUpperCase(),
-                  size: 24,
-                ),
-                const SizedBox(height: 12),
-                JarStackedBar(
-                  parts: [
-                    (b.mobileMoney.totalAmount, AppColors.mtnYellow),
-                    (b.card.totalAmount, AppColors.info),
-                    (b.cash.totalAmount, AppColors.positive),
-                  ],
-                ),
-                const SizedBox(height: 4),
-              ],
-            ),
-          ),
-          PaymentMethodContributionItem(
-            title: l.mobileMoney,
-            subtitle: l.contributionsCount(
-              jarData.mobileMoneyContributionCount,
-            ),
-            amount: b.mobileMoney.totalAmount,
-            currency: jarData.currency,
-            icon: Icons.phone_android_rounded,
-            color: AppColors.mtnYellow,
-          ),
-          PaymentMethodContributionItem(
-            title: l.cardPayment,
-            subtitle: l.contributionsCount(b.card.totalCount),
-            amount: b.card.totalAmount,
-            currency: jarData.currency,
-            icon: Icons.credit_card_rounded,
-            color: AppColors.info,
-          ),
-          PaymentMethodContributionItem(
-            title: l.cash,
-            subtitle: l.contributionsCount(jarData.cashContributionCount),
-            amount: b.cash.totalAmount,
-            currency: jarData.currency,
-            icon: Icons.payments_outlined,
-            color: AppColors.positive,
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  bool shouldRepaint(covariant _BalanceChartPainter oldDelegate) =>
+      oldDelegate.daily != daily;
 }
 
 /// Dashed baseline shown before a jar's first payment.
@@ -857,7 +833,7 @@ class _DashedLinePainter extends CustomPainter {
           ..color = const Color(0xFFE2D9CC)
           ..strokeWidth = 2
           ..strokeCap = StrokeCap.round;
-    final y = size.height - 4;
+    final y = size.height - 10;
     double x = 0;
     while (x < size.width) {
       canvas.drawLine(

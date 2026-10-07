@@ -82,7 +82,8 @@ void main() {
             'creator': {
               'id': 'test-user-123',
               'email': 'test@example.com',
-              'firstName': 'Test', 'lastName': 'User',
+              'firstName': 'Test',
+              'lastName': 'User',
               'phoneNumber': '+1234567890',
               'countryCode': 'US',
               'country': 'United States',
@@ -197,9 +198,10 @@ void main() {
           initialRoute: '/jar_create',
           routes: {
             '/jar_create': (context) => const JarCreateView(),
-            '/jar_detail': (context) => const Scaffold(
-              body: Center(child: Text('Jar Detail View')),
-            ),
+            '/jar_detail':
+                (context) => const Scaffold(
+                  body: Center(child: Text('Jar Detail View')),
+                ),
           },
         ),
       ),
@@ -211,6 +213,14 @@ void main() {
     of: find.byType(JarBareInput),
     matching: find.byType(TextField),
   );
+
+  // Three-step flow: pick a type, then Continue to "Name & photo".
+  Future<void> goToDetails(WidgetTester tester) async {
+    await tester.tap(find.text('Wedding'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(JarPrimaryButton));
+    await tester.pumpAndSettle();
+  }
 
   group('Jar Create View Comprehensive Tests', () {
     setUp(() async {
@@ -228,8 +238,10 @@ void main() {
 
       // Verify the form elements are present
       expect(find.byType(JarCreateView), findsOneWidget);
-      // Redesigned form: "New jar" header, name field and Create button
+      // Step 1 "What's it for?", then the name field on step 2
       expect(find.byType(JarTopBar), findsOneWidget);
+      expect(find.text('What\'s it for?'), findsOneWidget);
+      await goToDetails(tester);
       expect(nameField(), findsOneWidget); // At least name field
       expect(find.byType(JarPrimaryButton), findsOneWidget);
 
@@ -244,6 +256,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      await goToDetails(tester);
       // Fill in the jar name field
       await tester.enterText(nameField(), 'Test Jar');
       await tester.pumpAndSettle();
@@ -261,6 +274,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      await goToDetails(tester);
       // Fill in jar name if field exists
       await tester.enterText(nameField(), 'Submit Test Jar');
       await tester.pumpAndSettle();
@@ -282,6 +296,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      await goToDetails(tester);
       // Fill in jar name if field exists
       await tester.enterText(nameField(), 'Failed Jar');
       await tester.pumpAndSettle();
@@ -350,7 +365,8 @@ void main() {
                 'creator': {
                   'id': 'test-user-123',
                   'email': 'test@example.com',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'phoneNumber': '+1234567890',
                   'countryCode': 'US',
                   'country': 'United States',

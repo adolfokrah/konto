@@ -4,6 +4,7 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/enums/app_language.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -41,7 +42,8 @@ class LanguageSettingsView extends StatelessWidget {
             final l10n = AppLocalizations.of(context)!;
             final isUpdating = userAccountState is UserAccountLoading;
             return Scaffold(
-              appBar: AppBar(title: Text(l10n.language)),
+              backgroundColor: AppColors.cream,
+              appBar: JarTopBar(title: l10n.language),
               body: Stack(
                 children: [
                   ListView(

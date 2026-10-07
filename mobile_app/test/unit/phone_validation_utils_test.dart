@@ -5,19 +5,40 @@ void main() {
   group('PhoneValidationUtils Tests', () {
     group('isValidGhanaPhoneNumber', () {
       test('should validate 10-digit numbers with leading 0', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0241234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0101234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('0991234567'), true);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('0241234567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('0101234567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('0991234567'),
+          true,
+        );
       });
 
       test('should accept numbers with +233 prefix', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+233241234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+233501234567'), true);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('+233241234567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('+233501234567'),
+          true,
+        );
       });
 
       test('should accept numbers with 233 prefix (no plus)', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('233241234567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('233501234567'), true);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('233241234567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('233501234567'),
+          true,
+        );
       });
 
       test('should accept numbers without prefix (9 digits)', () {
@@ -26,28 +47,58 @@ void main() {
       });
 
       test('should handle numbers with spaces and special characters', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024 123 4567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024-123-4567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('(024) 123 4567'), true);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+233 24 123 4567'), true);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('024 123 4567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('024-123-4567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('(024) 123 4567'),
+          true,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('+233 24 123 4567'),
+          true,
+        );
       });
 
       test('should reject numbers that are too short', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024123456'), false);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('024123456'),
+          false,
+        );
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('02412345'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+23324123456'), false);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('+23324123456'),
+          false,
+        );
       });
 
       test('should reject numbers that are too long', () {
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('02412345678'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024123456789'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('+2332412345678'), false);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('02412345678'),
+          false,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('024123456789'),
+          false,
+        );
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('+2332412345678'),
+          false,
+        );
       });
 
       test('should reject empty or invalid input', () {
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber(''), false);
         expect(PhoneValidationUtils.isValidGhanaPhoneNumber('abc'), false);
-        expect(PhoneValidationUtils.isValidGhanaPhoneNumber('024abcd567'), false);
+        expect(
+          PhoneValidationUtils.isValidGhanaPhoneNumber('024abcd567'),
+          false,
+        );
       });
     });
 
@@ -124,7 +175,10 @@ void main() {
       });
 
       test('should return empty string for invalid numbers', () {
-        expect(PhoneValidationUtils.normalizeToInternationalFormat('024123'), '');
+        expect(
+          PhoneValidationUtils.normalizeToInternationalFormat('024123'),
+          '',
+        );
       });
     });
 
@@ -178,12 +232,16 @@ void main() {
       });
 
       test('should return appropriate error for too long numbers', () {
-        final error = PhoneValidationUtils.getDetailedValidationError('02412345678');
+        final error = PhoneValidationUtils.getDetailedValidationError(
+          '02412345678',
+        );
         expect(error.contains('too long'), true);
       });
 
       test('should return appropriate error for non-numeric characters', () {
-        final error = PhoneValidationUtils.getDetailedValidationError('024abc4567');
+        final error = PhoneValidationUtils.getDetailedValidationError(
+          '024abc4567',
+        );
         expect(error.contains('digits'), true);
       });
     });

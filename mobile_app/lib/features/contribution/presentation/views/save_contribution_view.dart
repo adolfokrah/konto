@@ -238,7 +238,25 @@ class _SaveContributionViewState extends State<SaveContributionView> {
               MomoPaymentRequested(state.contributionId),
             );
             final provider = _operatorKey(localizations);
-            context.push('${AppRoutes.awaitMomoPayment}?provider=$provider');
+            // The waiting screen shows who is paying and how much; "Change
+            // number" there comes back here to the payer step.
+            context
+                .push(
+                  '${AppRoutes.awaitMomoPayment}?provider=$provider',
+                  extra: {
+                    'amount': _totalAmount,
+                    'contribution': _contributionAmount,
+                    'currency': currency,
+                    'name': _nameController.text.trim(),
+                    'phone': _phoneController.text.trim(),
+                    'network': _shortOperatorName(_selectedOperator),
+                  },
+                )
+                .then((result) {
+                  if (result == 'change_number' && mounted) {
+                    setState(() => _reviewing = false);
+                  }
+                });
           } else {
             RatingService.instance.maybeRequestReview();
             context.go(AppRoutes.jarDetail);
@@ -333,12 +351,14 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       buttonText = localizations.processing;
     } else if (_isMomo && amount != null) {
       buttonText =
-          '${localizations.request} · ${(currency ?? '').toUpperCase()} ${_totalAmount.toStringAsFixed(2)}';
+          'Send request · ${(currency ?? '').toUpperCase()} ${_totalAmount.toStringAsFixed(2)}';
     } else if (_isMomo) {
       buttonText = localizations.requestPayment;
     } else if (amount != null) {
+      final whole =
+          _contributionAmount == _contributionAmount.truncateToDouble();
       buttonText =
-          '${localizations.saveContribution} · ${(currency ?? '').toUpperCase()} ${_contributionAmount.toStringAsFixed(2)}';
+          'Record ${(currency ?? '').toUpperCase()} ${whole ? DsMoney.group(_contributionAmount) : _contributionAmount.toStringAsFixed(2)} cash';
     } else {
       buttonText = localizations.saveContribution;
     }
@@ -361,21 +381,15 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     final phoneField = CollectField(
       controller: _phoneController,
       grouped: true,
-      label:
-          _isMomo
-              ? localizations.phoneNumber
-              : '${localizations.phoneNumber} (optional)',
-      hint:
-          _isMomo
-              ? localizations.enterMobileMoneyNumber
-              : localizations.enterPhoneNumber,
+      label: _isMomo ? "Payer's number" : 'Phone (optional, for a receipt)',
+      hint: '024 000 0000',
       keyboardType: TextInputType.phone,
     );
     final nameField = CollectField(
       controller: _nameController,
       grouped: true,
-      label: localizations.contributorName,
-      hint: localizations.enterContributorName,
+      label: _isMomo ? 'Name on wallet' : 'Name',
+      hint: 'Full name',
       keyboardType: TextInputType.name,
     );
 
@@ -490,7 +504,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
           child: Column(
             children: [
               Text(
-                '${name.isEmpty ? 'The payer' : name} will be asked to pay',
+                '${name.isEmpty ? 'The payer' : name.split(RegExp(r'\s+')).first} will be asked to pay',
                 style: DsText.caption,
                 textAlign: TextAlign.center,
               ),
@@ -516,13 +530,12 @@ class _SaveContributionViewState extends State<SaveContributionView> {
             ),
             DsKeyValue('Name', name),
             if (jarName != null) DsKeyValue('To jar', jarName!),
-            DsKeyValue('Total due to pay', _money(_totalAmount), strong: true),
           ],
         ),
         const SizedBox(height: 12),
         const DsNote(
           tone: DsTone.info,
-          icon: Icons.phone_iphone_rounded,
+          icon: Icons.info_outline_rounded,
           text:
               "They'll get a prompt on their phone and approve with their PIN.",
         ),
@@ -661,6 +674,12 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                   .map((o) => SelectOption(value: o.value, label: o.label))
                   .toList(),
           onChanged: (v) => setState(() => _customFieldSelectValues[key] = v),
+          // Mockup list row: label above the answer, chevron on the right.
+          suffixIcon: const Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: AppColors.faint,
+          ),
         );
       default:
         return CollectField(

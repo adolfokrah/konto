@@ -21,10 +21,7 @@ import 'package:go_router/go_router.dart';
 
 // The old "Create Jar" text button is now the + nav button in the header.
 void expectCreateJarButton() {
-  expect(
-    find.widgetWithIcon(JarNavButton, Icons.add),
-    findsOneWidget,
-  );
+  expect(find.widgetWithIcon(JarNavButton, Icons.add), findsOneWidget);
 }
 
 void main() {
@@ -97,7 +94,8 @@ void main() {
                       'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'email': 'test@example.com',
                         'phoneNumber': '+1234567890',
                         'countryCode': 'US',
@@ -134,7 +132,8 @@ void main() {
                       'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'email': 'test@example.com',
                         'phoneNumber': '+1234567890',
                         'countryCode': 'US',
@@ -183,7 +182,8 @@ void main() {
                       'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'email': 'test@example.com',
                         'phoneNumber': '+1234567890',
                         'countryCode': 'US',
@@ -233,9 +233,7 @@ void main() {
             supportedLocales: const [Locale('en')],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const JarsListView(),
-              },
+              routes: {'/': (context) => const JarsListView()},
             ),
           ),
         ),
@@ -250,14 +248,10 @@ void main() {
       // "Create Jar" is now the header's + nav button
       expectCreateJarButton();
 
-      // Group headers are shown as uppercase overlines
-      expect(find.text('SAVINGS'), findsOneWidget);
-      expect(find.text('EDUCATION'), findsOneWidget);
+      // One flat list (no category headers); search counts every jar
+      expect(find.text('SAVINGS'), findsNothing);
 
-      expect(find.text('2 Jars'), findsOneWidget);
-      expect(find.text('1 Jar'), findsOneWidget);
-
-      // Groups are no longer collapsible: every group's jars are listed
+      // Every group's jars are listed
       expect(find.text('Emergency Fund'), findsOneWidget);
       expect(find.text('Vacation Fund'), findsOneWidget);
       expect(find.text('Online Course'), findsOneWidget);
@@ -307,7 +301,8 @@ void main() {
                       'currency': 'GHS',
                       'creator': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'email': 'test@example.com',
                         'phoneNumber': '+1234567890',
                         'countryCode': 'US',
@@ -359,7 +354,8 @@ void main() {
                   'isFixedContribution': false,
                   'creator': {
                     'id': 'test-user-123',
-                    'firstName': 'Test', 'lastName': 'User',
+                    'firstName': 'Test',
+                    'lastName': 'User',
                     'email': 'test@example.com',
                     'phoneNumber': '+1234567890',
                     'countryCode': 'US',
@@ -389,7 +385,8 @@ void main() {
                       'amount': 1000.0,
                       'contributor': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'phoneNumber': '+1234567890',
                       },
                       'createdAt':
@@ -402,7 +399,8 @@ void main() {
                       'amount': 1000.0,
                       'contributor': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                         'phoneNumber': '+1234567890',
                       },
                       'createdAt':
@@ -437,14 +435,19 @@ void main() {
                   'currency': 'GHS',
                   'isActive': true,
                   'progress': 40.0,
-                  'creator': {'id': 'test-user-123', 'firstName': 'Test', 'lastName': 'User'},
+                  'creator': {
+                    'id': 'test-user-123',
+                    'firstName': 'Test',
+                    'lastName': 'User',
+                  },
                   'recentContributions': [
                     {
                       'id': 'contrib-1',
                       'amount': 1000.0,
                       'contributor': {
                         'id': 'test-user-123',
-                        'firstName': 'Test', 'lastName': 'User',
+                        'firstName': 'Test',
+                        'lastName': 'User',
                       },
                       'createdAt':
                           now
@@ -482,9 +485,10 @@ void main() {
             routerConfig: createTestRouter(
               initialRoute: '/jar_detail',
               routes: {
-                '/jar_detail': (context) => const Scaffold(
-                  body: Center(child: Text('Jar Detail Placeholder')),
-                ),
+                '/jar_detail':
+                    (context) => const Scaffold(
+                      body: Center(child: Text('Jar Detail Placeholder')),
+                    ),
                 '/jar_list': (context) => const JarsListView(),
               },
             ),
@@ -576,9 +580,7 @@ void main() {
             supportedLocales: const [Locale('en')],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const JarsListView(),
-              },
+              routes: {'/': (context) => const JarsListView()},
             ),
           ),
         ),
@@ -593,10 +595,7 @@ void main() {
       // Redesigned empty state: illustration, copy and a Create Jar button
       expect(find.text('No jars yet'), findsOneWidget);
       expect(find.textContaining('Start one for a wedding'), findsOneWidget);
-      expect(
-        find.widgetWithText(DsSmallButton, 'Create Jar'),
-        findsOneWidget,
-      );
+      expect(find.widgetWithText(DsSmallButton, 'Create Jar'), findsOneWidget);
       print('✅ Test 4 passed: Empty jar list state displays correctly');
     });
     testWidgets('Test 5: Should display error state when API call fails', (
@@ -633,9 +632,7 @@ void main() {
             supportedLocales: const [Locale('en')],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const JarsListView(),
-              },
+              routes: {'/': (context) => const JarsListView()},
             ),
           ),
         ),

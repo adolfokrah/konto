@@ -39,6 +39,9 @@ import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_custom_fields_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_add_custom_field_view.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
+import 'package:Hoga/features/insights/data/models/jar_insights_model.dart';
+import 'package:Hoga/features/insights/presentation/views/goal_forecast_view.dart';
+import 'package:Hoga/features/insights/presentation/views/insights_view.dart';
 
 /// Global navigator key for deep navigation (FCM, FlutterLoadingOverlay)
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -82,26 +85,17 @@ GoRouter createRouter(AuthBloc authBloc) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const StartupScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const StartupScreen()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnBoardingPage(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginView(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginView()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterView(),
       ),
-      GoRoute(
-        path: '/otp',
-        builder: (context, state) => const OtpView(),
-      ),
+      GoRoute(path: '/otp', builder: (context, state) => const OtpView()),
       // Signed-in tabs. Screens pushed from here (add contribution, jar settings…)
       // are top-level routes, so they cover the tab bar.
       StatefulShellRoute.indexedStack(
@@ -136,12 +130,30 @@ GoRouter createRouter(AuthBloc authBloc) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: '/insights',
+                builder: (context, state) => const InsightsView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: '/user_account_view',
                 builder: (context, state) => const UserAccountView(),
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/goal_forecast',
+        builder:
+            (context, state) => GoalForecastView(
+              insights:
+                  state.extra is JarInsights
+                      ? state.extra as JarInsights
+                      : null,
+            ),
       ),
       // A jar opens over the tabs, with a back button to Home.
       GoRoute(
@@ -219,10 +231,7 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/language_settings',
         builder: (context, state) => const LanguageSettingsView(),
       ),
-      GoRoute(
-        path: '/kycView',
-        builder: (context, state) => const KycView(),
-      ),
+      GoRoute(path: '/kycView', builder: (context, state) => const KycView()),
       GoRoute(
         path: '/businessKyb',
         builder: (context, state) => const BusinessKybView(),

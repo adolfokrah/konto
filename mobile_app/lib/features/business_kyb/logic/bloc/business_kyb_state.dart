@@ -10,8 +10,13 @@ final class BusinessKybLoadingStatus extends BusinessKybState {}
 final class BusinessKybStatusLoaded extends BusinessKybState {
   final String status;
   final String? rejectionReason;
+  final String? businessName;
 
-  BusinessKybStatusLoaded({required this.status, this.rejectionReason});
+  BusinessKybStatusLoaded({
+    required this.status,
+    this.rejectionReason,
+    this.businessName,
+  });
 }
 
 final class BusinessKybSubmitting extends BusinessKybState {}

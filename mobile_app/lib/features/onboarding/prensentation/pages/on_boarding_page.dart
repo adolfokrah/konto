@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/button_variants.dart';
-import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/route.dart';
@@ -58,7 +57,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar: wordmark + Skip (or About on the last page)
+            // Top bar: wordmark + Skip (empty on the last page)
             SizedBox(
               height: 48,
               child: Padding(
@@ -67,21 +66,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                   children: [
                     Image.asset('assets/images/logo.png', height: 18),
                     const Spacer(),
-                    if (_isLast)
-                      GestureDetector(
-                        onTap:
-                            () => UrlLauncherUtils.launch(
-                              'https://hogapay.com/about',
-                            ),
-                        child: Text(
-                          'About hogapay',
-                          style: DsText.small.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.navy,
-                          ),
-                        ),
-                      )
-                    else
+                    if (!_isLast)
                       GestureDetector(
                         onTap: () => _goTo(_pages.length - 1),
                         child: Text(

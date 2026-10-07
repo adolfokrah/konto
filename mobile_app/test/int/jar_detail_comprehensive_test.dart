@@ -505,7 +505,7 @@ void main() {
       final contributeButton = find.byKey(const Key('contribute_button'));
       expect(contributeButton, findsOneWidget);
       expect(find.byKey(const Key('request_button')), findsOneWidget);
-      expect(find.text('Contribute'), findsWidgets);
+      expect(find.text('Collect'), findsWidgets);
 
       await tester.ensureVisible(contributeButton);
       await tester.pumpAndSettle();

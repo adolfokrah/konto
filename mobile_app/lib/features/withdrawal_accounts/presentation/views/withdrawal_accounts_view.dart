@@ -4,6 +4,7 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
@@ -48,7 +49,7 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
       isDangerous: true,
       title: 'Remove ${payoutAccountTitle(account)}?',
       description:
-          '${payoutProviderName(account, banks)} ${account.maskedAccountNumber} '
+          '${payoutProviderName(account, banks)} ${payoutMaskedNumber(account)} '
           'will be removed. Jars paying out here switch to your default account.',
       confirmButtonText: 'Remove account',
       cancelButtonText: 'Keep it',
@@ -150,18 +151,14 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
       },
       builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Payout accounts'),
+          backgroundColor: AppColors.cream,
+          appBar: JarTopBar(
+            title: 'Payout accounts',
             actions: [
               if (state.accounts.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: AccRoundButton(
-                    icon: Icons.add_rounded,
-                    background: AppColors.surfaceWhite,
-                    size: 40,
-                    onTap: state.actionInProgress ? null : _openAddAccount,
-                  ),
+                JarNavButton(
+                  icon: Icons.add_rounded,
+                  onTap: state.actionInProgress ? null : _openAddAccount,
                 ),
             ],
           ),

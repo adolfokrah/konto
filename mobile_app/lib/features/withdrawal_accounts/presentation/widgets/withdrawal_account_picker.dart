@@ -132,7 +132,7 @@ class WithdrawalAccountPicker {
               AppButton(
                 text: 'Add account',
                 icon: const Icon(Icons.add_rounded, color: AppColors.navy),
-                backgroundColor: AppColors.fill,
+                backgroundColor: AppColors.cream,
                 textColor: AppColors.navy,
                 onPressed: () async {
                   Navigator.of(sheetContext).pop();
@@ -160,16 +160,7 @@ class WithdrawalAccountPicker {
       leading: PayoutAccountLogo(account: account),
       title: payoutAccountTitle(account),
       subtitle: payoutAccountSubtitle(account, banks),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (account.isDefault) ...[
-            const DsTag('Default', tone: DsTone.dark),
-            const SizedBox(width: 8),
-          ],
-          AccRadio(isSelected),
-        ],
-      ),
+      trailing: AccRadio(isSelected),
     );
   }
 }

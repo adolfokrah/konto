@@ -210,8 +210,6 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const AuthTopBar(),
@@ -328,16 +326,13 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              localizations.didntReceiveCode.trim(),
-                              style: DsText.small,
-                            ),
+                            child: Text("Didn't get it?", style: DsText.small),
                           ),
                           if (_canResend)
-                            DsLink(localizations.resend, onTap: _handleResend)
+                            DsLink('Resend code', onTap: _handleResend)
                           else
                             Text(
-                              localizations.resendIn(_resendCountdown),
+                              'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
                               style: DsText.small.copyWith(
                                 color: AppColors.muted,
                               ),

@@ -38,6 +38,7 @@ class BusinessKybBloc extends Bloc<BusinessKybEvent, BusinessKybState> {
         BusinessKybStatusLoaded(
           status: data?['status']?.toString() ?? 'none',
           rejectionReason: data?['rejectionReason']?.toString(),
+          businessName: data?['businessName']?.toString(),
         ),
       );
     } catch (e) {
