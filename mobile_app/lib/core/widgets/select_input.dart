@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -125,6 +126,7 @@ class SelectInput<T> extends StatelessWidget {
       onItemSelected: (selectedValue) {
         onChanged?.call(selectedValue);
       },
+      title: label ?? hintText,
       searchHint: localizations.searchOptions,
       recentSectionTitle: localizations.recentSelection,
       otherSectionTitle: localizations.allOptions,
@@ -160,16 +162,10 @@ class SelectInput<T> extends StatelessWidget {
       orElse: () => SelectOption(value: item, label: item.toString()),
     );
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
+    return DsRow(
       leading: option.icon,
-      title: Text(
-        option.label,
-        style: TextStyles.titleMedium.copyWith(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-      trailing: isSelected ? const Icon(Icons.check, size: 18) : null,
+      title: option.label,
+      trailing: DsRadio(selected: isSelected),
       onTap: onTap,
     );
   }

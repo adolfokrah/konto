@@ -241,7 +241,7 @@ class _JarCreateViewState extends State<JarCreateView> {
       return InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               CircleAvatar(
@@ -255,7 +255,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                   style: DsText.rowTitle,
                 ),
               ),
-              JarRadio(selected: isSelected),
+              DsRadio(selected: isSelected),
             ],
           ),
         ),

@@ -33,8 +33,7 @@ class NotificationIconButton extends StatelessWidget {
         key: const Key('notifications_button'),
         icon: _icon,
         size: const Size(_buttonSize, _buttonSize),
-        onPressed:
-            () => context.push(AppRoutes.notifications),
+        onPressed: () => context.push(AppRoutes.notifications),
       );
     }
 
@@ -57,9 +56,7 @@ class NotificationIconButton extends StatelessWidget {
               opacity: 0.8,
               icon: _icon,
               size: const Size(_buttonSize, _buttonSize),
-              onPressed:
-                  () =>
-                      context.push(AppRoutes.notifications),
+              onPressed: () => context.push(AppRoutes.notifications),
             ),
             if (showBadge)
               Positioned(

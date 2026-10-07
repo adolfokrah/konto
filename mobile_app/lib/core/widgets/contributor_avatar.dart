@@ -83,7 +83,10 @@ class ContributorAvatar extends StatelessWidget {
         ),
         // Status overlay icon
         if (showStatusOverlay &&
-            (paymentStatus != null || viaPaymentLink != null || isPayout || isRefund))
+            (paymentStatus != null ||
+                viaPaymentLink != null ||
+                isPayout ||
+                isRefund))
           Positioned(
             right: radius * 0.1, // Position with some padding from edge
             bottom: radius * 0.1, // Position with some padding from edge
@@ -95,12 +98,12 @@ class ContributorAvatar extends StatelessWidget {
                     paymentStatus?.toLowerCase() == 'failed'
                         ? AppColors.errorRed
                         : paymentStatus?.toLowerCase() == 'awaiting-approval'
-                            ? AppColors.warningOrange
-                            : isRefund
-                                ? AppColors.warningOrange
-                                : isDark
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.primary,
+                        ? AppColors.warningOrange
+                        : isRefund
+                        ? AppColors.warningOrange
+                        : isDark
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Theme.of(context).colorScheme.surface,

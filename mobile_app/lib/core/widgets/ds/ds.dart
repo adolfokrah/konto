@@ -716,6 +716,28 @@ class DsEmptyState extends StatelessWidget {
   }
 }
 
+/// Radio dot used in pickers: grey ring, navy filled ring when on.
+class DsRadio extends StatelessWidget {
+  final bool selected;
+  const DsRadio({super.key, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 140),
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: selected ? AppColors.navy : const Color(0xFFD0D4DB),
+          width: selected ? 7 : 2,
+        ),
+      ),
+    );
+  }
+}
+
 /// Compact navy button for inline actions ("Share link", "Transfer").
 class DsSmallButton extends StatelessWidget {
   final String label;

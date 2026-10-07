@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/jar_groups.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
-import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 /// Emoji shown next to a jar category, as in the redesign pickers.
@@ -43,13 +42,13 @@ class JarGroupPicker {
       return InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Text(jarGroupEmoji(group), style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(group, style: DsText.rowTitle)),
-              JarRadio(selected: isSelected),
+              DsRadio(selected: isSelected),
             ],
           ),
         ),

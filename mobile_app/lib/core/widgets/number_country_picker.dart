@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -40,22 +40,21 @@ class NumberCountryPicker extends StatelessWidget {
     Function(Country) onCountrySelected, [
     BuildContext? context,
   ]) {
-    return Column(
-      children: [
-        ListTile(
-          contentPadding: const EdgeInsets.all(0),
-          title: Text(
-            context != null
-                ? getLocalizedCountryName(context, country.name)
-                : country.name,
-            style: TextStyles.titleMediumM,
-          ),
-          trailing: Text(country.code, style: TextStyles.titleRegularSm),
-          onTap: () {
-            onCountrySelected(country);
-          },
-        ),
-      ],
+    return DsRow(
+      leading: Text(country.flag, style: const TextStyle(fontSize: 22)),
+      title:
+          context != null
+              ? getLocalizedCountryName(context, country.name)
+              : country.name,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(country.code, style: DsText.caption),
+          const SizedBox(width: 12),
+          DsRadio(selected: isSelected),
+        ],
+      ),
+      onTap: () => onCountrySelected(country),
     );
   }
 
@@ -71,6 +70,7 @@ class NumberCountryPicker extends StatelessWidget {
       selectedValue: selectedCountryCode,
       items: _countries,
       onItemSelected: onCountrySelected,
+      title: localizations.country,
       searchHint: localizations.searchCountries,
       recentSectionTitle: localizations.recentSelection,
       otherSectionTitle: localizations.otherCountries,

@@ -191,12 +191,13 @@ class AppSnackBar {
             left: 16,
             right: 16,
             child: GestureDetector(
-              onTap: onTap != null
-                  ? () {
-                      overlayEntry.remove();
-                      onTap();
-                    }
-                  : null,
+              onTap:
+                  onTap != null
+                      ? () {
+                        overlayEntry.remove();
+                        onTap();
+                      }
+                      : null,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
