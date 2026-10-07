@@ -156,8 +156,10 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           {!collapsed && (
             <Link href="/dashboard" className="flex flex-1 items-center gap-2 overflow-hidden">
               <img src="/logo_icon.png" alt="" className="h-[30px] w-[30px] rounded-[9px]" />
-              <span className="truncate font-chillax text-lg font-semibold tracking-tight text-white">Hogapay</span>
-              <span className="ml-auto rounded-[5px] bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shrink-0">
+              <span className="truncate font-chillax text-lg font-semibold tracking-tight text-white">
+                Hogapay
+              </span>
+              <span className="rounded-[5px] bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shrink-0">
                 Admin
               </span>
             </Link>
@@ -165,7 +167,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           {collapsed && <div className="flex-1" />}
           <button
             onClick={onToggle}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/10 hover:text-white"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? (

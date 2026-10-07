@@ -140,7 +140,7 @@ export default async function UsersPage({ searchParams }: Props) {
     <div className="flex flex-col gap-6 h-full">
       <PageHeader title="Users" subtitle="People on Hogapay" />
       {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <MetricCard
           title="Total Users"
           value={totalCount.totalDocs.toLocaleString()}

@@ -9,13 +9,7 @@ import {
   type ColumnSizingState,
   type RowSelectionState,
 } from '@tanstack/react-table'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,13 +51,23 @@ export function DataTable<TData>({
   tableMeta,
   fillParent,
 }: DataTableProps<TData>) {
-  const { updateParam, batchUpdateParams, toggleParam, getParam, clearAll, activeFilters, sortBy, sortOrder, updateSort } = useTableFilters(columns)
+  const {
+    updateParam,
+    batchUpdateParams,
+    toggleParam,
+    getParam,
+    clearAll,
+    activeFilters,
+    sortBy,
+    sortOrder,
+    updateSort,
+  } = useTableFilters(columns)
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const resolveRowId = useCallback(
-    (row: TData): string => (getRowId ? getRowId(row) : (row as any).id ?? ''),
+    (row: TData): string => (getRowId ? getRowId(row) : ((row as any).id ?? '')),
     [getRowId],
   )
 
@@ -80,7 +84,9 @@ export function DataTable<TData>({
         if (tableId) {
           try {
             localStorage.setItem(getStorageKey(tableId), JSON.stringify(next))
-          } catch { /* ignore quota errors */ }
+          } catch {
+            /* ignore quota errors */
+          }
         }
         return next
       })
@@ -154,6 +160,7 @@ export function DataTable<TData>({
     manualFiltering: true,
     manualSorting: true,
     manualPagination: true,
+    defaultColumn: { size: 120, minSize: 50 },
     columnResizeMode: 'onChange',
     enableColumnResizing: true,
     enableRowSelection: !!bulkActions,
@@ -260,7 +267,7 @@ export function DataTable<TData>({
                   <TableRow
                     className={cn(
                       'group',
-                      (!readOnly && onRowClick || renderExpandedRow) && 'cursor-pointer',
+                      ((!readOnly && onRowClick) || renderExpandedRow) && 'cursor-pointer',
                       row.getIsSelected() && 'bg-muted/40',
                     )}
                     data-expanded={isExpanded || undefined}
@@ -272,7 +279,11 @@ export function DataTable<TData>({
                         <TableCell
                           key={cell.id}
                           className={cellMeta?.cellClassName}
-                          style={{ width: cell.column.getSize(), maxWidth: cell.column.getSize(), overflow: 'hidden' }}
+                          style={{
+                            width: cell.column.getSize(),
+                            maxWidth: cell.column.getSize(),
+                            overflow: 'hidden',
+                          }}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
@@ -293,9 +304,7 @@ export function DataTable<TData>({
         </TableBody>
       </Table>
 
-      {!readOnly && pagination && (
-        <DataTablePagination {...pagination} />
-      )}
+      {!readOnly && pagination && <DataTablePagination {...pagination} />}
     </>
   )
 
