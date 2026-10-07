@@ -257,23 +257,44 @@
   background: hsl(var(--card));
 }
 .dashboard-theme [role='tablist'] {
+  display: flex;
+  height: auto;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  padding: 0;
+  border-radius: 0;
   background: transparent;
   border-bottom: 1px solid hsl(var(--border));
-  border-radius: 0;
-  padding: 0;
-  gap: 1.1rem;
 }
-.dashboard-theme [role='tab'] {
+.dashboard-theme [role='tablist'] [role='tab'] {
+  position: relative;
+  margin-bottom: -1px;
+  padding: 0.5rem 0 0.625rem;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  padding: 0.5rem 0;
+  font-size: 13px;
+  font-weight: 500;
   color: hsl(var(--muted-foreground));
 }
-.dashboard-theme [role='tab'][data-state='active'] {
+.dashboard-theme [role='tablist'] [role='tab']:hover {
+  color: hsl(var(--foreground));
+}
+.dashboard-theme [role='tablist'] [role='tab'][data-state='active'] {
   color: hsl(var(--foreground));
   font-weight: 600;
-  box-shadow: inset 0 -2px 0 hsl(var(--foreground));
+  background: transparent;
+  box-shadow: none;
+}
+.dashboard-theme [role='tablist'] [role='tab'][data-state='active']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: hsl(var(--foreground));
 }
 
 /* v4 radii: cards 16, dialogs 20, inputs/buttons 12, chips/menus 10, tags 7 */

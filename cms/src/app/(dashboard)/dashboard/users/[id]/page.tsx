@@ -70,9 +70,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 function TabCount({ value }: { value: number }) {
   return (
-    <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-      {value}
-    </span>
+    <span className="ml-1 text-[12px] font-medium tabular-nums text-muted-foreground">{value}</span>
   )
 }
 
@@ -427,7 +425,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         <TabsList className="flex w-full flex-wrap justify-start">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="accounts">
-            Withdrawal Accounts
+            Accounts
             <TabCount value={withdrawalAccounts.length} />
           </TabsTrigger>
           <TabsTrigger value="kyc">KYC</TabsTrigger>
