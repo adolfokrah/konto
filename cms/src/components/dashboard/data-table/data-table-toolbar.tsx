@@ -17,6 +17,8 @@ type Props<TData> = {
   toggleParam: (key: string, value: string) => void
 }
 
+const MAX_SELECT_CHIPS = 3
+
 type ToolbarFilter = { label: string; filter: ColumnFilterConfig }
 
 function collectFilters<TData>(columns: ColumnDef<TData, any>[]): ToolbarFilter[] {
@@ -44,8 +46,14 @@ export function DataTableToolbar<TData>({
   const primaryIndex = filters.findIndex((f) => f.filter.type === 'search')
   const primary = primaryIndex >= 0 ? filters[primaryIndex] : null
   const rest = filters.filter((_, i) => i !== primaryIndex)
-  const chips = rest.filter((f) => f.filter.type !== 'search')
-  const moreSearches = rest.filter((f) => f.filter.type === 'search')
+  // v4 shows a few chips; the rest go under "More" so the toolbar stays on one line.
+  const selects = rest.filter((f) => f.filter.type === 'select')
+  const dates = rest.filter((f) => f.filter.type === 'dateRange')
+  const chips = [...selects.slice(0, MAX_SELECT_CHIPS), ...dates]
+  const moreSearches = [
+    ...selects.slice(MAX_SELECT_CHIPS),
+    ...rest.filter((f) => f.filter.type === 'search'),
+  ]
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
@@ -70,7 +78,12 @@ export function DataTableToolbar<TData>({
         />
       ))}
       {moreSearches.length > 0 && (
-        <MoreFilters filters={moreSearches} getParam={getParam} updateParam={updateParam} />
+        <MoreFilters
+          filters={moreSearches}
+          getParam={getParam}
+          updateParam={updateParam}
+          toggleParam={toggleParam}
+        />
       )}
     </div>
   )
@@ -80,14 +93,18 @@ function MoreFilters({
   filters,
   getParam,
   updateParam,
+  toggleParam,
 }: {
   filters: ToolbarFilter[]
   getParam: (key: string) => string
   updateParam: (key: string, value: string) => void
+  toggleParam: (key: string, value: string) => void
 }) {
-  const activeCount = filters.filter(
-    (f) => f.filter.type === 'search' && getParam(f.filter.paramKey),
-  ).length
+  const activeCount = filters.filter((f) => {
+    if (f.filter.type === 'dateRange') return false
+    const v = getParam(f.filter.paramKey)
+    return !!v && v !== 'all'
+  }).length
 
   return (
     <Popover>
@@ -120,9 +137,36 @@ function MoreFilters({
                 className="h-8"
               />
             </label>
+          ) : filter.type === 'select' ? (
+            <div key={filter.paramKey} className="space-y-1">
+              <span className="text-[11.5px] text-muted-foreground">{label}</span>
+              <div className="flex flex-wrap gap-1">
+                {filter.options
+                  .filter((o) => o.value !== 'all')
+                  .map((o) => {
+                    const raw = getParam(filter.paramKey)
+                    const on = raw ? raw.split(',').includes(o.value) : false
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => toggleParam(filter.paramKey, o.value)}
+                        className={cn(
+                          'h-7 rounded-lg px-2.5 text-[12px] font-medium',
+                          on
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-secondary text-foreground',
+                        )}
+                      >
+                        {o.label}
+                      </button>
+                    )
+                  })}
+              </div>
+            </div>
           ) : null,
         )}
-        <p className="text-[11px] text-muted-foreground">Press Enter to apply.</p>
+        <p className="text-[11px] text-muted-foreground">Press Enter to apply text filters.</p>
       </PopoverContent>
     </Popover>
   )

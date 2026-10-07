@@ -1,6 +1,6 @@
 export const typeStyles: Record<string, string> = {
-  contribution: 'bg-purple-100 text-purple-800 border-purple-200',
-  payout: 'bg-orange-100 text-orange-800 border-orange-200',
+  contribution: 'bg-[#F4FDDF] text-[#1B232E] border-[#DCEFB0]',
+  payout: 'bg-[#EAF2FF] text-[#2E7CF6] border-transparent',
 }
 
 export const statusStyles: Record<string, string> = {

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/dashboard/page-header'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SystemSettingsForm } from '@/components/dashboard/system-settings-form'
@@ -12,20 +13,18 @@ export default async function SettingsPage() {
   })
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage fees, referral bonuses, and payout settings
-        </p>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title="System settings"
+        subtitle="Fees and limits apply to new transactions immediately"
+      />
 
       <SystemSettingsForm settings={settings as any} />
 
-      <div className="border rounded-lg p-6 space-y-3">
+      <div className="space-y-3 rounded-2xl bg-card p-4">
         <div>
-          <h2 className="text-lg font-semibold">Database Backup</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-chillax text-[15px] font-semibold">Database backup</h2>
+          <p className="text-[11.5px] text-muted-foreground">
             Download a full backup of the database as a compressed archive.
           </p>
         </div>
