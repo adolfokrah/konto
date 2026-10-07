@@ -242,19 +242,27 @@ class _HomeViewState extends State<HomeView> {
                   authState is AuthAuthenticated ? authState.user : null;
               return BlocBuilder<JarListBloc, JarListState>(
                 builder: (context, listState) {
-                  return RefreshIndicator(
-                    color: AppColors.navy,
-                    backgroundColor: AppColors.surfaceWhite,
-                    onRefresh: _onRefresh,
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 120),
-                      children: [
-                        _HomeHeader(user: user),
-                        const SizedBox(height: 14),
-                        ..._body(context, listState, user),
-                      ],
-                    ),
+                  // Avatar, greeting and bell stay pinned; the rest scrolls
+                  // underneath.
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                        child: _HomeHeader(user: user),
+                      ),
+                      Expanded(
+                        child: RefreshIndicator(
+                          color: AppColors.navy,
+                          backgroundColor: AppColors.surfaceWhite,
+                          onRefresh: _onRefresh,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+                            children: _body(context, listState, user),
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               );
