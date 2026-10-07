@@ -1,13 +1,11 @@
-import 'package:Hoga/core/widgets/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/config/backend_config.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/currencies.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/currency_picker.dart';
-import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
@@ -18,18 +16,17 @@ import 'package:go_router/go_router.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
-import 'package:Hoga/core/widgets/invited_collector_item.dart';
-import 'package:Hoga/core/widgets/scrollable_background_image.dart';
-import 'package:Hoga/core/widgets/small_button.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/features/collaborators/presentation/views/invite_collaborators_view.dart';
 import 'package:Hoga/features/jars/data/models/jar_model.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_group_picker.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/withdrawal_account_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
+/// New jar: type, name & photo, currency and payout, collectors — one screen
+/// laid out like the three-step mockup.
 class JarCreateView extends StatefulWidget {
   const JarCreateView({super.key});
 
@@ -38,21 +35,31 @@ class JarCreateView extends StatefulWidget {
 }
 
 class _JarCreateViewState extends State<JarCreateView> {
+  /// Quick picks shown as tiles: (JarGroups value, short label).
+  static const _quickGroups = [
+    ('Weddings', 'Wedding'),
+    ('Funeral', 'Funeral'),
+    ('Church Contributions', 'Church'),
+    ('Susu Collections', 'Susu'),
+    ('Birthdays', 'Birthday'),
+    ('Naming Ceremonies', 'Naming'),
+  ];
+
   final ScrollController _scrollController = ScrollController();
   TextEditingController nameController = TextEditingController();
+  final FocusNode _nameFocus = FocusNode();
   String selectedJarGroup = '';
   Currency? selectedCurrency = Currencies.defaultCurrency;
   List<InvitedCollector> newInvitedCollectors = [];
   // Multiple photos (max 3)
   List<String> jarImageUrls = [];
   List<String> jarImageIds = [];
-  double _scrollOffset = 0.0;
   String? selectedWithdrawalAccountId;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
+    _nameFocus.addListener(() => setState(() {}));
     // Load the user's withdrawal accounts for the payout picker.
     context.read<WithdrawalAccountsBloc>().add(LoadWithdrawalAccounts());
   }
@@ -138,12 +145,6 @@ class _JarCreateViewState extends State<JarCreateView> {
     );
   }
 
-  void _scrollListener() {
-    setState(() {
-      _scrollOffset = _scrollController.offset;
-    });
-  }
-
   String _translateError(String error) {
     // Handle translation keys from BLoC
     switch (error) {
@@ -179,10 +180,7 @@ class _JarCreateViewState extends State<JarCreateView> {
 
     if (selectedWithdrawalAccountId == null ||
         selectedWithdrawalAccountId!.isEmpty) {
-      AppSnackBar.showError(
-        context,
-        message: 'Please select a payout account',
-      );
+      AppSnackBar.showError(context, message: 'Please select a payout account');
       return;
     }
 
@@ -225,6 +223,275 @@ class _JarCreateViewState extends State<JarCreateView> {
     );
   }
 
+  void _openGroupPicker() {
+    JarGroupPicker.show(
+      context,
+      currentJarGroup: selectedJarGroup,
+      onJarGroupSelected: (String selectedGroup) {
+        setState(() {
+          selectedJarGroup = selectedGroup;
+        });
+      },
+    );
+  }
+
+  void _openCurrencyPicker() {
+    final localizations = AppLocalizations.of(context)!;
+    Widget row(Currency currency, bool isSelected, VoidCallback onTap) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundImage: NetworkImage(currency.flagUrl),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${CurrencyUtils.getLocalizedCurrencyName(currency.code, localizations)} · ${currency.code}',
+                  style: DsText.rowTitle,
+                ),
+              ),
+              JarRadio(selected: isSelected),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final current = selectedCurrency ?? Currencies.defaultCurrency;
+    GenericPicker.showPickerDialog<Currency>(
+      context,
+      selectedValue: current.code,
+      items: Currencies.all,
+      onItemSelected: (currency) {
+        setState(() => selectedCurrency = currency);
+      },
+      itemBuilder: row,
+      recentItemBuilder: row,
+      searchResultBuilder: row,
+      searchFilter:
+          (currency) =>
+              '${CurrencyUtils.getLocalizedCurrencyName(currency.code, localizations)} ${currency.code}',
+      isItemSelected:
+          (currency, selectedValue) => currency.code == selectedValue,
+      searchHint: localizations.searchCurrencies,
+      title: localizations.selectCurrency,
+      recentSectionTitle: localizations.selectedCurrency,
+      otherSectionTitle: localizations.availableCurrencies,
+      showSearch: true,
+      initialHeight: 0.9,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _nameFocus.dispose();
+    super.dispose();
+  }
+
+  // ------------------------------------------------------------ sections
+
+  Widget _heading(String text, {String? sub}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text, style: DsText.title.copyWith(fontSize: 24)),
+          if (sub != null) ...[
+            const SizedBox(height: 4),
+            Text(sub, style: DsText.small),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _typeOption({
+    required String emoji,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: AppColors.surfaceWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: selected ? AppColors.navy : AppColors.line,
+          width: selected ? 2 : 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _typeSection() {
+    final quickValues = _quickGroups.map((g) => g.$1).toSet();
+    final options = <Widget>[
+      for (final g in _quickGroups)
+        _typeOption(
+          emoji: jarGroupEmoji(g.$1),
+          label: g.$2,
+          selected: selectedJarGroup == g.$1,
+          onTap: () => setState(() => selectedJarGroup = g.$1),
+        ),
+      if (selectedJarGroup.isNotEmpty &&
+          !quickValues.contains(selectedJarGroup))
+        _typeOption(
+          emoji: jarGroupEmoji(selectedJarGroup),
+          label: selectedJarGroup,
+          selected: true,
+          onTap: _openGroupPicker,
+        ),
+      _typeOption(
+        emoji: '🔎',
+        label: 'More types',
+        selected: false,
+        onTap: _openGroupPicker,
+      ),
+    ];
+
+    return Column(
+      children: [
+        for (var i = 0; i < options.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: options[i]),
+              const SizedBox(width: 8),
+              Expanded(
+                child:
+                    i + 1 < options.length
+                        ? options[i + 1]
+                        : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _photoDrop() {
+    final canAdd = jarImageIds.length < 3;
+    return GestureDetector(
+      onTap: canAdd ? _showImageUploaderSheet : null,
+      child: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          color: AppColors.fill,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          Icons.photo_camera_outlined,
+          color: canAdd ? AppColors.navy : AppColors.faint,
+        ),
+      ),
+    );
+  }
+
+  Widget _photosRow() {
+    if (jarImageUrls.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          ...List.generate(
+            jarImageUrls.length,
+            (i) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  JarThumb(imageUrl: jarImageUrls[i], size: 64),
+                  Positioned(
+                    top: -6,
+                    right: -6,
+                    child: GestureDetector(
+                      onTap:
+                          () => setState(() {
+                            jarImageUrls.removeAt(i);
+                            jarImageIds.removeAt(i);
+                          }),
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: const BoxDecoration(
+                          color: AppColors.navy,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 13,
+                          color: AppColors.surfaceWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Spacer(),
+          Text('${jarImageIds.length} of 3', style: DsText.caption),
+        ],
+      ),
+    );
+  }
+
+  Widget _currencyField() {
+    final localizations = AppLocalizations.of(context)!;
+    final c = selectedCurrency ?? Currencies.defaultCurrency;
+    return JarField(
+      label: localizations.currency,
+      onTap: _openCurrencyPicker,
+      trailing: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: AppColors.muted,
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(radius: 9, backgroundImage: NetworkImage(c.flagUrl)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              '${CurrencyUtils.getLocalizedCurrencyName(c.code, localizations)} · ${c.code}',
+              style: DsText.rowTitle.copyWith(fontSize: 15.5),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPayoutAccountPicker(BuildContext context) {
     return BlocConsumer<WithdrawalAccountsBloc, WithdrawalAccountsState>(
       listenWhen: (prev, curr) => prev.accounts != curr.accounts,
@@ -246,60 +513,95 @@ class _JarCreateViewState extends State<JarCreateView> {
             break;
           }
         }
+        final network =
+            selected != null && selected.isMobileMoney
+                ? DsNetworkLogo.fromProvider(selected.provider)
+                : null;
 
-        final subtitle = selected == null
-            ? 'Select payout account'
-            : '${selected.label?.isNotEmpty == true ? selected.label! : withdrawalAccountLabel(selected)}  •  ${selected.maskedAccountNumber}';
-
-        return GestureDetector(
+        return JarField(
+          label: 'Payout account',
           onTap: _openPayoutAccountPicker,
-          child: AppCard(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingS,
-              vertical: 4,
-            ),
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              leading: Icon(
-                selected == null
-                    ? Icons.account_balance_wallet_outlined
-                    : (selected.isMobileMoney
-                        ? Icons.phone_android
-                        : Icons.account_balance),
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              title: Text(
-                subtitle,
-                style: AppTextStyles.titleMediumS.copyWith(
-                  color: selected == null
-                      ? Theme.of(context).hintColor
-                      : Theme.of(context).textTheme.bodyLarge?.color,
+          trailing: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppColors.muted,
+          ),
+          child: Row(
+            children: [
+              if (network != null) ...[
+                DsNetworkLogo(network, size: 22),
+                const SizedBox(width: 8),
+              ] else if (selected != null) ...[
+                Icon(
+                  selected.isMobileMoney
+                      ? Icons.phone_android_rounded
+                      : Icons.account_balance_outlined,
+                  size: 18,
+                  color: AppColors.navy,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Text(
+                  selected == null
+                      ? 'Select payout account'
+                      : '${selected.label?.isNotEmpty == true ? selected.label! : withdrawalAccountLabel(selected)} ${selected.maskedAccountNumber}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DsText.rowTitle.copyWith(
+                    fontSize: 15.5,
+                    color: selected == null ? AppColors.faint : null,
+                    fontWeight: selected == null ? FontWeight.w400 : null,
+                  ),
+                ),
               ),
-              trailing: Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
+            ],
           ),
         );
       },
     );
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
-    super.dispose();
+  Widget _collectorsSection() {
+    final localizations = AppLocalizations.of(context)!;
+    return DsListCard(
+      children: [
+        for (final c in newInvitedCollectors)
+          DsRow(
+            leading: JarInitialsAvatar(
+              name: c.collector?.fullName ?? c.name ?? '',
+              imageUrl:
+                  c.photo != null && c.photo!.startsWith('http')
+                      ? c.photo
+                      : null,
+            ),
+            title: c.collector?.fullName ?? c.name ?? localizations.unknown,
+            subtitle: c.phoneNumber ?? c.collector?.phoneNumber,
+            trailing: GestureDetector(
+              onTap: () => setState(() => newInvitedCollectors.remove(c)),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: AppColors.muted,
+                ),
+              ),
+            ),
+          ),
+        DsRow(
+          leading: const DsIconTile(Icons.person_add_alt_1_outlined),
+          title: localizations.invite,
+          subtitle: 'Name, username or phone',
+          chevron: true,
+          onTap: _showInviteCollaboratorsSheet,
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = AppLocalizations.of(context)!;
 
     return MultiBlocListener(
       listeners: [
@@ -309,7 +611,9 @@ class _JarCreateViewState extends State<JarCreateView> {
                 state.context == MediaUploadContext.jarImage) {
               if (jarImageIds.length < 3) {
                 setState(() {
-                  jarImageUrls.add("${BackendConfig.imageBaseUrl}/${state.media.url}");
+                  jarImageUrls.add(
+                    "${BackendConfig.imageBaseUrl}/${state.media.url}",
+                  );
                   jarImageIds.add(state.media.id);
                 });
               }
@@ -337,7 +641,7 @@ class _JarCreateViewState extends State<JarCreateView> {
               // 2. Refresh the jar list to include the new jar
               context.read<JarListBloc>().add(LoadJarList());
 
-              // 4. Replace the entire navigation stack with the jar detail view
+              // 3. Replace the entire navigation stack with the jar detail view
               context.go(AppRoutes.jarDetail);
               RatingService.instance.maybeRequestReview();
             } else if (state is JarCreateFailure) {
@@ -352,353 +656,63 @@ class _JarCreateViewState extends State<JarCreateView> {
       child: BlocBuilder<JarCreateBloc, JarCreateState>(
         builder: (context, jarCreateState) {
           final isLoading = jarCreateState is JarCreateLoading;
+          final invites = newInvitedCollectors.length;
 
           return Scaffold(
-            backgroundColor:
-                jarImageUrls.isNotEmpty && !isDark
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.primary,
-            body: Column(
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(
+              title: 'New jar',
+              leadingIcon: Icons.close_rounded,
+            ),
+            body: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
-                Expanded(
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      SliverAppBar(
-                        expandedHeight: 300.0,
-                        floating: false,
-                        pinned: true,
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        flexibleSpace: LayoutBuilder(
-                          builder: (
-                            BuildContext context,
-                            BoxConstraints constraints,
-                          ) {
-                            // Calculate scroll progress
-                            final double top = constraints.biggest.height;
-                            final double expandedHeight = 200.0;
-                            final double collapsedHeight =
-                                kToolbarHeight +
-                                MediaQuery.of(context).padding.top;
-                            final double scrollProgress = ((expandedHeight -
-                                        top) /
-                                    (expandedHeight - collapsedHeight))
-                                .clamp(0.0, 1.0);
-
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface
-                                    .withValues(alpha: scrollProgress),
-                              ),
-                              child: Stack(
-                                children: [
-                                  // Background gradient and image (if available)
-                                  if (jarImageUrls.isNotEmpty)
-                                    ScrollableBackgroundImage(
-                                      imageUrl: jarImageUrls.first,
-                                      scrollOffset: _scrollOffset,
-                                      height: 400.0,
-                                      maxScrollForOpacity: 100.0,
-                                      baseOpacity: 0.50,
-                                    ),
-
-                                  // Title positioned independently of image
-                                  Positioned(
-                                    left:
-                                        16.0 +
-                                        (40.0 *
-                                            scrollProgress), // Smoothly interpolate from 16 to 56
-                                    top:
-                                        MediaQuery.of(context).padding.top +
-                                        kToolbarHeight +
-                                        -7 -
-                                        (32.0 *
-                                            scrollProgress), // Adjusted to center properly when fully scrolled
-                                    child: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.setUpYourJar,
-                                      style: TextStyle(
-                                        fontSize:
-                                            24.0 -
-                                            (4.0 *
-                                                scrollProgress), // From 24 to 20
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-
-                                  Positioned(
-                                    bottom: AppSpacing.spacingXs,
-                                    right: AppSpacing.spacingXs,
-                                    child: AppIconButton(
-                                      size: const Size(40, 40),
-                                      onPressed: jarImageIds.length < 3
-                                          ? _showImageUploaderSheet
-                                          : null,
-                                      icon: Icons.camera,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                _heading('What\'s it for?'),
+                _typeSection(),
+                const SizedBox(height: 20),
+                _heading('Name & photo'),
+                Row(
+                  children: [
+                    _photoDrop(),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: JarField(
+                        label: localizations.jarName,
+                        focused: _nameFocus.hasFocus,
+                        onTap: () => _nameFocus.requestFocus(),
+                        child: JarBareInput(
+                          controller: nameController,
+                          focusNode: _nameFocus,
+                          hintText: localizations.enterJarName,
                         ),
                       ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color:
-                                  isDark
-                                      ? Theme.of(context).colorScheme.surface
-                                      : Theme.of(
-                                        context,
-                                      ).colorScheme.inversePrimary,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(
-                                AppSpacing.spacingM,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppTextInput(
-                                    label:
-                                        AppLocalizations.of(context)!.jarName,
-                                    hintText:
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.enterJarName,
-                                    controller: nameController,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  // Photos section
-                                  Text(
-                                    'Photos (${jarImageIds.length}/3)',
-                                    style: Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingXs),
-                                  Row(
-                                    children: [
-                                      ...List.generate(jarImageUrls.length, (i) => Padding(
-                                        padding: const EdgeInsets.only(right: AppSpacing.spacingS),
-                                        child: Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(8),
-                                              child: Image.network(
-                                                jarImageUrls[i],
-                                                width: 80,
-                                                height: 80,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 2,
-                                              right: 2,
-                                              child: GestureDetector(
-                                                onTap: () => setState(() {
-                                                  jarImageUrls.removeAt(i);
-                                                  jarImageIds.removeAt(i);
-                                                }),
-                                                child: Container(
-                                                  decoration: const BoxDecoration(
-                                                    color: Colors.black54,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  padding: const EdgeInsets.all(2),
-                                                  child: const Icon(Icons.close, size: 14, color: Colors.white),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )),
-                                      if (jarImageIds.length < 3)
-                                        GestureDetector(
-                                          onTap: _showImageUploaderSheet,
-                                          child: Container(
-                                            width: 80,
-                                            height: 80,
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
-                                                width: 1.5,
-                                              ),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Icon(
-                                              Icons.add_photo_alternate_outlined,
-                                              color: Theme.of(context).colorScheme.outline,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  Text(
-                                    AppLocalizations.of(context)!.jarGroup,
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingXs),
-                                  GestureDetector(
-                                    onTap: () {
-                                      JarGroupPicker.show(
-                                        context,
-                                        currentJarGroup: selectedJarGroup,
-                                        onJarGroupSelected: (
-                                          String selectedGroup,
-                                        ) {
-                                          setState(() {
-                                            selectedJarGroup = selectedGroup;
-                                          });
-                                        },
-                                      );
-                                    },
-                                    child: AppCard(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.spacingS,
-                                        vertical: AppSpacing.spacingS,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            selectedJarGroup.isEmpty
-                                                ? 'Select a jar group'
-                                                : selectedJarGroup,
-                                            style: AppTextStyles.titleMedium
-                                                .copyWith(
-                                                  color:
-                                                      selectedJarGroup.isEmpty
-                                                          ? Theme.of(
-                                                            context,
-                                                          ).hintColor
-                                                          : Theme.of(context)
-                                                              .textTheme
-                                                              .bodyLarge
-                                                              ?.color,
-                                                ),
-                                          ),
-                                          Icon(
-                                            Icons.arrow_drop_down,
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.outline,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  Text(
-                                    AppLocalizations.of(context)!.currency,
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  CurrencyPicker(
-                                    onCurrencySelected: (currency) {
-                                      setState(() {
-                                        selectedCurrency = currency;
-                                      });
-                                    },
-                                    selectedCurrency: selectedCurrency,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  Text(
-                                    'Payout account',
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingXs),
-                                  _buildPayoutAccountPicker(context),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.collaborators,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                      AppSmallButton(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.spacingS,
-                                          vertical: 6,
-                                        ),
-                                        onPressed:
-                                            _showInviteCollaboratorsSheet,
-                                        child: Row(
-                                          children: [
-                                            const Icon(Icons.add, size: 16),
-                                            const SizedBox(
-                                              width: AppSpacing.spacingXs,
-                                            ),
-                                            Text(
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.invite,
-                                              style: TextStyles.titleMediumS,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingM),
-                                  ...newInvitedCollectors.map(
-                                    (contributor) => InvitedCollectorItem(
-                                      invitedCollector: contributor,
-                                      onCancel: () {
-                                        setState(() {
-                                          newInvitedCollectors.remove(
-                                            contributor,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  // Add minimum height to ensure scrolling
-                                  SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height *
-                                        0.2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }, childCount: 1),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color:
-                        isDark
-                            ? Theme.of(context).colorScheme.surface
-                            : Theme.of(context).colorScheme.inversePrimary,
-                  ),
-                  padding: EdgeInsetsGeometry.symmetric(
-                    horizontal: AppSpacing.spacingM,
-                    vertical: AppSpacing.spacingL,
-                  ),
-                  child: Center(
-                    child: AppButton(
-                      text: AppLocalizations.of(context)!.createJar,
-                      onPressed: isLoading ? null : _createJar,
-                      isLoading: isLoading,
                     ),
-                  ),
+                  ],
+                ),
+                _photosRow(),
+                const SizedBox(height: 10),
+                _currencyField(),
+                const SizedBox(height: 10),
+                _buildPayoutAccountPicker(context),
+                const SizedBox(height: 20),
+                _heading(
+                  'Who\'s collecting with you?',
+                  sub:
+                      'Collectors take payments for this jar. You can add them later.',
+                ),
+                _collectorsSection(),
+              ],
+            ),
+            bottomNavigationBar: JarFooter(
+              children: [
+                JarPrimaryButton(
+                  label:
+                      invites > 0
+                          ? '${localizations.createJar} · invite $invites'
+                          : localizations.createJar,
+                  loading: isLoading,
+                  onTap: isLoading ? null : _createJar,
                 ),
               ],
             ),

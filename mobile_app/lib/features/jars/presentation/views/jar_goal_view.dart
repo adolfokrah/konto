@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/currency_text_field.dart';
 import 'package:Hoga/core/widgets/date_range_picker.dart';
-import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+/// Goal: big target amount, quick picks, and a deadline card.
 class JarGoalView extends StatefulWidget {
   const JarGoalView({super.key});
 
@@ -24,6 +24,8 @@ class JarGoalView extends StatefulWidget {
 
 class _JarGoalViewState extends State<JarGoalView>
     with TickerProviderStateMixin {
+  static const _quickTargets = [10000.0, 20000.0, 50000.0];
+
   late TextEditingController _amountController;
   final FocusNode _focusNode = FocusNode();
   DateTime? _selectedDeadline;
@@ -40,7 +42,7 @@ class _JarGoalViewState extends State<JarGoalView>
 
   @override
   void dispose() {
-    _amountController.dispose();
+    if (_isInitialized) _amountController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -63,7 +65,7 @@ class _JarGoalViewState extends State<JarGoalView>
       initialDate: initialDate,
       minimumDate: minimumDate,
       maximumDate: DateTime.now().add(const Duration(days: 365 * 5)),
-      title: 'Select Deadline',
+      title: 'Goal deadline',
     );
 
     if (selectedDate != null) {
@@ -73,200 +75,207 @@ class _JarGoalViewState extends State<JarGoalView>
     }
   }
 
+  double _currentAmount(String symbol) {
+    final field = CurrencyTextField(
+      controller: _amountController,
+      currencySymbol: symbol,
+    );
+    return field.getNumericValue();
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          localizations.jarGoal,
-          style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: false,
-        actions: [
-          BlocBuilder<JarSummaryBloc, JarSummaryState>(
-            builder: (context, state) {
-              if (state is JarSummaryLoaded && state.jarData.goalAmount > 0) {
-                return GestureDetector(
-                  onTap: () {
-                    // Remove goal by setting goalAmount to 0 and deadline to null
-                    context.read<UpdateJarBloc>().add(
-                      UpdateJarRequested(
-                        jarId: state.jarData.id,
-                        updates: {'goalAmount': 0.0, 'deadline': null},
+    return BlocListener<UpdateJarBloc, UpdateJarState>(
+      listener: (context, state) {
+        if (state is UpdateJarSuccess) {
+          context.pop();
+          context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
+        } else if (state is UpdateJarFailure) {
+          AppSnackBar.showError(
+            context,
+            message: localizations.failedToUpdateJarGoal,
+          );
+        }
+      },
+      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          if (state is! JarSummaryLoaded) {
+            return Scaffold(
+              backgroundColor: AppColors.cream,
+              appBar: JarTopBar(title: localizations.goal),
+              body: const SizedBox.shrink(),
+            );
+          }
+
+          final jarData = state.jarData;
+          final symbol = CurrencyUtils.getCurrencySymbol(jarData.currency);
+
+          // Initialize controllers with jar data if not already done
+          if (!_isInitialized) {
+            final initialAmount =
+                jarData.goalAmount > 0
+                    ? '$symbol${jarData.goalAmount.toStringAsFixed(2)}'
+                    : symbol;
+            _amountController = TextEditingController(text: initialAmount);
+            _amountController.addListener(() => setState(() {}));
+
+            // Initialize selected deadline from jar data
+            if (jarData.deadline != null) {
+              _selectedDeadline = jarData.deadline;
+            }
+
+            _isInitialized = true;
+          }
+
+          final current = _currentAmount(symbol);
+
+          return Scaffold(
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(
+              title: localizations.goal,
+              actions: [
+                if (jarData.goalAmount > 0)
+                  JarBarLink(
+                    localizations.removeGoal.split(' ').first,
+                    destructive: true,
+                    onTap: () {
+                      // Remove goal by setting goalAmount to 0 and deadline to null
+                      context.read<UpdateJarBloc>().add(
+                        UpdateJarRequested(
+                          jarId: jarData.id,
+                          updates: {'goalAmount': 0.0, 'deadline': null},
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              children: [
+                Text(
+                  'Target',
+                  style: DsText.caption,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                // Large amount display
+                CurrencyTextField(
+                  controller: _amountController,
+                  focusNode: _focusNode,
+                  currencySymbol: symbol,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  jarData.name,
+                  style: DsText.small,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 6,
+                  children: [
+                    for (final t in _quickTargets)
+                      JarChip(
+                        label: '${(t / 1000).toStringAsFixed(0)}k',
+                        selected: current == t,
+                        onTap: () {
+                          final text = '$symbol ${t.toStringAsFixed(0)}';
+                          _amountController.value = TextEditingValue(
+                            text: text,
+                            selection: TextSelection.collapsed(
+                              offset: text.length,
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                  builder: (context, jarUpdateState) {
+                    return DsCard(
+                      onTap: () {
+                        if (jarUpdateState is UpdateJarInProgress) return;
+                        _selectDeadline(context);
+                      },
+                      child: Row(
+                        children: [
+                          const DsIconTile(
+                            Icons.calendar_today_outlined,
+                            tone: DsTone.lime,
+                            size: 40,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  localizations.deadline,
+                                  style: DsText.caption,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _selectedDeadline != null
+                                      ? DateFormat(
+                                        'EEE, d MMMM',
+                                        localizations.localeName,
+                                      ).format(_selectedDeadline!)
+                                      : localizations
+                                          .tapCalendarButtonToSetDeadline,
+                                  style: DsText.rowTitle,
+                                ),
+                              ],
+                            ),
+                          ),
+                          DsLink(_selectedDeadline != null ? 'Change' : 'Set'),
+                        ],
                       ),
                     );
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Text(
-                      localizations.removeGoal,
-                      style: TextStyles.titleMedium.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                );
-              }
-              return Container();
-            },
-          ),
-        ],
-      ),
-      body: BlocListener<UpdateJarBloc, UpdateJarState>(
-        listener: (context, state) {
-          if (state is UpdateJarSuccess) {
-            context.pop();
-            context.read<JarSummaryReloadBloc>().add(
-              ReloadJarSummaryRequested(),
-            );
-          } else if (state is UpdateJarFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(localizations.failedToUpdateJarGoal)),
-            );
-          }
-        },
-        child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-          builder: (context, state) {
-            if (state is JarSummaryLoaded) {
-              // Initialize controllers with jar data if not already done
-              if (!_isInitialized) {
-                final currencySymbol = CurrencyUtils.getCurrencySymbol(
-                  state.jarData.currency,
-                );
-                final initialAmount =
-                    state.jarData.goalAmount > 0
-                        ? '$currencySymbol${state.jarData.goalAmount.toStringAsFixed(2)}'
-                        : currencySymbol;
-                _amountController = TextEditingController(text: initialAmount);
+                ),
+              ],
+            ),
+            bottomNavigationBar: JarFooter(
+              children: [
+                BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                  builder: (context, jarUpdateState) {
+                    return JarPrimaryButton(
+                      label: localizations.continueText,
+                      loading: jarUpdateState is UpdateJarInProgress,
+                      onTap: () {
+                        if (jarUpdateState is UpdateJarInProgress) {
+                          return;
+                        }
+                        final amount = _currentAmount(symbol);
 
-                // Initialize selected deadline from jar data
-                if (state.jarData.deadline != null) {
-                  _selectedDeadline = state.jarData.deadline;
-                }
+                        if (amount <= 0) {
+                          // Handle empty or invalid amount
+                          return;
+                        }
 
-                _isInitialized = true;
-              }
-
-              return Padding(
-                padding: const EdgeInsets.all(AppSpacing.spacingL),
-                child: Column(
-                  children: [
-                    // Main content area
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Large amount display
-                          CurrencyTextField(
-                            controller: _amountController,
-                            focusNode: _focusNode,
-                            currencySymbol: CurrencyUtils.getCurrencySymbol(
-                              state.jarData.currency,
-                            ),
+                        context.read<UpdateJarBloc>().add(
+                          UpdateJarRequested(
+                            jarId: jarData.id,
+                            updates: {
+                              'goalAmount': amount,
+                              if (_selectedDeadline != null)
+                                'deadline': _selectedDeadline,
+                            },
                           ),
-                          const SizedBox(height: AppSpacing.spacingM),
-
-                          // Jar name
-                          Text(
-                            state.jarData.name,
-                            style: TextStyles.titleMediumLg.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingM),
-
-                          Text(
-                            _selectedDeadline != null
-                                ? '${localizations.deadline}, ${DateFormat('MMM dd, yyyy').format(_selectedDeadline!)}'
-                                : localizations.tapCalendarButtonToSetDeadline,
-                            style: TextStyles.titleRegularSm.copyWith(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color
-                                  ?.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Continue button at bottom
-                    BlocBuilder<UpdateJarBloc, UpdateJarState>(
-                      builder: (context, jarUpdateState) {
-                        return Row(
-                          children: [
-                            AppIconButton(
-                              icon: Icons.calendar_month,
-                              onPressed: () {
-                                if (jarUpdateState is UpdateJarInProgress) {
-                                  return;
-                                }
-
-                                _selectDeadline(context);
-                              },
-                            ),
-                            const SizedBox(width: AppSpacing.spacingS),
-                            Expanded(
-                              child: AppButton.filled(
-                                isLoading:
-                                    jarUpdateState is UpdateJarInProgress,
-                                text: localizations.continueText,
-                                onPressed: () {
-                                  if (jarUpdateState is UpdateJarInProgress) {
-                                    return;
-                                  }
-                                  // Get the numeric value directly from the currency text field
-                                  final currencyTextField = CurrencyTextField(
-                                    controller: _amountController,
-                                    currencySymbol:
-                                        CurrencyUtils.getCurrencySymbol(
-                                          state.jarData.currency,
-                                        ),
-                                  );
-                                  final amount =
-                                      currencyTextField.getNumericValue();
-
-                                  if (amount <= 0) {
-                                    // Handle empty or invalid amount
-                                    return;
-                                  }
-
-                                  context.read<UpdateJarBloc>().add(
-                                    UpdateJarRequested(
-                                      jarId: state.jarData.id,
-                                      updates: {
-                                        'goalAmount': amount,
-                                        if (_selectedDeadline != null)
-                                          'deadline': _selectedDeadline,
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
                         );
                       },
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            }
-            return Container();
-          },
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
