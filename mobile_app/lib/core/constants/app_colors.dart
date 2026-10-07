@@ -100,9 +100,10 @@ const _dark = _Palette(
   primaryLight: Color(0xFF1B222B),
   primaryDark: Color(0xFF2D3849),
   black: Color(0xFFF3EEE6),
-  // Deeper than the 0xFF11161D canvas, so primary actions and the tab bar
-  // stay dark instead of flipping to light ink.
-  inkFill: Color(0xFF070A0E),
+  // A step below the 0xFF11161D canvas, same blue-grey hue, so the tab bar,
+  // quick actions and amount card stay darker than the background without
+  // going neutral black.
+  inkFill: Color(0xFF0B1016),
   onInkFill: Color(0xFFF3EEE6),
   positive: Color(0xFF34C27F),
   positiveSoft: Color(0xFF14301F),
