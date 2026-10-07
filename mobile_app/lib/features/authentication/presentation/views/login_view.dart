@@ -79,7 +79,7 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      appBar: const AuthTopBar(),
+      appBar: const AuthTopBar(fallbackRoute: AppRoutes.onboarding),
       body: MultiBlocListener(
         listeners: [
           BlocListener<VerificationBloc, VerificationState>(

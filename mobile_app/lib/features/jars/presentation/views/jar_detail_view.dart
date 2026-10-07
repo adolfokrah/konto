@@ -328,9 +328,9 @@ class _JarDetailViewState extends State<JarDetailView> {
         ),
         BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            // Handle sign out - navigate to login
+            // Handle sign out - back to the welcome screen, same as Profile
             if (state is AuthInitial) {
-              context.go(AppRoutes.login);
+              context.go(AppRoutes.onboarding);
             }
           },
         ),

@@ -230,6 +230,7 @@ class _RegisterViewState extends State<RegisterView> {
           appBar: AuthTopBar(
             progress: _progress,
             onBack: _step == 1 ? () => setState(() => _step = 0) : null,
+            fallbackRoute: AppRoutes.onboarding,
           ),
           body: Column(
             children: [

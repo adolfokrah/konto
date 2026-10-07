@@ -17,6 +17,10 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
   final double? progress;
   final bool close;
   final VoidCallback? onBack;
+
+  /// Where back goes when there is nothing to pop, e.g. after sign-out
+  /// lands straight on this screen. Keeps the back button visible.
+  final String? fallbackRoute;
   final Color background;
 
   const AuthTopBar({
@@ -25,6 +29,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.progress,
     this.close = false,
     this.onBack,
+    this.fallbackRoute,
     this.background = AppColors.cream,
   });
 
@@ -33,7 +38,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canPop = onBack != null || context.canPop();
+    final canPop = onBack != null || fallbackRoute != null || context.canPop();
     Widget? middle;
     if (progress != null) {
       middle = SizedBox(width: 120, child: DsProgress(progress!, height: 5));
@@ -56,7 +61,15 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
                         close
                             ? Icons.close_rounded
                             : Icons.arrow_back_ios_new_rounded,
-                    onTap: onBack ?? () => context.pop(),
+                    onTap:
+                        onBack ??
+                        () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go(fallbackRoute!);
+                          }
+                        },
                     filled: background == AppColors.surfaceWhite,
                   ),
                 ),
