@@ -55,12 +55,14 @@ class WithdrawalAccountsState {
     return WithdrawalAccountsState(
       status: status ?? this.status,
       accounts: accounts ?? this.accounts,
-      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      errorMessage:
+          clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
       actionInProgress: actionInProgress ?? this.actionInProgress,
       banks: banks ?? this.banks,
       banksLoading: banksLoading ?? this.banksLoading,
       verifying: verifying ?? this.verifying,
-      verifiedName: clearVerification ? null : (verifiedName ?? this.verifiedName),
+      verifiedName:
+          clearVerification ? null : (verifiedName ?? this.verifiedName),
       verifyError: clearVerification ? null : (verifyError ?? this.verifyError),
       createdAccount:
           clearCreatedAccount ? null : (createdAccount ?? this.createdAccount),

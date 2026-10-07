@@ -80,51 +80,58 @@ class _AddWithdrawalAccountViewState extends State<AddWithdrawalAccountView> {
         return;
       }
       context.read<WithdrawalAccountsBloc>().add(
-            VerifyWithdrawalAccount(
-              type: 'mobile-money',
-              bank: _operator,
-              accountNumber: number,
-            ),
-          );
+        VerifyWithdrawalAccount(
+          type: 'mobile-money',
+          bank: _operator,
+          accountNumber: number,
+        ),
+      );
     } else {
       if (_bankCode == null || _bankCode!.isEmpty) {
         AppSnackBar.showError(context, message: 'Please select a bank');
         return;
       }
       if (number.isEmpty) {
-        AppSnackBar.showError(context, message: 'Please enter an account number');
+        AppSnackBar.showError(
+          context,
+          message: 'Please enter an account number',
+        );
         return;
       }
       context.read<WithdrawalAccountsBloc>().add(
-            VerifyWithdrawalAccount(
-              type: 'bank',
-              bank: _bankCode!,
-              accountNumber: number,
-            ),
-          );
+        VerifyWithdrawalAccount(
+          type: 'bank',
+          bank: _bankCode!,
+          accountNumber: number,
+        ),
+      );
     }
   }
 
   void _handleSave() {
     final holder = _holderController.text.trim();
     if (holder.isEmpty) {
-      AppSnackBar.showError(context, message: 'Account holder name is required');
+      AppSnackBar.showError(
+        context,
+        message: 'Account holder name is required',
+      );
       return;
     }
 
     context.read<WithdrawalAccountsBloc>().add(
-          CreateWithdrawalAccount(
-            type: _type == _AccountType.mobileMoney ? 'mobile-money' : 'bank',
-            provider:
-                _type == _AccountType.mobileMoney ? _operator : (_bankCode ?? ''),
-            accountNumber: _numberController.text.trim(),
-            accountHolder: holder,
-            label: _labelController.text.trim().isEmpty
+      CreateWithdrawalAccount(
+        type: _type == _AccountType.mobileMoney ? 'mobile-money' : 'bank',
+        provider:
+            _type == _AccountType.mobileMoney ? _operator : (_bankCode ?? ''),
+        accountNumber: _numberController.text.trim(),
+        accountHolder: holder,
+        label:
+            _labelController.text.trim().isEmpty
                 ? null
                 : _labelController.text.trim(),
-            isDefault: _setAsDefault,
-          ),
-        );
+        isDefault: _setAsDefault,
+      ),
+    );
   }
 
   static const _networkPrefixes = {

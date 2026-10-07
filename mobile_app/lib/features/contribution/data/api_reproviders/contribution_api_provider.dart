@@ -128,9 +128,7 @@ class ContributionApiProvider extends BaseApiProvider {
 
       final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/transactions/get-transaction',
-        queryParameters: {
-          'id': contributionId,
-        },
+        queryParameters: {'id': contributionId},
         options: Options(headers: headers),
       );
 
@@ -158,7 +156,8 @@ class ContributionApiProvider extends BaseApiProvider {
     String? contributor,
     bool? isCurrentUserJarCreator, // Whether current user created the jar
     bool? hasAnyFilters, // Whether any filters are applied
-    String? linkedTransactionId, // Filter refunds linked to a specific transaction
+    String?
+    linkedTransactionId, // Filter refunds linked to a specific transaction
   }) async {
     try {
       // Get authenticated headers
@@ -202,11 +201,8 @@ class ContributionApiProvider extends BaseApiProvider {
         final validStatuses =
             statuses
                 .where(
-                  (status) => [
-                    'pending',
-                    'failed',
-                    'completed',
-                  ].contains(status),
+                  (status) =>
+                      ['pending', 'failed', 'completed'].contains(status),
                 )
                 .toList();
         if (validStatuses.isNotEmpty) {
@@ -219,11 +215,7 @@ class ContributionApiProvider extends BaseApiProvider {
         final validTypes =
             transactionTypes
                 .where(
-                  (type) => [
-                    'contribution',
-                    'payout',
-                    'refund',
-                  ].contains(type),
+                  (type) => ['contribution', 'payout', 'refund'].contains(type),
                 )
                 .toList();
         if (validTypes.isNotEmpty) {
@@ -443,20 +435,14 @@ class ContributionApiProvider extends BaseApiProvider {
 
       final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/transactions/approve-reject-payout',
-        data: {
-          'transactionId': transactionId,
-          'action': action,
-        },
+        data: {'transactionId': transactionId, 'action': action},
         options: Options(headers: headers),
       );
 
       if (response.data != null && response.data is Map) {
         return response.data as Map<String, dynamic>;
       }
-      return {
-        'success': false,
-        'message': 'Unexpected response format',
-      };
+      return {'success': false, 'message': 'Unexpected response format'};
     } catch (e) {
       return handleApiError(e, 'processing payout approval');
     }

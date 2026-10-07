@@ -248,7 +248,8 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
           builder: (context, state) {
             if (state is! FilterContributionsLoaded) return Container();
 
-            final selectedDate = _pendingDate ?? FilterOptions.defaultDateOption;
+            final selectedDate =
+                _pendingDate ?? FilterOptions.defaultDateOption;
             final isCustom = selectedDate.contains(' - ');
 
             return CollectSheet(
@@ -292,7 +293,8 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
                         type.value,
                       ),
                       selected: _pendingTransactionTypes.contains(type.value),
-                      onTap: () => _toggle(_pendingTransactionTypes, type.value),
+                      onTap:
+                          () => _toggle(_pendingTransactionTypes, type.value),
                     ),
                 ]),
                 _section(localizations.status, [
@@ -311,7 +313,8 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
                         method.value,
                       ),
                       selected: _pendingPaymentMethods.contains(method.value),
-                      onTap: () => _toggle(_pendingPaymentMethods, method.value),
+                      onTap:
+                          () => _toggle(_pendingPaymentMethods, method.value),
                     ),
                 ]),
                 if (isCreator && collectors.isNotEmpty)

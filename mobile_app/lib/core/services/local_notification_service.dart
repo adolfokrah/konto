@@ -18,8 +18,9 @@ class LocalNotificationService {
 
   /// Initialize the plugin and create the Android notification channel
   static Future<void> initialize() async {
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -38,7 +39,8 @@ class LocalNotificationService {
     // Create Android notification channel
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
   }
 
@@ -86,7 +88,8 @@ class LocalNotificationService {
       if (context == null) return;
 
       final jarId = data['jarId'] as String?;
-      final contributionId = (data['contributionId'] ?? data['transactionId']) as String?;
+      final contributionId =
+          (data['contributionId'] ?? data['transactionId']) as String?;
 
       if (jarId != null && contributionId != null) {
         NavigationService.navigateToContribution(

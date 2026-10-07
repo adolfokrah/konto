@@ -100,7 +100,7 @@ class _LoginViewState extends State<LoginView> {
               if (state is AuthAuthenticated) {
                 _navigatedToOtp = false;
                 // Navigate to home on success
-                context.go(AppRoutes.jarDetail);
+                context.go(AppRoutes.home);
               } else if (state is PhoneNumberAvailable) {
                 _navigatedToOtp = false;
                 // Phone number available for registration - redirect to register

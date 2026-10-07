@@ -394,7 +394,8 @@ class _CollectorsViewState extends State<CollectorsView> {
       const DsNote(
         tone: DsTone.neutral,
         icon: Icons.lock_outline_rounded,
-        text: "Collectors can take payments for this jar. They can't move money out.",
+        text:
+            "Collectors can take payments for this jar. They can't move money out.",
       ),
     ];
   }
@@ -496,8 +497,7 @@ class _CollectorsViewState extends State<CollectorsView> {
               child: Column(
                 children: [
                   for (var i = 0; i < actions.length; i++) ...[
-                    if (i > 0)
-                      const Divider(height: 1, color: AppColors.line),
+                    if (i > 0) const Divider(height: 1, color: AppColors.line),
                     actions[i],
                   ],
                 ],

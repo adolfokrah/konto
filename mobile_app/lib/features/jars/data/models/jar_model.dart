@@ -122,8 +122,14 @@ class JarModel {
               : null,
       images:
           (json['images'] as List<dynamic>?)
-              ?.where((e) => e is Map<String, dynamic> && e['image'] is Map<String, dynamic>)
-              .map((e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>))
+              ?.where(
+                (e) =>
+                    e is Map<String, dynamic> &&
+                    e['image'] is Map<String, dynamic>,
+              )
+              .map(
+                (e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       isActive: json['isActive'] as bool? ?? true,
@@ -160,10 +166,7 @@ class JarModel {
               : 0,
       customFields:
           (json['customFields'] as List<dynamic>?)
-              ?.map(
-                (e) =>
-                    CustomFieldModel.fromJson(e as Map<String, dynamic>),
-              )
+              ?.map((e) => CustomFieldModel.fromJson(e as Map<String, dynamic>))
               .toList(),
     );
   }

@@ -200,6 +200,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
       }
     }
   }
+
   int _tab = 0;
 
   String _shareText(
@@ -419,11 +420,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                jarName,
-                style: DsText.section,
-                textAlign: TextAlign.center,
-              ),
+              Text(jarName, style: DsText.section, textAlign: TextAlign.center),
               const SizedBox(height: 2),
               Text(
                 localizations.scanTheQRCodeToContribute,

@@ -9,6 +9,7 @@ import 'package:Hoga/features/onboarding/prensentation/pages/walk_through.dart';
 import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
+import 'package:Hoga/features/jars/presentation/views/home_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
 import 'package:Hoga/core/widgets/main_shell.dart';
@@ -74,7 +75,7 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       // Authenticated — redirect away from auth/startup routes
       if (authState is AuthAuthenticated) {
-        if (isOnAuthRoute || isOnStartup) return AppRoutes.jarDetail;
+        if (isOnAuthRoute || isOnStartup) return AppRoutes.home;
         return null;
       }
 
@@ -111,8 +112,8 @@ GoRouter createRouter(AuthBloc authBloc) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/jar_detail',
-                builder: (context, state) => const JarDetailView(),
+                path: '/home',
+                builder: (context, state) => const HomeView(),
               ),
             ],
           ),
@@ -141,6 +142,11 @@ GoRouter createRouter(AuthBloc authBloc) {
             ],
           ),
         ],
+      ),
+      // A jar opens over the tabs, with a back button to Home.
+      GoRoute(
+        path: '/jar_detail',
+        builder: (context, state) => const JarDetailView(),
       ),
       GoRoute(
         path: '/walkthrough',

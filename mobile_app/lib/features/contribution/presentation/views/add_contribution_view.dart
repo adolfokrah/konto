@@ -159,8 +159,7 @@ class _AddContributionViewState extends State<AddContributionView> {
                     ),
                   ),
                 ),
-                if (!fixed)
-                  _Keypad(onKey: _onKey, onClear: _clear),
+                if (!fixed) _Keypad(onKey: _onKey, onClear: _clear),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: AppButton.filled(

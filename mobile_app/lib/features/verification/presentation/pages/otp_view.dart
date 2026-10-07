@@ -260,7 +260,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthAuthenticated) {
-                context.go(AppRoutes.jarDetail);
+                context.go(AppRoutes.home);
               } else if (state is AuthError) {
                 AppSnackBar.showError(context, message: state.error);
               }

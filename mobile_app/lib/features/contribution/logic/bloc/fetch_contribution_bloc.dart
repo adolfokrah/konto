@@ -10,9 +10,10 @@ class FetchContributionBloc
     extends Bloc<FetchContributionEvent, FetchContributionState> {
   final ContributionRepository _contributionRepository;
 
-  FetchContributionBloc({required ContributionRepository contributionRepository})
-    : _contributionRepository = contributionRepository,
-      super(FetchContributionInitial()) {
+  FetchContributionBloc({
+    required ContributionRepository contributionRepository,
+  }) : _contributionRepository = contributionRepository,
+       super(FetchContributionInitial()) {
     on<FetchContributionById>(_fetchContributionById);
   }
 
@@ -23,8 +24,9 @@ class FetchContributionBloc
     emit(FetchContributionLoading());
 
     try {
-      final response = await _contributionRepository
-          .getContributionById(contributionId: event.contributionId);
+      final response = await _contributionRepository.getContributionById(
+        contributionId: event.contributionId,
+      );
 
       if (response['success']) {
         final data = response['data'] as Map<String, dynamic>;
@@ -47,7 +49,12 @@ class FetchContributionBloc
         final int requiredApprovals = (data['requiredApprovals'] as int?) ?? 1;
 
         emit(
-          FetchContributionLoaded(contribution, refundDocs: refundDocs, approvalDocs: approvalDocs, requiredApprovals: requiredApprovals),
+          FetchContributionLoaded(
+            contribution,
+            refundDocs: refundDocs,
+            approvalDocs: approvalDocs,
+            requiredApprovals: requiredApprovals,
+          ),
         );
       } else {
         emit(

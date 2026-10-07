@@ -1,16 +1,10 @@
-import 'dart:io';
-
 import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
-import 'package:Hoga/features/notifications/data/models/notification_model.dart';
-import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
-import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/contribution_chart.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
-import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
@@ -21,6 +15,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_activity_row.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_balance_breakdown.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_goal_card.dart';
@@ -31,10 +26,7 @@ import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dar
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
-import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// Home tab: the dashboard of the current jar (switch jars from the name row).
@@ -47,21 +39,12 @@ class JarDetailView extends StatefulWidget {
 
 class _JarDetailViewState extends State<JarDetailView> {
   final ScrollController _scrollController = ScrollController();
-  bool _walkthroughTriggered =
-      false; // Flag to prevent multiple walkthrough navigations
 
   @override
   void initState() {
     super.initState();
-    // Trigger jar summary request when page loads for the first time
+    // Same jar: refreshes silently; another jar: shows loading.
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
-
-    _requestFCMPermissionAndUpdateToken();
-    _fetchUserNotifications();
-
-    // Preload the user's withdrawal accounts so the withdraw flow can route to
-    // the add-account screen when none exist.
-    context.read<WithdrawalAccountsBloc>().add(LoadWithdrawalAccounts());
   }
 
   @override
@@ -105,147 +88,16 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
-  /// Navigate to withdraw page, checking the payout destination and verification first
-  void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
-    // Setting up a payout destination needs no KYC or KYB — it moves no money —
-    // so this runs before the verification gate. Otherwise an unverified user is
-    // sent to KYC and can never reach account setup from here.
-    //
-    // The jar carries its own linked withdrawal account, but if the user has no
-    // withdrawal accounts at all, route them to add one.
-    final waState = context.read<WithdrawalAccountsBloc>().state;
-    if (waState.status == WithdrawalAccountsStatus.loaded &&
-        waState.accounts.isEmpty) {
-      AppSnackBar.show(
-        context,
-        message: 'Add a withdrawal account to receive your payout.',
-        type: SnackBarType.info,
-      );
-      context.push(AppRoutes.withdrawalAccounts);
-      return;
-    }
-
-    // Payouts are the creator's: they need their own verification for their account type.
-    if (!_requireVerification(context)) return;
-
-    context.push(
-      AppRoutes.withdraw,
-      extra: {
-        'jarId': jarData.id,
-        'payoutBalance': jarData.balanceBreakDown.totalAmountTobeTransferred,
-        'currency': jarData.currency,
-        'withdrawalAccount': jarData.withdrawalAccount,
-      },
-    );
-  }
-
-  /// Verification gate by account type: individuals need personal KYC; organizations
-  /// need business verification (KYB) only. Returns true if allowed; otherwise shows
-  /// a message, routes to the appropriate screen, and returns false.
-  bool _requireVerification(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) return false;
-
-    final kyc = authState.user.kycStatus;
-    final kyb = authState.user.kybStatus;
-
-    // Organizations: business verification (KYB) only.
-    if (authState.user.isOrganization) {
-      if (kyb == 'approved') return true;
-      final message =
-          (kyb == 'in_review' || kyb == 'pending')
-              ? 'Your business verification is under review. Please wait for approval.'
-              : kyb == 'rejected'
-              ? 'Your business verification was rejected. Please review and resubmit.'
-              : 'Complete business verification to continue.';
-      AppSnackBar.show(context, message: message, type: SnackBarType.info);
-      context.push(AppRoutes.businessKyb);
-      return false;
-    }
-
-    // Individuals: personal KYC only.
-    if (kyc != 'verified') {
-      final message =
-          kyc == 'in_review'
-              ? 'Your identity verification (KYC) is under review. Please wait for approval.'
-              : 'Complete identity verification (KYC) to continue.';
-      AppSnackBar.show(context, message: message, type: SnackBarType.info);
-      // in_review users have nothing to do on the KYC screen, but it shows the pending state.
-      context.push(AppRoutes.kycView);
-      return false;
-    }
-
-    return true;
-  }
-
-  /// Gate for collecting (record a contribution, request link, QR). The server checks the
-  /// jar creator's verification, so: the creator is sent to finish their own verification;
-  /// a collector is told the organizer isn't verified yet (nothing for them to do).
-  bool _requireCollecting(BuildContext context, JarSummaryModel jarData) {
-    if (jarData.isCreator) return _requireVerification(context);
-    if (jarData.creator.canCollect) return true;
-    AppSnackBar.show(
-      context,
-      message:
-          'This jar\'s organizer is still completing verification, so it can\'t collect contributions yet.',
-      type: SnackBarType.info,
-    );
-    return false;
-  }
-
-  /// Request FCM permissions and update user token
-  Future<void> _requestFCMPermissionAndUpdateToken() async {
-    try {
-      // Request FCM permissions first
-      FCMService.requestPermission();
-
-      // Get the FCM token
-      final String? token = await FCMService.getToken();
-
-      // Update user with the token if available and widget is still mounted
-      if (token != null && mounted) {
-        context.read<UserAccountBloc>().add(
-          UpdatePersonalDetails(
-            fcmToken: token,
-            platform: Platform.isAndroid ? 'android' : 'ios',
-          ),
-        );
-      }
-    } catch (e) {
-      // Handle any errors silently or log them
-      debugPrint('Error requesting FCM permission or updating token: $e');
-    }
-  }
-
-  /// Fetch User Notificatiosn
-  Future<void> _fetchUserNotifications() async {
-    try {
-      // Use NotificationsBloc from context
-      final notificationsBloc = context.read<NotificationsBloc>();
-
-      // Fetch notifications with default pagination
-      notificationsBloc.add(FetchNotifications(limit: 20, page: 1));
-    } catch (e) {
-      // Handle any errors silently or log them
-      debugPrint('Error fetching user notifications: $e');
-    }
-  }
+  void _handleWithdraw(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.withdraw(context, jarData);
 
   // ------------------------------------------------------------ actions
 
-  void _contribute(BuildContext context, JarSummaryModel jarData) {
-    if (!_requireCollecting(context, jarData)) return;
-    context.push(AppRoutes.addContribution);
-  }
+  void _contribute(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.contribute(context, jarData);
 
-  void _request(BuildContext context, JarSummaryModel jarData) {
-    // Collecting needs the jar's creator to be verified.
-    if (!_requireCollecting(context, jarData)) return;
-    context.push(
-      AppRoutes.contributionRequest,
-      extra: {'paymentLink': jarData.link, 'jarName': jarData.name},
-    );
-  }
+  void _request(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.request(context, jarData);
 
   Future<void> _showCollectorInfo(
     BuildContext context,
@@ -326,14 +178,6 @@ class _JarDetailViewState extends State<JarDetailView> {
             // which calls UpdateJarSummaryRequested on the main bloc without flicker
           },
         ),
-        BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            // Handle sign out - back to the welcome screen, same as Profile
-            if (state is AuthInitial) {
-              context.go(AppRoutes.onboarding);
-            }
-          },
-        ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
           listenWhen: (previous, current) => current is UpdateJarSuccess,
           listener: (context, state) {
@@ -367,29 +211,6 @@ class _JarDetailViewState extends State<JarDetailView> {
             }
           },
         ),
-        BlocListener<OnboardingBloc, OnboardingState>(
-          listener: (context, state) {
-            if (state is OnboardingPageState && !_walkthroughTriggered) {
-              // User hasn't completed onboarding, show walkthrough with delay
-              _walkthroughTriggered = true;
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted && _walkthroughTriggered) {
-                  context.push(AppRoutes.walkthrough).then((_) {
-                    // Reset flag when user returns from walkthrough
-                    if (mounted) {
-                      setState(() {
-                        _walkthroughTriggered = false;
-                      });
-                    }
-                  });
-                }
-              });
-            }
-            if (state is OnboardingCompleted) {
-              _walkthroughTriggered = false;
-            }
-          },
-        ),
       ],
       child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
         builder: (context, state) {
@@ -417,62 +238,47 @@ class _JarDetailViewState extends State<JarDetailView> {
     );
   }
 
-  /// Avatar + greeting + bell + QR.
+  /// Back, share and settings (mockup jar screen).
   Widget _buildHeader(BuildContext context, JarSummaryState state) {
-    final localizations = AppLocalizations.of(context)!;
-    final hour = DateTime.now().hour;
-    final greeting =
-        hour < 12
-            ? 'Good morning'
-            : hour < 17
-            ? 'Good afternoon'
-            : 'Good evening';
+    final jarData = state is JarSummaryLoaded ? state.jarData : null;
+    final blocked =
+        jarData == null ||
+        jarData.status == JarStatus.sealed ||
+        jarData.status == JarStatus.frozen;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
       child: Row(
         children: [
-          const UserAvatarSmall(
-            radius: 20,
-            backgroundColor: AppColors.surfaceWhite,
+          JarNavButton(
+            key: const Key('jar_back_button'),
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                String name = localizations.user;
-                if (authState is AuthAuthenticated &&
-                    authState.user.fullName.trim().isNotEmpty) {
-                  name = authState.user.fullName;
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(greeting, style: DsText.caption),
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: DsText.rowTitle.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          const _HomeBell(),
-          if (state is JarSummaryLoaded) ...[
-            const SizedBox(width: 8),
+          const Spacer(),
+          if (jarData != null) ...[
             JarNavButton(
               key: const Key('request_button_qr_code'),
-              icon: Icons.qr_code_2_rounded,
+              icon: Icons.ios_share_rounded,
+              onTap: blocked ? null : () => _request(context, jarData),
+            ),
+            const SizedBox(width: 8),
+            JarNavButton(
+              key: const Key('info_button'),
+              icon:
+                  jarData.isCreator
+                      ? Icons.settings_outlined
+                      : Icons.info_outline_rounded,
               onTap:
-                  state.jarData.status != JarStatus.sealed
-                      ? () => _request(context, state.jarData)
-                      : null,
+                  jarData.isCreator
+                      ? () => context.push(AppRoutes.jarInfo)
+                      : () => _showCollectorInfo(context, jarData),
             ),
           ],
         ],
@@ -720,16 +526,6 @@ class _JarDetailViewState extends State<JarDetailView> {
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        JarNavButton(
-          key: const Key('info_button'),
-          icon:
-              isCreator ? Icons.settings_outlined : Icons.info_outline_rounded,
-          onTap:
-              isCreator
-                  ? () => context.push(AppRoutes.jarInfo)
-                  : () => _showCollectorInfo(context, jarData),
         ),
       ],
     );
@@ -1048,50 +844,6 @@ class _JarDetailViewState extends State<JarDetailView> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Bell with an unread dot, driven by the notifications bloc when present.
-class _HomeBell extends StatelessWidget {
-  const _HomeBell();
-
-  @override
-  Widget build(BuildContext context) {
-    void open() => context.push(AppRoutes.notifications);
-
-    // If NotificationsBloc is not provided (e.g. tests), show a plain bell.
-    NotificationsBloc? bloc;
-    try {
-      bloc = context.read<NotificationsBloc>();
-    } catch (_) {
-      bloc = null;
-    }
-    if (bloc == null) {
-      return JarNavButton(
-        key: const Key('notifications_button'),
-        icon: Icons.notifications_none_rounded,
-        onTap: open,
-      );
-    }
-
-    return BlocBuilder<NotificationsBloc, NotificationsState>(
-      buildWhen: (prev, curr) => curr is NotificationsLoaded,
-      builder: (context, state) {
-        var unread = 0;
-        if (state is NotificationsLoaded) {
-          unread =
-              state.notifications
-                  .where((n) => n.status == NotificationStatus.unread)
-                  .length;
-        }
-        return JarNavButton(
-          key: const Key('notifications_button'),
-          icon: Icons.notifications_none_rounded,
-          dot: unread > 0,
-          onTap: open,
-        );
-      },
     );
   }
 }

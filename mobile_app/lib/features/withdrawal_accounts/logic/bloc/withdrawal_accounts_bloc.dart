@@ -25,21 +25,27 @@ class WithdrawalAccountsBloc
     LoadWithdrawalAccounts event,
     Emitter<WithdrawalAccountsState> emit,
   ) async {
-    emit(state.copyWith(
-      status: WithdrawalAccountsStatus.loading,
-      clearErrorMessage: true,
-    ));
+    emit(
+      state.copyWith(
+        status: WithdrawalAccountsStatus.loading,
+        clearErrorMessage: true,
+      ),
+    );
     final result = await _repository.listAccounts();
     if (result.success) {
-      emit(state.copyWith(
-        status: WithdrawalAccountsStatus.loaded,
-        accounts: result.accounts,
-      ));
+      emit(
+        state.copyWith(
+          status: WithdrawalAccountsStatus.loaded,
+          accounts: result.accounts,
+        ),
+      );
     } else {
-      emit(state.copyWith(
-        status: WithdrawalAccountsStatus.error,
-        errorMessage: result.message,
-      ));
+      emit(
+        state.copyWith(
+          status: WithdrawalAccountsStatus.error,
+          errorMessage: result.message,
+        ),
+      );
     }
   }
 
@@ -59,17 +65,18 @@ class WithdrawalAccountsBloc
     if (result.success) {
       // Refresh the list so default flags stay consistent.
       final listResult = await _repository.listAccounts();
-      emit(state.copyWith(
-        actionInProgress: false,
-        accounts: listResult.success ? listResult.accounts : state.accounts,
-        status: WithdrawalAccountsStatus.loaded,
-        createdAccount: result.account,
-      ));
+      emit(
+        state.copyWith(
+          actionInProgress: false,
+          accounts: listResult.success ? listResult.accounts : state.accounts,
+          status: WithdrawalAccountsStatus.loaded,
+          createdAccount: result.account,
+        ),
+      );
     } else {
-      emit(state.copyWith(
-        actionInProgress: false,
-        errorMessage: result.message,
-      ));
+      emit(
+        state.copyWith(actionInProgress: false, errorMessage: result.message),
+      );
     }
   }
 
@@ -81,15 +88,16 @@ class WithdrawalAccountsBloc
     final result = await _repository.setDefault(id: event.id);
     if (result.success) {
       final listResult = await _repository.listAccounts();
-      emit(state.copyWith(
-        actionInProgress: false,
-        accounts: listResult.success ? listResult.accounts : state.accounts,
-      ));
+      emit(
+        state.copyWith(
+          actionInProgress: false,
+          accounts: listResult.success ? listResult.accounts : state.accounts,
+        ),
+      );
     } else {
-      emit(state.copyWith(
-        actionInProgress: false,
-        errorMessage: result.message,
-      ));
+      emit(
+        state.copyWith(actionInProgress: false, errorMessage: result.message),
+      );
     }
   }
 
@@ -101,15 +109,16 @@ class WithdrawalAccountsBloc
     final result = await _repository.deleteAccount(id: event.id);
     if (result.success) {
       final listResult = await _repository.listAccounts();
-      emit(state.copyWith(
-        actionInProgress: false,
-        accounts: listResult.success ? listResult.accounts : state.accounts,
-      ));
+      emit(
+        state.copyWith(
+          actionInProgress: false,
+          accounts: listResult.success ? listResult.accounts : state.accounts,
+        ),
+      );
     } else {
-      emit(state.copyWith(
-        actionInProgress: false,
-        errorMessage: result.message,
-      ));
+      emit(
+        state.copyWith(actionInProgress: false, errorMessage: result.message),
+      );
     }
   }
 
@@ -120,10 +129,12 @@ class WithdrawalAccountsBloc
     if (state.banks.isNotEmpty) return; // cache
     emit(state.copyWith(banksLoading: true));
     final result = await _repository.fetchBanks();
-    emit(state.copyWith(
-      banksLoading: false,
-      banks: result.success ? result.banks : state.banks,
-    ));
+    emit(
+      state.copyWith(
+        banksLoading: false,
+        banks: result.success ? result.banks : state.banks,
+      ),
+    );
   }
 
   Future<void> _onVerify(

@@ -135,8 +135,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
         final isVoucher =
             state is MomoPaymentSuccess && state.charge.status == 'send_otp';
         return Scaffold(
-          backgroundColor:
-              isVoucher ? AppColors.cream : AppColors.surfaceWhite,
+          backgroundColor: isVoucher ? AppColors.cream : AppColors.surfaceWhite,
           appBar: CollectTopBar(
             showBack: false,
             background: isVoucher ? AppColors.cream : AppColors.surfaceWhite,

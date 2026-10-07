@@ -59,25 +59,23 @@ final getIt = GetIt.instance;
 
 void setupServiceLocator() {
   // ── Core services ──
-  getIt.registerLazySingleton<Dio>(
-    () {
-      final dio = Dio(
-        BaseOptions(
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-          sendTimeout: const Duration(seconds: 30),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-          },
-        ),
-      );
-      // Auth interceptor handles 401 with automatic token refresh.
-      // Dependencies resolved lazily from GetIt to avoid circular init.
-      dio.interceptors.add(AuthInterceptor());
-      return dio;
-    },
-  );
+  getIt.registerLazySingleton<Dio>(() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+    // Auth interceptor handles 401 with automatic token refresh.
+    // Dependencies resolved lazily from GetIt to avoid circular init.
+    dio.interceptors.add(AuthInterceptor());
+    return dio;
+  });
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
   getIt.registerLazySingleton<UserStorageService>(
     () => UserStorageService(localStorageService: getIt<LocalStorageService>()),
@@ -211,9 +209,8 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<NotificationsRepository>(
-    () => NotificationsRepository(
-      apiProvider: getIt<NotificationsApiProvider>(),
-    ),
+    () =>
+        NotificationsRepository(apiProvider: getIt<NotificationsApiProvider>()),
   );
   getIt.registerLazySingleton<CollaboratorsRepository>(
     () => CollaboratorsRepository(
@@ -223,9 +220,7 @@ void setupServiceLocator() {
 
   // ── BLoCs: independent (lazy singletons) ──
   getIt.registerLazySingleton<OnboardingBloc>(
-    () => OnboardingBloc(
-      walkthroughRepository: getIt<WalkthroughRepository>(),
-    ),
+    () => OnboardingBloc(walkthroughRepository: getIt<WalkthroughRepository>()),
   );
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(
@@ -280,14 +275,11 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<KycBloc>(
-    () => KycBloc(
-      verificationRepository: getIt<VerificationRepository>(),
-    ),
+    () => KycBloc(verificationRepository: getIt<VerificationRepository>()),
   );
   getIt.registerLazySingleton<BusinessKybBloc>(
-    () => BusinessKybBloc(
-      businessKybRepository: getIt<BusinessKybRepository>(),
-    ),
+    () =>
+        BusinessKybBloc(businessKybRepository: getIt<BusinessKybRepository>()),
   );
   getIt.registerLazySingleton<NotificationsBloc>(
     () => NotificationsBloc(
@@ -295,9 +287,8 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<ReminderBloc>(
-    () => ReminderBloc(
-      collaboratorsRepository: getIt<CollaboratorsRepository>(),
-    ),
+    () =>
+        ReminderBloc(collaboratorsRepository: getIt<CollaboratorsRepository>()),
   );
   getIt.registerLazySingleton<WithdrawalAccountVerificationBloc>(
     () => WithdrawalAccountVerificationBloc(

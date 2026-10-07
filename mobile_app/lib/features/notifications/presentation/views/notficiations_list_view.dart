@@ -350,10 +350,7 @@ void _resubmitKyc(BuildContext context, NotificationModel notification) {
   );
 }
 
-void _viewPayoutApproval(
-  BuildContext context,
-  NotificationModel notification,
-) {
+void _viewPayoutApproval(BuildContext context, NotificationModel notification) {
   context.read<NotificationsBloc>().add(
     MarkjarInviteAsRead(notificationId: notification.id),
   );
@@ -533,8 +530,18 @@ String _formatTimestamp(DateTime? dt) {
   if (diff.inDays < 7) return '${diff.inDays} d ago';
   final local = dt.toLocal();
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   final sameYear = local.year == now.year;
   return '${local.day} ${months[local.month - 1]}${sameYear ? '' : ' ${local.year}'}';

@@ -15,7 +15,8 @@ class GenericPicker<T> extends StatelessWidget {
     required this.onItemSelected,
   });
 
-  static void showPickerDialog<T>(
+  /// Completes when the sheet closes.
+  static Future<void> showPickerDialog<T>(
     BuildContext context, {
     required String selectedValue,
     required List<T> items,
@@ -42,9 +43,11 @@ class GenericPicker<T> extends StatelessWidget {
     // Provide heavy haptic feedback when opening the picker modal
     HapticUtils.heavy();
 
-    showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      // Above the tab bar when opened from a tab.
+      useRootNavigator: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {

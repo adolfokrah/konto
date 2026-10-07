@@ -308,10 +308,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     final username = _usernameController.text.trim();
     if (!_hasExistingUsername) {
       if (username.isEmpty) {
-        AppSnackBar.showError(
-          context,
-          message: 'Please enter a username',
-        );
+        AppSnackBar.showError(context, message: 'Please enter a username');
         return;
       }
       if (username.length < 3 || username.length > 30) {
@@ -324,7 +321,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
       if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username)) {
         AppSnackBar.showError(
           context,
-          message: 'Username can only contain letters, numbers, and underscores',
+          message:
+              'Username can only contain letters, numbers, and underscores',
         );
         return;
       }

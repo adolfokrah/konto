@@ -118,9 +118,7 @@ class MomoApiProvider extends BaseApiProvider {
 
   /// Initiate payout for a jar via Eganow
   /// Sends the jar's available balance to the creator's withdrawal account
-  Future<Map<String, dynamic>> requestPayout({
-    required String jarId,
-  }) async {
+  Future<Map<String, dynamic>> requestPayout({required String jarId}) async {
     try {
       final headers = await getAuthenticatedHeaders();
 

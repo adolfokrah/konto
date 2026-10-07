@@ -324,7 +324,7 @@ class _JarsListViewState extends State<JarsListView> {
           SetCurrentJarRequested(jarId: jar.id),
         );
         if (widget.asTab) {
-          context.go(AppRoutes.jarDetail);
+          context.push(AppRoutes.jarDetail);
         } else if (context.canPop()) {
           context.pop();
         }

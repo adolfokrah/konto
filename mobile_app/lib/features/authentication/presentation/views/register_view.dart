@@ -179,7 +179,7 @@ class _RegisterViewState extends State<RegisterView> {
           listener: (context, state) {
             if (state is AuthAuthenticated) {
               // Navigate to home on success
-              context.go(AppRoutes.jarDetail);
+              context.go(AppRoutes.home);
             }
 
             if (state is AuthError) {

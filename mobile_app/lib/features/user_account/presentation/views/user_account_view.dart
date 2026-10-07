@@ -112,19 +112,20 @@ class UserAccountView extends StatelessWidget {
     User user,
     AppLocalizations l10n,
   ) {
-    final payoutRow = BlocBuilder<WithdrawalAccountsBloc, WithdrawalAccountsState>(
-      builder: (context, waState) {
-        final loaded = waState.status == WithdrawalAccountsStatus.loaded;
-        return DsRow(
-          leading: const AccRowIcon(Icons.account_balance_wallet_outlined),
-          title: 'Payout accounts',
-          value: loaded ? '${waState.accounts.length}' : null,
-          chevron: true,
-          // Navigate to the withdrawal accounts manager (multi-account)
-          onTap: () => context.push(AppRoutes.withdrawalAccounts),
+    final payoutRow =
+        BlocBuilder<WithdrawalAccountsBloc, WithdrawalAccountsState>(
+          builder: (context, waState) {
+            final loaded = waState.status == WithdrawalAccountsStatus.loaded;
+            return DsRow(
+              leading: const AccRowIcon(Icons.account_balance_wallet_outlined),
+              title: 'Payout accounts',
+              value: loaded ? '${waState.accounts.length}' : null,
+              chevron: true,
+              // Navigate to the withdrawal accounts manager (multi-account)
+              onTap: () => context.push(AppRoutes.withdrawalAccounts),
+            );
+          },
         );
-      },
-    );
 
     final personalRow = DsRow(
       leading: const AccRowIcon(Icons.person_outline_rounded),

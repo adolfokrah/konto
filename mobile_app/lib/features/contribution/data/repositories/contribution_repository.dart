@@ -224,10 +224,7 @@ class ContributionRepository {
         contributor: contributor,
       );
       if (apiResponse['success'] == true) {
-        return {
-          'success': true,
-          'data': apiResponse['data'],
-        };
+        return {'success': true, 'data': apiResponse['data']};
       }
       return {
         'success': false,

@@ -372,8 +372,7 @@ class _ContributionDetail extends StatelessWidget {
                       localizations.contributor,
                       contribution.contributor ?? localizations.unknown,
                     ),
-                  if (contribution.charges != null &&
-                      contribution.charges! > 0)
+                  if (contribution.charges != null && contribution.charges! > 0)
                     DsKeyValue(
                       'Fee',
                       CurrencyUtils.formatAmount(
@@ -445,8 +444,7 @@ class _ContributionDetail extends StatelessWidget {
                   const SizedBox(height: 12),
                   const DsNote(
                     tone: DsTone.neutral,
-                    text:
-                        "Refunded payments don't count toward the jar total.",
+                    text: "Refunded payments don't count toward the jar total.",
                   ),
                 ],
               ],
@@ -585,7 +583,11 @@ class _ContributionDetail extends StatelessWidget {
     );
 
     return DsRow(
-      leading: const DsIconTile(Icons.undo_rounded, tone: DsTone.info, size: 32),
+      leading: const DsIconTile(
+        Icons.undo_rounded,
+        tone: DsTone.info,
+        size: 32,
+      ),
       title: 'Refund to $refundName',
       subtitle:
           refundDate != null

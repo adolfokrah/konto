@@ -62,7 +62,8 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
                 filterState.selectedDate != null
             ? FilterLabels.date(localizations, filterState.selectedDate!)
             : localizations.dateAll;
-    final count = listState is ContributionsListLoaded ? listState.totalDocs : 0;
+    final count =
+        listState is ContributionsListLoaded ? listState.totalDocs : 0;
 
     return CollectSheet(
       title: 'Export statement',
@@ -141,10 +142,7 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: DsText.section.copyWith(fontSize: 14),
-                ),
+                Text(title, style: DsText.section.copyWith(fontSize: 14)),
                 const SizedBox(height: 2),
                 Text(subtitle, style: DsText.caption),
               ],

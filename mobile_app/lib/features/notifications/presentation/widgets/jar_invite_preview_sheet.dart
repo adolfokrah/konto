@@ -59,8 +59,9 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
     }
 
     try {
-      final response =
-          await getIt<JarApiProvider>().getJarPreview(jarId: jarId);
+      final response = await getIt<JarApiProvider>().getJarPreview(
+        jarId: jarId,
+      );
 
       if (response['success'] == true && response['data'] != null) {
         final jar = response['data'];

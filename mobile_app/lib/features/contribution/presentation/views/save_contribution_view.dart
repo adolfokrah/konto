@@ -58,10 +58,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   final Map<String, String?> _customFieldSelectValues = {};
   final Map<String, bool> _customFieldCheckboxValues = {};
 
-  final List<String> _operators = [
-    'MTN Mobile Money',
-    'Telecel Cash',
-  ];
+  final List<String> _operators = ['MTN Mobile Money', 'Telecel Cash'];
 
   // Charges from backend (includes discount)
   ChargesModel? _charges;
@@ -83,10 +80,18 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     if (parsedAmount == null || parsedAmount <= 0 || jarId == null) return;
     // Cash has no processing fee — no need to fetch a breakdown.
     if (_selectedPaymentMethod == 'cash') {
-      if (mounted) setState(() { _charges = null; _chargesLoaded = true; });
+      if (mounted)
+        setState(() {
+          _charges = null;
+          _chargesLoaded = true;
+        });
       return;
     }
-    if (mounted) setState(() { _charges = null; _chargesLoaded = false; });
+    if (mounted)
+      setState(() {
+        _charges = null;
+        _chargesLoaded = false;
+      });
     try {
       final charges = await ChargesApiProvider(
         dio: getIt<Dio>(),
@@ -96,7 +101,11 @@ class _SaveContributionViewState extends State<SaveContributionView> {
         jarId: jarId!,
         paymentMethod: _selectedPaymentMethod,
       );
-      if (mounted) setState(() { _charges = charges; _chargesLoaded = true; });
+      if (mounted)
+        setState(() {
+          _charges = charges;
+          _chargesLoaded = true;
+        });
     } catch (_) {
       if (mounted) setState(() => _chargesLoaded = true);
     }
@@ -107,8 +116,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     super.didChangeDependencies();
 
     // Get arguments passed from add_contribution_view
-    final arguments =
-        GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final arguments = GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     if (arguments != null) {
       amount = arguments['amount'] as String?;
@@ -174,7 +182,6 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     super.dispose();
   }
 
-
   // ---------------------------------------------------------------- helpers
 
   bool get _isMomo => _selectedPaymentMethod == 'mobile-money';
@@ -191,9 +198,9 @@ class _SaveContributionViewState extends State<SaveContributionView> {
   String _money(double v) => CurrencyUtils.formatAmount(v, currency ?? '');
 
   String _operatorKey(AppLocalizations localizations) =>
-      PaymentMethodUtils.getMobileMoneyOperatorMap(localizations).entries
-          .firstWhere((entry) => entry.value == _selectedOperator)
-          .key;
+      PaymentMethodUtils.getMobileMoneyOperatorMap(
+        localizations,
+      ).entries.firstWhere((entry) => entry.value == _selectedOperator).key;
 
   String _shortOperatorName(String operator) {
     final net = DsNetworkLogo.fromProvider(operator);
@@ -279,8 +286,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                             ? _money(_contributionAmount)
                             : localizations.requestContribution),
                 showBack: !isLoading,
-                onBack:
-                    reviewing ? _backFromReview : () => context.pop(),
+                onBack: reviewing ? _backFromReview : () => context.pop(),
               ),
               bottomNavigationBar: CollectFooter(
                 children: [_buildPrimaryButton(context, state, localizations)],

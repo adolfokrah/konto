@@ -13,7 +13,12 @@ final class FetchContributionLoaded extends FetchContributionState {
   final List<Map<String, dynamic>> approvalDocs;
   final int requiredApprovals;
 
-  FetchContributionLoaded(this.contribution, {this.refundDocs = const [], this.approvalDocs = const [], this.requiredApprovals = 1});
+  FetchContributionLoaded(
+    this.contribution, {
+    this.refundDocs = const [],
+    this.approvalDocs = const [],
+    this.requiredApprovals = 1,
+  });
 }
 
 final class FetchContributionError extends FetchContributionState {

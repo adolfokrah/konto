@@ -9,10 +9,9 @@ part 'notifications_state.dart';
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   final NotificationsRepository _notificationsRepository;
 
-  NotificationsBloc({
-    required NotificationsRepository notificationsRepository,
-  }) : _notificationsRepository = notificationsRepository,
-       super(NotificationsInitial()) {
+  NotificationsBloc({required NotificationsRepository notificationsRepository})
+    : _notificationsRepository = notificationsRepository,
+      super(NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
     on<MarkjarInviteAsRead>(_markJarInviteAsRead);
     on<MarkAllNotificationsRead>(_markAllAsRead);
@@ -82,7 +81,6 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
             pagination: pagination,
           ),
         );
-
       } else {
         emit(
           NotificationsError(
@@ -100,10 +98,15 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     Emitter<NotificationsState> emit,
   ) async {
     try {
-      await _notificationsRepository.markNotificationAsRead(notificationId: event.notificationId);
+      await _notificationsRepository.markNotificationAsRead(
+        notificationId: event.notificationId,
+      );
       // After marking as read, refetch the latest notifications without flashing loading state.
       try {
-        final response = await _notificationsRepository.fetchUserNotifications(limit: 20, page: 1);
+        final response = await _notificationsRepository.fetchUserNotifications(
+          limit: 20,
+          page: 1,
+        );
         if (response['success'] == true) {
           final List<NotificationModel> notifications =
               (response['data'] as List<NotificationModel>);

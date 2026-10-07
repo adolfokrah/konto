@@ -60,9 +60,8 @@ class LanguageSettingsView extends StatelessWidget {
                               onTap:
                                   isUpdating || lang == selectedLanguage
                                       ? null
-                                      : () => context
-                                          .read<UserAccountBloc>()
-                                          .add(
+                                      : () =>
+                                          context.read<UserAccountBloc>().add(
                                             UpdatePersonalDetails(
                                               appLanguage: lang,
                                             ),

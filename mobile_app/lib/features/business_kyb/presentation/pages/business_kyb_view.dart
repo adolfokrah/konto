@@ -299,7 +299,9 @@ class _BusinessKybViewState extends State<BusinessKybView> {
       ),
       bottomNavigationBar: AuthFooter(
         background: AppColors.surfaceWhite,
-        children: [AppButton.filled(text: 'Done', onPressed: () => context.pop())],
+        children: [
+          AppButton.filled(text: 'Done', onPressed: () => context.pop()),
+        ],
       ),
     );
   }
@@ -514,7 +516,9 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                 Expanded(
                   child: Text(
                     'Director ${index + 1}',
-                    style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w700),
+                    style: DsText.rowTitle.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 complete

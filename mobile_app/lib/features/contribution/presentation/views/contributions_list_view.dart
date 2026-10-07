@@ -500,7 +500,11 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       net += c.isTransfer ? -c.amountContributed.abs() : c.amountContributed;
     }
     final netLabel =
-        '${net > 0 ? '+' : net < 0 ? '−' : ''}${DsMoney.group(net)}.${((net.abs() * 100).round() % 100).toString().padLeft(2, '0')}';
+        '${net > 0
+            ? '+'
+            : net < 0
+            ? '−'
+            : ''}${DsMoney.group(net)}.${((net.abs() * 100).round() % 100).toString().padLeft(2, '0')}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -581,7 +585,8 @@ class _ActivityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final c = contribution;
-    final isAnonymous = c.contributor == null && c.contributorPhoneNumber == null;
+    final isAnonymous =
+        c.contributor == null && c.contributorPhoneNumber == null;
     final name =
         isAnonymous
             ? (c.isCash ? 'Anonymous · cash' : 'Anonymous')

@@ -91,7 +91,8 @@ void main() {
             'isFixedContribution': false,
             'creator': {
               'id': 'test-user-123',
-              'firstName': 'Test', 'lastName': 'User',
+              'firstName': 'Test',
+              'lastName': 'User',
               'email': 'test@example.com',
               'phoneNumber': '+1234567890',
               'countryCode': 'US',
@@ -104,7 +105,8 @@ void main() {
             'collectors': [
               {
                 'id': 'collector-1',
-                'firstName': 'Test', 'lastName': 'Collector',
+                'firstName': 'Test',
+                'lastName': 'Collector',
                 'phoneNumber': '+1234567890',
                 'email': 'collector@test.com',
                 'countryCode': 'US',
@@ -135,7 +137,8 @@ void main() {
                 'paymentStatus': 'completed',
                 'collector': {
                   'id': 'test-user-123',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'phoneNumber': '+1234567890',
                   'email': 'test@example.com',
                   'countryCode': 'US',
@@ -222,7 +225,7 @@ void main() {
         BlocProvider.value(value: getIt<UpdateJarBloc>()),
         BlocProvider.value(value: getIt<MediaBloc>()),
         BlocProvider.value(value: getIt<NotificationsBloc>()),
-            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+        BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
       ],
@@ -239,7 +242,8 @@ void main() {
           routes: {
             '/jar_detail': (context) => const JarDetailView(),
             '/login': (context) => const Scaffold(body: Text('Login Screen')),
-            '/request_contribution': (context) => const RequestContributionView(),
+            '/request_contribution':
+                (context) => const RequestContributionView(),
             '/add_contribution':
                 (context) =>
                     const Scaffold(body: Text('Add Contribution Screen')),
@@ -251,8 +255,8 @@ void main() {
   }
 
   // The redesigned jar detail (Home dashboard) has no AppBar; its header row
-  // (avatar, greeting, notifications bell) is always shown.
-  Finder homeHeader() => find.byKey(const Key('notifications_button'));
+  // (back button) is always shown.
+  Finder homeHeader() => find.byKey(const Key('jar_back_button'));
 
   group('Jar Detail View Comprehensive Tests', () {
     testWidgets('should display loading state initially', (
@@ -391,7 +395,8 @@ void main() {
       final mockUser = User(
         id: 'test-user-123',
         email: 'test@example.com',
-        firstName: 'John', lastName: 'Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         username: 'johndoe',
         phoneNumber: '+1234567890',
         countryCode: 'US',
@@ -422,7 +427,7 @@ void main() {
           BlocProvider.value(value: getIt<UpdateJarBloc>()),
           BlocProvider.value(value: getIt<MediaBloc>()),
           BlocProvider.value(value: getIt<NotificationsBloc>()),
-            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+          BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           BlocProvider.value(value: getIt<UserAccountBloc>()),
           BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
         ],
@@ -454,18 +459,10 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Should display user's greeting - check for presence of user name
-      final greetingFound =
-          find.text('Hi John !').evaluate().isNotEmpty ||
-          find.textContaining('John').evaluate().isNotEmpty ||
-          find.textContaining('Hi').evaluate().isNotEmpty;
-      expect(
-        greetingFound,
-        isTrue,
-        reason: 'Expected to find user greeting or name',
-      );
+      // The greeting lives on Home now; the jar screen shows its header.
+      expect(homeHeader(), findsOneWidget);
 
-      print('✅ User authentication and greeting display working');
+      print('✅ User authentication and jar header display working');
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -480,7 +477,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Header action buttons: notifications bell and the QR (request) button
+      // Header action buttons: back, share (request) and settings
       final qrCodeButton = find.byKey(const Key('request_button_qr_code'));
       expect(qrCodeButton, findsOneWidget);
       await tester.tap(qrCodeButton);
@@ -574,7 +571,8 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'firstName': 'Test', 'lastName': 'User',
+                'firstName': 'Test',
+                'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',
@@ -764,7 +762,8 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'firstName': 'Test', 'lastName': 'User',
+                'firstName': 'Test',
+                'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',

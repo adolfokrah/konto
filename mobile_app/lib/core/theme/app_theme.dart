@@ -66,14 +66,16 @@ class AppTheme {
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? AppColors.lime
-              : AppColors.surfaceWhite,
+          (s) =>
+              s.contains(WidgetState.selected)
+                  ? AppColors.lime
+                  : AppColors.surfaceWhite,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? AppColors.navy
-              : const Color(0xFFDDD5CA),
+          (s) =>
+              s.contains(WidgetState.selected)
+                  ? AppColors.navy
+                  : const Color(0xFFDDD5CA),
         ),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),

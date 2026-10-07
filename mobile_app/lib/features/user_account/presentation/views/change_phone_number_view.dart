@@ -161,9 +161,7 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: AppButton(
                   onPressed:
-                      _isPhoneNumberChanged()
-                          ? _handleChangePhoneNumber
-                          : null,
+                      _isPhoneNumberChanged() ? _handleChangePhoneNumber : null,
                   text: localizations.changePhoneNumber,
                   isLoading: state is UserAccountLoading,
                 ),

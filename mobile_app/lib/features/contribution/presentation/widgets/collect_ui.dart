@@ -311,9 +311,7 @@ class CollectSegment<T> extends StatelessWidget {
                                     ? FontWeight.w600
                                     : FontWeight.w500,
                             color:
-                                o.$1 == value
-                                    ? AppColors.navy
-                                    : AppColors.ink2,
+                                o.$1 == value ? AppColors.navy : AppColors.ink2,
                           ),
                         ),
                       ),
@@ -360,8 +358,7 @@ class CollectTabs extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color:
-                            i == index ? AppColors.navy : Colors.transparent,
+                        color: i == index ? AppColors.navy : Colors.transparent,
                         width: 2,
                       ),
                     ),
@@ -504,7 +501,10 @@ class CollectCheck extends StatelessWidget {
       decoration: BoxDecoration(
         color: checked ? AppColors.navy : Colors.transparent,
         borderRadius: BorderRadius.circular(7),
-        border: checked ? null : Border.all(color: const Color(0xFFD0D4DB), width: 2),
+        border:
+            checked
+                ? null
+                : Border.all(color: const Color(0xFFD0D4DB), width: 2),
       ),
       child:
           checked
@@ -690,7 +690,10 @@ class CollectAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        _avatarColors[name.isEmpty ? 0 : name.codeUnits.fold<int>(0, (a, b) => a + b) % _avatarColors.length];
+        _avatarColors[name.isEmpty
+            ? 0
+            : name.codeUnits.fold<int>(0, (a, b) => a + b) %
+                _avatarColors.length];
     return ContributorAvatar(
       contributorName: name.isEmpty ? '?' : name,
       avatarUrl: (photoUrl != null && photoUrl!.isNotEmpty) ? photoUrl : null,

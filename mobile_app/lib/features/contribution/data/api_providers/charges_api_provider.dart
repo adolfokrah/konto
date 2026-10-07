@@ -5,10 +5,7 @@ import 'package:Hoga/features/contribution/data/models/charges_model.dart';
 /// Fetches the full charge breakdown (including discount) from the server.
 /// Endpoint: GET /api/transactions/get-charges?amount=xxx&jarId=xxx
 class ChargesApiProvider extends BaseApiProvider {
-  ChargesApiProvider({
-    required super.dio,
-    required super.userStorageService,
-  });
+  ChargesApiProvider({required super.dio, required super.userStorageService});
 
   /// Returns the charge breakdown for [amount] for the given [jarId].
   /// [paymentMethod] selects the fee schedule (mobile-money vs card) on the server.
