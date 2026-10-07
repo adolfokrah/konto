@@ -27,7 +27,6 @@ import {
   Percent,
   MessageSquare,
   BadgeCheck,
-  Bug,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -316,12 +315,6 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                   <Link href="/dashboard/settings" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     System Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/sentry-test" className="flex items-center gap-2">
-                    <Bug className="h-4 w-4" />
-                    Error Tracking Test
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
