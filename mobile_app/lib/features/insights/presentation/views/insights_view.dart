@@ -202,9 +202,9 @@ class _InsightsBodyState extends State<_InsightsBody> {
       ];
     }
     if (summary is JarSummaryInitial) {
-      context.watch<AuthBloc>();
-      if (JarActions.needsVerification(context)) {
-        return [const VerifyFirstCard()];
+      JarActions.watchSetup(context);
+      if (JarActions.needsSetup(context)) {
+        return [const JarSetupCard()];
       }
       return [
         DsEmptyState(

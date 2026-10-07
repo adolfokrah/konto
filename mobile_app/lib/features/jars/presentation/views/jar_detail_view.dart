@@ -338,8 +338,8 @@ class _JarDetailViewState extends State<JarDetailView> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child:
-              JarActions.needsVerification(context)
-                  ? const VerifyFirstCard()
+              JarActions.needsSetup(context)
+                  ? const JarSetupCard()
                   : DsCard(
                     child: DsEmptyState(
                       icon: Icons.savings_outlined,

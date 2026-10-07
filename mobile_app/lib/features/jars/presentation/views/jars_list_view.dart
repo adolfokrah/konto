@@ -195,12 +195,12 @@ class _JarsListViewState extends State<JarsListView> {
 
   Widget _buildEmpty(AppLocalizations localizations) {
     // New users verify first (same order as Home's get-started list).
-    context.watch<AuthBloc>();
-    if (JarActions.needsVerification(context)) {
+    JarActions.watchSetup(context);
+    if (JarActions.needsSetup(context)) {
       return const Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          child: VerifyFirstCard(),
+          child: JarSetupCard(),
         ),
       );
     }

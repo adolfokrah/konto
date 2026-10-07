@@ -383,8 +383,8 @@ class _HomeViewState extends State<HomeView> {
       ],
       if (collectorOnly) ...[
         const SizedBox(height: 14),
-        if (JarActions.needsVerification(context))
-          const VerifyFirstCard()
+        if (JarActions.needsSetup(context))
+          const JarSetupCard()
         else
           DsCard(
             child: DsEmptyState(
@@ -573,16 +573,16 @@ class _HomeViewState extends State<HomeView> {
                   ),
             ),
             _Step(
-              'Create your first jar',
-              subtitle: 'Takes two minutes',
-              done: false,
-              onStart: () => JarActions.createJar(context),
-            ),
-            _Step(
               'Add a payout account',
               subtitle: 'Where your money goes',
               done: hasPayout,
               onStart: () => context.push(AppRoutes.withdrawalAccounts),
+            ),
+            _Step(
+              'Create your first jar',
+              subtitle: 'Takes two minutes',
+              done: false,
+              onStart: () => JarActions.createJar(context),
             ),
           ];
           return _GetStartedCard(steps: steps);

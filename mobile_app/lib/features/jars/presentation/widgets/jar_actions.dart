@@ -144,6 +144,34 @@ class JarActions {
         : user.kycStatus == 'in_review';
   }
 
+  /// Whether the user has no payout account yet. Only true once the accounts
+  /// have loaded (Home preloads them), so an unknown state never blocks.
+  static bool needsPayoutAccount(BuildContext context) {
+    final WithdrawalAccountsState wa;
+    try {
+      wa = context.read<WithdrawalAccountsBloc>().state;
+    } catch (_) {
+      return false; // not provided (e.g. widget tests): don't block
+    }
+    return wa.status == WithdrawalAccountsStatus.loaded && wa.accounts.isEmpty;
+  }
+
+  /// Rebuild [context] when anything [needsSetup] reads changes.
+  static void watchSetup(BuildContext context) {
+    context.watch<AuthBloc>();
+    try {
+      context.watch<WithdrawalAccountsBloc>();
+    } catch (_) {}
+  }
+
+  /// Anything left before the user can create a jar: verify, then add a
+  /// payout account (Home's get-started order).
+  static bool needsSetup(BuildContext context) =>
+      needsVerification(context) || needsPayoutAccount(context);
+
+  static void openPayoutAccounts(BuildContext context) =>
+      context.push(AppRoutes.withdrawalAccounts);
+
   static void openVerification(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     final isOrg =
@@ -164,6 +192,16 @@ class JarActions {
         type: SnackBarType.info,
       );
       openVerification(context);
+      return;
+    }
+    if (needsPayoutAccount(context)) {
+      AppSnackBar.show(
+        context,
+        message:
+            'Add a payout account first, so the money you collect has somewhere to go.',
+        type: SnackBarType.info,
+      );
+      openPayoutAccounts(context);
       return;
     }
     context.push(AppRoutes.jarCreate);
@@ -231,14 +269,29 @@ class JarActions {
   }
 }
 
-/// Empty state used where a "Create jar" button would be, while the user
-/// still has to verify: points to verification instead.
-class VerifyFirstCard extends StatelessWidget {
-  const VerifyFirstCard({super.key});
+/// Empty state used where a "Create jar" button would be while setup isn't
+/// done: points to verification, then to adding a payout account.
+class JarSetupCard extends StatelessWidget {
+  const JarSetupCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
+    JarActions.watchSetup(context);
+    final authState = context.read<AuthBloc>().state;
+    if (!JarActions.needsVerification(context) &&
+        JarActions.needsPayoutAccount(context)) {
+      return DsCard(
+        child: DsEmptyState(
+          icon: Icons.account_balance_wallet_outlined,
+          tone: DsTone.lime,
+          title: 'Add a payout account',
+          message:
+              'Add the MoMo wallet or bank account your money goes to. Then you can create your first jar.',
+          actionLabel: 'Add payout account',
+          onAction: () => JarActions.openPayoutAccounts(context),
+        ),
+      );
+    }
     final isOrg =
         authState is AuthAuthenticated && authState.user.isOrganization;
     if (JarActions.verificationInReview(context)) {
