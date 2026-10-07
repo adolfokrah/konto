@@ -1,16 +1,14 @@
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 
+/// "Why are you leaving?" — reason list, then a red Close account button.
 class DeleteAccountReasonsBottomSheet extends StatefulWidget {
   const DeleteAccountReasonsBottomSheet({super.key});
 
@@ -19,7 +17,7 @@ class DeleteAccountReasonsBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      useSafeArea: false,
+      useSafeArea: true,
       isDismissible: true,
       enableDrag: true,
       builder: (context) => const DeleteAccountReasonsBottomSheet(),
@@ -54,6 +52,10 @@ class _DeleteAccountReasonsBottomSheetState
     super.dispose();
   }
 
+  bool get _canSubmit =>
+      selectedReason != null &&
+      (!isOtherSelected || _otherReasonController.text.trim().isNotEmpty);
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -64,123 +66,107 @@ class _DeleteAccountReasonsBottomSheetState
           AppSnackBar.showError(context, message: state.message);
         }
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.spacingM,
-            right: AppSpacing.spacingM,
-            bottom:
-                MediaQuery.of(context).viewInsets.bottom + AppSpacing.spacingM,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Fixed Header
-              Center(child: DragHandle()),
-              const SizedBox(height: AppSpacing.spacingM),
-              Text(
-                'Why are you deleting your account?',
-                style: TextStyles.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              Text(
-                'Please let us know why you\'re leaving. This helps us improve our service.',
-                style: TextStyles.titleRegularSm,
-              ),
-              const SizedBox(height: AppSpacing.spacingL),
-
-              // Scrollable Content Area
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Reasons list
-                      ...List.generate(_reasons.length, (index) {
-                        final reason = _reasons[index];
-                        return ListTile(
-                          leading: Icon(
-                            selectedReason == reason
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_unchecked,
-                          ),
-                          title: Text(reason, style: TextStyles.titleRegularM),
-                          onTap: () {
-                            setState(() {
-                              selectedReason = reason;
-                              if (!isOtherSelected) {
-                                _otherReasonController.clear();
-                              }
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        );
-                      }),
-
-                      // Other reason text field (show when "Other" is selected)
-                      if (isOtherSelected) ...[
-                        const SizedBox(height: AppSpacing.spacingM),
-                        AppTextInput(
-                          controller: _otherReasonController,
-                          hintText: 'Please specify your reason...',
-                          maxLines: 3,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-
-              // Fixed Bottom Buttons
-              const SizedBox(height: AppSpacing.spacingM),
-              Row(
+      child: AccSheet(
+        gap: 12,
+        children: [
+          AccSheetHeader(localizations.closeAccount),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 12,
                 children: [
-                  Expanded(
-                    child: AppButton.outlined(
-                      text: localizations.cancel,
-                      onPressed: () => Navigator.of(context).pop(),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Text('Why are you leaving?', style: AccText.h1),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.cream,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < _reasons.length; i++) ...[
+                          if (i > 0)
+                            const Divider(height: 1, color: AppColors.line),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedReason = _reasons[i];
+                                if (!isOtherSelected) {
+                                  _otherReasonController.clear();
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 15,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _reasons[i] == 'Other'
+                                          ? 'Something else'
+                                          : _reasons[i],
+                                      style: DsText.rowTitle.copyWith(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  AccRadio(selectedReason == _reasons[i]),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.spacingM),
-                  BlocBuilder<UserAccountBloc, UserAccountState>(
-                    builder: (context, state) {
-                      return Expanded(
-                        child: AppButton.filled(
-                          text: 'Delete Account',
-                          isLoading: state is UserAccountLoading,
-                          onPressed:
-                              selectedReason != null &&
-                                      (!isOtherSelected ||
-                                          _otherReasonController.text
-                                              .trim()
-                                              .isNotEmpty)
-                                  ? () {
-                                    context.read<UserAccountBloc>().add(
-                                      DeleteAccount(
-                                        reason:
-                                            isOtherSelected
-                                                ? _otherReasonController.text
-                                                    .trim()
-                                                : selectedReason!,
-                                      ),
-                                    );
-                                  }
-                                  : null,
-                        ),
-                      );
-                    },
+                  if (isOtherSelected)
+                    AccField(
+                      label: 'Tell us more',
+                      hint: 'Please specify your reason...',
+                      controller: _otherReasonController,
+                      maxLines: 3,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  DsNote(
+                    tone: DsTone.negative,
+                    icon: Icons.error_outline_rounded,
+                    text: localizations.closeAccountDescription,
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+          BlocBuilder<UserAccountBloc, UserAccountState>(
+            builder: (context, state) {
+              return AppButton.filled(
+                text: localizations.closeAccount,
+                backgroundColor: AppColors.negative,
+                textColor: AppColors.surfaceWhite,
+                isLoading: state is UserAccountLoading,
+                onPressed:
+                    _canSubmit
+                        ? () {
+                          context.read<UserAccountBloc>().add(
+                            DeleteAccount(
+                              reason:
+                                  isOtherSelected
+                                      ? _otherReasonController.text.trim()
+                                      : selectedReason!,
+                            ),
+                          );
+                        }
+                        : null,
+              );
+            },
+          ),
+        ],
       ),
     );
   }

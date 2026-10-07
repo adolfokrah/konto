@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:Hoga/core/services/rating_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/features/contribution/data/models/momo_charge_model.dart';
 import 'package:Hoga/features/contribution/logic/bloc/momo_payment_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
@@ -27,6 +27,8 @@ class AwaitMomoPaymentView extends StatefulWidget {
 class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
   late final TextEditingController _otpController;
   Timer? _verificationTimer;
+
+  bool get _isMtn => widget.provider == 'mtn';
 
   @override
   void initState() {
@@ -70,7 +72,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     _verificationTimer = null;
   }
 
-  _submitVoucher(String reference) {
+  void _submitVoucher(String reference) {
     final voucherCode = _otpController.text.trim();
     if (voucherCode.isNotEmpty) {
       context.read<MomoPaymentBloc>().add(
@@ -85,139 +87,230 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     }
   }
 
+  void _listener(BuildContext context, MomoPaymentState state) {
+    if (state is MomoPaymentSuccess) {
+      final charge = state.charge;
+      final localizations = AppLocalizations.of(context)!;
+
+      if (charge.status == 'success') {
+        if (_verificationTimer == null) {
+          context.read<MomoPaymentBloc>().add(
+            VerifyPaymentRequested(charge.reference!),
+          );
+        } else {
+          _stopPaymentVerification(); // Stop verification timer
+        }
+        context.read<JarSummaryReloadBloc>().add(ReloadJarSummaryRequested());
+        RatingService.instance.maybeRequestReview();
+        context.go(AppRoutes.jarDetail);
+      } else if (charge.status == 'pay_offline') {
+        // Start periodic verification for offline payment (only once)
+        if (_verificationTimer == null && charge.reference != null) {
+          _startPaymentVerification(charge.reference!);
+          AppSnackBar.show(
+            context,
+            message: localizations.momoWaitingAuthorization,
+          );
+        }
+      } else if (charge.status == 'send_otp') {
+        AppSnackBar.show(
+          context,
+          message: localizations.momoWaitingAuthorization,
+        );
+      } else if (charge.status == 'failed') {
+        _stopPaymentVerification(); // Stop verification timer
+        AppSnackBar.show(
+          context,
+          message: localizations.momoPaymentFailedTryAgain,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(leading: Container()),
-      body: BlocListener<MomoPaymentBloc, MomoPaymentState>(
-        listener: (context, state) {
-          if (state is MomoPaymentSuccess) {
-            final charge = state.charge;
-            final localizations = AppLocalizations.of(context)!;
-
-            if (charge.status == 'success') {
-              if (_verificationTimer == null) {
-                context.read<MomoPaymentBloc>().add(
-                  VerifyPaymentRequested(charge.reference!),
-                );
-              } else {
-                _stopPaymentVerification(); // Stop verification timer
-              }
-              context.read<JarSummaryReloadBloc>().add(
-                ReloadJarSummaryRequested(),
-              );
-              RatingService.instance.maybeRequestReview();
-              context.go(AppRoutes.jarDetail);
-            } else if (charge.status == 'pay_offline') {
-              // Start periodic verification for offline payment (only once)
-              if (_verificationTimer == null && charge.reference != null) {
-                _startPaymentVerification(charge.reference!);
-                AppSnackBar.show(
-                  context,
-                  message: localizations.momoWaitingAuthorization,
-                );
-              }
-            } else if (charge.status == 'send_otp') {
-              AppSnackBar.show(
-                context,
-                message: localizations.momoWaitingAuthorization,
-              );
-            } else if (charge.status == 'failed') {
-              _stopPaymentVerification(); // Stop verification timer
-              AppSnackBar.show(
-                context,
-                message: localizations.momoPaymentFailedTryAgain,
-              );
-            }
-          }
-        },
-        child: BlocBuilder<MomoPaymentBloc, MomoPaymentState>(
-          builder: (context, state) {
-            final localizations = AppLocalizations.of(context)!;
-
-            if (state is MomoPaymentLoading) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              );
-            } else if (state is MomoPaymentSuccess) {
-              return builderContent(context, state);
-            }
-
-            return Center(child: Text(localizations.momoPaymentFailed));
-          },
-        ),
-      ),
+    return BlocConsumer<MomoPaymentBloc, MomoPaymentState>(
+      listener: _listener,
+      builder: (context, state) {
+        final isVoucher =
+            state is MomoPaymentSuccess && state.charge.status == 'send_otp';
+        return Scaffold(
+          backgroundColor:
+              isVoucher ? AppColors.cream : AppColors.surfaceWhite,
+          appBar: CollectTopBar(
+            showBack: false,
+            background: isVoucher ? AppColors.cream : AppColors.surfaceWhite,
+            title: isVoucher ? 'Voucher code' : null,
+          ),
+          body: SafeArea(top: false, child: _buildBody(context, state)),
+          bottomNavigationBar: _buildFooter(context, state),
+        );
+      },
     );
   }
 
-  Widget _buildApprovalInstructions(bool isDark) {
-    final localizations = AppLocalizations.of(context)!;
-    final isMtn = widget.provider == 'mtn';
+  Widget _buildBody(BuildContext context, MomoPaymentState state) {
+    if (state is MomoPaymentLoading) {
+      return _waiting(context, null, current: 0);
+    }
+    if (state is MomoPaymentSuccess) {
+      final charge = state.charge;
+      switch (charge.status) {
+        case 'success':
+          return _received(context);
+        case 'pay_offline':
+        case 'ongoing':
+          return _waiting(context, charge, current: 1);
+        case 'send_otp':
+          return _voucher(context, charge);
+        case 'failed':
+        default:
+          return _failed(context);
+      }
+    }
+    return _failed(context);
+  }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
-      decoration: BoxDecoration(
-        color:
-            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color:
-              isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.grey.shade200,
+  Widget? _buildFooter(BuildContext context, MomoPaymentState state) {
+    final localizations = AppLocalizations.of(context)!;
+    if (state is MomoPaymentSuccess) {
+      switch (state.charge.status) {
+        case 'success':
+          return CollectFooter(
+            children: [
+              AppButton.filled(
+                text: localizations.done,
+                onPressed: () => context.go(AppRoutes.jarDetail),
+              ),
+            ],
+          );
+        case 'pay_offline':
+        case 'ongoing':
+          return null;
+        case 'send_otp':
+          return CollectFooter(
+            children: [
+              AppButton.filled(
+                text: localizations.momoSubmitVoucher,
+                onPressed: () => _submitVoucher(state.charge.reference!),
+              ),
+            ],
+          );
+      }
+    } else if (state is MomoPaymentLoading) {
+      return null;
+    }
+    // Failed (or the request could not be made)
+    return CollectFooter(
+      children: [
+        AppButton.filled(
+          text: localizations.tryAgain,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.jarDetail);
+            }
+          },
         ),
-      ),
+        CollectButton(
+          label: 'Back to jar',
+          style: CollectButtonStyle.ghost,
+          onTap: () => context.go(AppRoutes.jarDetail),
+        ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------- states
+
+  Widget _waiting(
+    BuildContext context,
+    MomoChargeModel? charge, {
+    required int current,
+  }) {
+    final localizations = AppLocalizations.of(context)!;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      children: [
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: DsIconTile(
+            Icons.hourglass_top_rounded,
+            tone: DsTone.pending,
+            size: 72,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(localizations.momoCompleteAuthorization, style: DsText.title),
+        const SizedBox(height: 6),
+        Text(
+          charge?.displayText ?? localizations.momoDontClosePage,
+          style: DsText.body,
+        ),
+        if (charge?.displayText != null) ...[
+          const SizedBox(height: 4),
+          Text(localizations.momoDontClosePage, style: DsText.small),
+        ],
+        const SizedBox(height: 24),
+        DsSteps(
+          current: current,
+          steps: [
+            ('Request sent', null),
+            (
+              'Approve on phone',
+              _isMtn
+                  ? 'No prompt? Dial *170# → My Approvals'
+                  : 'No prompt? Dial *110# → Approvals',
+            ),
+            ('Added to jar', null),
+          ],
+        ),
+        const SizedBox(height: 24),
+        if (current > 0) _buildApprovalInstructions(),
+      ],
+    );
+  }
+
+  Widget _buildApprovalInstructions() {
+    final localizations = AppLocalizations.of(context)!;
+    return DsCard(
+      color: AppColors.fill,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             localizations.momoContributorNoPrompt,
-            style: AppTextStyles.titleMediumS.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: AppSpacing.spacingS),
-          Text(
-            localizations.momoAskContributorAuthorize,
-            style: AppTextStyles.titleMediumS.copyWith(
-              color: isDark ? Colors.white70 : Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
+          const SizedBox(height: 4),
+          Text(localizations.momoAskContributorAuthorize, style: DsText.small),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.only(top: 6, right: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white54 : Colors.grey.shade500,
-                  shape: BoxShape.circle,
-                ),
+              DsNetworkLogo(
+                _isMtn ? DsNetwork.mtn : DsNetwork.telecel,
+                size: 32,
               ),
+              const SizedBox(width: 12),
               Expanded(
-                child: RichText(
-                  text: TextSpan(
+                child: Text.rich(
+                  TextSpan(
                     children: [
                       TextSpan(
-                        text: isMtn ? 'MTN MoMo: ' : 'Telecel Cash: ',
-                        style: AppTextStyles.titleMediumS.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
+                        text: _isMtn ? 'MTN MoMo: ' : 'Telecel Cash: ',
+                        style: DsText.small.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.navy,
                         ),
                       ),
                       TextSpan(
                         text:
-                            isMtn
-                                ? 'Dial *170# \u2192 My Wallet \u2192 My Approvals \u2192 Select the pending request \u2192 Enter PIN'
-                                : 'Dial *110# \u2192 Telecel Cash \u2192 Approvals \u2192 Select the request \u2192 Enter PIN',
-                        style: AppTextStyles.titleMediumS.copyWith(
-                          color: isDark ? Colors.white70 : Colors.grey.shade600,
-                        ),
+                            _isMtn
+                                ? 'Dial *170# → My Wallet → My Approvals → Select the pending request → Enter PIN'
+                                : 'Dial *110# → Telecel Cash → Approvals → Select the request → Enter PIN',
+                        style: DsText.small,
                       ),
                     ],
                   ),
@@ -230,86 +323,112 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
     );
   }
 
-  builderContent(BuildContext context, MomoPaymentState state) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _voucher(BuildContext context, MomoChargeModel charge) {
     final localizations = AppLocalizations.of(context)!;
-
-    if (state is MomoPaymentSuccess) {
-      final charge = state.charge;
-
-      switch (charge.status) {
-        case 'success':
-          return Center(child: Text(localizations.momoPaymentSuccessful));
-
-        case 'pay_offline':
-        case 'ongoing':
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingL,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      children: [
+        Text(
+          charge.displayText ?? localizations.momoCompleteAuthorization,
+          style: DsText.body,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.navy, width: 2),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: TextField(
+            controller: _otpController,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            cursorColor: AppColors.navy,
+            style: const TextStyle(
+              fontFamily: 'Chillax',
+              fontWeight: FontWeight.w600,
+              fontSize: 28,
+              letterSpacing: 6,
+              color: AppColors.navy,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 60),
-                AppCard(
-                  child: CircularProgressIndicator(
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-                Text(
-                  charge.displayText ?? localizations.momoCompleteAuthorization,
-                  style: AppTextStyles.titleMediumLg,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-                Text(
-                  localizations.momoDontClosePage,
-                  style: AppTextStyles.titleMediumS,
-                ),
-                const SizedBox(height: AppSpacing.spacingL),
-                _buildApprovalInstructions(isDark),
-              ],
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              filled: false,
+              hintText: localizations.momoEnterVoucherCode,
+              hintStyle: DsText.body.copyWith(
+                color: AppColors.faint,
+                letterSpacing: 0,
+              ),
             ),
-          );
+            onSubmitted: (_) => _submitVoucher(charge.reference!),
+          ),
+        ),
+      ],
+    );
+  }
 
-        case 'send_otp':
-          return Padding(
-            padding: const EdgeInsets.all(AppSpacing.spacingM),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  charge.displayText ?? localizations.momoCompleteAuthorization,
-                  style: AppTextStyles.titleMediumS,
-                ),
-                const SizedBox(height: AppSpacing.spacingXs),
-                AppTextInput(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  label: localizations.momoEnterVoucherCode,
-                ),
-                const SizedBox(height: AppSpacing.spacingXs),
-                AppButton(
-                  onPressed: () {
-                    _submitVoucher(charge.reference!);
-                  },
-                  text: localizations.momoSubmitVoucher,
-                ),
-              ],
+  Widget _received(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DsIconTile(
+              Icons.check_rounded,
+              tone: DsTone.positive,
+              size: 72,
             ),
-          );
+            const SizedBox(height: 14),
+            Text(
+              'Payment received',
+              style: DsText.title,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'It has been added to the jar.',
+              style: DsText.body,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-        case 'failed':
-        default:
-          return Center(
-            child: Text(
-              localizations.momoPaymentFailed,
-              style: AppTextStyles.titleMedium,
+  Widget _failed(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DsIconTile(
+              Icons.close_rounded,
+              tone: DsTone.negative,
+              size: 72,
             ),
-          );
-      }
-    }
-    return Container();
+            const SizedBox(height: 14),
+            Text(
+              "Payment didn't go through",
+              style: DsText.title,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              localizations.momoPaymentFailedTryAgain,
+              style: DsText.body,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

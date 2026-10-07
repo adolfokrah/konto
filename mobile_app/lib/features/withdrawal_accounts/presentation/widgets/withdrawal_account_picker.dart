@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/generic_picker.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/payout_account_widgets.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
@@ -30,9 +34,9 @@ String withdrawalAccountLabel(WithdrawalAccountModel account) {
 
 /// A shared bottom-sheet picker for selecting a payout (withdrawal) account.
 ///
-/// Built on the app design-system [GenericPicker] (same search + section layout
-/// used by SelectInput / currency & jar-group pickers). Accounts are loaded via
-/// the app-root [WithdrawalAccountsBloc] before the sheet opens.
+/// A "Send to" sheet listing saved accounts with network logos and radios,
+/// plus an "Add account" shortcut. Accounts are loaded via the app-root
+/// [WithdrawalAccountsBloc] before the sheet opens.
 ///
 /// The picker uses a callback ([onSelected]) rather than an awaitable result so
 /// there is no future to hang when the sheet is dismissed without a selection —
@@ -87,94 +91,85 @@ class WithdrawalAccountPicker {
       return;
     }
 
-    GenericPicker.showPickerDialog<WithdrawalAccountModel>(
-      context,
-      selectedValue: currentId ?? '',
-      items: accounts,
-      onItemSelected: (account) => onSelected(account.id),
-      searchFilter: (a) => '${withdrawalAccountLabel(a)} ${a.accountNumber}',
-      isItemSelected: (a, sel) => a.id == sel,
-      itemBuilder: _buildRow,
-      recentItemBuilder: _buildRow,
-      searchResultBuilder: _buildRow,
-      title: 'Select payout account',
-      searchHint: 'Search payout accounts',
-      recentSectionTitle: 'Current account',
-      otherSectionTitle: 'Your accounts',
-      searchResultsTitle: 'Results',
-      noResultsMessage: 'No payout accounts found',
-      showSearch: true,
+    final banks = state.banks;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (sheetContext) => AccSheet(
+            children: [
+              const AccSheetHeader('Send to'),
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.cream,
+                    borderRadius: BorderRadius.circular(AppRadius.radiusCard),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < accounts.length; i++) ...[
+                          if (i > 0)
+                            const Divider(height: 1, color: AppColors.line),
+                          _buildRow(
+                            accounts[i],
+                            accounts[i].id == currentId,
+                            banks,
+                            () {
+                              Navigator.of(sheetContext).pop();
+                              onSelected(accounts[i].id);
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              AppButton(
+                text: 'Add account',
+                icon: const Icon(Icons.add_rounded, color: AppColors.navy),
+                backgroundColor: AppColors.fill,
+                textColor: AppColors.navy,
+                onPressed: () async {
+                  Navigator.of(sheetContext).pop();
+                  await context.push(AppRoutes.withdrawalAccounts);
+                  if (context.mounted) {
+                    context.read<WithdrawalAccountsBloc>().add(
+                      LoadWithdrawalAccounts(),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
     );
   }
 
   static Widget _buildRow(
     WithdrawalAccountModel account,
     bool isSelected,
+    List<BankModel> banks,
     VoidCallback onTap,
   ) {
-    return Builder(
-      builder: (context) {
-        return ListTile(
-          onTap: onTap,
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(
-            account.isMobileMoney
-                ? Icons.phone_android
-                : Icons.account_balance,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          title: Row(
-            children: [
-              Flexible(
-                child: Text(
-                  account.label?.isNotEmpty == true
-                      ? account.label!
-                      : withdrawalAccountLabel(account),
-                  style: TextStyles.titleMediumS.copyWith(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (account.isDefault) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Default',
-                    style: TextStyles.titleRegularSm.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          subtitle: Text(
-            '${withdrawalAccountLabel(account)}  •  ${account.maskedAccountNumber}',
-            style: TextStyles.titleRegularSm.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          trailing: isSelected
-              ? Icon(
-                  Icons.check_circle,
-                  color: Theme.of(context).colorScheme.primary,
-                )
-              : null,
-        );
-      },
+    return DsRow(
+      onTap: onTap,
+      leading: PayoutAccountLogo(account: account),
+      title: payoutAccountTitle(account),
+      subtitle: payoutAccountSubtitle(account, banks),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (account.isDefault) ...[
+            const DsTag('Default', tone: DsTone.dark),
+            const SizedBox(width: 8),
+          ],
+          AccRadio(isSelected),
+        ],
+      ),
     );
   }
 }

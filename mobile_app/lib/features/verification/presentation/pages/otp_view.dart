@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/core/widgets/otp_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -63,6 +64,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   int _resendCountdown = 30;
   bool _canResend = false;
   bool _confirming = false;
+  String? _error;
 
   @override
   void initState() {
@@ -169,13 +171,36 @@ class _OtpViewContentState extends State<_OtpViewContent> {
     );
   }
 
+  /// "Sent to +233 24 123 4567 · Change". Without a phone number (some
+  /// verification-only flows) it falls back to the generic line.
+  Widget _sentTo() {
+    final phone = widget.phoneNumber ?? '';
+    if (phone.isEmpty) {
+      return const Text(
+        'We sent a 6 digit code to your email and phone number',
+        style: DsText.body,
+      );
+    }
+    final code = widget.countryCode ?? '';
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text('Sent to $code $phone', style: DsText.body),
+        if (widget.isRegistering != null && context.canPop()) ...[
+          const Text(' · ', style: DsText.body),
+          DsLink('Change', onTap: () => context.pop()),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: AppColors.cream,
+      appBar: const AuthTopBar(),
       body: MultiBlocListener(
         listeners: [
           BlocListener<VerificationBloc, VerificationState>(
@@ -214,7 +239,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                   }
                 }
               } else if (state is VerificationFailure) {
-                AppSnackBar.showError(context, message: state.errorMessage);
+                setState(() => _error = state.errorMessage);
               }
             },
           ),
@@ -229,76 +254,89 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           ),
         ],
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.spacingS),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: AppSpacing.spacingL),
-
-                // Title
-                Text(localizations.enterOtp, style: AppTextStyles.headingOne),
-
-                const SizedBox(height: AppSpacing.spacingM),
-
-                // Subtitle with contact info
-                Text(
-                  'We sent a 6 digit code to your email and phone number',
-                  style: AppTextStyles.titleRegularM.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                AuthHeader(
+                  title: localizations.enterOtp,
+                  subtitleWidget: _sentTo(),
                 ),
-
-                const SizedBox(height: AppSpacing.spacingL),
+                const SizedBox(height: 24),
 
                 // OTP Input
-                BlocBuilder<VerificationBloc, VerificationState>(
-                  builder: (context, state) {
-                    return AppOtpInput(
-                      length: 6,
-                      hasError: false,
-                      enabled: !_confirming,
-                      onCompleted: _handleOtpCompleted,
-                    );
+                AppOtpInput(
+                  length: 6,
+                  hasError: _error != null,
+                  enabled: !_confirming,
+                  onChanged: (_) {
+                    if (_error != null) setState(() => _error = null);
                   },
+                  onCompleted: _handleOtpCompleted,
                 ),
 
-                const SizedBox(height: AppSpacing.spacingL),
+                if (_error != null) ...[
+                  const SizedBox(height: 14),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          size: 16,
+                          color: AppColors.negative,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: DsText.small.copyWith(
+                            color: AppColors.negative,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                const SizedBox(height: 20),
 
                 // Resend code section
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      localizations.didntReceiveCode,
-                      style: AppTextStyles.titleRegularM.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _canResend ? _handleResend : null,
+                    Expanded(
                       child: Text(
-                        _canResend
-                            ? localizations.resend
-                            : localizations.resendIn(_resendCountdown),
-                        style: AppTextStyles.titleMediumM.copyWith(
-                          color:
-                              _canResend
-                                  ? Theme.of(context).colorScheme.onSurface
-                                  : Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.5),
-                          fontWeight: FontWeight.w600,
-                          decoration:
-                              _canResend ? TextDecoration.underline : null,
-                        ),
+                        localizations.didntReceiveCode.trim(),
+                        style: DsText.small,
                       ),
                     ),
+                    if (_canResend)
+                      DsLink(localizations.resend, onTap: _handleResend)
+                    else
+                      Text(
+                        localizations.resendIn(_resendCountdown),
+                        style: DsText.small.copyWith(color: AppColors.muted),
+                      ),
                   ],
                 ),
+
+                if (_confirming) ...[
+                  const SizedBox(height: 24),
+                  const Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppColors.navy,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

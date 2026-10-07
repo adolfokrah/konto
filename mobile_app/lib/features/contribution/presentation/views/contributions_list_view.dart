@@ -3,26 +3,23 @@ import 'dart:async';
 import 'package:Hoga/features/contribution/presentation/widgets/export_to_pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/filter_options.dart';
 import 'package:Hoga/core/utils/date_utils.dart';
-import 'package:Hoga/core/widgets/card.dart';
-import 'package:Hoga/core/widgets/contribution_list_item.dart';
-import 'package:Hoga/core/widgets/icon_button.dart';
-import 'package:Hoga/core/widgets/searh_input.dart';
-import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/core/utils/payment_status_utils.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/data/models/contribution_model.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/contribtions_list_filter.dart';
-import 'package:Hoga/features/jars/data/models/jar_summary_model.dart'
-    hide ContributionModel;
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
-/// A stateless widget that displays a scrollable list of contributions
-/// grouped by date sections with scroll-to-load pagination
+/// Activity tab: a statement for the current jar, searchable and filterable,
+/// grouped by day, with scroll-to-load pagination.
 class ContributionsListView extends StatefulWidget {
   const ContributionsListView({super.key});
 
@@ -32,6 +29,7 @@ class ContributionsListView extends StatefulWidget {
 
 class _ContributionsListViewState extends State<ContributionsListView> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   // Pagination state
   bool _isLoadingMore = false;
@@ -59,6 +57,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     _debounceTimer?.cancel();
     super.dispose();
   }
@@ -152,6 +151,24 @@ class _ContributionsListViewState extends State<ContributionsListView> {
     }
   }
 
+  /// "No results" action: drop the search and every filter.
+  void _clearSearchAndFilters() {
+    _debounceTimer?.cancel();
+    _searchController.clear();
+    _currentSearchQuery = '';
+    setState(() {
+      _currentPage = 1;
+      _isLoadingMore = false;
+    });
+    final filterState = context.read<FilterContributionsBloc>().state;
+    if (filterState is FilterContributionsLoaded && filterState.hasFilters) {
+      // The filter listener refetches with the (now empty) search.
+      context.read<FilterContributionsBloc>().add(ClearAllFilters());
+    } else {
+      _fetchContributions(page: 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -164,63 +181,200 @@ class _ContributionsListViewState extends State<ContributionsListView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Transactions'),
-          centerTitle: false,
-          elevation: 0,
-        ),
-        body: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Search Bar that slides away on scroll
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              elevation: 0,
-              floating: true,
-              snap: false,
-              pinned: false,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              flexibleSpace: _buildSearchBar(localizations),
-              expandedHeight: 90,
-              toolbarHeight: 90,
+        backgroundColor: AppColors.cream,
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            color: AppColors.navy,
+            onRefresh: () async {
+              setState(() {
+                _currentPage = 1;
+                _isLoadingMore = false;
+              });
+              _fetchContributions(page: 1, contributor: _currentSearchQuery);
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader(localizations)),
+                _buildSliverContributionsList(localizations),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
             ),
-
-            // Contributions List
-            _buildSliverContributionsList(localizations),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar(AppLocalizations localizations) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
-      child: Row(
+  Widget _buildHeader(AppLocalizations localizations) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 16, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Search Field
-          Expanded(
-            child: SearchInput(
-              hintText: localizations.searchContributions,
-              onChanged: _onSearchChanged,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Activity',
+                  style: DsText.display.copyWith(fontSize: 31),
+                ),
+              ),
+              const ExportToPdf(),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CollectSearchField(
+                    controller: _searchController,
+                    hint: localizations.searchContributions,
+                    onChanged: _onSearchChanged,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BlocBuilder<FilterContributionsBloc, FilterContributionsState>(
+                  builder: (context, state) {
+                    final active =
+                        state is FilterContributionsLoaded && state.hasFilters;
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: CollectBoxButton(
+                            icon: Icons.tune_rounded,
+                            onTap: () {
+                              ContributionsListFilter.show(
+                                context,
+                                contributor: _currentSearchQuery,
+                              );
+                            },
+                          ),
+                        ),
+                        if (active)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppColors.navy,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.lime,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 13),
-          const ExportToPdf(),
-          const SizedBox(width: 13),
-          // Filter Button
-          AppIconButton(
-            onPressed: () {
-              ContributionsListFilter.show(
-                context,
-                contributor: _currentSearchQuery,
-              );
-            },
-            icon: Icons.tune,
-            size: const Size(50, 50),
-          ),
+          _buildActiveFilterChips(localizations),
         ],
       ),
+    );
+  }
+
+  /// Lime chips for each active filter; tapping one removes it.
+  Widget _buildActiveFilterChips(AppLocalizations localizations) {
+    return BlocBuilder<FilterContributionsBloc, FilterContributionsState>(
+      builder: (context, state) {
+        if (state is! FilterContributionsLoaded || !state.hasFilters) {
+          return const SizedBox.shrink();
+        }
+        final methods = state.selectedPaymentMethods ?? const <String>[];
+        final statuses = state.selectedStatuses ?? const <String>[];
+        final types = state.selectedTransactionTypes ?? const <String>[];
+        final collectors = state.selectedCollectors ?? const <String>[];
+        final date = state.selectedDate;
+        final hasDate = date != null && date != FilterOptions.defaultDateOption;
+
+        void apply({
+          List<String>? m,
+          List<String>? s,
+          List<String>? t,
+          List<String>? c,
+          bool clearDate = false,
+        }) {
+          context.read<FilterContributionsBloc>().add(
+            ApplyFilters(
+              paymentMethods: m ?? methods,
+              statuses: s ?? statuses,
+              collectors: c ?? collectors,
+              transactionTypes: t ?? types,
+              selectedDate: clearDate ? null : date,
+              startDate: clearDate ? null : state.startDate,
+              endDate: clearDate ? null : state.endDate,
+            ),
+          );
+        }
+
+        // Collector ids to names, from the loaded jar.
+        final jarState = context.read<JarSummaryBloc>().state;
+        String collectorName(String id) {
+          if (jarState is JarSummaryLoaded) {
+            for (final ic in jarState.jarData.invitedCollectors ?? []) {
+              if (ic.collector.id == id) return ic.collector.fullName;
+            }
+          }
+          return localizations.collector;
+        }
+
+        final chips = <Widget>[
+          if (hasDate)
+            CollectChip(
+              label: FilterLabels.date(localizations, date),
+              soft: true,
+              trailingIcon: Icons.close_rounded,
+              onTap: () => apply(clearDate: true),
+            ),
+          for (final v in types)
+            CollectChip(
+              label: FilterLabels.transactionType(localizations, v),
+              soft: true,
+              trailingIcon: Icons.close_rounded,
+              onTap: () => apply(t: [...types]..remove(v)),
+            ),
+          for (final v in statuses)
+            CollectChip(
+              label: FilterLabels.status(localizations, v),
+              soft: true,
+              trailingIcon: Icons.close_rounded,
+              onTap: () => apply(s: [...statuses]..remove(v)),
+            ),
+          for (final v in methods)
+            CollectChip(
+              label: FilterLabels.paymentMethod(localizations, v),
+              soft: true,
+              trailingIcon: Icons.close_rounded,
+              onTap: () => apply(m: [...methods]..remove(v)),
+            ),
+          for (final v in collectors)
+            CollectChip(
+              label: collectorName(v),
+              soft: true,
+              trailingIcon: Icons.close_rounded,
+              onTap: () => apply(c: [...collectors]..remove(v)),
+            ),
+        ];
+        return Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Wrap(spacing: 6, runSpacing: 6, children: chips),
+        );
+      },
     );
   }
 
@@ -235,31 +389,25 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       },
       builder: (context, state) {
         if (state is ContributionsListLoading && _currentPage == 1) {
-          return SliverFillRemaining(
+          return const SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              child: CircularProgressIndicator(color: AppColors.navy),
             ),
           );
         }
 
         if (state is ContributionsListError) {
           return SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  AppSmallButton(
-                    onPressed: () => _fetchContributions(),
-                    child: Text(
-                      localizations.retry,
-                      style: AppTextStyles.titleRegularM,
-                    ),
-                  ),
-                ],
+              child: DsEmptyState(
+                icon: Icons.wifi_off_rounded,
+                tone: DsTone.negative,
+                title: localizations.failedToFetchContribution,
+                message: state.message,
+                actionLabel: localizations.retry,
+                onAction: () => _fetchContributions(),
               ),
             ),
           );
@@ -267,12 +415,32 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
         if (state is ContributionsListLoaded) {
           if (state.contributions.isEmpty) {
+            final filterState = context.read<FilterContributionsBloc>().state;
+            final filtered =
+                _currentSearchQuery.isNotEmpty ||
+                (filterState is FilterContributionsLoaded &&
+                    filterState.hasFilters);
             return SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  localizations.noContributionsFound,
-                  style: AppTextStyles.titleRegularM,
-                ),
+              hasScrollBody: false,
+              child: Align(
+                alignment: const Alignment(0, -0.4),
+                child:
+                    filtered
+                        ? DsEmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: 'No payments match',
+                          message:
+                              'Try another name or number, or clear filters.',
+                          actionLabel: 'Clear filters',
+                          onAction: _clearSearchAndFilters,
+                        )
+                        : DsEmptyState(
+                          icon: Icons.receipt_long_outlined,
+                          tone: DsTone.lime,
+                          title: localizations.noContributionsFound,
+                          message:
+                              'Every payment in or out of this jar will be listed here, with receipts and exports.',
+                        ),
               ),
             );
           }
@@ -299,23 +467,22 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       delegate: SliverChildBuilderDelegate((context, index) {
         if (index == groupedContributions.length) {
           // Loading indicator for pagination
-          return Padding(
-            padding: EdgeInsets.all(AppSpacing.spacingM),
+          return const Padding(
+            padding: EdgeInsets.all(16),
             child: Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              child: CircularProgressIndicator(color: AppColors.navy),
             ),
           );
         }
 
         final group = groupedContributions[index];
+        // A day's total is only shown once every payment of that day is
+        // loaded (the last group may continue on the next page).
+        final complete =
+            index < groupedContributions.length - 1 || !state.hasNextPage;
         return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.spacingM,
-            vertical: AppSpacing.spacingXs,
-          ),
-          child: _buildDateGroup(group, localizations),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: _buildDateGroup(group, localizations, showTotal: complete),
         );
       }, childCount: groupedContributions.length + (_isLoadingMore ? 1 : 0)),
     );
@@ -323,60 +490,34 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
   Widget _buildDateGroup(
     ContributionDateGroup group,
-    AppLocalizations localizations,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Date Header
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: AppSpacing.spacingXs),
-          child: Text(group.dateLabel, style: AppTextStyles.titleMedium),
-        ),
+    AppLocalizations localizations, {
+    required bool showTotal,
+  }) {
+    // Net of completed payments that day: money in minus transfers/refunds.
+    double net = 0;
+    for (final c in group.contributions) {
+      if (c.paymentStatus != 'completed') continue;
+      net += c.isTransfer ? -c.amountContributed.abs() : c.amountContributed;
+    }
+    final netLabel =
+        '${net > 0 ? '+' : net < 0 ? '−' : ''}${DsMoney.group(net)}.${((net.abs() * 100).round() % 100).toString().padLeft(2, '0')}';
 
-        // Contributions Card
-        AppCard(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.spacingS,
-            vertical: AppSpacing.spacingXs,
-          ),
-          child: Column(
-            children:
-                group.contributions.asMap().entries.map((entry) {
-                  final contribution = entry.value;
-                  return Column(
-                    children: [
-                      _buildContributionItem(contribution, localizations),
-                    ],
-                  );
-                }).toList(),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CollectCap(
+          group.dateLabel,
+          trailing: showTotal ? netLabel : null,
+          trailingColor: net > 0 ? AppColors.positive : null,
+        ),
+        const SizedBox(height: 6),
+        DsListCard(
+          children: [
+            for (final contribution in group.contributions)
+              _ActivityRow(contribution: contribution),
+          ],
         ),
       ],
-    );
-  }
-
-  Widget _buildContributionItem(
-    ContributionModel contribution,
-    AppLocalizations localizations,
-  ) {
-    // Get currency from jar object
-    final currency = contribution.jar.currency;
-
-    return ContributionListItem(
-      contributionId: contribution.id,
-      contributorName: contribution.contributor ?? 'Konto',
-      amount: contribution.amountContributed,
-      currency: currency,
-      timestamp: contribution.createdAt,
-      paymentMethod: contribution.paymentMethod,
-      isAnonymous:
-          contribution.contributor == null &&
-          contribution.contributorPhoneNumber == null,
-      paymentStatus: contribution.paymentStatus,
-      viaPaymentLink: contribution.viaPaymentLink,
-      isTransfer: contribution.isTransfer,
-      isRefund: contribution.isRefund,
     );
   }
 
@@ -426,6 +567,96 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           ),
         )
         .toList();
+  }
+}
+
+/// One statement line: method tile, name, time and collector, signed amount
+/// with a status tag when it isn't completed.
+class _ActivityRow extends StatelessWidget {
+  final ContributionModel contribution;
+
+  const _ActivityRow({required this.contribution});
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final c = contribution;
+    final isAnonymous = c.contributor == null && c.contributorPhoneNumber == null;
+    final name =
+        isAnonymous
+            ? (c.isCash ? 'Anonymous · cash' : 'Anonymous')
+            : (c.contributor ?? c.contributorPhoneNumber ?? 'Hogapay');
+
+    final collectorName = c.collector?.fullName;
+    final collectorFirst =
+        (collectorName != null &&
+                collectorName.isNotEmpty &&
+                collectorName != 'Unknown User')
+            ? collectorName.split(' ').first
+            : null;
+    final subtitle = [
+      AppDateUtils.formatTimeOnly(c.createdAt, localizations),
+      if (c.isContribution && collectorFirst != null)
+        c.viaPaymentLink ? 'via $collectorFirst' : 'by $collectorFirst',
+      if (c.isPayout) localizations.typePayout,
+      if (c.isRefund) localizations.typeRefund,
+    ].join(' · ');
+
+    final status = c.paymentStatus.toLowerCase();
+    final failed = status == 'failed' || status == 'rejected';
+    final completed = status == 'completed' || status == 'transferred';
+    final out = c.isTransfer;
+    final amount = c.amountContributed.abs();
+    final amountText =
+        '${out ? '−' : '+'}${DsMoney.group(amount)}.${((amount * 100).round() % 100).toString().padLeft(2, '0')}';
+    final amountColor =
+        failed
+            ? AppColors.muted
+            : (!out && completed)
+            ? AppColors.positive
+            : AppColors.navy;
+
+    final amountWidget = Text(
+      amountText,
+      style: TextStyle(
+        fontFamily: 'Chillax',
+        fontWeight: FontWeight.w600,
+        fontSize: 15.5,
+        color: amountColor,
+        decoration: failed ? TextDecoration.lineThrough : null,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
+
+    return DsRow(
+      onTap: () => ContributionView.show(context, c.id),
+      leading: PaymentMethodTile(
+        paymentMethod: c.paymentMethod,
+        phone: c.contributorPhoneNumber,
+        isPayout: c.isPayout,
+        isRefund: c.isRefund,
+      ),
+      title: name,
+      subtitle: subtitle,
+      trailing:
+          completed
+              ? amountWidget
+              : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  amountWidget,
+                  const SizedBox(height: 3),
+                  paymentStatusTag(
+                    status,
+                    PaymentStatusUtils.getPaymentStatusLabel(
+                      c.paymentStatus,
+                      localizations,
+                    ),
+                  ),
+                ],
+              ),
+    );
   }
 }
 

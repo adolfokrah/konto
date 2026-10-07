@@ -1,22 +1,20 @@
-import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_links.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/card.dart';
 import 'package:Hoga/core/widgets/contributor_avatar.dart';
-import 'package:Hoga/core/widgets/icon_button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
 import 'package:Hoga/features/user_account/presentation/widgets/delete_account_reasons_bottom_sheet.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
 import 'package:Hoga/core/utils/url_launcher_utils.dart';
@@ -24,16 +22,13 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/config/app_config.dart';
 
-/// User account view - profile screen with settings and account management
+/// Profile tab: user card, referral card, grouped settings, log out / close.
 class UserAccountView extends StatelessWidget {
   const UserAccountView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return Scaffold(
-      appBar: AppBar(title: Text(localizations.account), centerTitle: true),
       body: MultiBlocListener(
         listeners: [
           BlocListener<AuthBloc, AuthState>(
@@ -59,375 +54,476 @@ class UserAccountView extends StatelessWidget {
         ],
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            User? currentUser;
-
             // Show loading indicator during logout
             if (state is AuthLoading) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.navy),
               );
             }
-
-            // Get current user from auth state or service registry
             if (state is AuthAuthenticated) {
-              currentUser = state.user;
-              return _buildAccountView(context, currentUser);
+              return _buildAccountView(context, state.user);
             }
-            return Container(); // Placeholder for unauthenticated users
+            return const SizedBox.shrink();
           },
         ),
       ),
     );
   }
 
-  Widget _buildAccountView(BuildContext context, User? user) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildUserProfile(context, user),
-                const SizedBox(height: AppSpacing.spacingXs),
-                _buildAccountSections(context, user),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Build user profile section with avatar and name
-  Widget _buildUserProfile(BuildContext context, User? user) {
-    return Column(
-      children: [
-        // User avatar
-        GestureDetector(
-          onTap: () {
-            ImageUploaderBottomSheet.show(
-              context,
-              uploadContext: MediaUploadContext.userPhoto,
-            );
-          },
-          child: BlocBuilder<UserAccountBloc, UserAccountState>(
-            builder: (context, uaState) {
-              final effectiveUser =
-                  uaState is UserAccountSuccess ? uaState.updatedUser : user;
-              return Stack(
-                children: [
-                  ContributorAvatar(
-                    contributorName: effectiveUser?.fullName ?? '',
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    radius: 50,
-                    avatarUrl: effectiveUser?.photo?.thumbnailURL,
-                  ),
-                  Positioned(
-                    bottom: -4,
-                    right: -4,
-                    child: AppIconButton(
-                      onPressed: () {
-                        ImageUploaderBottomSheet.show(
-                          context,
-                          uploadContext: MediaUploadContext.userPhoto,
-                        );
-                      },
-                      icon: Icons.camera_alt,
-                      size: const Size(24, 24),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-
-        const SizedBox(height: 10),
-
-        // User name
-        Text(user?.fullName ?? '', style: TextStyles.titleBoldLg),
-
-        const SizedBox(height: 1),
-
-        // User email
-        Text(user?.email ?? '', style: TextStyles.titleRegularSm),
-      ],
-    );
-  }
-
-  /// Build main account sections
-  Widget _buildAccountSections(BuildContext context, User? user) {
-    final localizations = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildAccountView(BuildContext context, User user) {
+    final l10n = AppLocalizations.of(context)!;
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
-          // Main account sections
-          _buildSectionCard([
-            _buildMenuItem(
-              context: context,
-              title: localizations.personalDetails,
-              onTap: () {
-                // Navigate to personal details
-                context.push(AppRoutes.personalDetails);
-              },
-            ),
-            _buildMenuItem(
-              context: context,
-              title: localizations.withdrawalAccounts,
-              onTap: () {
-                // Navigate to the withdrawal accounts manager (multi-account)
-                context.push(AppRoutes.withdrawalAccounts);
-              },
-            ),
-            _buildMenuItem(
-              context: context,
-              title: localizations.changePhoneNumber,
-              onTap: () {
-                // Navigate to change phone number
-                context.push(AppRoutes.changePhoneNumber);
-              },
-            ),
-            if (user?.isOrganization == true && user?.kybStatus == 'approved')
-              _buildMenuItem(
-                context: context,
-                title: 'Share contribution pages',
-                onTap: () {
-                  final url =
-                      '${AppConfig.contributionPage}/organizations/${user!.id}';
-                  final box = context.findRenderObject() as RenderBox?;
-                  Share.share(
-                    'Support our campaigns on Hoga: $url',
-                    sharePositionOrigin:
-                        box == null
-                            ? null
-                            : box.localToGlobal(Offset.zero) & box.size,
-                  );
-                },
-              )
-            else if (user?.isOrganization == true)
-              _buildMenuItem(
-                context: context,
-                title: 'Business verification',
-                onTap: () => context.push(AppRoutes.businessKyb),
-              )
-            else
-              // Individuals become organizations by completing business verification.
-              _buildMenuItem(
-                context: context,
-                title: 'Upgrade to organization',
-                onTap: () => context.push(AppRoutes.businessKyb),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(4, 4, 4, 14),
+            child: Text('Profile', style: AccText.bigTitle),
+          ),
+          _UserCard(user: user),
+          const SizedBox(height: 12),
+          _ReferralCard(onTap: () => context.push(AppRoutes.referral)),
+          const SizedBox(height: 12),
+          ..._buildGroups(context, user, l10n),
+          const SizedBox(height: 12),
+          DsListCard(
+            children: [
+              DsRow(
+                title: l10n.logout,
+                onTap: () => _confirmLogout(context, l10n),
               ),
-            _buildMenuItem(
-              context: context,
-              title: 'Refer & Earn',
-              onTap: () => context.push(AppRoutes.referral),
-            ),
-          ]),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // Security section
-          // _buildSectionTitle(localizations.security),
-          // const SizedBox(height: AppSpacing.spacingXs),
-
-          // _buildSectionCard([
-          //   _buildMenuItem(
-          //     context: context,
-          //     title: localizations.accountPin,
-          //     onTap: () {
-          //       // Navigate to transaction PIN
-          //       _showComingSoon(context);
-          //     },
-          //   ),
-          //   _buildToggleMenuItem(
-          //     title: localizations.enableDisableBiometric,
-          //     value: user?.appSettings.biometricAuthEnabled ?? true,
-          //     onChanged: (value) {
-          //       // Handle biometric toggle
-          //       _showComingSoon(context);
-          //     },
-          //   ),
-          // ]),
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // App Settings section
-          _buildSectionTitle(localizations.appSettings),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          _buildSectionCard([
-            _buildMenuItem(
-              context: context,
-              title: localizations.language,
-              onTap: () {
-                // _showComingSoon(context);
-                context.push(AppRoutes.languageSettings);
-              },
-            ),
-            // _buildMenuItem(
-            //   context: context,
-            //   title: localizations.notifications,
-            //   onTap: () {
-            //     // _showComingSoon(context);
-            //     AppSnackBar.show(context, message: localizations.comingSoon);
-            //   },
-            // ),
-          ]),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // About section
-          _buildSectionTitle(localizations.about),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          _buildSectionCard([
-            _buildExternalMenuItem(
-              title: localizations.aboutKonto,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.about),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.privacyPolicy,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.privacy),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.termsOfServices,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.terms),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.contactUs,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.contact),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.help,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.support),
-            ),
-            _buildExternalMenuItem(
-              title: localizations.appRating,
-              onTap: () => UrlLauncherUtils.launch(AppLinks.appStore),
-            ),
-          ]),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // Logout section
-          _buildSectionCard([
-            _buildMenuItem(
-              context: context,
-              title: localizations.logout,
-              onTap: () {
-                ConfirmationBottomSheet.show(
-                  context,
-                  title: localizations.doYouWantToLogout,
-                  description: localizations.logoutDescription,
-                  confirmButtonText: localizations.continueText,
-                  onConfirm: () {
-                    // Trigger the SignOutRequested event in AuthBloc
-                    context.read<AuthBloc>().add(SignOutRequested());
-                  },
-                  isDangerous: true,
-                );
-              },
-            ),
-          ]),
-
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // Close account section
-          _buildSectionCard([
-            _buildMenuItem(
-              context: context,
-              title: localizations.closeAccount,
-              titleColor: AppColors.errorRed,
-              onTap: () {
-                ConfirmationBottomSheet.show(
-                  context,
-                  title: localizations.doYouWantToCloseAccount,
-                  description: localizations.closeAccountDescription,
-                  confirmButtonText: localizations.continueText,
-                  onConfirm: () {
-                    DeleteAccountReasonsBottomSheet.show(context);
-                  },
-                  isDangerous: true,
-                );
-              },
-            ),
-          ]),
+              DsRow(
+                title: l10n.closeAccount,
+                titleColor: AppColors.negative,
+                onTap: () => _confirmCloseAccount(context, l10n),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const _VersionLabel(),
         ],
       ),
     );
   }
 
-  /// Build section title
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingS),
-      child: Text(title, style: TextStyles.titleMedium),
+  List<Widget> _buildGroups(
+    BuildContext context,
+    User user,
+    AppLocalizations l10n,
+  ) {
+    final payoutRow = BlocBuilder<WithdrawalAccountsBloc, WithdrawalAccountsState>(
+      builder: (context, waState) {
+        final loaded = waState.status == WithdrawalAccountsStatus.loaded;
+        return DsRow(
+          leading: const AccRowIcon(Icons.account_balance_wallet_outlined),
+          title: 'Payout accounts',
+          value: loaded ? '${waState.accounts.length}' : null,
+          chevron: true,
+          // Navigate to the withdrawal accounts manager (multi-account)
+          onTap: () => context.push(AppRoutes.withdrawalAccounts),
+        );
+      },
+    );
+
+    final personalRow = DsRow(
+      leading: const AccRowIcon(Icons.person_outline_rounded),
+      title: l10n.personalDetails,
+      chevron: true,
+      onTap: () => context.push(AppRoutes.personalDetails),
+    );
+
+    final isOrg = user.isOrganization;
+    final kybApproved = user.kybStatus == 'approved';
+
+    // Organizations get an organization block instead of "Upgrade".
+    final orgRow =
+        isOrg && kybApproved
+            ? DsRow(
+              leading: const AccRowIcon(Icons.public_rounded),
+              title: 'Share contribution pages',
+              chevron: true,
+              onTap: () {
+                final url =
+                    '${AppConfig.contributionPage}/organizations/${user.id}';
+                final box = context.findRenderObject() as RenderBox?;
+                Share.share(
+                  'Support our campaigns on Hoga: $url',
+                  sharePositionOrigin:
+                      box == null
+                          ? null
+                          : box.localToGlobal(Offset.zero) & box.size,
+                );
+              },
+            )
+            : isOrg
+            ? DsRow(
+              leading: const AccRowIcon(Icons.description_outlined),
+              title: 'Business verification',
+              trailing: _kybTag(user.kybStatus),
+              chevron: true,
+              onTap: () => context.push(AppRoutes.businessKyb),
+            )
+            // Individuals become organizations by completing business verification.
+            : DsRow(
+              leading: const AccRowIcon(Icons.apartment_rounded),
+              title: 'Upgrade to organization',
+              chevron: true,
+              onTap: () => context.push(AppRoutes.businessKyb),
+            );
+
+    return [
+      if (isOrg) ...[
+        const DsGroupLabel('Organization'),
+        const SizedBox(height: 8),
+        DsListCard(children: [orgRow, payoutRow]),
+        const SizedBox(height: 12),
+        const DsGroupLabel('Account'),
+        const SizedBox(height: 8),
+        DsListCard(children: [personalRow]),
+      ] else ...[
+        const DsGroupLabel('Account'),
+        const SizedBox(height: 8),
+        DsListCard(children: [personalRow, payoutRow, orgRow]),
+      ],
+      const SizedBox(height: 12),
+      DsGroupLabel(l10n.security),
+      const SizedBox(height: 8),
+      DsListCard(
+        children: [
+          DsRow(
+            leading: const AccRowIcon(Icons.phone_iphone_rounded),
+            title: 'Phone number',
+            value: _maskPhone(user.phoneNumber),
+            chevron: true,
+            onTap: () => context.push(AppRoutes.changePhoneNumber),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      const DsGroupLabel('App'),
+      const SizedBox(height: 8),
+      DsListCard(
+        children: [
+          BlocBuilder<UserAccountBloc, UserAccountState>(
+            builder: (context, uaState) {
+              final language =
+                  uaState is UserAccountSuccess
+                      ? uaState.updatedUser.appSettings.language
+                      : user.appSettings.language;
+              return DsRow(
+                leading: const AccRowIcon(Icons.language_rounded),
+                title: l10n.language,
+                value: language.displayName,
+                chevron: true,
+                onTap: () => context.push(AppRoutes.languageSettings),
+              );
+            },
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      DsGroupLabel(l10n.help),
+      const SizedBox(height: 8),
+      DsListCard(
+        children: [
+          DsRow(
+            leading: const AccRowIcon(Icons.help_outline_rounded),
+            title: l10n.help,
+            chevron: true,
+            onTap: () => UrlLauncherUtils.launch(AppLinks.support),
+          ),
+          DsRow(
+            leading: const AccRowIcon(Icons.mail_outline_rounded),
+            title: l10n.contactUs,
+            chevron: true,
+            onTap: () => UrlLauncherUtils.launch(AppLinks.contact),
+          ),
+          DsRow(
+            leading: const AccRowIcon(Icons.star_outline_rounded),
+            title: l10n.appRating,
+            chevron: true,
+            onTap: () => UrlLauncherUtils.launch(AppLinks.appStore),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      DsGroupLabel(l10n.about),
+      const SizedBox(height: 8),
+      DsListCard(
+        children: [
+          _externalRow(
+            Icons.info_outline_rounded,
+            l10n.aboutKonto,
+            AppLinks.about,
+          ),
+          _externalRow(
+            Icons.shield_outlined,
+            l10n.privacyPolicy,
+            AppLinks.privacy,
+          ),
+          _externalRow(
+            Icons.description_outlined,
+            l10n.termsOfServices,
+            AppLinks.terms,
+          ),
+        ],
+      ),
+    ];
+  }
+
+  Widget _externalRow(IconData icon, String title, String url) {
+    return DsRow(
+      leading: AccRowIcon(icon),
+      title: title,
+      trailing: const Icon(
+        Icons.open_in_new_rounded,
+        size: 17,
+        color: AppColors.faint,
+      ),
+      onTap: () => UrlLauncherUtils.launch(url),
     );
   }
 
-  /// Build section card container
-  Widget _buildSectionCard(List<Widget> children) {
-    return AppCard(
-      variant: CardVariant.secondary,
-      padding: EdgeInsets.all(0),
-      margin: EdgeInsets.symmetric(horizontal: AppSpacing.spacingS),
-      child: Column(children: children),
+  Widget? _kybTag(String status) {
+    switch (status) {
+      case 'approved':
+        return const DsTag('Approved', tone: DsTone.positive);
+      case 'pending':
+      case 'in_review':
+      case 'submitted':
+      case 'under-review':
+        return const DsTag('In review', tone: DsTone.pending);
+      case 'rejected':
+        return const DsTag('Rejected', tone: DsTone.negative);
+      default:
+        return null;
+    }
+  }
+
+  static String _maskPhone(String phone) {
+    final p = phone.replaceAll(' ', '');
+    if (p.length < 7) return p;
+    return '${p.substring(0, 3)} ••• ${p.substring(p.length - 4)}';
+  }
+
+  void _confirmLogout(BuildContext context, AppLocalizations l10n) {
+    ConfirmationBottomSheet.show(
+      context,
+      icon: Icons.logout_rounded,
+      title: l10n.doYouWantToLogout,
+      description: l10n.logoutDescription,
+      confirmButtonText: l10n.logout,
+      cancelButtonText: l10n.cancel,
+      onConfirm: () {
+        // Trigger the SignOutRequested event in AuthBloc
+        context.read<AuthBloc>().add(SignOutRequested());
+      },
     );
   }
 
-  /// Build regular menu item
-  Widget _buildMenuItem({
-    required BuildContext context,
-    required String title,
-    required VoidCallback onTap,
-    Color? titleColor,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.radiusM),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacingM),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyles.titleMediumS.copyWith(
-                color:
-                    titleColor ?? Theme.of(context).textTheme.bodyLarge?.color,
+  void _confirmCloseAccount(BuildContext context, AppLocalizations l10n) {
+    ConfirmationBottomSheet.show(
+      context,
+      icon: Icons.delete_outline_rounded,
+      title: l10n.doYouWantToCloseAccount,
+      description: l10n.closeAccountDescription,
+      confirmButtonText: l10n.continueText,
+      cancelButtonText: l10n.cancel,
+      onConfirm: () {
+        DeleteAccountReasonsBottomSheet.show(context);
+      },
+      isDangerous: true,
+    );
+  }
+}
+
+/// Avatar, name, @username and verification / account-type tags.
+class _UserCard extends StatelessWidget {
+  final User user;
+  const _UserCard({required this.user});
+
+  void _changePhoto(BuildContext context) {
+    ImageUploaderBottomSheet.show(
+      context,
+      uploadContext: MediaUploadContext.userPhoto,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<UserAccountBloc, UserAccountState>(
+      builder: (context, uaState) {
+        final u = uaState is UserAccountSuccess ? uaState.updatedUser : user;
+        final idTag = switch (u.kycStatus) {
+          'verified' => const DsTag('ID verified', tone: DsTone.positive),
+          'in_review' => const DsTag('ID in review', tone: DsTone.pending),
+          _ => const DsTag('ID not verified', tone: DsTone.neutral),
+        };
+        final orgTag =
+            u.isOrganization && u.kybStatus == 'approved'
+                ? const DsTag('Business verified', tone: DsTone.positive)
+                : null;
+        return DsCard(
+          onTap: () => context.push(AppRoutes.personalDetails),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => _changePhoto(context),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ContributorAvatar(
+                      contributorName: u.fullName,
+                      backgroundColor: AppColors.limeSoft,
+                      radius: 28,
+                      avatarUrl: u.photo?.thumbnailURL,
+                      showStatusOverlay: false,
+                    ),
+                    Positioned(
+                      right: -3,
+                      bottom: -3,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: AppColors.navy,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.surfaceWhite,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          size: 11,
+                          color: AppColors.lime,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      u.fullName,
+                      style: AccText.h2,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (u.username.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text('@${u.username}', style: DsText.caption),
+                    ] else if (u.email.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(u.email, style: DsText.caption),
+                    ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        orgTag ?? idTag,
+                        DsTag(u.isOrganization ? 'Organization' : 'Personal'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.faint,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Navy "Invite friends, earn GHS 5" card leading to the referral screen.
+class _ReferralCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ReferralCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return DsCard(
+      color: AppColors.navy,
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const Icon(Icons.chevron_right, size: 20),
-          ],
-        ),
+            child: const Icon(
+              Icons.card_giftcard_rounded,
+              size: 20,
+              color: AppColors.lime,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Invite friends, earn GHS 5',
+                  style: AccText.h3.copyWith(
+                    fontSize: 14,
+                    color: AppColors.surfaceWhite,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Plus 20% of our fees on their jars',
+                  style: TextStyle(
+                    fontFamily: 'Supreme',
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: AppColors.surfaceWhite,
+          ),
+        ],
       ),
     );
   }
+}
 
-  /// Build external link menu item
-  Widget _buildExternalMenuItem({
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.radiusM),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacingM),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: TextStyles.titleMediumS),
-            const Icon(Icons.open_in_new, size: 20),
-          ],
-        ),
-      ),
+class _VersionLabel extends StatelessWidget {
+  const _VersionLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snap) {
+        final v = snap.data;
+        if (v == null) return const SizedBox(height: 16);
+        return Text(
+          'Hogapay ${v.version} (${v.buildNumber})',
+          textAlign: TextAlign.center,
+          style: DsText.caption,
+        );
+      },
     );
   }
 }

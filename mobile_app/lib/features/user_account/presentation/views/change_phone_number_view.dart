@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
 import 'package:Hoga/core/widgets/number_country_picker.dart';
@@ -28,6 +30,12 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
 
   bool _isPhoneNumberChanged() {
     return _phoneNumber.isNotEmpty && _phoneNumber != _initialPhoneNumber;
+  }
+
+  static String _maskPhone(String phone) {
+    final p = phone.replaceAll(' ', '');
+    if (p.length < 7) return p;
+    return '${p.substring(0, 3)} ••• ${p.substring(p.length - 4)}';
   }
 
   void _handleChangePhoneNumber() {
@@ -73,7 +81,7 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
           }
 
           return Scaffold(
-            appBar: AppBar(title: Text(localizations.changePhoneNumber)),
+            appBar: AppBar(title: Text(localizations.phoneNumber)),
             body: MultiBlocListener(
               listeners: [
                 BlocListener<VerificationBloc, VerificationState>(
@@ -111,39 +119,53 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
                   },
                 ),
               ],
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(AppSpacing.spacingXs),
-                child: Column(
-                  children: [
-                    NumberInput(
-                      selectedCountry: _selectedCountry,
-                      countryCode: _countryCode,
-                      phoneNumber: _phoneNumber,
-                      placeholder: localizations.phoneNumber,
-                      textFieldKey: const Key('phone_number'),
-                      onCountryChanged: (country, code) {
-                        setState(() {
-                          _selectedCountry = country;
-                          _countryCode = code;
-                        });
-                      },
-                      onPhoneNumberChanged: (phoneNumber) {
-                        setState(() {
-                          _phoneNumber = phoneNumber;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.spacingM),
-                    AppButton(
-                      onPressed:
-                          _isPhoneNumberChanged()
-                              ? _handleChangePhoneNumber
-                              : null,
-                      text: localizations.changePhoneNumber,
-                      isLoading: state is UserAccountLoading,
-                    ),
-                    SizedBox(height: AppSpacing.spacingM),
-                  ],
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                children: [
+                  const Text('New phone number', style: AccText.h1),
+                  const SizedBox(height: 6),
+                  Text(
+                    "You'll sign in with it. Current: ${_maskPhone(_initialPhoneNumber)}",
+                    style: DsText.body,
+                  ),
+                  const SizedBox(height: 16),
+                  NumberInput(
+                    selectedCountry: _selectedCountry,
+                    countryCode: _countryCode,
+                    phoneNumber: _phoneNumber,
+                    placeholder: localizations.phoneNumber,
+                    textFieldKey: const Key('phone_number'),
+                    onCountryChanged: (country, code) {
+                      setState(() {
+                        _selectedCountry = country;
+                        _countryCode = code;
+                      });
+                    },
+                    onPhoneNumberChanged: (phoneNumber) {
+                      setState(() {
+                        _phoneNumber = phoneNumber;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const DsNote(
+                    tone: DsTone.neutral,
+                    text:
+                        "Payout accounts don't change. Update them separately.",
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: AppButton(
+                  onPressed:
+                      _isPhoneNumberChanged()
+                          ? _handleChangePhoneNumber
+                          : null,
+                  text: localizations.changePhoneNumber,
+                  isLoading: state is UserAccountLoading,
                 ),
               ),
             ),
@@ -152,11 +174,9 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
 
         // Show loading or error state
         return Scaffold(
-          appBar: AppBar(title: Text(localizations.changePhoneNumber)),
-          body: Center(
-            child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+          appBar: AppBar(title: Text(localizations.phoneNumber)),
+          body: const Center(
+            child: CircularProgressIndicator(color: AppColors.navy),
           ),
         );
       },

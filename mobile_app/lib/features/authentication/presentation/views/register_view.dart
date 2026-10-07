@@ -1,9 +1,10 @@
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_links.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/core/constants/select_options.dart';
 import 'package:Hoga/core/utils/url_launcher_utils.dart';
 import 'package:Hoga/core/utils/phone_validation_utils.dart';
@@ -11,7 +12,6 @@ import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/number_input.dart';
 import 'package:Hoga/core/widgets/select_input.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -135,6 +135,27 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
+  /// Top progress: the account type is half the job, the details the rest.
+  double get _progress {
+    final filled =
+        [
+          _firstNameController.text,
+          _lastNameController.text,
+          _emailController.text,
+          _usernameController.text,
+          _phoneNumber,
+        ].where((v) => v.trim().isNotEmpty).length;
+    return 0.5 + 0.5 * filled / 5;
+  }
+
+  static const _linkStyle = TextStyle(
+    fontWeight: FontWeight.w700,
+    color: AppColors.navy,
+    decoration: TextDecoration.underline,
+    decorationColor: AppColors.lime,
+    decorationThickness: 3,
+  );
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -196,228 +217,219 @@ class _RegisterViewState extends State<RegisterView> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            localizations.register,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.spacingM),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.spacingL),
-              const Text(
-                'Who are you collecting for?',
-                style: AppTextStyles.titleRegularXs,
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<String>(
-                  key: const Key('accountType'),
-                  segments: const [
-                    ButtonSegment(
-                      value: 'individual',
-                      label: Text('Myself / family'),
-                      icon: Icon(Icons.person_outline),
-                    ),
-                    ButtonSegment(
-                      value: 'organization',
-                      label: Text('Organization'),
-                      icon: Icon(Icons.account_balance),
-                    ),
-                  ],
-                  selected: {_accountType},
-                  showSelectedIcon: false,
-                  onSelectionChanged:
-                      (selection) =>
-                          setState(() => _accountType = selection.first),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                _accountType == 'organization'
-                    ? 'Churches, schools, associations and businesses. You\'ll verify your ID and your business before collecting.'
-                    : 'Weddings, funerals, birthdays and personal causes. You\'ll verify your ID before collecting.',
-                style: AppTextStyles.titleRegularXs,
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-              AppTextInput(
-                label: 'First name',
-                keyboardType: TextInputType.name,
-                controller: _firstNameController,
-                key: const Key('firstName'),
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              AppTextInput(
-                label: 'Last name',
-                keyboardType: TextInputType.name,
-                controller: _lastNameController,
-                key: const Key('lastName'),
-              ),
-              const SizedBox(height: 3),
-              const Text(
-                'Your name should match the name on your ID.',
-                style: AppTextStyles.titleRegularXs,
-              ),
-
-              const SizedBox(height: AppSpacing.spacingS),
-              AppTextInput(
-                key: const Key('email'),
-                label: localizations.email,
-                keyboardType: TextInputType.emailAddress,
-                controller: _emailController,
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              AppTextInput(
-                key: const Key('username'),
-                label: 'Username',
-                keyboardType: TextInputType.text,
-                controller: _usernameController,
-                onChanged: (value) {
-                  // Convert to lowercase for case-insensitive username
-                  final cursorPosition =
-                      _usernameController.selection.baseOffset;
-                  _usernameController.value = TextEditingValue(
-                    text: value.toLowerCase(),
-                    selection: TextSelection.collapsed(offset: cursorPosition),
-                  );
-                },
-              ),
-              const SizedBox(height: 3),
-              const Text(
-                'Username is required and could be name of organization, institution or unique name to identify you. It cannot be changed once set.',
-                style: AppTextStyles.titleRegularXs,
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              SelectInput<String>(
-                key: const Key('country'),
-                label: localizations.country,
-                options: AppSelectOptions.getCountryOptions(localizations),
-                value: _selectedCountry,
-                onChanged: (value) {
-                  print(value);
-
-                  setState(() {
-                    _selectedCountry = value;
-                  });
-                },
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-
-              NumberInput(
-                key: const Key('phoneNumber'),
-                selectedCountry: _selectedPhoneCountry,
-                countryCode: _countryCode,
-                phoneNumber: _phoneNumber, // Pre-fill with passed phone number
-                placeholder: localizations.phoneNumberPlaceholder,
-                onCountryChanged: (country, code) {
-                  setState(() {
-                    _selectedPhoneCountry = country;
-                    _countryCode = code;
-                  });
-                },
-                onPhoneNumberChanged: (phoneNumber) {
-                  setState(() {
-                    _phoneNumber = phoneNumber;
-                  });
-                },
-              ),
-              const SizedBox(height: 3),
-              const Text(
-                'Enter your number without the leading 0. e.g. 241234567',
-                style: AppTextStyles.titleRegularXs,
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              AppTextInput(
-                key: const Key('referralCode'),
-                label: 'Referral code (optional)',
-                keyboardType: TextInputType.text,
-                controller: _referralCodeController,
-                onChanged: (value) {
-                  final upper = value.toUpperCase();
-                  final cursor = _referralCodeController.selection.baseOffset;
-                  _referralCodeController.value = TextEditingValue(
-                    text: upper,
-                    selection: TextSelection.collapsed(offset: cursor),
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.spacingL),
-
-              // Terms & Conditions Section
-              RichText(
-                textAlign: TextAlign.left,
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodySmall,
+        backgroundColor: AppColors.cream,
+        appBar: AuthTopBar(progress: _progress),
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextSpan(text: localizations.bySigningUpYouAgree),
-                    TextSpan(
-                      text: localizations.termsAndConditions,
-                      style: TextStyle(decoration: TextDecoration.underline),
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              UrlLauncherUtils.launch(AppLinks.terms);
-                            },
+                    const AuthHeader(
+                      title: 'Who are you collecting for?',
+                      subtitle:
+                          'This sets how you get verified. You can upgrade later.',
                     ),
-                    TextSpan(text: localizations.and),
-                    TextSpan(
-                      text: localizations.privacyPolicy,
-                      style: TextStyle(decoration: TextDecoration.underline),
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              UrlLauncherUtils.launch(AppLinks.privacy);
-                            },
+                    const SizedBox(height: 18),
+                    AuthChoiceCard(
+                      key: const Key('accountType'),
+                      icon: Icons.person_outline_rounded,
+                      title: 'Personal',
+                      description:
+                          'Weddings, funerals, birthdays and family causes',
+                      tags: const ['Ghana Card', '~3 min'],
+                      selected: _accountType == 'individual',
+                      onTap: () => setState(() => _accountType = 'individual'),
+                    ),
+                    const SizedBox(height: 10),
+                    AuthChoiceCard(
+                      key: const Key('accountType_organization'),
+                      icon: Icons.account_balance_outlined,
+                      title: 'Organization',
+                      description:
+                          'Churches, schools, associations, businesses',
+                      tags: const ['Business docs', '2–3 days'],
+                      selected: _accountType == 'organization',
+                      onTap:
+                          () => setState(() => _accountType = 'organization'),
+                    ),
+                    const SizedBox(height: 28),
+                    Text('About you', style: DsText.title.copyWith(fontSize: 22)),
+                    const SizedBox(height: 12),
+                    AuthFieldGroup(
+                      children: [
+                        AuthField(
+                          key: const Key('firstName'),
+                          label: 'First name',
+                          keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
+                          controller: _firstNameController,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        AuthField(
+                          key: const Key('lastName'),
+                          label: 'Last name',
+                          keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
+                          controller: _lastNameController,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ],
+                    ),
+                    const AuthHelp('As on your Ghana Card or ID'),
+                    const SizedBox(height: 14),
+                    AuthFieldGroup(
+                      children: [
+                        AuthField(
+                          key: const Key('email'),
+                          label: localizations.email,
+                          keyboardType: TextInputType.emailAddress,
+                          controller: _emailController,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        AuthField(
+                          key: const Key('username'),
+                          label: 'Username',
+                          prefixText: '@',
+                          keyboardType: TextInputType.text,
+                          controller: _usernameController,
+                          onChanged: (value) {
+                            // Convert to lowercase for case-insensitive username
+                            final cursorPosition =
+                                _usernameController.selection.baseOffset;
+                            _usernameController.value = TextEditingValue(
+                              text: value.toLowerCase(),
+                              selection: TextSelection.collapsed(
+                                offset: cursorPosition,
+                              ),
+                            );
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    const AuthHelp(
+                      'Your username identifies you or your organization. It can\'t be changed once set.',
+                    ),
+                    const SizedBox(height: 14),
+                    SelectInput<String>(
+                      key: const Key('country'),
+                      label: localizations.country,
+                      options: AppSelectOptions.getCountryOptions(localizations),
+                      value: _selectedCountry,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCountry = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    NumberInput(
+                      key: const Key('phoneNumber'),
+                      selectedCountry: _selectedPhoneCountry,
+                      countryCode: _countryCode,
+                      phoneNumber: _phoneNumber, // Pre-fill with passed phone number
+                      placeholder: localizations.phoneNumberPlaceholder,
+                      onCountryChanged: (country, code) {
+                        setState(() {
+                          _selectedPhoneCountry = country;
+                          _countryCode = code;
+                        });
+                      },
+                      onPhoneNumberChanged: (phoneNumber) {
+                        setState(() {
+                          _phoneNumber = phoneNumber;
+                        });
+                      },
+                    ),
+                    const AuthHelp(
+                      'Enter your number without the leading 0. e.g. 241234567',
+                    ),
+                    const SizedBox(height: 14),
+                    AuthField(
+                      key: const Key('referralCode'),
+                      label: 'Referral code (optional)',
+                      hintText: 'e.g. KOFI24',
+                      standalone: true,
+                      keyboardType: TextInputType.text,
+                      controller: _referralCodeController,
+                      onChanged: (value) {
+                        final upper = value.toUpperCase();
+                        final cursor =
+                            _referralCodeController.selection.baseOffset;
+                        _referralCodeController.value = TextEditingValue(
+                          text: upper,
+                          selection: TextSelection.collapsed(offset: cursor),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Terms & Conditions Section
+                    RichText(
+                      textAlign: TextAlign.left,
+                      text: TextSpan(
+                        style: DsText.caption,
+                        children: [
+                          TextSpan(text: localizations.bySigningUpYouAgree),
+                          TextSpan(
+                            text: localizations.termsAndConditions,
+                            style: _linkStyle,
+                            recognizer:
+                                TapGestureRecognizer()
+                                  ..onTap = () {
+                                    UrlLauncherUtils.launch(AppLinks.terms);
+                                  },
+                          ),
+                          TextSpan(text: localizations.and),
+                          TextSpan(
+                            text: localizations.privacyPolicy,
+                            style: _linkStyle,
+                            recognizer:
+                                TapGestureRecognizer()
+                                  ..onTap = () {
+                                    UrlLauncherUtils.launch(AppLinks.privacy);
+                                  },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
+            ),
 
-              const SizedBox(height: AppSpacing.spacingL),
-
-              // Action Buttons Section
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  return Column(
-                    children: [
-                      // Create Account Button
-                      AppButton.filled(
-                        text: localizations.createAccount,
-                        isLoading: state is AuthLoading,
-                        onPressed:
-                            state is AuthLoading
-                                ? null
-                                : () {
-                                  _handleCreateAccount(context);
-                                },
-                      ),
-
-                      const SizedBox(height: AppSpacing.spacingS),
-
-                      // Login Button
-                      AppButton.outlined(
-                        key: const Key('login_button'),
-                        text: localizations.login,
-                        onPressed: () {
-                          if (state is AuthLoading) return;
-                          // Handle login navigation
-                          context.pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              const SizedBox(height: AppSpacing.spacingS),
-            ],
-          ),
+            // Action Buttons Section
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                return AuthFooter(
+                  children: [
+                    AppButton.filled(
+                      text: localizations.createAccount,
+                      isLoading: state is AuthLoading,
+                      onPressed:
+                          state is AuthLoading
+                              ? null
+                              : () {
+                                _handleCreateAccount(context);
+                              },
+                    ),
+                    AppButton.outlined(
+                      key: const Key('login_button'),
+                      text: 'I have an account',
+                      onPressed: () {
+                        if (state is AuthLoading) return;
+                        // Handle login navigation
+                        context.pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

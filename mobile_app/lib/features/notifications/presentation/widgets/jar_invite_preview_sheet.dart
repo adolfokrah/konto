@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
 import 'package:Hoga/core/di/service_locator.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
-import 'package:Hoga/core/widgets/scrollable_background_image.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 
@@ -45,7 +44,6 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
   String? _jarDescription;
   String? _creatorName;
   String? _creatorPhoto;
-  double _scrollOffset = 0.0;
 
   @override
   void initState() {
@@ -109,230 +107,166 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
+    if (_isLoading) {
+      return const AccSheet(
+        children: [
+          SizedBox(
+            height: 180,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.navy),
+            ),
           ),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
-          ),
-          child: Stack(
+        ],
+      );
+    }
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
+      child: AccSheet(
+        children: [
+          Row(
             children: [
-              // Background jar image (same style as jar detail view)
-              if (_jarImage != null)
-                ScrollableBackgroundImage(
-                  imageUrl: ImageUtils.constructImageUrl(_jarImage!),
-                  scrollOffset: _scrollOffset,
-                  height: 350,
-                  maxScrollForOpacity: 150,
-                  baseOpacity: 0.30,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child:
+                      _jarImage != null
+                          ? Image.network(
+                            ImageUtils.constructImageUrl(_jarImage!),
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => const DsIconTile(
+                                  Icons.savings_outlined,
+                                  tone: DsTone.lime,
+                                  size: 56,
+                                ),
+                          )
+                          : const DsIconTile(
+                            Icons.savings_outlined,
+                            tone: DsTone.lime,
+                            size: 56,
+                          ),
                 ),
-
-              // Content
-              Column(
-                children: [
-                  const Center(child: DragHandle()),
-                  if (_isLoading)
-                    Expanded(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          if (notification is ScrollUpdateNotification) {
-                            setState(() {
-                              _scrollOffset = notification.metrics.pixels;
-                            });
-                          }
-                          return false;
-                        },
-                        child: ListView(
-                          controller: scrollController,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.spacingL,
-                          ),
-                          children: [
-                            // Spacer to push content below the background image
-                            if (_jarImage != null)
-                              const SizedBox(height: 170),
-
-                            if (_jarImage == null)
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                            // Jar name (fetched) or fallback to notification message
-                            Text(
-                              _jarName ?? widget.notification.message,
-                              style: TextStyles.titleBoldLg,
-                            ),
-                            const SizedBox(height: AppSpacing.spacingXs),
-
-                            // Jar description
-                            if (_jarDescription != null &&
-                                _jarDescription!.isNotEmpty) ...[
-                              Text(
-                                _jarDescription!,
-                                style: TextStyles.titleRegularM.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color
-                                      ?.withValues(alpha: 0.7),
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-                            ],
-
-                            // Creator row
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 14,
-                                  backgroundImage: _creatorPhoto != null
-                                      ? NetworkImage(
-                                          ImageUtils.constructImageUrl(
-                                              _creatorPhoto!),
-                                        )
-                                      : null,
-                                  child: _creatorPhoto == null
-                                      ? Text(
-                                          (_creatorName ?? 'S')
-                                              .characters
-                                              .first
-                                              .toUpperCase(),
-                                          style: const TextStyle(fontSize: 14),
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Invited by ${_creatorName ?? 'Someone'}',
-                                  style: TextStyles.titleRegularSm.copyWith(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withValues(alpha: 0.6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
-
-                            // Safety notice
-                            Container(
-                              padding: const EdgeInsets.all(
-                                  AppSpacing.spacingS),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(
-                                    AppRadius.radiusM),
-                              ),
-                              child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    size: 18,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Before accepting, make sure you know and trust the organizer of this jar.',
-                                      style: TextStyles.titleRegularSm
-                                          .copyWith(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color
-                                            ?.withValues(alpha: 0.5),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _jarName ?? widget.notification.message,
+                      style: AccText.h2,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-
-                  // Action buttons pinned at bottom
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingL,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AppButton.outlined(
-                            text: 'Decline',
-                            onPressed: () =>
-                                Navigator.of(context).pop('decline'),
-                            textColor: Colors.red,
-                            borderColor: Colors.red,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.spacingM),
-                        Expanded(
-                          child: AppButton(
-                            text: 'Accept',
-                            onPressed: () =>
-                                Navigator.of(context).pop('accept'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop('report'),
-                    child: Text(
-                      'Report this jar',
-                      style: TextStyles.titleRegularSm.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.color
-                            ?.withValues(alpha: 0.4),
-                        decoration: TextDecoration.underline,
-                        decorationColor: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.color
-                            ?.withValues(alpha: 0.4),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                ],
+                    const SizedBox(height: 2),
+                    const Text('Jar invitation', style: DsText.caption),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.cream,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Organizer',
+                        style: DsText.small.copyWith(color: AppColors.muted),
+                      ),
+                      const Spacer(),
+                      CircleAvatar(
+                        radius: 11,
+                        backgroundColor: AppColors.limeSoft,
+                        backgroundImage:
+                            _creatorPhoto != null
+                                ? NetworkImage(
+                                  ImageUtils.constructImageUrl(_creatorPhoto!),
+                                )
+                                : null,
+                        child:
+                            _creatorPhoto == null
+                                ? Text(
+                                  (_creatorName?.isNotEmpty == true
+                                          ? _creatorName!
+                                          : 'S')
+                                      .characters
+                                      .first
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    fontFamily: 'Supreme',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.navy,
+                                  ),
+                                )
+                                : null,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          _creatorName?.isNotEmpty == true
+                              ? _creatorName!
+                              : 'Someone',
+                          style: DsText.rowTitle.copyWith(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.line),
+                const DsKeyValue('Your role', 'Collector'),
+              ],
+            ),
+          ),
+          if (_jarDescription != null && _jarDescription!.isNotEmpty)
+            Flexible(
+              child: SingleChildScrollView(
+                child: Text(_jarDescription!, style: DsText.small),
+              ),
+            ),
+          AccHelp(
+            'Only accept if you know this organizer.',
+            linkText: 'Report',
+            onLink: () => Navigator.of(context).pop('report'),
+          ),
+          Row(
+            spacing: 10,
+            children: [
+              Expanded(
+                child: AppButton(
+                  text: 'Decline',
+                  backgroundColor: AppColors.surfaceWhite,
+                  textColor: AppColors.navy,
+                  borderColor: AppColors.line,
+                  variant: ButtonVariant.outline,
+                  onPressed: () => Navigator.of(context).pop('decline'),
+                ),
+              ),
+              Expanded(
+                child: AppButton(
+                  text: 'Accept',
+                  onPressed: () => Navigator.of(context).pop('accept'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

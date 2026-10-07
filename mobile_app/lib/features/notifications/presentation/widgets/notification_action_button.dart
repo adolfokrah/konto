@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 
 /// Reusable action button used inside notification list items (Accept, Decline, etc.).
 /// Wraps a tap area with consistent padding, background color and text styling.
@@ -27,30 +27,28 @@ class NotificationActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBg =
-        backgroundColor ?? Theme.of(context).colorScheme.primary;
-    final effectivePadding =
-        padding ??
-        EdgeInsets.only(
-          top: AppSpacing.spacingXs,
-          right: dense ? AppSpacing.spacingM : AppSpacing.spacingL,
-        );
-
+    final bg = backgroundColor ?? AppColors.navy;
+    final fg = textColor ?? AppColors.surfaceWhite;
     return Opacity(
       opacity: enabled ? 1.0 : 0.5,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: Container(
-          padding: effectivePadding,
-          decoration: BoxDecoration(
-            color: effectiveBg,
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: textColor ?? Theme.of(context).colorScheme.onSurface,
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(9),
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(9),
+          child: Padding(
+            padding:
+                padding ??
+                EdgeInsets.symmetric(horizontal: dense ? 11 : 14, vertical: 7),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Supreme',
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: fg,
+              ),
             ),
           ),
         ),

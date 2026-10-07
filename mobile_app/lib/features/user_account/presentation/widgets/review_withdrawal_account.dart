@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/constants/button_variants.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/user_account/logic/bloc/withdrawal_account_verification_bloc.dart';
 
 /// Bottom sheet widget to display withdrawal account verification success details
@@ -43,96 +41,46 @@ class ReviewWithdrawalAccountBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppRadius.radiusM),
-          topRight: Radius.circular(AppRadius.radiusM),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingM),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle bar
-          const Center(child: DragHandle()),
-          const SizedBox(height: AppSpacing.spacingM),
-
-          // Title
-          Text('Review Account Details', style: TextStyles.titleBoldLg),
-          const SizedBox(height: AppSpacing.spacingXs),
-
-          // Account details card
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Account Name
-              _buildDetailRow(
-                label: 'Account Name',
-                value: verificationData.name,
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-
-              // Phone Number
-              _buildDetailRow(
-                label: 'Phone Number',
-                value: verificationData.phoneNumber,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.spacingL),
-
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: AppButton(
-                  text: 'Cancel',
-                  variant: ButtonVariant.outline,
-                  onPressed: () {
-                    Navigator.pop(context, false);
-                    onCancel?.call();
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.spacingM),
-
-              // Confirm button
-              Expanded(
-                child: AppButton(
-                  text: 'Confirm Account',
-                  variant: ButtonVariant.fill,
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                    onConfirm?.call();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow({required String label, required String value}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return AccSheet(
       children: [
-        Text(
-          label,
-          style: TextStyles.titleRegularM.copyWith(
-            color: AppColors.label,
-            fontWeight: FontWeight.w500,
+        const AccSheetHeader('Review account'),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.cream,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            children: [
+              DsKeyValue('Account name', verificationData.name),
+              const Divider(height: 1, color: AppColors.line),
+              DsKeyValue('Phone number', verificationData.phoneNumber),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyles.titleMediumS.copyWith(fontWeight: FontWeight.w600),
+        Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              child: AppButton(
+                text: 'Cancel',
+                variant: ButtonVariant.outline,
+                onPressed: () {
+                  Navigator.pop(context, false);
+                  onCancel?.call();
+                },
+              ),
+            ),
+            Expanded(
+              child: AppButton(
+                text: 'Confirm account',
+                variant: ButtonVariant.fill,
+                onPressed: () {
+                  Navigator.pop(context, true);
+                  onConfirm?.call();
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
