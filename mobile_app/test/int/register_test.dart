@@ -165,7 +165,7 @@ void main() {
 
       // Look for OTP-specific elements
       expect(
-        find.textContaining('OTP'),
+        find.text('Enter the code'),
         findsOneWidget,
         reason: 'Should find OTP text on the page',
       );

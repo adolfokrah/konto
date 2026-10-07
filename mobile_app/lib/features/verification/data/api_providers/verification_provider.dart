@@ -34,10 +34,7 @@ class VerificationProvider {
     if (isInTestMode) {
       print('🧪 TEST MODE: Mocking OTP send to $phoneNumber');
       await Future.delayed(const Duration(milliseconds: 800));
-      return {
-        'success': true,
-        'message': 'OTP sent successfully (mocked)',
-      };
+      return {'success': true, 'message': 'OTP sent successfully (mocked)'};
     }
 
     try {
@@ -172,11 +169,7 @@ class VerificationProvider {
         errorMessage = responseData['message'];
       }
 
-      return {
-        'success': false,
-        'verified': false,
-        'message': errorMessage,
-      };
+      return {'success': false, 'verified': false, 'message': errorMessage};
     } catch (e) {
       print('❌ Unexpected Verify OTP Error: $e');
       return {

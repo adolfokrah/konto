@@ -135,7 +135,11 @@ class _StartView extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline_rounded, size: 13, color: AppColors.muted),
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 13,
+                color: AppColors.muted,
+              ),
               SizedBox(width: 6),
               Flexible(
                 child: Text(

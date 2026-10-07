@@ -158,9 +158,9 @@ void main() {
 
         // Look for OTP-specific elements
         expect(
-          find.text('Enter OTP'),
+          find.text('Enter the code'),
           findsOneWidget,
-          reason: 'Should find "Enter OTP" text on the page',
+          reason: 'Should find "Enter the code" text on the page',
         );
 
         // Debug: Check the verification bloc state

@@ -4,9 +4,8 @@ import 'package:Hoga/features/verification/data/api_providers/verification_provi
 class VerificationRepository {
   final VerificationProvider _verificationProvider;
 
-  VerificationRepository({
-    required VerificationProvider verificationProvider,
-  }) : _verificationProvider = verificationProvider;
+  VerificationRepository({required VerificationProvider verificationProvider})
+    : _verificationProvider = verificationProvider;
 
   /// Verify OTP code via backend
   Future<Map<String, dynamic>> verifyOtp({

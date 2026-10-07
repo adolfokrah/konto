@@ -23,8 +23,7 @@ class KycBloc extends Bloc<KycEvent, KycState> {
 
     try {
       // Request a KYC session from the backend
-      final result =
-          await _verificationRepository.requestKycVerification();
+      final result = await _verificationRepository.requestKycVerification();
 
       if (result['success'] != true) {
         emit(KycFailure(result['message'] ?? 'Failed to create KYC session'));

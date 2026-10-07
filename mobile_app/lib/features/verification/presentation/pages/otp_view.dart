@@ -62,6 +62,19 @@ class _OtpViewContent extends StatefulWidget {
 class _OtpViewContentState extends State<_OtpViewContent> {
   Timer? _timer;
   int _resendCountdown = 30;
+  final TextEditingController _codeController = TextEditingController();
+
+  void _typeDigit(String d) {
+    if (_confirming || _codeController.text.length >= 6) return;
+    _codeController.text = _codeController.text + d;
+  }
+
+  void _backspace() {
+    final t = _codeController.text;
+    if (_confirming || t.isEmpty) return;
+    _codeController.text = t.substring(0, t.length - 1);
+  }
+
   bool _canResend = false;
   bool _confirming = false;
   String? _error;
@@ -106,6 +119,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   @override
   void dispose() {
+    _codeController.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -254,91 +268,103 @@ class _OtpViewContentState extends State<_OtpViewContent> {
           ),
         ],
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AuthHeader(
-                  title: localizations.enterOtp,
-                  subtitleWidget: _sentTo(),
-                ),
-                const SizedBox(height: 24),
-
-                // OTP Input
-                AppOtpInput(
-                  length: 6,
-                  hasError: _error != null,
-                  enabled: !_confirming,
-                  onChanged: (_) {
-                    if (_error != null) setState(() => _error = null);
-                  },
-                  onCompleted: _handleOtpCompleted,
-                ),
-
-                if (_error != null) ...[
-                  const SizedBox(height: 14),
-                  Row(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 2),
-                        child: Icon(
-                          Icons.error_outline_rounded,
-                          size: 16,
-                          color: AppColors.negative,
-                        ),
+                      AuthHeader(
+                        title: 'Enter the code',
+                        subtitleWidget: _sentTo(),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          _error!,
-                          style: DsText.small.copyWith(
-                            color: AppColors.negative,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 24),
+
+                      // OTP Input
+                      AppOtpInput(
+                        length: 6,
+                        controller: _codeController,
+                        useSystemKeyboard: false,
+                        hasError: _error != null,
+                        enabled: !_confirming,
+                        onChanged: (_) {
+                          if (_error != null) setState(() => _error = null);
+                        },
+                        onCompleted: _handleOtpCompleted,
+                      ),
+
+                      if (_error != null) ...[
+                        const SizedBox(height: 14),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 2),
+                              child: Icon(
+                                Icons.error_outline_rounded,
+                                size: 16,
+                                color: AppColors.negative,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: DsText.small.copyWith(
+                                  color: AppColors.negative,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+
+                      // Resend code section
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              localizations.didntReceiveCode.trim(),
+                              style: DsText.small,
+                            ),
+                          ),
+                          if (_canResend)
+                            DsLink(localizations.resend, onTap: _handleResend)
+                          else
+                            Text(
+                              localizations.resendIn(_resendCountdown),
+                              style: DsText.small.copyWith(
+                                color: AppColors.muted,
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      if (_confirming) ...[
+                        const SizedBox(height: 24),
+                        const Center(
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.navy,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
-                ],
-
-                const SizedBox(height: 20),
-
-                // Resend code section
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        localizations.didntReceiveCode.trim(),
-                        style: DsText.small,
-                      ),
-                    ),
-                    if (_canResend)
-                      DsLink(localizations.resend, onTap: _handleResend)
-                    else
-                      Text(
-                        localizations.resendIn(_resendCountdown),
-                        style: DsText.small.copyWith(color: AppColors.muted),
-                      ),
-                  ],
                 ),
-
-                if (_confirming) ...[
-                  const SizedBox(height: 24),
-                  const Center(
-                    child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppColors.navy,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+              ),
+              AuthKeypad(onDigit: _typeDigit, onBackspace: _backspace),
+              const SizedBox(height: 12),
+            ],
           ),
         ),
       ),
