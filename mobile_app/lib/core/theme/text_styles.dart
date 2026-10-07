@@ -5,17 +5,17 @@ class AppTextStyles {
   // Heading Styles
   static const TextStyle headingOne = TextStyle(
     fontFamily: 'Chillax',
-    fontSize: 38,
-    fontWeight: FontWeight.bold, // Bold
-    height: 1.2,
-    letterSpacing: -0.5,
+    fontSize: 32,
+    fontWeight: FontWeight.w600, // Semibold
+    height: 1.1,
+    letterSpacing: -0.6,
   );
 
   static const TextStyle headingTwo = TextStyle(
     fontFamily: 'Chillax',
     fontSize: 20,
-    fontWeight: FontWeight.normal, // Auto weight
-    height: 1.3,
+    fontWeight: FontWeight.w600, // Semibold
+    height: 1.25,
     letterSpacing: -0.2,
   );
 
@@ -53,12 +53,14 @@ class AppTextStyles {
     letterSpacing: 0.1,
   );
 
+  // Balances and big amounts: Chillax with tabular figures
   static const TextStyle titleBoldXl = TextStyle(
-    fontFamily: 'Supreme',
+    fontFamily: 'Chillax',
     fontSize: 36,
-    fontWeight: FontWeight.bold, // Bold
-    height: 1.2,
-    letterSpacing: -0.5,
+    fontWeight: FontWeight.w600,
+    height: 1.15,
+    letterSpacing: -0.4,
+    fontFeatures: [FontFeature.tabularFigures()],
   );
 
   static const TextStyle titleMediumLg = TextStyle(

@@ -265,18 +265,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                       ? null
                       : Locale(languageCode);
 
-              // Light theme disabled - always use dark theme
-              final ThemeMode resolvedThemeMode = switch (appTheme) {
-                theme_enum.AppTheme.light => ThemeMode.dark, // Redirect light to dark
-                theme_enum.AppTheme.dark => ThemeMode.dark,
-                theme_enum.AppTheme.system => ThemeMode.dark, // Force dark even for system
-              };
+              // The redesign is light-only, whatever the saved preference.
+              const ThemeMode resolvedThemeMode = ThemeMode.light;
 
               return MaterialApp.router(
                 routerConfig: _getRouter(context),
                 title: 'hoga',
-                // theme: AppTheme.lightTheme, // COMMENTED OUT - Light theme disabled
-                darkTheme: AppTheme.darkTheme,
+                theme: AppTheme.lightTheme,
                 themeMode: resolvedThemeMode,
                 // Use user-selected locale or fallback (null lets Flutter resolve)
                 locale: resolvedLocale,

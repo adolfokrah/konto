@@ -40,16 +40,12 @@ class AppTextInput extends StatelessWidget {
             filled
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent, // Match number_input
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        border:
-            !filled
-                ? Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.2),
-                  width: 1,
-                )
-                : null,
+        borderRadius: BorderRadius.circular(AppRadius.radiusButton),
+        // Hairline outline on white, as in the redesign
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 1,
+        ),
       ),
       child: Row(
         children: [

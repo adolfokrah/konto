@@ -1,3 +1,4 @@
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -405,14 +406,14 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               TextButton.icon(
                 onPressed: _addDirector,
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.white),
-                  iconColor: WidgetStateProperty.all(Colors.white),
+                  foregroundColor: WidgetStateProperty.all(AppColors.navy),
+                  iconColor: WidgetStateProperty.all(AppColors.navy),
                   overlayColor: WidgetStateProperty.all(
-                    Colors.white.withValues(alpha: 0.1),
+                    AppColors.navy.withValues(alpha: 0.1),
                   ),
                 ),
-                icon: Icon(Icons.add, color: Colors.white),
-                label: Text('Add director', style: TextStyle(color: Colors.white)),
+                icon: Icon(Icons.add, color: AppColors.navy),
+                label: Text('Add director', style: TextStyle(color: AppColors.navy)),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
 
 class AppIconButton extends StatelessWidget {
   /// The callback function when the button is pressed
@@ -51,7 +52,10 @@ class AppIconButton extends StatelessWidget {
                 ).colorScheme.primary.withValues(alpha: opacity ?? 1)
                 : AppColors.surfaceWhite.withValues(alpha: opacity ?? 1),
         foregroundColor: Theme.of(context).colorScheme.onSurface,
-        minimumSize: size ?? const Size(50, 50), // Makes button bigger
+        minimumSize: size ?? const Size(44, 44),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusButton),
+        ),
       ),
     );
   }

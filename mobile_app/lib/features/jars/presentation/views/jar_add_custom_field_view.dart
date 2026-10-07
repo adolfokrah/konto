@@ -1,3 +1,4 @@
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -83,13 +84,13 @@ class _PasteOptionsSheetState extends State<_PasteOptionsSheet> {
                   maxLines: null,
                   textAlignVertical: TextAlignVertical.top,
                   autofocus: true,
-                  cursorColor: Colors.white,
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  cursorColor: AppColors.navy,
+                  style: const TextStyle(fontSize: 16, color: AppColors.navy),
                   decoration: InputDecoration(
                     hintText: 'e.g. Option A, Option B, Option C',
                     hintStyle: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.4),
+                      color: AppColors.navy.withValues(alpha: 0.4),
                     ),
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.primary,
@@ -420,14 +421,14 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                       children: [
                         TextButton.icon(
                           onPressed: _openPasteSheet,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.content_paste,
                             size: 16,
-                            color: Colors.white,
+                            color: AppColors.navy,
                           ),
-                          label: const Text(
+                          label: Text(
                             'Paste',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.navy),
                           ),
                         ),
                         TextButton.icon(
@@ -435,11 +436,11 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                           icon: const Icon(
                             Icons.add,
                             size: 16,
-                            color: Colors.white,
+                            color: AppColors.navy,
                           ),
                           label: const Text(
                             'Add option',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.navy),
                           ),
                         ),
                       ],

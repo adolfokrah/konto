@@ -1,3 +1,4 @@
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 
@@ -39,7 +40,15 @@ class AppSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 20),
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: Colors.white, size: 16),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -49,10 +58,10 @@ class AppSnackBar {
             ),
           ],
         ),
-        backgroundColor: color,
+        backgroundColor: AppColors.navy,
         duration: duration,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.all(16),
         action:
             actionLabel != null
@@ -139,13 +148,13 @@ class AppSnackBar {
   static Color _getColorForType(SnackBarType type) {
     switch (type) {
       case SnackBarType.success:
-        return Colors.green;
+        return AppColors.positive;
       case SnackBarType.error:
-        return Colors.red;
+        return AppColors.negative;
       case SnackBarType.warning:
-        return Colors.orange;
+        return AppColors.pending;
       case SnackBarType.info:
-        return Colors.blue;
+        return AppColors.info;
     }
   }
 
@@ -196,19 +205,20 @@ class AppSnackBar {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: AppColors.navy,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
-                      Icon(icon, color: Colors.white, size: 20),
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(icon, color: Colors.white, size: 16),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

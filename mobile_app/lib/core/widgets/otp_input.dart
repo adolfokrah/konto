@@ -261,9 +261,11 @@ class _AppOtpInputState extends State<AppOtpInput> {
       border = Border.all(color: Theme.of(context).colorScheme.error, width: 2);
     } else if (isActive) {
       border = Border.all(
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.onSurface,
         width: 2,
       );
+    } else {
+      border = Border.all(color: Theme.of(context).colorScheme.outline);
     }
 
     return Container(
@@ -275,7 +277,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
             widget.enabled
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
+        borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         border: border,
       ),
       child: Text(

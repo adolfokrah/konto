@@ -91,7 +91,8 @@ class _NumberInputState extends State<NumberInput> {
       decoration: BoxDecoration(
         color:
             Theme.of(context).colorScheme.primary, // theme-aware primary color
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
+        borderRadius: BorderRadius.circular(AppRadius.radiusButton),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
