@@ -88,7 +88,7 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       width: isFullWidth ? double.infinity : null,
-      height: 55,
+      height: 52,
       child:
           variant == ButtonVariant.fill
               ? _buildFilledButton(context, isDisabled)
@@ -125,7 +125,9 @@ class AppButton extends StatelessWidget {
         foregroundColor: txtColor,
         elevation: 0,
         shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusButton),
+        ),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.spacingM,
           vertical: AppSpacing.spacingXs,
@@ -150,9 +152,9 @@ class AppButton extends StatelessWidget {
       onPressed: _getOnPressedCallback(),
       style: OutlinedButton.styleFrom(
         foregroundColor: txtColor,
-        side: BorderSide(color: borderClr, width: 2),
+        side: BorderSide(color: borderClr, width: 1.5),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusL),
+          borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         ),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.spacingM,
@@ -187,7 +189,7 @@ class AppButton extends StatelessWidget {
               text,
               style: AppTextStyles.titleMediumM.copyWith(
                 color: textColor,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 fontSize: 16,
                 height: 22 / 16, // line-height: 22px
               ),

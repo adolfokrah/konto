@@ -128,9 +128,7 @@ class ContributionApiProvider extends BaseApiProvider {
 
       final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/transactions/get-transaction',
-        queryParameters: {
-          'id': contributionId,
-        },
+        queryParameters: {'id': contributionId},
         options: Options(headers: headers),
       );
 
@@ -158,7 +156,12 @@ class ContributionApiProvider extends BaseApiProvider {
     String? contributor,
     bool? isCurrentUserJarCreator, // Whether current user created the jar
     bool? hasAnyFilters, // Whether any filters are applied
-    String? linkedTransactionId, // Filter refunds linked to a specific transaction
+    String?
+    linkedTransactionId, // Filter refunds linked to a specific transaction
+    // All-jars feed: when either list is given, [jarId] and the collector
+    // rules above are replaced by a per-jar OR (see below).
+    List<String>? fullAccessJarIds, // jars the user owns / is admin on
+    List<String>? collectorOnlyJarIds, // jars the user only collects for
   }) async {
     try {
       // Get authenticated headers
@@ -202,11 +205,8 @@ class ContributionApiProvider extends BaseApiProvider {
         final validStatuses =
             statuses
                 .where(
-                  (status) => [
-                    'pending',
-                    'failed',
-                    'completed',
-                  ].contains(status),
+                  (status) =>
+                      ['pending', 'failed', 'completed'].contains(status),
                 )
                 .toList();
         if (validStatuses.isNotEmpty) {
@@ -219,11 +219,7 @@ class ContributionApiProvider extends BaseApiProvider {
         final validTypes =
             transactionTypes
                 .where(
-                  (type) => [
-                    'contribution',
-                    'payout',
-                    'refund',
-                  ].contains(type),
+                  (type) => ['contribution', 'payout', 'refund'].contains(type),
                 )
                 .toList();
         if (validTypes.isNotEmpty) {
@@ -244,8 +240,30 @@ class ContributionApiProvider extends BaseApiProvider {
         };
       }
 
+      final allJars = fullAccessJarIds != null || collectorOnlyJarIds != null;
+
       // Apply collector filtering logic
-      if (isCurrentUserJarCreator == true) {
+      if (allJars) {
+        // Each jar keeps its own visibility rule, ORed together (Payload ANDs
+        // this with the other top-level filters):
+        //   (jar in fullAccess) OR (jar in collectorOnly AND collector = me)
+        var i = 0;
+        if (fullAccessJarIds != null && fullAccessJarIds.isNotEmpty) {
+          queryParams['where[or][$i][jar][in]'] = fullAccessJarIds.join(',');
+          i++;
+        }
+        if (collectorOnlyJarIds != null && collectorOnlyJarIds.isNotEmpty) {
+          queryParams['where[or][$i][and][0][jar][in]'] = collectorOnlyJarIds
+              .join(',');
+          queryParams['where[or][$i][and][1][collector][equals]'] = user.id;
+          i++;
+        }
+        if (i == 0) {
+          // No jars in scope: match nothing rather than everything visible.
+          queryParams['where[collector][equals]'] = user.id;
+          queryParams['where[jar][exists]'] = 'false';
+        }
+      } else if (isCurrentUserJarCreator == true) {
         // User IS the jar creator
         if (collectors != null && collectors.isNotEmpty) {
           // Collector filter is explicitly applied - use it
@@ -443,20 +461,14 @@ class ContributionApiProvider extends BaseApiProvider {
 
       final response = await dio.post(
         '${BackendConfig.apiBaseUrl}/transactions/approve-reject-payout',
-        data: {
-          'transactionId': transactionId,
-          'action': action,
-        },
+        data: {'transactionId': transactionId, 'action': action},
         options: Options(headers: headers),
       );
 
       if (response.data != null && response.data is Map) {
         return response.data as Map<String, dynamic>;
       }
-      return {
-        'success': false,
-        'message': 'Unexpected response format',
-      };
+      return {'success': false, 'message': 'Unexpected response format'};
     } catch (e) {
       return handleApiError(e, 'processing payout approval');
     }

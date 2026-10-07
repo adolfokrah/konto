@@ -1,22 +1,24 @@
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
-import 'package:Hoga/core/widgets/select_input.dart';
-import 'package:Hoga/core/widgets/custom_cupertino_switch.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/manage_custom_fields/manage_custom_fields_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_settings_widgets.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 
+/// "Paste a list" sheet: paste options separated by commas or new lines.
 class _PasteOptionsSheet extends StatefulWidget {
   final String initialText;
   final void Function(List<String> parts) onConvert;
 
-  const _PasteOptionsSheet({required this.initialText, required this.onConvert});
+  const _PasteOptionsSheet({
+    required this.initialText,
+    required this.onConvert,
+  });
 
   @override
   State<_PasteOptionsSheet> createState() => _PasteOptionsSheetState();
@@ -29,6 +31,7 @@ class _PasteOptionsSheetState extends State<_PasteOptionsSheet> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialText);
+    _controller.addListener(() => setState(() {}));
   }
 
   @override
@@ -37,90 +40,66 @@ class _PasteOptionsSheetState extends State<_PasteOptionsSheet> {
     super.dispose();
   }
 
+  List<String> get _parts =>
+      _controller.text
+          .split(RegExp(r'[,\n]'))
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 1.0,
-      minChildSize: 0.5,
-      maxChildSize: 1.0,
-      expand: false,
-      builder: (_, __) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.spacingM,
-            right: AppSpacing.spacingM,
-            top: AppSpacing.spacingM,
-            bottom:
-                MediaQuery.of(context).viewInsets.bottom + AppSpacing.spacingM,
+    final parts = _parts;
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: JarSheetFrame(
+        title: 'Paste a list',
+        children: [
+          Text(
+            'Paste options separated by commas or new lines.',
+            style: DsText.small,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Paste Options', style: AppTextStyles.titleMediumS),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+          const SizedBox(height: 12),
+          JarField(
+            label: 'Options',
+            focused: true,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 100),
+              child: JarBareInput(
+                controller: _controller,
+                hintText: 'e.g. Option A, Option B, Option C',
+                maxLines: 6,
+                minLines: 4,
+                keyboardType: TextInputType.multiline,
               ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              Text(
-                'Type or paste your options separated by commas.',
-                style: AppTextStyles.titleRegularXs.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 180),
-                child: TextField(
-                  controller: _controller,
-                  maxLines: null,
-                  textAlignVertical: TextAlignVertical.top,
-                  autofocus: true,
-                  cursorColor: Colors.white,
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'e.g. Option A, Option B, Option C',
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.4),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.primary,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(AppSpacing.spacingM),
-                    alignLabelWithHint: true,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-              AppButton(
-                text: 'Convert to options',
-                onPressed: () {
-                  final text = _controller.text.trim();
-                  if (text.isEmpty) return;
-                  final parts = text
-                      .split(',')
-                      .map((s) => s.trim())
-                      .where((s) => s.isNotEmpty)
-                      .toList();
-                  Navigator.pop(context);
-                  widget.onConvert(parts);
-                },
-              ),
-            ],
+            ),
           ),
-        );
-      },
+          if (parts.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [for (final p in parts) JarChip(label: p)],
+            ),
+          ],
+          const SizedBox(height: 16),
+          JarPrimaryButton(
+            label:
+                parts.isEmpty
+                    ? 'Add options'
+                    : 'Add ${parts.length} option${parts.length == 1 ? '' : 's'}',
+            onTap:
+                parts.isEmpty
+                    ? null
+                    : () {
+                      Navigator.pop(context);
+                      widget.onConvert(parts);
+                    },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -152,15 +131,6 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
   late bool _required;
   late bool _includeInExport;
   late final List<TextEditingController> _optionControllers;
-
-  static const _fieldTypeOptions = [
-    SelectOption(value: 'text', label: 'Text'),
-    SelectOption(value: 'number', label: 'Number'),
-    SelectOption(value: 'select', label: 'Select (dropdown)'),
-    SelectOption(value: 'checkbox', label: 'Checkbox'),
-    SelectOption(value: 'phone', label: 'Phone'),
-    SelectOption(value: 'email', label: 'Email'),
-  ];
 
   @override
   void initState() {
@@ -200,9 +170,7 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return _PasteOptionsSheet(
           initialText: initialText,
@@ -307,6 +275,62 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
     }
   }
 
+  /// Four answer types; phone and email live under Text as a format.
+  static const _types = [
+    ('text', 'Text'),
+    ('number', 'Number'),
+    ('select', 'Choice'),
+    ('checkbox', 'Yes/No'),
+  ];
+
+  static const _textFormats = [
+    ('text', 'Any text'),
+    ('phone', 'Phone'),
+    ('email', 'Email'),
+  ];
+
+  bool get _isTextType =>
+      _fieldType == 'text' || _fieldType == 'phone' || _fieldType == 'email';
+
+  void _delete() async {
+    final ok = await JarConfirmSheet.show(
+      context: context,
+      icon: Icons.delete_outline_rounded,
+      tone: DsTone.negative,
+      title: 'Delete this question?',
+      message:
+          '"${widget.existingField!.label}" will be removed from your payment page. This cannot be undone.',
+      confirmText: 'Delete',
+    );
+    if (ok != true || !mounted) return;
+    final summaryState = context.read<JarSummaryBloc>().state;
+    final currentFields =
+        summaryState is JarSummaryLoaded
+            ? (summaryState.jarData.customFields ?? [])
+                .map((f) => f.toJson())
+                .toList()
+            : <Map<String, dynamic>>[];
+    context.read<ManageCustomFieldsBloc>().add(
+      DeleteCustomFieldRequested(
+        jarId: widget.jarId,
+        index: widget.existingIndex!,
+        currentFields: currentFields,
+      ),
+    );
+  }
+
+  void _setType(String value) {
+    setState(() {
+      _fieldType = value;
+      if (value != 'select') {
+        for (final c in _optionControllers) {
+          c.dispose();
+        }
+        _optionControllers.clear();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ManageCustomFieldsBloc, ManageCustomFieldsState>(
@@ -318,190 +342,171 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.isEditMode ? 'Edit Custom Field' : 'Add Custom Field',
-          ),
-          centerTitle: true,
+        backgroundColor: AppColors.cream,
+        appBar: JarTopBar(
+          title: widget.isEditMode ? 'Edit question' : 'New question',
+          leadingIcon: Icons.close_rounded,
         ),
-        body: Column(
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.spacingM),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTextInput(
-                label: 'Field Label *',
-                hintText: 'e.g. Year Group, Department',
+            JarField(
+              label: 'Question',
+              focused: true,
+              child: JarBareInput(
                 controller: _labelController,
+                hintText: 'e.g. Which side are you from?',
               ),
-              const SizedBox(height: AppSpacing.spacingM),
-              SelectInput<String>(
-                label: 'Field Type',
+            ),
+            const SizedBox(height: 12),
+            JarSegmented<String>(
+              options: _types,
+              value: _isTextType ? 'text' : _fieldType,
+              onChanged: widget.isEditMode ? null : _setType,
+            ),
+            if (_isTextType) ...[
+              const SizedBox(height: 12),
+              const DsGroupLabel('Format'),
+              const SizedBox(height: 8),
+              JarSegmented<String>(
+                options: _textFormats,
                 value: _fieldType,
-                options: _fieldTypeOptions,
-                enabled: !widget.isEditMode,
-                onChanged: (value) => setState(() {
-                  _fieldType = value;
-                  if (value != 'select') {
-                    for (final c in _optionControllers) {
-                      c.dispose();
-                    }
-                    _optionControllers.clear();
-                  }
-                }),
+                onChanged: widget.isEditMode ? null : _setType,
               ),
-              const SizedBox(height: AppSpacing.spacingM),
+            ],
+            const SizedBox(height: 12),
 
-              if (_fieldType != 'checkbox') ...[
-                AppTextInput(
-                  label: 'Placeholder (optional)',
-                  hintText: 'e.g. Enter your year group',
-                  controller: _placeholderController,
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-              ],
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
-                  vertical: AppSpacing.spacingXs,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Required', style: AppTextStyles.titleMediumS),
-                  subtitle: Text(
-                    'Contributors must fill in this field',
-                    style: AppTextStyles.titleRegularXs,
-                  ),
-                  trailing: CustomCupertinoSwitch(
-                    defaultValue: _required,
-                    onChanged: (v) => setState(() => _required = v),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.spacingS),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
-                  vertical: AppSpacing.spacingXs,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Include in PDF export', style: AppTextStyles.titleMediumS),
-                  subtitle: Text(
-                    'Show this field\'s value in exported PDF reports',
-                    style: AppTextStyles.titleRegularXs,
-                  ),
-                  trailing: CustomCupertinoSwitch(
-                    defaultValue: _includeInExport,
-                    onChanged: (v) => setState(() => _includeInExport = v),
-                  ),
-                ),
-              ),
-
-              if (_fieldType == 'select') ...[
-                const SizedBox(height: AppSpacing.spacingM),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Options', style: AppTextStyles.titleMediumS),
-                    Row(
-                      children: [
-                        TextButton.icon(
-                          onPressed: _openPasteSheet,
-                          icon: const Icon(
-                            Icons.content_paste,
-                            size: 16,
-                            color: Colors.white,
+            if (_fieldType == 'select') ...[
+              DsListCard(
+                children: [
+                  for (var i = 0; i < _optionControllers.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            child: Text('${i + 1}', style: DsText.caption),
                           ),
-                          label: const Text(
-                            'Paste',
-                            style: TextStyle(color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: JarBareInput(
+                              controller: _optionControllers[i],
+                              hintText: 'Option label',
+                            ),
                           ),
-                        ),
-                        TextButton.icon(
-                          onPressed: _addOption,
-                          icon: const Icon(
-                            Icons.add,
-                            size: 16,
-                            color: Colors.white,
+                          IconButton(
+                            onPressed: () => _removeOption(i),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: AppColors.muted,
+                            ),
                           ),
-                          label: const Text(
-                            'Add option',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.spacingXs),
-                if (_optionControllers.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.spacingXs,
-                    ),
-                    child: Text(
-                      'No options added yet. Tap "Add option" to add one.',
-                      style: AppTextStyles.titleRegularXs.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.5),
+                  InkWell(
+                    onTap: _addOption,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.add_rounded,
+                            size: 18,
+                            color: AppColors.navy,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Add option',
+                              style: DsText.rowTitle.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _openPasteSheet,
+                            child: const Text(
+                              'Paste list',
+                              style: TextStyle(
+                                fontFamily: 'Supreme',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: AppColors.navy,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppColors.lime,
+                                decorationThickness: 3,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ...List.generate(_optionControllers.length, (i) {
-                  return Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: AppSpacing.spacingXs,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AppTextInput(
-                            hintText: 'Option label',
-                            controller: _optionControllers[i],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.spacingXs),
-                        IconButton(
-                          onPressed: () => _removeOption(i),
-                          icon: const Icon(Icons.remove_circle_outline),
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
-
-            ],
-          ),
-        ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.spacingM),
-              child: BlocBuilder<ManageCustomFieldsBloc, ManageCustomFieldsState>(
-                builder: (context, state) {
-                  return AppButton(
-                    text: widget.isEditMode ? 'Save Changes' : 'Add Field',
-                    isLoading: state is ManageCustomFieldsInProgress,
-                    onPressed:
-                        state is ManageCustomFieldsInProgress ? null : _submit,
-                  );
-                },
+                ],
               ),
+              const SizedBox(height: 12),
+            ],
+
+            if (_fieldType != 'checkbox' && _fieldType != 'select') ...[
+              JarField(
+                label: 'Placeholder (optional)',
+                child: JarBareInput(
+                  controller: _placeholderController,
+                  hintText: 'e.g. Enter your year group',
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            DsListCard(
+              children: [
+                DsRow(
+                  title: 'Required',
+                  trailing: JarToggle(
+                    value: _required,
+                    onChanged: (v) => setState(() => _required = v),
+                  ),
+                ),
+                DsRow(
+                  title: 'Include in PDF',
+                  trailing: JarToggle(
+                    value: _includeInExport,
+                    onChanged: (v) => setState(() => _includeInExport = v),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        bottomNavigationBar: JarFooter(
+          children: [
+            BlocBuilder<ManageCustomFieldsBloc, ManageCustomFieldsState>(
+              builder: (context, state) {
+                final busy = state is ManageCustomFieldsInProgress;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    JarPrimaryButton(
+                      label:
+                          widget.isEditMode ? 'Save changes' : 'Add question',
+                      loading: busy,
+                      onTap: busy ? null : _submit,
+                    ),
+                    if (widget.isEditMode)
+                      JarGhostButton(
+                        label: 'Delete question',
+                        color: AppColors.negative,
+                        onTap: busy ? null : _delete,
+                      ),
+                  ],
+                );
+              },
             ),
           ],
         ),

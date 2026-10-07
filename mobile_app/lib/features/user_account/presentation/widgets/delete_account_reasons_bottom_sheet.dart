@@ -1,28 +1,27 @@
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_loading_overlay/flutter_loading_overlay.dart';
 
+/// Close account page (mockup "Close account"): "Why are you leaving?"
+/// reason list, a red note, then a red Close account button.
+///
+/// Kept under its old name so callers don't change; it is now pushed as a
+/// full page rather than shown as a sheet.
 class DeleteAccountReasonsBottomSheet extends StatefulWidget {
   const DeleteAccountReasonsBottomSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: false,
-      isDismissible: true,
-      enableDrag: true,
-      builder: (context) => const DeleteAccountReasonsBottomSheet(),
+    return Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const DeleteAccountReasonsBottomSheet(),
+      ),
     );
   }
 
@@ -38,13 +37,10 @@ class _DeleteAccountReasonsBottomSheetState
   bool get isOtherSelected => selectedReason == 'Other';
 
   final List<String> _reasons = [
-    'No longer need the service',
-    'Found a better alternative',
-    'Privacy concerns',
-    'Too expensive',
-    'Technical issues',
-    'Poor customer support',
-    'Account security concerns',
+    "I don't need it anymore",
+    'Fees are too high',
+    'Problems with payments',
+    'Security concerns',
     'Other',
   ];
 
@@ -53,6 +49,10 @@ class _DeleteAccountReasonsBottomSheetState
     _otherReasonController.dispose();
     super.dispose();
   }
+
+  bool get _canSubmit =>
+      selectedReason != null &&
+      (!isOtherSelected || _otherReasonController.text.trim().isNotEmpty);
 
   @override
   Widget build(BuildContext context) {
@@ -64,122 +64,78 @@ class _DeleteAccountReasonsBottomSheetState
           AppSnackBar.showError(context, message: state.message);
         }
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.spacingM,
-            right: AppSpacing.spacingM,
-            bottom:
-                MediaQuery.of(context).viewInsets.bottom + AppSpacing.spacingM,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Fixed Header
-              Center(child: DragHandle()),
-              const SizedBox(height: AppSpacing.spacingM),
-              Text(
-                'Why are you deleting your account?',
-                style: TextStyles.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              Text(
-                'Please let us know why you\'re leaving. This helps us improve our service.',
-                style: TextStyles.titleRegularSm,
-              ),
-              const SizedBox(height: AppSpacing.spacingL),
-
-              // Scrollable Content Area
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Reasons list
-                      ...List.generate(_reasons.length, (index) {
-                        final reason = _reasons[index];
-                        return ListTile(
-                          leading: Icon(
-                            selectedReason == reason
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_unchecked,
-                          ),
-                          title: Text(reason, style: TextStyles.titleRegularM),
-                          onTap: () {
-                            setState(() {
-                              selectedReason = reason;
-                              if (!isOtherSelected) {
-                                _otherReasonController.clear();
-                              }
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        );
-                      }),
-
-                      // Other reason text field (show when "Other" is selected)
-                      if (isOtherSelected) ...[
-                        const SizedBox(height: AppSpacing.spacingM),
-                        AppTextInput(
-                          controller: _otherReasonController,
-                          hintText: 'Please specify your reason...',
-                          maxLines: 3,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-
-              // Fixed Bottom Buttons
-              const SizedBox(height: AppSpacing.spacingM),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton.outlined(
-                      text: localizations.cancel,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.spacingM),
-                  BlocBuilder<UserAccountBloc, UserAccountState>(
-                    builder: (context, state) {
-                      return Expanded(
-                        child: AppButton.filled(
-                          text: 'Delete Account',
-                          isLoading: state is UserAccountLoading,
-                          onPressed:
-                              selectedReason != null &&
-                                      (!isOtherSelected ||
-                                          _otherReasonController.text
-                                              .trim()
-                                              .isNotEmpty)
-                                  ? () {
-                                    context.read<UserAccountBloc>().add(
-                                      DeleteAccount(
-                                        reason:
-                                            isOtherSelected
-                                                ? _otherReasonController.text
-                                                    .trim()
-                                                : selectedReason!,
-                                      ),
-                                    );
-                                  }
-                                  : null,
-                        ),
-                      );
+      child: Scaffold(
+        backgroundColor: AppColors.cream,
+        appBar: const JarTopBar(title: 'Close account'),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
+              child: Text('Why are you leaving?', style: AccText.h1),
+            ),
+            const SizedBox(height: 12),
+            DsListCard(
+              children: [
+                for (final reason in _reasons)
+                  DsRow(
+                    title: reason == 'Other' ? 'Something else' : reason,
+                    trailing: AccRadio(selectedReason == reason),
+                    onTap: () {
+                      setState(() {
+                        selectedReason = reason;
+                        if (!isOtherSelected) {
+                          _otherReasonController.clear();
+                        }
+                      });
                     },
                   ),
-                ],
+              ],
+            ),
+            if (isOtherSelected) ...[
+              const SizedBox(height: 12),
+              AccField(
+                label: 'Tell us more',
+                hint: 'Please specify your reason...',
+                controller: _otherReasonController,
+                maxLines: 3,
+                onChanged: (_) => setState(() {}),
               ),
             ],
-          ),
+            const SizedBox(height: 12),
+            DsNote(
+              tone: DsTone.negative,
+              icon: Icons.error_outline_rounded,
+              text: localizations.closeAccountDescription,
+            ),
+          ],
+        ),
+        bottomNavigationBar: JarFooter(
+          children: [
+            BlocBuilder<UserAccountBloc, UserAccountState>(
+              builder: (context, state) {
+                return AppButton.filled(
+                  text: 'Close account',
+                  backgroundColor: AppColors.negative,
+                  textColor: AppColors.surfaceWhite,
+                  isLoading: state is UserAccountLoading,
+                  onPressed:
+                      _canSubmit
+                          ? () {
+                            context.read<UserAccountBloc>().add(
+                              DeleteAccount(
+                                reason:
+                                    isOtherSelected
+                                        ? _otherReasonController.text.trim()
+                                        : selectedReason!,
+                              ),
+                            );
+                          }
+                          : null,
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

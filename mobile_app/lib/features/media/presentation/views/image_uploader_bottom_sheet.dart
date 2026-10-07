@@ -1,13 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
-import 'package:Hoga/core/widgets/card.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import '../../logic/bloc/media_bloc.dart';
@@ -20,7 +22,7 @@ import '../../logic/bloc/media_bloc.dart';
 /// ```dart
 /// ImageUploaderBottomSheet.show(context, context: MediaUploadContext.userPhoto);
 /// ```
-class ImageUploaderBottomSheet extends StatelessWidget {
+class ImageUploaderBottomSheet extends StatefulWidget {
   final MediaUploadContext uploadContext;
   final int maxImages;
 
@@ -70,8 +72,36 @@ class ImageUploaderBottomSheet extends StatelessWidget {
   }
 
   @override
+  State<ImageUploaderBottomSheet> createState() =>
+      _ImageUploaderBottomSheetState();
+}
+
+class _ImageUploaderBottomSheetState extends State<ImageUploaderBottomSheet> {
+  MediaUploadContext get uploadContext => widget.uploadContext;
+  int get maxImages => widget.maxImages;
+  String get collection => widget.collection;
+  String? get contextId => widget.contextId;
+  bool get allowFiles => widget.allowFiles;
+
+  /// The file being uploaded, shown in the progress row.
+  XFile? _picked;
+
+  void _upload(BuildContext context, XFile file, String alt) {
+    if (mounted) setState(() => _picked = file);
+    context.read<MediaBloc>().add(
+      RequestUploadMedia(
+        imageFile: file,
+        alt: alt,
+        context: uploadContext,
+        collection: collection,
+        contextId: contextId,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return BlocListener<MediaBloc, MediaState>(
       listener: (context, state) {
@@ -80,131 +110,141 @@ class ImageUploaderBottomSheet extends StatelessWidget {
           // MediaModel can be accessed via BlocProvider.of<MediaBloc>(context).state
         } else if (state is MediaError) {
           Navigator.pop(context);
-          // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '${AppLocalizations.of(context)!.uploadFailed}: ${state.errorMessage}',
-              ),
-              backgroundColor: Colors.red,
-            ),
+          AppSnackBar.showError(
+            context,
+            message: '${l10n.uploadFailed}: ${state.errorMessage}',
           );
         }
       },
       child: BlocBuilder<MediaBloc, MediaState>(
         builder: (context, state) {
-          return Container(
-            decoration: BoxDecoration(
-              color:
-                  isDark
-                      ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.onPrimary,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(AppRadius.radiusM),
-                topRight: Radius.circular(AppRadius.radiusM),
+          final uploading = state is MediaLoading;
+          final isImage =
+              _picked != null &&
+              RegExp(
+                r'\.(jpe?g|png|heic|webp)$',
+                caseSensitive: false,
+              ).hasMatch(_picked!.name);
+          return AccSheet(
+            children: [
+              Text(
+                allowFiles ? l10n.uploadImage : 'Add photo',
+                style: AccText.h2,
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DragHandle(),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingM,
-                    vertical: AppSpacing.spacingXs,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context)!.uploadImage,
-                          style: TextStyles.titleMediumLg.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      if (state is MediaLoading)
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                    ],
-                  ),
-                ),
-
-                if (state is! MediaLoading) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingM,
+              IgnorePointer(
+                ignoring: uploading,
+                child: Opacity(
+                  opacity: uploading ? 0.5 : 1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.cream,
+                      borderRadius: BorderRadius.circular(AppRadius.radiusCard),
                     ),
+                    clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
                         _buildOptionTile(
                           context,
-                          icon: Icons.camera_alt_outlined,
-                          title: AppLocalizations.of(context)!.takePhoto,
-                          subtitle:
-                              AppLocalizations.of(
-                                context,
-                              )!.useCameraToTakePhoto,
+                          icon: Icons.photo_camera_outlined,
+                          title: 'Take photo',
                           onTap:
                               () => _handleImageSelection(
                                 context,
                                 ImageSource.camera,
                               ),
                         ),
-
-                        const SizedBox(height: AppSpacing.spacingS),
-
+                        const Divider(height: 1, color: AppColors.line),
                         _buildOptionTile(
                           context,
-                          icon: Icons.photo_library_outlined,
-                          title:
-                              AppLocalizations.of(context)!.chooseFromGallery,
-                          subtitle:
-                              AppLocalizations.of(
-                                context,
-                              )!.selectImageFromGallery,
+                          icon: Icons.image_outlined,
+                          title: 'Choose from library',
                           onTap:
                               () => _handleImageSelection(
                                 context,
                                 ImageSource.gallery,
                               ),
                         ),
-
                         if (allowFiles) ...[
-                          const SizedBox(height: AppSpacing.spacingS),
+                          const Divider(height: 1, color: AppColors.line),
                           _buildOptionTile(
                             context,
-                            icon: Icons.description_outlined,
-                            title: 'Choose file',
-                            subtitle: 'Upload a PDF or image',
+                            icon: Icons.insert_drive_file_outlined,
+                            title: 'Upload file',
                             onTap: () => _handleFileSelection(context),
                           ),
                         ],
                       ],
                     ),
                   ),
-                ] else ...[
-                  Padding(
-                    padding: EdgeInsets.all(AppSpacing.spacingL),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        SizedBox(height: AppSpacing.spacingM),
-                        Text(AppLocalizations.of(context)!.uploadingImage),
-                      ],
-                    ),
+                ),
+              ),
+              if (uploading)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
                   ),
-                ],
-
-                const SizedBox(height: AppSpacing.spacingL),
-              ],
-            ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.line),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.cream,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child:
+                            isImage
+                                ? Image.file(
+                                  File(_picked!.path),
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => const Icon(
+                                        Icons.image_outlined,
+                                        size: 18,
+                                        color: AppColors.navy,
+                                      ),
+                                )
+                                : const Icon(
+                                  Icons.insert_drive_file_outlined,
+                                  size: 18,
+                                  color: AppColors.navy,
+                                ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _picked != null
+                                  ? '${_picked!.name} · ${l10n.uploadingImage}'
+                                  : l10n.uploadingImage,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: DsText.caption,
+                            ),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: const LinearProgressIndicator(
+                                minHeight: 6,
+                                backgroundColor: AppColors.cream,
+                                color: AppColors.navy,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -260,15 +300,7 @@ class ImageUploaderBottomSheet extends StatelessWidget {
               generatedAltText.lastIndexOf('.'),
             );
           }
-          context.read<MediaBloc>().add(
-            RequestUploadMedia(
-              imageFile: image,
-              alt: generatedAltText,
-              context: uploadContext,
-              collection: collection,
-              contextId: contextId,
-            ),
-          );
+          _upload(context, image, generatedAltText);
         } else if (context.mounted) {
           Navigator.pop(context);
         }
@@ -276,12 +308,7 @@ class ImageUploaderBottomSheet extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error selecting image: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackBar.showError(context, message: 'Error selecting image: $e');
       }
     }
   }
@@ -307,26 +334,11 @@ class ImageUploaderBottomSheet extends StatelessWidget {
       if (altText.contains('.')) {
         altText = altText.substring(0, altText.lastIndexOf('.'));
       }
-      if (context.mounted) {
-        context.read<MediaBloc>().add(
-          RequestUploadMedia(
-            imageFile: file,
-            alt: altText,
-            context: uploadContext,
-            collection: collection,
-            contextId: contextId,
-          ),
-        );
-      }
+      if (context.mounted) _upload(context, file, altText);
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error selecting file: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackBar.showError(context, message: 'Error selecting file: $e');
       }
     }
   }
@@ -335,66 +347,14 @@ class ImageUploaderBottomSheet extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
+    return DsRow(
+      leading: AccRowIcon(icon, background: AppColors.surfaceWhite),
+      title: title,
+      subtitle: subtitle,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: AppCard(
-        variant: CardVariant.secondary,
-        padding: const EdgeInsets.all(AppSpacing.spacingM),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.spacingS),
-              decoration: BoxDecoration(
-                color:
-                    isDark
-                        ? Theme.of(context).colorScheme.surface
-                        : Theme.of(context).colorScheme.onPrimary,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.spacingM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyles.titleMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  Text(
-                    subtitle,
-                    style: TextStyles.titleRegularM.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

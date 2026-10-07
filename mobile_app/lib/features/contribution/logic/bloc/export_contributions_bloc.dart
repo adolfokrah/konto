@@ -33,13 +33,17 @@ class ExportContributionsBloc
     );
 
     if (result['success'] == true) {
-      emit(ExportContributionsSuccess(
-        message: result['message'] ?? 'Statement emailed successfully',
-      ));
+      emit(
+        ExportContributionsSuccess(
+          message: result['message'] ?? 'Statement emailed successfully',
+        ),
+      );
     } else {
-      emit(ExportContributionsFailure(
-        message: result['message'] ?? 'Export failed',
-      ));
+      emit(
+        ExportContributionsFailure(
+          message: result['message'] ?? 'Export failed',
+        ),
+      );
     }
   }
 }

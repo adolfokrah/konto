@@ -34,13 +34,24 @@ class CollaboratorsProvider extends BaseApiProvider {
             {
               'lastName': {'contains': query},
             },
+            {
+              'username': {'contains': query.replaceFirst('@', '')},
+            },
           ],
         },
       };
 
+      // Reading users needs a signed-in user; without the token the server
+      // answers 403 "You are not allowed to perform this action."
+      final headers = await getAuthenticatedHeaders();
+      if (headers == null) {
+        throw Exception('Not signed in');
+      }
+
       final response = await dio.get(
         '${BackendConfig.apiBaseUrl}/users',
         queryParameters: queryParams,
+        options: Options(headers: headers),
       );
 
       if (response.statusCode == 200) {

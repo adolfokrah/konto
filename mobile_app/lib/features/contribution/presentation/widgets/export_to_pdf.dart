@@ -1,11 +1,13 @@
-import 'package:Hoga/core/widgets/icon_button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/export_options_sheet.dart';
 
+/// Boxed export button for the Activity header. Hidden while there is
+/// nothing to export.
 class ExportToPdf extends StatelessWidget {
   const ExportToPdf({super.key});
 
@@ -27,12 +29,10 @@ class ExportToPdf extends StatelessWidget {
                 listState.contributions.isEmpty) {
               return const SizedBox.shrink();
             }
-            return AppIconButton(
+            return CollectBoxButton(
+              icon: Icons.download_rounded,
               loading: isLoading,
-              enabled: !isLoading,
-              onPressed: () => ExportOptionsSheet.show(context),
-              icon: isLoading ? Icons.hourglass_top : Icons.ios_share,
-              size: const Size(50, 50),
+              onTap: () => ExportOptionsSheet.show(context),
             );
           },
         );

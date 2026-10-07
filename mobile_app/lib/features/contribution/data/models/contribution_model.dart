@@ -510,12 +510,15 @@ class ContributionModel {
   final String? contributor;
   final String? contributorPhoneNumber;
   final String? paymentMethod; // 'mobile-money' | 'bank' | 'cash'
+
+  /// Network the payer actually paid with ('MTN', 'Telecel', 'AirtelTigo').
+  /// Use this, never the phone prefix: numbers can be ported between networks.
+  final String? mobileMoneyProvider;
   final String? accountNumber;
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
   final ChargesBreakdown? chargesBreakdown; // Detailed charges breakdown
-  final String
-  paymentStatus; // 'pending' | 'completed' | 'failed'
+  final String paymentStatus; // 'pending' | 'completed' | 'failed'
   final ContributionUser? collector;
   final bool viaPaymentLink;
   final ContributionType type; // contribution | payout | refund
@@ -532,6 +535,7 @@ class ContributionModel {
     this.contributor,
     this.contributorPhoneNumber,
     this.paymentMethod,
+    this.mobileMoneyProvider,
     this.accountNumber,
     required this.amountContributed,
     this.charges,
@@ -593,6 +597,7 @@ class ContributionModel {
         contributor: json['contributor'] as String?,
         contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
         paymentMethod: json['paymentMethod'] as String?,
+        mobileMoneyProvider: json['mobileMoneyProvider'] as String?,
         accountNumber: json['accountNumber'] as String?,
         amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
         charges:
@@ -606,7 +611,10 @@ class ContributionModel {
                 )
                 : null,
         paymentStatus: json['paymentStatus'] as String? ?? 'pending',
-        collector: json['collector'] != null ? _parseCollector(json['collector']) : null,
+        collector:
+            json['collector'] != null
+                ? _parseCollector(json['collector'])
+                : null,
         viaPaymentLink: json['viaPaymentLink'] as bool? ?? false,
         type: ContributionType.fromString(
           json['type'] as String? ?? 'contribution',
@@ -614,9 +622,10 @@ class ContributionModel {
         isSettled: json['isSettled'] as bool? ?? false,
         transactionReference: json['transactionReference'] as String?,
         remarks: json['remarks'] as String?,
-        customFieldValues: (json['customFieldValues'] as List<dynamic>?)
-            ?.map((e) => Map<String, dynamic>.from(e as Map))
-            .toList(),
+        customFieldValues:
+            (json['customFieldValues'] as List<dynamic>?)
+                ?.map((e) => Map<String, dynamic>.from(e as Map))
+                .toList(),
         createdAt: DateTime.parse(
           json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         ),
@@ -637,6 +646,8 @@ class ContributionModel {
       if (contributorPhoneNumber != null)
         'contributorPhoneNumber': contributorPhoneNumber,
       if (paymentMethod != null) 'paymentMethod': paymentMethod,
+      if (mobileMoneyProvider != null)
+        'mobileMoneyProvider': mobileMoneyProvider,
       if (accountNumber != null) 'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       if (charges != null) 'charges': charges,
@@ -647,7 +658,8 @@ class ContributionModel {
       'viaPaymentLink': viaPaymentLink,
       'type': type.value,
       'isSettled': isSettled,
-      if (transactionReference != null) 'transactionReference': transactionReference,
+      if (transactionReference != null)
+        'transactionReference': transactionReference,
       if (remarks != null) 'remarks': remarks,
       if (customFieldValues != null) 'customFieldValues': customFieldValues,
       'createdAt': createdAt.toIso8601String(),
@@ -662,6 +674,7 @@ class ContributionModel {
     String? contributor,
     String? contributorPhoneNumber,
     String? paymentMethod,
+    String? mobileMoneyProvider,
     String? accountNumber,
     double? amountContributed,
     double? charges,
@@ -684,6 +697,7 @@ class ContributionModel {
       contributorPhoneNumber:
           contributorPhoneNumber ?? this.contributorPhoneNumber,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      mobileMoneyProvider: mobileMoneyProvider ?? this.mobileMoneyProvider,
       accountNumber: accountNumber ?? this.accountNumber,
       amountContributed: amountContributed ?? this.amountContributed,
       charges: charges ?? this.charges,
@@ -714,7 +728,8 @@ class ContributionModel {
   bool get isContribution => type == ContributionType.contribution;
   bool get isPayout => type == ContributionType.payout;
   bool get isRefund => type == ContributionType.refund;
-  bool get isTransfer => isPayout || isRefund; // Payouts and refunds show negative amounts
+  bool get isTransfer =>
+      isPayout || isRefund; // Payouts and refunds show negative amounts
 
   /// Get formatted amount with currency
   String get formattedAmount =>

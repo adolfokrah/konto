@@ -13,10 +13,12 @@ class UserAccountBloc extends Bloc<UserAccountEvent, UserAccountState> {
   final UserAccountRepository _userAccountRepository;
   final AuthBloc _authBloc;
 
-  UserAccountBloc({required AuthBloc authBloc, required UserAccountRepository userAccountRepository})
-    : _userAccountRepository = userAccountRepository,
-      _authBloc = authBloc,
-      super(UserAccountInitial()) {
+  UserAccountBloc({
+    required AuthBloc authBloc,
+    required UserAccountRepository userAccountRepository,
+  }) : _userAccountRepository = userAccountRepository,
+       _authBloc = authBloc,
+       super(UserAccountInitial()) {
     on<UpdatePersonalDetails>(_updatePersonalDetails);
     on<DeleteAccount>(_deleteAccount);
   }

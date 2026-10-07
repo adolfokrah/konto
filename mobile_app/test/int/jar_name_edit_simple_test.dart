@@ -10,6 +10,7 @@ import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_name_edit_view.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
@@ -63,7 +64,8 @@ void main() {
         'status': 'open',
         'creator': {
           'id': 'test-user-123',
-          'firstName': 'Test', 'lastName': 'User',
+          'firstName': 'Test',
+          'lastName': 'User',
           'email': 'test@example.com',
           'phoneNumber': '+1234567890',
           'countryCode': 'GH',
@@ -130,9 +132,7 @@ void main() {
             supportedLocales: const [Locale('en')],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const JarNameEditView(),
-              },
+              routes: {'/': (context) => const JarNameEditView()},
             ),
           ),
         ),
@@ -145,8 +145,24 @@ void main() {
       // Verify the jar name edit form elements are displayed
       expect(find.byType(JarNameEditView), findsOneWidget);
 
-      // Check that we're on the jar name edit view
-      expect(find.text('Edit Jar Name'), findsOneWidget);
+      // Check that we're on the jar name edit view (redesigned top bar is
+      // titled with the field name and carries a Save action)
+      expect(
+        find.descendant(
+          of: find.byType(JarTopBar),
+          matching: find.textContaining(
+            RegExp('jar name', caseSensitive: false),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(JarTopBar),
+          matching: find.byType(JarBarLink),
+        ),
+        findsOneWidget,
+      );
 
       // Debug BLoC state
       final jarSummaryBloc = BlocProvider.of<JarSummaryBloc>(
@@ -154,23 +170,19 @@ void main() {
       );
       print('🔍 JarSummaryBloc current state: ${jarSummaryBloc.state}');
 
-      // Look for text input field
-      final textField = find.byType(TextFormField);
-      print('🔍 TextFormFields found: ${textField.evaluate().length}');
+      // Look for the (redesigned) bare text input field
+      final textField = find.descendant(
+        of: find.byType(JarBareInput),
+        matching: find.byType(TextField),
+      );
+      expect(textField, findsOneWidget);
 
-      if (textField.evaluate().isNotEmpty) {
-        expect(textField, findsOneWidget);
+      // Check the current jar name is displayed in the input field
+      final input = tester.widget<TextField>(textField);
+      expect(input.controller?.text, equals('Emergency Fund'));
 
-        // Check if the current jar name is displayed in the input field
-        final textFormField = tester.widget<TextFormField>(textField);
-        expect(textFormField.controller?.text, equals('Emergency Fund'));
-
-        print(
-          '✅ Test passed: Jar name edit form displays with current jar name',
-        );
-      } else {
-        print('❌ TextFormField not found - form may not be loaded');
-      }
+      // No framework errors (e.g. setState during build) while seeding it
+      expect(tester.takeException(), isNull);
     });
   });
 }

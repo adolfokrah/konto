@@ -5,6 +5,7 @@ import 'package:Hoga/core/constants/currencies.dart';
 import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
 import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/core/widgets/small_button.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
@@ -75,20 +76,17 @@ class _CurrencyPickerState extends State<CurrencyPicker> {
     VoidCallback onTap,
     AppLocalizations localizations,
   ) {
-    return ListTile(
-      leading: CircleAvatar(backgroundImage: NetworkImage(currency.flagUrl)),
-      title: Text(
-        CurrencyUtils.getLocalizedCurrencyName(currency.code, localizations),
-        style: TextStyles.titleMedium,
+    return DsRow(
+      leading: CircleAvatar(
+        radius: 16,
+        backgroundImage: NetworkImage(currency.flagUrl),
       ),
-      subtitle: Text(currency.code, style: TextStyles.titleRegularSm),
-      trailing:
-          isSelected
-              ? Icon(
-                Icons.check_circle,
-                color: Theme.of(context).colorScheme.primary,
-              )
-              : null,
+      title: CurrencyUtils.getLocalizedCurrencyName(
+        currency.code,
+        localizations,
+      ),
+      subtitle: currency.code,
+      trailing: DsRadio(selected: isSelected),
       onTap: onTap,
     );
   }

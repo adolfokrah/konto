@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/di/service_locator.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 
 /// Bottom sheet for reporting a jar.
 /// Returns `true` on successful report, `null` on dismiss.
@@ -33,7 +31,15 @@ class JarReportSheet extends StatefulWidget {
 }
 
 class _JarReportSheetState extends State<JarReportSheet> {
+  static const _reasons = [
+    'Looks like a scam',
+    'Wrong or misleading information',
+    'Offensive content',
+    'Something else',
+  ];
+
   final _controller = TextEditingController();
+  int _reason = 0;
   bool _isSubmitting = false;
   String? _error;
 
@@ -44,11 +50,15 @@ class _JarReportSheetState extends State<JarReportSheet> {
   }
 
   Future<void> _submit() async {
-    final message = _controller.text.trim();
-    if (message.isEmpty) {
-      setState(() => _error = 'Please enter a reason for your report');
+    final details = _controller.text.trim();
+    final isOther = _reason == _reasons.length - 1;
+    if (isOther && details.isEmpty) {
+      setState(() => _error = 'Please tell us what\'s wrong');
       return;
     }
+    // The API takes one message: the chosen reason plus any details.
+    final message =
+        details.isEmpty ? _reasons[_reason] : '${_reasons[_reason]}: $details';
 
     setState(() {
       _isSubmitting = true;
@@ -86,68 +96,48 @@ class _JarReportSheetState extends State<JarReportSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
+      child: JarSheetFrame(
+        title: 'Report this jar',
+        children: [
+          Text(
+            'We review every report. The organizer won\'t know it was you.',
+            style: DsText.small,
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Center(child: DragHandle()),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingL,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppSpacing.spacingS),
-                  Text('Report Jar', style: TextStyles.titleBoldLg),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  Text(
-                    'Tell us why you want to report this jar.',
-                    style: TextStyles.titleRegularSm.copyWith(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.color
-                          ?.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  TextField(
-                    controller: _controller,
-                    maxLines: 5,
-                    minLines: 3,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Describe the issue...',
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppRadius.radiusM),
-                      ),
-                      errorText: _error,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButton(
-                      text: 'Submit Report',
-                      onPressed: _isSubmitting ? null : _submit,
-                      isLoading: _isSubmitting,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingL),
-                ],
-              ),
+          const SizedBox(height: 14),
+          JarFillList(
+            children: [
+              for (var i = 0; i < _reasons.length; i++)
+                DsRow(
+                  title: _reasons[i],
+                  trailing: JarRadio(selected: _reason == i),
+                  onTap: () => setState(() => _reason = i),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          JarField(
+            label: 'Details (optional)',
+            child: JarBareInput(
+              controller: _controller,
+              hintText: 'Tell us more',
+              maxLines: 4,
+              minLines: 2,
+            ),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: DsText.caption.copyWith(color: AppColors.negative),
             ),
           ],
-        ),
+          const SizedBox(height: 16),
+          JarPrimaryButton(
+            label: 'Send report',
+            loading: _isSubmitting,
+            onTap: _isSubmitting ? null : _submit,
+          ),
+        ],
       ),
     );
   }

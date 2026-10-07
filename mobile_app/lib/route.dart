@@ -5,7 +5,9 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String otp = '/otp';
+  static const String home = '/home';
   static const String jarDetail = '/jar_detail';
+  static const String jars = '/jars';
   static const String contributionRequest = '/request_contribution';
   static const String addContribution = '/add_contribution';
   static const String saveContribution = '/save_contribution';
@@ -34,4 +36,6 @@ class AppRoutes {
   static const String referral = '/referral';
   static const String jarCustomFields = '/jar_custom_fields';
   static const String jarCustomFieldAdd = '/jar_custom_field_add';
+  static const String insights = '/insights';
+  static const String goalForecast = '/goal_forecast';
 }

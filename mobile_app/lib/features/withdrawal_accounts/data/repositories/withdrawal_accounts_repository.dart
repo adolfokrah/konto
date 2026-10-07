@@ -10,7 +10,9 @@ class WithdrawalAccountsRepository {
   }) : _apiProvider = apiProvider;
 
   /// List the current user's withdrawal accounts.
-  Future<({bool success, String? message, List<WithdrawalAccountModel> accounts})>
+  Future<
+    ({bool success, String? message, List<WithdrawalAccountModel> accounts})
+  >
   listAccounts() async {
     final result = await _apiProvider.listAccounts();
     if (result['success'] == true) {

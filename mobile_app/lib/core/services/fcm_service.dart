@@ -85,7 +85,8 @@ class FCMService {
       final path = messageData['path'];
 
       final jarId = messageData['jarId'];
-      final contributionId = messageData['contributionId'] ?? messageData['transactionId'];
+      final contributionId =
+          messageData['contributionId'] ?? messageData['transactionId'];
       final BuildContext? context = rootNavigatorKey.currentContext;
 
       if (context == null) {
@@ -117,7 +118,9 @@ class FCMService {
                 );
                 _triggerAutoLogin(postNavContext);
               } catch (e) {
-                print('⚠️ Could not dispatch side effects after $type navigation: $e');
+                print(
+                  '⚠️ Could not dispatch side effects after $type navigation: $e',
+                );
               }
             }
           });
@@ -171,7 +174,8 @@ class FCMService {
     final BuildContext? context = rootNavigatorKey.currentContext;
 
     // Skip notification for contribution/payout-approval on the currently selected jar
-    if ((type == 'contribution' || type == 'payout-approval') && context != null) {
+    if ((type == 'contribution' || type == 'payout-approval') &&
+        context != null) {
       final jarId = messageData['jarId'];
       try {
         final state = context.read<JarSummaryBloc>().state;
@@ -185,11 +189,7 @@ class FCMService {
     final body = message.notification?.body ?? '';
     if (title.isEmpty && body.isEmpty) return;
 
-    LocalNotificationService.show(
-      title: title,
-      body: body,
-      data: messageData,
-    );
+    LocalNotificationService.show(title: title, body: body, data: messageData);
   }
 
   /// Trigger auto login to refresh user authentication state

@@ -47,7 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         // If username or email conflicts, show as error
         if (conflictField == 'username' || conflictField == 'email') {
-          emit(AuthError(error: message));
+          emit(AuthError(error: message, conflictField: conflictField));
         } else {
           // Phone number conflict - user should login
           emit(

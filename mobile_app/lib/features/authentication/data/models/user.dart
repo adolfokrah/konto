@@ -64,14 +64,16 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      // Contact fields are only returned for yourself (or to admins); other
+      // users, e.g. collector search results, come back without them.
       id: json['id'] as String,
-      email: json['email'] as String,
+      email: json['email'] as String? ?? '',
       firstName: json['firstName'] as String? ?? '',
       lastName: json['lastName'] as String? ?? '',
       username: json['username'] as String? ?? '',
-      phoneNumber: json['phoneNumber'] as String,
-      countryCode: json['countryCode'] as String,
-      country: json['country'] as String,
+      phoneNumber: json['phoneNumber'] as String? ?? '',
+      countryCode: json['countryCode'] as String? ?? '',
+      country: json['country'] as String? ?? '',
       kycStatus: json['kycStatus'] as String? ?? 'none',
       kybStatus: json['kybStatus'] as String? ?? 'none',
       accountType: json['accountType'] as String? ?? 'individual',

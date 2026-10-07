@@ -48,6 +48,12 @@ class AppOtpInput extends StatefulWidget {
   /// Error state
   final bool hasError;
 
+  /// Optional external controller, e.g. driven by an in-app keypad.
+  final TextEditingController? controller;
+
+  /// false hides the system keyboard (use with an in-app keypad).
+  final bool useSystemKeyboard;
+
   const AppOtpInput({
     super.key,
     this.length = 6,
@@ -61,6 +67,8 @@ class AppOtpInput extends StatefulWidget {
     this.spacing = AppSpacing.spacingS,
     this.initialValue,
     this.hasError = false,
+    this.controller,
+    this.useSystemKeyboard = true,
   });
 
   @override
@@ -74,7 +82,13 @@ class _AppOtpInputState extends State<AppOtpInput> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: _sanitize(widget.initialValue));
+    _controller =
+        widget.controller ??
+        TextEditingController(text: _sanitize(widget.initialValue));
+    if (widget.controller != null) {
+      // Changes from outside (keypad) don't go through TextField.onChanged.
+      _controller.addListener(_onExternalChange);
+    }
     _focusNode = FocusNode();
     // The boxes render the focused/filled state, so they need to repaint when
     // focus changes even though no text changed.
@@ -91,8 +105,20 @@ class _AppOtpInputState extends State<AppOtpInput> {
   void dispose() {
     _focusNode.removeListener(_onFocusChanged);
     _focusNode.dispose();
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    } else {
+      _controller.removeListener(_onExternalChange);
+    }
     super.dispose();
+  }
+
+  String _lastExternal = '';
+  void _onExternalChange() {
+    if (_controller.text == _lastExternal) return;
+    _lastExternal = _controller.text;
+    if (mounted) setState(() {});
+    _notify();
   }
 
   void _onFocusChanged() {
@@ -221,7 +247,8 @@ class _AppOtpInputState extends State<AppOtpInput> {
       focusNode: _focusNode,
       enabled: widget.enabled,
       autofocus: widget.autoFocus,
-      keyboardType: TextInputType.number,
+      keyboardType:
+          widget.useSystemKeyboard ? TextInputType.number : TextInputType.none,
       textInputAction: TextInputAction.done,
       // One field for the whole code, so SMS autofill fills it in a single shot
       // instead of having to spread across per-digit fields.
@@ -261,9 +288,11 @@ class _AppOtpInputState extends State<AppOtpInput> {
       border = Border.all(color: Theme.of(context).colorScheme.error, width: 2);
     } else if (isActive) {
       border = Border.all(
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.onSurface,
         width: 2,
       );
+    } else {
+      border = Border.all(color: Theme.of(context).colorScheme.outline);
     }
 
     return Container(
@@ -275,7 +304,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
             widget.enabled
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
+        borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         border: border,
       ),
       child: Text(

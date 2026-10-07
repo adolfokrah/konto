@@ -49,10 +49,7 @@ class PaymentMethodUtils {
   static Map<String, String> getMobileMoneyOperatorMap(
     AppLocalizations localizations,
   ) {
-    return {
-      'mtn': 'MTN Mobile Money',
-      'telecel': 'Telecel Cash',
-    };
+    return {'mtn': 'MTN Mobile Money', 'telecel': 'Telecel Cash'};
   }
 
   /// Get mobile money operator options as SelectOption list

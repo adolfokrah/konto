@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/enums/app_language.dart';
-import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class LanguageSettingsView extends StatelessWidget {
   const LanguageSettingsView({super.key});
+
+  static String _flag(AppLanguage lang) => switch (lang) {
+    AppLanguage.english => '🇬🇧',
+    AppLanguage.french => '🇫🇷',
+  };
+
+  static String _nativeName(AppLanguage lang) => switch (lang) {
+    AppLanguage.english => 'English',
+    AppLanguage.french => 'Français',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -25,102 +37,69 @@ class LanguageSettingsView extends StatelessWidget {
               selectedLanguage = authState.user.appSettings.language;
             }
 
-            if (selectedLanguage != null) {
-              final l10n = AppLocalizations.of(context)!;
-              final isUpdating = userAccountState is UserAccountLoading;
-              return Scaffold(
-                appBar: AppBar(title: Text(l10n.language)),
-                body: SizedBox.expand(
-                  child: Stack(
+            if (selectedLanguage == null) return const SizedBox.shrink();
+
+            final l10n = AppLocalizations.of(context)!;
+            final isUpdating = userAccountState is UserAccountLoading;
+            return Scaffold(
+              backgroundColor: AppColors.cream,
+              appBar: JarTopBar(title: l10n.language),
+              body: Stack(
+                children: [
+                  ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                     children: [
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.spacingXs),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppCard(
-                                variant: CardVariant.secondary,
-                                child: _LanguageOptions(
-                                  selected: selectedLanguage,
-                                  onSelect: (lang) {
-                                    context.read<UserAccountBloc>().add(
-                                      UpdatePersonalDetails(appLanguage: lang),
-                                    );
-                                  },
-                                ),
+                      DsListCard(
+                        children: [
+                          for (final lang in AppLanguage.values)
+                            DsRow(
+                              leading: Text(
+                                _flag(lang),
+                                style: const TextStyle(fontSize: 20),
                               ),
-                              const SizedBox(height: 24),
+                              title: _nativeName(lang),
+                              trailing: AccRadio(lang == selectedLanguage),
+                              onTap:
+                                  isUpdating || lang == selectedLanguage
+                                      ? null
+                                      : () =>
+                                          context.read<UserAccountBloc>().add(
+                                            UpdatePersonalDetails(
+                                              appLanguage: lang,
+                                            ),
+                                          ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (isUpdating)
+                    Positioned.fill(
+                      child: ColoredBox(
+                        color: AppColors.cream.withValues(alpha: 0.7),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(
+                                color: AppColors.navy,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.updatingLanguageSettings,
+                                style: DsText.rowTitle,
+                              ),
                             ],
                           ),
                         ),
                       ),
-                      if (isUpdating)
-                        Positioned.fill(
-                          child: Container(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircularProgressIndicator(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    l10n.updatingLanguageSettings,
-                                    style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
+                    ),
+                ],
+              ),
+            );
           },
         );
       },
-    );
-  }
-}
-
-class _LanguageOptions extends StatelessWidget {
-  final AppLanguage selected;
-  final ValueChanged<AppLanguage> onSelect;
-  const _LanguageOptions({required this.selected, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-    return Column(
-      children:
-          AppLanguage.values
-              .map(
-                (lang) => RadioListTile<AppLanguage>(
-                  value: lang,
-                  groupValue: selected,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                  activeColor: onSurface,
-                  title: Text(
-                    lang.displayName,
-                    style: TextStyle(color: onSurface),
-                  ),
-                  onChanged: (v) {
-                    if (v != null) onSelect(v);
-                  },
-                ),
-              )
-              .toList(),
     );
   }
 }

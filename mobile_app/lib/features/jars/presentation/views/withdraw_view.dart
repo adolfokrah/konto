@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/utils/image_utils.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/payout_account_widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/user_storage_service.dart';
 import 'package:Hoga/features/contribution/data/repositories/momo_repository.dart';
 import 'package:Hoga/features/settings/data/api_providers/system_settings_api_provider.dart';
 import 'package:Hoga/features/settings/data/models/system_settings_model.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/button.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/services/rating_service.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
@@ -22,6 +23,8 @@ import 'package:Hoga/features/verification/presentation/pages/kyc_view.dart';
 import 'package:Hoga/features/business_kyb/presentation/pages/business_kyb_view.dart';
 import 'package:go_router/go_router.dart';
 
+/// Transfer the jar's full available balance to its payout account:
+/// review the amount, fee and destination, confirm with a code, then track it.
 class WithdrawView extends StatefulWidget {
   const WithdrawView({super.key});
 
@@ -33,6 +36,10 @@ class _WithdrawViewState extends State<WithdrawView> {
   bool _isLoading = false;
   bool _isSendingOtp = false;
   bool _isLoadingSettings = true;
+
+  /// Set once the payout request succeeds: the screen switches to tracking.
+  DateTime? _sentAt;
+  double? _sentAmount;
 
   // Arguments from previous screen
   String? jarId;
@@ -74,8 +81,7 @@ class _WithdrawViewState extends State<WithdrawView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final arguments =
-        GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final arguments = GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     if (arguments != null) {
       jarId = arguments['jarId'] as String?;
@@ -183,22 +189,18 @@ class _WithdrawViewState extends State<WithdrawView> {
     });
 
     try {
-      final result = await getIt<MomoRepository>().requestPayout(
-        jarId: jarId!,
-      );
+      final result = await getIt<MomoRepository>().requestPayout(jarId: jarId!);
 
       if (!mounted) return;
 
       if (result['success'] == true) {
-        AppSnackBar.show(
-          context,
-          message: localizations.withdrawSuccess,
-          type: SnackBarType.success,
-        );
         // Refresh jar summary to reflect updated balance
         context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
-        context.pop();
-        RatingService.instance.maybeRequestReview();
+        // Show the tracking state; "Done" closes the screen.
+        setState(() {
+          _sentAmount = _systemSettings.calculateNetPayout(payoutBalance ?? 0);
+          _sentAt = DateTime.now();
+        });
       } else {
         AppSnackBar.show(
           context,
@@ -222,12 +224,69 @@ class _WithdrawViewState extends State<WithdrawView> {
     }
   }
 
+  void _finish() {
+    context.pop();
+    RatingService.instance.maybeRequestReview();
+  }
+
+  /// Tracking state after a successful request (mockup "Transfer · status").
+  Widget _buildStatus(WithdrawalAccountModel? account, String curCode) {
+    final at = _sentAt!;
+    final time =
+        '${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}';
+    return Scaffold(
+      backgroundColor: AppColors.surfaceWhite,
+      appBar: JarTopBar(
+        showLeading: false,
+        fillButtons: true,
+        actions: [
+          JarNavButton(icon: Icons.close_rounded, fill: true, onTap: _finish),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: DsIconTile(Icons.send_rounded, tone: DsTone.lime, size: 72),
+          ),
+          const SizedBox(height: 14),
+          const Text('Transfer on its way', style: DsText.title),
+          const SizedBox(height: 4),
+          DsMoney(_sentAmount ?? 0, currency: null, size: 32),
+          if (account != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'to ${payoutProviderName(account)} ${payoutMaskedNumber(account)}',
+              style: DsText.small,
+            ),
+          ],
+          const SizedBox(height: 22),
+          DsSteps(
+            current: 2,
+            steps: [
+              ('Requested', time),
+              ('Sent by Hogapay', time),
+              ('Arriving in your wallet', "We'll notify you"),
+            ],
+          ),
+        ],
+      ),
+      bottomNavigationBar: JarFooter(
+        children: [JarPrimaryButton(label: 'Done', onTap: _finish)],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final balance = payoutBalance ?? 0.0;
     final cur = currency ?? 'GHS';
-    final double transferCharges = _systemSettings.calculateTransferFee(balance);
+    final curCode = cur.toUpperCase();
+    final double transferCharges = _systemSettings.calculateTransferFee(
+      balance,
+    );
     final double total = _systemSettings.calculateNetPayout(balance);
 
     // Verification before a transfer, by account type: KYC for individuals, business
@@ -246,140 +305,183 @@ class _WithdrawViewState extends State<WithdrawView> {
     // The jar's linked withdrawal account is the only source now. The old fallback
     // to the user's flat accountHolder/accountNumber/bank fields is gone — nothing
     // writes those any more, so it always resolved to null.
-    final accountHolder = withdrawalAccount?.accountHolder;
-    final accountNumber = withdrawalAccount?.accountNumber;
-    final bank = withdrawalAccount?.provider;
+    final account = withdrawalAccount;
+    if (_sentAt != null) return _buildStatus(account, curCode);
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: Text(
-          localizations.withdraw,
-          style: TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
+    // Jar name, photo and clearing amount come from the loaded jar, when it matches.
+    final jarState = context.watch<JarSummaryBloc>().state;
+    final jar =
+        jarState is JarSummaryLoaded && jarState.jarData.id == jarId
+            ? jarState.jarData
+            : null;
+    final clearing = jar?.balanceBreakDown.upcomingBalance ?? 0;
+    final busy = _isLoading || _isSendingOtp;
+    final nothingReady = balance <= 0;
+
+    String money(double v) =>
+        '$curCode ${DsMoney.group(v)}.${((v.abs() * 100).round() % 100).toString().padLeft(2, '0')}';
+
+    final fromCard = Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.fill,
+        borderRadius: BorderRadius.circular(16),
       ),
-      body: _isLoadingSettings
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacingM,
+      child: Row(
+        children: [
+          JarThumb(
+            imageUrl:
+                jar?.image?.url != null
+                    ? ImageUtils.constructImageUrl(jar!.image!.url!)
+                    : null,
+            size: 32,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('From', style: DsText.caption),
+                Text(
+                  '${jar?.name ?? localizations.payoutBalance} · ${DsMoney.group(balance)}.${((balance * 100).round() % 100).toString().padLeft(2, '0')} available',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DsText.rowTitle.copyWith(fontSize: 14),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final List<Widget> content;
+    if (nothingReady) {
+      content = [
+        fromCard,
+        const SizedBox(height: 12),
+        DsCard(
+          child: Column(
+            children: [
+              DsEmptyState(
+                icon: Icons.schedule_rounded,
+                tone: DsTone.pending,
+                title: 'Nothing to transfer yet',
+                message:
+                    clearing > 0
+                        ? '${money(clearing)} is still clearing from card payments. It\'ll be ready to transfer soon.'
+                        : 'Money you collect shows up here once it\'s ready to transfer.',
+              ),
+              if (clearing > 0)
+                JarFillList(
                   children: [
-                    const SizedBox(height: AppSpacing.spacingL),
-
-                    // Payout balance row
-                    _buildBreakdownRow(
-                      localizations.payoutBalance,
-                      CurrencyUtils.formatAmount(balance, cur),
-                      context,
+                    DsKeyValue(
+                      'Clearing',
+                      money(clearing),
+                      valueColor: AppColors.pending,
                     ),
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    // Processing fee row
-                    _buildBreakdownRow(
-                      localizations.transferCharges,
-                      '-${CurrencyUtils.formatAmount(transferCharges, cur)}',
-                      context,
-                    ),
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    const Divider(),
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    // Total row
-                    _buildBreakdownRow(
-                      localizations.total,
-                      CurrencyUtils.formatAmount(total, cur),
-                      context,
-                      isBold: true,
-                    ),
-
-                    if (accountNumber != null || accountHolder != null) ...[
-                      const SizedBox(height: AppSpacing.spacingL),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(AppSpacing.spacingM),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Payout destination',
-                              style: TextStyles.titleMediumS.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
-                            if (accountHolder != null) ...[
-                              _buildAccountDetailRow('Account name', accountHolder, context),
-                              const SizedBox(height: AppSpacing.spacingS),
-                            ],
-                            if (accountNumber != null) ...[
-                              _buildAccountDetailRow('Account number', accountNumber, context),
-                              const SizedBox(height: AppSpacing.spacingS),
-                            ],
-                            if (bank != null)
-                              _buildAccountDetailRow('Bank / Network', bank.toUpperCase(), context),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    const Spacer(),
-
-                    // Withdraw button
-                    AppButton.filled(
-                      text: localizations.withdraw,
-                      isLoading: _isLoading || _isSendingOtp,
-                      onPressed:
-                          (_isLoading || _isSendingOtp)
-                              ? null
-                              : _handleWithdraw,
-                    ),
-                    const SizedBox(height: AppSpacing.spacingL),
                   ],
                 ),
-              ),
-    );
-  }
-
-  Widget _buildAccountDetailRow(String label, String value, BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyles.titleRegularSm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-        const SizedBox(width: AppSpacing.spacingM),
-        Flexible(
-          child: Text(value, style: TextStyles.titleMediumS, textAlign: TextAlign.end),
+            ],
+          ),
         ),
-      ],
-    );
-  }
+      ];
+    } else {
+      content = [
+        fromCard,
+        const SizedBox(height: 22),
+        const Text(
+          'You\'ll receive',
+          style: DsText.caption,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Center(child: DsMoney(total, currency: curCode, size: 42)),
+        const SizedBox(height: 22),
+        DsListCard(
+          children: [
+            DsKeyValue('Amount', money(balance)),
+            DsKeyValue(
+              'Fee · ${_systemSettings.transferFeePercentage % 1 == 0 ? _systemSettings.transferFeePercentage.toStringAsFixed(0) : _systemSettings.transferFeePercentage}%',
+              '− ${money(transferCharges)}',
+            ),
+            if (account != null) ...[
+              DsKeyValue(
+                'To',
+                '${payoutProviderName(account)} · ${payoutMaskedNumber(account)}',
+              ),
+              DsKeyValue('Name', account.accountHolder.toUpperCase()),
+            ],
+            if (_systemSettings.payoutProcessingMessage != null &&
+                _systemSettings.payoutProcessingMessage!.isNotEmpty)
+              DsKeyValue('Arrives', _systemSettings.payoutProcessingMessage!),
+          ],
+        ),
+        const SizedBox(height: 10),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'The full available balance is transferred. Cash and card '
+            'payments still clearing aren\'t included.',
+            style: DsText.caption,
+          ),
+        ),
+      ];
+    }
 
-  Widget _buildBreakdownRow(
-    String label,
-    String value,
-    BuildContext context, {
-    bool isBold = false,
-  }) {
-    final style =
-        isBold
-            ? TextStyles.titleMediumLg.copyWith(fontWeight: FontWeight.w600)
-            : TextStyles.titleMedium;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label, style: style), Text(value, style: style)],
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: JarTopBar(
+        title: localizations.withdraw,
+        leadingIcon: Icons.close_rounded,
+      ),
+      body:
+          _isLoadingSettings
+              ? const DsSkeletonPage(
+                children: [
+                  DsSkeletonCard(
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        DsSkeletonBox(width: 32, height: 32, radius: 10),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              DsSkeletonLine(width: 40, height: 10),
+                              SizedBox(height: 6),
+                              DsSkeletonLine(width: 180, height: 12),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 22),
+                  Center(child: DsSkeletonLine(width: 90, height: 11)),
+                  SizedBox(height: 10),
+                  Center(child: DsSkeletonLine(width: 200, height: 40)),
+                  SizedBox(height: 22),
+                  DsSkeletonKeyValueCard(rows: 4),
+                ],
+              )
+              : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                children: content,
+              ),
+      bottomNavigationBar:
+          _isLoadingSettings
+              ? null
+              : JarFooter(
+                children: [
+                  JarPrimaryButton(
+                    label: nothingReady ? 'Review' : 'Confirm with code',
+                    loading: busy,
+                    onTap: (busy || nothingReady) ? null : _handleWithdraw,
+                  ),
+                ],
+              ),
     );
   }
 }

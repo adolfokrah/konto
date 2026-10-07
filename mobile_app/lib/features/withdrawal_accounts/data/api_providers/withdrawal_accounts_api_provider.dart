@@ -158,10 +158,7 @@ class WithdrawalAccountsApiProvider extends BaseApiProvider {
       );
 
       if (response.data['success'] == true) {
-        return {
-          'success': true,
-          'data': response.data['data'],
-        };
+        return {'success': true, 'data': response.data['data']};
       }
       return {
         'success': false,
@@ -171,8 +168,7 @@ class WithdrawalAccountsApiProvider extends BaseApiProvider {
       if (e is DioException) {
         return {
           'success': false,
-          'message':
-              e.response?.data?['message'] ?? 'Could not verify account',
+          'message': e.response?.data?['message'] ?? 'Could not verify account',
         };
       }
       return {'success': false, 'message': 'Could not verify account'};

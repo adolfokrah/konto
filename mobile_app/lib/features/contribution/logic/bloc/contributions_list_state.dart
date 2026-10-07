@@ -19,6 +19,7 @@ final class ContributionsListLoaded extends ContributionsListState {
   final int? prevPage;
   final int? nextPage;
   final String? contributorSearch; // current contributor name/phone search term
+  final bool allJars; // whether this page spans all the user's jars
 
   ContributionsListLoaded(
     this.contributions, {
@@ -32,6 +33,7 @@ final class ContributionsListLoaded extends ContributionsListState {
     this.prevPage,
     this.nextPage,
     this.contributorSearch,
+    this.allJars = false,
   });
 }
 

@@ -34,7 +34,7 @@ class UserAvatarSmall extends StatelessWidget {
 
             return GestureDetector(
               onTap: () {
-                context.push(AppRoutes.userAccountView);
+                context.go(AppRoutes.userAccountView);
               },
               child: ContributorAvatar(
                 contributorName: contributorName,

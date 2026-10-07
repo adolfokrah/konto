@@ -15,12 +15,11 @@ export const getUserJars = async (req: PayloadRequest) => {
       collection: 'jars',
       where: {
         or: [
+          // Owners also get their closed ('broken') jars: the app lists them
+          // under "Sealed & closed jars" on Home and the Jars tab's Closed tab.
           {
             creator: {
               equals: req.user,
-            },
-            status: {
-              not_equals: 'broken',
             },
           },
           {
@@ -123,6 +122,7 @@ export const getUserJars = async (req: PayloadRequest) => {
             }
           : null,
         isActive: jar.isActive,
+        status: jar.status,
         isFixedContribution: jar.isFixedContribution,
         acceptedContributionAmount: jar.acceptedContributionAmount,
         goalAmount: jar.goalAmount || 0,

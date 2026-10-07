@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/widgets/alert_banner.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
 import 'package:go_router/go_router.dart';
 
-/// A widget that displays contextual alerts for jar creators based on missing information
-/// Shows one alert at a time in priority order:
+/// Setup prompt for jar creators, shown as a single note with progress
+/// ("Finish setting up · 3 of 6"). One item at a time, in priority order:
 /// 1. Missing jar description
 /// 2. Missing thank you message
 /// 3. Missing withdrawal account
@@ -36,64 +37,121 @@ class JarCompletionAlert extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        // Check conditions and prioritize alerts
+        final waState = context.watch<WithdrawalAccountsBloc>().state;
+
+        final hasDescription =
+            jarData.description != null &&
+            jarData.description!.trim().isNotEmpty;
+        final hasThankYou =
+            jarData.thankYouMessage != null &&
+            jarData.thankYouMessage!.trim().isNotEmpty;
+        // Source of truth is the user's withdrawal accounts list. Only count it
+        // missing once the list has loaded so a cold bloc doesn't flash a false alert.
+        final missingPayout =
+            waState.status == WithdrawalAccountsStatus.loaded &&
+            waState.accounts.isEmpty;
+        final verified =
+            user.isOrganization
+                ? user.kybStatus == 'approved'
+                : user.kycStatus == 'verified';
+        final hasPhoto = user.photo != null;
+        final hasJarPhotos = jarData.images.isNotEmpty;
+
+        final done =
+            [
+              hasDescription,
+              hasThankYou,
+              !missingPayout,
+              verified,
+              hasPhoto,
+              hasJarPhotos,
+            ].where((d) => d).length;
+        final heading = 'Finish setting up · $done of 6';
+
+        Widget note({
+          required String text,
+          VoidCallback? onTap,
+          String? title,
+          DsTone tone = DsTone.pending,
+          IconData icon = Icons.edit_outlined,
+        }) => DsCard(
+          // White row card (mockup): tinted icon tile, title, one line, chevron.
+          padding: const EdgeInsets.all(14),
+          onTap: onTap,
+          child: Row(
+            children: [
+              DsIconTile(icon, tone: tone),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title ?? heading,
+                      style: DsText.rowTitle.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(text, style: DsText.caption),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.faint,
+                ),
+              ],
+            ],
+          ),
+        );
+
         // 1. No jar description (Highest Priority)
-        if (jarData.description == null ||
-            jarData.description!.trim().isEmpty) {
-          return Alert(
-            message:
-                'Every jar holds a story worth sharing. Add a short description to tell yours. Tap to begin.',
-            onTap: () {
-              context.push(AppRoutes.jarDescriptionEdit);
-            },
+        if (!hasDescription) {
+          return note(
+            text: 'Add a description so people know what it\'s for',
+            onTap: () => context.push(AppRoutes.jarDescriptionEdit),
           );
         }
 
         // 2. No thank you message
-        if (jarData.thankYouMessage == null ||
-            jarData.thankYouMessage!.trim().isEmpty) {
-          return Alert(
-            message:
-                'Add a personalized thank you message to show appreciation to your contributors. Tap to add a thank you message.',
-            onTap: () {
-              context.push(AppRoutes.jarThankYouMessageEdit);
-            },
+        if (!hasThankYou) {
+          return note(
+            text: 'Add a thank-you note contributors see after paying',
+            onTap: () => context.push(AppRoutes.jarThankYouMessageEdit),
           );
         }
 
-        // 3. No withdrawal account set. Source of truth is the user's withdrawal
-        // accounts list, not the legacy flat accountNumber/bank/accountHolder
-        // fields on the user. Only alert once the list has actually loaded so a
-        // cold bloc doesn't flash a false alert.
-        final waState = context.watch<WithdrawalAccountsBloc>().state;
-        if (waState.status == WithdrawalAccountsStatus.loaded &&
-            waState.accounts.isEmpty) {
-          return Alert(
-            message:
-                'Set up your withdrawal account to receive funds from your jar. Tap to add withdrawal details.',
-            onTap: () {
-              context.push(AppRoutes.withdrawalAccounts);
-            },
+        // 3. No withdrawal account set.
+        if (missingPayout) {
+          return note(
+            text: 'Add a payout account to receive your money',
+            icon: Icons.account_balance_wallet_outlined,
+            onTap: () => context.push(AppRoutes.withdrawalAccounts),
           );
         }
 
         // 4. Individuals: KYC not verified
         if (!user.isOrganization && user.kycStatus == 'none') {
-          return Alert(
-            message:
-                'Verify your identity to start collecting and transferring funds. Tap to start verification.',
-            onTap: () {
-              context.push(AppRoutes.kycView);
-            },
+          return note(
+            text:
+                'Verify your identity to collect and transfer · about 3 minutes',
+            icon: Icons.verified_user_outlined,
+            onTap: () => context.push(AppRoutes.kycView),
           );
         }
 
         // 5. Individuals: KYC in review
         if (!user.isOrganization && user.kycStatus == 'in_review') {
-          return Alert(
-            message:
-                'Your identity verification is under review. This usually takes 24 hours. We\'ll notify you once complete.',
-            onTap: null, // Non-clickable, just informational
+          return note(
+            title: 'Verification in review',
+            text: 'Usually takes 24 hours. We\'ll let you know.',
+            tone: DsTone.info,
+            icon: Icons.hourglass_top_rounded,
           );
         }
 
@@ -101,42 +159,39 @@ class JarCompletionAlert extends StatelessWidget {
         if (user.isOrganization && user.kybStatus != 'approved') {
           final kyb = user.kybStatus;
           if (kyb == 'in_review' || kyb == 'pending' || kyb == 'under-review') {
-            return Alert(
-              message:
-                  'Your business verification is under review. We\'ll notify you once it\'s approved.',
-              onTap: null, // Non-clickable, just informational
+            return note(
+              title: 'Business verification in review',
+              text: 'We\'ll notify you once it\'s approved.',
+              tone: DsTone.info,
+              icon: Icons.hourglass_top_rounded,
             );
           }
-          return Alert(
-            message:
+          return note(
+            text:
                 kyb == 'rejected'
-                    ? 'Your business verification was not approved. Tap to review and resubmit.'
-                    : 'Verify your organization so your jar can start collecting. Tap to start business verification.',
-            onTap: () {
-              context.push(AppRoutes.businessKyb);
-            },
+                    ? 'Your business verification was not approved. Review and resubmit.'
+                    : 'Verify your organization so your jar can start collecting.',
+            tone: kyb == 'rejected' ? DsTone.negative : DsTone.pending,
+            icon: Icons.business_outlined,
+            onTap: () => context.push(AppRoutes.businessKyb),
           );
         }
 
         // 7. No profile photo
-        if (user.photo == null) {
-          return Alert(
-            message:
-                'Add a profile photo so contributors know who they\'re supporting. Tap to update your profile.',
-            onTap: () {
-              context.push(AppRoutes.userAccountView);
-            },
+        if (!hasPhoto) {
+          return note(
+            text: 'Add a profile photo so contributors know it\'s you',
+            icon: Icons.account_circle_outlined,
+            onTap: () => context.go(AppRoutes.userAccountView),
           );
         }
 
         // 8. No additional jar photos
-        if (jarData.images.isEmpty) {
-          return Alert(
-            message:
-                'Add photos to your jar to give contributors a better look at what you\'re collecting for. Tap to add photos.',
-            onTap: () {
-              context.push(AppRoutes.jarInfo);
-            },
+        if (!hasJarPhotos) {
+          return note(
+            text: 'Add photos of what you\'re collecting for',
+            icon: Icons.add_photo_alternate_outlined,
+            onTap: () => context.push(AppRoutes.jarInfo),
           );
         }
 

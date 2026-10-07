@@ -109,7 +109,7 @@ class _CardState extends State<AppCard> with SingleTickerProviderStateMixin {
       child: Material(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusM),
+          borderRadius: BorderRadius.circular(AppRadius.radiusCard),
         ),
         color: _getCardColor(context),
         clipBehavior: Clip.antiAlias,

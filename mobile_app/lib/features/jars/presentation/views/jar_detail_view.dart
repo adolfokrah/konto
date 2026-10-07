@@ -1,27 +1,8 @@
-import 'dart:io';
-
-import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
-import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
-import 'package:Hoga/features/onboarding/logic/bloc/onboarding_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
-import 'package:Hoga/core/constants/app_images.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/animated_number_text.dart';
-import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/alert_banner.dart';
-import 'package:Hoga/core/widgets/card.dart';
-import 'package:Hoga/core/widgets/contribution_chart.dart';
-import 'package:Hoga/core/widgets/contribution_list_item.dart';
-import 'package:Hoga/core/widgets/user_avatar_small.dart';
-import 'package:Hoga/core/widgets/goal_progress_card.dart';
-import 'package:Hoga/core/widgets/icon_button.dart';
-import 'package:Hoga/core/widgets/notification_icon_button.dart';
-import 'package:Hoga/core/widgets/scrollable_background_image.dart';
-import 'package:Hoga/core/widgets/small_button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
@@ -32,19 +13,22 @@ import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart'
 import 'package:Hoga/features/jars/logic/bloc/jar_summary_reload/jar_summary_reload_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_activity_row.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_balance_breakdown.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_goal_card.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_info_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_report_sheet.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_more_menu.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_completion_alert.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:Hoga/route.dart';
-import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
-import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
-import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+/// Home tab: the dashboard of the current jar (switch jars from the name row).
 class JarDetailView extends StatefulWidget {
   const JarDetailView({super.key});
 
@@ -54,36 +38,16 @@ class JarDetailView extends StatefulWidget {
 
 class _JarDetailViewState extends State<JarDetailView> {
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
-  bool _walkthroughTriggered =
-      false; // Flag to prevent multiple walkthrough navigations
 
   @override
   void initState() {
     super.initState();
-    // Trigger jar summary request when page loads for the first time
+    // Same jar: refreshes silently; another jar: shows loading.
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
-
-    // Listen to scroll changes
-    _scrollController.addListener(_scrollListener);
-
-    _requestFCMPermissionAndUpdateToken();
-    _fetchUserNotifications();
-
-    // Preload the user's withdrawal accounts so the withdraw flow can route to
-    // the add-account screen when none exist.
-    context.read<WithdrawalAccountsBloc>().add(LoadWithdrawalAccounts());
-  }
-
-  void _scrollListener() {
-    setState(() {
-      _scrollOffset = _scrollController.offset;
-    });
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
   }
@@ -123,150 +87,86 @@ class _JarDetailViewState extends State<JarDetailView> {
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
   }
 
-  /// Navigate to withdraw page, checking the payout destination and verification first
-  void _handleWithdraw(BuildContext context, JarSummaryModel jarData) {
-    // Setting up a payout destination needs no KYC or KYB — it moves no money —
-    // so this runs before the verification gate. Otherwise an unverified user is
-    // sent to KYC and can never reach account setup from here.
-    //
-    // The jar carries its own linked withdrawal account, but if the user has no
-    // withdrawal accounts at all, route them to add one.
-    final waState = context.read<WithdrawalAccountsBloc>().state;
-    if (waState.status == WithdrawalAccountsStatus.loaded &&
-        waState.accounts.isEmpty) {
-      AppSnackBar.show(
-        context,
-        message: 'Add a withdrawal account to receive your payout.',
-        type: SnackBarType.info,
+  void _handleWithdraw(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.withdraw(context, jarData);
+
+  // ------------------------------------------------------------ actions
+
+  void _contribute(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.contribute(context, jarData);
+
+  void _request(BuildContext context, JarSummaryModel jarData) =>
+      JarActions.request(context, jarData);
+
+  Future<void> _showCollectorInfo(
+    BuildContext context,
+    JarSummaryModel jarData,
+  ) async {
+    final result = await JarInfoSheet.show(context: context, jarData: jarData);
+    if (!context.mounted) return;
+    if (result == 'leave') {
+      context.read<UpdateJarBloc>().add(LeaveJarRequested(jarId: jarData.id));
+    } else if (result == 'report') {
+      final reported = await JarReportSheet.show(
+        context: context,
+        jarId: jarData.id,
       );
-      context.push(AppRoutes.withdrawalAccounts);
-      return;
-    }
-
-    // Payouts are the creator's: they need their own verification for their account type.
-    if (!_requireVerification(context)) return;
-
-    context.push(
-      AppRoutes.withdraw,
-      extra: {
-        'jarId': jarData.id,
-        'payoutBalance': jarData.balanceBreakDown.totalAmountTobeTransferred,
-        'currency': jarData.currency,
-        'withdrawalAccount': jarData.withdrawalAccount,
-      },
-    );
-  }
-
-  /// Verification gate by account type: individuals need personal KYC; organizations
-  /// need business verification (KYB) only. Returns true if allowed; otherwise shows
-  /// a message, routes to the appropriate screen, and returns false.
-  bool _requireVerification(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) return false;
-
-    final kyc = authState.user.kycStatus;
-    final kyb = authState.user.kybStatus;
-
-    // Organizations: business verification (KYB) only.
-    if (authState.user.isOrganization) {
-      if (kyb == 'approved') return true;
-      final message =
-          (kyb == 'in_review' || kyb == 'pending')
-              ? 'Your business verification is under review. Please wait for approval.'
-              : kyb == 'rejected'
-              ? 'Your business verification was rejected. Please review and resubmit.'
-              : 'Complete business verification to continue.';
-      AppSnackBar.show(context, message: message, type: SnackBarType.info);
-      context.push(AppRoutes.businessKyb);
-      return false;
-    }
-
-    // Individuals: personal KYC only.
-    if (kyc != 'verified') {
-      final message =
-          kyc == 'in_review'
-              ? 'Your identity verification (KYC) is under review. Please wait for approval.'
-              : 'Complete identity verification (KYC) to continue.';
-      AppSnackBar.show(context, message: message, type: SnackBarType.info);
-      // in_review users have nothing to do on the KYC screen, but it shows the pending state.
-      context.push(AppRoutes.kycView);
-      return false;
-    }
-
-    return true;
-  }
-
-  /// Gate for collecting (record a contribution, request link, QR). The server checks the
-  /// jar creator's verification, so: the creator is sent to finish their own verification;
-  /// a collector is told the organizer isn't verified yet (nothing for them to do).
-  bool _requireCollecting(BuildContext context, JarSummaryModel jarData) {
-    if (jarData.isCreator) return _requireVerification(context);
-    if (jarData.creator.canCollect) return true;
-    AppSnackBar.show(
-      context,
-      message:
-          'This jar\'s organizer is still completing verification, so it can\'t collect contributions yet.',
-      type: SnackBarType.info,
-    );
-    return false;
-  }
-
-  /// Request FCM permissions and update user token
-  Future<void> _requestFCMPermissionAndUpdateToken() async {
-    try {
-      // Request FCM permissions first
-      FCMService.requestPermission();
-
-      // Get the FCM token
-      final String? token = await FCMService.getToken();
-
-      // Update user with the token if available and widget is still mounted
-      if (token != null && mounted) {
-        context.read<UserAccountBloc>().add(
-          UpdatePersonalDetails(
-            fcmToken: token,
-            platform: Platform.isAndroid ? 'android' : 'ios',
-          ),
+      if (reported == true && context.mounted) {
+        AppSnackBar.show(
+          context,
+          message: 'Report submitted successfully',
+          type: SnackBarType.success,
         );
       }
-    } catch (e) {
-      // Handle any errors silently or log them
-      print('Error requesting FCM permission or updating token: $e');
     }
   }
 
-  /// Fetch User Notificatiosn
-  Future<void> _fetchUserNotifications() async {
+  Future<void> _confirmReopen(
+    BuildContext context,
+    JarSummaryModel jarData,
+  ) async {
+    final l = AppLocalizations.of(context)!;
+    final ok = await JarConfirmSheet.show(
+      context: context,
+      icon: Icons.lock_open_rounded,
+      tone: DsTone.positive,
+      title: l.reopenJar,
+      message: l.reopenJarMessage,
+      confirmText: l.reopen,
+    );
+    if (ok == true && context.mounted) {
+      context.read<UpdateJarBloc>().add(
+        UpdateJarRequested(jarId: jarData.id, updates: {'status': 'open'}),
+      );
+    }
+  }
+
+  void _openContributionsList(BuildContext context) {
+    // Clear all contribution filters before navigating
     try {
-      // Use NotificationsBloc from context
-      final notificationsBloc = context.read<NotificationsBloc>();
-
-      // Fetch notifications with default pagination
-      notificationsBloc.add(FetchNotifications(limit: 20, page: 1));
-    } catch (e) {
-      // Handle any errors silently or log them
-      print('Error fetching user notifications: $e');
+      context.read<FilterContributionsBloc>().add(ClearAllFilters());
+    } catch (_) {
+      // Bloc not found in context; ignore.
     }
+    context.go(AppRoutes.contributionsList);
   }
+
+  // ------------------------------------------------------------ build
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return MultiBlocListener(
       listeners: [
         BlocListener<JarSummaryBloc, JarSummaryState>(
           listener: (context, state) {
             if (state is JarSummaryLoaded) {
               context.read<JarListBloc>().add(LoadJarList());
-              // Request FCM permissions and update token
             }
           },
         ),
         BlocListener<JarSummaryReloadBloc, JarSummaryReloadState>(
           listener: (context, state) {
             if (state is JarSummaryReloadError) {
-              // Show error message
               AppSnackBar.show(
                 context,
                 message: state.message,
@@ -275,14 +175,6 @@ class _JarDetailViewState extends State<JarDetailView> {
             }
             // JarSummaryReloaded state is handled automatically by the bloc
             // which calls UpdateJarSummaryRequested on the main bloc without flicker
-          },
-        ),
-        BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            // Handle sign out - navigate to login
-            if (state is AuthInitial) {
-              context.go(AppRoutes.login);
-            }
           },
         ),
         BlocListener<UpdateJarBloc, UpdateJarState>(
@@ -318,157 +210,26 @@ class _JarDetailViewState extends State<JarDetailView> {
             }
           },
         ),
-        BlocListener<OnboardingBloc, OnboardingState>(
-          listener: (context, state) {
-            if (state is OnboardingPageState && !_walkthroughTriggered) {
-              // User hasn't completed onboarding, show walkthrough with delay
-              _walkthroughTriggered =
-                  true; // Set flag to prevent multiple calls
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted && _walkthroughTriggered) {
-                  context.push(AppRoutes.walkthrough).then((_) {
-                    // Reset flag when user returns from walkthrough
-                    if (mounted) {
-                      setState(() {
-                        _walkthroughTriggered = false;
-                      });
-                    }
-                  });
-                }
-              });
-            }
-            // If state is OnboardingCompleted, reset flag and do nothing (user has completed walkthrough)
-            if (state is OnboardingCompleted) {
-              _walkthroughTriggered = false;
-            }
-          },
-        ),
       ],
       child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            body: Stack(
-              children: [
-                // Background image positioned to cover upper section only
-                if (state is JarSummaryLoaded &&
-                    state.jarData.image?.url != null)
-                  ScrollableBackgroundImage(
-                    imageUrl: ImageUtils.constructImageUrl(
-                      state.jarData.image!.url!,
-                    ),
-                    scrollOffset: _scrollOffset,
-                    height: 500.0,
-                    maxScrollForOpacity: 200.0,
-                    baseOpacity: 0.30,
-                  ),
-                // Main content with custom scroll view
-                NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification notification) {
-                    if (notification is ScrollUpdateNotification) {
-                      setState(() {
-                        _scrollOffset = notification.metrics.pixels;
-                      });
-                    }
-                    return false;
-                  },
-                  child: RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    child: CustomScrollView(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverAppBar(
-                          centerTitle: false,
-                          title: BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, state) {
-                              String firstName = localizations.user;
-                              if (state is AuthAuthenticated) {
-                                // Extract first name from full name
-                                final fullName = state.user.fullName;
-                                firstName = fullName.split(' ').first;
-                              }
-                              return Text(
-                                localizations.hiUser(firstName),
-                                style: TextStyles.titleMediumLg,
-                              );
-                            },
-                          ),
-                          backgroundColor: Color.lerp(
-                            Colors.transparent,
-                            Theme.of(context).colorScheme.surface,
-                            (_scrollOffset / 200).clamp(0.0, 1.0),
-                          ),
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 0,
-                          floating: true,
-                          snap: true,
-                          pinned: true,
-                          actions: [
-                            const NotificationIconButton(),
-                            if (state is JarSummaryLoaded)
-                              AppIconButton(
-                                key: const Key('request_button_qr_code'),
-                                opacity: 0.8,
-                                onPressed: () {
-                                  // Collecting needs the jar's creator to be verified.
-                                  if (!_requireCollecting(
-                                    context,
-                                    state.jarData,
-                                  )) {
-                                    return;
-                                  }
-                                  context.push(
-                                    AppRoutes.contributionRequest,
-                                    extra: {
-                                      'paymentLink': state.jarData.link,
-                                      'jarName': state.jarData.name,
-                                    },
-                                  );
-                                },
-                                icon: Icons.qr_code,
-                                enabled:
-                                    state.jarData.status != JarStatus.sealed,
-                                size: const Size(40, 40),
-                              ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: AppSpacing.spacingXs,
-                                right: AppSpacing.spacingM,
-                              ),
-                              child: BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, authState) {
-                                  return BlocBuilder<
-                                    UserAccountBloc,
-                                    UserAccountState
-                                  >(
-                                    builder: (context, uaState) {
-                                      return UserAvatarSmall(
-                                        backgroundColor:
-                                            isDark
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withValues(alpha: 0.5)
-                                                : Colors.white.withValues(
-                                                  alpha: 0.5,
-                                                ),
-                                        radius: 20,
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        _buildSliverBody(context, state),
-                      ],
-                    ),
-                  ),
+            backgroundColor: AppColors.cream,
+            body: SafeArea(
+              bottom: false,
+              child: RefreshIndicator(
+                color: AppColors.navy,
+                backgroundColor: AppColors.surfaceWhite,
+                onRefresh: _onRefresh,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(child: _buildHeader(context, state)),
+                    _buildSliverBody(context, state),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -476,846 +237,633 @@ class _JarDetailViewState extends State<JarDetailView> {
     );
   }
 
+  /// Back, share and settings (mockup jar screen).
+  Widget _buildHeader(BuildContext context, JarSummaryState state) {
+    final jarData = state is JarSummaryLoaded ? state.jarData : null;
+    final broken = jarData?.status == JarStatus.broken;
+    final blocked =
+        jarData == null ||
+        broken ||
+        jarData.status == JarStatus.sealed ||
+        jarData.status == JarStatus.frozen;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      child: Row(
+        children: [
+          JarNavButton(
+            key: const Key('jar_back_button'),
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+          const Spacer(),
+          if (jarData != null) ...[
+            JarNavButton(
+              key: const Key('request_button_qr_code'),
+              icon: Icons.ios_share_rounded,
+              onTap: blocked ? null : () => _request(context, jarData),
+            ),
+            const SizedBox(width: 8),
+            JarNavButton(
+              key: const Key('info_button'),
+              icon:
+                  jarData.isCreator
+                      ? Icons.settings_outlined
+                      : Icons.info_outline_rounded,
+              // A broken jar is read-only: no settings.
+              onTap:
+                  broken
+                      ? null
+                      : jarData.isCreator
+                      ? () => context.push(AppRoutes.jarInfo)
+                      : () => _showCollectorInfo(context, jarData),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildSliverBody(BuildContext context, JarSummaryState state) {
     final localizations = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (state is JarSummaryLoading) {
-      return SliverFillRemaining(
-        child: Center(
-          child: CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-      );
+      return const SliverToBoxAdapter(child: JarDetailSkeleton());
     } else if (state is JarSummaryError) {
       return SliverFillRemaining(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48),
-                  const SizedBox(height: 16),
-                  Text(state.message, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  AppButton.filled(
-                    onPressed: _onRefetch,
-                    text: localizations.retry,
-                  ),
-                ],
+        hasScrollBody: false,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: DsCard(
+              child: DsEmptyState(
+                icon: Icons.error_outline_rounded,
+                tone: DsTone.negative,
+                title: 'Couldn\'t load your jar',
+                message: state.message,
+                actionLabel: localizations.retry,
+                onAction: _onRefetch,
               ),
             ),
           ),
         ),
       );
     } else if (state is JarSummaryLoaded) {
-      // Display jar details
       final jarData = state.jarData;
-      bool isDark = Theme.of(context).brightness == Brightness.dark;
-      return SliverToBoxAdapter(
-        child: Stack(
+      return SliverPadding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
+        sliver: SliverToBoxAdapter(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              final isCreator =
+                  authState is AuthAuthenticated &&
+                  jarData.creator.id == authState.user.id;
+              return _buildDashboard(context, jarData, isCreator);
+            },
+          ),
+        ),
+      );
+    }
+
+    // No jar yet
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child:
+              JarActions.needsSetup(context)
+                  ? const JarSetupCard()
+                  : DsCard(
+                    child: DsEmptyState(
+                      icon: Icons.savings_outlined,
+                      tone: DsTone.lime,
+                      title: localizations.createNewJar,
+                      message: localizations.createNewJarMessage,
+                      actionLabel: localizations.createNewJar,
+                      onAction: () => JarActions.createJar(context),
+                    ),
+                  ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboard(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool isCreator,
+  ) {
+    final localizations = AppLocalizations.of(context)!;
+    final sealed = jarData.status == JarStatus.sealed;
+    final frozen = jarData.status == JarStatus.frozen;
+    final broken = jarData.status == JarStatus.broken;
+    final blocked = sealed || frozen || broken;
+    final b = jarData.balanceBreakDown;
+
+    final children = <Widget>[
+      _identityRow(context, jarData, isCreator),
+      if (broken)
+        const DsNote(
+          tone: DsTone.neutral,
+          icon: Icons.block_rounded,
+          title: 'This jar is broken',
+          text:
+              'It no longer takes payments, transfers or collectors. Its statement stays here.',
+        ),
+      if (frozen)
+        DsNote(
+          tone: DsTone.negative,
+          icon: Icons.ac_unit_rounded,
+          title: 'Frozen by Hogapay',
+          text:
+              jarData.freezeReason != null && jarData.freezeReason!.isNotEmpty
+                  ? '${jarData.freezeReason!} Contributions, transfers, and withdrawals are disabled. Contact support.'
+                  : 'Contributions, transfers, and withdrawals are disabled. Contact support.',
+        ),
+      if (sealed)
+        DsNote(
+          tone: DsTone.pending,
+          icon: Icons.lock_outline_rounded,
+          title: 'This jar is sealed',
+          text:
+              isCreator
+                  ? 'No new payments. You can still transfer the balance.'
+                  : 'No new payments for now.',
+        ),
+      _balanceCard(context, jarData, isCreator),
+      _quickActions(context, jarData, isCreator),
+      if (!isCreator)
+        const DsNote(
+          tone: DsTone.neutral,
+          icon: Icons.lock_outline_rounded,
+          text: 'Only the organizer can transfer money or change settings.',
+        ),
+      if (isCreator && !blocked)
+        JarGoalCard(
+          currentAmount: b.totalContributedAmount,
+          goalAmount: jarData.goalAmount,
+          currency: jarData.currency,
+          deadline: jarData.deadline,
+          createdAt: jarData.createdAt,
+        ),
+      if (isCreator && !blocked) JarCompletionAlert(jarData: jarData),
+      DsSectionHeader(
+        isCreator ? 'Statement' : 'Your collections',
+        action: jarData.contributions.isNotEmpty ? localizations.seeAll : null,
+        onAction: () => _openContributionsList(context),
+      ),
+      if (jarData.contributions.isEmpty)
+        DsCard(
+          padding: EdgeInsets.zero,
+          child: _emptyStatement(context, jarData, blocked),
+        )
+      else
+        DsListCard(
           children: [
-            /// CTA Banner Here
-            Padding(
-              padding: const EdgeInsets.only(top: 80),
+            for (final c in jarData.contributions)
+              JarActivityRow(contribution: c, creatorId: jarData.creator.id),
+          ],
+        ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < children.length; i++) ...[
+          if (i > 0) const SizedBox(height: 14),
+          children[i],
+        ],
+        // Keeps the jar-photo upload listener alive (the More tile became
+        // Team; photos are changed from jar settings).
+        if (isCreator) JarMoreMenu(jarId: jarData.id, hidden: true),
+      ],
+    );
+  }
+
+  /// "No payments yet" card with a Share link action (mockup `.es`).
+  Widget _emptyStatement(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool blocked,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 18),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DsIconTile(Icons.format_list_bulleted_rounded, size: 56),
+          const SizedBox(height: 12),
+          Text(
+            'No payments yet',
+            style: DsText.rowTitle.copyWith(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Record cash, send a MoMo request, or share your link to get started.',
+            style: DsText.small,
+            textAlign: TextAlign.center,
+          ),
+          if (!blocked) ...[
+            const SizedBox(height: 14),
+            DsSmallButton(
+              label: 'Share link',
+              icon: Icons.ios_share_rounded,
+              onTap: () => _request(context, jarData),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Photo, name, status tag and "category · currency"; tapping it opens the
+  /// jar switcher.
+  Widget _identityRow(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool isCreator,
+  ) {
+    final imageUrl =
+        jarData.image?.url != null
+            ? ImageUtils.constructImageUrl(jarData.image!.url!)
+            : null;
+
+    final DsTag tag;
+    if (!isCreator) {
+      tag = DsTag(AppLocalizations.of(context)!.collector);
+    } else {
+      tag = switch (jarData.status) {
+        JarStatus.open => const DsTag('Open', tone: DsTone.positive),
+        JarStatus.sealed => const DsTag('Sealed'),
+        JarStatus.frozen => const DsTag('Frozen', tone: DsTone.negative),
+        JarStatus.broken => const DsTag('Broken'),
+      };
+    }
+
+    final now = DateTime.now();
+    final createdToday =
+        jarData.createdAt.year == now.year &&
+        jarData.createdAt.month == now.month &&
+        jarData.createdAt.day == now.day;
+    final subtitle =
+        !isCreator
+            ? 'Organized by ${jarData.creator.fullName}'
+            : jarData.contributions.isEmpty && createdToday
+            ? 'Created today'
+            : [
+              if (jarData.jarGroup != null && jarData.jarGroup!.isNotEmpty)
+                jarData.jarGroup!,
+              jarData.currency.toUpperCase(),
+            ].join(' · ');
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => JarsListView.showModal(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: [
+            JarThumb(imageUrl: imageUrl, size: 48),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(jarData.name, style: TextStyles.titleMediumM),
-                  const SizedBox(height: 2),
-                  GestureDetector(
-                    onTap: () {
-                      if (jarData.isCreator) {
-                        JarBalanceBreakdown.show(context);
-                      }
-                    },
-                    child: RevolutStyleCounterWithCurrency(
-                      value:
-                          CurrencyUtils.getCurrencySymbol(jarData.currency) +
-                          jarData.balanceBreakDown.totalContributedAmount
-                              .toString(),
-                      style: TextStyles.titleBoldXl,
-                      duration: const Duration(milliseconds: 1000),
-                    ),
+                  Text(
+                    jarData.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: DsText.section.copyWith(fontSize: 19),
                   ),
                   const SizedBox(height: 2),
-                  // Only show balances if user is the creator
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      final isCreator =
-                          authState is AuthAuthenticated &&
-                          jarData.creator.id == authState.user.id;
-                      if (!isCreator) {
-                        return const SizedBox(height: AppSpacing.spacingXs);
-                      }
-                      return Column(
-                        children: [
-                          Text(
-                            localizations.upcomingBalanceAmount(
-                              CurrencyUtils.getCurrencySymbol(jarData.currency),
-                              jarData.balanceBreakDown.upcomingBalance
-                                  .toString(),
-                            ),
-                            style: TextStyles.titleRegularXs.copyWith(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color
-                                  ?.withValues(alpha: 0.7),
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                        ],
-                      );
-                    },
-                  ),
-                  AppSmallButton(
-                    opacity: 0.8,
-                    child: Text(
-                      localizations.jars,
-                      style: TextStyles.titleMedium,
-                    ),
-                    onPressed: () {
-                      JarsListView.showModal(context);
-                    },
-                  ),
-                  const SizedBox(height: 45),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingM,
-                      vertical: AppSpacing.spacingL,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AppIconButton(
-                                key: const Key('contribute_button'),
-                                enabled:
-                                    jarData.status != JarStatus.sealed &&
-                                    jarData.status != JarStatus.frozen,
-                                onPressed: () {
-                                  if (!_requireCollecting(context, jarData)) {
-                                    return;
-                                  }
-                                  context.push(AppRoutes.addContribution);
-                                },
-                                icon: Icons.add,
-                                opacity: 0.8,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              Text(
-                                localizations.contribute,
-                                style: TextStyles.titleMediumS.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color?.withValues(
-                                    alpha:
-                                        jarData.status == JarStatus.sealed ||
-                                                jarData.status ==
-                                                    JarStatus.frozen
-                                            ? 0.4
-                                            : 1.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AppIconButton(
-                                key: const Key('request_button'),
-                                enabled:
-                                    jarData.status != JarStatus.sealed &&
-                                    jarData.status != JarStatus.frozen,
-                                onPressed: () {
-                                  if (!_requireCollecting(context, jarData)) {
-                                    return;
-                                  }
-                                  context.push(
-                                    AppRoutes.contributionRequest,
-                                    extra: {
-                                      'paymentLink': state.jarData.link,
-                                      'jarName': state.jarData.name,
-                                    },
-                                  );
-                                },
-                                icon: Icons.call_received,
-                                opacity: 0.8,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              Text(
-                                localizations.request,
-                                style: TextStyles.titleMediumS.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color?.withValues(
-                                    alpha:
-                                        jarData.status == JarStatus.sealed
-                                            ? 0.4
-                                            : 1.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, authState) {
-                              final isCreator =
-                                  authState is AuthAuthenticated &&
-                                  jarData.creator.id == authState.user.id;
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  AppIconButton(
-                                    key: const Key('info_button'),
-                                    onPressed:
-                                        isCreator
-                                            ? () {
-                                              context.push(AppRoutes.jarInfo);
-                                            }
-                                            : () async {
-                                              final result =
-                                                  await JarInfoSheet.show(
-                                                    context: context,
-                                                    jarData: jarData,
-                                                  );
-                                              if (!context.mounted) return;
-                                              if (result == 'leave') {
-                                                context
-                                                    .read<UpdateJarBloc>()
-                                                    .add(
-                                                      LeaveJarRequested(
-                                                        jarId: jarData.id,
-                                                      ),
-                                                    );
-                                              } else if (result == 'report') {
-                                                final reported =
-                                                    await JarReportSheet.show(
-                                                      context: context,
-                                                      jarId: jarData.id,
-                                                    );
-                                                if (reported == true &&
-                                                    context.mounted) {
-                                                  AppSnackBar.show(
-                                                    context,
-                                                    message:
-                                                        'Report submitted successfully',
-                                                    type: SnackBarType.success,
-                                                  );
-                                                }
-                                              }
-                                            },
-                                    icon: Icons.info_outline,
-                                  ),
-                                  const SizedBox(height: AppSpacing.spacingXs),
-                                  Text(
-                                    localizations.info,
-                                    style: TextStyles.titleMediumS,
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                        Expanded(child: JarMoreMenu(jarId: jarData.id)),
-                      ],
-                    ),
-                  ),
-
-                  // Frozen jar banner
-                  if (jarData.isJarFrozen)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
-                      ),
-                      child: Alert(
-                        message:
-                            jarData.freezeReason != null &&
-                                    jarData.freezeReason!.isNotEmpty
-                                ? 'This jar is frozen. ${jarData.freezeReason!} Contributions, transfers, and withdrawals are disabled.'
-                                : 'This jar is frozen. Contributions, transfers, and withdrawals are disabled.',
-                      ),
-                    ),
-
-                  /// Dynamic CTA Banner Based on Missing Information
-                  SizedBox(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
-                      ),
-                      child: JarCompletionAlert(jarData: jarData),
-                    ),
-                  ),
-
-                  /// Jar Balance Card (only for jar creators)
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      final isCreator =
-                          authState is AuthAuthenticated &&
-                          jarData.creator.id == authState.user.id;
-                      if (!isCreator) {
-                        return Container();
-                      }
-                      final hasFunds =
-                          jarData.balanceBreakDown.totalAmountTobeTransferred >
-                          0;
-                      return SizedBox(
-                        width: double.infinity,
-                        child: AppCard(
-                          margin: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.spacingXs,
-                          ),
-                          variant: CardVariant.primary,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Jar balance',
-                                      style: TextStyles.titleRegularM,
-                                    ),
-                                    const SizedBox(
-                                      height: AppSpacing.spacingXs,
-                                    ),
-                                    RevolutStyleCounterWithCurrency(
-                                      value:
-                                          CurrencyUtils.getCurrencySymbol(
-                                            jarData.currency,
-                                          ) +
-                                          jarData
-                                              .balanceBreakDown
-                                              .totalAmountTobeTransferred
-                                              .toString(),
-                                      style: TextStyles.titleBoldLg,
-                                      duration: const Duration(
-                                        milliseconds: 800,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: AppSpacing.spacingXs,
-                                    ),
-                                    Text(
-                                      localizations.totalWeOweYou,
-                                      style: TextStyles.titleRegularXs.copyWith(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color
-                                            ?.withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (hasFunds &&
-                                  jarData.status != JarStatus.frozen)
-                                SizedBox(
-                                  child: AppButton.filled(
-                                    key: const Key('withdraw_button'),
-                                    text: 'Transfer',
-                                    isFullWidth: false,
-                                    onPressed:
-                                        () => _handleWithdraw(context, jarData),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, authState) {
-                          final isCreator =
-                              authState is AuthAuthenticated &&
-                              jarData.creator.id == authState.user.id;
-                          if (!isCreator) {
-                            return Container();
-                          }
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                CollectorsView.show(context);
-                              },
-                              child: AppCard(
-                                margin: EdgeInsets.only(
-                                  left: AppSpacing.spacingXs,
-                                ),
-                                variant: CardVariant.primary,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(Icons.person),
-                                      style: IconButton.styleFrom(
-                                        backgroundColor:
-                                            isDark
-                                                ? Theme.of(
-                                                  context,
-                                                ).colorScheme.surface
-                                                : Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                        foregroundColor:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: AppSpacing.spacingL),
-                                    Text(
-                                      localizations.collectors,
-                                      style: TextStyles.titleRegularM,
-                                    ),
-                                    const SizedBox(
-                                      height: AppSpacing.spacingXs,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        AnimatedNumberTextScale(
-                                          value:
-                                              (jarData.invitedCollectors
-                                                          ?.where(
-                                                            (collector) =>
-                                                                collector
-                                                                    .status ==
-                                                                'accepted',
-                                                          )
-                                                          .length ??
-                                                      0)
-                                                  .toString(),
-                                          style: TextStyles.titleBoldLg,
-                                          duration: const Duration(
-                                            milliseconds: 600,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.add,
-                                          size: 20,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.5),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: AppSpacing.spacingXs),
-                      Expanded(
-                        child: AppCard(
-                          margin: EdgeInsets.only(right: AppSpacing.spacingXs),
-                          variant: CardVariant.primary,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                localizations.contributions,
-                                style: TextStyles.titleRegularM,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingXs),
-                              RevolutStyleCounterWithCurrency(
-                                value:
-                                    CurrencyUtils.getCurrencySymbol(
-                                      jarData.currency,
-                                    ) +
-                                    jarData
-                                        .balanceBreakDown
-                                        .totalContributedAmount
-                                        .toString(),
-                                style: TextStyles.titleBoldLg,
-                                duration: const Duration(milliseconds: 800),
-                              ),
-                              const SizedBox(height: AppSpacing.spacingM),
-                              // Chart with real data from API
-                              ContributionChart(
-                                dataPoints: jarData.chartData ?? const [],
-                                chartColor: Colors.green,
-                                height: 50,
-                              ),
-                            ],
-                          ),
+                      tag,
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: DsText.caption,
                         ),
                       ),
                     ],
                   ),
-
-                  //end of top section
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  // Goal Progress Card
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      final isCreator =
-                          state is AuthAuthenticated &&
-                          state.user.id == jarData.creator.id;
-                      if (!isCreator) {
-                        return Container();
-                      }
-                      return GoalProgressCard(
-                        currentAmount:
-                            jarData.balanceBreakDown.totalContributedAmount,
-                        goalAmount: jarData.goalAmount,
-                        currency: jarData.currency,
-                        deadline: jarData.deadline,
-                        variant: CardVariant.primary,
-                      );
-                    },
-                  ),
-
-                  // Recent Contributions Section
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.spacingM,
-                          vertical: AppSpacing.spacingXs,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              localizations.recentContributions,
-                              style: TextStyles.titleMediumLg,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                // Clear all contribution filters before navigating
-                                try {
-                                  context.read<FilterContributionsBloc>().add(
-                                    ClearAllFilters(),
-                                  );
-                                } catch (_) {
-                                  // Bloc not found in context; ignore.
-                                }
-                                context.push(AppRoutes.contributionsList);
-                              },
-                              child: Text(
-                                localizations.seeAll,
-                                style: TextStyles.titleMedium,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppCard(
-                          margin: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.spacingXs,
-                          ),
-                          variant: CardVariant.primary,
-                          child:
-                              jarData.contributions.isEmpty
-                                  ? Column(
-                                    children: [
-                                      Image.asset(
-                                        AppImages.onboardingSlide1,
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.contain,
-                                        color:
-                                            isDark
-                                                ? Colors.white
-                                                : AppColors.black,
-                                        colorBlendMode: BlendMode.srcIn,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingM,
-                                      ),
-                                      Text(
-                                        localizations.noContributionsYet,
-                                        style: TextStyles.titleMedium,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingXs,
-                                      ),
-                                      Text(
-                                        localizations.beTheFirstToContribute,
-                                        style: TextStyles.titleRegularSm,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.spacingL,
-                                      ),
-                                      AppButton.filled(
-                                        text: localizations.contribute,
-                                        onPressed: () {
-                                          if (!_requireCollecting(
-                                            context,
-                                            jarData,
-                                          )) {
-                                            return;
-                                          }
-                                          context.push(
-                                            AppRoutes.addContribution,
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  )
-                                  : Column(
-                                    children: [
-                                      ...jarData.contributions
-                                          .map(
-                                            (contribution) => [
-                                              ContributionListItem(
-                                                contributionId: contribution.id,
-                                                contributorName:
-                                                    contribution.contributor ??
-                                                    (contribution
-                                                                .contributorPhoneNumber !=
-                                                            null
-                                                        ? localizations.userWithLastDigits(
-                                                          contribution
-                                                              .contributorPhoneNumber!
-                                                              .substring(
-                                                                contribution
-                                                                        .contributorPhoneNumber!
-                                                                        .length -
-                                                                    4,
-                                                              ),
-                                                        )
-                                                        : 'Konto'),
-                                                amount:
-                                                    contribution
-                                                        .amountContributed,
-                                                currency: jarData.currency,
-                                                timestamp:
-                                                    contribution.createdAt ??
-                                                    DateTime.now(),
-                                                paymentMethod:
-                                                    contribution.paymentMethod,
-                                                isAnonymous:
-                                                    contribution.contributor ==
-                                                    null,
-                                                viaPaymentLink:
-                                                    contribution.viaPaymentLink,
-                                                paymentStatus:
-                                                    contribution.paymentStatus,
-                                                isTransfer:
-                                                    contribution.isTransfer,
-                                                isRefund: contribution.isRefund,
-                                              ),
-                                            ],
-                                          )
-                                          .expand((list) => list),
-                                    ],
-                                  ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // balance breakdown section (only for jar creators)
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      final isCreator =
-                          authState is AuthAuthenticated &&
-                          jarData.creator.id == authState.user.id;
-                      if (!isCreator) {
-                        return Container();
-                      }
-                      return Column(
-                        children: [
-                          const SizedBox(height: AppSpacing.spacingM),
-                          AppCard(
-                            margin: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.spacingXs,
-                            ),
-                            padding: EdgeInsets.all(0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    JarBalanceBreakdown.show(context);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: AppSpacing.spacingM,
-                                      right: AppSpacing.spacingM,
-                                      top: AppSpacing.spacingM,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Contribution Breakdown',
-                                              style:
-                                                  AppTextStyles.titleMediumXs,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Icon(Icons.chevron_right, size: 16),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "${CurrencyUtils.getCurrencySymbol(jarData.currency)} ${jarData.balanceBreakDown.totalContributedAmount}",
-                                          style: AppTextStyles.titleBoldXl,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                PaymentMethodContributionItem(
-                                  title: localizations.cash,
-                                  subtitle: localizations.contributionsCount(
-                                    jarData.cashContributionCount,
-                                  ),
-                                  amount:
-                                      jarData.balanceBreakDown.cash.totalAmount,
-                                  currency: jarData.currency,
-                                  icon: Icons.money,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
-                                ),
-                                // PaymentMethodContributionItem(
-                                //   title: localizations.bankTransfer,
-                                //   subtitle: localizations.contributionsCount(
-                                //     jarData.bankTransferContributionCount,
-                                //   ),
-                                //   amount:
-                                //       jarData
-                                //           .balanceBreakDown
-                                //           .bankTransfer
-                                //           .totalAmount,
-                                //   currency: jarData.currency,
-                                //   icon: Icons.account_balance,
-                                //   backgroundColor:
-                                //       Theme.of(context).colorScheme.surface,
-                                // ),
-                                PaymentMethodContributionItem(
-                                  title: localizations.mobileMoney,
-                                  subtitle: localizations.contributionsCount(
-                                    jarData.mobileMoneyContributionCount,
-                                  ),
-                                  amount:
-                                      jarData
-                                          .balanceBreakDown
-                                          .mobileMoney
-                                          .totalAmount,
-                                  currency: jarData.currency,
-                                  icon: Icons.phone_android,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
-                                ),
-                                PaymentMethodContributionItem(
-                                  title: localizations.cardPayment,
-                                  subtitle: localizations.contributionsCount(
-                                    jarData.balanceBreakDown.card.totalCount,
-                                  ),
-                                  amount:
-                                      jarData.balanceBreakDown.card.totalAmount,
-                                  currency: jarData.currency,
-                                  icon: Icons.credit_card,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
-                                ),
-                                // PaymentMethodContributionItem(
-                                //   title: localizations.applePayPayment,
-                                //   subtitle: localizations.contributionsCount(
-                                //     jarData
-                                //         .balanceBreakDown
-                                //         .applePay
-                                //         .totalCount,
-                                //   ),
-                                //   amount:
-                                //       jarData
-                                //           .balanceBreakDown
-                                //           .applePay
-                                //           .totalAmount,
-                                //   currency: jarData.currency,
-                                //   icon: Icons.apple,
-                                //   backgroundColor:
-                                //       Theme.of(context).colorScheme.surface,
-                                // ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
                 ],
               ),
             ),
           ],
         ),
-      );
-    }
-    return SliverFillRemaining(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  AppImages.onboardingSlide1,
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.contain,
-                  color: isDark ? Colors.white : Colors.black,
-                  colorBlendMode: BlendMode.srcIn,
-                ),
-                Text(
-                  localizations.createNewJarMessage,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-                AppButton.outlined(
-                  text: localizations.createNewJar,
-                  onPressed: () {
-                    context.push(AppRoutes.jarCreate);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
+
+  /// Balance card. Owner: balance, Available / Clearing, a 10-day chart
+  /// (the summary's chartData is daily totals for the last 10 days).
+  /// Collector: what they've collected and how many payments.
+  Widget _balanceCard(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool isCreator,
+  ) {
+    final b = jarData.balanceBreakDown;
+    final cur = jarData.currency;
+    final blocked =
+        jarData.status == JarStatus.sealed ||
+        jarData.status == JarStatus.frozen ||
+        jarData.status == JarStatus.broken;
+    final points = jarData.chartData ?? const <double>[];
+    final hasChart = points.length >= 2 && points.any((p) => p > 0);
+
+    Widget figure(String label, double value, {Color? color}) => Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: '$label ', style: DsText.small.copyWith(fontSize: 13)),
+          TextSpan(
+            text: CurrencyUtils.formatAmount(value, cur),
+            style: DsText.small.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color ?? AppColors.navy,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!isCreator) {
+      final payments =
+          b.cash.totalCount + b.mobileMoney.totalCount + b.card.totalCount;
+      return DsCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You\'ve collected', style: DsText.caption),
+            const SizedBox(height: 4),
+            DsMoney(
+              b.totalContributedAmount,
+              currency: cur.toUpperCase(),
+              size: 36,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$payments ${payments == 1 ? 'payment' : 'payments'}',
+              style: DsText.caption,
+            ),
+          ],
+        ),
+      );
+    }
+
+    final hasMoney = b.totalContributedAmount > 0;
+    final today = DateTime.now();
+    final firstDay = today.subtract(Duration(days: points.length - 1));
+
+    return DsCard(
+      onTap: () => JarBalanceBreakdown.show(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Balance', style: DsText.caption),
+          const SizedBox(height: 4),
+          DsMoney(
+            b.totalContributedAmount,
+            currency: cur.toUpperCase(),
+            size: 38,
+          ),
+          if (hasMoney) ...[
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                figure('Available', b.totalAmountTobeTransferred),
+                figure('Clearing', b.upcomingBalance, color: AppColors.pending),
+              ],
+            ),
+          ],
+          // Sealed and frozen jars show the balance only (mockup).
+          if (!blocked) ...[
+            const SizedBox(height: 10),
+            if (hasChart) ...[
+              SizedBox(
+                height: 110,
+                width: double.infinity,
+                child: CustomPaint(painter: _BalanceChartPainter(points)),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text(
+                    DateFormat('d MMM').format(firstDay),
+                    style: DsText.caption,
+                  ),
+                  const Spacer(),
+                  Text('Today', style: DsText.caption),
+                ],
+              ),
+            ] else if (!hasMoney) ...[
+              SizedBox(
+                height: 70,
+                width: double.infinity,
+                child: CustomPaint(painter: _DashedLinePainter()),
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  'Your chart starts with the first payment',
+                  style: DsText.caption,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _quickActions(
+    BuildContext context,
+    JarSummaryModel jarData,
+    bool isCreator,
+  ) {
+    final l = AppLocalizations.of(context)!;
+    final sealed = jarData.status == JarStatus.sealed;
+    final frozen = jarData.status == JarStatus.frozen;
+    // Broken jars are read-only: every action is off.
+    final broken = jarData.status == JarStatus.broken;
+    final blocked = sealed || frozen || broken;
+    final b = jarData.balanceBreakDown;
+    final transferable =
+        !frozen &&
+        !broken &&
+        (b.totalAmountTobeTransferred > 0 || b.upcomingBalance > 0);
+
+    final collect = DsQuickAction(
+      key: const Key('contribute_button'),
+      icon: Icons.add_rounded,
+      label: 'Collect',
+      primary: !sealed && !broken,
+      onTap: blocked ? null : () => _contribute(context, jarData),
+    );
+    final request = DsQuickAction(
+      key: const Key('request_button'),
+      icon: Icons.qr_code_2_rounded,
+      label: l.request,
+      onTap: blocked ? null : () => _request(context, jarData),
+    );
+
+    final List<Widget> tiles;
+    if (!isCreator) {
+      tiles = [
+        collect,
+        request,
+        DsQuickAction(
+          icon: Icons.info_outline_rounded,
+          label: l.about,
+          onTap: broken ? null : () => _showCollectorInfo(context, jarData),
+        ),
+      ];
+    } else {
+      tiles = [
+        collect,
+        request,
+        DsQuickAction(
+          key: const Key('withdraw_button'),
+          icon: Icons.send_rounded,
+          label: 'Transfer',
+          primary: sealed,
+          onTap: transferable ? () => _handleWithdraw(context, jarData) : null,
+        ),
+        if (sealed)
+          DsQuickAction(
+            icon: Icons.lock_open_rounded,
+            label: l.reopen,
+            onTap: () => _confirmReopen(context, jarData),
+          )
+        else
+          DsQuickAction(
+            key: const Key('team_button'),
+            icon: Icons.group_outlined,
+            label: 'Team',
+            onTap: frozen || broken ? null : () => CollectorsView.show(context),
+          ),
+      ];
+    }
+
+    return Row(
+      children: [
+        for (var i = 0; i < tiles.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: tiles[i]),
+        ],
+      ],
+    );
+  }
+}
+
+/// Cumulative takings over the chart window (chartData is completed
+/// contributions per day for the last 10 days), drawn as a straight-segment
+/// line with a soft fill and a lime end dot.
+class _BalanceChartPainter extends CustomPainter {
+  final List<double> daily;
+  _BalanceChartPainter(this.daily);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final values = <double>[];
+    var running = 0.0;
+    for (final d in daily) {
+      running += d;
+      values.add(running);
+    }
+    final maxV = values.last <= 0 ? 1.0 : values.last;
+    const top = 8.0;
+    final bottom = size.height - 4;
+    final dx = size.width / (values.length - 1);
+    Offset at(int i) => Offset(
+      (i * dx).clamp(0, size.width - 7),
+      bottom - (values[i] / maxV) * (bottom - top),
+    );
+
+    final line = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < values.length; i++) {
+      line.lineTo(at(i).dx, at(i).dy);
+    }
+    final fill =
+        Path.from(line)
+          ..lineTo(at(values.length - 1).dx, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+    canvas.drawPath(
+      fill,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.navy.withValues(alpha: 0.14),
+            AppColors.navy.withValues(alpha: 0),
+          ],
+        ).createShader(Offset.zero & size),
+    );
+    canvas.drawPath(
+      line,
+      Paint()
+        ..color = AppColors.navy
+        ..strokeWidth = 2.4
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
+    final end = at(values.length - 1);
+    canvas.drawCircle(end, 6, Paint()..color = AppColors.lime);
+    canvas.drawCircle(
+      end,
+      6,
+      Paint()
+        ..color = AppColors.navy
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BalanceChartPainter oldDelegate) =>
+      oldDelegate.daily != daily;
+}
+
+/// Dashed baseline shown before a jar's first payment.
+class _DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = const Color(0xFFE2D9CC)
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round;
+    final y = size.height - 10;
+    double x = 0;
+    while (x < size.width) {
+      canvas.drawLine(
+        Offset(x, y),
+        Offset((x + 4).clamp(0, size.width), y),
+        paint,
+      );
+      x += 9;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

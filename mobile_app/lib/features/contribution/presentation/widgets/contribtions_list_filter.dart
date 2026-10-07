@@ -1,33 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/filter_options.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/card.dart';
-import 'package:Hoga/core/widgets/contributor_avatar.dart';
-import 'package:Hoga/core/widgets/date_range_picker.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/custom_dates_sheet.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
+/// Localized labels for the filter option keys, shared by the sheet and the
+/// active-filter chips on the Activity screen.
+class FilterLabels {
+  FilterLabels._();
+
+  static String date(AppLocalizations l, String key) {
+    // A custom date range is stored as its own label ("1/10/2026 - 6/10/2026")
+    if (key.contains(' - ')) return key;
+    return switch (key) {
+      'dateAll' => l.dateAll,
+      'dateToday' => l.dateToday,
+      'dateYesterday' => l.dateYesterday,
+      'dateLast7Days' => l.dateLast7Days,
+      'dateLast30Days' => l.dateLast30Days,
+      'dateCustomRange' => l.dateCustomRange,
+      _ => key,
+    };
+  }
+
+  static String paymentMethod(AppLocalizations l, String value) {
+    final option = FilterOptions.paymentMethods.where((m) => m.value == value);
+    final key = option.isEmpty ? value : option.first.label;
+    return switch (key) {
+      'mobileMoneyPayment' => l.mobileMoneyPayment,
+      'cashPayment' => l.cashPayment,
+      'bankTransferPayment' => l.bankTransferPayment,
+      'cardPayment' => l.cardPayment,
+      'applePayPayment' => l.applePayPayment,
+      _ => key,
+    };
+  }
+
+  static String status(AppLocalizations l, String value) {
+    final option = FilterOptions.statuses.where((s) => s.value == value);
+    final key = option.isEmpty ? value : option.first.label;
+    return switch (key) {
+      'statusPending' => l.statusPending,
+      'statusCompleted' => l.statusCompleted,
+      'statusFailed' => l.statusFailed,
+      'statusTransferred' => l.statusTransferred,
+      _ => key,
+    };
+  }
+
+  static String transactionType(AppLocalizations l, String value) {
+    final option = FilterOptions.transactionTypes.where(
+      (t) => t.value == value,
+    );
+    final key = option.isEmpty ? value : option.first.label;
+    return switch (key) {
+      'typeContribution' => l.typeContribution,
+      'typePayout' => l.typePayout,
+      'typeRefund' => l.typeRefund,
+      _ => key,
+    };
+  }
+}
+
 class ContributionsListFilter extends StatefulWidget {
   final String? contributor;
-  const ContributionsListFilter({super.key, this.contributor});
 
-  static void show(BuildContext context, {String? contributor}) {
+  /// All-jars feed: collectors belong to one jar, so that section is hidden.
+  final bool allJars;
+
+  const ContributionsListFilter({
+    super.key,
+    this.contributor,
+    this.allJars = false,
+  });
+
+  static void show(
+    BuildContext context, {
+    String? contributor,
+    bool allJars = false,
+  }) {
     HapticUtils.heavy();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder:
-          (modalContext) => SizedBox(
-            height: MediaQuery.of(context).size.height * 0.90,
-            child: ContributionsListFilter(contributor: contributor),
+          (modalContext) => ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.90,
+            ),
+            child: ContributionsListFilter(
+              contributor: contributor,
+              allJars: allJars,
+            ),
           ),
     );
   }
@@ -53,7 +126,8 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     if (st is FilterContributionsLoaded) {
       _pendingPaymentMethods = List.from(st.selectedPaymentMethods ?? []);
       _pendingStatuses = List.from(st.selectedStatuses ?? []);
-      _pendingCollectors = List.from(st.selectedCollectors ?? []);
+      _pendingCollectors =
+          widget.allJars ? [] : List.from(st.selectedCollectors ?? []);
       _pendingTransactionTypes = List.from(st.selectedTransactionTypes ?? []);
       _pendingDate = st.selectedDate;
       _pendingStartDate = st.startDate;
@@ -61,42 +135,13 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     }
   }
 
-  void _togglePaymentMethod(String method) {
+  void _toggle(List<String> list, String value) {
+    HapticUtils.selection();
     setState(() {
-      if (_pendingPaymentMethods.contains(method)) {
-        _pendingPaymentMethods.remove(method);
+      if (list.contains(value)) {
+        list.remove(value);
       } else {
-        _pendingPaymentMethods.add(method);
-      }
-    });
-  }
-
-  void _toggleStatus(String status) {
-    setState(() {
-      if (_pendingStatuses.contains(status)) {
-        _pendingStatuses.remove(status);
-      } else {
-        _pendingStatuses.add(status);
-      }
-    });
-  }
-
-  void _toggleCollector(String id) {
-    setState(() {
-      if (_pendingCollectors.contains(id)) {
-        _pendingCollectors.remove(id);
-      } else {
-        _pendingCollectors.add(id);
-      }
-    });
-  }
-
-  void _toggleTransactionType(String type) {
-    setState(() {
-      if (_pendingTransactionTypes.contains(type)) {
-        _pendingTransactionTypes.remove(type);
-      } else {
-        _pendingTransactionTypes.add(type);
+        list.add(value);
       }
     });
   }
@@ -124,7 +169,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     Navigator.pop(context);
   }
 
-  void _clearAll(List<String> allCollectorIds) {
+  void _clearAll() {
     setState(() {
       _pendingPaymentMethods.clear();
       _pendingStatuses.clear();
@@ -152,85 +197,20 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     });
   }
 
-  void _showDateOptions(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
-    final currentSelected = _pendingDate ?? FilterOptions.defaultDateOption;
-
-    // Translated date options
-    final translatedDateOptions = [
-      localizations.dateAll,
-      localizations.dateToday,
-      localizations.dateYesterday,
-      localizations.dateLast7Days,
-      localizations.dateLast30Days,
-      localizations.dateCustomRange,
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder:
-          (modalContext) => Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacingM,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const DragHandle(),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  Text(
-                    localizations.selectDateRange,
-                    style: TextStyles.titleBoldLg,
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                  AppCard(
-                    child: Column(
-                      children:
-                          translatedDateOptions.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final translatedOption = entry.value;
-                            final originalOption =
-                                FilterOptions.dateOptions[index];
-
-                            return ListTile(
-                              title: Text(
-                                translatedOption,
-                                style: TextStyles.titleMediumM,
-                              ),
-                              onTap: () {
-                                if (originalOption == 'dateCustomRange') {
-                                  Navigator.pop(modalContext);
-                                  _showCustomDateRangePicker(context);
-                                } else {
-                                  _updateDate(dateKey: originalOption);
-                                  Navigator.pop(modalContext);
-                                }
-                              },
-                              trailing:
-                                  currentSelected == originalOption
-                                      ? const Icon(Icons.check, size: 18)
-                                      : null,
-                            );
-                          }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingL),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
+  bool get _hasPending =>
+      _pendingPaymentMethods.isNotEmpty ||
+      _pendingStatuses.isNotEmpty ||
+      _pendingCollectors.isNotEmpty ||
+      _pendingTransactionTypes.isNotEmpty ||
+      _pendingDate != null ||
+      _pendingStartDate != null ||
+      _pendingEndDate != null;
 
   void _showCustomDateRangePicker(BuildContext context) async {
-    final dateRange = await DateRangePicker.showDateRangePicker(
-      context: context,
+    final dateRange = await CustomDatesSheet.show(
+      context,
+      initialStart: _pendingStartDate,
+      initialEnd: _pendingEndDate,
     );
 
     if (dateRange != null) {
@@ -248,30 +228,70 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  String _getTranslatedDateOption(BuildContext context, String dateOptionKey) {
-    final localizations = AppLocalizations.of(context)!;
+  Widget _section(String title, List<Widget> chips) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CollectCap(title),
+        const SizedBox(height: 6),
+        Wrap(spacing: 6, runSpacing: 6, children: chips),
+      ],
+    );
+  }
 
-    // If it's a custom date range (contains " - "), return as is
-    if (dateOptionKey.contains(' - ')) {
-      return dateOptionKey;
-    }
-
-    switch (dateOptionKey) {
-      case 'dateAll':
-        return localizations.dateAll;
-      case 'dateToday':
-        return localizations.dateToday;
-      case 'dateYesterday':
-        return localizations.dateYesterday;
-      case 'dateLast7Days':
-        return localizations.dateLast7Days;
-      case 'dateLast30Days':
-        return localizations.dateLast30Days;
-      case 'dateCustomRange':
-        return localizations.dateCustomRange;
-      default:
-        return dateOptionKey;
-    }
+  /// PERIOD: Today / 7 days / 30 days / Custom. Tapping the selected one
+  /// again goes back to all dates.
+  Widget _period(String selectedDate, bool isCustom) {
+    final value = isCustom ? FilterOptions.customDateRangeOption : selectedDate;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const CollectCap('Period'),
+        const SizedBox(height: 6),
+        CollectSegment<String>(
+          value: value,
+          options: const [
+            (FilterOptions.todayOption, 'Today', null),
+            (FilterOptions.last7DaysOption, '7 days', null),
+            (FilterOptions.last30DaysOption, '30 days', null),
+            (FilterOptions.customDateRangeOption, 'Custom', null),
+          ],
+          onChanged: (option) {
+            HapticUtils.selection();
+            if (option == FilterOptions.customDateRangeOption) {
+              _showCustomDateRangePicker(context);
+            } else if (option == value) {
+              _updateDate(dateKey: FilterOptions.defaultDateOption);
+            } else {
+              _updateDate(dateKey: option);
+            }
+          },
+        ),
+        if (isCustom) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => _showCustomDateRangePicker(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14,
+                    color: AppColors.muted,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    selectedDate,
+                    style: DsText.small.copyWith(color: AppColors.navy),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
@@ -280,511 +300,101 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
 
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, jarState) {
-        // Extract accepted collector IDs
-        List<String> allCollectorIds = [];
-        if (jarState is JarSummaryLoaded) {
-          final invitedCollectors =
-              jarState.jarData.invitedCollectors
-                  ?.where(
-                    (collector) =>
-                        collector.status == 'accepted' &&
-                        collector.collector != null,
-                  )
-                  .toList() ??
-              [];
-          allCollectorIds =
-              invitedCollectors
-                  .map((collectorModel) => collectorModel.collector!.id)
+        // Accepted collectors, shown to the jar creator only
+        final authState = context.read<AuthBloc>().state;
+        List<({String id, String name})> collectors = [];
+        bool isCreator = false;
+        if (jarState is JarSummaryLoaded && !widget.allJars) {
+          isCreator =
+              authState is AuthAuthenticated &&
+              jarState.jarData.creator.id == authState.user.id;
+          collectors =
+              (jarState.jarData.invitedCollectors ?? [])
+                  .where((c) => c.status == 'accepted')
+                  .map((c) => (id: c.collector.id, name: c.collector.fullName))
                   .toList();
         }
+        final allCollectorIds = collectors.map((c) => c.id).toList();
 
         return BlocBuilder<FilterContributionsBloc, FilterContributionsState>(
           builder: (context, state) {
-            if (state is FilterContributionsLoaded) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(AppRadius.radiusM),
-                    topRight: Radius.circular(AppRadius.radiusM),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.spacingM,
-                    vertical: AppSpacing.spacingM,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Drag handle
-                      const DragHandle(),
-                      const SizedBox(height: AppSpacing.spacingM),
+            if (state is! FilterContributionsLoaded) return Container();
 
-                      // Header with title and select all
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            localizations.jarFilter,
-                            style: TextStyles.titleBoldLg,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              final hasPending =
-                                  _pendingPaymentMethods.isNotEmpty ||
-                                  _pendingStatuses.isNotEmpty ||
-                                  _pendingCollectors.isNotEmpty ||
-                                  _pendingTransactionTypes.isNotEmpty ||
-                                  _pendingDate != null ||
-                                  _pendingStartDate != null ||
-                                  _pendingEndDate != null;
-                              if (hasPending) {
-                                _clearAll(allCollectorIds);
-                              } else {
-                                _selectAll(allCollectorIds);
-                              }
-                            },
-                            child: Text(
-                              (_pendingPaymentMethods.isNotEmpty ||
-                                      _pendingStatuses.isNotEmpty ||
-                                      _pendingCollectors.isNotEmpty ||
-                                      _pendingTransactionTypes.isNotEmpty ||
-                                      _pendingDate != null ||
-                                      _pendingStartDate != null ||
-                                      _pendingEndDate != null)
-                                  ? localizations.clearAll
-                                  : localizations.selectAll,
-                              style: TextStyles.titleMediumM,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.spacingM),
+            final selectedDate =
+                _pendingDate ?? FilterOptions.defaultDateOption;
+            final isCustom = selectedDate.contains(' - ');
 
-                      Flexible(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Payment Method Section
-                              Text(
-                                localizations.paymentMethod,
-                                style: TextStyles.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                              // Payment Methods List
-                              ...List.generate(
-                                FilterOptions.paymentMethods.length,
-                                (index) {
-                                  final method =
-                                      FilterOptions.paymentMethods[index];
-                                  final isSelected = _pendingPaymentMethods
-                                      .contains(method.value);
-                                  final isLast =
-                                      index ==
-                                      FilterOptions.paymentMethods.length - 1;
-
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: isLast ? 0 : AppSpacing.spacingS,
-                                    ),
-                                    child: _buildPaymentMethodCard(
-                                      context,
-                                      method,
-                                      isSelected,
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: AppSpacing.spacingM),
-
-                              // Status Section
-                              Text(
-                                localizations.status,
-                                style: TextStyles.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                              // Status List
-                              ...List.generate(FilterOptions.statuses.length, (
-                                index,
-                              ) {
-                                final status = FilterOptions.statuses[index];
-                                final isSelected = _pendingStatuses.contains(
-                                  status.value,
-                                );
-                                final isLast =
-                                    index == FilterOptions.statuses.length - 1;
-
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: isLast ? 0 : AppSpacing.spacingS,
-                                  ),
-                                  child: _buildStatusCard(
-                                    context,
-                                    status,
-                                    isSelected,
-                                  ),
-                                );
-                              }),
-
-                              const SizedBox(height: AppSpacing.spacingM),
-
-                              // Transaction Type Section
-                              Text(
-                                localizations.transactionType,
-                                style: TextStyles.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                              // Transaction Type List
-                              ...List.generate(
-                                FilterOptions.transactionTypes.length,
-                                (index) {
-                                  final type =
-                                      FilterOptions.transactionTypes[index];
-                                  final isSelected =
-                                      _pendingTransactionTypes
-                                          .contains(type.value);
-                                  final isLast =
-                                      index ==
-                                      FilterOptions.transactionTypes.length - 1;
-
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: isLast ? 0 : AppSpacing.spacingS,
-                                    ),
-                                    child: _buildTransactionTypeCard(
-                                      context,
-                                      type,
-                                      isSelected,
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              // Collectors Section (only for jar creators)
-                              BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, authState) {
-                                  return BlocBuilder<
-                                    JarSummaryBloc,
-                                    JarSummaryState
-                                  >(
-                                    builder: (context, jarState) {
-                                      if (jarState is JarSummaryLoaded) {
-                                        // Check if current user is the creator of the jar
-                                        final isCreator =
-                                            authState is AuthAuthenticated &&
-                                            jarState.jarData.creator.id ==
-                                                authState.user.id;
-
-                                        // Only show collectors section if user is the creator
-                                        if (!isCreator) {
-                                          return Container();
-                                        }
-
-                                        final invitedCollectors =
-                                            jarState.jarData.invitedCollectors
-                                                ?.where(
-                                                  (collector) =>
-                                                      collector.status ==
-                                                          'accepted' &&
-                                                      collector.collector !=
-                                                          null,
-                                                )
-                                                .toList() ??
-                                            [];
-
-                                        if (invitedCollectors.isEmpty) {
-                                          return Container();
-                                        }
-
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(
-                                              height: AppSpacing.spacingM,
-                                            ),
-
-                                            // Collector Section
-                                            Text(
-                                              localizations.collector,
-                                              style: TextStyles.titleMedium,
-                                            ),
-                                            const SizedBox(
-                                              height: AppSpacing.spacingS,
-                                            ),
-
-                                            // Collectors List
-                                            AppCard(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical:
-                                                        AppSpacing.spacingXs,
-                                                  ),
-                                              child: Column(
-                                                children: List.generate(
-                                                  invitedCollectors.length,
-                                                  (index) {
-                                                    final collectorModel =
-                                                        invitedCollectors[index];
-                                                    final collector =
-                                                        collectorModel
-                                                            .collector!;
-                                                    final isSelected =
-                                                        _pendingCollectors
-                                                            .contains(
-                                                              collector.id,
-                                                            );
-
-                                                    return ListTile(
-                                                      leading:
-                                                          ContributorAvatar(
-                                                            contributorName:
-                                                                collector
-                                                                    .fullName,
-                                                            showStatusOverlay:
-                                                                false,
-                                                          ),
-                                                      title: Text(
-                                                        collector.fullName,
-                                                        style:
-                                                            TextStyles
-                                                                .titleMediumM,
-                                                      ),
-                                                      subtitle: Text(
-                                                        collector.phoneNumber,
-                                                        style: TextStyles
-                                                            .titleRegularXs
-                                                            .copyWith(
-                                                              color: Theme.of(
-                                                                    context,
-                                                                  )
-                                                                  .colorScheme
-                                                                  .onSurface
-                                                                  .withValues(
-                                                                    alpha: 0.6,
-                                                                  ),
-                                                            ),
-                                                      ),
-                                                      trailing: Icon(
-                                                        isSelected
-                                                            ? Icons.check_box
-                                                            : Icons
-                                                                .check_box_outline_blank,
-                                                        size: 15,
-                                                      ),
-                                                      onTap:
-                                                          () =>
-                                                              _toggleCollector(
-                                                                collector.id,
-                                                              ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                      return Container();
-                                    },
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: AppSpacing.spacingM),
-
-                              // Date Section
-                              Text(
-                                localizations.date,
-                                style: TextStyles.titleMedium,
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                              GestureDetector(
-                                onTap: () => _showDateOptions(context),
-                                child: AppCard(
-                                  padding: EdgeInsets.zero,
-                                  child: ListTile(
-                                    title: Text(
-                                      localizations.selectDate,
-                                      style: TextStyles.titleMediumXs.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.6),
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      _getTranslatedDateOption(
-                                        context,
-                                        _pendingDate ??
-                                            FilterOptions.defaultDateOption,
-                                      ),
-                                      style: TextStyles.titleMediumS,
-                                    ),
-                                    trailing: const Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 15,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: AppSpacing.spacingM),
-                            ],
-                          ),
+            return CollectSheet(
+              title: 'Filters',
+              scrollable: true,
+              trailing: DsLink(
+                _hasPending ? 'Reset' : localizations.selectAll,
+                onTap: () {
+                  if (_hasPending) {
+                    _clearAll();
+                  } else {
+                    _selectAll(allCollectorIds);
+                  }
+                },
+              ),
+              children: [
+                _period(selectedDate, isCustom),
+                _section('Type', [
+                  for (final type in FilterOptions.transactionTypes)
+                    CollectChip(
+                      label: switch (type.value) {
+                        'contribution' => 'Money in',
+                        'payout' => 'Transfers',
+                        _ => FilterLabels.transactionType(
+                          localizations,
+                          type.value,
                         ),
+                      },
+                      selected: _pendingTransactionTypes.contains(type.value),
+                      onTap:
+                          () => _toggle(_pendingTransactionTypes, type.value),
+                    ),
+                ]),
+                _section(localizations.status, [
+                  // Mockup order: Completed, Pending, Failed.
+                  for (final value in const ['completed', 'pending', 'failed'])
+                    CollectChip(
+                      label: FilterLabels.status(localizations, value),
+                      selected: _pendingStatuses.contains(value),
+                      onTap: () => _toggle(_pendingStatuses, value),
+                    ),
+                ]),
+                _section('Method', [
+                  for (final method in FilterOptions.paymentMethods)
+                    CollectChip(
+                      label: FilterLabels.paymentMethod(
+                        localizations,
+                        method.value,
                       ),
-
-                      // Filter Button
-                      AppButton.filled(
-                        text: localizations.filter,
-                        onPressed: _applyFilters,
+                      selected: _pendingPaymentMethods.contains(method.value),
+                      onTap:
+                          () => _toggle(_pendingPaymentMethods, method.value),
+                    ),
+                ]),
+                if (isCreator && collectors.isNotEmpty)
+                  _section(localizations.collector, [
+                    for (final c in collectors)
+                      CollectChip(
+                        label: c.name,
+                        selected: _pendingCollectors.contains(c.id),
+                        onTap: () => _toggle(_pendingCollectors, c.id),
                       ),
-                    ],
-                  ),
+                  ]),
+                const SizedBox(height: 2),
+                AppButton.filled(
+                  text: 'Show payments',
+                  onPressed: _applyFilters,
                 ),
-              );
-            }
-            return Container();
+              ],
+            );
           },
         );
       },
-    );
-  }
-
-  Widget _buildPaymentMethodCard(
-    BuildContext context,
-    PaymentMethodOption method,
-    bool isSelected,
-  ) {
-    final localizations = AppLocalizations.of(context)!;
-
-    String getTranslatedLabel(String labelKey) {
-      switch (labelKey) {
-        case 'mobileMoneyPayment':
-          return localizations.mobileMoneyPayment;
-        case 'cashPayment':
-          return localizations.cashPayment;
-        case 'bankTransferPayment':
-          return localizations.bankTransferPayment;
-        case 'cardPayment':
-          return localizations.cardPayment;
-        case 'applePayPayment':
-          return localizations.applePayPayment;
-        default:
-          return labelKey;
-      }
-    }
-
-    return GestureDetector(
-      onTap: () => _togglePaymentMethod(method.value),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
-        child: ListTile(
-          leading: CircleAvatar(
-            radius: 25,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            child: Icon(
-              method.icon,
-              size: 18,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          title: Text(
-            getTranslatedLabel(method.label),
-            style: TextStyles.titleMediumM,
-          ),
-          trailing: Icon(
-            isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-            size: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTransactionTypeCard(
-    BuildContext context,
-    TransactionTypeOption type,
-    bool isSelected,
-  ) {
-    final localizations = AppLocalizations.of(context)!;
-
-    String getTranslatedLabel(String labelKey) {
-      switch (labelKey) {
-        case 'typeContribution':
-          return localizations.typeContribution;
-        case 'typePayout':
-          return localizations.typePayout;
-        case 'typeRefund':
-          return localizations.typeRefund;
-        default:
-          return labelKey;
-      }
-    }
-
-    return GestureDetector(
-      onTap: () => _toggleTransactionType(type.value),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
-        child: ListTile(
-          title: Text(
-            getTranslatedLabel(type.label),
-            style: TextStyles.titleMediumM,
-          ),
-          trailing: Icon(
-            isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-            size: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusCard(
-    BuildContext context,
-    StatusOption status,
-    bool isSelected,
-  ) {
-    final localizations = AppLocalizations.of(context)!;
-
-    String getTranslatedLabel(String labelKey) {
-      switch (labelKey) {
-        case 'statusPending':
-          return localizations.statusPending;
-        case 'statusCompleted':
-          return localizations.statusCompleted;
-        case 'statusFailed':
-          return localizations.statusFailed;
-        case 'statusTransferred':
-          return localizations.statusTransferred;
-        default:
-          return labelKey;
-      }
-    }
-
-    return GestureDetector(
-      onTap: () => _toggleStatus(status.value),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
-        child: ListTile(
-          title: Text(
-            getTranslatedLabel(status.label),
-            style: TextStyles.titleMediumM,
-          ),
-          trailing: Icon(
-            isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-            size: 16,
-          ),
-        ),
-      ),
     );
   }
 }

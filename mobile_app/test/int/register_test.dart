@@ -19,6 +19,16 @@ import '../lib/test_setup.dart';
 import '../lib/api_mock_interceptor.dart';
 import '../lib/test_router.dart';
 
+/// Register is two steps: account type, then "About you". Tap Continue to reach the fields.
+Future<void> _toAboutYou(WidgetTester tester) async {
+  final next = find.byKey(const Key('register_continue'));
+  if (find.byKey(const Key('firstName')).evaluate().isEmpty &&
+      next.evaluate().isNotEmpty) {
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -99,6 +109,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await _toAboutYou(tester);
+
       // Verify we're on the register page by checking for form fields
       expect(find.byKey(const Key('firstName')), findsOneWidget);
       expect(find.byKey(const Key('email')), findsOneWidget);
@@ -128,7 +140,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to the create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       expect(createAccountButton, findsOneWidget);
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
@@ -153,7 +165,7 @@ void main() {
 
       // Look for OTP-specific elements
       expect(
-        find.textContaining('OTP'),
+        find.text('Enter the code'),
         findsOneWidget,
         reason: 'Should find OTP text on the page',
       );
@@ -202,16 +214,17 @@ void main() {
             routerConfig: createTestRouter(
               initialRoute: '/start',
               routes: {
-                '/start': (context) => Scaffold(
-                  body: Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        GoRouter.of(context).push('/register');
-                      },
-                      child: const Text('Navigate to Register'),
+                '/start':
+                    (context) => Scaffold(
+                      body: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            GoRouter.of(context).push('/register');
+                          },
+                          child: const Text('Navigate to Register'),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
                 '/register': (context) => const RegisterView(),
                 '/otp': (context) => const OtpView(),
               },
@@ -229,6 +242,8 @@ void main() {
 
       // Wait for the widget to initialize with pre-filled data
       await tester.pump(const Duration(milliseconds: 1000));
+
+      await _toAboutYou(tester);
 
       // Verify we're now on the register page
       expect(find.byKey(const Key('firstName')), findsOneWidget);
@@ -258,7 +273,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -299,14 +314,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Fill email, username and phone but leave first name empty
       final emailField = find.byKey(const Key('email'));
@@ -322,7 +336,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -358,14 +372,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Fill first name, last name, username and phone but leave email empty
       final firstNameField = find.byKey(const Key('firstName'));
@@ -384,7 +397,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -420,14 +433,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Fill first name, last name, username and email but leave phone number empty
       final firstNameField = find.byKey(const Key('firstName'));
@@ -446,7 +458,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -501,14 +513,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Fill all fields
       final firstNameField = find.byKey(const Key('firstName'));
@@ -531,7 +542,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap create account button
-      final createAccountButton = find.text('Create Account');
+      final createAccountButton = find.byKey(const Key('register_continue'));
       await tester.ensureVisible(createAccountButton);
       await tester.pumpAndSettle();
 
@@ -573,9 +584,9 @@ void main() {
             routerConfig: createTestRouter(
               initialRoute: '/login',
               routes: {
-                '/login': (context) => const Scaffold(
-                  body: Center(child: Text('Login Page')),
-                ),
+                '/login':
+                    (context) =>
+                        const Scaffold(body: Center(child: Text('Login Page'))),
                 '/register': (context) => const RegisterView(),
               },
             ),
@@ -627,14 +638,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Find the country selection field
       final countryField = find.byKey(const Key('country'));
@@ -671,14 +681,13 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
+      await _toAboutYou(tester);
 
       // Find the phone number input
       final phoneNumberField = find.byKey(const Key('phoneNumber'));
@@ -713,9 +722,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const RegisterView(),
-              },
+              routes: {'/': (context) => const RegisterView()},
             ),
           ),
         ),

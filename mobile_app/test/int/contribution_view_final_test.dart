@@ -68,7 +68,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(ContributionView), findsOneWidget);
-      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      expect(find.byType(Scaffold), findsOneWidget);
     });
 
     testWidgets('should show loading state when fetching data', (
@@ -114,7 +114,7 @@ void main() {
       await tester.pumpWidget(testWidget);
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(ContributionDetailSkeleton), findsOneWidget);
 
       // Let the delayed response land so no timer is left pending.
       await tester.pump(const Duration(seconds: 3));
@@ -125,7 +125,7 @@ void main() {
     ) async {
       // Mock API to return error
       MockInterceptor.overrideEndpoint(
-        '/transactions/contrib-123',
+        '/transactions/get-transaction',
         (options) =>
             throw DioException(
               requestOptions: options,
@@ -317,10 +317,10 @@ void main() {
       await tester.pump();
 
       // Initial state: should not be loading since no event was triggered
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(ContributionDetailSkeleton), findsNothing);
 
-      // Should show the DraggableScrollableSheet structure
-      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      // The detail is a full page (Scaffold), not a sheet
+      expect(find.byType(Scaffold), findsOneWidget);
     });
   });
 }

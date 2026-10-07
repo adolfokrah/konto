@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/button_variants.dart';
 import 'package:Hoga/core/di/service_locator.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
-import 'package:Hoga/core/widgets/scrollable_background_image.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 
@@ -42,10 +41,12 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
   bool _isLoading = true;
   String? _jarName;
   String? _jarImage;
-  String? _jarDescription;
+  String? _jarGroup;
   String? _creatorName;
-  String? _creatorPhoto;
-  double _scrollOffset = 0.0;
+
+  /// 'business' / 'person' when the organizer is verified, 'none' when not,
+  /// null when the preview didn't say.
+  String? _verification;
 
   @override
   void initState() {
@@ -61,8 +62,9 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
     }
 
     try {
-      final response =
-          await getIt<JarApiProvider>().getJarPreview(jarId: jarId);
+      final response = await getIt<JarApiProvider>().getJarPreview(
+        jarId: jarId,
+      );
 
       if (response['success'] == true && response['data'] != null) {
         final jar = response['data'];
@@ -76,16 +78,19 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
 
         // Resolve creator name and photo from populated creator object
         String? creatorName;
-        String? creatorPhoto;
+        String? verification;
         final creator = jar['creator'];
         if (creator is Map<String, dynamic>) {
           final firstName = creator['firstName'] as String? ?? '';
           final lastName = creator['lastName'] as String? ?? '';
           creatorName = '$firstName $lastName'.trim();
 
-          final photo = creator['photo'];
-          if (photo is Map<String, dynamic>) {
-            creatorPhoto = photo['url'] as String?;
+          final isOrg = creator['accountType'] == 'organization';
+          final status =
+              (isOrg ? creator['kybStatus'] : creator['kycStatus']) as String?;
+          if (status != null) {
+            verification =
+                status == 'verified' ? (isOrg ? 'business' : 'person') : 'none';
           }
         }
 
@@ -93,9 +98,9 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
           setState(() {
             _jarName = jar['name'] as String?;
             _jarImage = imageUrl;
-            _jarDescription = jar['description'] as String?;
+            _jarGroup = jar['jarGroup'] as String?;
             _creatorName = creatorName;
-            _creatorPhoto = creatorPhoto;
+            _verification = verification;
             _isLoading = false;
           });
         }
@@ -109,230 +114,170 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.radiusM),
-            topRight: Radius.circular(AppRadius.radiusM),
-          ),
-          child: Stack(
-            children: [
-              // Background jar image (same style as jar detail view)
-              if (_jarImage != null)
-                ScrollableBackgroundImage(
-                  imageUrl: ImageUtils.constructImageUrl(_jarImage!),
-                  scrollOffset: _scrollOffset,
-                  height: 350,
-                  maxScrollForOpacity: 150,
-                  baseOpacity: 0.30,
+    if (_isLoading) {
+      return const AccSheet(
+        children: [
+          DsSkeleton(
+            onWhite: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    DsSkeletonBox(width: 56, height: 56, radius: 16),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DsSkeletonLine(width: 160, height: 16),
+                          SizedBox(height: 8),
+                          DsSkeletonLine(width: 110, height: 11),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                SizedBox(height: 20),
+                DsSkeletonLine(height: 11),
+                SizedBox(height: 6),
+                DsSkeletonLine(width: 220, height: 11),
+                SizedBox(height: 20),
+                DsSkeletonBox(height: 52, radius: 14),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
-              // Content
-              Column(
-                children: [
-                  const Center(child: DragHandle()),
-                  if (_isLoading)
-                    Expanded(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          if (notification is ScrollUpdateNotification) {
-                            setState(() {
-                              _scrollOffset = notification.metrics.pixels;
-                            });
-                          }
-                          return false;
-                        },
-                        child: ListView(
-                          controller: scrollController,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.spacingL,
-                          ),
-                          children: [
-                            // Spacer to push content below the background image
-                            if (_jarImage != null)
-                              const SizedBox(height: 170),
-
-                            if (_jarImage == null)
-                              const SizedBox(height: AppSpacing.spacingS),
-
-                            // Jar name (fetched) or fallback to notification message
-                            Text(
-                              _jarName ?? widget.notification.message,
-                              style: TextStyles.titleBoldLg,
-                            ),
-                            const SizedBox(height: AppSpacing.spacingXs),
-
-                            // Jar description
-                            if (_jarDescription != null &&
-                                _jarDescription!.isNotEmpty) ...[
-                              Text(
-                                _jarDescription!,
-                                style: TextStyles.titleRegularM.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color
-                                      ?.withValues(alpha: 0.7),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
+      child: AccSheet(
+        children: [
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child:
+                      _jarImage != null
+                          ? Image.network(
+                            ImageUtils.constructImageUrl(_jarImage!),
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => const DsIconTile(
+                                  Icons.savings_outlined,
+                                  tone: DsTone.lime,
+                                  size: 56,
                                 ),
-                              ),
-                              const SizedBox(height: AppSpacing.spacingS),
-                            ],
-
-                            // Creator row
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 14,
-                                  backgroundImage: _creatorPhoto != null
-                                      ? NetworkImage(
-                                          ImageUtils.constructImageUrl(
-                                              _creatorPhoto!),
-                                        )
-                                      : null,
-                                  child: _creatorPhoto == null
-                                      ? Text(
-                                          (_creatorName ?? 'S')
-                                              .characters
-                                              .first
-                                              .toUpperCase(),
-                                          style: const TextStyle(fontSize: 14),
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Invited by ${_creatorName ?? 'Someone'}',
-                                  style: TextStyles.titleRegularSm.copyWith(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withValues(alpha: 0.6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.spacingM),
-
-                            // Safety notice
-                            Container(
-                              padding: const EdgeInsets.all(
-                                  AppSpacing.spacingS),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(
-                                    AppRadius.radiusM),
-                              ),
-                              child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    size: 18,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.color
-                                        ?.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Before accepting, make sure you know and trust the organizer of this jar.',
-                                      style: TextStyles.titleRegularSm
-                                          .copyWith(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color
-                                            ?.withValues(alpha: 0.5),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                  // Action buttons pinned at bottom
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.spacingL,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AppButton.outlined(
-                            text: 'Decline',
-                            onPressed: () =>
-                                Navigator.of(context).pop('decline'),
-                            textColor: Colors.red,
-                            borderColor: Colors.red,
+                          )
+                          : const DsIconTile(
+                            Icons.savings_outlined,
+                            tone: DsTone.lime,
+                            size: 56,
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.spacingM),
-                        Expanded(
-                          child: AppButton(
-                            text: 'Accept',
-                            onPressed: () =>
-                                Navigator.of(context).pop('accept'),
-                          ),
-                        ),
-                      ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _jarName ?? widget.notification.message,
+                      style: AccText.h2,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingXs),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop('report'),
-                    child: Text(
-                      'Report this jar',
-                      style: TextStyles.titleRegularSm.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.color
-                            ?.withValues(alpha: 0.4),
-                        decoration: TextDecoration.underline,
-                        decorationColor: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.color
-                            ?.withValues(alpha: 0.4),
-                      ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _jarGroup?.isNotEmpty == true
+                          ? _jarGroup!
+                          : 'Jar invitation',
+                      style: DsText.caption,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacingM),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.cream,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                DsKeyValue(
+                  'Organizer',
+                  _creatorName?.isNotEmpty == true ? _creatorName! : 'Someone',
+                ),
+                if (_verification != null) ...[
+                  const Divider(height: 1, color: AppColors.line),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Status',
+                          style: DsText.small.copyWith(color: AppColors.muted),
+                        ),
+                        const Spacer(),
+                        switch (_verification) {
+                          'business' => const DsTag(
+                            'Verified business',
+                            tone: DsTone.positive,
+                          ),
+                          'person' => const DsTag(
+                            'Verified',
+                            tone: DsTone.positive,
+                          ),
+                          _ => const DsTag('Not verified'),
+                        },
+                      ],
+                    ),
+                  ),
+                ],
+                const Divider(height: 1, color: AppColors.line),
+                const DsKeyValue('Your role', 'Collector'),
+              ],
+            ),
+          ),
+          AccHelp(
+            'Only accept if you know this organizer.',
+            linkText: 'Report',
+            onLink: () => Navigator.of(context).pop('report'),
+          ),
+          Row(
+            spacing: 10,
+            children: [
+              Expanded(
+                child: AppButton(
+                  text: 'Decline',
+                  backgroundColor: AppColors.surfaceWhite,
+                  textColor: AppColors.navy,
+                  borderColor: AppColors.line,
+                  variant: ButtonVariant.outline,
+                  onPressed: () => Navigator.of(context).pop('decline'),
+                ),
+              ),
+              Expanded(
+                child: AppButton(
+                  text: 'Accept',
+                  onPressed: () => Navigator.of(context).pop('accept'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

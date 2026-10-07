@@ -91,7 +91,8 @@ void main() {
             'isFixedContribution': false,
             'creator': {
               'id': 'test-user-123',
-              'firstName': 'Test', 'lastName': 'User',
+              'firstName': 'Test',
+              'lastName': 'User',
               'email': 'test@example.com',
               'phoneNumber': '+1234567890',
               'countryCode': 'US',
@@ -104,7 +105,8 @@ void main() {
             'collectors': [
               {
                 'id': 'collector-1',
-                'firstName': 'Test', 'lastName': 'Collector',
+                'firstName': 'Test',
+                'lastName': 'Collector',
                 'phoneNumber': '+1234567890',
                 'email': 'collector@test.com',
                 'countryCode': 'US',
@@ -135,7 +137,8 @@ void main() {
                 'paymentStatus': 'completed',
                 'collector': {
                   'id': 'test-user-123',
-                  'firstName': 'Test', 'lastName': 'User',
+                  'firstName': 'Test',
+                  'lastName': 'User',
                   'phoneNumber': '+1234567890',
                   'email': 'test@example.com',
                   'countryCode': 'US',
@@ -222,7 +225,7 @@ void main() {
         BlocProvider.value(value: getIt<UpdateJarBloc>()),
         BlocProvider.value(value: getIt<MediaBloc>()),
         BlocProvider.value(value: getIt<NotificationsBloc>()),
-            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+        BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
         BlocProvider.value(value: getIt<UserAccountBloc>()),
         BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
       ],
@@ -239,13 +242,21 @@ void main() {
           routes: {
             '/jar_detail': (context) => const JarDetailView(),
             '/login': (context) => const Scaffold(body: Text('Login Screen')),
-            '/request_contribution': (context) => const RequestContributionView(),
+            '/request_contribution':
+                (context) => const RequestContributionView(),
+            '/add_contribution':
+                (context) =>
+                    const Scaffold(body: Text('Add Contribution Screen')),
             '/kycView': (context) => const Scaffold(body: Text('KYC View')),
           },
         ),
       ),
     );
   }
+
+  // The redesigned jar detail (Home dashboard) has no AppBar; its header row
+  // (back button) is always shown.
+  Finder homeHeader() => find.byKey(const Key('jar_back_button'));
 
   group('Jar Detail View Comprehensive Tests', () {
     testWidgets('should display loading state initially', (
@@ -257,8 +268,8 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Check loading state appears - it might be in different forms
-      // Look for any loading indicator or the app bar at minimum
-      expect(find.byType(AppBar), findsOneWidget);
+      // Look for any loading indicator or the home header at minimum
+      expect(homeHeader(), findsOneWidget);
     });
 
     testWidgets('should display jar details when loaded successfully', (
@@ -310,7 +321,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify error state is displayed
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
       expect(find.text('Network error occurred'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
 
@@ -344,10 +355,10 @@ void main() {
         await tester.tap(retryButton);
         await tester.pump();
         // Should show some response to retry
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
       } else {
         // If no retry button, just verify error state is handled
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
       }
 
       MockInterceptor.clearEndpointOverride(
@@ -368,7 +379,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show basic UI elements even with no jar
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(homeHeader(), findsOneWidget);
 
       // Reset jar ID
       await prefs.setString('konto_current_jar_id', 'jar123');
@@ -384,7 +395,8 @@ void main() {
       final mockUser = User(
         id: 'test-user-123',
         email: 'test@example.com',
-        firstName: 'John', lastName: 'Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         username: 'johndoe',
         phoneNumber: '+1234567890',
         countryCode: 'US',
@@ -415,7 +427,7 @@ void main() {
           BlocProvider.value(value: getIt<UpdateJarBloc>()),
           BlocProvider.value(value: getIt<MediaBloc>()),
           BlocProvider.value(value: getIt<NotificationsBloc>()),
-            BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+          BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
           BlocProvider.value(value: getIt<UserAccountBloc>()),
           BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
         ],
@@ -447,18 +459,10 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Should display user's greeting - check for presence of user name
-      final greetingFound =
-          find.text('Hi John !').evaluate().isNotEmpty ||
-          find.textContaining('John').evaluate().isNotEmpty ||
-          find.textContaining('Hi').evaluate().isNotEmpty;
-      expect(
-        greetingFound,
-        isTrue,
-        reason: 'Expected to find user greeting or name',
-      );
+      // The greeting lives on Home now; the jar screen shows its header.
+      expect(homeHeader(), findsOneWidget);
 
-      print('✅ User authentication and greeting display working');
+      print('✅ User authentication and jar header display working');
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -473,17 +477,14 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Find app bar action buttons - handle multiple icons gracefully
-      final qrCodeIcons = find.byIcon(Icons.qr_code);
-
-      if (qrCodeIcons.evaluate().isNotEmpty) {
-        // Test QR code button (refetch) - use first one if multiple
-        await tester.tap(qrCodeIcons.first);
-        await tester.pump();
-      }
+      // Header action buttons: back, share (request) and settings
+      final qrCodeButton = find.byKey(const Key('request_button_qr_code'));
+      expect(qrCodeButton, findsOneWidget);
+      await tester.tap(qrCodeButton);
+      await tester.pump();
 
       // Verify UI is still functional
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(homeHeader(), findsOneWidget);
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -500,17 +501,19 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Find and test action buttons if they exist
-      final contributeButton = find.text('Contribute');
+      // Quick actions: Contribute and Request
+      final contributeButton = find.byKey(const Key('contribute_button'));
+      expect(contributeButton, findsOneWidget);
+      expect(find.byKey(const Key('request_button')), findsOneWidget);
+      expect(find.text('Collect'), findsWidgets);
 
-      // Test buttons if they exist
-      if (contributeButton.evaluate().isNotEmpty) {
-        await tester.tap(contributeButton.last);
-        await tester.pumpAndSettle();
-      }
+      await tester.ensureVisible(contributeButton);
+      await tester.pumpAndSettle();
+      await tester.tap(contributeButton);
+      await tester.pumpAndSettle();
 
-      // Verify basic UI is still present
-      expect(find.byType(AppBar), findsOneWidget);
+      // Contribute opens the add-contribution flow
+      expect(find.text('Add Contribution Screen'), findsOneWidget);
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -568,7 +571,8 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'firstName': 'Test', 'lastName': 'User',
+                'firstName': 'Test',
+                'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',
@@ -602,7 +606,7 @@ void main() {
 
       // Should display jar name and basic UI
       expect(find.text('Empty Jar'), findsOneWidget);
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(homeHeader(), findsOneWidget);
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -633,7 +637,7 @@ void main() {
         expect(emergencyFundFinder, findsOneWidget);
       } else {
         // Fallback: at least verify the app bar and basic UI structure
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
         print('⚠️ Emergency Fund text not found, but AppBar is present');
       }
 
@@ -658,7 +662,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should still show basic UI even with timeout
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(homeHeader(), findsOneWidget);
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',
@@ -688,7 +692,7 @@ void main() {
         expect(emergencyFundFinder, findsOneWidget);
       } else {
         // Fallback: at least verify the app bar is present
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
         print('⚠️ Emergency Fund text not found, but AppBar is present');
       }
 
@@ -698,7 +702,7 @@ void main() {
         expect(amountWidgets, findsWidgets);
       } else {
         print('⚠️ Amount text not found, checking for basic UI elements');
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
       }
 
       MockInterceptor.clearEndpointOverride(
@@ -728,7 +732,7 @@ void main() {
         expect(emergencyFundFinder, findsOneWidget);
       } else {
         // Fallback: at least verify the app bar is present
-        expect(find.byType(AppBar), findsOneWidget);
+        expect(homeHeader(), findsOneWidget);
         print(
           '⚠️ Emergency Fund text not found on first load, but AppBar is present',
         );
@@ -758,7 +762,8 @@ void main() {
               'isFixedContribution': false,
               'creator': {
                 'id': 'test-user-123',
-                'firstName': 'Test', 'lastName': 'User',
+                'firstName': 'Test',
+                'lastName': 'User',
                 'email': 'test@example.com',
                 'phoneNumber': '+1234567890',
                 'countryCode': 'US',
@@ -799,7 +804,7 @@ void main() {
       }
 
       // Verify the test completed without major errors
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(homeHeader(), findsOneWidget);
 
       MockInterceptor.clearEndpointOverride(
         '${BackendConfig.jarsEndpoint}/jar123',

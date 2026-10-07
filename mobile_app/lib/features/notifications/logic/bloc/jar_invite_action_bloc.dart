@@ -9,9 +9,10 @@ class JarInviteActionBloc
     extends Bloc<JarInviteActionEvent, JarInviteActionState> {
   final NotificationsRepository notificationsRepository;
 
-  JarInviteActionBloc({required NotificationsRepository notificationsRepository})
-    : notificationsRepository = notificationsRepository,
-      super(JarInviteActionInitial()) {
+  JarInviteActionBloc({
+    required NotificationsRepository notificationsRepository,
+  }) : notificationsRepository = notificationsRepository,
+       super(JarInviteActionInitial()) {
     on<AcceptDeclineJarInvite>(_acceptDeclineJarInvite);
   }
 

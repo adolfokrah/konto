@@ -61,7 +61,8 @@ void main() {
               'id': 'test_user_123',
               'phoneNumber': '245301631',
               'countryCode': '+233',
-              'firstName': 'Test', 'lastName': 'User',
+              'firstName': 'Test',
+              'lastName': 'User',
               'email': 'test@example.com',
               'country': 'Ghana',
               'kycStatus': 'none',
@@ -158,9 +159,9 @@ void main() {
 
         // Look for OTP-specific elements
         expect(
-          find.text('Enter OTP'),
+          find.text('Enter the code'),
           findsOneWidget,
-          reason: 'Should find "Enter OTP" text on the page',
+          reason: 'Should find "Enter the code" text on the page',
         );
 
         // Debug: Check the verification bloc state
@@ -334,9 +335,7 @@ void main() {
             ],
             routerConfig: createTestRouter(
               initialRoute: '/',
-              routes: {
-                '/': (context) => const LoginView(),
-              },
+              routes: {'/': (context) => const LoginView()},
             ),
           ),
         ),

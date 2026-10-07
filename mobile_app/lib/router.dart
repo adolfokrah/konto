@@ -9,7 +9,10 @@ import 'package:Hoga/features/onboarding/prensentation/pages/walk_through.dart';
 import 'package:Hoga/features/authentication/presentation/views/login_view.dart';
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
+import 'package:Hoga/features/jars/presentation/views/home_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
+import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_info_view.dart';
@@ -36,6 +39,9 @@ import 'package:Hoga/features/referral/presentation/views/referral_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_custom_fields_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_add_custom_field_view.dart';
 import 'package:Hoga/features/jars/data/models/custom_field_model.dart';
+import 'package:Hoga/features/insights/data/models/jar_insights_model.dart';
+import 'package:Hoga/features/insights/presentation/views/goal_forecast_view.dart';
+import 'package:Hoga/features/insights/presentation/views/insights_view.dart';
 
 /// Global navigator key for deep navigation (FCM, FlutterLoadingOverlay)
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -72,40 +78,91 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       // Authenticated — redirect away from auth/startup routes
       if (authState is AuthAuthenticated) {
-        if (isOnAuthRoute || isOnStartup) return AppRoutes.jarDetail;
+        if (isOnAuthRoute || isOnStartup) return AppRoutes.home;
         return null;
       }
 
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const StartupScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const StartupScreen()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnBoardingPage(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginView(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginView()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterView(),
       ),
+      GoRoute(path: '/otp', builder: (context, state) => const OtpView()),
+      // Signed-in tabs. Screens pushed from here (add contribution, jar settings…)
+      // are top-level routes, so they cover the tab bar.
+      StatefulShellRoute.indexedStack(
+        builder:
+            (context, state, navigationShell) =>
+                MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/jars',
+                builder: (context, state) => const JarsListView(asTab: true),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/contributions_list',
+                builder: (context, state) => const ContributionsListView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/insights',
+                builder: (context, state) => const InsightsView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/user_account_view',
+                builder: (context, state) => const UserAccountView(),
+              ),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
-        path: '/otp',
-        builder: (context, state) => const OtpView(),
+        path: '/goal_forecast',
+        builder:
+            (context, state) => GoalForecastView(
+              insights:
+                  state.extra is JarInsights
+                      ? state.extra as JarInsights
+                      : null,
+            ),
+      ),
+      // A jar opens over the tabs, with a back button to Home.
+      GoRoute(
+        path: '/jar_detail',
+        builder: (context, state) => const JarDetailView(),
       ),
       GoRoute(
         path: '/walkthrough',
         builder: (context, state) => const WalkThrough(),
-      ),
-      GoRoute(
-        path: '/jar_detail',
-        builder: (context, state) => const JarDetailView(),
       ),
       GoRoute(
         path: '/request_contribution',
@@ -148,10 +205,6 @@ GoRouter createRouter(AuthBloc authBloc) {
         builder: (context, state) => const JarNameEditView(),
       ),
       GoRoute(
-        path: '/user_account_view',
-        builder: (context, state) => const UserAccountView(),
-      ),
-      GoRoute(
         path: '/personal_details',
         builder: (context, state) => const PersonalDetailsView(),
       ),
@@ -171,10 +224,6 @@ GoRouter createRouter(AuthBloc authBloc) {
         },
       ),
       GoRoute(
-        path: '/contributions_list',
-        builder: (context, state) => const ContributionsListView(),
-      ),
-      GoRoute(
         path: '/theme_settings',
         builder: (context, state) => const ThemeSettingsView(),
       ),
@@ -182,10 +231,7 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/language_settings',
         builder: (context, state) => const LanguageSettingsView(),
       ),
-      GoRoute(
-        path: '/kycView',
-        builder: (context, state) => const KycView(),
-      ),
+      GoRoute(path: '/kycView', builder: (context, state) => const KycView()),
       GoRoute(
         path: '/businessKyb',
         builder: (context, state) => const BusinessKybView(),

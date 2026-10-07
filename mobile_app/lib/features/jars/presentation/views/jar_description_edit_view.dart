@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/update_jar/update_jar_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+/// Focused text edit for the jar description, saved from the header.
 class JarDescriptionEditView extends StatefulWidget {
   const JarDescriptionEditView({super.key});
 
@@ -25,6 +26,11 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
   void initState() {
     super.initState();
     _textController = TextEditingController();
+    // The initial value is seeded from the jar inside build(); skip that
+    // notification so setState isn't called during build.
+    _textController.addListener(() {
+      if (_isInitialized) setState(() {});
+    });
     _focusNode = FocusNode();
 
     // Auto focus the text field when the page opens
@@ -43,93 +49,96 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(localizations.editJarDescription)),
-      body: BlocListener<UpdateJarBloc, UpdateJarState>(
-        listener: (context, state) {
-          if (state is UpdateJarSuccess) {
-            context.pop();
-            AppSnackBar.showSuccess(
-              context,
-              message: localizations.jarDescriptionUpdatedSuccessfully,
-            );
+    return BlocListener<UpdateJarBloc, UpdateJarState>(
+      listener: (context, state) {
+        if (state is UpdateJarSuccess) {
+          context.pop();
+          AppSnackBar.showSuccess(
+            context,
+            message: localizations.jarDescriptionUpdatedSuccessfully,
+          );
+        }
+      },
+      child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
+        builder: (context, state) {
+          final jarData = state is JarSummaryLoaded ? state.jarData : null;
+
+          // Initialize the text controller with the jar description if not already done
+          if (jarData != null && !_isInitialized) {
+            _textController.text = jarData.description ?? '';
+            _isInitialized = true;
           }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.spacingS),
-          child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
-            builder: (context, state) {
-              if (state is JarSummaryLoaded) {
-                final jarData = state.jarData;
 
-                // Initialize the text controller with the jar description if not already done
-                if (_isInitialized == false) {
-                  _textController.text = jarData.description ?? '';
-                  _isInitialized = true;
-                }
-
-                return Column(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        focusNode: _focusNode,
-                        cursorColor:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.black,
-                        decoration: InputDecoration(
-                          hintText: localizations.jarDescriptionHint(
-                            jarData.name,
-                          ),
-                          hintStyle: AppTextStyles.headingOne.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).hintColor.withValues(alpha: 0.2),
-                            fontWeight: FontWeight.w400,
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        style: AppTextStyles.headingOne.copyWith(
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.spacingXs),
-                    SizedBox(
-                      width: double.infinity,
-                      child: BlocBuilder<UpdateJarBloc, UpdateJarState>(
-                        builder: (context, state) {
-                          return AppButton(
-                            isLoading: state is UpdateJarInProgress,
-                            onPressed: () {
-                              context.read<UpdateJarBloc>().add(
-                                UpdateJarRequested(
-                                  jarId: jarData.id,
-                                  updates: {
-                                    'description': _textController.text,
-                                  },
-                                ),
-                              );
-                            },
-                            text: localizations.save,
+          return Scaffold(
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(
+              title: localizations.description,
+              leadingIcon: Icons.close_rounded,
+              actions: [
+                if (jarData != null)
+                  BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                    builder: (context, updateState) {
+                      return JarBarLink(
+                        localizations.save,
+                        loading: updateState is UpdateJarInProgress,
+                        onTap: () {
+                          context.read<UpdateJarBloc>().add(
+                            UpdateJarRequested(
+                              jarId: jarData.id,
+                              updates: {'description': _textController.text},
+                            ),
                           );
                         },
-                      ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+            body:
+                jarData == null
+                    ? const SizedBox.shrink()
+                    : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      children: [
+                        JarField(
+                          label: 'Shown on your contribution page',
+                          focused: true,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 140),
+                            child: JarBareInput(
+                              controller: _textController,
+                              focusNode: _focusNode,
+                              maxLines: null,
+                              minLines: 6,
+                              keyboardType: TextInputType.multiline,
+                              hintText: localizations.jarDescriptionHint(
+                                jarData.name,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Say what it\'s for and where the money goes',
+                                  style: DsText.caption,
+                                ),
+                              ),
+                              Text(
+                                '${_textController.text.length}',
+                                style: DsText.caption,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                );
-              }
-              return Container();
-            },
-          ),
-        ),
+          );
+        },
       ),
     );
   }

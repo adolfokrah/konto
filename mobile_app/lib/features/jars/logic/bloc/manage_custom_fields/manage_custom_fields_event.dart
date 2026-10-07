@@ -9,10 +9,7 @@ final class AddCustomFieldRequested extends ManageCustomFieldsEvent {
   /// Full updated list (existing fields + new field appended)
   final List<Map<String, dynamic>> updatedFields;
 
-  AddCustomFieldRequested({
-    required this.jarId,
-    required this.updatedFields,
-  });
+  AddCustomFieldRequested({required this.jarId, required this.updatedFields});
 }
 
 final class UpdateCustomFieldRequested extends ManageCustomFieldsEvent {

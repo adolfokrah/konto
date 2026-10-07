@@ -63,9 +63,10 @@ class ManageCustomFieldsBloc
     if (response['success'] == true) {
       emit(
         ManageCustomFieldsSuccess(
-          updatedFields: event.reorderedFields
-              .map((f) => CustomFieldModel.fromJson(f))
-              .toList(),
+          updatedFields:
+              event.reorderedFields
+                  .map((f) => CustomFieldModel.fromJson(f))
+                  .toList(),
         ),
       );
     } else {
@@ -121,16 +122,14 @@ class ManageCustomFieldsBloc
     if (response['success'] == true) {
       // Parse the returned customFields from the response doc
       final doc = response['data'];
-      List<CustomFieldModel> updatedFields = event.updatedFields
-          .map((f) => CustomFieldModel.fromJson(f))
-          .toList();
+      List<CustomFieldModel> updatedFields =
+          event.updatedFields.map((f) => CustomFieldModel.fromJson(f)).toList();
 
       if (doc != null && doc['customFields'] is List) {
         updatedFields =
             (doc['customFields'] as List<dynamic>)
                 .map(
-                  (e) =>
-                      CustomFieldModel.fromJson(e as Map<String, dynamic>),
+                  (e) => CustomFieldModel.fromJson(e as Map<String, dynamic>),
                 )
                 .toList();
       }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/select_options.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/card.dart';
-import 'package:Hoga/core/widgets/contributor_avatar.dart';
+import 'package:Hoga/core/constants/app_links.dart';
+import 'package:Hoga/core/utils/url_launcher_utils.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
-import 'package:Hoga/core/widgets/select_input.dart';
-import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
@@ -28,6 +27,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
 
   String selectedCountry = 'ghana';
   bool _hasPopulatedData = false;
@@ -45,6 +45,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     _usernameController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
+    _fullNameController.dispose();
     super.dispose();
   }
 
@@ -56,6 +57,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     _usernameController.text = user.username;
     _emailController.text = user.email;
     _phoneNumberController.text = user.phoneNumber;
+    _fullNameController.text = user.fullName;
 
     // Store original values
     _originalFirstName = user.firstName;
@@ -98,7 +100,6 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     return BlocListener<UserAccountBloc, UserAccountState>(
       listener: (context, userAccountState) {
         if (userAccountState is UserAccountSuccess) {
-          // Show success message - using fallback for now until translations are regenerated
           context.read<AuthBloc>().add(
             UpdateUserData(
               updatedUser: userAccountState.updatedUser,
@@ -130,64 +131,30 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
             return BlocBuilder<UserAccountBloc, UserAccountState>(
               builder: (context, userAccountState) {
                 final isLoading = userAccountState is UserAccountLoading;
+                // Only allow editing if KYC status is 'none'
+                final canEdit = state.user.kycStatus == 'none';
+                final localizations = AppLocalizations.of(context)!;
 
                 return Scaffold(
-                  appBar: AppBar(elevation: 0),
-                  body: SingleChildScrollView(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Show KYC lock warning when KYC is in_review or verified
-                          if (state.user.kycStatus == 'in_review' || state.user.kycStatus == 'verified') ...[
-                            AppCard(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(Icons.lock_outline, color: Theme.of(context).colorScheme.primary),
-                                  const SizedBox(width: AppSpacing.spacingXs),
-                                  Expanded(
-                                    child: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.kycVerifiedDetailsLocked,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ]
-                          // Show warning only when critical fields are changed and KYC is none
-                          else if (_hasChangedCriticalFields()) ...[
-                            AppCard(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(Icons.info, color: Theme.of(context).colorScheme.onSurface),
-                                  const SizedBox(width: AppSpacing.spacingXs),
-                                  Expanded(
-                                    child: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.reVerificationWarning,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
-                          // Header with back button and profile
-                          _buildHeader(state.user),
-                          const SizedBox(height: 38),
-                          // Personal information section
-                          _buildPersonalInformationSection(isLoading, state.user.kycStatus),
-                          const SizedBox(height: 40), // Add bottom padding
-                        ],
+                  backgroundColor: AppColors.cream,
+                  appBar: JarTopBar(
+                    title: localizations.personalDetails,
+                    actions: [
+                      // Email and country stay editable after ID checks, so
+                      // Save is always there (mockup).
+                      JarBarLink(
+                        localizations.save,
+                        loading: isLoading,
+                        onTap: _handleUpdateAccount,
                       ),
+                    ],
+                  ),
+                  body: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    children: _buildFields(
+                      state.user,
+                      isLoading: isLoading,
+                      canEdit: canEdit,
                     ),
                   ),
                 );
@@ -197,10 +164,19 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
 
           // Show loading or error state
           return Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(
+              title: AppLocalizations.of(context)!.personalDetails,
+            ),
+            body: const DsSkeletonPage(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                DsSkeletonLabel(),
+                DsSkeletonListCard(rows: 3, leading: false, trailing: false),
+                SizedBox(height: 20),
+                DsSkeletonLabel(width: 90),
+                DsSkeletonListCard(rows: 2, leading: false, trailing: false),
+              ],
             ),
           );
         },
@@ -208,113 +184,126 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     );
   }
 
-  Widget _buildHeader(User user) {
+  List<Widget> _buildFields(
+    User user, {
+    required bool isLoading,
+    required bool canEdit,
+  }) {
     final localizations = AppLocalizations.of(context)!;
+    final locked =
+        user.kycStatus == 'in_review' || user.kycStatus == 'verified';
+    final countryOptions = AppSelectOptions.getCountryOptions(localizations);
+    final countryLabel =
+        countryOptions
+            .where((o) => o.value == selectedCountry)
+            .map((o) => o.label)
+            .firstOrNull;
+    final usernameLocked = _hasExistingUsername || !canEdit;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Title and profile
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(localizations.editProfile, style: AppTextStyles.titleBoldLg),
-
-              ContributorAvatar(
-                contributorName: user.fullName,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                radius: 30,
-                avatarUrl: user.photo?.thumbnailURL,
-              ),
-            ],
-          ),
+    return [
+      // Show warning only when critical fields are changed and KYC is none
+      if (!locked && _hasChangedCriticalFields()) ...[
+        DsNote(
+          tone: DsTone.pending,
+          icon: Icons.warning_amber_rounded,
+          title: 'Name changes need a new ID check',
+          text: localizations.reVerificationWarning,
         ),
+        const SizedBox(height: 12),
       ],
-    );
-  }
-
-  Widget _buildPersonalInformationSection(bool isLoading, String kycStatus) {
-    final localizations = AppLocalizations.of(context)!;
-    // Only allow editing if KYC status is 'none'
-    final canEdit = kycStatus == 'none';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        Text(
-          localizations.personalInformation,
-          style: AppTextStyles.titleMedium,
-        ),
-        const SizedBox(height: 17),
-        // First name input
-        AppTextInput(
-          label: 'First name',
-          controller: _firstNameController,
-          enabled: !isLoading && canEdit,
-        ),
-        const SizedBox(height: 17),
-        // Last name input
-        AppTextInput(
-          label: 'Last name',
-          controller: _lastNameController,
-          enabled: !isLoading && canEdit,
-        ),
-        const SizedBox(height: 17),
-        // Username input - always disabled, cannot be changed
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      if (canEdit) ...[
+        AccFieldGroup(
           children: [
-            AppTextInput(
-              label: 'Username',
-              controller: _usernameController,
-              enabled: false,
+            AccField(
+              label: 'First name',
+              controller: _firstNameController,
+              enabled: !isLoading,
+              grouped: true,
+              textCapitalization: TextCapitalization.words,
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.only(left: 12),
-              child: Text(
-                'Username cannot be changed once set',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
+            AccField(
+              label: 'Last name',
+              controller: _lastNameController,
+              enabled: !isLoading,
+              grouped: true,
+              textCapitalization: TextCapitalization.words,
             ),
           ],
         ),
-        const SizedBox(height: 17),
-        // Email input
-        AppTextInput(
-          label: localizations.email,
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          enabled: !isLoading && canEdit,
+        const SizedBox(height: 12),
+        AccField(
+          label: 'Username',
+          controller: _usernameController,
+          locked: usernameLocked,
+          enabled: !isLoading && !usernameLocked,
+          hint: 'Choose a username',
         ),
-        const SizedBox(height: 17),
-        // Country selector
-        SelectInput<String>(
-          label: localizations.country,
-          value: selectedCountry,
-          options: AppSelectOptions.getCountryOptions(localizations),
-          enabled: !isLoading && canEdit,
-          onChanged: (value) {
-            setState(() {
-              selectedCountry = value;
-            });
-          },
+        const SizedBox(height: 8),
+        const AccHelp('Username cannot be changed once set'),
+      ] else ...[
+        // Mockup "Personal details": name and username locked together.
+        AccFieldGroup(
+          children: [
+            AccField(
+              label: 'Full name',
+              controller: _fullNameController,
+              locked: true,
+              grouped: true,
+            ),
+            AccField(
+              label: 'Username',
+              controller: _usernameController,
+              locked: true,
+              enabled: false,
+              grouped: true,
+            ),
+          ],
         ),
-        const SizedBox(height: 17),
-        // Update button - show only when KYC is none
-        if (canEdit)
-          AppButton.filled(
-            text: localizations.updateAccount,
-            isLoading: isLoading,
-            onPressed: isLoading ? null : _handleUpdateAccount,
-          ),
+        const SizedBox(height: 8),
+        AccHelp(
+          user.kycStatus == 'verified'
+              ? 'Name is locked after ID verification.'
+              : 'Name is locked during ID verification.',
+          linkText: 'Request a change',
+          onLink: () => UrlLauncherUtils.launch(AppLinks.contact),
+        ),
       ],
-    );
+      const SizedBox(height: 12),
+      AccFieldGroup(
+        children: [
+          AccField(
+            label: localizations.email,
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            enabled: !isLoading,
+            grouped: true,
+          ),
+          AccSelectField(
+            label: localizations.country,
+            value: countryLabel,
+            grouped: true,
+            showChevron: true,
+            onTap:
+                !isLoading
+                    ? () async {
+                      final picked = await showAccOptionSheet<String>(
+                        context,
+                        title: localizations.country,
+                        selected: selectedCountry,
+                        options: [
+                          for (final o in countryOptions)
+                            AccOption(value: o.value, label: o.label),
+                        ],
+                      );
+                      if (picked != null && mounted) {
+                        setState(() => selectedCountry = picked);
+                      }
+                    }
+                    : null,
+          ),
+        ],
+      ),
+    ];
   }
 
   void _handleUpdateAccount() {
@@ -333,10 +322,7 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     final username = _usernameController.text.trim();
     if (!_hasExistingUsername) {
       if (username.isEmpty) {
-        AppSnackBar.showError(
-          context,
-          message: 'Please enter a username',
-        );
+        AppSnackBar.showError(context, message: 'Please enter a username');
         return;
       }
       if (username.length < 3 || username.length > 30) {
@@ -349,7 +335,8 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
       if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username)) {
         AppSnackBar.showError(
           context,
-          message: 'Username can only contain letters, numbers, and underscores',
+          message:
+              'Username can only contain letters, numbers, and underscores',
         );
         return;
       }

@@ -20,11 +20,12 @@ GoRouter createTestRouter({
 }) {
   return GoRouter(
     initialLocation: initialRoute,
-    routes: routes.entries.map((entry) {
-      return GoRoute(
-        path: entry.key,
-        builder: (context, state) => entry.value(context),
-      );
-    }).toList(),
+    routes:
+        routes.entries.map((entry) {
+          return GoRoute(
+            path: entry.key,
+            builder: (context, state) => entry.value(context),
+          );
+        }).toList(),
   );
 }

@@ -14,7 +14,8 @@ class AuthInterceptor extends Interceptor {
   bool _isRefreshing = false;
 
   // Resolve lazily so tests can replace these after setup
-  UserStorageService get _userStorageService => GetIt.instance<UserStorageService>();
+  UserStorageService get _userStorageService =>
+      GetIt.instance<UserStorageService>();
   AuthApiProvider get _authApiProvider => GetIt.instance<AuthApiProvider>();
   Dio get _dio => GetIt.instance<Dio>();
 

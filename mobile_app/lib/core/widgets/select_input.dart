@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
@@ -49,67 +48,54 @@ class SelectInput<T> extends StatelessWidget {
 
     return GestureDetector(
       onTap: enabled ? () => _showSelectionBottomSheet(context) : null,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacingXs),
-        decoration: BoxDecoration(
-          color:
-              filled
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadius.radiusM),
-          border:
-              !filled
-                  ? Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                    width: 1,
-                  )
-                  : null,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Label (always show at top when there's a value or label)
-                  if (label != null && hasValue)
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.6,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 58),
+          padding: const EdgeInsets.fromLTRB(16, 9, 12, 9),
+          decoration: BoxDecoration(
+            color: filled ? AppColors.surfaceWhite : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.line),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Label sits on top once there's a value
+                    if (label != null && hasValue) ...[
+                      Text(
+                        label!,
+                        style: DsText.caption.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                    ],
                     Text(
-                      label!,
-                      style: TextStyles.titleRegularXs.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-
-                  // Small gap between label and value
-                  if (label != null && hasValue) const SizedBox(height: 2),
-
-                  // Display value or placeholder
-                  Opacity(
-                    opacity: enabled ? 1.0 : 0.6,
-                    child: Text(
                       effectiveDisplayText ?? label ?? hintText ?? '',
-                      style: TextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface
-                            .withValues(alpha: hasValue ? 1.0 : 0.6),
-                      ),
+                      style:
+                          hasValue
+                              ? DsText.rowTitle.copyWith(fontSize: 16)
+                              : DsText.body.copyWith(color: AppColors.muted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-
-            // Suffix icon (chevron or custom)
-            Opacity(
-              opacity: enabled ? 1.0 : 0.6,
-              child:
-                  suffixIcon ?? const Icon(Icons.keyboard_arrow_down, size: 20),
-            ),
-          ],
+              suffixIcon ??
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 22,
+                    color: AppColors.muted,
+                  ),
+            ],
+          ),
         ),
       ),
     );
@@ -125,6 +111,7 @@ class SelectInput<T> extends StatelessWidget {
       onItemSelected: (selectedValue) {
         onChanged?.call(selectedValue);
       },
+      title: label ?? hintText,
       searchHint: localizations.searchOptions,
       recentSectionTitle: localizations.recentSelection,
       otherSectionTitle: localizations.allOptions,
@@ -160,16 +147,10 @@ class SelectInput<T> extends StatelessWidget {
       orElse: () => SelectOption(value: item, label: item.toString()),
     );
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
+    return DsRow(
       leading: option.icon,
-      title: Text(
-        option.label,
-        style: TextStyles.titleMedium.copyWith(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-      trailing: isSelected ? const Icon(Icons.check, size: 18) : null,
+      title: option.label,
+      trailing: DsRadio(selected: isSelected),
       onTap: onTap,
     );
   }

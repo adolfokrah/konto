@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 
+/// One payment-method line in a breakdown: colour dot, method, count, amount.
 class PaymentMethodContributionItem extends StatelessWidget {
   const PaymentMethodContributionItem({
     super.key,
@@ -11,6 +14,7 @@ class PaymentMethodContributionItem extends StatelessWidget {
     required this.currency,
     required this.icon,
     this.backgroundColor,
+    this.color,
   });
 
   final String title;
@@ -18,33 +22,110 @@ class PaymentMethodContributionItem extends StatelessWidget {
   final double amount;
   final String currency;
   final IconData icon;
+
+  /// Kept for compatibility; the redesign uses [color] for the legend dot.
   final Color? backgroundColor;
+
+  /// Legend colour that matches the stacked bar.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      leading: CircleAvatar(
-        backgroundColor:
-            backgroundColor ?? Theme.of(context).colorScheme.primary,
-        child: Icon(
-          icon,
-          size: 16,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              // White tile on the cream list inside the breakdown sheet.
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, size: 18, color: AppColors.navy),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (color != null) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: DsText.rowTitle.copyWith(fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(subtitle, style: DsText.caption),
+              ],
+            ),
+          ),
+          Text(
+            CurrencyUtils.formatAmount(amount, currency),
+            style: DsText.rowTitle.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
       ),
-      title: Text(title, style: TextStyles.titleMediumM),
-      subtitle: Text(
-        subtitle,
-        style: TextStyles.titleMediumXs.copyWith(
-          color: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+    );
+  }
+}
+
+/// Thin stacked bar showing each method's share (mockup `.stacked`).
+class JarStackedBar extends StatelessWidget {
+  final List<(double value, Color color)> parts;
+  final double height;
+
+  const JarStackedBar({super.key, required this.parts, this.height = 10});
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = parts.where((p) => p.$1 > 0).toList();
+    if (visible.isEmpty) {
+      return Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: SheetSurface.fillOf(context),
+          borderRadius: BorderRadius.circular(6),
         ),
-      ),
-      trailing: Text(
-        CurrencyUtils.formatAmount(amount, currency),
-        style: TextStyles.titleMediumM,
+      );
+    }
+    final total = visible.fold<double>(0, (s, p) => s + p.$1);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        height: height,
+        child: Row(
+          children: [
+            for (var i = 0; i < visible.length; i++) ...[
+              if (i > 0) const SizedBox(width: 3),
+              Expanded(
+                flex: ((visible[i].$1 / total) * 1000).round().clamp(1, 1000),
+                child: Container(color: visible[i].$2),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

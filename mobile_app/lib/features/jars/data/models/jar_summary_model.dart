@@ -880,6 +880,10 @@ class ContributionModel {
   final String? contributor;
   final String? contributorPhoneNumber;
   final String? paymentMethod; // 'mobile-money' | 'bank' | 'cash'
+
+  /// Network actually used ('MTN', 'Telecel', 'AirtelTigo'); not the phone
+  /// prefix, since numbers can be ported.
+  final String? mobileMoneyProvider;
   final String? accountNumber; // Account number for bank transfers
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
@@ -897,6 +901,7 @@ class ContributionModel {
     this.contributor,
     this.contributorPhoneNumber,
     this.paymentMethod,
+    this.mobileMoneyProvider,
     this.accountNumber,
     required this.amountContributed,
     this.charges,
@@ -916,6 +921,7 @@ class ContributionModel {
       contributor: json['contributor'] as String?,
       contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
       paymentMethod: json['paymentMethod'] as String?,
+      mobileMoneyProvider: json['mobileMoneyProvider'] as String?,
       accountNumber: json['accountNumber'] as String?,
       amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
       charges:
@@ -948,6 +954,7 @@ class ContributionModel {
       'contributor': contributor,
       'contributorPhoneNumber': contributorPhoneNumber,
       'paymentMethod': paymentMethod,
+      'mobileMoneyProvider': mobileMoneyProvider,
       'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       'charges': charges,

@@ -39,9 +39,10 @@ class MediaApiProvider extends BaseApiProvider {
 
       // Derive content type from the file extension so non-image files (e.g. PDF)
       // aren't mislabelled as images (which makes PayloadCMS image-size detection fail).
-      final ext = imageFile.name.contains('.')
-          ? imageFile.name.split('.').last.toLowerCase()
-          : '';
+      final ext =
+          imageFile.name.contains('.')
+              ? imageFile.name.split('.').last.toLowerCase()
+              : '';
       final MediaType contentType;
       switch (ext) {
         case 'pdf':

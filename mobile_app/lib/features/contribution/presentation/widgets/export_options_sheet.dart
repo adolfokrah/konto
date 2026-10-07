@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/contribtions_list_filter.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
-class ExportOptionsSheet extends StatelessWidget {
-  const ExportOptionsSheet({super.key});
+class ExportOptionsSheet extends StatefulWidget {
+  /// "Edit" on the period card: closes this sheet and opens the filters.
+  final VoidCallback? onEditPeriod;
+
+  const ExportOptionsSheet({super.key, this.onEditPeriod});
 
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder:
           (_) => MultiBlocProvider(
             providers: [
@@ -34,104 +39,139 @@ class ExportOptionsSheet extends StatelessWidget {
                 value: context.read<FilterContributionsBloc>(),
               ),
             ],
-            child: const ExportOptionsSheet(),
+            child: ExportOptionsSheet(
+              onEditPeriod: () => ContributionsListFilter.show(context),
+            ),
           ),
     );
   }
 
   @override
+  State<ExportOptionsSheet> createState() => _ExportOptionsSheetState();
+}
+
+class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
+  /// 0 = PDF statement by email, 1 = share as a list
+  int _choice = 0;
+
+  @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const DragHandle(),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingM,
-              vertical: AppSpacing.spacingS,
-            ),
-            child: Column(
-              children: [
-                _buildOption(
-                  context,
-                  icon: Icons.picture_as_pdf,
-                  iconColor: Colors.redAccent,
-                  label: localizations.exportToPdf,
-                  isDark: isDark,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _triggerPdfExport(context);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.spacingS),
-                _buildOption(
-                  context,
-                  icon: Icons.share,
-                  iconColor: Colors.green,
-                  label: localizations.shareAsList,
-                  isDark: isDark,
-                  onTap: () => _shareAsList(context),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).padding.bottom + AppSpacing.spacingM,
-          ),
-        ],
-      ),
-    );
-  }
+    // What will be exported: the jar and the active date filter.
+    final jarState = context.read<JarSummaryBloc>().state;
+    final filterState = context.read<FilterContributionsBloc>().state;
+    final listState = context.read<ContributionsListBloc>().state;
+    final jarName = jarState is JarSummaryLoaded ? jarState.jarData.name : '';
+    final fmt = DateFormat('d MMM');
+    final dateLabel =
+        filterState is FilterContributionsLoaded &&
+                filterState.startDate != null &&
+                filterState.endDate != null
+            ? '${fmt.format(filterState.startDate!)} – ${fmt.format(filterState.endDate!)}'
+            : filterState is FilterContributionsLoaded &&
+                filterState.selectedDate != null
+            ? FilterLabels.date(localizations, filterState.selectedDate!)
+            : localizations.dateAll;
+    final count =
+        listState is ContributionsListLoaded ? listState.totalDocs : 0;
 
-  Widget _buildOption(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color:
-          isDark
-              ? Theme.of(context).colorScheme.primary
-              : AppColors.onPrimaryWhite,
-      borderRadius: BorderRadius.circular(AppRadius.radiusM),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.spacingM,
-            vertical: AppSpacing.spacingM,
-          ),
+    return CollectSheet(
+      title: 'Export statement',
+      trailing: CollectBoxButton(
+        icon: Icons.close_rounded,
+        filled: true,
+        onTap: () => Navigator.pop(context),
+      ),
+      children: [
+        DsCard(
+          color: AppColors.cream,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: Colors.white, size: 20),
+              const Icon(
+                Icons.calendar_today_rounded,
+                size: 18,
+                color: AppColors.navy,
               ),
-              const SizedBox(width: AppSpacing.spacingM),
-              Text(label, style: TextStyles.titleMedium),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  jarName.isEmpty ? dateLabel : '$dateLabel · $jarName',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DsText.small.copyWith(color: AppColors.navy),
+                ),
+              ),
+              if (widget.onEditPeriod != null) ...[
+                const SizedBox(width: 8),
+                DsLink(
+                  'Edit',
+                  onTap: () {
+                    Navigator.pop(context);
+                    widget.onEditPeriod!();
+                  },
+                ),
+              ],
             ],
           ),
         ),
+        _option(
+          index: 0,
+          icon: Icons.picture_as_pdf_outlined,
+          tone: DsTone.negative,
+          title: 'PDF statement',
+          subtitle: 'Totals, payments, answers',
+        ),
+        _option(
+          index: 1,
+          icon: Icons.chat_bubble_outline_rounded,
+          tone: DsTone.info,
+          title: 'WhatsApp list',
+          subtitle: 'Names and amounts only',
+        ),
+        AppButton.filled(
+          text: count > 0 ? 'Export $count payments' : 'Export',
+          onPressed: () {
+            if (_choice == 0) {
+              Navigator.pop(context);
+              _triggerPdfExport(context);
+            } else {
+              _shareAsList(context);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _option({
+    required int index,
+    required IconData icon,
+    required DsTone tone,
+    required String title,
+    required String subtitle,
+  }) {
+    return CollectOption(
+      selected: _choice == index,
+      onTap: () => setState(() => _choice = index),
+      child: Row(
+        children: [
+          DsIconTile(icon, tone: tone),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: DsText.section.copyWith(fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: DsText.caption),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          CollectRadio(_choice == index),
+        ],
       ),
     );
   }

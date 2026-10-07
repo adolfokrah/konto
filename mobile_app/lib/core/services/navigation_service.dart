@@ -101,7 +101,7 @@ class NavigationService {
     final jarSummaryBloc = context.read<JarSummaryBloc>();
     jarSummaryBloc.add(SetCurrentJarRequested(jarId: jarId));
 
-    GoRouter.of(context).pushReplacement(AppRoutes.jarDetail);
+    GoRouter.of(context).go(AppRoutes.jarDetail);
   }
 
   /// Navigate to notifications list view and optionally trigger a refresh callback

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
-import 'package:Hoga/core/widgets/searh_input.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/sheet_surface.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 class GenericPicker<T> extends StatelessWidget {
@@ -17,7 +16,8 @@ class GenericPicker<T> extends StatelessWidget {
     required this.onItemSelected,
   });
 
-  static void showPickerDialog<T>(
+  /// Completes when the sheet closes.
+  static Future<void> showPickerDialog<T>(
     BuildContext context, {
     required String selectedValue,
     required List<T> items,
@@ -44,30 +44,35 @@ class GenericPicker<T> extends StatelessWidget {
     // Provide heavy haptic feedback when opening the picker modal
     HapticUtils.heavy();
 
-    showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      // Above the tab bar when opened from a tab.
+      useRootNavigator: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return _GenericPickerContent<T>(
-          selectedValue: selectedValue,
-          items: items,
-          onItemSelected: onItemSelected,
-          itemBuilder: itemBuilder,
-          recentItemBuilder: recentItemBuilder,
-          searchResultBuilder: searchResultBuilder,
-          searchFilter: searchFilter,
-          isItemSelected: isItemSelected,
-          title: title,
-          searchHint: searchHint,
-          recentSectionTitle: recentSectionTitle,
-          otherSectionTitle: otherSectionTitle,
-          searchResultsTitle: searchResultsTitle,
-          noResultsMessage: noResultsMessage,
-          showSearch: showSearch,
-          maxHeight: maxHeight,
-          minHeight: minHeight,
-          initialHeight: initialHeight,
+        return SheetSurface(
+          child: _GenericPickerContent<T>(
+            selectedValue: selectedValue,
+            items: items,
+            onItemSelected: onItemSelected,
+            itemBuilder: itemBuilder,
+            recentItemBuilder: recentItemBuilder,
+            searchResultBuilder: searchResultBuilder,
+            searchFilter: searchFilter,
+            isItemSelected: isItemSelected,
+            title: title,
+            searchHint: searchHint,
+            recentSectionTitle: recentSectionTitle,
+            otherSectionTitle: otherSectionTitle,
+            searchResultsTitle: searchResultsTitle,
+            noResultsMessage: noResultsMessage,
+            showSearch: showSearch,
+            maxHeight: maxHeight,
+            minHeight: minHeight,
+            initialHeight: initialHeight,
+          ),
         );
       },
     );
@@ -166,152 +171,12 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
     }
   }
 
-  int _getItemCount() {
-    final selectedItem = _selectedItem;
-    final filteredItems = _filteredItems;
-    final otherItems =
-        filteredItems
-            .where((item) => !widget.isItemSelected(item, widget.selectedValue))
-            .toList();
-    final selectedItemInResults =
-        selectedItem != null && filteredItems.contains(selectedItem);
-
-    int count = 0;
-
-    // Recent Selection section (when no search) OR selected item in search results
-    if ((_searchQuery.isEmpty && selectedItemInResults) ||
-        (_searchQuery.isNotEmpty && selectedItemInResults)) {
-      count += 2; // header + selected item
-    }
-
-    // Other Items section
-    if (otherItems.isNotEmpty) {
-      count += 1; // header
-      count += otherItems.length; // other items
-    }
-
-    return count;
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingM),
-      child: Text(title, style: TextStyles.titleBoldLg),
-    );
-  }
-
-  Widget _buildListItem(BuildContext context, int index) {
-    final selectedItem = _selectedItem;
-    final filteredItems = _filteredItems;
-    final otherItems =
-        filteredItems
-            .where((item) => !widget.isItemSelected(item, widget.selectedValue))
-            .toList();
-    final selectedItemInResults =
-        selectedItem != null && filteredItems.contains(selectedItem);
-    final localizations = AppLocalizations.of(context)!;
-
-    int currentIndex = 0;
-
-    // Recent Selection section (when no search) OR selected item in search results
-    if ((_searchQuery.isEmpty && selectedItemInResults) ||
-        (_searchQuery.isNotEmpty && selectedItemInResults)) {
-      if (index == currentIndex) {
-        // Header changes based on search state
-        final headerTitle =
-            _searchQuery.isEmpty
-                ? (widget.recentSectionTitle ?? localizations.recentSelection)
-                : (widget.searchResultsTitle ?? localizations.searchResults);
-        return _buildSectionHeader(headerTitle);
-      }
-      currentIndex++;
-
-      if (index == currentIndex) {
-        // Selected item. Material (not a decorated Container) so the item's ListTile can
-        // paint its ink splash on this background.
-        return Material(
-          color: Theme.of(context).colorScheme.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.radiusM),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingXs,
-            ),
-            child:
-                _searchQuery.isEmpty
-                    ? widget.recentItemBuilder(
-                      selectedItem,
-                      true,
-                      () => _onItemSelected(selectedItem),
-                    )
-                    : widget.searchResultBuilder(
-                      selectedItem,
-                      true,
-                      () => _onItemSelected(selectedItem),
-                    ),
-          ),
-        );
-      }
-      currentIndex++;
-    }
-
-    // Other Items section
-    if (otherItems.isNotEmpty) {
-      if (index == currentIndex) {
-        // Other Items header
-        final headerTitle =
-            _searchQuery.isEmpty
-                ? (widget.otherSectionTitle ?? localizations.allOptions)
-                : (selectedItemInResults
-                    ? (widget.searchResultsTitle ?? localizations.searchResults)
-                    : (widget.searchResultsTitle ??
-                        localizations.searchResults));
-        return _buildSectionHeader(headerTitle);
-      }
-      currentIndex++;
-
-      // Other items
-      final otherItemIndex = index - currentIndex;
-      if (otherItemIndex >= 0 && otherItemIndex < otherItems.length) {
-        final item = otherItems[otherItemIndex];
-        final isFirst = otherItemIndex == 0;
-        final isLast = otherItemIndex == otherItems.length - 1;
-
-        return Material(
-          color: Theme.of(context).colorScheme.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isFirst ? AppRadius.radiusM : 0),
-              topRight: Radius.circular(isFirst ? AppRadius.radiusM : 0),
-              bottomLeft: Radius.circular(isLast ? AppRadius.radiusM : 0),
-              bottomRight: Radius.circular(isLast ? AppRadius.radiusM : 0),
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.spacingXs,
-            ),
-            child:
-                _searchQuery.isEmpty
-                    ? widget.itemBuilder(
-                      item,
-                      false,
-                      () => _onItemSelected(item),
-                    )
-                    : widget.searchResultBuilder(
-                      item,
-                      false,
-                      () => _onItemSelected(item),
-                    ),
-          ),
-        );
-      }
-    }
-
-    return const SizedBox.shrink();
+  /// Selected item first, then the rest, all in one list card.
+  List<T> get _orderedItems {
+    final filtered = _filteredItems;
+    final selected = _selectedItem;
+    if (selected == null || !filtered.contains(selected)) return filtered;
+    return [selected, ...filtered.where((item) => item != selected)];
   }
 
   void _onItemSelected(T item) {
@@ -319,93 +184,228 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
     Navigator.pop(context);
   }
 
+  Widget _buildRow(T item, bool isFirst, bool isLast) {
+    final isSelected = widget.isItemSelected(item, widget.selectedValue);
+    final onTap = () => _onItemSelected(item);
+    final child =
+        _searchQuery.isNotEmpty
+            ? widget.searchResultBuilder(item, isSelected, onTap)
+            : isSelected
+            ? widget.recentItemBuilder(item, isSelected, onTap)
+            : widget.itemBuilder(item, isSelected, onTap);
+
+    const radius = Radius.circular(AppRadius.radiusCard);
+    // Material (not a decorated Container) so rows can paint ink splashes.
+    return Material(
+      color: AppColors.cream,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? radius : Radius.zero,
+          bottom: isLast ? radius : Radius.zero,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isFirst)
+            const Divider(height: 1, thickness: 1, color: AppColors.line),
+          child,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final media = MediaQuery.of(context);
+    final items = _orderedItems;
+    final maxHeight = media.size.height * widget.maxHeight;
 
-    return DraggableScrollableSheet(
-      initialChildSize:
-          widget.initialHeight <= widget.maxHeight
-              ? widget.initialHeight
-              : widget.maxHeight,
-      minChildSize: widget.minHeight,
-      maxChildSize: widget.maxHeight,
-      snap: true,
-      snapSizes: [
-        widget.initialHeight <= widget.maxHeight
-            ? widget.initialHeight
-            : widget.maxHeight,
-      ],
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(AppRadius.radiusM),
-              topRight: Radius.circular(AppRadius.radiusM),
+    final list =
+        items.isEmpty
+            ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Center(
+                child: Text(
+                  widget.noResultsMessage ?? localizations.noOptionsFound,
+                  style: DsText.small.copyWith(color: AppColors.muted),
+                ),
+              ),
+            )
+            : ListView.builder(
+              shrinkWrap: !widget.showSearch,
+              padding: EdgeInsets.zero,
+              itemCount: items.length,
+              itemBuilder:
+                  (context, index) => _buildRow(
+                    items[index],
+                    index == 0,
+                    index == items.length - 1,
+                  ),
+            );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+      child: Container(
+        // A searchable sheet keeps a fixed height so it doesn't jump while
+        // the list filters; a short plain list hugs its content.
+        height:
+            widget.showSearch
+                ? media.size.height *
+                    (widget.initialHeight <= widget.maxHeight
+                        ? widget.initialHeight
+                        : widget.maxHeight)
+                : null,
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceWhite,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.radiusSheet),
+          ),
+        ),
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + media.padding.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDADDE3),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title ?? '',
+                    style: DsText.section.copyWith(fontSize: 19),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Semantics(
+                  button: true,
+                  label: localizations.close,
+                  child: Material(
+                    color: AppColors.cream,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => Navigator.pop(context),
+                      child: const SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: AppColors.navy,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            if (widget.showSearch) ...[
+              _PickerSearch(
+                controller: _searchController,
+                hintText: widget.searchHint ?? localizations.searchOptions,
+                onChanged: (value) => setState(() => _searchQuery = value),
+              ),
+              const SizedBox(height: 14),
+            ],
+            if (widget.showSearch)
+              Expanded(child: list)
+            else
+              Flexible(child: list),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Search field in the picker sheet (mockup `.search`): cream, 44 tall.
+class _PickerSearch extends StatefulWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+
+  const _PickerSearch({
+    required this.controller,
+    required this.hintText,
+    required this.onChanged,
+  });
+
+  @override
+  State<_PickerSearch> createState() => _PickerSearchState();
+}
+
+class _PickerSearchState extends State<_PickerSearch> {
+  @override
+  Widget build(BuildContext context) {
+    final hasText = widget.controller.text.isNotEmpty;
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.only(left: 12),
+      child: Row(
+        children: [
+          const Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: widget.controller,
+              style: DsText.rowTitle,
+              cursorColor: AppColors.navy,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: widget.hintText,
+                hintStyle: DsText.rowTitle.copyWith(
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w400,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (value) {
+                setState(() {});
+                widget.onChanged(value);
+              },
             ),
           ),
-          padding: const EdgeInsets.only(
-            left: AppSpacing.spacingM,
-            right: AppSpacing.spacingM,
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              const DragHandle(),
-
-              // Title
-              if (widget.title != null) ...[
-                const SizedBox(height: AppSpacing.spacingM),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(widget.title!, style: TextStyles.titleBoldLg),
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-              ],
-
-              // Search Input
-              if (widget.showSearch) ...[
-                SearchInput(
-                  controller: _searchController,
-                  hintText: widget.searchHint ?? localizations.searchOptions,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: AppSpacing.spacingM),
-              ],
-
-              // Items list
-              Flexible(
-                child:
-                    _getItemCount() == 0
-                        ? Center(
-                          child: Text(
-                            widget.noResultsMessage ??
-                                localizations.noOptionsFound,
-                            style: TextStyles.titleMedium.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        )
-                        : ListView.builder(
-                          controller: scrollController,
-                          padding: EdgeInsets.zero,
-                          itemCount: _getItemCount(),
-                          itemBuilder: (context, index) {
-                            return _buildListItem(context, index);
-                          },
-                        ),
+          if (hasText)
+            IconButton(
+              onPressed: () {
+                widget.controller.clear();
+                setState(() {});
+                widget.onChanged('');
+              },
+              icon: const Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: AppColors.muted,
               ),
-            ],
-          ),
-        );
-      },
+            ),
+        ],
+      ),
     );
   }
 }

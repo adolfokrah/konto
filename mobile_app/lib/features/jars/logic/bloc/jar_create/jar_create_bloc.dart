@@ -23,6 +23,9 @@ class JarCreateBloc extends Bloc<JarCreateEvent, JarCreateState> {
     JarCreateSubmitted event,
     Emitter<JarCreateState> emit,
   ) async {
+    // One jar per submit: taps that land while a create is in flight are
+    // ignored (they used to create the same jar several times).
+    if (state is JarCreateLoading) return;
     emit(JarCreateLoading());
     try {
       // Call the createJar function from the repository

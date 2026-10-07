@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
-import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/card.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/confirmation_bottom_sheet.dart';
 import 'package:Hoga/features/withdrawal_accounts/data/models/withdrawal_account_model.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/features/withdrawal_accounts/presentation/views/add_withdrawal_account_view.dart';
+import 'package:Hoga/features/withdrawal_accounts/presentation/widgets/payout_account_widgets.dart';
 
 /// Manager screen listing the user's saved withdrawal (payout) accounts.
 class WithdrawalAccountsView extends StatefulWidget {
@@ -28,10 +30,11 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
   Future<void> _openAddAccount() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: context.read<WithdrawalAccountsBloc>(),
-          child: const AddWithdrawalAccountView(),
-        ),
+        builder:
+            (_) => BlocProvider.value(
+              value: context.read<WithdrawalAccountsBloc>(),
+              child: const AddWithdrawalAccountView(),
+            ),
       ),
     );
     if (mounted) {
@@ -39,33 +42,102 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
     }
   }
 
-  void _confirmDelete(WithdrawalAccountModel account) {
-    showDialog(
+  void _confirmDelete(WithdrawalAccountModel account, List<BankModel> banks) {
+    ConfirmationBottomSheet.show(
+      context,
+      icon: Icons.delete_outline_rounded,
+      isDangerous: true,
+      title: 'Remove ${payoutAccountTitle(account)}?',
+      description:
+          '${payoutProviderName(account, banks)} ${payoutMaskedNumber(account)} '
+          'will be removed. Jars paying out here switch to your default account.',
+      confirmButtonText: 'Remove account',
+      cancelButtonText: 'Keep it',
+      onConfirm: () {
+        context.read<WithdrawalAccountsBloc>().add(
+          DeleteWithdrawalAccount(id: account.id),
+        );
+      },
+    );
+  }
+
+  void _showOptions(WithdrawalAccountModel account, List<BankModel> banks) {
+    showModalBottomSheet<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Remove account'),
-        content: Text(
-          'Remove ${account.accountHolder} (${account.maskedAccountNumber})?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (sheetContext) => AccSheet(
+            children: [
+              Row(
+                children: [
+                  PayoutAccountLogo(account: account),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          payoutAccountTitle(account),
+                          style: AccText.h2,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          payoutAccountSubtitle(account, banks),
+                          style: DsText.caption,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cream,
+                  borderRadius: BorderRadius.circular(AppRadius.radiusCard),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    if (!account.isDefault) ...[
+                      DsRow(
+                        leading: const AccRowIcon(
+                          Icons.check_rounded,
+                          background: AppColors.surfaceWhite,
+                        ),
+                        title: 'Make default',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          context.read<WithdrawalAccountsBloc>().add(
+                            SetDefaultWithdrawalAccount(id: account.id),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1, color: AppColors.line),
+                    ],
+                    DsRow(
+                      leading: const AccRowIcon(
+                        Icons.delete_outline_rounded,
+                        background: AppColors.negativeSoft,
+                        foreground: AppColors.negative,
+                      ),
+                      title: 'Remove account',
+                      titleColor: AppColors.negative,
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        _confirmDelete(account, banks);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                'Jars paying out to this account switch to your default.',
+                style: DsText.caption,
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context
-                  .read<WithdrawalAccountsBloc>()
-                  .add(DeleteWithdrawalAccount(id: account.id));
-            },
-            child: Text(
-              'Remove',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -79,21 +151,18 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
       },
       builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            centerTitle: true,
-            title: const Text('Withdrawal accounts'),
+          backgroundColor: AppColors.cream,
+          appBar: JarTopBar(
+            title: 'Payout accounts',
+            actions: [
+              if (state.accounts.isNotEmpty)
+                JarNavButton(
+                  icon: Icons.add_rounded,
+                  onTap: state.actionInProgress ? null : _openAddAccount,
+                ),
+            ],
           ),
           body: _buildBody(context, state),
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.spacingM),
-              child: AppButton.filled(
-                text: 'Add account',
-                onPressed: state.actionInProgress ? null : _openAddAccount,
-              ),
-            ),
-          ),
         );
       },
     );
@@ -102,174 +171,75 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
   Widget _buildBody(BuildContext context, WithdrawalAccountsState state) {
     if (state.status == WithdrawalAccountsStatus.loading &&
         state.accounts.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const DsSkeletonPage(
+        children: [
+          DsSkeletonListCard(rows: 2),
+          SizedBox(height: 12),
+          DsSkeletonLine(width: 240, height: 10),
+        ],
+      );
     }
 
     if (state.accounts.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.spacingL),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 56,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              const SizedBox(height: AppSpacing.spacingM),
-              Text(
-                'No withdrawal accounts yet',
-                style: TextStyles.titleMediumLg,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              Text(
-                'Add a mobile money or bank account to receive your payouts.',
-                style: TextStyles.titleRegularM.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+      return Align(
+        alignment: const Alignment(0, -0.45),
+        child: DsEmptyState(
+          icon: Icons.account_balance_wallet_outlined,
+          tone: DsTone.lime,
+          title: 'Add where your money goes',
+          message:
+              'Add a mobile money wallet or bank account. You can add more '
+              'than one and pick per jar.',
+          actionLabel: 'Add account',
+          onAction: state.actionInProgress ? null : _openAddAccount,
         ),
       );
     }
 
     return Stack(
       children: [
-        ListView.separated(
-          padding: const EdgeInsets.all(AppSpacing.spacingM),
-          itemCount: state.accounts.length,
-          separatorBuilder: (_, __) =>
-              const SizedBox(height: AppSpacing.spacingS),
-          itemBuilder: (context, index) {
-            return _AccountCard(
-              account: state.accounts[index],
-              disabled: state.actionInProgress,
-              onSetDefault: () => context
-                  .read<WithdrawalAccountsBloc>()
-                  .add(SetDefaultWithdrawalAccount(id: state.accounts[index].id)),
-              onDelete: () => _confirmDelete(state.accounts[index]),
-            );
-          },
+        ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            DsListCard(
+              children: [
+                for (final account in state.accounts)
+                  DsRow(
+                    leading: PayoutAccountLogo(account: account),
+                    title: payoutAccountTitle(account),
+                    subtitle: payoutAccountSubtitle(account, state.banks),
+                    trailing:
+                        account.isDefault
+                            ? const DsTag('Default', tone: DsTone.dark)
+                            : null,
+                    chevron: !account.isDefault,
+                    onTap:
+                        state.actionInProgress
+                            ? null
+                            : () => _showOptions(account, state.banks),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Tap an account to make it the default or remove it.',
+                style: DsText.caption,
+              ),
+            ),
+          ],
         ),
         if (state.actionInProgress)
           const Positioned.fill(
             child: ColoredBox(
               color: Color(0x11000000),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.navy),
+              ),
             ),
           ),
       ],
-    );
-  }
-}
-
-class _AccountCard extends StatelessWidget {
-  final WithdrawalAccountModel account;
-  final bool disabled;
-  final VoidCallback onSetDefault;
-  final VoidCallback onDelete;
-
-  const _AccountCard({
-    required this.account,
-    required this.disabled,
-    required this.onSetDefault,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final providerLabel = account.isMobileMoney
-        ? (account.provider == 'mtn'
-            ? 'MTN Mobile Money'
-            : account.provider == 'telecel'
-                ? 'Telecel Cash'
-                : account.provider.toUpperCase())
-        : account.provider.toUpperCase();
-
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                account.isMobileMoney
-                    ? Icons.phone_android
-                    : Icons.account_balance,
-                size: 20,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.spacingXs),
-              Expanded(
-                child: Text(
-                  account.label?.isNotEmpty == true
-                      ? account.label!
-                      : providerLabel,
-                  style: TextStyles.titleMediumS.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (account.isDefault) _defaultChip(context),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.spacingXs),
-          Text(account.accountHolder, style: TextStyles.titleMedium),
-          const SizedBox(height: 2),
-          Text(
-            '$providerLabel  •  ${account.maskedAccountNumber}',
-            style: TextStyles.titleRegularSm.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
-          Row(
-            children: [
-              if (!account.isDefault)
-                TextButton.icon(
-                  onPressed: disabled ? null : onSetDefault,
-                  icon: const Icon(Icons.star_outline, size: 18),
-                  label: const Text('Set default'),
-                ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: disabled ? null : onDelete,
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                label: Text(
-                  'Remove',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _defaultChip(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Text(
-        'Default',
-        style: TextStyles.titleRegularXs.copyWith(fontWeight: FontWeight.w600),
-      ),
     );
   }
 }

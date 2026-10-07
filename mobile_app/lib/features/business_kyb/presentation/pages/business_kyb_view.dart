@@ -1,14 +1,18 @@
+import 'package:Hoga/core/config/app_config.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/enums/media_upload_context.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/media/presentation/views/image_uploader_bottom_sheet.dart';
@@ -61,6 +65,12 @@ class _BusinessKybViewState extends State<BusinessKybView> {
   _UploadedDoc? _companyReg;
   _UploadedDoc? _proofOfAddress;
   int _directorSeq = 0;
+
+  /// Personal accounts upgrading see "Collect as an organization" first.
+  bool _showUpgradeIntro = true;
+
+  /// The director whose fields are open below their row.
+  int? _openDirector;
   late final List<_DirectorForm> _directors = [_newDirector()];
 
   _DirectorForm _newDirector() => _DirectorForm('${_directorSeq++}');
@@ -127,13 +137,17 @@ class _BusinessKybViewState extends State<BusinessKybView> {
   }
 
   void _addDirector() {
-    setState(() => _directors.add(_newDirector()));
+    setState(() {
+      _directors.add(_newDirector());
+      _openDirector = _directors.length - 1;
+    });
   }
 
   void _removeDirector(int index) {
     setState(() {
       _directors[index].dispose();
       _directors.removeAt(index);
+      _openDirector = null;
     });
   }
 
@@ -152,11 +166,9 @@ class _BusinessKybViewState extends State<BusinessKybView> {
 
   void _submit() {
     if (!_isFormValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all required fields.'),
-          backgroundColor: Colors.red,
-        ),
+      AppSnackBar.showError(
+        context,
+        message: 'Please complete all required fields.',
       );
       return;
     }
@@ -180,151 +192,369 @@ class _BusinessKybViewState extends State<BusinessKybView> {
     );
   }
 
+  /// Four parts of the checklist: name, certificate, proof of address,
+  /// directors (all complete).
+  int get _completedParts {
+    var n = 0;
+    if (_businessNameController.text.trim().isNotEmpty) n++;
+    if (_companyReg != null) n++;
+    if (_proofOfAddress != null) n++;
+    if (_directors.isNotEmpty && _directors.every(_directorComplete)) n++;
+    return n;
+  }
+
+  bool _directorComplete(_DirectorForm d) =>
+      d.nameController.text.trim().isNotEmpty &&
+      d.idFront != null &&
+      d.idBack != null;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: Text('Business verification', style: TextStyles.titleMediumLg),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: BlocListener<MediaBloc, MediaState>(
+    return BlocListener<MediaBloc, MediaState>(
+      listener: (context, state) {
+        if (state is MediaLoaded) {
+          _onMediaLoaded(state);
+        }
+      },
+      child: BlocConsumer<BusinessKybBloc, BusinessKybState>(
         listener: (context, state) {
-          if (state is MediaLoaded) {
-            _onMediaLoaded(state);
+          if (state is BusinessKybSubmitted) {
+            // Reload user data to get updated KYB status.
+            context.read<AuthBloc>().add(AutoLoginRequested());
+
+            AppSnackBar.showSuccess(
+              context,
+              message: 'Business verification submitted successfully!',
+            );
+            context.pop();
+          } else if (state is BusinessKybFailure) {
+            AppSnackBar.showError(context, message: state.message);
           }
         },
-        child: BlocConsumer<BusinessKybBloc, BusinessKybState>(
-          listener: (context, state) {
-            if (state is BusinessKybSubmitted) {
-              // Reload user data to get updated KYB status.
-              context.read<AuthBloc>().add(AutoLoginRequested());
+        builder: (context, state) {
+          return BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              // Resolve the effective KYB status. Prefer a freshly loaded
+              // status from the bloc, otherwise fall back to the auth user's
+              // kybStatus.
+              String kybStatus = 'none';
+              String? rejectionReason;
+              String? businessName;
+              User? user;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Business verification submitted successfully!',
+              if (authState is AuthAuthenticated) {
+                user = authState.user;
+                kybStatus = authState.user.kybStatus;
+              }
+              if (state is BusinessKybStatusLoaded) {
+                kybStatus = state.status;
+                rejectionReason = state.rejectionReason;
+                businessName = state.businessName;
+              }
+              if (businessName != null && businessName.trim().isEmpty) {
+                businessName = null;
+              }
+
+              if (state is BusinessKybLoadingStatus) {
+                return const Scaffold(
+                  backgroundColor: AppColors.cream,
+                  appBar: AuthTopBar(
+                    close: true,
+                    title: 'Business verification',
                   ),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              context.pop();
-            } else if (state is BusinessKybFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            return BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                // Resolve the effective KYB status. Prefer a freshly loaded
-                // status from the bloc, otherwise fall back to the auth user's
-                // kybStatus.
-                String kybStatus = 'none';
-                String? rejectionReason;
-
-                if (authState is AuthAuthenticated) {
-                  kybStatus = authState.user.kybStatus;
-                }
-                if (state is BusinessKybStatusLoaded) {
-                  kybStatus = state.status;
-                  rejectionReason = state.rejectionReason;
-                }
-
-                if (state is BusinessKybLoadingStatus) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (kybStatus == 'approved') {
-                  return _buildStatusMessage(
-                    icon: Icons.check_circle,
-                    iconColor: Colors.green,
-                    title: 'Business Verified',
-                    message:
-                        'Your business has been successfully verified. You can '
-                        'now use all business features.',
-                  );
-                }
-
-                if (kybStatus == 'in_review' ||
-                    kybStatus == 'pending' ||
-                    kybStatus == 'under-review') {
-                  return _buildStatusMessage(
-                    icon: Icons.hourglass_empty,
-                    iconColor: Colors.orange,
-                    title: 'Business Verification Pending',
-                    message:
-                        'Your business verification is currently being '
-                        'reviewed. We will notify you once it\'s complete.',
-                    subMessage: 'This usually takes 2-3 business days.',
-                  );
-                }
-
-                // 'rejected' shows the reason above the form; 'none' shows the
-                // plain form.
-                return _buildForm(
-                  context,
-                  state,
-                  isRejected: kybStatus == 'rejected',
-                  rejectionReason: rejectionReason,
+                  body: DsSkeletonPage(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    children: [
+                      DsSkeletonCard(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            DsSkeletonCircle(size: 56),
+                            SizedBox(height: 14),
+                            DsSkeletonLine(width: 170, height: 16),
+                            SizedBox(height: 10),
+                            DsSkeletonLine(width: 230, height: 11),
+                            SizedBox(height: 6),
+                            DsSkeletonLine(width: 190, height: 11),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      DsSkeletonLabel(),
+                      DsSkeletonListCard(rows: 3, trailing: false),
+                    ],
+                  ),
                 );
-              },
-            );
-          },
-        ),
+              }
+
+              if (kybStatus == 'approved') {
+                return _buildApproved(businessName, user);
+              }
+
+              if (kybStatus == 'in_review' ||
+                  kybStatus == 'pending' ||
+                  kybStatus == 'under-review') {
+                return _buildInReview(businessName);
+              }
+
+              // Personal accounts arrive here from "Upgrade to organization"
+              // on Profile: explain what changes before the checklist.
+              if (_showUpgradeIntro &&
+                  kybStatus == 'none' &&
+                  user != null &&
+                  !user.isOrganization) {
+                return _buildUpgradeIntro();
+              }
+
+              // 'rejected' shows the reason above the form; 'none' shows the
+              // plain form.
+              return _buildForm(
+                context,
+                state,
+                isRejected: kybStatus == 'rejected',
+                rejectionReason: rejectionReason,
+              );
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatusMessage({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String message,
-    String? subMessage,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.spacingM),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: iconColor),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: TextStyles.titleBoldLg,
-              textAlign: TextAlign.center,
+  /// Mockup: Upgrade to organization (from Profile).
+  Widget _buildUpgradeIntro() {
+    Widget perk(String text) => DsRow(
+      leading: const DsIconTile(
+        Icons.check_rounded,
+        tone: DsTone.positive,
+        size: 32,
+      ),
+      title: text,
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: const AuthTopBar(),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: DsIconTile(
+              Icons.apartment_rounded,
+              tone: DsTone.lime,
+              size: 64,
             ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: TextStyles.titleRegularSm,
-              textAlign: TextAlign.center,
-            ),
-            if (subMessage != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                subMessage,
-                style: TextStyles.titleRegularSm.copyWith(
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
+          ),
+          const SizedBox(height: 14),
+          const AuthHeader(
+            title: 'Collect as an organization',
+            subtitle: 'For churches, schools, associations and businesses.',
+          ),
+          const SizedBox(height: 14),
+          DsListCard(
+            children: [
+              perk('A public organization page'),
+              perk("Payouts to the organization's account"),
+              perk('Your existing jars keep working'),
             ],
-          ],
-        ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            "You'll need the certificate of registration, proof of address "
+            "and directors' IDs.",
+            style: DsText.caption,
+          ),
+        ],
+      ),
+      bottomNavigationBar: AuthFooter(
+        children: [
+          AppButton.filled(
+            text: 'Start business verification',
+            onPressed: () => setState(() => _showUpgradeIntro = false),
+          ),
+        ],
       ),
     );
   }
 
+  /// Mockup: Business · approved.
+  Widget _buildApproved(String? businessName, User? user) {
+    final isOrg = user?.isOrganization ?? false;
+    final pageUrl =
+        user == null
+            ? null
+            : '${AppConfig.contributionPage}/organizations/${user.id}';
+    final shortName = businessName?.split(RegExp(r'\s+')).take(2).join(' ');
+
+    return Scaffold(
+      backgroundColor: AppColors.surfaceWhite,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const DsIconTile(
+                Icons.apartment_rounded,
+                tone: DsTone.positive,
+                size: 64,
+              ),
+              const SizedBox(height: 14),
+              AuthHeader(
+                title:
+                    shortName != null
+                        ? '$shortName is verified'
+                        : 'Your organization is verified',
+                subtitle:
+                    isOrg
+                        ? 'Your organization page is live and your jars can '
+                            'take payments.'
+                        : 'Your jars can take payments.',
+              ),
+              if (isOrg && pageUrl != null) ...[
+                const SizedBox(height: 14),
+                DsCard(
+                  color: AppColors.fill,
+                  padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Your organization page',
+                              style: DsText.caption,
+                            ),
+                            Text(
+                              pageUrl.replaceFirst(RegExp(r'^https?://'), ''),
+                              style: DsText.rowTitle.copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Material(
+                        color: AppColors.surfaceWhite,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: pageUrl));
+                            AppSnackBar.showSuccess(
+                              context,
+                              message: 'Link copied',
+                            );
+                          },
+                          child: const SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.copy_rounded,
+                              size: 18,
+                              color: AppColors.navy,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: AuthFooter(
+        background: AppColors.surfaceWhite,
+        children: [
+          if (isOrg && pageUrl != null)
+            Builder(
+              builder:
+                  (context) => AppButton.filled(
+                    text: 'Share organization page',
+                    icon: const Icon(
+                      Icons.ios_share_rounded,
+                      size: 18,
+                      color: AppColors.surfaceWhite,
+                    ),
+                    onPressed: () {
+                      final box = context.findRenderObject() as RenderBox?;
+                      Share.share(
+                        'Support our campaigns on Hoga: $pageUrl',
+                        sharePositionOrigin:
+                            box == null
+                                ? null
+                                : box.localToGlobal(Offset.zero) & box.size,
+                      );
+                    },
+                  ),
+            ),
+          AppButton.outlined(text: 'Done', onPressed: () => context.pop()),
+        ],
+      ),
+    );
+  }
+
+  /// Mockup: Business · in review.
+  Widget _buildInReview(String? businessName) {
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: const AuthTopBar(close: true, title: 'Business verification'),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          DsCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        businessName ?? 'Your business',
+                        style: DsText.section,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const DsTag('In review', tone: DsTone.pending),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const DsSteps(
+                  current: 1,
+                  steps: [
+                    ('Submitted', null),
+                    ('Documents being checked', '2–3 business days'),
+                    ('Approved', null),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const DsNote(
+            tone: DsTone.neutral,
+            text:
+                "Your jars can be set up now. Payments open once you're "
+                'approved.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Mockup: Business verification (and Business · action needed when
+  /// [isRejected]).
   Widget _buildForm(
     BuildContext context,
     BusinessKybState state, {
@@ -332,231 +562,254 @@ class _BusinessKybViewState extends State<BusinessKybView> {
     String? rejectionReason,
   }) {
     final isSubmitting = state is BusinessKybSubmitting;
+    final done = _completedParts;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      appBar: const AuthTopBar(close: true, title: 'Business verification'),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           if (isRejected) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.spacingS),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.radiusM),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Verification rejected',
-                    style: TextStyles.titleMediumS.copyWith(color: Colors.red),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    rejectionReason ??
-                        'Your previous submission was rejected. Please review '
-                            'your details and submit again.',
-                    style: TextStyles.titleRegularSm,
-                  ),
-                ],
-              ),
+            DsNote(
+              tone: DsTone.negative,
+              icon: Icons.error_outline_rounded,
+              title: 'Action needed',
+              text:
+                  rejectionReason ??
+                  'Your previous submission was rejected. Please review '
+                      'your details and submit again.',
             ),
-            const SizedBox(height: AppSpacing.spacingM),
+            const SizedBox(height: 12),
           ],
 
-          Text('Business details', style: TextStyles.titleBoldLg),
-          const SizedBox(height: 8),
-          Text(
-            'Provide your business information and documents to get verified.',
-            style: TextStyles.titleRegularSm.copyWith(color: Colors.grey[600]),
+          DsCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$done of 4 complete',
+                        style: DsText.section.copyWith(fontSize: 16),
+                      ),
+                    ),
+                    const Text('2–3 day review', style: DsText.caption),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                DsProgress(done / 4),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.spacingM),
+          const SizedBox(height: 12),
 
-          AppTextInput(
-            label: 'Business name',
+          AuthField(
+            label: 'Registered business name',
             hintText: 'Enter your business name',
+            standalone: true,
+            textCapitalization: TextCapitalization.words,
             controller: _businessNameController,
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: AppSpacing.spacingM),
+          const SizedBox(height: 12),
 
-          _buildDocumentTile(
-            title: 'Company Registration Document',
-            doc: _companyReg,
-            onPick: () => _pickDocument(_companyRegSlot),
-            onClear: () => setState(() => _companyReg = null),
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
-
-          _buildDocumentTile(
-            title: 'Proof of Business Address',
-            doc: _proofOfAddress,
-            onPick: () => _pickDocument(_proofOfAddressSlot),
-            onClear: () => setState(() => _proofOfAddress = null),
-          ),
-          const SizedBox(height: AppSpacing.spacingL),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const DsGroupLabel('Documents'),
+          const SizedBox(height: 8),
+          DsListCard(
             children: [
-              Text('Directors', style: TextStyles.titleBoldLg),
-              TextButton.icon(
-                onPressed: _addDirector,
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.white),
-                  iconColor: WidgetStateProperty.all(Colors.white),
-                  overlayColor: WidgetStateProperty.all(
-                    Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                icon: Icon(Icons.add, color: Colors.white),
-                label: Text('Add director', style: TextStyle(color: Colors.white)),
+              _buildDocumentRow(
+                title: 'Certificate of registration',
+                hint: 'Company registration document',
+                doc: _companyReg,
+                onPick: () => _pickDocument(_companyRegSlot),
+              ),
+              _buildDocumentRow(
+                title: 'Proof of address',
+                hint: 'Under 3 months old',
+                doc: _proofOfAddress,
+                onPick: () => _pickDocument(_proofOfAddressSlot),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.spacingS),
+          const SizedBox(height: 12),
 
-          ...List.generate(_directors.length, (index) {
-            return _buildDirectorCard(index);
-          }),
-
-          const SizedBox(height: AppSpacing.spacingL),
-
+          const DsGroupLabel('Directors'),
+          const SizedBox(height: 8),
+          DsListCard(
+            children: [
+              for (var i = 0; i < _directors.length; i++)
+                ..._buildDirectorRows(i),
+              InkWell(
+                onTap: _addDirector,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.add_rounded,
+                        size: 20,
+                        color: AppColors.navy,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Add director',
+                        style: DsText.rowTitle.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const DsNote(
+            tone: DsTone.info,
+            text:
+                "Organizations don't need personal ID checks. This is the "
+                'only step.',
+          ),
+        ],
+      ),
+      bottomNavigationBar: AuthFooter(
+        children: [
           AppButton.filled(
-            onPressed: isSubmitting ? null : _submit,
-            text: isSubmitting ? 'Submitting...' : 'Submit for verification',
+            // Unlocks at 4 of 4.
+            onPressed: isSubmitting || !_isFormValid ? null : _submit,
+            text:
+                isSubmitting
+                    ? 'Submitting...'
+                    : isRejected
+                    ? 'Resubmit'
+                    : 'Submit for review',
             isLoading: isSubmitting,
           ),
-          const SizedBox(height: AppSpacing.spacingM),
         ],
       ),
     );
   }
 
-  Widget _buildDirectorCard(int index) {
+  /// One director as a list row (initials, name, ID status, "n left" tag).
+  /// Tapping the row opens its fields inline below it.
+  List<Widget> _buildDirectorRows(int index) {
     final director = _directors[index];
+    final complete = _directorComplete(director);
+    final open = _openDirector == index;
+    final missing =
+        [
+          director.nameController.text.trim().isEmpty,
+          director.idFront == null,
+          director.idBack == null,
+        ].where((m) => m).length;
+    final name = director.nameController.text.trim();
+    final initials =
+        name.isEmpty
+            ? '${index + 1}'
+            : name
+                .split(RegExp(r'\s+'))
+                .where((p) => p.isNotEmpty)
+                .take(2)
+                .map((p) => p[0].toUpperCase())
+                .join();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.spacingM),
-      padding: const EdgeInsets.all(AppSpacing.spacingS),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+    final String status;
+    if (director.idFront == null && director.idBack == null) {
+      status = name.isEmpty ? 'Add name and ID' : 'ID front and back missing';
+    } else {
+      final front = director.idFront != null ? '✓' : 'missing';
+      final back = director.idBack != null ? '✓' : 'missing';
+      status = 'ID front $front · back $back';
+    }
+
+    return [
+      DsRow(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: AppColors.limeSoft,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            initials,
+            style: DsText.rowTitle.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(AppRadius.radiusM),
+        title: name.isEmpty ? 'Director ${index + 1}' : name,
+        subtitle: status,
+        onTap: () => setState(() => _openDirector = open ? null : index),
+        trailing:
+            complete
+                ? const DsTag('Complete', tone: DsTone.positive)
+                : DsTag('$missing left', tone: DsTone.pending),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Director ${index + 1}', style: TextStyles.titleMediumS),
-              if (_directors.length > 1)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: () => _removeDirector(index),
-                ),
-            ],
+      if (open) ...[
+        AuthField(
+          label: 'Full name',
+          hintText: 'As on their ID',
+          textCapitalization: TextCapitalization.words,
+          controller: director.nameController,
+          onChanged: (_) => setState(() {}),
+        ),
+        _buildDocumentRow(
+          title: 'ID front',
+          hint: 'Ghana Card or passport',
+          doc: director.idFront,
+          onPick: () => _pickDocument(director.frontContextId),
+        ),
+        _buildDocumentRow(
+          title: 'ID back',
+          hint: 'Back of the same ID',
+          doc: director.idBack,
+          onPick: () => _pickDocument(director.backContextId),
+        ),
+        if (_directors.length > 1)
+          DsRow(
+            leading: const DsIconTile(
+              Icons.delete_outline_rounded,
+              tone: DsTone.negative,
+              size: 32,
+            ),
+            title: 'Remove director',
+            titleColor: AppColors.negative,
+            onTap: () => _removeDirector(index),
           ),
-          const SizedBox(height: 8),
-          AppTextInput(
-            label: 'Full name',
-            hintText: 'Enter director full name',
-            controller: director.nameController,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
-          _buildDocumentTile(
-            title: 'ID Document',
-            doc: director.idFront,
-            onPick: () => _pickDocument(director.frontContextId),
-            onClear: () => setState(() => director.idFront = null),
-          ),
-          const SizedBox(height: AppSpacing.spacingS),
-          _buildDocumentTile(
-            title: 'ID Document (back)',
-            doc: director.idBack,
-            onPick: () => _pickDocument(director.backContextId),
-            onClear: () => setState(() => director.idBack = null),
-          ),
-        ],
-      ),
-    );
+      ],
+    ];
   }
 
-  Widget _buildDocumentTile({
+  /// Document list row: status tile, title, filename or hint, and an
+  /// Upload / Replace action. Tapping the row also opens the uploader.
+  Widget _buildDocumentRow({
     required String title,
+    required String hint,
     required _UploadedDoc? doc,
     required VoidCallback onPick,
-    required VoidCallback onClear,
   }) {
     final hasFile = doc != null;
-    final previewUrl = doc?.url;
-
-    return InkWell(
+    return DsRow(
+      leading:
+          hasFile
+              ? const DsIconTile(Icons.check_rounded, tone: DsTone.positive)
+              : const DsIconTile(Icons.description_outlined),
+      title: title,
+      subtitle: hasFile ? (doc.filename ?? 'Uploaded') : hint,
       onTap: onPick,
-      borderRadius: BorderRadius.circular(AppRadius.radiusM),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacingS),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.radiusM),
-        ),
-        child: Row(
-          children: [
-            if (hasFile && previewUrl != null && previewUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.radiusM),
-                child: Image.network(
-                  previewUrl,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 32,
-                      ),
-                ),
-              )
-            else if (hasFile)
-              const Icon(Icons.check_circle, color: Colors.green, size: 32)
-            else
-              Icon(
-                Icons.upload_file,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            const SizedBox(width: AppSpacing.spacingS),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyles.titleMediumS),
-                  const SizedBox(height: 4),
-                  Text(
-                    hasFile
-                        ? (doc.filename ?? 'Uploaded. Tap to replace')
-                        : 'Tap to capture',
-                    style: TextStyles.titleRegularSm.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            if (hasFile)
-              IconButton(icon: const Icon(Icons.close), onPressed: onClear),
-          ],
-        ),
-      ),
+      trailing:
+          hasFile
+              ? DsLink('Replace', onTap: onPick)
+              : DsSmallButton(label: 'Upload', secondary: true, onTap: onPick),
     );
   }
 }

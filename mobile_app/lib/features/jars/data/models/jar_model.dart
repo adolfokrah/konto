@@ -122,8 +122,14 @@ class JarModel {
               : null,
       images:
           (json['images'] as List<dynamic>?)
-              ?.where((e) => e is Map<String, dynamic> && e['image'] is Map<String, dynamic>)
-              .map((e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>))
+              ?.where(
+                (e) =>
+                    e is Map<String, dynamic> &&
+                    e['image'] is Map<String, dynamic>,
+              )
+              .map(
+                (e) => MediaModel.fromJson(e['image'] as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       isActive: json['isActive'] as bool? ?? true,
@@ -160,10 +166,7 @@ class JarModel {
               : 0,
       customFields:
           (json['customFields'] as List<dynamic>?)
-              ?.map(
-                (e) =>
-                    CustomFieldModel.fromJson(e as Map<String, dynamic>),
-              )
+              ?.map((e) => CustomFieldModel.fromJson(e as Map<String, dynamic>))
               .toList(),
     );
   }
@@ -423,10 +426,14 @@ class UserModel {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      fullName: json['fullName'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      // Other users' contact fields are hidden by the server (e.g. invited
+      // collectors on a jar you created), so none of these are guaranteed.
+      fullName:
+          json['fullName'] as String? ??
+          '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim(),
+      phoneNumber: json['phoneNumber'] as String? ?? '',
       countryCode: json['countryCode'] as String? ?? '',
-      country: json['country'] as String,
+      country: json['country'] as String? ?? '',
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
       photo: parsedPhoto,
       createdAt:

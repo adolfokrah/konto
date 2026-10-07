@@ -15,6 +15,9 @@ import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
 import 'package:Hoga/features/onboarding/data/repositories/walkthrough_repository.dart';
 import 'package:Hoga/features/jars/data/api_providers/jar_api_provider.dart';
 import 'package:Hoga/features/jars/data/repositories/jar_repository.dart';
+import 'package:Hoga/features/insights/data/api_providers/insights_api_provider.dart';
+import 'package:Hoga/features/insights/data/repositories/insights_repository.dart';
+import 'package:Hoga/features/insights/logic/bloc/insights_bloc.dart';
 import 'package:Hoga/features/media/data/api_provider/media_api_provider.dart';
 import 'package:Hoga/features/media/data/repository_provider/media_repository.dart';
 import 'package:Hoga/features/contribution/data/api_reproviders/contribution_api_provider.dart';
@@ -59,25 +62,23 @@ final getIt = GetIt.instance;
 
 void setupServiceLocator() {
   // ── Core services ──
-  getIt.registerLazySingleton<Dio>(
-    () {
-      final dio = Dio(
-        BaseOptions(
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-          sendTimeout: const Duration(seconds: 30),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-          },
-        ),
-      );
-      // Auth interceptor handles 401 with automatic token refresh.
-      // Dependencies resolved lazily from GetIt to avoid circular init.
-      dio.interceptors.add(AuthInterceptor());
-      return dio;
-    },
-  );
+  getIt.registerLazySingleton<Dio>(() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+    // Auth interceptor handles 401 with automatic token refresh.
+    // Dependencies resolved lazily from GetIt to avoid circular init.
+    dio.interceptors.add(AuthInterceptor());
+    return dio;
+  });
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
   getIt.registerLazySingleton<UserStorageService>(
     () => UserStorageService(localStorageService: getIt<LocalStorageService>()),
@@ -188,6 +189,15 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<JarRepository>(
     () => JarRepository(jarApiProvider: getIt<JarApiProvider>()),
   );
+  getIt.registerLazySingleton<InsightsApiProvider>(
+    () => InsightsApiProvider(
+      dio: getIt<Dio>(),
+      userStorageService: getIt<UserStorageService>(),
+    ),
+  );
+  getIt.registerLazySingleton<InsightsRepository>(
+    () => InsightsRepository(apiProvider: getIt<InsightsApiProvider>()),
+  );
   getIt.registerLazySingleton<MediaRepository>(
     () => MediaRepository(mediaApiProvider: getIt<MediaApiProvider>()),
   );
@@ -211,9 +221,8 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<NotificationsRepository>(
-    () => NotificationsRepository(
-      apiProvider: getIt<NotificationsApiProvider>(),
-    ),
+    () =>
+        NotificationsRepository(apiProvider: getIt<NotificationsApiProvider>()),
   );
   getIt.registerLazySingleton<CollaboratorsRepository>(
     () => CollaboratorsRepository(
@@ -223,9 +232,7 @@ void setupServiceLocator() {
 
   // ── BLoCs: independent (lazy singletons) ──
   getIt.registerLazySingleton<OnboardingBloc>(
-    () => OnboardingBloc(
-      walkthroughRepository: getIt<WalkthroughRepository>(),
-    ),
+    () => OnboardingBloc(walkthroughRepository: getIt<WalkthroughRepository>()),
   );
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(
@@ -280,14 +287,11 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<KycBloc>(
-    () => KycBloc(
-      verificationRepository: getIt<VerificationRepository>(),
-    ),
+    () => KycBloc(verificationRepository: getIt<VerificationRepository>()),
   );
   getIt.registerLazySingleton<BusinessKybBloc>(
-    () => BusinessKybBloc(
-      businessKybRepository: getIt<BusinessKybRepository>(),
-    ),
+    () =>
+        BusinessKybBloc(businessKybRepository: getIt<BusinessKybRepository>()),
   );
   getIt.registerLazySingleton<NotificationsBloc>(
     () => NotificationsBloc(
@@ -295,9 +299,8 @@ void setupServiceLocator() {
     ),
   );
   getIt.registerLazySingleton<ReminderBloc>(
-    () => ReminderBloc(
-      collaboratorsRepository: getIt<CollaboratorsRepository>(),
-    ),
+    () =>
+        ReminderBloc(collaboratorsRepository: getIt<CollaboratorsRepository>()),
   );
   getIt.registerLazySingleton<WithdrawalAccountVerificationBloc>(
     () => WithdrawalAccountVerificationBloc(
@@ -345,5 +348,8 @@ void setupServiceLocator() {
     () => CollectorsBloc(
       collaboratorsRepository: getIt<CollaboratorsRepository>(),
     ),
+  );
+  getIt.registerFactory<InsightsBloc>(
+    () => InsightsBloc(insightsRepository: getIt<InsightsRepository>()),
   );
 }

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/currency_utils.dart';
-import 'package:Hoga/core/widgets/divider.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/jars/presentation/widgets/payment_method_contribution_item.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
+/// "Balance explained" sheet: share per payment method, then how the
+/// available amount relates to what was collected and transferred.
 class JarBalanceBreakdown extends StatelessWidget {
   const JarBalanceBreakdown({super.key});
 
@@ -32,241 +32,163 @@ class JarBalanceBreakdown extends StatelessWidget {
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.radiusM),
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.spacingM),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        final jarData = state.jarData;
-
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-          ),
-          child: IntrinsicHeight(
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-              ),
-              child: SafeArea(
+          return const JarSheetFrame(
+            children: [
+              DsSkeleton(
+                onWhite: true,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Drag handle
-                    Center(child: const DragHandle()),
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    // Title
+                    DsSkeletonLine(width: 160, height: 18),
+                    SizedBox(height: 14),
+                    DsSkeletonLine(height: 11),
+                    SizedBox(height: 6),
+                    DsSkeletonLine(width: 220, height: 11),
+                    SizedBox(height: 20),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            localizations.balanceBreakdown,
-                            style: TextStyles.titleBoldLg,
-                          ),
-                          const SizedBox(height: AppSpacing.spacingXs),
-                          Text(
-                            localizations.balanceBreakdownDescription,
-                            style: TextStyles.titleRegularM,
-                          ),
+                          DsSkeletonLine(width: 110, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: AppSpacing.spacingM),
-
-                    PaymentMethodContributionItem(
-                      title: localizations.cash,
-                      subtitle: localizations.contributionsCount(
-                        jarData.cashContributionCount,
-                      ),
-                      amount: jarData.balanceBreakDown.cash.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.money,
-                    ),
-
-                    // PaymentMethodContributionItem(
-                    //   title: localizations.bankTransfer,
-                    //   subtitle: localizations.contributionsCount(
-                    //     jarData.bankTransferContributionCount,
-                    //   ),
-                    //   amount: jarData.balanceBreakDown.bankTransfer.totalAmount,
-                    //   currency: jarData.currency,
-                    //   icon: Icons.account_balance,
-                    // ),
-                    PaymentMethodContributionItem(
-                      title: localizations.mobileMoney,
-                      subtitle: localizations.contributionsCount(
-                        jarData.mobileMoneyContributionCount,
-                      ),
-                      amount: jarData.balanceBreakDown.mobileMoney.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.phone_android,
-                    ),
-
-                    PaymentMethodContributionItem(
-                      title: localizations.cardPayment,
-                      subtitle: localizations.contributionsCount(
-                        jarData.balanceBreakDown.card.totalCount,
-                      ),
-                      amount: jarData.balanceBreakDown.card.totalAmount,
-                      currency: jarData.currency,
-                      icon: Icons.credit_card,
-                    ),
-
-                    // PaymentMethodContributionItem(
-                    //   title: localizations.applePayPayment,
-                    //   subtitle: localizations.contributionsCount(
-                    //     jarData.balanceBreakDown.applePay.totalCount,
-                    //   ),
-                    //   amount: jarData.balanceBreakDown.applePay.totalAmount,
-                    //   currency: jarData.currency,
-                    //   icon: Icons.apple,
-                    // ),
-                    AppDivider(),
-                    const SizedBox(height: AppSpacing.spacingXs),
-
-                    // Balance breakdown items
-                    _buildBalanceItem(
-                      context,
-                      title: localizations.totalContributions,
-                      amount: jarData.balanceBreakDown.totalContributedAmount,
-                      currency: jarData.currency,
-                    ),
-
-                    _buildBalanceItem(
-                      context,
-                      title: localizations.totalTransfers,
-                      amount: jarData.balanceBreakDown.totalTransfers,
-                      currency: jarData.currency,
-                    ),
-
-                    const SizedBox(height: AppSpacing.spacingS),
-
-                    _buildBalanceItem(
-                      context,
-                      title: localizations.totalWeOweYou,
-                      amount: jarData.balanceBreakDown.totalAmountTobeTransferred,
-                      currency: jarData.currency,
-                      isLastItem: true,
-                      isGreenAmount: true,
-                    ),
-
-                    const SizedBox(height: AppSpacing.spacingS),
-
-                    _buildBalanceItem(
-                      context,
-                      title: localizations.upcomingBalance,
-                      amount: jarData.balanceBreakDown.upcomingBalance,
-                      currency: jarData.currency,
-                      isLastItem: false,
-                    ),
-
-                    AppDivider(),
-                    const SizedBox(height: AppSpacing.spacingM),
-
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.spacingXs,
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 90, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
                       ),
-                      child: Text(
-                        localizations.transfersNote,
-                        style: TextStyles.titleRegularM.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                        ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 130, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 100, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
+          );
+        }
+
+        final jarData = state.jarData;
+        final b = jarData.balanceBreakDown;
+        final cur = jarData.currency;
+        String money(double v) => CurrencyUtils.formatAmount(v, cur);
+
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
+          child: JarSheetFrame(
+            title: localizations.balanceBreakdown,
+            children: [
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        localizations.balanceBreakdownDescription,
+                        style: DsText.small,
+                      ),
+                      const SizedBox(height: 14),
+                      JarStackedBar(
+                        parts: [
+                          (b.mobileMoney.totalAmount, AppColors.mtnYellow),
+                          (b.card.totalAmount, AppColors.info),
+                          (b.cash.totalAmount, AppColors.positive),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      JarFillList(
+                        children: [
+                          PaymentMethodContributionItem(
+                            title: localizations.mobileMoney,
+                            subtitle: localizations.contributionsCount(
+                              jarData.mobileMoneyContributionCount,
+                            ),
+                            amount: b.mobileMoney.totalAmount,
+                            currency: cur,
+                            icon: Icons.phone_android_rounded,
+                            color: AppColors.mtnYellow,
+                          ),
+                          PaymentMethodContributionItem(
+                            title: localizations.cardPayment,
+                            subtitle: localizations.contributionsCount(
+                              b.card.totalCount,
+                            ),
+                            amount: b.card.totalAmount,
+                            currency: cur,
+                            icon: Icons.credit_card_rounded,
+                            color: AppColors.info,
+                          ),
+                          PaymentMethodContributionItem(
+                            title: localizations.cash,
+                            subtitle: localizations.contributionsCount(
+                              jarData.cashContributionCount,
+                            ),
+                            amount: b.cash.totalAmount,
+                            currency: cur,
+                            icon: Icons.payments_outlined,
+                            color: AppColors.positive,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      JarFillList(
+                        children: [
+                          DsKeyValue(
+                            localizations.totalContributions,
+                            money(b.totalContributedAmount),
+                          ),
+                          DsKeyValue(
+                            localizations.totalTransfers,
+                            '− ${money(b.totalTransfers)}',
+                          ),
+                          DsKeyValue(
+                            localizations.upcomingBalance,
+                            money(b.upcomingBalance),
+                            valueColor: AppColors.pending,
+                          ),
+                          DsKeyValue(
+                            localizations.totalWeOweYou,
+                            money(b.totalAmountTobeTransferred),
+                            strong: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(localizations.transfersNote, style: DsText.caption),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBalanceItem(
-    BuildContext context, {
-    required String title,
-    required double amount,
-    required String currency,
-    bool isLastItem = false,
-    bool isRedAmount = false,
-    bool isGreenAmount = false,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.spacingXs,
-        vertical: 2,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style:
-                isLastItem
-                    ? TextStyles.titleMediumLg
-                    : TextStyles.titleMediumS.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                    ),
-          ),
-          Text(
-            isRedAmount
-                ? '-${CurrencyUtils.formatAmount(amount, currency)}'
-                : isGreenAmount
-                ? '+${CurrencyUtils.formatAmount(amount, currency)}'
-                : CurrencyUtils.formatAmount(amount, currency),
-            style:
-                isLastItem
-                    ? TextStyles.titleMediumLg.copyWith(
-                      color:
-                          isRedAmount
-                              ? Colors.red
-                              : isGreenAmount
-                              ? Colors.green
-                              : null,
-                    )
-                    : TextStyles.titleMediumS.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                    ),
-          ),
-        ],
-      ),
     );
   }
 }

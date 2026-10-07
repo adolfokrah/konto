@@ -12,7 +12,8 @@ class SystemSettingsModel {
   factory SystemSettingsModel.fromJson(Map<String, dynamic> json) {
     return SystemSettingsModel(
       collectionFee: (json['collectionFee'] as num?)?.toDouble() ?? 1.95,
-      transferFeePercentage: (json['transferFeePercentage'] as num?)?.toDouble() ?? 1.0,
+      transferFeePercentage:
+          (json['transferFeePercentage'] as num?)?.toDouble() ?? 1.0,
       payoutProcessingMessage: json['payoutProcessingMessage'] as String?,
     );
   }
@@ -27,10 +28,10 @@ class SystemSettingsModel {
 
   // Default settings for fallback
   static SystemSettingsModel get defaultSettings => SystemSettingsModel(
-        collectionFee: 1.95,
-        transferFeePercentage: 1.0,
-        payoutProcessingMessage: null,
-      );
+    collectionFee: 1.95,
+    transferFeePercentage: 1.0,
+    payoutProcessingMessage: null,
+  );
 
   /// Calculate collection fee for a given contribution amount
   double calculateCollectionFee(double amount) {

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/route.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 
 class StartupScreen extends StatefulWidget {
@@ -46,9 +48,38 @@ class _StartupScreenState extends State<StartupScreen> {
         }
       },
       child: Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.onSurface,
+        backgroundColor: AppColors.cream,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          'assets/images/logo_icon.png',
+                          width: 112,
+                          height: 112,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      Image.asset('assets/images/logo.png', height: 28),
+                    ],
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text(
+                  'Licensed payments by Eganow',
+                  style: DsText.caption,
+                ),
+              ),
+            ],
           ),
         ),
       ),

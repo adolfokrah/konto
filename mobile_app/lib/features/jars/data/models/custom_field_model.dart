@@ -52,9 +52,8 @@ class CustomFieldModel {
       options:
           (json['options'] as List<dynamic>?)
               ?.map(
-                (e) => CustomFieldOptionModel.fromJson(
-                  e as Map<String, dynamic>,
-                ),
+                (e) =>
+                    CustomFieldOptionModel.fromJson(e as Map<String, dynamic>),
               )
               .toList(),
     );

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:Hoga/core/constants/app_radius.dart';
-import 'package:Hoga/core/constants/app_spacing.dart';
-import 'package:Hoga/core/constants/button_variants.dart';
-import 'package:Hoga/core/theme/text_styles.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/drag_handle.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/features/user_account/presentation/widgets/account_ds.dart';
 
-/// Generic confirmation bottom sheet widget
+/// Generic confirmation bottom sheet (Log out, Close account, Remove account):
+/// icon tile, title, one line of copy, primary action and a ghost cancel.
 class ConfirmationBottomSheet extends StatelessWidget {
   final String title;
   final String description;
@@ -15,7 +14,10 @@ class ConfirmationBottomSheet extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback? onCancel;
   final Color? confirmButtonColor;
+
+  /// Destructive actions get a red icon tile and a red primary button.
   final bool isDangerous;
+  final IconData? icon;
 
   const ConfirmationBottomSheet({
     super.key,
@@ -27,6 +29,7 @@ class ConfirmationBottomSheet extends StatelessWidget {
     this.onCancel,
     this.confirmButtonColor,
     this.isDangerous = false,
+    this.icon,
   });
 
   /// Show the confirmation bottom sheet
@@ -40,6 +43,7 @@ class ConfirmationBottomSheet extends StatelessWidget {
     VoidCallback? onCancel,
     Color? confirmButtonColor,
     bool isDangerous = false,
+    IconData? icon,
   }) {
     showModalBottomSheet<void>(
       context: context,
@@ -55,87 +59,60 @@ class ConfirmationBottomSheet extends StatelessWidget {
             onCancel: onCancel,
             confirmButtonColor: confirmButtonColor,
             isDangerous: isDangerous,
+            icon: icon,
           ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color:
-            isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppRadius.radiusM),
-          topRight: Radius.circular(AppRadius.radiusM),
+    final buttonColor =
+        confirmButtonColor ?? (isDangerous ? AppColors.negative : null);
+    return AccSheet(
+      children: [
+        if (icon != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: DsIconTile(
+              icon!,
+              size: 52,
+              tone: isDangerous ? DsTone.negative : DsTone.neutral,
+            ),
+          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 6,
+          children: [
+            Text(title, style: AccText.h2),
+            Text(description, style: DsText.small),
+          ],
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingM),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          DragHandle(),
-
-          // Title
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              title,
-              style: TextStyles.titleMediumLg,
-              textAlign: TextAlign.center,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4,
+          children: [
+            AppButton.filled(
+              text: confirmButtonText,
+              backgroundColor: buttonColor,
+              textColor: buttonColor != null ? AppColors.surfaceWhite : null,
+              onPressed: () {
+                Navigator.pop(context);
+                onConfirm();
+              },
             ),
-          ),
-
-          const SizedBox(height: AppSpacing.spacingM),
-
-          // Description
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              description,
-              style: TextStyles.titleRegularM,
-              textAlign: TextAlign.center,
+            SizedBox(
+              width: double.infinity,
+              child: AccGhostButton(
+                text: cancelButtonText,
+                onPressed: () {
+                  Navigator.pop(context);
+                  onCancel?.call();
+                },
+              ),
             ),
-          ),
-
-          const SizedBox(height: AppSpacing.spacingM),
-
-          // Action buttons
-          Row(
-            children: [
-              // Cancel button
-              Expanded(
-                child: AppButton(
-                  text: cancelButtonText,
-                  variant: ButtonVariant.outline,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    if (onCancel != null) {
-                      onCancel!();
-                    }
-                  },
-                ),
-              ),
-
-              const SizedBox(width: AppSpacing.spacingM),
-
-              // Confirm button
-              Expanded(
-                child: AppButton(
-                  text: confirmButtonText,
-                  variant: ButtonVariant.fill,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    onConfirm();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
