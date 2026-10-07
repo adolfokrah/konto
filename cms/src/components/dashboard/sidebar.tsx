@@ -27,7 +27,6 @@ import {
   Percent,
   MessageSquare,
   BadgeCheck,
-  Bug,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -147,16 +146,19 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex h-full flex-col border-r bg-card transition-all duration-200',
+          'dashboard-sidebar flex h-full flex-col transition-all duration-200',
           className,
         )}
       >
         {/* Logo + toggle */}
-        <div className="flex h-12 items-center border-b px-3 gap-2">
+        <div className="flex h-14 items-center px-3 gap-2">
           {!collapsed && (
             <Link href="/dashboard" className="flex flex-1 items-center gap-2 overflow-hidden">
-              <span className="truncate text-sm font-semibold tracking-tight">Hogapay</span>
-              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary shrink-0">
+              <img src="/logo_icon.png" alt="" className="h-[30px] w-[30px] rounded-[9px]" />
+              <span className="truncate font-chillax text-lg font-semibold tracking-tight text-white">
+                hogapay
+              </span>
+              <span className="rounded-[5px] bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shrink-0">
                 Admin
               </span>
             </Link>
@@ -164,7 +166,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           {collapsed && <div className="flex-1" />}
           <button
             onClick={onToggle}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/10 hover:text-white"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? (
@@ -180,7 +182,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           {navGroups.map((group, gi) => (
             <div key={group.label} className={cn(gi > 0 && 'mt-4')}>
               {!collapsed && (
-                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                <p className="mb-1 px-2 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#6E7682]">
                   {group.label}
                 </p>
               )}
@@ -205,28 +207,33 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                     <Link
                       href={item.href}
                       className={cn(
-                        'relative flex items-center rounded-md transition-colors',
+                        'relative flex items-center rounded-[10px] transition-colors',
                         collapsed
                           ? 'justify-center p-2'
-                          : 'gap-2.5 px-2 py-1.5 text-[13px] font-medium',
+                          : 'h-[34px] gap-2.5 px-2.5 text-[13px] font-medium',
                         isActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                          ? 'bg-primary font-semibold text-primary-foreground'
+                          : 'text-[#C9CDD3] hover:bg-white/[0.06] hover:text-white',
                       )}
                     >
-                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <item.icon className="h-[17px] w-[17px] shrink-0" />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate">{item.label}</span>
                           {count !== null && (
-                            <span className="ml-auto rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
+                            <span
+                              className={cn(
+                                'ml-auto rounded-md px-1.5 py-px text-[10.5px] font-medium tabular-nums',
+                                isActive ? 'bg-[#1B232E] text-[#D9F57A]' : 'bg-white/10 text-white',
+                              )}
+                            >
                               {count}
                             </span>
                           )}
                         </>
                       )}
                       {collapsed && count !== null && (
-                        <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-orange-500" />
+                        <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-[#D9F57A]" />
                       )}
                     </Link>
                   )
@@ -238,7 +245,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                         <TooltipContent side="right" className="flex items-center gap-2">
                           {item.label}
                           {count !== null && (
-                            <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
+                            <span className="rounded-md bg-white/10 px-1.5 py-px text-[10.5px] font-medium tabular-nums">
                               {count}
                             </span>
                           )}
@@ -255,12 +262,12 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
         </nav>
 
         {/* User section */}
-        <div className="border-t p-2">
+        <div className="p-3">
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex justify-center py-1">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground cursor-default">
+                  <span className="flex h-8 w-8 shrink-0 cursor-default items-center justify-center rounded-full bg-[#FFE8CC] text-[11px] font-semibold text-[#1B232E]">
                     {initials}
                   </span>
                 </div>
@@ -270,13 +277,17 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                <button className="flex w-full items-center gap-2.5 rounded-xl bg-white/[0.06] px-2.5 py-2.5 text-left transition-colors hover:bg-white/10">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FFE8CC] text-[11px] font-semibold text-[#1B232E]">
                     {initials}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[12px] font-medium leading-tight">{displayName}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
+                    <p className="truncate text-[12.5px] font-semibold leading-tight text-white">
+                      {displayName}
+                    </p>
+                    <p className="truncate text-[11px] capitalize text-[#8B8F96]">
+                      {user.role ?? 'Admin'}
+                    </p>
                   </div>
                   <MoreHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </button>
@@ -304,12 +315,6 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                   <Link href="/dashboard/settings" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     System Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/sentry-test" className="flex items-center gap-2">
-                    <Bug className="h-4 w-4" />
-                    Error Tracking Test
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

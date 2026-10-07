@@ -1,8 +1,8 @@
+import { PageHeader } from '@/components/dashboard/page-header'
 import { getPayload } from 'payload'
 import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
 import configPromise from '@payload-config'
-import { UserCircle } from 'lucide-react'
 import { ProfileForm } from '@/components/dashboard/profile-form'
 
 export default async function ProfilePage() {
@@ -13,16 +13,17 @@ export default async function ProfilePage() {
   if (!user) redirect('/dashboard/login?redirect=%2Fdashboard%2Fprofile')
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3">
-        <UserCircle className="h-5 w-5 text-muted-foreground" />
-        <div>
-          <h1 className="text-xl font-semibold">My Profile</h1>
-          <p className="text-sm text-muted-foreground">Update your name and password</p>
-        </div>
-      </div>
+    <div className="max-w-3xl space-y-4">
+      <PageHeader title="My profile" subtitle="Update your name and password" />
 
-      <ProfileForm user={{ id: user!.id, firstName: (user as any).firstName, lastName: (user as any).lastName, email: user!.email }} />
+      <ProfileForm
+        user={{
+          id: user!.id,
+          firstName: (user as any).firstName,
+          lastName: (user as any).lastName,
+          email: user!.email,
+        }}
+      />
     </div>
   )
 }

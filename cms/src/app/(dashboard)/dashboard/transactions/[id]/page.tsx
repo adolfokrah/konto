@@ -3,8 +3,6 @@ import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import { TransactionDetailView } from '@/components/dashboard/transaction-detail-view'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -12,12 +10,14 @@ export default async function TransactionDetailPage({ params }: Props) {
   const { id } = await params
   const payload = await getPayload({ config: configPromise })
 
-  const tx: any = await payload.findByID({
-    collection: 'transactions',
-    id,
-    depth: 2,
-    overrideAccess: true,
-  }).catch(() => null)
+  const tx: any = await payload
+    .findByID({
+      collection: 'transactions',
+      id,
+      depth: 2,
+      overrideAccess: true,
+    })
+    .catch(() => null)
 
   if (!tx) notFound()
 
@@ -25,7 +25,9 @@ export default async function TransactionDetailPage({ params }: Props) {
   const collectorObj = typeof tx.collector === 'object' && tx.collector ? tx.collector : null
   const snap = (tx as any).collectorSnapshot
 
-  const collectorName = snap?.name || (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
+  const collectorName =
+    snap?.name ||
+    (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
   const collectorEmail = snap?.email || collectorObj?.email || ''
 
   const transaction: TransactionRow = {
@@ -45,14 +47,17 @@ export default async function TransactionDetailPage({ params }: Props) {
     payoutFeeAmount: tx.payoutFeeAmount ?? null,
     payoutNetAmount: tx.payoutNetAmount ?? null,
     transactionReference: tx.transactionReference || null,
-    collector: (collectorName || collectorEmail)
-      ? {
-          id: collectorObj?.id || null,
-          firstName: snap?.name ? snap.name.split(' ')[0] : (collectorObj?.firstName || ''),
-          lastName: snap?.name ? snap.name.split(' ').slice(1).join(' ') : (collectorObj?.lastName || ''),
-          email: collectorEmail,
-        }
-      : null,
+    collector:
+      collectorName || collectorEmail
+        ? {
+            id: collectorObj?.id || null,
+            firstName: snap?.name ? snap.name.split(' ')[0] : collectorObj?.firstName || '',
+            lastName: snap?.name
+              ? snap.name.split(' ').slice(1).join(' ')
+              : collectorObj?.lastName || '',
+            email: collectorEmail,
+          }
+        : null,
     viaPaymentLink: tx.viaPaymentLink ?? false,
     createdAt: tx.createdAt,
     webhookResponse: tx.webhookResponse ?? null,
@@ -60,16 +65,5 @@ export default async function TransactionDetailPage({ params }: Props) {
     customFieldValues: tx.customFieldValues ?? null,
   }
 
-  return (
-    <div className="space-y-4">
-      <Link
-        href="/dashboard/transactions"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Transactions
-      </Link>
-      <TransactionDetailView transaction={transaction} />
-    </div>
-  )
+  return <TransactionDetailView transaction={transaction} />
 }

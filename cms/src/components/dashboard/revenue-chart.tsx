@@ -18,11 +18,11 @@ type Props = {
 const chartConfig = {
   contributions: {
     label: 'Contributions',
-    color: '#2563eb',
+    color: 'hsl(var(--chart-1))',
   },
   payouts: {
     label: 'Payouts',
-    color: '#7c3aed',
+    color: 'hsl(75 62% 58%)',
   },
 } satisfies ChartConfig
 

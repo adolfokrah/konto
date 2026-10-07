@@ -40,6 +40,7 @@ import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
 import { TotalTransactionVolumeChart } from '@/components/dashboard/analytics/total-transaction-volume-chart'
 import { PayoutCountTrendChart } from '@/components/dashboard/analytics/payout-count-trend-chart'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const fmt = (n: number) =>
   n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -469,8 +470,7 @@ export default async function AnalyticsPage({
   // --- KPI calculations ---
   const totalCompleted = completedContributions.totalDocs
   const completedTotal = completedCount.totalDocs
-  const totalTransactions =
-    completedTotal + pendingCount.totalDocs + failedCount.totalDocs
+  const totalTransactions = completedTotal + pendingCount.totalDocs + failedCount.totalDocs
   const successRate = totalTransactions > 0 ? (completedTotal / totalTransactions) * 100 : 0
 
   const totalContributedAmount = completedContributions.docs.reduce(
@@ -491,7 +491,7 @@ export default async function AnalyticsPage({
   )
   // Balance = settled contributions + payouts (payouts are negative)
   const totalSettledContributions = completedContributions.docs.reduce(
-    (sum, tx: any) => sum + (tx.isSettled ? (tx.amountContributed || 0) : 0),
+    (sum, tx: any) => sum + (tx.isSettled ? tx.amountContributed || 0 : 0),
     0,
   )
   const totalJarBalances = totalSettledContributions + totalPayoutsAmount
@@ -533,10 +533,7 @@ export default async function AnalyticsPage({
   ].filter((d) => d.count > 0)
 
   // --- Chart data: Revenue Trend ---
-  const revenueTrendData = buildRevenueTrendData(
-    last30DaysRevenue.docs as any[],
-    range,
-  )
+  const revenueTrendData = buildRevenueTrendData(last30DaysRevenue.docs as any[], range)
 
   // --- Chart data: User Growth ---
   const userGrowthData = buildUserGrowthData(
@@ -556,10 +553,16 @@ export default async function AnalyticsPage({
   ].filter((d) => d.value > 0)
 
   // --- Chart data: Contribution Volume ---
-  const contributionVolumeData = buildContributionVolumeData(last30DaysContributions.docs as any[], range)
+  const contributionVolumeData = buildContributionVolumeData(
+    last30DaysContributions.docs as any[],
+    range,
+  )
 
   // --- Chart data: Contribution Volume by Method ---
-  const contributionVolumeByMethodData = buildContributionVolumeByMethodData(last30DaysContributionsByMethod.docs as any[], range)
+  const contributionVolumeByMethodData = buildContributionVolumeByMethodData(
+    last30DaysContributionsByMethod.docs as any[],
+    range,
+  )
 
   // --- Chart data: Top Contributors ---
   const topContributorsData = buildTopContributorsData(contributorTransactions.docs as any[])
@@ -573,17 +576,21 @@ export default async function AnalyticsPage({
   ].filter((d) => d.value > 0)
 
   // --- New KPI calculations ---
-  const totalJars = jarsOpen.totalDocs + jarsFrozen.totalDocs + jarsBroken.totalDocs + jarsSealed.totalDocs
+  const totalJars =
+    jarsOpen.totalDocs + jarsFrozen.totalDocs + jarsBroken.totalDocs + jarsSealed.totalDocs
   // Jars with at least one completed contribution = unique jar IDs in topJarsContributions
   const jarsWithContributions = new Set(
-    topJarsContributions.docs.map((tx: any) => {
-      const jar = tx.jar
-      return typeof jar === 'object' && jar ? jar.id : jar
-    }).filter(Boolean)
+    topJarsContributions.docs
+      .map((tx: any) => {
+        const jar = tx.jar
+        return typeof jar === 'object' && jar ? jar.id : jar
+      })
+      .filter(Boolean),
   ).size
   const jarConversionRate = totalJars > 0 ? (jarsWithContributions / totalJars) * 100 : 0
 
-  const avgContributionsPerJar = jarsWithContributions > 0 ? totalCompleted / jarsWithContributions : 0
+  const avgContributionsPerJar =
+    jarsWithContributions > 0 ? totalCompleted / jarsWithContributions : 0
 
   // Repeat contributors = phone numbers that appear in more than one contribution
   const phoneCounts: Record<string, number> = {}
@@ -618,11 +625,21 @@ export default async function AnalyticsPage({
   const failedTransactionsTrendData = buildCountTrendData(failedInRange.docs as any[], range)
 
   // --- Chart data: Provider Split ---
-  const mtnVolume = mtnContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
-  const telecelVolume = telecelContributions.docs.reduce((s: number, tx: any) => s + (tx.amountContributed || 0), 0)
+  const mtnVolume = mtnContributions.docs.reduce(
+    (s: number, tx: any) => s + (tx.amountContributed || 0),
+    0,
+  )
+  const telecelVolume = telecelContributions.docs.reduce(
+    (s: number, tx: any) => s + (tx.amountContributed || 0),
+    0,
+  )
   const providerSplitData = [
     { provider: 'MTN', volume: Number(mtnVolume.toFixed(2)), count: mtnContributions.totalDocs },
-    { provider: 'Telecel', volume: Number(telecelVolume.toFixed(2)), count: telecelContributions.totalDocs },
+    {
+      provider: 'Telecel',
+      volume: Number(telecelVolume.toFixed(2)),
+      count: telecelContributions.totalDocs,
+    },
   ].filter((d) => d.count > 0)
 
   // --- Chart data: Revenue Breakdown ---
@@ -638,12 +655,15 @@ export default async function AnalyticsPage({
   ].filter((d) => d.amount > 0)
 
   // --- Chart data: Collector Performance ---
-  const collectorPerformanceData = buildCollectorPerformanceData(collectorContributions.docs as any[])
+  const collectorPerformanceData = buildCollectorPerformanceData(
+    collectorContributions.docs as any[],
+  )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <PageHeader title="Analytics" subtitle="Growth, volume and revenue across the platform" />
       {/* Engagement KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
           title="Jar Conversion Rate"
           value={`${jarConversionRate.toFixed(1)}%`}
@@ -665,7 +685,7 @@ export default async function AnalyticsPage({
       </div>
 
       {/* Volume & Revenue */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
           title="Total Contributions"
           value={`GHS ${fmt(totalContributedAmount)}`}
@@ -693,7 +713,7 @@ export default async function AnalyticsPage({
       </div>
 
       {/* Revenue & Balances */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
           title="Hogapay Revenue"
           value={`GHS ${fmt(platformRevenue)}`}
@@ -723,7 +743,7 @@ export default async function AnalyticsPage({
       </div>
 
       {/* Transaction Status */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
           title="Total Transactions"
           value={totalTransactionCount.totalDocs.toLocaleString()}
@@ -848,8 +868,7 @@ function buildBuckets(range: Range): Record<string, number> {
 function dateKey(createdAt: string, range: Range): string {
   const d = new Date(createdAt)
   if (range === 'yearly') return String(d.getFullYear())
-  if (range === 'monthly')
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  if (range === 'monthly') return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   return d.toISOString().split('T')[0]
 }
 
@@ -890,7 +909,10 @@ function buildUserGrowthData(
   })
 }
 
-function buildContributionVolumeData(docs: { amountContributed?: number; createdAt: string }[], range: Range = 'daily') {
+function buildContributionVolumeData(
+  docs: { amountContributed?: number; createdAt: string }[],
+  range: Range = 'daily',
+) {
   const buckets = buildBuckets(range)
 
   for (const doc of docs) {
@@ -904,7 +926,9 @@ function buildContributionVolumeData(docs: { amountContributed?: number; created
   }))
 }
 
-function buildTopContributorsData(docs: { amountContributed?: number; contributor?: string; contributorPhoneNumber?: string }[]) {
+function buildTopContributorsData(
+  docs: { amountContributed?: number; contributor?: string; contributorPhoneNumber?: string }[],
+) {
   const totals: Record<string, { name: string; amount: number }> = {}
 
   for (const doc of docs) {
@@ -932,7 +956,8 @@ function buildContributionVolumeByMethodData(
   range: Range = 'daily',
 ) {
   const rawBuckets = buildBuckets(range)
-  const buckets: Record<string, { mobileMoney: number; cash: number; bank: number; card: number }> = {}
+  const buckets: Record<string, { mobileMoney: number; cash: number; bank: number; card: number }> =
+    {}
   for (const key of Object.keys(rawBuckets)) {
     buckets[key] = { mobileMoney: 0, cash: 0, bank: 0, card: 0 }
   }
@@ -966,13 +991,19 @@ function buildCountTrendData(docs: { createdAt: string }[], range: Range = 'dail
   return Object.entries(buckets).map(([date, count]) => ({ date, count }))
 }
 
-function buildAmountTrendData(docs: { amountContributed?: number; createdAt: string }[], range: Range = 'daily') {
+function buildAmountTrendData(
+  docs: { amountContributed?: number; createdAt: string }[],
+  range: Range = 'daily',
+) {
   const buckets = buildBuckets(range)
   for (const doc of docs) {
     const key = dateKey(doc.createdAt, range)
     if (key in buckets) buckets[key] += Math.abs(doc.amountContributed || 0)
   }
-  return Object.entries(buckets).map(([date, amount]) => ({ date, amount: Number(amount.toFixed(2)) }))
+  return Object.entries(buckets).map(([date, amount]) => ({
+    date,
+    amount: Number(amount.toFixed(2)),
+  }))
 }
 
 function buildCollectorPerformanceData(docs: { amountContributed?: number; jar?: any }[]) {
@@ -988,7 +1019,11 @@ function buildCollectorPerformanceData(docs: { amountContributed?: number; jar?:
       const lastName = createdBy?.lastName || ''
       const phone = createdBy?.phoneNumber || ''
       const fullName = [firstName, lastName].filter(Boolean).join(' ') || phone || 'Unknown'
-      totals[creatorId] = { name: fullName.length > 20 ? fullName.slice(0, 20) + '…' : fullName, amount: 0, count: 0 }
+      totals[creatorId] = {
+        name: fullName.length > 20 ? fullName.slice(0, 20) + '…' : fullName,
+        amount: 0,
+        count: 0,
+      }
     }
     totals[creatorId].amount += doc.amountContributed || 0
     totals[creatorId].count += 1
@@ -1009,7 +1044,11 @@ function buildTopJarsData(docs: { amountContributed?: number; jar?: any }[]) {
     const jarId = jarObj.id as string
     if (!jarTotals[jarId]) {
       const name = (jarObj.name as string) || 'Unknown'
-      jarTotals[jarId] = { id: jarId, name: name.length > 20 ? name.slice(0, 20) + '…' : name, amount: 0 }
+      jarTotals[jarId] = {
+        id: jarId,
+        name: name.length > 20 ? name.slice(0, 20) + '…' : name,
+        amount: 0,
+      }
     }
     jarTotals[jarId].amount += doc.amountContributed || 0
   }

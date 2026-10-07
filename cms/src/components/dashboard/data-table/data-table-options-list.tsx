@@ -14,9 +14,7 @@ export function DataTableOptionsList({ options, selectedValues, onToggle }: Prop
     <div className="flex flex-col">
       {options.map((opt) => {
         const isSelected =
-          opt.value === 'all'
-            ? selectedValues.length === 0
-            : selectedValues.includes(opt.value)
+          opt.value === 'all' ? selectedValues.length === 0 : selectedValues.includes(opt.value)
 
         return (
           <button

@@ -36,7 +36,10 @@ export function InlineReplyBox({ to, subject, threadId }: Props) {
     if (!body.trim() || sending) return
     setSending(true)
     try {
-      const ccAddresses = cc.split(',').map(s => s.trim()).filter(Boolean)
+      const ccAddresses = cc
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
       const res = await fetch('/api/emails/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +76,7 @@ export function InlineReplyBox({ to, subject, threadId }: Props) {
   if (!isAdmin) return null
 
   return (
-    <div className="bg-white overflow-hidden">
+    <div className="overflow-hidden bg-card">
       {/* To row */}
       <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-2.5">
         <Send className="h-3.5 w-3.5 shrink-0 text-gray-300 -rotate-12" />
@@ -114,20 +117,22 @@ export function InlineReplyBox({ to, subject, threadId }: Props) {
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={handleKeyDown}
         rows={4}
-        className="w-full resize-none bg-white px-4 py-3 text-sm leading-relaxed text-gray-800 placeholder:text-gray-300 focus:outline-none"
+        className="w-full resize-none !border-0 bg-card px-4 py-3 text-[14px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
       />
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-gray-100 px-4 py-2.5">
         <span className="text-xs text-gray-300">
-          <kbd className="rounded bg-gray-100 px-1.5 py-px font-mono text-[10px] text-gray-400">⌘ Enter</kbd>
-          {' '}to send
+          <kbd className="rounded bg-gray-100 px-1.5 py-px font-mono text-[10px] text-gray-400">
+            ⌘ Enter
+          </kbd>{' '}
+          to send
         </span>
 
         <button
           onClick={handleSend}
           disabled={!body.trim() || sending}
-          className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-9 items-center gap-1.5 rounded-[11px] bg-[#1B232E] px-4 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {sending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
           Send

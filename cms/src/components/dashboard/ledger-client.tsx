@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import { toast } from 'sonner'
-import { Loader2, RefreshCw, Wallet, Landmark, Plus, CheckCircle2, XCircle } from 'lucide-react'
+import { Loader2, RefreshCw, Plus, CheckCircle2, XCircle } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,6 +35,8 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utilities/ui'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { MetricCard } from '@/components/dashboard/metric-card'
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json())
 
@@ -61,15 +63,25 @@ interface Props {
   initialPayoutBalance: number | null
   topups: TopupRow[]
   pagination: Pagination
+  stats: { completedAmount: number; completedCount: number; total: number }
   fillParent?: boolean
 }
 
 type DialogStep = 'form' | 'waiting' | 'success' | 'failed'
 
-export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, topups, pagination, fillParent }: Props) {
+export function LedgerClient({
+  initialCollectionBalance,
+  initialPayoutBalance,
+  topups,
+  pagination,
+  stats,
+  fillParent,
+}: Props) {
   const router = useRouter()
 
-  const [collectionBalance, setCollectionBalance] = useState<number | null>(initialCollectionBalance)
+  const [collectionBalance, setCollectionBalance] = useState<number | null>(
+    initialCollectionBalance,
+  )
   const [payoutBalance, setPayoutBalance] = useState<number | null>(initialPayoutBalance)
   const [loadingBalances, setLoadingBalances] = useState(false)
 
@@ -190,9 +202,22 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
     )
   }
 
-  const momoSteps = provider === 'telecel'
-    ? ['Dial *110#', 'Select Telecel Cash', 'Select Approvals', 'Select the pending request', 'Enter your PIN to confirm']
-    : ['Dial *170#', 'Select My Wallet', 'Select My Approvals', 'Select the pending request', 'Enter your PIN to confirm']
+  const momoSteps =
+    provider === 'telecel'
+      ? [
+          'Dial *110#',
+          'Select Telecel Cash',
+          'Select Approvals',
+          'Select the pending request',
+          'Enter your PIN to confirm',
+        ]
+      : [
+          'Dial *170#',
+          'Select My Wallet',
+          'Select My Approvals',
+          'Select the pending request',
+          'Enter your PIN to confirm',
+        ]
 
   const renderDialogContent = () => {
     if (dialogStep === 'waiting') {
@@ -259,7 +284,9 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => handleDialogClose(false)}>Close</Button>
+            <Button variant="outline" onClick={() => handleDialogClose(false)}>
+              Close
+            </Button>
             <Button onClick={() => setDialogStep('form')}>Try Again</Button>
           </DialogFooter>
         </>
@@ -324,103 +351,109 @@ export function LedgerClient({ initialCollectionBalance, initialPayoutBalance, t
   }
 
   return (
-    <div className={cn(fillParent ? 'flex flex-col flex-1 min-h-0 gap-6' : 'space-y-6')}>
-      {/* Eganow Balances */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Collection Balance</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatBalance(collectionBalance)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Funds received from mobile money collections
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Payout Balance</CardTitle>
-            <Landmark className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatBalance(payoutBalance)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Available balance for payouts
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={refreshBalances} disabled={loadingBalances}>
-          <RefreshCw className={cn('mr-2 h-4 w-4', loadingBalances && 'animate-spin')} />
-          Refresh
-        </Button>
-
-        <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Top Up
+    <div className={cn(fillParent ? 'flex flex-col flex-1 min-h-0 gap-4' : 'space-y-4')}>
+      <PageHeader
+        title="Ledger"
+        subtitle="Eganow balances and top-ups"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshBalances}
+              disabled={loadingBalances}
+            >
+              <RefreshCw className={cn('h-4 w-4', loadingBalances && 'animate-spin')} />
+              Refresh
             </Button>
-          </DialogTrigger>
-          <DialogContent onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
-            {renderDialogContent()}
-          </DialogContent>
-        </Dialog>
+            <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4" />
+                  Top up
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                onPointerDownOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+              >
+                {renderDialogContent()}
+              </DialogContent>
+            </Dialog>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard
+          title="Collection balance"
+          value={formatBalance(collectionBalance)}
+          description="Eganow · live"
+          tone="pos"
+        />
+        <MetricCard
+          title="Payout balance"
+          value={formatBalance(payoutBalance)}
+          description="Available for transfers"
+        />
+        <MetricCard
+          title="Top-ups completed"
+          value={`GHS ${stats.completedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          description={`${stats.completedCount} completed`}
+        />
+        <MetricCard title="All top-ups" value={stats.total.toLocaleString()} />
       </div>
 
       {/* Top-Up Records */}
       <Card className={cn(fillParent && 'flex flex-col flex-1 min-h-0')}>
         <CardHeader>
-          <CardTitle>Top-Up Records</CardTitle>
+          <CardTitle>Top-up records</CardTitle>
           <CardDescription>
             {pagination.totalRows} record{pagination.totalRows !== 1 ? 's' : ''}
           </CardDescription>
         </CardHeader>
         <CardContent className={cn(fillParent && 'flex flex-col flex-1 min-h-0 overflow-hidden')}>
           <div className={cn(fillParent && 'flex-1 overflow-auto min-h-0')}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topups.length === 0 ? (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    No top-up records yet
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Account</TableHead>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Date</TableHead>
                 </TableRow>
-              ) : (
-                topups.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{t.id}</TableCell>
-                    <TableCell className="font-medium">
-                      GHS {t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </TableHeader>
+              <TableBody>
+                {topups.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      No top-up records yet
                     </TableCell>
-                    <TableCell>{t.phoneNumber}</TableCell>
-                    <TableCell>{t.accountName}</TableCell>
-                    <TableCell className="uppercase">{t.provider}</TableCell>
-                    <TableCell>{statusBadge(t.status)}</TableCell>
-                    <TableCell className="font-mono text-xs">{t.transactionReference}</TableCell>
-                    <TableCell>{new Date(t.createdAt).toLocaleString()}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  topups.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {t.id}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        GHS {t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>{t.phoneNumber}</TableCell>
+                      <TableCell>{t.accountName}</TableCell>
+                      <TableCell className="uppercase">{t.provider}</TableCell>
+                      <TableCell>{statusBadge(t.status)}</TableCell>
+                      <TableCell className="font-mono text-xs">{t.transactionReference}</TableCell>
+                      <TableCell>{new Date(t.createdAt).toLocaleString()}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
 
           {pagination.totalPages > 1 && (

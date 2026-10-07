@@ -1,23 +1,20 @@
+import { MetricCard } from '@/components/dashboard/metric-card'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   Snowflake,
   Calendar,
   Clock,
   UserCircle,
   Mail,
-  DollarSign,
   Target,
   Users,
   MessageSquare,
   Settings,
   CheckCircle,
   AlertCircle,
-  Wallet,
-  ArrowDownToLine,
   Banknote,
   Smartphone,
   AlertTriangle,
@@ -33,12 +30,14 @@ import { type TransactionRow } from '@/components/dashboard/data-table/columns/t
 import { CollectorsDataTable } from '@/components/dashboard/collectors-data-table'
 import { getJarBalance } from '@/utilities/getJarBalance'
 
-const statusStyles: Record<string, string> = {
-  open: 'bg-green-100 text-green-800 border-green-200',
-  frozen: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  sealed: 'bg-blue-100 text-blue-800 border-blue-200',
-  broken: 'bg-red-100 text-red-800 border-red-200',
+const jarStatusVariant: Record<string, 'pos' | 'info' | 'gray' | 'neg'> = {
+  open: 'pos',
+  frozen: 'info',
+  sealed: 'gray',
+  broken: 'neg',
 }
+
+const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2 })
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -275,224 +274,122 @@ export default async function JarDetailPage({ params, searchParams }: Props) {
     : `/pay/${jar.id}/${encodeURIComponent(jar.name.toLowerCase().replace(/\s+/g, '-'))}`
 
   return (
-    <div className="space-y-6">
-      {/* Back link */}
-      <Link
-        href="/dashboard/jars"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Jars
-      </Link>
-
-      {/* Hero: Image + Header overlay */}
-      <div className="relative overflow-hidden rounded-xl border bg-card">
-        {typeof jar.image === 'object' && jar.image?.url ? (
-          <div className="relative">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          {typeof jar.image === 'object' && jar.image?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={jar.image.url}
-              alt={jar.name}
-              className="w-full max-h-[400px] object-contain bg-black/5"
+              alt=""
+              className="h-[60px] w-[60px] shrink-0 rounded-[14px] object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-white">{jar.name}</h1>
-                    <Badge
-                      variant="outline"
-                      className={cn('capitalize border-white/20', statusStyles[jar.status])}
-                    >
-                      {jar.status}
-                    </Badge>
-                    {reportCount.totalDocs > 0 && (
-                      <Link
-                        href={`/dashboard/jar-reports?search=${encodeURIComponent(jar.name)}`}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
-                      >
-                        <AlertTriangle className="h-3 w-3" />
-                        {reportCount.totalDocs} {reportCount.totalDocs === 1 ? 'report' : 'reports'}
-                      </Link>
-                    )}
-                  </div>
-                  {jar.description && (
-                    <p className="text-sm text-white/80 max-w-2xl">{jar.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <JarActions jarId={jar.id} status={jar.status} />
-                  <Link
-                    href={contributionPageUrl}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View Contribution Page
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-6">
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl font-bold">{jar.name}</h1>
-                  <Badge variant="outline" className={cn('capitalize', statusStyles[jar.status])}>
-                    {jar.status}
+          ) : (
+            <span className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-card text-xl font-semibold">
+              {jar.name?.[0]?.toUpperCase()}
+            </span>
+          )}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-chillax text-[26px] font-semibold leading-tight tracking-tight">
+                {jar.name}
+              </h1>
+              <Badge variant={jarStatusVariant[jar.status] ?? 'gray'} className="capitalize">
+                {jar.status}
+              </Badge>
+              {reportCount.totalDocs > 0 && (
+                <Link href={`/dashboard/jar-reports?search=${encodeURIComponent(jar.name)}`}>
+                  <Badge variant="warn">
+                    <AlertTriangle className="h-3 w-3" />
+                    {reportCount.totalDocs} {reportCount.totalDocs === 1 ? 'report' : 'reports'}
                   </Badge>
-                  {reportCount.totalDocs > 0 && (
-                    <Link
-                      href={`/dashboard/jar-reports?search=${encodeURIComponent(jar.name)}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
-                    >
-                      <AlertTriangle className="h-3 w-3" />
-                      {reportCount.totalDocs} {reportCount.totalDocs === 1 ? 'report' : 'reports'}
-                    </Link>
-                  )}
-                </div>
-                {jar.description && (
-                  <p className="text-sm text-muted-foreground max-w-2xl">{jar.description}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <JarActions jarId={jar.id} status={jar.status} />
-                <Link
-                  href={contributionPageUrl}
-                  target="_blank"
-                  className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  View Contribution Page
                 </Link>
-              </div>
+              )}
             </div>
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
+              Created by{' '}
+              {creatorObj ? (
+                <Link href={`/dashboard/users/${creatorObj.id}`} className="hover:underline">
+                  {creatorName}
+                </Link>
+              ) : (
+                creatorName
+              )}
+              {' · '}
+              {new Date(jar.createdAt).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+              {' · '}
+              {currency}
+            </p>
           </div>
-        )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={contributionPageUrl}
+            target="_blank"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border bg-card px-4 text-[13.5px] font-semibold transition-colors hover:bg-secondary"
+          >
+            <ExternalLink className="h-4 w-4" />
+            View contribution page
+          </Link>
+          <JarActions jarId={jar.id} status={jar.status} />
+        </div>
       </div>
 
-      {/* Frozen Banner */}
+      {jar.description && (
+        <p className="max-w-3xl text-[13.5px] text-muted-foreground">{jar.description}</p>
+      )}
+
+      {/* Frozen banner */}
       {jar.status === 'frozen' && (
-        <div className="rounded-lg border border-cyan-800/50 bg-cyan-950/40 p-4">
-          <div className="flex items-center gap-2 font-medium text-cyan-400">
+        <div className="rounded-2xl bg-[#EAF2FF] p-4">
+          <div className="flex items-center gap-2 font-semibold text-[#2E7CF6]">
             <Snowflake className="h-5 w-5" />
             This jar is frozen for AML compliance
           </div>
           {jar.freezeReason && (
-            <p className="mt-2 text-sm text-cyan-300/80 pl-7">{jar.freezeReason}</p>
+            <p className="mt-1.5 pl-7 text-[13px] text-[#1B232E]">{jar.freezeReason}</p>
           )}
         </div>
       )}
 
-      {/* Progress Bar (if goal is set) */}
+      {/* Goal */}
       {goalAmount > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                {formatAmount(totalContributions, currency)} raised
-              </span>
-              <span className="text-sm text-muted-foreground">
-                Goal: {formatAmount(goalAmount, currency)}
-              </span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-muted">
-              <div
-                className={cn(
-                  'h-3 rounded-full transition-all',
-                  progress >= 100 ? 'bg-green-500' : 'bg-primary',
-                )}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="mt-2 text-right text-sm font-medium text-muted-foreground">
-              {progress.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-card p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="font-chillax text-[15px] font-semibold">Goal</span>
+            <span className="text-[12px] text-muted-foreground">
+              {totalContributions.toLocaleString()} of {goalAmount.toLocaleString()}
+              {jar.deadline &&
+                ` · ends ${new Date(jar.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`}
+            </span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-secondary">
+            <div
+              className={cn(
+                'h-2 rounded-full transition-all',
+                progress >= 100 ? 'bg-[#0F9F61]' : 'bg-[#1B232E]',
+              )}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Financial — spans 1 col */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <DollarSign className="h-4 w-4" />
-              Financial
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingBalance > 0 && (
-              <>
-                <DetailRow
-                  label="Upcoming"
-                  icon={Clock}
-                  value={
-                    <span className="text-amber-600">
-                      {formatAmount(upcomingBalance, currency)}
-                    </span>
-                  }
-                />
-                <Separator />
-              </>
-            )}
-            <DetailRow label="Jar Balance" icon={Wallet} value={formatAmount(balance, currency)} />
-            <Separator />
-            <DetailRow
-              label="Total Withdrawn"
-              icon={ArrowDownToLine}
-              value={
-                totalWithdrawn > 0 ? (
-                  <span className="text-red-400">{formatAmount(totalWithdrawn, currency)}</span>
-                ) : (
-                  formatAmount(0, currency)
-                )
-              }
-            />
-            <Separator />
-            <DetailRow
-              label="Total Contributions"
-              icon={DollarSign}
-              value={formatAmount(totalContributions, currency)}
-            />
-            <Separator />
-            <DetailRow
-              label="Mobile Money"
-              icon={Smartphone}
-              value={formatAmount(mobileMoneyContributions, currency)}
-            />
-            <Separator />
-            <DetailRow
-              label="Cash"
-              icon={Banknote}
-              value={formatAmount(cashContributions, currency)}
-            />
-            <Separator />
-            <DetailRow
-              label="Goal Amount"
-              icon={Target}
-              value={goalAmount > 0 ? formatAmount(goalAmount, currency) : 'No goal set'}
-            />
-            {jar.isFixedContribution && (
-              <>
-                <Separator />
-                <DetailRow
-                  label="Fixed Amount"
-                  value={
-                    jar.acceptedContributionAmount
-                      ? formatAmount(jar.acceptedContributionAmount, currency)
-                      : '—'
-                  }
-                />
-              </>
-            )}
-            <Separator />
-            <DetailRow label="Currency" value={currency.toUpperCase()} />
-          </CardContent>
-        </Card>
+      {/* Money */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard title="Jar balance" value={money(balance)} />
+        <MetricCard title="Upcoming" value={money(upcomingBalance)} />
+        <MetricCard title="Total withdrawn" value={money(totalWithdrawn)} />
+        <MetricCard title="Mobile money" value={money(mobileMoneyContributions)} />
+        <MetricCard title="Cash" value={money(cashContributions)} />
+      </div>
 
+      <div className="grid gap-3 lg:grid-cols-2">
         {/* Creator */}
         <Card>
           <CardHeader>

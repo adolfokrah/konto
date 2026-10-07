@@ -1,11 +1,12 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Users, ShieldCheck, ShieldAlert, Clock, ShieldX, Activity } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { UsersDataTable } from '@/components/dashboard/users-data-table'
 import { ExportUsersButton } from '@/components/dashboard/export-users-button'
 import { type UserRow } from '@/components/dashboard/data-table/columns/user-columns'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { userSearchClauses } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -29,20 +30,7 @@ export default async function UsersPage({ searchParams }: Props) {
   // Build where clause from filters
   const where: Record<string, any> = {}
   if (search) {
-    const parts = search.trim().split(/\s+/)
-    if (parts.length >= 2) {
-      // Full name search: match first name + last name
-      where.and = [
-        { firstName: { like: parts[0] } },
-        { lastName: { like: parts.slice(1).join(' ') } },
-      ]
-    } else {
-      where.or = [
-        { firstName: { like: search } },
-        { lastName: { like: search } },
-        { phoneNumber: { like: search } },
-      ]
-    }
+    where.and = userSearchClauses(search)
   }
   if (kyc && ['none', 'in_review', 'verified'].includes(kyc)) {
     where.kycStatus = { equals: kyc }
@@ -67,51 +55,39 @@ export default async function UsersPage({ searchParams }: Props) {
   startOfToday.setHours(0, 0, 0, 0)
 
   // Run all queries in parallel
-  const [
-    totalCount,
-    kycNoneCount,
-    kycInReviewCount,
-    kycVerifiedCount,
-    adminCount,
-    dauCount,
-    usersResult,
-  ] = await Promise.all([
-    payload.count({ collection: 'users', overrideAccess: true }),
-    payload.count({
-      collection: 'users',
-      overrideAccess: true,
-      where: { kycStatus: { equals: 'none' } },
-    }),
-    payload.count({
-      collection: 'users',
-      overrideAccess: true,
-      where: { kycStatus: { equals: 'in_review' } },
-    }),
-    payload.count({
-      collection: 'users',
-      overrideAccess: true,
-      where: { kycStatus: { equals: 'verified' } },
-    }),
-    payload.count({
-      collection: 'users',
-      overrideAccess: true,
-      where: { role: { equals: 'admin' } },
-    }),
-    payload.count({
-      collection: 'dailyActiveUsers',
-      overrideAccess: true,
-      where: { createdAt: { greater_than_equal: startOfToday.toISOString() } },
-    }),
-    payload.find({
-      collection: 'users',
-      where,
-      page,
-      limit,
-      sort: '-createdAt',
-      depth: 1,
-      overrideAccess: true,
-    }),
-  ])
+  const [totalCount, kycNoneCount, kycInReviewCount, kycVerifiedCount, dauCount, usersResult] =
+    await Promise.all([
+      payload.count({ collection: 'users', overrideAccess: true }),
+      payload.count({
+        collection: 'users',
+        overrideAccess: true,
+        where: { kycStatus: { equals: 'none' } },
+      }),
+      payload.count({
+        collection: 'users',
+        overrideAccess: true,
+        where: { kycStatus: { equals: 'in_review' } },
+      }),
+      payload.count({
+        collection: 'users',
+        overrideAccess: true,
+        where: { kycStatus: { equals: 'verified' } },
+      }),
+      payload.count({
+        collection: 'dailyActiveUsers',
+        overrideAccess: true,
+        where: { createdAt: { greater_than_equal: startOfToday.toISOString() } },
+      }),
+      payload.find({
+        collection: 'users',
+        where,
+        page,
+        limit,
+        sort: '-createdAt',
+        depth: 1,
+        overrideAccess: true,
+      }),
+    ])
 
   // Map to UserRow type
   const users: UserRow[] = usersResult.docs.map((u: any) => {
@@ -136,69 +112,39 @@ export default async function UsersPage({ searchParams }: Props) {
   })
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 h-full">
+      <PageHeader title="Users" subtitle="People on Hogapay" />
       {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          title="Total Users"
-          value={totalCount.totalDocs.toLocaleString()}
-          icon={Users}
-        />
-        <MetricCard
-          title="Not Verified"
-          value={kycNoneCount.totalDocs.toLocaleString()}
-          description="KYC not started"
-          icon={ShieldX}
-        />
-        <MetricCard
-          title="In Review"
-          value={kycInReviewCount.totalDocs.toLocaleString()}
-          description="KYC pending review"
-          icon={Clock}
-        />
-        <MetricCard
-          title="Verified"
-          value={kycVerifiedCount.totalDocs.toLocaleString()}
-          description="KYC approved"
-          icon={ShieldCheck}
-        />
-        <MetricCard
-          title="Admins"
-          value={adminCount.totalDocs.toLocaleString()}
-          icon={ShieldAlert}
-        />
-        <MetricCard
-          title="Daily Active Users"
-          value={dauCount.totalDocs.toLocaleString()}
-          description="Active today"
-          icon={Activity}
-        />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <MetricCard title="Total users" value={totalCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Not verified" value={kycNoneCount.totalDocs.toLocaleString()} />
+        <MetricCard title="In review" value={kycInReviewCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Verified" value={kycVerifiedCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Daily active" value={dauCount.totalDocs.toLocaleString()} />
       </div>
 
       {/* Users Table */}
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>
-              {usersResult.totalDocs} user{usersResult.totalDocs !== 1 ? 's' : ''} found
-            </CardDescription>
-          </div>
-          <ExportUsersButton />
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <UsersDataTable
-            users={users}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: usersResult.totalPages,
-              totalRows: usersResult.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+      <TableCard
+        title="All users"
+        description={
+          <>
+            {usersResult.totalDocs} user{usersResult.totalDocs !== 1 ? 's' : ''} found
+          </>
+        }
+        actions={<ExportUsersButton />}
+        className="flex-1 min-h-0"
+      >
+        <UsersDataTable
+          users={users}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: usersResult.totalPages,
+            totalRows: usersResult.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

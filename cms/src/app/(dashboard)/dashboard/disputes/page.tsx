@@ -1,9 +1,11 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers as getHeaders } from 'next/headers'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DisputesDataTable } from '@/components/dashboard/disputes-data-table'
 import { type DisputeRow } from '@/components/dashboard/data-table/columns/dispute-columns'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -45,7 +47,11 @@ export default async function DisputesPage({ searchParams }: Props) {
     where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
 
-  // Search by user name requires joining — filter in memory after fetch if search provided
+  if (search) {
+    const userIds = await findUserIdsBySearch(payload, search)
+    where.or = [inIds('raisedBy', userIds), { description: { like: search } }]
+  }
+
   const result = await payload.find({
     collection: 'disputes' as any,
     where,
@@ -56,16 +62,7 @@ export default async function DisputesPage({ searchParams }: Props) {
     overrideAccess: true,
   })
 
-  let docs = result.docs as any[]
-
-  if (search) {
-    const lower = search.toLowerCase()
-    docs = docs.filter((d: any) => {
-      const user = typeof d.raisedBy === 'object' && d.raisedBy ? d.raisedBy : null
-      const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ').toLowerCase()
-      return name.includes(lower) || d.description?.toLowerCase().includes(lower)
-    })
-  }
+  const docs = result.docs as any[]
 
   const disputes: DisputeRow[] = docs.map((d: any) => {
     const user = typeof d.raisedBy === 'object' && d.raisedBy ? d.raisedBy : null
@@ -81,7 +78,9 @@ export default async function DisputesPage({ searchParams }: Props) {
         : 'Unknown',
       resolvedById: resolver?.id ?? null,
       resolvedByName: resolver
-        ? [resolver.firstName, resolver.lastName].filter(Boolean).join(' ') || resolver.email || null
+        ? [resolver.firstName, resolver.lastName].filter(Boolean).join(' ') ||
+          resolver.email ||
+          null
         : null,
       description: d.description || '',
       status: d.status || 'open',
@@ -91,26 +90,29 @@ export default async function DisputesPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Disputes</CardTitle>
-          <CardDescription>
+      <div className="mb-4">
+        <PageHeader title="Disputes" subtitle="Payment disputes raised by users" />
+      </div>
+      <TableCard
+        title="All disputes"
+        description={
+          <>
             {result.totalDocs} dispute{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <DisputesDataTable
-            disputes={disputes}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <DisputesDataTable
+          disputes={disputes}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

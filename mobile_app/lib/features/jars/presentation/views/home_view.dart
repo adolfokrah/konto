@@ -531,7 +531,6 @@ class _HomeViewState extends State<HomeView> {
         builder: (context, wa) {
           final hasPayout = wa.accounts.isNotEmpty;
           final steps = <_Step>[
-            _Step('Create your account', done: true),
             _Step(
               user?.isOrganization == true
                   ? 'Verify your business'
@@ -544,6 +543,12 @@ class _HomeViewState extends State<HomeView> {
                         ? AppRoutes.businessKyb
                         : AppRoutes.kycView,
                   ),
+            ),
+            _Step(
+              'Set up your profile',
+              subtitle: 'Add a photo so contributors know it\'s you',
+              done: user?.photo != null,
+              onStart: () => context.push(AppRoutes.userAccountView),
             ),
             _Step(
               'Add a payout account',

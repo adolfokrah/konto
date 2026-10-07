@@ -16,6 +16,8 @@ import { type DataTableColumnMeta } from './types'
 type Props<TData> = {
   header: Header<TData, unknown>
   readOnly?: boolean
+  /** Filters live in the table toolbar; the header only sorts. */
+  hideFilter?: boolean
   getParam: (key: string) => string
   updateParam: (key: string, value: string) => void
   batchUpdateParams: (updates: { key: string; value: string }[]) => void
@@ -27,7 +29,7 @@ type Props<TData> = {
 
 const rdpDefaults = getDefaultClassNames()
 
-function DateRangeFilter({
+export function DateRangeFilter({
   fromParamKey,
   toParamKey,
   getParam,
@@ -81,7 +83,10 @@ function DateRangeFilter({
         numberOfMonths={2}
         classNames={{
           root: 'w-full',
-          today: cn('ring-1 ring-primary rounded-md data-[selected=true]:rounded-none', rdpDefaults.today),
+          today: cn(
+            'ring-1 ring-primary rounded-md data-[selected=true]:rounded-none',
+            rdpDefaults.today,
+          ),
           range_start: cn('bg-primary/20 rounded-l-md', rdpDefaults.range_start),
           range_end: cn('bg-primary/20 rounded-r-md', rdpDefaults.range_end),
           range_middle: cn('bg-primary/10 rounded-none', rdpDefaults.range_middle),
@@ -102,6 +107,7 @@ function DateRangeFilter({
 export function DataTableFilterHeader<TData>({
   header,
   readOnly,
+  hideFilter,
   getParam,
   updateParam,
   batchUpdateParams,
@@ -111,7 +117,7 @@ export function DataTableFilterHeader<TData>({
   updateSort,
 }: Props<TData>) {
   const meta = header.column.columnDef.meta as DataTableColumnMeta | undefined
-  const filter = meta?.filter
+  const filter = hideFilter ? undefined : meta?.filter
   const headerClassName = meta?.headerClassName
   const sortKey = meta?.sortKey
 
@@ -137,7 +143,10 @@ export function DataTableFilterHeader<TData>({
   // No filter, no sort — plain header
   if ((!filter || readOnly) && !sortKey) {
     return (
-      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
+      <TableHead
+        className={cn('relative', headerClassName)}
+        style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}
+      >
         {label}
         {resizeHandle}
       </TableHead>
@@ -147,7 +156,10 @@ export function DataTableFilterHeader<TData>({
   // Sort only (no filter)
   if ((!filter || readOnly) && sortKey) {
     return (
-      <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
+      <TableHead
+        className={cn('relative', headerClassName)}
+        style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}
+      >
         <button
           onClick={() => updateSort(sortKey)}
           className={cn(
@@ -174,7 +186,10 @@ export function DataTableFilterHeader<TData>({
   const selectedValues = filter!.type === 'select' && rawValue ? rawValue.split(',') : []
 
   return (
-    <TableHead className={cn('relative', headerClassName)} style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}>
+    <TableHead
+      className={cn('relative', headerClassName)}
+      style={{ width: header.getSize(), maxWidth: header.getSize(), overflow: 'hidden' }}
+    >
       <div className="flex items-center justify-between gap-0.5">
         {/* Sort button wraps label */}
         {sortKey ? (
@@ -186,7 +201,12 @@ export function DataTableFilterHeader<TData>({
             )}
           >
             <span className="truncate">{label}</span>
-            <SortIcon className={cn('h-3 w-3 shrink-0', isSorted ? 'text-primary' : 'text-muted-foreground')} />
+            <SortIcon
+              className={cn(
+                'h-3 w-3 shrink-0',
+                isSorted ? 'text-primary' : 'text-muted-foreground',
+              )}
+            />
           </button>
         ) : (
           <span className="flex-1 truncate">{label}</span>
@@ -213,7 +233,8 @@ export function DataTableFilterHeader<TData>({
           <PopoverContent
             className={cn(
               isDateRange ? 'w-[600px] p-0' : 'p-2',
-              !isDateRange && (filter!.popoverWidth || (filter!.type === 'search' ? 'w-56' : 'w-40')),
+              !isDateRange &&
+                (filter!.popoverWidth || (filter!.type === 'search' ? 'w-56' : 'w-40')),
             )}
             align="start"
           >

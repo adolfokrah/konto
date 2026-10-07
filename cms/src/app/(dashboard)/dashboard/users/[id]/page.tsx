@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft, Building2, Check, FileText, Phone, User as UserIcon, Users } from 'lucide-react'
+import { Building2, Check, FileText, Phone, User as UserIcon, Users } from 'lucide-react'
 import { PlatformBadge } from '@/components/dashboard/platform-badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FactTile } from '@/components/dashboard/detail-kit'
 import { cn } from '@/utilities/ui'
 import { kycStatusLabels } from '@/components/dashboard/table-constants'
 import { bankName } from '@/utilities/eganowBanks'
@@ -67,22 +68,9 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function QuickFact({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <span className="text-sm font-semibold tabular-nums">{value}</span>
-    </div>
-  )
-}
-
 function TabCount({ value }: { value: number }) {
   return (
-    <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-      {value}
-    </span>
+    <span className="ml-1 text-[12px] font-medium tabular-nums text-muted-foreground">{value}</span>
   )
 }
 
@@ -346,131 +334,98 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Back link */}
-      <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard/users"
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Users
-        </Link>
-      </div>
+    <div className="space-y-4">
+      {/* Identity header */}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-card p-4">
+        {photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt={fullName}
+            className="h-16 w-16 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FFE8CC] text-xl font-semibold text-[#1B232E]">
+            {(user.firstName?.[0] || '').toUpperCase()}
+            {(user.lastName?.[0] || '').toUpperCase()}
+          </div>
+        )}
 
-      {/* ── Full-width identity header ── */}
-      <Card>
-        <CardContent className="flex flex-wrap items-center gap-5 py-6">
-          {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photoUrl}
-              alt={fullName}
-              className="h-16 w-16 rounded-full border border-border object-cover shrink-0"
-            />
-          ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xl font-semibold text-muted-foreground">
-              {(user.firstName?.[0] || '').toUpperCase()}
-              {(user.lastName?.[0] || '').toUpperCase()}
-            </div>
-          )}
-
-          {/* Identity: name, chips, contact line */}
-          <div className="flex min-w-[260px] flex-1 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-bold tracking-tight">{fullName || 'Unknown User'}</h1>
-              <Badge
-                variant="outline"
-                className={cn(
-                  'capitalize',
-                  user.role === 'admin'
-                    ? 'bg-purple-100 text-purple-800 border-purple-200'
-                    : 'bg-gray-100 text-gray-800 border-gray-200',
-                )}
-              >
+        <div className="flex min-w-[260px] flex-1 flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-chillax text-[26px] font-semibold leading-tight tracking-tight">
+              {fullName || 'Unknown user'}
+            </h1>
+            <Badge variant={(user as any).accountType === 'organization' ? 'dark' : 'gray'}>
+              {(user as any).accountType === 'organization' ? 'Organization' : 'Individual'}
+            </Badge>
+            <Badge
+              variant={
+                user.kycStatus === 'verified'
+                  ? 'pos'
+                  : user.kycStatus === 'in_review'
+                    ? 'warn'
+                    : 'neg'
+              }
+            >
+              KYC: {kycStatusLabels[user.kycStatus] || user.kycStatus}
+            </Badge>
+            {bv ? <BusinessVerificationStatusBadge status={bv.status} /> : null}
+            {user.role !== 'user' && (
+              <Badge variant="brand" className="capitalize">
                 {user.role}
               </Badge>
-              {user.demoUser && (
-                <Badge
-                  variant="outline"
-                  className="bg-orange-100 text-orange-800 border-orange-200"
-                >
-                  Demo
-                </Badge>
-              )}
-              <Badge
-                variant="outline"
-                className={cn(
-                  (user as any).accountType === 'organization'
-                    ? 'bg-blue-100 text-blue-800 border-blue-200'
-                    : 'bg-gray-100 text-gray-800 border-gray-200',
-                )}
-              >
-                {(user as any).accountType === 'organization' ? 'Organization' : 'Individual'}
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn(
-                  user.kycStatus === 'verified' &&
-                    'bg-green-900/40 text-green-300 border-green-700',
-                  user.kycStatus === 'in_review' &&
-                    'bg-yellow-900/40 text-yellow-300 border-yellow-700',
-                  user.kycStatus === 'none' && 'bg-red-900/40 text-red-300 border-red-700',
-                )}
-              >
-                KYC: {kycStatusLabels[user.kycStatus] || user.kycStatus}
-              </Badge>
-              {bv && <BusinessVerificationStatusBadge status={bv.status} />}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {[
-                user.email,
-                user.phoneNumber ? `${user.countryCode || ''} ${user.phoneNumber}`.trim() : null,
-                user.country,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
+            )}
+            {user.demoUser && <Badge variant="warn">Demo</Badge>}
           </div>
+          <p className="text-[12.5px] text-muted-foreground">
+            {[
+              user.email,
+              user.phoneNumber ? `${user.countryCode || ''} ${user.phoneNumber}`.trim() : null,
+              user.country,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        </div>
+      </div>
 
-          {/* Quick-facts strip */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-8">
-            <QuickFact
-              label="Joined"
-              value={formatFullDate(user.createdAt).split(',').slice(0, 2).join(',')}
+      {/* Quick facts */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <FactTile
+          label="Joined"
+          value={new Date(user.createdAt).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}
+        />
+        <FactTile
+          label="Fee discount"
+          value={
+            <UserDiscountEditor
+              userId={user.id}
+              currentDiscount={user.hogapayDiscountPercent ?? 0}
             />
-            <QuickFact
-              label="Fee discount"
-              value={
-                <UserDiscountEditor
-                  userId={user.id}
-                  currentDiscount={user.hogapayDiscountPercent ?? 0}
-                />
-              }
-            />
-            <QuickFact label="Accounts" value={withdrawalAccounts.length} />
-            <QuickFact label="Jars" value={createdJarsResult.totalDocs} />
-            <QuickFact
-              label="Referral"
-              value={
-                user.referralCode ? (
-                  <span className="font-mono tracking-widest">{user.referralCode}</span>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )
-              }
-            />
-            <QuickFact label="Platform" value={<PlatformBadge platform={user.platform} />} />
-          </div>
-        </CardContent>
-      </Card>
+          }
+        />
+        <FactTile label="Payout accounts" value={withdrawalAccounts.length} />
+        <FactTile label="Jars" value={createdJarsResult.totalDocs} />
+        <FactTile
+          label="Referral code"
+          value={
+            user.referralCode ? user.referralCode : <span className="text-muted-foreground">—</span>
+          }
+        />
+        <FactTile label="Platform" value={<PlatformBadge platform={user.platform} />} />
+      </div>
 
       {/* ── Full-width tab bar ── */}
       <Tabs defaultValue={activeTab} className="space-y-4">
         <TabsList className="flex w-full flex-wrap justify-start">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="accounts">
-            Withdrawal Accounts
+            Accounts
             <TabCount value={withdrawalAccounts.length} />
           </TabsTrigger>
           <TabsTrigger value="kyc">KYC</TabsTrigger>
@@ -486,8 +441,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsList>
 
         {/* ── PROFILE TAB ── */}
-        <TabsContent value="profile" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="profile" className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
             {/* Personal Info */}
             <Card>
               <CardHeader className="pb-3">
@@ -569,7 +524,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsContent>
 
         {/* ── WITHDRAWAL ACCOUNTS TAB ── */}
-        <TabsContent value="accounts" className="space-y-6">
+        <TabsContent value="accounts" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -638,7 +593,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsContent>
 
         {/* ── KYC TAB ── */}
-        <TabsContent value="kyc" className="space-y-6">
+        <TabsContent value="kyc" className="space-y-4">
           {/* KYC Status & Actions */}
           <Card>
             <CardHeader className="pb-3">
@@ -1222,7 +1177,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsContent>
 
         {/* ── KYB TAB ── */}
-        <TabsContent value="kyb" className="space-y-6">
+        <TabsContent value="kyb" className="space-y-4">
           {!bv ? (
             <Card>
               <CardContent className="py-10 text-center text-sm text-muted-foreground">
@@ -1373,7 +1328,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsContent>
 
         {/* ── TRANSACTIONS TAB ── */}
-        <TabsContent value="transactions" className="space-y-6">
+        <TabsContent value="transactions" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">
@@ -1400,7 +1355,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
         </TabsContent>
 
         {/* ── JARS TAB ── */}
-        <TabsContent value="jars" className="space-y-6">
+        <TabsContent value="jars" className="space-y-4">
           {/* User's Jars */}
           <Card>
             <CardHeader className="pb-3">

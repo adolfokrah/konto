@@ -1,8 +1,10 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralBonusesDataTable } from '@/components/dashboard/referral-bonuses-data-table'
 import { type ReferralBonusRow } from '@/components/dashboard/data-table/columns/referral-bonus-columns'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -33,7 +35,7 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
     where.id = { equals: id }
   }
   if (search) {
-    where['user.firstName'] = { like: search }
+    Object.assign(where, inIds('user', await findUserIdsBySearch(payload, search)))
   }
   if (status && status !== 'all') {
     const valid = ['paid', 'pending', 'failed', 'cancelled']
@@ -88,26 +90,29 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Referral Bonuses</CardTitle>
-          <CardDescription>
+      <div className="mb-4">
+        <PageHeader title="Referral bonuses" subtitle="Bonuses earned from referrals" />
+      </div>
+      <TableCard
+        title="All referral bonuses"
+        description={
+          <>
             {result.totalDocs} bonus record{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ReferralBonusesDataTable
-            bonuses={bonuses}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <ReferralBonusesDataTable
+          bonuses={bonuses}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

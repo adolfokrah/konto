@@ -18,11 +18,11 @@ type Props = {
 const chartConfig = {
   contributionCount: {
     label: 'Contributions',
-    color: '#2563eb',
+    color: 'hsl(var(--chart-1))',
   },
   payoutCount: {
     label: 'Payouts',
-    color: '#7c3aed',
+    color: 'hsl(75 62% 58%)',
   },
 } satisfies ChartConfig
 
@@ -63,7 +63,11 @@ export function TransactionCountChart({ data }: Props) {
               }
             />
             <ChartLegend content={<ChartLegendContent />} />
-            <Bar dataKey="contributionCount" fill="var(--color-contributionCount)" radius={[3, 3, 0, 0]} />
+            <Bar
+              dataKey="contributionCount"
+              fill="var(--color-contributionCount)"
+              radius={[3, 3, 0, 0]}
+            />
             <Bar dataKey="payoutCount" fill="var(--color-payoutCount)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ChartContainer>

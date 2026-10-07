@@ -70,17 +70,19 @@ function Group({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-muted/30">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-          <Icon className="h-4 w-4 text-primary" />
+    <div className="overflow-hidden rounded-2xl bg-card">
+      <div className="flex items-center gap-3 px-4 pt-4">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-secondary">
+          <Icon className="h-4 w-4 text-foreground" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold leading-tight">{title}</p>
-          {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+          <p className="font-chillax text-[15px] font-semibold leading-tight">{title}</p>
+          {description && (
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">{description}</p>
+          )}
         </div>
       </div>
-      <div className="grid gap-x-6 gap-y-5 p-5 sm:grid-cols-2">{children}</div>
+      <div className="grid gap-3 p-4 sm:grid-cols-2">{children}</div>
     </div>
   )
 }
@@ -172,19 +174,18 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
   return (
     <div className="space-y-5">
       {/* Tabs */}
-      <div className="inline-flex flex-wrap gap-1 rounded-xl border bg-muted/40 p-1">
-        {TABS.map(({ key, label, icon: Icon }) => (
+      <div className="flex gap-[18px] border-b">
+        {TABS.map(({ key, label }) => (
           <button
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`relative -mb-px pb-2 text-[12.5px] transition-colors ${
               tab === key
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'font-semibold text-foreground shadow-[inset_0_-2px_0_hsl(var(--foreground))]'
+                : 'font-medium text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Icon className="h-4 w-4" />
             {label}
           </button>
         ))}
@@ -192,13 +193,18 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
 
       {/* Collection fees */}
       {tab === 'fees' && (
-        <div className="space-y-5">
+        <div className="grid gap-3 lg:grid-cols-2">
           <Group
             icon={Smartphone}
             title="Mobile money"
             description="Fees on mobile money contributions"
           >
-            {field({ name: 'collectionFee', label: 'Fee', suffix: '%', hint: 'Total fee paid by the contributor' })}
+            {field({
+              name: 'collectionFee',
+              label: 'Fee',
+              suffix: '%',
+              hint: 'Total fee paid by the contributor',
+            })}
             {field({
               name: 'hogapayCollectionFeePercent',
               label: 'Hogapay split',
@@ -208,7 +214,12 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
           </Group>
 
           <Group icon={CreditCard} title="Card" description="Fees on card contributions">
-            {field({ name: 'cardCollectionFee', label: 'Fee', suffix: '%', hint: 'Total fee paid by the contributor' })}
+            {field({
+              name: 'cardCollectionFee',
+              label: 'Fee',
+              suffix: '%',
+              hint: 'Total fee paid by the contributor',
+            })}
             {field({
               name: 'hogapayCardCollectionFeePercent',
               label: 'Hogapay split',
@@ -227,7 +238,13 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
             title="Mobile money payout"
             description="Fee deducted from mobile money withdrawals"
           >
-            {field({ name: 'transferFeePercentage', label: 'Fee', suffix: '%', step: 0.1, hint: 'Deducted from the payout' })}
+            {field({
+              name: 'transferFeePercentage',
+              label: 'Fee',
+              suffix: '%',
+              step: 0.1,
+              hint: 'Deducted from the payout',
+            })}
             {field({
               name: 'hogapayTransferFeePercent',
               label: 'Hogapay split',
@@ -241,7 +258,13 @@ export function SystemSettingsForm({ settings }: { settings: Settings }) {
             title="Bank payout"
             description="Fee deducted from bank withdrawals"
           >
-            {field({ name: 'bankTransferFeePercentage', label: 'Fee', suffix: '%', step: 0.1, hint: 'Deducted from the payout' })}
+            {field({
+              name: 'bankTransferFeePercentage',
+              label: 'Fee',
+              suffix: '%',
+              step: 0.1,
+              hint: 'Deducted from the payout',
+            })}
             {field({
               name: 'hogapayBankTransferFeePercent',
               label: 'Hogapay split',

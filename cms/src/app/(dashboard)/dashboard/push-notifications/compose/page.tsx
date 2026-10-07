@@ -1,7 +1,5 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import { ComposeCampaignForm } from '@/components/dashboard/compose-campaign-form'
 import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -64,17 +62,5 @@ export default async function ComposePage({ searchParams }: Props) {
     } catch {}
   }
 
-  return (
-    <div className="space-y-6">
-      <Link
-        href="/dashboard/push-notifications"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Push Notifications
-      </Link>
-
-      <ComposeCampaignForm prefill={prefill} />
-    </div>
-  )
+  return <ComposeCampaignForm prefill={prefill} />
 }

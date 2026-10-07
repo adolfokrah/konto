@@ -1,8 +1,10 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralsDataTable } from '@/components/dashboard/referrals-data-table'
 import { type ReferralRow } from '@/components/dashboard/data-table/columns/referral-columns'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -25,7 +27,7 @@ export default async function ReferralsPage({ searchParams }: Props) {
 
   const where: Record<string, any> = {}
   if (search) {
-    where['referredBy.firstName'] = { like: search }
+    Object.assign(where, inIds('referredBy', await findUserIdsBySearch(payload, search)))
   }
   if (from) {
     where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }
@@ -75,26 +77,29 @@ export default async function ReferralsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Referrals</CardTitle>
-          <CardDescription>
+      <div className="mb-4">
+        <PageHeader title="Referrals" subtitle="Who invited whom" />
+      </div>
+      <TableCard
+        title="All referrals"
+        description={
+          <>
             {result.totalDocs} referral{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ReferralsDataTable
-            referrals={referrals}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <ReferralsDataTable
+          referrals={referrals}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

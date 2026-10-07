@@ -1,13 +1,36 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
 import { TransactionCountChart } from '@/components/dashboard/transaction-count-chart'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import Link from 'next/link'
+import { headers as getHeaders } from 'next/headers'
 
 export default async function DashboardPage() {
   const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers: await getHeaders() })
+
+  // Ghana is UTC+0 all year, so Africa/Accra gives the staff's local time.
+  const now = new Date()
+  const hour = Number(
+    new Intl.DateTimeFormat('en-GB', {
+      hour: 'numeric',
+      hour12: false,
+      timeZone: 'Africa/Accra',
+    }).format(now),
+  )
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const today = new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Africa/Accra',
+  }).format(now)
 
   const todayStart = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
 
@@ -57,9 +80,7 @@ export default async function DashboardPage() {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'contribution' },
         createdAt: {
-          greater_than_equal: new Date(
-            Date.now() - 30 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
+          greater_than_equal: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         },
       },
       pagination: false,
@@ -77,9 +98,7 @@ export default async function DashboardPage() {
         paymentStatus: { equals: 'completed' },
         type: { equals: 'payout' },
         createdAt: {
-          greater_than_equal: new Date(
-            Date.now() - 30 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
+          greater_than_equal: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         },
       },
       pagination: false,
@@ -99,10 +118,12 @@ export default async function DashboardPage() {
 
   // Summary stats
   const totalContributions = (last30DaysContributions.docs as any[]).reduce(
-    (sum, doc) => sum + Math.abs(doc.amountContributed || 0), 0,
+    (sum, doc) => sum + Math.abs(doc.amountContributed || 0),
+    0,
   )
   const totalPayouts = (last30DaysPayouts.docs as any[]).reduce(
-    (sum, doc) => sum + Math.abs(doc.amountContributed || 0), 0,
+    (sum, doc) => sum + Math.abs(doc.amountContributed || 0),
+    0,
   )
 
   // Format recent transactions for the table
@@ -141,32 +162,44 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <PageHeader
+        title={user?.firstName ? `${greeting}, ${user.firstName}` : greeting}
+        subtitle={today}
+      />
       {/* Compact stats strip */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Users</p>
-          <p className="text-2xl font-semibold mt-1">{totalUsersResult.totalDocs.toLocaleString()}</p>
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
+            {totalUsersResult.totalDocs.toLocaleString()}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5">{dauResult.totalDocs} active today</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Jars</p>
-          <p className="text-2xl font-semibold mt-1">{totalJarsResult.totalDocs.toLocaleString()}</p>
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
+            {totalJarsResult.totalDocs.toLocaleString()}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5">{activeJarsResult.totalDocs} open</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Contributions (30d)</p>
-          <p className="text-2xl font-semibold mt-1">
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
             GHS {totalContributions.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">{last30DaysContributions.totalDocs} transactions</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {last30DaysContributions.totalDocs} transactions
+          </p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Payouts (30d)</p>
-          <p className="text-2xl font-semibold mt-1">
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
             GHS {totalPayouts.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">{last30DaysPayouts.totalDocs} transactions</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {last30DaysPayouts.totalDocs} transactions
+          </p>
         </Card>
       </div>
 
@@ -177,15 +210,21 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Transactions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>The latest 15 transactions across all jars</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TransactionsDataTable transactions={transactions} />
-        </CardContent>
-      </Card>
+      <TableCard
+        filters={false}
+        actions={
+          <Link
+            href="/dashboard/transactions"
+            className="text-[12.5px] font-semibold underline decoration-[#D9F57A] decoration-2 underline-offset-4"
+          >
+            View all
+          </Link>
+        }
+        title="Recent transactions"
+        description={<>The latest 15 transactions across all jars</>}
+      >
+        <TransactionsDataTable transactions={transactions} />
+      </TableCard>
     </div>
   )
 }

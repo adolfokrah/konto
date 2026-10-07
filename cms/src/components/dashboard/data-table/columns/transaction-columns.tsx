@@ -12,9 +12,26 @@ import {
   statusStyles,
   statusLabels,
   paymentMethodLabels,
+  networkFor,
   formatShortDate,
 } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
+
+function MethodCell({ row }: { row: TransactionRow }) {
+  if (!row.paymentMethod) return <span>{'\u2014'}</span>
+  const network =
+    row.paymentMethod === 'mobile-money' ? networkFor(row.mobileMoneyProvider) : undefined
+  const label = network?.label ?? paymentMethodLabels[row.paymentMethod] ?? row.paymentMethod
+  return (
+    <span className="flex items-center gap-2">
+      {network && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={network.logo} alt="" className="h-6 w-6 shrink-0 rounded-[7px] object-cover" />
+      )}
+      <span className="truncate">{label}</span>
+    </span>
+  )
+}
 
 function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
   const [copied, setCopied] = useState(false)
@@ -31,7 +48,8 @@ function CopyableId({ id, prefix }: { id: string; prefix?: string }) {
   return (
     <span className="group flex items-center gap-1">
       <span className="font-mono text-xs text-muted-foreground">
-        {prefix && <span className="opacity-50">{prefix}</span>}{id}
+        {prefix && <span className="opacity-50">{prefix}</span>}
+        {id}
       </span>
       <button
         onClick={handleCopy}
@@ -115,7 +133,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
       <span className="font-medium truncate block">{row.original.contributor || '\u2014'}</span>
     ),
     meta: {
-      filter: { type: 'search', paramKey: 'search', placeholder: 'Search...' },
+      filter: { type: 'search', paramKey: 'search', placeholder: 'Search contributor or phone' },
       filterLabel: 'Contributor',
     } satisfies DataTableColumnMeta,
   },
@@ -125,7 +143,10 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     size: 160,
     cell: ({ row }) =>
       row.original.jar ? (
-        <Link href={`/dashboard/jars/${row.original.jar.id}`} className="truncate block hover:underline">
+        <Link
+          href={`/dashboard/jars/${row.original.jar.id}`}
+          className="truncate block hover:underline"
+        >
           {row.original.jar.name}
         </Link>
       ) : (
@@ -162,13 +183,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     accessorKey: 'paymentMethod',
     header: 'Method',
     size: 120,
-    cell: ({ row }) => (
-      <span>
-        {row.original.paymentMethod
-          ? paymentMethodLabels[row.original.paymentMethod] || row.original.paymentMethod
-          : '\u2014'}
-      </span>
-    ),
+    cell: ({ row }) => <MethodCell row={row.original} />,
     meta: {
       filter: {
         type: 'select',
@@ -192,7 +207,10 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Status',
     size: 110,
     cell: ({ row }) => (
-      <Badge variant="outline" className={cn('capitalize', statusStyles[row.original.paymentStatus])}>
+      <Badge
+        variant="outline"
+        className={cn('capitalize', statusStyles[row.original.paymentStatus])}
+      >
         {statusLabels[row.original.paymentStatus] || row.original.paymentStatus}
       </Badge>
     ),
@@ -270,12 +288,15 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Contribution',
     size: 130,
     cell: ({ row }) => {
-      if (row.original.type !== 'contribution') return <span className="text-muted-foreground">—</span>
+      if (row.original.type !== 'contribution')
+        return <span className="text-muted-foreground">—</span>
       return (
         <span
           className={cn(
             'font-medium',
-            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-green-400',
+            row.original.paymentStatus === 'failed'
+              ? 'text-muted-foreground line-through'
+              : 'text-green-400',
           )}
         >
           {formatAmount(Math.abs(row.original.amountContributed))}
@@ -293,13 +314,14 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
     header: 'Payout',
     size: 130,
     cell: ({ row }) => {
-      if (row.original.type !== 'payout')
-        return <span className="text-muted-foreground">—</span>
+      if (row.original.type !== 'payout') return <span className="text-muted-foreground">—</span>
       return (
         <span
           className={cn(
             'font-medium',
-            row.original.paymentStatus === 'failed' ? 'text-muted-foreground line-through' : 'text-red-400',
+            row.original.paymentStatus === 'failed'
+              ? 'text-muted-foreground line-through'
+              : 'text-red-400',
           )}
         >
           -{formatAmount(Math.abs(row.original.amountContributed))}

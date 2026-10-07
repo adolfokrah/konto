@@ -16,14 +16,10 @@ export function SidebarWrapper({ user }: { user: User }) {
   return (
     <div
       className="hidden lg:block shrink-0 transition-all duration-200"
-      style={{ width: collapsed ? '3.5rem' : '13rem' }}
+      style={{ width: collapsed ? '3.5rem' : '14.5rem' }}
     >
       <div className="sticky top-0 h-screen">
-        <Sidebar
-          user={user}
-          collapsed={collapsed}
-          onToggle={() => setCollapsed((v) => !v)}
-        />
+        <Sidebar user={user} collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
       </div>
     </div>
   )

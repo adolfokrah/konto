@@ -1,9 +1,11 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { Container as JarIcon, CircleCheck, Lock, Hammer, Snowflake } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { JarsDataTable } from '@/components/dashboard/jars-data-table'
+import { TableCard } from '@/components/dashboard/table-card'
+import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -32,7 +34,8 @@ export default async function JarsPage({ searchParams }: Props) {
   // Build where clause
   const where: Record<string, any> = {}
   if (search) {
-    where.name = { like: search }
+    const creatorIds = await findUserIdsBySearch(payload, search)
+    where.or = [{ name: { like: search } }, inIds('creator', creatorIds)]
   }
   if (status && ['open', 'frozen', 'broken', 'sealed'].includes(status)) {
     where.status = { equals: status }
@@ -49,10 +52,26 @@ export default async function JarsPage({ searchParams }: Props) {
   // Run metric counts and paginated query in parallel
   const [totalJars, openJars, sealedJars, brokenJars, frozenJars, jarsResult] = await Promise.all([
     payload.count({ collection: 'jars', overrideAccess: true }),
-    payload.count({ collection: 'jars', overrideAccess: true, where: { status: { equals: 'open' } } }),
-    payload.count({ collection: 'jars', overrideAccess: true, where: { status: { equals: 'sealed' } } }),
-    payload.count({ collection: 'jars', overrideAccess: true, where: { status: { equals: 'broken' } } }),
-    payload.count({ collection: 'jars', overrideAccess: true, where: { status: { equals: 'frozen' } } }),
+    payload.count({
+      collection: 'jars',
+      overrideAccess: true,
+      where: { status: { equals: 'open' } },
+    }),
+    payload.count({
+      collection: 'jars',
+      overrideAccess: true,
+      where: { status: { equals: 'sealed' } },
+    }),
+    payload.count({
+      collection: 'jars',
+      overrideAccess: true,
+      where: { status: { equals: 'broken' } },
+    }),
+    payload.count({
+      collection: 'jars',
+      overrideAccess: true,
+      where: { status: { equals: 'frozen' } },
+    }),
     payload.find({
       collection: 'jars',
       where,
@@ -98,7 +117,14 @@ export default async function JarsPage({ searchParams }: Props) {
         paymentStatus: { in: ['completed', 'pending', 'awaiting-approval'] },
       },
       pagination: false,
-      select: { jar: true, amountContributed: true, type: true, isSettled: true, paymentMethod: true, paymentStatus: true },
+      select: {
+        jar: true,
+        amountContributed: true,
+        type: true,
+        isSettled: true,
+        paymentMethod: true,
+        paymentStatus: true,
+      },
       overrideAccess: true,
     })
 
@@ -126,7 +152,9 @@ export default async function JarsPage({ searchParams }: Props) {
   const jars = jarsResult.docs.map((jar: any) => {
     const creatorObj = typeof jar.creator === 'object' && jar.creator ? jar.creator : null
     const creatorName = creatorObj
-      ? `${creatorObj.firstName || ''} ${creatorObj.lastName || ''}`.trim() || creatorObj.email || 'Unknown'
+      ? `${creatorObj.firstName || ''} ${creatorObj.lastName || ''}`.trim() ||
+        creatorObj.email ||
+        'Unknown'
       : 'Unknown'
 
     return {
@@ -174,9 +202,10 @@ export default async function JarsPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <PageHeader title="Jars" subtitle="All jars across the platform" />
       {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <MetricCard
           title="Total Jars"
           value={totalJars.totalDocs.toLocaleString()}
@@ -188,16 +217,8 @@ export default async function JarsPage({ searchParams }: Props) {
           description="Actively accepting contributions"
           icon={CircleCheck}
         />
-        <MetricCard
-          title="Sealed"
-          value={sealedJars.totalDocs.toLocaleString()}
-          icon={Lock}
-        />
-        <MetricCard
-          title="Broken"
-          value={brokenJars.totalDocs.toLocaleString()}
-          icon={Hammer}
-        />
+        <MetricCard title="Sealed" value={sealedJars.totalDocs.toLocaleString()} icon={Lock} />
+        <MetricCard title="Broken" value={brokenJars.totalDocs.toLocaleString()} icon={Hammer} />
         <MetricCard
           title="Frozen"
           value={frozenJars.totalDocs.toLocaleString()}
@@ -207,20 +228,19 @@ export default async function JarsPage({ searchParams }: Props) {
       </div>
 
       {/* Jars Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Jars</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All jars"
+        description={
+          <>
             {totalRows} jar{totalRows !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <JarsDataTable
-            jars={displayJars}
-            pagination={{ currentPage: page, totalPages, totalRows, rowsPerPage: limit }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+      >
+        <JarsDataTable
+          jars={displayJars}
+          pagination={{ currentPage: page, totalPages, totalRows, rowsPerPage: limit }}
+        />
+      </TableCard>
     </div>
   )
 }

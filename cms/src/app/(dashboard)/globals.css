@@ -14,6 +14,49 @@
   unicode-range: U+20B5;
 }
 
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Bold.otf') format('opentype');
+  font-weight: 600;
+  font-display: swap;
+}
+
 @layer base {
   *,
   ::after,
@@ -86,40 +129,418 @@
     @apply bg-background text-foreground min-h-screen flex flex-col;
   }
 
-  /* Dashboard dark theme — matches Hogapay mobile app colors */
-  .dashboard-dark {
-    --background: 213 25% 14%; /* #1B232E */
-    --foreground: 0 0% 100%; /* #FFFFFF */
+  /* Dashboard theme — Hogapay v4 design: cream canvas, ink text, lime accent,
+     navy sidebar (see .dashboard-sidebar). Tokens mirror design/hogapay-v4.html. */
+  .dashboard-theme {
+    --background: 37 70% 96%; /* #FBF6EE */
+    --foreground: 213 25% 14%; /* #1B232E ink */
 
-    --card: 213 25% 23%; /* #2D3849 */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 25% 14%;
 
-    --popover: 213 25% 20%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 25% 14%;
 
-    --primary: 78 88% 93%; /* #F4FDDF - secondary green */
-    --primary-foreground: 213 25% 14%; /* dark text on green */
+    --primary: 213 25% 14%; /* ink */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 25% 28%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 35 36% 92%; /* #F3ECE2 fill */
+    --secondary-foreground: 213 25% 14%;
 
-    --muted: 213 20% 20%;
-    --muted-foreground: 213 15% 65%;
+    --muted: 35 36% 92%;
+    --muted-foreground: 218 6% 56%; /* #8B8F96 */
 
-    --accent: 78 88% 93%;
+    --accent: 35 36% 92%; /* hover fill, same as secondary */
     --accent-foreground: 213 25% 14%;
 
-    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive: 4 76% 58%; /* #E5483D */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 213 20% 28%;
-    --input: 213 20% 25%;
-    --ring: 78 88% 93%;
+    --border: 36 33% 90%; /* #EDE5D9 line */
+    --input: 36 33% 90%;
+    --ring: 213 25% 14%;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --radius: 0.875rem;
+
+    --success: 152 83% 34%; /* #0F9F61 */
+    --warning: 35 90% 45%;
+    --error: 4 76% 58%;
+
+    --chart-1: 213 25% 14%;
+    --chart-2: 152 83% 34%;
+    --chart-3: 35 90% 45%;
+    --chart-4: 218 91% 58%;
+    --chart-5: 75 60% 48%;
+
+    font-family: 'Supreme', 'Cedi', system-ui, sans-serif;
   }
+
+  /* Navy sidebar, lime active item */
+  .dashboard-theme .dashboard-sidebar {
+    --background: 213 25% 14%;
+    --foreground: 0 0% 100%;
+    --card: 213 25% 14%;
+    --card-foreground: 0 0% 100%;
+    --popover: 213 25% 18%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 75 88% 73%; /* lime */
+    --primary-foreground: 213 25% 14%;
+    --muted: 213 20% 22%;
+    --muted-foreground: 215 10% 75%;
+    --border: 213 20% 22%;
+    background-color: hsl(213 25% 14%);
+    color: #c9cdd3;
+  }
+}
+
+/* Unlayered on purpose: must beat tailwind utilities on shared ui/* components */
+/* v4 component treatments, scoped so shared ui/* stays unchanged on public pages */
+/* Cards only: controls (search forms, link buttons) keep their border */
+.dashboard-theme main div.rounded-lg.border.bg-card,
+.dashboard-theme main div.rounded-xl.border.bg-card,
+.dashboard-theme main div.rounded-2xl.border.bg-card {
+  border-color: transparent;
+  border-radius: 1rem;
+  box-shadow: none;
+}
+.dashboard-theme main th {
+  height: 2.5rem;
+  border-right: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+.dashboard-theme main td {
+  padding-block: 0.65rem;
+  font-size: 12.5px;
+  vertical-align: middle;
+}
+.dashboard-theme main tbody tr:hover {
+  background-color: hsl(var(--secondary) / 0.6);
+}
+.dashboard-theme main td,
+.dashboard-theme main .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+/* Tables: hairline rows, no column rules, compact pager */
+.dashboard-theme main thead tr,
+.dashboard-theme main tbody tr {
+  border-bottom: 1px solid hsl(var(--border));
+}
+.dashboard-theme main tbody tr:last-child {
+  border-bottom: 0;
+}
+.dashboard-theme main thead th {
+  background-color: hsl(var(--card));
+}
+.dashboard-theme main th > div,
+.dashboard-theme main th button {
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+.dashboard-theme main table + div,
+.dashboard-theme main table ~ div {
+  font-size: 11.5px;
+}
+.dashboard-theme main table ~ div p,
+.dashboard-theme main table ~ div .text-sm {
+  font-size: 11.5px;
+}
+.dashboard-theme main table ~ div button[class*='h-8'] {
+  height: 30px;
+  width: 30px;
+  border-radius: 9px;
+  background: hsl(var(--card));
+}
+.dashboard-theme [role='tablist'] {
+  display: flex;
+  height: auto;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.dashboard-theme [role='tablist'] [role='tab'] {
+  position: relative;
+  margin-bottom: -1px;
+  padding: 0.5rem 0 0.625rem;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+.dashboard-theme [role='tablist'] [role='tab']:hover {
+  color: hsl(var(--foreground));
+}
+.dashboard-theme [role='tablist'] [role='tab'][data-state='active'] {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  background: transparent;
+  box-shadow: none;
+}
+.dashboard-theme [role='tablist'] [role='tab'][data-state='active']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: hsl(var(--foreground));
+}
+
+/* v4 radii: cards 16, dialogs 20, inputs/buttons 12, chips/menus 10, tags 7 */
+.dashboard-theme .rounded {
+  border-radius: 12px;
+}
+.dashboard-theme .rounded-sm {
+  border-radius: 8px;
+}
+.dashboard-theme .rounded-md {
+  border-radius: 11px;
+}
+.dashboard-theme .rounded-lg {
+  border-radius: 14px;
+}
+.dashboard-theme .rounded-xl {
+  border-radius: 16px;
+}
+.dashboard-theme [role='dialog'] {
+  border-radius: 20px;
+  background-color: hsl(var(--background));
+  box-shadow: 0 24px 60px -20px rgba(27, 35, 46, 0.35);
+}
+.dashboard-theme [data-radix-popper-content-wrapper] > * {
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -12px rgba(27, 35, 46, 0.25);
+}
+.dashboard-theme input:not([type='checkbox']):not([type='radio']),
+.dashboard-theme textarea,
+.dashboard-theme [role='combobox'] {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+  border-radius: 12px;
+}
+.dashboard-theme button[class*='bg-primary'] {
+  font-weight: 600;
+}
+
+.dashboard-theme h1,
+.dashboard-theme h2,
+.dashboard-theme h3,
+.dashboard-theme [data-slot='card-title'] {
+  font-family: 'Chillax', 'Cedi', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Remap legacy dark-theme status colors (and light tailwind tints) to v4 soft tones */
+
+.dashboard-theme main .bg-green-900\/40,
+.dashboard-theme main .bg-green-900\/20,
+.dashboard-theme main .bg-green-100,
+.dashboard-theme main .bg-green-500\/10,
+.dashboard-theme main .bg-green-500\/20 {
+  background-color: #e6f7ee;
+}
+.dashboard-theme main .text-green-300,
+.dashboard-theme main .text-green-400,
+.dashboard-theme main .text-green-500,
+.dashboard-theme main .text-green-600,
+.dashboard-theme main .text-green-700,
+.dashboard-theme main .text-green-800 {
+  color: #0f9f61;
+}
+.dashboard-theme main .border-green-200,
+.dashboard-theme main .border-green-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-red-900\/40,
+.dashboard-theme main .bg-red-900\/20,
+.dashboard-theme main .bg-red-100,
+.dashboard-theme main .bg-red-500\/10,
+.dashboard-theme main .bg-red-500\/20 {
+  background-color: #fdecea;
+}
+.dashboard-theme main .text-red-300,
+.dashboard-theme main .text-red-400,
+.dashboard-theme main .text-red-500,
+.dashboard-theme main .text-red-600,
+.dashboard-theme main .text-red-700,
+.dashboard-theme main .text-red-800 {
+  color: #e5483d;
+}
+.dashboard-theme main .border-red-200,
+.dashboard-theme main .border-red-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-yellow-900\/40,
+.dashboard-theme main .bg-yellow-900\/20,
+.dashboard-theme main .bg-yellow-100,
+.dashboard-theme main .bg-yellow-500\/10,
+.dashboard-theme main .bg-yellow-500\/20 {
+  background-color: #fff4e2;
+}
+.dashboard-theme main .text-yellow-300,
+.dashboard-theme main .text-yellow-400,
+.dashboard-theme main .text-yellow-500,
+.dashboard-theme main .text-yellow-600,
+.dashboard-theme main .text-yellow-700,
+.dashboard-theme main .text-yellow-800 {
+  color: #d9840a;
+}
+.dashboard-theme main .border-yellow-200,
+.dashboard-theme main .border-yellow-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-amber-900\/40,
+.dashboard-theme main .bg-amber-900\/20,
+.dashboard-theme main .bg-amber-100,
+.dashboard-theme main .bg-amber-500\/10,
+.dashboard-theme main .bg-amber-500\/20 {
+  background-color: #fff4e2;
+}
+.dashboard-theme main .text-amber-300,
+.dashboard-theme main .text-amber-400,
+.dashboard-theme main .text-amber-500,
+.dashboard-theme main .text-amber-600,
+.dashboard-theme main .text-amber-700,
+.dashboard-theme main .text-amber-800 {
+  color: #d9840a;
+}
+.dashboard-theme main .border-amber-200,
+.dashboard-theme main .border-amber-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-orange-900\/40,
+.dashboard-theme main .bg-orange-900\/20,
+.dashboard-theme main .bg-orange-100,
+.dashboard-theme main .bg-orange-500\/10,
+.dashboard-theme main .bg-orange-500\/20 {
+  background-color: #fff4e2;
+}
+.dashboard-theme main .text-orange-300,
+.dashboard-theme main .text-orange-400,
+.dashboard-theme main .text-orange-500,
+.dashboard-theme main .text-orange-600,
+.dashboard-theme main .text-orange-700,
+.dashboard-theme main .text-orange-800 {
+  color: #d9840a;
+}
+.dashboard-theme main .border-orange-200,
+.dashboard-theme main .border-orange-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-blue-900\/40,
+.dashboard-theme main .bg-blue-900\/20,
+.dashboard-theme main .bg-blue-100,
+.dashboard-theme main .bg-blue-500\/10,
+.dashboard-theme main .bg-blue-500\/20 {
+  background-color: #eaf2ff;
+}
+.dashboard-theme main .text-blue-300,
+.dashboard-theme main .text-blue-400,
+.dashboard-theme main .text-blue-500,
+.dashboard-theme main .text-blue-600,
+.dashboard-theme main .text-blue-700,
+.dashboard-theme main .text-blue-800 {
+  color: #2e7cf6;
+}
+.dashboard-theme main .border-blue-200,
+.dashboard-theme main .border-blue-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-indigo-900\/40,
+.dashboard-theme main .bg-indigo-900\/20,
+.dashboard-theme main .bg-indigo-100,
+.dashboard-theme main .bg-indigo-500\/10,
+.dashboard-theme main .bg-indigo-500\/20 {
+  background-color: #eaf2ff;
+}
+.dashboard-theme main .text-indigo-300,
+.dashboard-theme main .text-indigo-400,
+.dashboard-theme main .text-indigo-500,
+.dashboard-theme main .text-indigo-600,
+.dashboard-theme main .text-indigo-700,
+.dashboard-theme main .text-indigo-800 {
+  color: #2e7cf6;
+}
+.dashboard-theme main .border-indigo-200,
+.dashboard-theme main .border-indigo-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-purple-900\/40,
+.dashboard-theme main .bg-purple-900\/20,
+.dashboard-theme main .bg-purple-100,
+.dashboard-theme main .bg-purple-500\/10,
+.dashboard-theme main .bg-purple-500\/20 {
+  background-color: #f1ecfb;
+}
+.dashboard-theme main .text-purple-300,
+.dashboard-theme main .text-purple-400,
+.dashboard-theme main .text-purple-500,
+.dashboard-theme main .text-purple-600,
+.dashboard-theme main .text-purple-700,
+.dashboard-theme main .text-purple-800 {
+  color: #7b4fd1;
+}
+.dashboard-theme main .border-purple-200,
+.dashboard-theme main .border-purple-700 {
+  border-color: transparent;
+}
+.dashboard-theme main .bg-gray-900\/40,
+.dashboard-theme main .bg-gray-900\/20,
+.dashboard-theme main .bg-gray-100,
+.dashboard-theme main .bg-gray-500\/10,
+.dashboard-theme main .bg-gray-500\/20 {
+  background-color: #f3ece2;
+}
+.dashboard-theme main .text-gray-300,
+.dashboard-theme main .text-gray-400,
+.dashboard-theme main .text-gray-500,
+.dashboard-theme main .text-gray-600,
+.dashboard-theme main .text-gray-700,
+.dashboard-theme main .text-gray-800 {
+  color: #4a5361;
+}
+.dashboard-theme main .border-gray-200,
+.dashboard-theme main .border-gray-700 {
+  border-color: transparent;
+}
+
+/* Card density: 15px Chillax titles, 16px padding, like the v4 dcard */
+.dashboard-theme main [data-slot='card-title'] {
+  font-size: 15px;
+  line-height: 1.3;
+}
+.dashboard-theme main .p-6 {
+  padding: 1rem;
+}
+.dashboard-theme main .p-6.pt-0 {
+  padding-top: 0;
+}
+.dashboard-theme main .text-sm.text-muted-foreground:is(div) {
+  font-size: 11.5px;
+}
+
+/* v4 switch: ink track with lime thumb when on */
+.dashboard-theme button[role='switch'][data-state='checked'] {
+  background-color: #1b232e;
+}
+.dashboard-theme button[role='switch'][data-state='unchecked'] {
+  background-color: #e2d9cb;
+}
+.dashboard-theme button[role='switch'] > span {
+  background-color: #fff;
+}
+.dashboard-theme button[role='switch'][data-state='checked'] > span {
+  background-color: #d9f57a;
 }
