@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hogapay v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#E9EBEF;
+  --bg:#F4F5F7;
+  --card:#FFFFFF;
+  --fill:#F1F2F5;
+  --line:#EAECF0;
+  --ink:#0B0D12;
+  --ink-2:#4A5060;
+  --muted:#8A8F9C;
+  --faint:#B9BDC7;
+  --brand:#5B4FF7;
+  --brand-2:#7C72FF;
+  --brand-soft:#EEEDFF;
+  --pos:#0F9F61; --pos-soft:#E6F7EE;
+  --neg:#E5483D; --neg-soft:#FDECEA;
+  --warn:#D9840A; --warn-soft:#FFF4E2;
+  --info:#2E7CF6; --info-soft:#EAF2FF;
+  --momo:#FFCB05; --telecel:#E30613; --cardc:#2E7CF6; --cash:#0F9F61;
+  --r:20px; --r-sm:14px; --r-xs:10px;
+  --sh:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.03);
+  --sh-lg:0 24px 48px -16px rgba(16,24,40,.22);
+  --display:"Inter Tight","Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --text:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);font-family:var(--text);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+img{display:block}
+
+/* ---------- Document ---------- */
+.doc{max-width:1680px;margin:0 auto;padding:64px 40px 120px}
+.doc-head{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;margin-bottom:36px}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:var(--brand);background:var(--brand-soft);padding:6px 10px;border-radius:8px;margin-bottom:18px}
+.doc-head h1{font-family:var(--display);font-weight:700;font-size:64px;letter-spacing:-2px;line-height:.95}
+.doc-head p{color:var(--ink-2);max-width:660px;margin-top:18px;font-size:17px;line-height:1.55}
+.doc-meta{font-size:13px;color:var(--ink-2);text-align:right;line-height:1.8}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 60px;padding:6px;background:var(--card);border-radius:14px;width:max-content;max-width:100%}
+.toc a{color:var(--ink-2);text-decoration:none;font-size:13px;font-weight:500;padding:9px 13px;border-radius:9px}
+.toc a:hover{background:var(--fill);color:var(--ink)}
+.section{margin-top:84px}
+.section-head{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:end;margin-bottom:30px}
+.section-head .num{font-family:var(--display);font-weight:600;font-size:13px;color:var(--brand);background:var(--card);border-radius:8px;padding:6px 9px}
+.section-head h2{font-family:var(--display);font-weight:700;font-size:36px;letter-spacing:-1px;line-height:1}
+.section-head p{color:var(--ink-2);font-size:14px;max-width:520px;text-align:right;line-height:1.5}
+.board{display:flex;flex-wrap:wrap;gap:44px 30px;align-items:flex-start}
+.shot{width:360px}
+.shot-label{display:flex;gap:8px;align-items:baseline;margin-bottom:12px}
+.shot-label b{font-family:var(--display);font-weight:600;font-size:15px}
+.shot-label span{font-size:12px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.shot-note{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:12px}
+
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+.tok{background:var(--card);border-radius:var(--r);padding:24px}
+.tok h3{font-family:var(--display);font-weight:600;font-size:17px;margin-bottom:16px}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sw div{height:52px;border-radius:12px;border:1px solid rgba(0,0,0,.05)}
+.sw b{display:block;font-size:11.5px;font-weight:600;margin-top:6px}
+.sw span{font-size:10.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.type-row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding:10px 0;gap:12px}
+.type-row:last-child{border:0}
+.type-row small{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ---------- Phone ---------- */
+.phone{position:relative;width:360px;height:760px;border-radius:48px;background:#0d0f13;padding:8px;box-shadow:0 0 0 1px #2a2d33 inset,0 40px 70px -30px rgba(16,24,40,.45)}
+.phone.tall{height:1080px}
+.phone.xtall{height:1360px}
+.screen{position:relative;width:100%;height:100%;border-radius:40px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.screen.white{background:var(--card)}
+.status{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;font-size:14.5px;font-weight:600;position:relative;z-index:3}
+.status .dots{display:flex;gap:5px;align-items:center}
+.status .dots i{display:block;width:17px;height:10px;border-radius:3px;border:1.4px solid currentColor;position:relative}
+.status .dots i:after{content:"";position:absolute;inset:1.4px;right:4px;background:currentColor;border-radius:1px}
+.status .dots s{display:block;width:15px;height:10px;background:linear-gradient(90deg,currentColor 0 3px,transparent 3px 4px,currentColor 4px 7px,transparent 7px 8px,currentColor 8px 11px,transparent 11px 12px,currentColor 12px 15px);clip-path:polygon(0 100%,100% 0,100% 100%)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:98px;height:29px;border-radius:20px;background:#0d0f13;z-index:4}
+.status.light{color:#fff}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:124px;height:5px;border-radius:5px;background:var(--ink);z-index:9}
+.home-ind.light{background:#fff}
+
+/* Headers */
+.nav{flex:none;display:flex;align-items:center;gap:10px;padding:4px 16px 8px;min-height:52px}
+.nav .t{flex:1;text-align:center;font-weight:600;font-size:16px}
+.nav .t.l{text-align:left}
+.ib{width:40px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;color:var(--ink);position:relative}
+.ib.box{background:var(--card)}
+.ib.fill{background:var(--fill)}
+.ib .dot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--neg);border:2px solid var(--bg)}
+.sp{width:40px;flex:none}
+.bigtitle{font-family:var(--display);font-weight:700;font-size:32px;letter-spacing:-1px;line-height:1.05}
+.link{color:var(--brand);font-weight:600;font-size:14px}
+
+/* Content */
+.content{flex:1;overflow:hidden;padding:6px 16px 24px;display:flex;flex-direction:column;gap:14px}
+.content.p20{padding-left:20px;padding-right:20px}
+.foot{flex:none;padding:12px 16px 30px;display:flex;flex-direction:column;gap:8px}
+.foot.edge{background:var(--card);border-top:1px solid var(--line)}
+.screen:has(.tabbar) .content{padding-bottom:100px}
+
+/* Icons */
+.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.i.sm{width:16px;height:16px}.i.xs{width:14px;height:14px}.i.lg{width:24px;height:24px}.i.xl{width:30px;height:30px}
+
+/* Type */
+.h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:-.8px;line-height:1.1}
+.h2{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.3px}
+.h3{font-weight:600;font-size:15px}
+.body{font-size:15px;line-height:1.55;color:var(--ink-2)}
+.small{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.tiny{font-size:12px;color:var(--muted);line-height:1.4}
+.cap{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+.muted{color:var(--muted)}.pos{color:var(--pos)}.neg{color:var(--neg)}.warn{color:var(--warn)}.brand{color:var(--brand)}
+.num{font-family:var(--display);font-weight:600;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.num .c{color:var(--faint)}
+.num .cur{font-family:var(--text);font-weight:500;font-size:.5em;letter-spacing:0;color:var(--muted);margin-right:5px;vertical-align:.55em}
+.center{text-align:center}.grow{flex:1}
+.row{display:flex;align-items:center;gap:10px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.s4{gap:4px}.s6{gap:6px}.s14{gap:14px}.s18{gap:18px}
+.mt2{margin-top:2px}.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+
+/* Cards & lists */
+.card{background:var(--card);border-radius:var(--r);padding:16px}
+.card.p0{padding:0}
+.card.dark{background:var(--ink);color:#fff}
+.card.brand{background:var(--brand);color:#fff}
+.card.soft{background:var(--brand-soft)}
+.card.fill{background:var(--fill)}
+.card.outline{background:transparent;border:1px solid var(--line)}
+.hr{height:1px;background:var(--line)}
+.list .li{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:60px}
+.list .li + .li{border-top:1px solid var(--line)}
+.list .li.ind + .li.ind{border-top:0;box-shadow:inset 68px 1px 0 0 var(--card),inset 0 1px 0 0 var(--line)}
+.li .t{font-size:15px;font-weight:500}
+.li .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+.li .e{margin-left:auto;text-align:right;display:flex;align-items:center;gap:6px}
+.li .chev{color:var(--faint)}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;padding:6px 4px 0}
+.sechead b{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.2px}
+
+/* Icon tiles (category style) */
+.ic{width:40px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--fill);color:var(--ink)}
+.ic.r{border-radius:50%}
+.ic.sm{width:32px;height:32px;border-radius:10px}
+.ic.lg{width:52px;height:52px;border-radius:16px}
+.ic.xl{width:72px;height:72px;border-radius:22px}
+.ic.brand{background:var(--brand-soft);color:var(--brand)}
+.ic.pos{background:var(--pos-soft);color:var(--pos)}
+.ic.neg{background:var(--neg-soft);color:var(--neg)}
+.ic.warn{background:var(--warn-soft);color:var(--warn)}
+.ic.info{background:var(--info-soft);color:var(--info)}
+.ic.dark{background:var(--ink);color:#fff}
+.ic.momo{background:var(--momo);color:#111;font-size:10px;font-weight:700}
+.ic.tel{background:var(--telecel);color:#fff;font-size:11px;font-weight:700}
+.ic.solid{background:var(--brand);color:#fff}
+
+/* Avatars */
+.av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13.5px;overflow:hidden;color:var(--ink)}
+.av img{width:100%;height:100%;object-fit:cover}
+.av.sm{width:28px;height:28px;font-size:11px}.av.lg{width:56px;height:56px;font-size:18px}.av.xl{width:80px;height:80px;font-size:26px}
+.a1{background:#FFE8CC}.a2{background:#DCE8FF}.a3{background:#D8F3E4}.a4{background:#FFDDE0}.a5{background:#E7E3FF}
+.avs{display:flex}.avs .av{border:2px solid var(--card);margin-left:-9px}.avs .av:first-child{margin-left:0}
+
+/* Buttons: squared, not pills */
+.btn{height:52px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15.5px;background:var(--ink);color:#fff;width:100%}
+.btn.brand{background:var(--brand)}
+.btn.sec{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.fill{background:var(--fill);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.danger{background:var(--neg-soft);color:var(--neg)}
+.btn.sm{height:38px;font-size:13.5px;padding:0 14px;width:auto;border-radius:11px}
+.btn.xs{height:30px;font-size:12.5px;padding:0 11px;width:auto;border-radius:9px}
+.btn.off{opacity:.3}
+.btn .i{width:18px;height:18px}
+
+/* Quick actions: square tiles */
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.qa div{background:var(--card);border-radius:16px;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:500}
+.qa div.on{background:var(--ink);color:#fff}
+
+/* Inputs: floating label */
+.fl{background:var(--card);border-radius:var(--r-sm);padding:9px 14px 10px;box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:2px;min-height:58px;justify-content:center}
+.fl .lb{font-size:12px;color:var(--muted)}
+.fl .v{font-size:15.5px;font-weight:500;display:flex;align-items:center;gap:8px}
+.fl .v .ph{color:var(--faint);font-weight:400}
+.fl.on{box-shadow:inset 0 0 0 2px var(--brand)}
+.fl.err{box-shadow:inset 0 0 0 2px var(--neg)}
+.fl.ro{background:var(--fill);box-shadow:none}
+.fl .end{margin-left:auto;color:var(--muted);display:flex;align-items:center;gap:6px}
+.fl.area{min-height:120px;justify-content:flex-start}
+.help{font-size:12px;color:var(--muted);padding:0 4px}
+.group{background:var(--card);border-radius:var(--r-sm);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.group .fl{box-shadow:none;border-radius:0}
+.group .fl + .fl{border-top:1px solid var(--line)}
+.search{height:44px;border-radius:12px;background:var(--fill);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);font-size:15px;flex:none}
+.search.w{background:var(--card)}
+
+/* Tabs / segments */
+.tabs{display:flex;gap:20px;border-bottom:1px solid var(--line);flex:none}
+.tabs div{padding:10px 0;font-size:14px;font-weight:500;color:var(--muted);position:relative}
+.tabs .on{color:var(--ink);font-weight:600}
+.tabs .on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--fill);border-radius:12px;padding:3px;flex:none}
+.seg div{height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.seg .on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;flex:none}
+.chip{height:34px;padding:0 12px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;box-shadow:inset 0 0 0 1px var(--line)}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip.b{background:var(--brand-soft);color:var(--brand);box-shadow:none}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:7px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag.pos{background:var(--pos-soft);color:var(--pos)}
+.tag.neg{background:var(--neg-soft);color:var(--neg)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.info{background:var(--info-soft);color:var(--info)}
+.tag.brand{background:var(--brand-soft);color:var(--brand)}
+.tag.gray{background:var(--fill);color:var(--ink-2)}
+.tag.dark{background:var(--ink);color:#fff}
+
+/* Controls */
+.tg{width:44px;height:26px;flex:none;border-radius:20px;background:#DADDE3;position:relative}
+.tg:after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tg.on{background:var(--brand)}.tg.on:after{left:20px}
+.rd{width:22px;height:22px;flex:none;border-radius:50%;box-shadow:inset 0 0 0 2px #D0D4DB}
+.rd.on{box-shadow:inset 0 0 0 7px var(--brand)}
+.cb{width:22px;height:22px;flex:none;border-radius:7px;box-shadow:inset 0 0 0 2px #D0D4DB;display:grid;place-items:center}
+.cb.on{background:var(--brand);box-shadow:none;color:#fff}
+.opt{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:16px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)}
+.opt.on{box-shadow:inset 0 0 0 2px var(--brand)}
+
+/* Progress & charts */
+.bar{height:6px;border-radius:6px;background:var(--fill);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:var(--brand)}
+.card.dark .bar{background:rgba(255,255,255,.14)}
+.card.dark .bar i{background:#fff}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bars .b i{display:block;width:100%;border-radius:6px 6px 3px 3px;background:#E4E2FF}
+.bars .b.on i{background:var(--brand)}
+.bars .b span{font-size:10.5px;color:var(--muted)}
+.legend{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.legend i{width:8px;height:8px;border-radius:3px}
+.stacked{display:flex;height:10px;gap:3px;border-radius:6px;overflow:hidden}
+.stacked i{display:block;height:100%}
+
+/* Banner */
+.note{display:flex;gap:12px;align-items:flex-start;border-radius:16px;padding:14px;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.note b{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+.note.brand{background:var(--brand-soft)}.note.warn{background:var(--warn-soft)}.note.neg{background:var(--neg-soft)}.note.info{background:var(--info-soft)}.note.pos{background:var(--pos-soft)}.note.white{background:var(--card)}
+
+/* Tab bar */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:84px;padding:8px 8px 28px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:8}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:500;color:var(--muted)}
+.tab.on{color:var(--ink)}
+.tab.on .i{color:var(--brand)}
+
+/* Sheets */
+.scrim{position:absolute;inset:0;background:rgba(11,13,18,.4);z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:24px 24px 0 0;z-index:6;padding:8px 16px 32px;display:flex;flex-direction:column;gap:14px}
+.grab{width:36px;height:5px;border-radius:5px;background:#DADDE3;margin:0 auto 6px}
+.sh-h{display:flex;align-items:center;justify-content:space-between}
+
+/* Toast */
+.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13.5px;font-weight:500}
+.toast .ti{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none}
+
+/* Misc */
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;text-align:center;font-family:var(--display);font-weight:500;font-size:25px}
+.keypad div{height:54px;display:grid;place-items:center;border-radius:14px}
+.otp{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;flex:none}
+.otp div{height:58px;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:24px}
+.otp .on{box-shadow:inset 0 0 0 2px var(--brand)}
+.qr{width:210px;height:210px;margin:0 auto;display:grid;grid-template-columns:repeat(21,1fr);grid-template-rows:repeat(21,1fr)}
+.qr i{background:var(--ink);border-radius:1.5px}
+.thumb{border-radius:14px;overflow:hidden;background:var(--fill);flex:none}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:14px}
+.kv + .kv{border-top:1px solid var(--line)}
+.kv span{color:var(--muted)}
+.kv b{font-weight:500;text-align:right}
+.steps{display:flex;flex-direction:column}
+.stp{display:flex;gap:12px;position:relative;padding-bottom:18px}
+.stp:last-child{padding-bottom:0}
+.stp .d{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--fill);color:var(--ink-2);position:relative;z-index:1}
+.stp .d.done{background:var(--pos);color:#fff}
+.stp .d.cur{background:var(--brand);color:#fff}
+.stp:not(:last-child):before{content:"";position:absolute;left:12px;top:26px;bottom:0;width:2px;background:var(--line)}
+.pager{display:flex;gap:5px;justify-content:center}
+.pager i{width:6px;height:6px;border-radius:6px;background:#D0D4DB}
+.pager i.on{width:18px;background:var(--ink)}
+.drop{border:1.5px dashed #D0D4DB;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:center;background:var(--card)}
+.drop.ok{border:0;background:var(--pos-soft)}
+.drop.bad{border:0;background:var(--neg-soft)}
+.skel{background:linear-gradient(90deg,var(--fill),#E9EBEF,var(--fill));border-radius:8px}
+/* fixes */
+.content{min-height:0}
+.content > *{flex-shrink:0}
+.opt > .grow{min-width:0}
+.opt .row{flex-wrap:wrap}
+.h1,.bigtitle{text-wrap:balance}
+.nav .bar{background:#E2E4E9}
+.foot,.btn,.qa,.tabs,.seg{flex:none}
+.li > div{min-width:0}
+.li .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv b.num{letter-spacing:-.2px;word-spacing:3px}
+.row > .btn:not(.sm):not(.xs){flex:1;width:auto;min-width:0}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="17" r="2.5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.4"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M15.5 5.8a3.3 3.3 0 0 1 0 6.4M17.5 14.2a6 6 0 0 1 3.5 5.3"/></symbol>
+  <symbol id="i-jar" viewBox="0 0 24 24"><path d="M8 3.5h8M9 3.5v2.2c0 .8-.6 1.3-1.3 1.8A5.5 5.5 0 0 0 5.5 12v6.5A2.5 2.5 0 0 0 8 21h8a2.5 2.5 0 0 0 2.5-2.5V12a5.5 5.5 0 0 0-2.2-4.5c-.7-.5-1.3-1-1.3-1.8V3.5"/><path d="M5.5 13h13"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
+  <symbol id="i-receive" viewBox="0 0 24 24"><path d="M17 7L7 17M15 17H7V9"/></symbol>
+  <symbol id="i-transfer" viewBox="0 0 24 24"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.2"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M20.5 12h-2M5.5 12h-2M18 6l-1.4 1.4M7.4 16.6L6 18M18 18l-1.4-1.4M7.4 7.4L6 6"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3"/><path d="M4 7.5v10A2.5 2.5 0 0 0 6.5 20h12a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 18.5 8H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="14" r="1.2"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3.5 9.5L12 4.5l8.5 5M5 10v7M9.5 10v7M14.5 10v7M19 10v7M3.5 20h17"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M3.5 10h17M7 15h3"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 7.5L12 3.5l4 4M6 11H5.5A1.5 1.5 0 0 0 4 12.5v6A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-6a1.5 1.5 0 0 0-1.5-1.5H18"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6A1.5 1.5 0 0 0 14 4.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="15" rx="2.5"/><circle cx="9" cy="9.5" r="1.6"/><path d="M4.5 17l4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3.5h7l4.5 4.5v11A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5V8.5h5M9 13h6M9 16.5h4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5l7 2.8v5.4c0 4.4-3 7.6-7 8.8-4-1.2-7-4.4-7-8.8V6.3z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 20.5V5A1.5 1.5 0 0 1 6.5 3.5h7A1.5 1.5 0 0 1 15 5v15.5M15 9.5h3.5A1.5 1.5 0 0 1 20 11v9.5M3.5 20.5h17M8.5 7.5h3M8.5 11h3M8.5 14.5h3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19l.8-3.6L15.5 5.7a2 2 0 0 1 2.8 2.8L8.6 18.2z"/><path d="M13.5 7.7l2.8 2.8"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M10 4h4M6.5 7l.8 11.5A1.6 1.6 0 0 0 8.9 20h6.2a1.6 1.6 0 0 0 1.6-1.5L17.5 7M10 11v5M14 11v5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11.5" rx="1.8"/><path d="M3.5 9h17M12 9v11.5M12 9c-1.5-3.8-6-4.2-6-1.5C6 9 12 9 12 9zM12 9c1.5-3.8 6-4.2 6-1.5C18 9 12 9 12 9z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.5 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.5-3.5-8.5s1-5.9 3.5-8.5z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2-2.4 3.6M12 17v.2"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4.5 7l7.5 6 7.5-6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14M10 12h10M16.5 8.5L20 12l-3.5 3.5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 20.5V4.5M6 5h11l-2 4 2 4H6"/></symbol>
+  <symbol id="i-seal" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></symbol>
+  <symbol id="i-break" viewBox="0 0 24 24"><path d="M8 3.5h8M9 3.5v2.2c0 .8-.6 1.3-1.3 1.8A5.5 5.5 0 0 0 5.5 12v6.5A2.5 2.5 0 0 0 8 21h8a2.5 2.5 0 0 0 2.5-2.5V12a5.5 5.5 0 0 0-2.2-4.5c-.7-.5-1.3-1-1.3-1.8V3.5"/><path d="M12 9l-1.5 3.5 3 1.5-1.5 4"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M4.5 6A1.5 1.5 0 0 1 6 4.5h12A1.5 1.5 0 0 1 19.5 6v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5v-3.5H6A1.5 1.5 0 0 1 4.5 15z"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 19.5s-7.5-4.3-7.5-9.8A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.5c0 5.5-7.5 9.8-7.5 9.8z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M9.5 4L8 20M16 4l-1.5 16M4.5 9h15M4 15h15"/></symbol>
+  <symbol id="i-toggle" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="16" cy="12" r="2.5"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9.5 19h5"/></symbol>
+  <symbol id="i-paste" viewBox="0 0 24 24"><rect x="5.5" y="5" width="13" height="15.5" rx="2"/><path d="M9 5V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V5M9 11h6M9 14.5h4"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M7 3.5h7l4.5 4.5v11A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5V8.5h5M8.5 16v-3.5h1.2a1.2 1.2 0 0 1 0 2.4H8.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8z"/><path d="M18.5 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M7 3.5h10M7 20.5h10M8 3.5c0 4.5 4 5.5 4 8.5s-4 4-4 8.5M16 3.5c0 4.5-4 5.5-4 8.5s4 4 4 8.5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.2v.2"/></symbol>
+  <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5.5 13.5h6L11 21l7.5-10.5h-6z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19.5h16M7 16v-4M11.5 16V8M16 16v-6"/></symbol>
+  <symbol id="i-backspace" viewBox="0 0 24 24"><path d="M9 5.5h10.5A1.5 1.5 0 0 1 21 7v10a1.5 1.5 0 0 1-1.5 1.5H9L3 12z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></symbol>
+</svg>
+<div class="doc">
+
+<header class="doc-head">
+  <div>
+    <span class="kicker">Version 3 · Complete redesign</span>
+    <h1>Hogapay, rebuilt<br>as a money app.</h1>
+    <p>Inspired by Finom and Finanzguru: crisp type, big tabular numbers, charts that explain your money, and a bank-style structure. Your jars behave like accounts, Activity reads like a statement, and a new Insights tab tells you how each jar is doing.</p>
+  </div>
+  <div class="doc-meta">Inter + Inter Tight<br>Light theme · 5 tabs<br>Home · Jars · Activity · Insights · Profile</div>
+</header>
+
+<nav class="toc">
+  <a href="#system">System</a><a href="#auth">Sign up</a><a href="#home">Home &amp; jars</a><a href="#jar">Jar settings</a><a href="#collect">Collect</a><a href="#activity">Activity</a><a href="#insights">Insights</a><a href="#collectors">Collectors</a><a href="#payouts">Payouts</a><a href="#verify">Verification</a><a href="#profile">Profile</a><a href="#inbox">Inbox &amp; referral</a><a href="#feedback">Feedback</a>
+</nav>
+
+<!-- ============ SYSTEM ============ -->
+<section class="section" id="system">
+  <div class="section-head"><span class="num">00</span><h2>System</h2><p>Neutral greys and white do the work. One violet accent for focus and progress. Green and red only ever mean money in and money out.</p></div>
+  <div class="tokens">
+    <div class="tok"><h3>Colour</h3>
+      <div class="swatches">
+        <div class="sw"><div style="background:#0B0D12"></div><b>Ink</b><span>#0B0D12</span></div>
+        <div class="sw"><div style="background:#5B4FF7"></div><b>Violet</b><span>#5B4FF7</span></div>
+        <div class="sw"><div style="background:#EEEDFF"></div><b>Violet 50</b><span>#EEEDFF</span></div>
+        <div class="sw"><div style="background:#F4F5F7"></div><b>Canvas</b><span>#F4F5F7</span></div>
+        <div class="sw"><div style="background:#0F9F61"></div><b>In</b><span>#0F9F61</span></div>
+        <div class="sw"><div style="background:#E5483D"></div><b>Out / error</b><span>#E5483D</span></div>
+        <div class="sw"><div style="background:#D9840A"></div><b>Pending</b><span>#D9840A</span></div>
+        <div class="sw"><div style="background:#2E7CF6"></div><b>Info</b><span>#2E7CF6</span></div>
+      </div>
+    </div>
+    <div class="tok"><h3>Type · Inter Tight &amp; Inter</h3>
+      <div class="type-row"><span class="num" style="font-size:38px">12,480<span class="c">.00</span></span><small>Tight 600 · numbers</small></div>
+      <div class="type-row"><span class="bigtitle" style="font-size:28px">Overview</span><small>Tight 700 · 32</small></div>
+      <div class="type-row"><span class="h2">Recent activity</span><small>Tight 600 · 19</small></div>
+      <div class="type-row"><span style="font-size:15px">Body copy for reading</span><small>Inter 400 · 15</small></div>
+      <div class="type-row"><span class="cap">CAPTION LABEL</span><small>Inter 600 · 12</small></div>
+    </div>
+    <div class="tok"><h3>Components</h3>
+      <div class="stack">
+        <div class="btn">Primary</div>
+        <div class="row"><div class="btn brand sm">Accent</div><div class="btn sec sm">Secondary</div><div class="btn fill sm">Fill</div></div>
+        <div class="fl on"><span class="lb">Jar name</span><span class="v">Kofi &amp; Ama's Wedding</span></div>
+        <div class="row" style="flex-wrap:wrap;gap:6px"><span class="tag pos">Completed</span><span class="tag warn">Pending</span><span class="tag neg">Failed</span><span class="tag info">Transferred</span><span class="tag brand">Payout</span></div>
+        <div class="row"><span class="tg on"></span><span class="tg"></span><span class="cb on"><svg class="i xs"><use href="#i-check"/></svg></span><span class="rd on"></span></div>
+      </div>
+    </div>
+    <div class="tok"><h3>Structure</h3>
+      <div class="stack small">
+        <div class="between"><span>Tabs</span><b>Home · Jars · Activity · Insights · Profile</b></div>
+        <div class="between"><span>Screen padding</span><b>16</b></div>
+        <div class="between"><span>Cards</span><b>20 radius · no shadow</b></div>
+        <div class="between"><span>Buttons</span><b>52 tall · 14 radius</b></div>
+        <div class="between"><span>Inputs</span><b>Floating label · 58</b></div>
+        <div class="between"><span>Lists</span><b>Grouped in cards · 60 rows</b></div>
+        <div class="between"><span>Money</span><b>Tabular · cents in grey</b></div>
+        <div class="between"><span>Icons</span><b>Category tiles · 12 radius</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AUTH ============ -->
+<section class="section" id="auth">
+  <div class="section-head"><span class="num">01</span><h2>Sign up</h2><p>A bank-grade start: phone first, then who you're collecting for, then your details. Six screens, no clutter.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Launch</b><span>/</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="grow" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+          <div class="ic xl dark" style="border-radius:22px"><svg class="i xl"><use href="#i-jar"/></svg></div>
+          <div style="font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-1px">hogapay</div>
+        </div>
+        <div class="center tiny" style="padding-bottom:44px">Licensed payments by Eganow</div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Plain white, black mark. Trust before personality.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Welcome</b><span>/onboarding</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="content" style="padding-top:20px;gap:18px">
+          <div class="card" style="padding:18px;margin:0 6px;transform:rotate(-2deg);box-shadow:var(--sh-lg)">
+            <div class="between"><div class="row"><div class="thumb" style="width:36px;height:36px;border-radius:10px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><div><div class="tiny">Wedding jar</div><div class="h3" style="font-size:14px">Kofi &amp; Ama</div></div></div><span class="tag pos">+ 12%</span></div>
+            <div class="num mt12" style="font-size:34px">12,480<span class="c">.00</span></div>
+            <div class="bars mt12" style="height:70px"><div class="b"><i style="height:30%"></i></div><div class="b"><i style="height:45%"></i></div><div class="b"><i style="height:38%"></i></div><div class="b"><i style="height:60%"></i></div><div class="b"><i style="height:52%"></i></div><div class="b"><i style="height:75%"></i></div><div class="b on"><i style="height:92%"></i></div></div>
+          </div>
+          <div class="card row" style="margin:-30px 30px 0 60px;box-shadow:var(--sh-lg);padding:12px;position:relative"><div class="ic sm pos"><svg class="i sm"><use href="#i-receive"/></svg></div><div class="grow"><div class="tiny">Kwame Asante</div><div class="h3" style="font-size:13.5px">MTN MoMo</div></div><div class="num pos" style="font-size:16px">+200</div></div>
+          <div class="grow"></div>
+          <div class="pager"><i class="on"></i><i></i><i></i></div>
+          <div class="h1" style="font-size:30px">Collect money together. See every cedi.</div>
+          <p class="body">Jars for weddings, funerals, church and susu. MoMo, card and cash in one place.</p>
+        </div>
+        <div class="foot"><div class="btn">Create free account</div><div class="btn ghost">Log in</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A product preview instead of stock photos: the jar card and a live contribution say what the app does.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Phone number</b><span>/login · /register</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"></div><div class="sp"></div></div>
+        <div class="content p20" style="gap:20px;padding-top:10px">
+          <div class="stack s6"><div class="h1">What's your number?</div><p class="body">We'll text you a 6-digit code. New or returning, it's the same step.</p></div>
+          <div class="row" style="gap:8px">
+            <div class="fl" style="width:104px"><span class="lb">Country</span><span class="v">🇬🇭 +233</span></div>
+            <div class="fl on grow"><span class="lb">Phone number</span><span class="v">24 123 4567</span></div>
+          </div>
+          <div class="row tiny"><svg class="i sm"><use href="#i-lock"/></svg>Your number is only used to sign in and send receipts.</div>
+        </div>
+        <div class="keypad" style="padding:0 24px 6px"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div></div><div>0</div><div><svg class="i lg"><use href="#i-backspace"/></svg></div></div>
+        <div class="foot"><div class="btn">Continue</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Login and sign-up merge into one phone step. The server decides which path follows.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Code</b><span>/otp</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"></div><div class="sp"></div></div>
+        <div class="content p20" style="gap:20px;padding-top:10px">
+          <div class="stack s6"><div class="h1">Enter the code</div><p class="body">Sent to +233 24 123 4567 · <span class="link">Change</span></p></div>
+          <div class="otp"><div>4</div><div>8</div><div>1</div><div class="on">0</div><div></div><div></div></div>
+          <div class="between small"><span>Didn't get it?</span><span class="muted">Resend in 0:24</span></div>
+        </div>
+        <div class="keypad" style="padding:0 24px 34px"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div></div><div>0</div><div><svg class="i lg"><use href="#i-backspace"/></svg></div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Account type</b><span>/register · 1 of 2</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"><div class="bar" style="width:120px;margin:0 auto"><i style="width:50%"></i></div></div><div class="sp"></div></div>
+        <div class="content p20" style="gap:14px;padding-top:10px">
+          <div class="stack s6"><div class="h1">Who are you collecting for?</div><p class="body">This sets how you get verified. You can upgrade later.</p></div>
+          <div class="opt on" style="align-items:flex-start"><div class="ic brand"><svg class="i"><use href="#i-user"/></svg></div><div class="grow"><div class="h3">Personal</div><p class="small mt2">Weddings, funerals, birthdays and family causes</p><div class="row mt8" style="gap:6px"><span class="tag gray">Ghana Card</span><span class="tag gray">~3 min</span></div></div><span class="rd on"></span></div>
+          <div class="opt" style="align-items:flex-start"><div class="ic"><svg class="i"><use href="#i-building"/></svg></div><div class="grow"><div class="h3">Organization</div><p class="small mt2">Churches, schools, associations, businesses</p><div class="row mt8" style="gap:6px"><span class="tag gray">Business docs</span><span class="tag gray">2–3 days</span></div></div><span class="rd"></span></div>
+        </div>
+        <div class="foot"><div class="btn">Continue</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Each option states what verification it needs and how long it takes. The radio stays inside the card and the tags wrap.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Your details</b><span>/register · 2 of 2</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"><div class="bar" style="width:120px;margin:0 auto"><i style="width:100%"></i></div></div><div class="sp"></div></div>
+        <div class="content p20" style="gap:12px;padding-top:10px">
+          <div class="h1">About you</div>
+          <div class="group">
+            <div class="fl"><span class="lb">First name</span><span class="v">Ama</span></div>
+            <div class="fl on"><span class="lb">Last name</span><span class="v">Mensah</span></div>
+          </div>
+          <div class="help">As on your Ghana Card</div>
+          <div class="group">
+            <div class="fl"><span class="lb">Email</span><span class="v">ama.mensah@gmail.com</span></div>
+            <div class="fl"><span class="lb">Username</span><span class="v">@amamensah<span class="end pos"><svg class="i sm"><use href="#i-check"/></svg></span></span></div>
+          </div>
+          <div class="fl"><span class="lb">Referral code (optional)</span><span class="v"><span class="ph">e.g. KOFI24</span></span></div>
+          <p class="tiny">By continuing you agree to the <span class="link" style="font-size:12px">Terms</span> and <span class="link" style="font-size:12px">Privacy Policy</span>.</p>
+        </div>
+        <div class="foot"><div class="btn">Create account</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ HOME & JARS ============ -->
+<section class="section" id="home">
+  <div class="section-head"><span class="num">02</span><h2>Home &amp; jars</h2><p>Home is an overview of all your money. Each jar is an account with its own balance, chart and statement.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Home</b><span>tab · Home</span></div>
+      <div class="phone" style="height:1070px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="av a1"><img src="../mobile_app/assets/images/onboarding/image5.png" alt=""></div><div class="t l"><div class="tiny" style="font-weight:400">Good morning</div><div style="font-size:15px;font-weight:600">Ama Mensah</div></div><div class="ib box"><svg class="i"><use href="#i-search"/></svg></div><div class="ib box"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></div></div>
+        <div class="content" style="gap:14px">
+          <div style="padding:6px 4px 2px">
+            <div class="row tiny" style="gap:6px">Total in your jars<svg class="i xs"><use href="#i-eye"/></svg></div>
+            <div class="num" style="font-size:44px;margin-top:4px"><span class="cur">GHS</span>46,410<span class="c">.00</span></div>
+            <div class="row mt4" style="gap:8px"><span class="tag pos">↑ GHS 3,820 this week</span><span class="tiny">3 jars</span></div>
+          </div>
+          <div class="qa">
+            <div class="on"><svg class="i"><use href="#i-plus"/></svg>Collect</div>
+            <div><svg class="i"><use href="#i-qr"/></svg>Request</div>
+            <div><svg class="i"><use href="#i-send"/></svg>Transfer</div>
+            <div><svg class="i"><use href="#i-jar"/></svg>New jar</div>
+          </div>
+          <div class="sechead"><b>Your jars</b><span class="link">See all</span></div>
+          <div class="row" style="gap:10px;margin-right:-16px;overflow:hidden">
+            <div class="card" style="width:220px;flex:none;padding:14px">
+              <div class="between"><div class="thumb" style="width:34px;height:34px;border-radius:10px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><span class="tag gray">Owner</span></div>
+              <div class="h3 mt12" style="font-size:14px">Kofi &amp; Ama's Wedding</div>
+              <div class="num mt4" style="font-size:22px">12,480<span class="c">.00</span></div>
+              <div class="bar mt12"><i style="width:62%"></i></div>
+              <div class="between tiny mt8"><span>62% of 20,000</span><span>18 days</span></div>
+            </div>
+            <div class="card" style="width:220px;flex:none;padding:14px">
+              <div class="between"><div class="thumb" style="width:34px;height:34px;border-radius:10px"><img src="../mobile_app/assets/images/onboarding/image8.png" alt=""></div><span class="tag gray">Collector</span></div>
+              <div class="h3 mt12" style="font-size:14px">Grace Chapel Harvest</div>
+              <div class="num mt4" style="font-size:22px">31,900<span class="c">.00</span></div>
+              <div class="bar mt12"><i style="width:80%"></i></div>
+              <div class="between tiny mt8"><span>80% of 40,000</span><span>4 days</span></div>
+            </div>
+          </div>
+          <div class="note brand"><div class="ic sm solid"><svg class="i sm"><use href="#i-sparkle"/></svg></div><div class="grow"><b>Wedding jar is up 34% this week</b>Saturday brought in the most. Share again on Friday evening.</div></div>
+          <div class="sechead"><b>Recent activity</b><span class="link">All</span></div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic momo">MTN</div><div><div class="t">Kwame Asante</div><div class="s">Wedding · 10:42</div></div><div class="e"><div><div class="num pos" style="font-size:15.5px">+200.00</div></div></div></div>
+            <div class="li"><div class="ic info"><svg class="i"><use href="#i-card"/></svg></div><div><div class="t">Efua Boateng</div><div class="s">Wedding · 09:15 · <span class="warn">Pending</span></div></div><div class="e"><div class="num" style="font-size:15.5px">+500.00</div></div></div>
+            <div class="li"><div class="ic"><svg class="i"><use href="#i-send"/></svg></div><div><div class="t">Transfer to MoMo</div><div class="s">Wedding · 08:01</div></div><div class="e"><div class="num" style="font-size:15.5px">−2,000.00</div></div></div>
+            <div class="li"><div class="ic pos"><svg class="i"><use href="#i-cash"/></svg></div><div><div class="t">Cash · Anonymous</div><div class="s">Harvest · Yesterday</div></div><div class="e"><div class="num pos" style="font-size:15.5px">+50.00</div></div></div>
+          </div>
+        </div>
+        <div class="tabbar"><div class="tab on"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Bank-style overview: one total, four quick actions, jars as swipeable account cards, a weekly insight and a statement-style feed.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Jars</b><span>tab · Jars</span></div>
+      <div class="phone" style="height:780px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="bigtitle grow" style="padding-left:4px">Jars</div><div class="ib box"><svg class="i"><use href="#i-plus"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <div class="search w"><svg class="i"><use href="#i-search"/></svg>Search 6 jars</div>
+          <div class="tabs"><div class="on">Active · 4</div><div>Sealed · 1</div><div>Closed · 1</div></div>
+          <div class="card p0 list">
+            <div class="li"><div class="thumb" style="width:44px;height:44px;border-radius:12px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><div class="grow"><div class="t">Kofi &amp; Ama's Wedding</div><div class="bar mt8" style="width:140px"><i style="width:62%"></i></div></div><div class="e"><div><div class="num" style="font-size:15.5px">12,480.00</div><div class="tiny">Owner</div></div></div></div>
+            <div class="li"><div class="thumb" style="width:44px;height:44px;border-radius:12px"><img src="../mobile_app/assets/images/onboarding/image8.png" alt=""></div><div class="grow"><div class="t">Grace Chapel Harvest</div><div class="bar mt8" style="width:140px"><i style="width:80%"></i></div></div><div class="e"><div><div class="num" style="font-size:15.5px">31,900.00</div><div class="tiny">Collector</div></div></div></div>
+            <div class="li"><div class="thumb" style="width:44px;height:44px;border-radius:12px"><img src="../mobile_app/assets/images/onboarding/image9.png" alt=""></div><div class="grow"><div class="t">Youth Camp 2026</div><div class="s">No goal</div></div><div class="e"><div><div class="num" style="font-size:15.5px">2,030.00</div><div class="tiny">Owner</div></div></div></div>
+            <div class="li"><div class="ic warn" style="width:44px;height:44px"><svg class="i"><use href="#i-users"/></svg></div><div class="grow"><div class="t">Asante Family Susu</div><div class="s">Monthly · next on 1 Nov</div></div><div class="e"><div><div class="num" style="font-size:15.5px">0.00</div><div class="tiny">Owner</div></div></div></div>
+          </div>
+          <div class="card fill row" style="padding:14px"><div class="ic" style="background:#fff"><svg class="i"><use href="#i-mail"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">1 invitation</div><div class="tiny">Rev. Ofori invited you to Easter Convention</div></div><span class="btn xs">View</span></div>
+        </div>
+        <div class="tabbar"><div class="tab"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab on"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">The old full-screen switcher becomes a proper tab with status filters, progress and role on each row.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Jar</b><span>/jar_detail</span></div>
+      <div class="phone" style="height:1000px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"></div><div class="ib box"><svg class="i"><use href="#i-share"/></svg></div><div class="ib box"><svg class="i"><use href="#i-gear"/></svg></div></div>
+        <div class="content" style="gap:14px">
+          <div class="row" style="padding:0 4px"><div class="thumb" style="width:48px;height:48px;border-radius:14px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><div><div class="h2">Kofi &amp; Ama's Wedding</div><div class="row tiny mt2" style="gap:6px"><span class="tag pos">Open</span>Wedding · GHS</div></div></div>
+          <div class="card">
+            <div class="tiny">Balance</div>
+            <div class="num" style="font-size:38px"><span class="cur">GHS</span>12,480<span class="c">.00</span></div>
+            <div class="row mt4" style="gap:12px;font-size:13px"><span class="muted">Available <b style="color:var(--ink);font-weight:600">9,860.00</b></span><span class="muted">Clearing <b class="warn" style="font-weight:600">640.00</b></span></div>
+            <div class="seg mt16" style="width:200px"><div>7D</div><div class="on">30D</div><div>All</div></div>
+            <svg viewBox="0 0 320 110" style="width:100%;height:110px;margin-top:10px"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B4FF7" stop-opacity=".22"/><stop offset="1" stop-color="#5B4FF7" stop-opacity="0"/></linearGradient></defs><path d="M0 96 L30 90 L60 92 L90 78 L120 80 L150 64 L180 66 L210 48 L240 52 L270 30 L300 22 L320 14 L320 110 L0 110Z" fill="url(#ag)"/><path d="M0 96 L30 90 L60 92 L90 78 L120 80 L150 64 L180 66 L210 48 L240 52 L270 30 L300 22 L320 14" fill="none" stroke="#5B4FF7" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="320" cy="14" r="4" fill="#5B4FF7"/></svg>
+            <div class="between tiny"><span>7 Sep</span><span>Today</span></div>
+          </div>
+          <div class="qa">
+            <div class="on"><svg class="i"><use href="#i-plus"/></svg>Collect</div>
+            <div><svg class="i"><use href="#i-qr"/></svg>Request</div>
+            <div><svg class="i"><use href="#i-send"/></svg>Transfer</div>
+            <div><svg class="i"><use href="#i-users"/></svg>Team</div>
+          </div>
+          <div class="card">
+            <div class="between"><div class="h3">Goal</div><span class="tiny">Ends 24 Oct · 18 days</span></div>
+            <div class="between mt12"><div class="num" style="font-size:20px">62%</div><div class="small">12,480 of 20,000</div></div>
+            <div class="bar mt8" style="height:8px"><i style="width:62%"></i></div>
+            <div class="tiny mt8">At this pace you'll reach <b style="color:var(--ink)">GHS 21,300</b> by the deadline.</div>
+          </div>
+          <div class="card row" style="padding:14px"><div class="ic warn"><svg class="i"><use href="#i-edit"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">Finish setting up · 3 of 5</div><div class="tiny">Add a description and thank-you note</div></div><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></div>
+          <div class="sechead"><b>Statement</b><span class="link">Export</span></div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a2">KA</div><div><div class="t">Kwame Asante</div><div class="s">MoMo · 10:42</div></div><div class="e num pos" style="font-size:15.5px">+200.00</div></div>
+            <div class="li"><div class="av a4">EB</div><div><div class="t">Efua Boateng</div><div class="s">Card · 09:15 · via Yaw</div></div><div class="e"><span class="tag warn">Pending</span></div></div>
+            <div class="li"><div class="ic"><svg class="i"><use href="#i-send"/></svg></div><div><div class="t">Transfer to MoMo</div><div class="s">08:01</div></div><div class="e num" style="font-size:15.5px">−2,000.00</div></div>
+          </div>
+        </div>
+        <div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A jar is an account: balance split into available and clearing, a 30-day chart, a goal forecast and a statement.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>New jar · type</b><span>/jar_create · 1 of 3</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">New jar</div><div class="sp"></div></div>
+        <div class="content p20" style="gap:14px">
+          <div class="h1">What's it for?</div>
+          <div class="search w"><svg class="i"><use href="#i-search"/></svg>Search 40 types</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="opt on" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">💍</span><b style="font-size:14px">Wedding</b></div>
+            <div class="opt" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">🕊️</span><b style="font-size:14px">Funeral</b></div>
+            <div class="opt" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">⛪</span><b style="font-size:14px">Church</b></div>
+            <div class="opt" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">🤝</span><b style="font-size:14px">Susu</b></div>
+            <div class="opt" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">🎂</span><b style="font-size:14px">Birthday</b></div>
+            <div class="opt" style="flex-direction:column;align-items:flex-start;gap:10px"><span style="font-size:22px">👶</span><b style="font-size:14px">Naming</b></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Continue</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>New jar · details</b><span>/jar_create · 2 of 3</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">New jar</div><div class="sp"></div></div>
+        <div class="content p20" style="gap:12px">
+          <div class="h1">Name &amp; photo</div>
+          <div class="row" style="gap:12px"><div class="drop" style="width:84px;height:84px;padding:0;justify-content:center"><svg class="i lg muted"><use href="#i-camera"/></svg></div><div class="fl on grow"><span class="lb">Jar name</span><span class="v">Kofi &amp; Ama's Wedding</span></div></div>
+          <div class="group">
+            <div class="fl"><span class="lb">Currency</span><span class="v">🇬🇭 Ghana cedi · GHS<span class="end"><svg class="i sm"><use href="#i-down"/></svg></span></span></div>
+            <div class="fl"><span class="lb">Payout account</span><span class="v"><span class="ic sm momo" style="width:22px;height:22px;border-radius:6px;font-size:7px">MTN</span>MoMo ••• 4567<span class="end"><svg class="i sm"><use href="#i-down"/></svg></span></span></div>
+          </div>
+          <div class="card outline row" style="padding:14px"><div class="grow"><div class="h3" style="font-size:14px">Goal</div><div class="tiny">Show progress to contributors</div></div><span class="tg on"></span></div>
+          <div class="fl"><span class="lb">Goal amount</span><span class="v">GHS 20,000</span></div>
+        </div>
+        <div class="foot"><div class="btn">Continue</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Step 3 invites collectors (skippable), then the jar opens with a setup checklist.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Home · first day</b><span>empty state</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="av a1">AM</div><div class="t l"><div class="tiny" style="font-weight:400">Welcome</div><div style="font-size:15px;font-weight:600">Ama Mensah</div></div><div class="ib box"><svg class="i"><use href="#i-bell"/></svg></div></div>
+        <div class="content" style="gap:14px">
+          <div style="padding:6px 4px 2px"><div class="tiny">Total in your jars</div><div class="num" style="font-size:44px"><span class="cur">GHS</span>0<span class="c">.00</span></div></div>
+          <div class="card">
+            <div class="between"><div class="h2">Get started</div><span class="tag brand">1 of 4</span></div>
+            <div class="bar mt12"><i style="width:25%"></i></div>
+            <div class="steps mt16">
+              <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div><div class="h3" style="font-size:14px">Create your account</div></div></div>
+              <div class="stp"><span class="d cur">2</span><div class="grow"><div class="h3" style="font-size:14px">Verify your ID</div><div class="tiny">About 3 minutes</div><div class="btn sm mt8" style="width:auto;display:inline-flex">Start</div></div></div>
+              <div class="stp"><span class="d">3</span><div><div class="h3 muted" style="font-size:14px">Create your first jar</div></div></div>
+              <div class="stp"><span class="d">4</span><div><div class="h3 muted" style="font-size:14px">Add a payout account</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar"><div class="tab on"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A checklist replaces the one-at-a-time banners and the image walkthrough.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ JAR SETTINGS ============ -->
+<section class="section" id="jar">
+  <div class="section-head"><span class="num">03</span><h2>Jar settings</h2><p>Settings read like a bank's account settings: grouped lists, values on the right, one screen per edit.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Jar settings</b><span>/jar_info</span></div>
+      <div class="phone" style="height:1120px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Jar settings</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card row" style="padding:14px"><div class="thumb" style="width:56px;height:56px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><div class="grow"><div class="h3">Kofi &amp; Ama's Wedding</div><div class="tiny mt2">3 photos · Wedding</div></div><span class="btn fill xs">Edit</span></div>
+          <div class="cap" style="padding:6px 4px 0">PAGE</div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Description</div><div class="e"><span class="tiny">Join us as we…</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="t">Thank-you message</div><div class="e"><span class="tag warn">Missing</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="t">Custom questions</div><div class="e"><span class="tiny">2</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="t">Say "Donate"</div><div class="e"><span class="tg"></span></div></div>
+          </div>
+          <div class="cap" style="padding:6px 4px 0">MONEY</div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Goal</div><div class="e"><span class="tiny">GHS 20,000 · 24 Oct</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="t">Fixed amount</div><div class="e"><span class="tiny">Off</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="t">Payout account</div><div class="e"><span class="tiny">MoMo ••• 4567</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+          </div>
+          <div class="cap" style="padding:6px 4px 0">PRIVACY</div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Show goal publicly</div><div class="e"><span class="tg on"></span></div></div>
+            <div class="li"><div class="t">Allow anonymous</div><div class="e"><span class="tg on"></span></div></div>
+            <div class="li"><div class="t">Show recent contributions</div><div class="e"><span class="tg"></span></div></div>
+          </div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Seal jar</div><div class="e"><span class="tiny">Stop new contributions</span></div></div>
+            <div class="li"><div class="t neg">Close jar</div></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Values sit on the right, so you can scan the whole jar at once. Missing items get an amber tag.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Edit text</b><span>description · thank-you</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Thank-you message</div><span class="link" style="width:40px">Save</span></div>
+        <div class="content" style="gap:10px">
+          <div class="fl area on"><span class="lb">Shown after someone pays</span><span class="v" style="font-weight:400;line-height:1.5;display:block;margin-top:4px">Thank you so much for celebrating with us! Your kindness means the world to Kofi and me.</span></div>
+          <div class="between help"><span>Short and personal works best</span><span>86 / 250</span></div>
+          <div class="cap mt8" style="padding:0 4px">SUGGESTIONS</div>
+          <div class="chips"><span class="chip">🙏 Thank you for your support</span><span class="chip">💛 We're so grateful</span><span class="chip">God bless you</span></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Goal</b><span>/jar_goal</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Goal</div><span class="link neg" style="width:56px;text-align:right">Remove</span></div>
+        <div class="content center" style="gap:8px;padding-top:24px">
+          <div class="tiny">Target</div>
+          <div class="num" style="font-size:54px"><span class="cur">GHS</span>20,000</div>
+          <div class="chips" style="justify-content:center"><span class="chip">10k</span><span class="chip on">20k</span><span class="chip">50k</span></div>
+          <div class="card row mt12" style="text-align:left;padding:12px 14px"><div class="ic brand sm"><svg class="i sm"><use href="#i-calendar"/></svg></div><div class="grow"><div class="tiny">Deadline</div><div class="h3" style="font-size:14px">Sat, 24 October</div></div><span class="link">Change</span></div>
+        </div>
+        <div class="keypad" style="padding:0 24px 4px"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>.</div><div>0</div><div><svg class="i lg"><use href="#i-backspace"/></svg></div></div>
+        <div class="foot" style="padding-top:4px"><div class="btn">Save goal</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Custom questions</b><span>/jar_custom_fields</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Custom questions</div><div class="ib box"><svg class="i"><use href="#i-plus"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <p class="small" style="padding:0 4px">Contributors answer these when they pay. Answers show on each payment and in exports.</p>
+          <div class="card p0 list">
+            <div class="li"><div class="ic brand"><svg class="i"><use href="#i-list"/></svg></div><div class="grow"><div class="t">Which side are you from?</div><div class="row mt4" style="gap:4px"><span class="tag gray">Choice · 2</span><span class="tag neg">Required</span></div></div><svg class="i sm chev"><use href="#i-chev"/></svg></div>
+            <div class="li"><div class="ic brand"><svg class="i"><use href="#i-type"/></svg></div><div class="grow"><div class="t">Message for the couple</div><div class="row mt4" style="gap:4px"><span class="tag gray">Text</span><span class="tag info">In PDF</span></div></div><svg class="i sm chev"><use href="#i-chev"/></svg></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>New question</b><span>/jar_custom_field_add</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">New question</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="fl on"><span class="lb">Question</span><span class="v">Which side are you from?</span></div>
+          <div class="seg"><div>Text</div><div>Number</div><div class="on">Choice</div><div>Yes/No</div></div>
+          <div class="card p0 list">
+            <div class="li"><span class="tiny" style="width:16px">1</span><div class="t">Bride's family</div><div class="e"><svg class="i sm muted"><use href="#i-close"/></svg></div></div>
+            <div class="li"><span class="tiny" style="width:16px">2</span><div class="t">Groom's family</div><div class="e"><svg class="i sm muted"><use href="#i-close"/></svg></div></div>
+            <div class="li"><svg class="i sm brand"><use href="#i-plus"/></svg><div class="t brand">Add option</div><div class="e link" style="font-size:13px">Paste list</div></div>
+          </div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Required</div><div class="e"><span class="tg on"></span></div></div>
+            <div class="li"><div class="t">Include in PDF</div><div class="e"><span class="tg on"></span></div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Add question</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Phone and email types live under "Text" as a format option, so the choice stays at four.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Close jar</b><span>sheet</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="h1">Jar settings</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="ic lg neg"><svg class="i lg"><use href="#i-break"/></svg></div>
+          <div class="stack s6"><div class="h2">Close this jar for good?</div><p class="small">Nobody can pay into it again and it can't be reopened. Its history stays in Activity.</p></div>
+          <div class="card fill p0"><div class="kv"><span>Still available</span><b class="num">GHS 9,860.00</b></div></div>
+          <div class="note warn"><svg class="i warn"><use href="#i-alert"/></svg><span>Transfer the balance first, or it stays here until you contact support.</span></div>
+          <div class="btn" style="background:var(--neg)">Close jar</div>
+          <div class="btn ghost">Keep it open</div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ COLLECT ============ -->
+<section class="section" id="collect">
+  <div class="section-head"><span class="num">04</span><h2>Collect</h2><p>Record mobile money or cash in three steps: amount, payer, review. Request links and QR codes have their own screen.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Amount</b><span>/add_contribution</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div><div class="t"><span class="chip" style="height:30px">💍 Wedding <svg class="i xs"><use href="#i-down"/></svg></span></div><div class="sp"></div></div>
+        <div class="content center" style="gap:10px;padding-top:40px">
+          <div class="num" style="font-size:64px"><span class="cur">GHS</span>200<span class="c">.00</span></div>
+          <div class="chips" style="justify-content:center;margin-top:8px"><span class="chip">50</span><span class="chip">100</span><span class="chip on">200</span><span class="chip">500</span></div>
+        </div>
+        <div class="keypad" style="padding:0 24px 4px"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>.</div><div>0</div><div><svg class="i lg"><use href="#i-backspace"/></svg></div></div>
+        <div class="foot" style="padding-top:4px"><div class="btn">Next</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Payer</b><span>/save_contribution</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">GHS 200.00</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="seg"><div class="on"><svg class="i sm"><use href="#i-phone"/></svg>Mobile money</div><div><svg class="i sm"><use href="#i-cash"/></svg>Cash</div></div>
+          <div class="row" style="gap:8px">
+            <div class="opt on grow" style="padding:12px"><span class="ic sm momo">MTN</span><b style="font-size:14px">MTN</b></div>
+            <div class="opt grow" style="padding:12px"><span class="ic sm tel">T</span><b style="font-size:14px">Telecel</b></div>
+          </div>
+          <div class="group">
+            <div class="fl on"><span class="lb">Payer's number</span><span class="v">055 987 6543</span></div>
+            <div class="fl"><span class="lb">Name on wallet</span><span class="v">Kwame Asante<span class="end pos"><svg class="i sm"><use href="#i-check"/></svg></span></span></div>
+          </div>
+          <div class="card p0 list">
+            <div class="li"><div class="t">Show as anonymous</div><div class="e"><span class="tg"></span></div></div>
+            <div class="li"><div><div class="tiny">Which side are you from? *</div><div class="t mt2">Groom's family</div></div><div class="e"><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Review</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Only mobile money and cash. The wallet name is looked up from the number and shown with a tick.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Review</b><span>confirm</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Review</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="center" style="padding:12px 0"><div class="tiny">Kwame will be asked to pay</div><div class="num" style="font-size:44px"><span class="cur">GHS</span>203<span class="c">.90</span></div></div>
+          <div class="card p0">
+            <div class="kv"><span>Contribution</span><b>GHS 200.00</b></div>
+            <div class="kv"><span>Processing fee</span><b>GHS 3.90</b></div>
+            <div class="kv"><span>From</span><b>MTN · 055 987 6543</b></div>
+            <div class="kv"><span>Name</span><b>Kwame Asante</b></div>
+            <div class="kv"><span>To jar</span><b>Kofi &amp; Ama's Wedding</b></div>
+          </div>
+          <div class="note info"><svg class="i" style="color:var(--info)"><use href="#i-info"/></svg><span>He'll get a prompt on his phone and approve with his PIN.</span></div>
+        </div>
+        <div class="foot"><div class="btn">Send request · GHS 203.90</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A dedicated review step, like a bank transfer. The fee and the total are clear before anything is sent.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Waiting</b><span>/await_momo_payment</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="sp"></div><div class="t"></div><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div></div>
+        <div class="content p20" style="gap:16px;padding-top:30px">
+          <div class="ic xl warn"><svg class="i xl"><use href="#i-phone"/></svg></div>
+          <div class="stack s6"><div class="h1">Waiting for Kwame to approve</div><p class="body">GHS 203.90 · MTN 055 987 6543</p></div>
+          <div class="steps mt8">
+            <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div class="small" style="color:var(--ink)">Request sent</div></div>
+            <div class="stp"><span class="d cur">2</span><div><div class="small" style="color:var(--ink);font-weight:600">Approve on phone</div><div class="tiny">No prompt? Dial *170# → My Approvals</div></div></div>
+            <div class="stp"><span class="d">3</span><div class="small">Added to jar</div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn fill">Use a voucher code</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Received</b><span>success</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="content p20" style="gap:14px;justify-content:center">
+          <div class="ic xl pos"><svg class="i xl"><use href="#i-check"/></svg></div>
+          <div class="h1">Payment received</div>
+          <div class="num" style="font-size:44px">+200<span class="c">.00</span></div>
+          <div class="card fill p0 mt8"><div class="kv"><span>From</span><b>Kwame Asante</b></div><div class="kv"><span>Jar balance</span><b>GHS 12,680.00</b></div><div class="kv"><span>Reference</span><b>HG-48210</b></div></div>
+        </div>
+        <div class="foot"><div class="btn">Done</div><div class="btn ghost">Share receipt</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Request</b><span>/request_contribution</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Request money</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="tabs"><div class="on">QR code</div><div>Link</div><div>Poster</div></div>
+          <div class="card center" style="padding:22px"><div class="qr" id="qr"></div><div class="h3 mt16">Kofi &amp; Ama's Wedding</div><div class="tiny mt2">Scan to pay with MoMo or card</div></div>
+          <div class="card row" style="padding:12px 14px"><div class="grow"><div class="tiny">Your link</div><div class="h3" style="font-size:14px">hogapay.com/j/K8F2/yaw</div></div><div class="ib fill"><svg class="i"><use href="#i-copy"/></svg></div></div>
+          <div class="tiny" style="padding:0 4px">Payments through your link are credited to you as collector.</div>
+        </div>
+        <div class="foot"><div class="btn"><svg class="i"><use href="#i-share"/></svg>Share</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ ACTIVITY ============ -->
+<section class="section" id="activity">
+  <div class="section-head"><span class="num">05</span><h2>Activity</h2><p>A statement across every jar: searchable, filterable, and grouped by day with daily totals.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Activity</b><span>tab · Activity</span></div>
+      <div class="phone" style="height:880px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="bigtitle grow" style="padding-left:4px">Activity</div><div class="ib box"><svg class="i"><use href="#i-download"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <div class="row" style="gap:8px"><div class="search w grow"><svg class="i"><use href="#i-search"/></svg>Name, number, reference</div><div class="ib box" style="height:44px;width:44px"><svg class="i"><use href="#i-filter"/></svg></div></div>
+          <div class="chips"><span class="chip b">Wedding <svg class="i xs"><use href="#i-close"/></svg></span><span class="chip b">This week <svg class="i xs"><use href="#i-close"/></svg></span></div>
+          <div class="row" style="gap:8px">
+            <div class="card grow" style="padding:12px 14px"><div class="tiny">In</div><div class="num pos" style="font-size:18px">+4,320.00</div></div>
+            <div class="card grow" style="padding:12px 14px"><div class="tiny">Out</div><div class="num" style="font-size:18px">−2,000.00</div></div>
+          </div>
+          <div class="between cap" style="padding:4px 4px 0"><span>TODAY</span><span>+700.00</span></div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic momo">MTN</div><div><div class="t">Kwame Asante</div><div class="s">10:42</div></div><div class="e num pos" style="font-size:15.5px">+200.00</div></div>
+            <div class="li"><div class="ic info"><svg class="i"><use href="#i-card"/></svg></div><div><div class="t">Efua Boateng</div><div class="s">09:15 · via Yaw</div></div><div class="e"><div><div class="num" style="font-size:15.5px">+500.00</div><span class="tag warn">Pending</span></div></div></div>
+            <div class="li"><div class="ic"><svg class="i"><use href="#i-send"/></svg></div><div><div class="t">Transfer to MoMo</div><div class="s">08:01 · ••• 4567</div></div><div class="e num" style="font-size:15.5px">−2,000.00</div></div>
+          </div>
+          <div class="between cap" style="padding:4px 4px 0"><span>YESTERDAY</span><span>+50.00</span></div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic tel">T</div><div><div class="t">Kojo Mensah</div><div class="s">21:10</div></div><div class="e"><div><div class="num muted" style="font-size:15.5px;text-decoration:line-through">+100.00</div><span class="tag neg">Failed</span></div></div></div>
+            <div class="li"><div class="ic pos"><svg class="i"><use href="#i-cash"/></svg></div><div><div class="t">Anonymous · cash</div><div class="s">18:30 · by Ama</div></div><div class="e num pos" style="font-size:15.5px">+50.00</div></div>
+          </div>
+        </div>
+        <div class="tabbar"><div class="tab"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab on"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Payment-method tiles (MTN yellow, Telecel red, card, cash) make the list scannable like a bank statement.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Payment</b><span>detail page</span></div>
+      <div class="phone" style="height:860px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t"></div><div class="ib box"><svg class="i"><use href="#i-more"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <div class="center stack s6" style="align-items:center;padding:6px 0 10px"><div class="ic lg momo" style="font-size:13px">MTN</div><div class="num mt8" style="font-size:40px">+200<span class="c">.00</span></div><div class="small">Kwame Asante</div><span class="tag pos">Completed</span></div>
+          <div class="card p0">
+            <div class="kv"><span>Jar</span><b>Kofi &amp; Ama's Wedding</b></div>
+            <div class="kv"><span>Method</span><b>MTN MoMo · 055 987 6543</b></div>
+            <div class="kv"><span>Fee (paid by payer)</span><b>GHS 3.90</b></div>
+            <div class="kv"><span>Collected by</span><b>Yaw Adjei · link</b></div>
+            <div class="kv"><span>Date</span><b>6 Oct 2026, 10:42</b></div>
+            <div class="kv"><span>Reference</span><b class="row" style="gap:6px">HG-48210<svg class="i sm muted"><use href="#i-copy"/></svg></b></div>
+          </div>
+          <div class="cap" style="padding:2px 4px 0">ANSWERS</div>
+          <div class="card p0"><div class="kv"><span>Which side?</span><b>Groom's family</b></div><div class="kv" style="display:block"><span>Message</span><p class="small mt4" style="color:var(--ink)">"Congratulations to you both! God bless your home."</p></div></div>
+          <div class="row"><div class="btn sec"><svg class="i"><use href="#i-download"/></svg>Receipt</div><div class="btn sec"><svg class="i"><use href="#i-help"/></svg>Help</div></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A full page instead of a long sheet. Payout approvals reuse it with Approve / Reject at the bottom.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Filters</b><span>sheet</span></div>
+      <div class="phone" style="height:900px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Activity</div></div>
+        <div class="scrim"></div>
+        <div class="sheet" style="top:120px">
+          <div class="grab"></div>
+          <div class="sh-h"><div class="h2">Filters</div><span class="link">Reset</span></div>
+          <div class="stack s6"><div class="cap">PERIOD</div><div class="seg"><div>Today</div><div class="on">7 days</div><div>30 days</div><div>Custom</div></div></div>
+          <div class="stack s6"><div class="cap">JARS</div><div class="chips"><span class="chip on">Wedding</span><span class="chip">Harvest</span><span class="chip">Youth Camp</span></div></div>
+          <div class="stack s6"><div class="cap">TYPE</div><div class="chips"><span class="chip on">Money in</span><span class="chip">Transfers</span><span class="chip">Refunds</span></div></div>
+          <div class="stack s6"><div class="cap">STATUS</div><div class="chips"><span class="chip on">Completed</span><span class="chip on">Pending</span><span class="chip">Failed</span></div></div>
+          <div class="stack s6"><div class="cap">METHOD</div><div class="chips"><span class="chip">MTN</span><span class="chip">Telecel</span><span class="chip">Card</span><span class="chip">Cash</span></div></div>
+          <div class="stack s6"><div class="cap">COLLECTOR</div><div class="chips"><span class="chip">Me</span><span class="chip">Yaw</span><span class="chip">Kwame</span><span class="chip">Efua</span></div></div>
+          <div class="btn mt8">Show 42 payments</div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Export</b><span>sheet</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Activity</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sh-h"><div class="h2">Export statement</div><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div></div>
+          <div class="card fill row" style="padding:12px 14px"><svg class="i muted"><use href="#i-calendar"/></svg><div class="grow small" style="color:var(--ink)">30 Sep – 6 Oct · Wedding</div><span class="link">Edit</span></div>
+          <div class="opt on"><div class="ic neg"><svg class="i"><use href="#i-pdf"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">PDF statement</div><div class="tiny">Totals, payments, answers</div></div><span class="rd on"></span></div>
+          <div class="opt"><div class="ic pos"><svg class="i"><use href="#i-list"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">CSV for Excel</div><div class="tiny">One row per payment</div></div><span class="rd"></span></div>
+          <div class="opt"><div class="ic info"><svg class="i"><use href="#i-message"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">WhatsApp list</div><div class="tiny">Names and amounts only</div></div><span class="rd"></span></div>
+          <div class="btn">Export 42 payments</div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ INSIGHTS ============ -->
+<section class="section" id="insights">
+  <div class="section-head"><span class="num">06</span><h2>Insights</h2><p>New, in the Finanzguru spirit: how each jar is doing, where the money comes from, who brings it in, and whether you'll hit the goal.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Insights</b><span>tab · Insights</span></div>
+      <div class="phone" style="height:1040px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="bigtitle grow" style="padding-left:4px">Insights</div><span class="chip" style="height:34px">💍 Wedding <svg class="i xs"><use href="#i-down"/></svg></span></div>
+        <div class="content" style="gap:12px">
+          <div class="seg"><div>Week</div><div class="on">Month</div><div>All time</div></div>
+          <div class="card">
+            <div class="between"><div><div class="tiny">Collected in October</div><div class="num" style="font-size:30px">7,940<span class="c">.00</span></div></div><span class="tag pos">↑ 34%</span></div>
+            <div class="bars mt16">
+              <div class="b"><i style="height:30%"></i><span>Mon</span></div><div class="b"><i style="height:22%"></i><span>Tue</span></div><div class="b"><i style="height:40%"></i><span>Wed</span></div><div class="b"><i style="height:35%"></i><span>Thu</span></div><div class="b"><i style="height:58%"></i><span>Fri</span></div><div class="b on"><i style="height:100%"></i><span>Sat</span></div><div class="b"><i style="height:66%"></i><span>Sun</span></div>
+            </div>
+            <div class="tiny mt12">Saturdays bring in <b style="color:var(--ink)">2.4×</b> your average day.</div>
+          </div>
+          <div class="card">
+            <div class="h3">How people pay</div>
+            <div class="row mt12" style="gap:16px">
+              <svg viewBox="0 0 42 42" width="96" height="96" style="flex:none;transform:rotate(-90deg)"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#F1F2F5" stroke-width="6"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#FFCB05" stroke-width="6" stroke-dasharray="48 52"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#E30613" stroke-width="6" stroke-dasharray="14 86" stroke-dashoffset="-48"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#2E7CF6" stroke-width="6" stroke-dasharray="26 74" stroke-dashoffset="-62"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#0F9F61" stroke-width="6" stroke-dasharray="12 88" stroke-dashoffset="-88"/></svg>
+              <div class="stack s6 grow">
+                <div class="between"><span class="legend"><i style="background:#FFCB05"></i>MTN MoMo</span><b style="font-size:13px">48%</b></div>
+                <div class="between"><span class="legend"><i style="background:#E30613"></i>Telecel</span><b style="font-size:13px">14%</b></div>
+                <div class="between"><span class="legend"><i style="background:#2E7CF6"></i>Card</span><b style="font-size:13px">26%</b></div>
+                <div class="between"><span class="legend"><i style="background:#0F9F61"></i>Cash</span><b style="font-size:13px">12%</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="card p0 list">
+            <div class="li"><div class="h3">Top collectors</div><div class="e link" style="font-size:13px">All</div></div>
+            <div class="li"><span class="tiny" style="width:12px">1</span><div class="av sm a1">AM</div><div class="grow"><div class="t" style="font-size:14px">Ama (you)</div><div class="bar mt4"><i style="width:100%"></i></div></div><div class="e num" style="font-size:14px">6,120</div></div>
+            <div class="li"><span class="tiny" style="width:12px">2</span><div class="av sm a2">YA</div><div class="grow"><div class="t" style="font-size:14px">Yaw Adjei</div><div class="bar mt4"><i style="width:65%"></i></div></div><div class="e num" style="font-size:14px">3,980</div></div>
+            <div class="li"><span class="tiny" style="width:12px">3</span><div class="av sm a3">KA</div><div class="grow"><div class="t" style="font-size:14px">Kwame Asante</div><div class="bar mt4"><i style="width:39%"></i></div></div><div class="e num" style="font-size:14px">2,380</div></div>
+          </div>
+          <div class="row" style="gap:8px">
+            <div class="card grow" style="padding:14px"><div class="tiny">Average gift</div><div class="num mt4" style="font-size:20px">84.30</div></div>
+            <div class="card grow" style="padding:14px"><div class="tiny">Contributors</div><div class="num mt4" style="font-size:20px">148</div></div>
+          </div>
+        </div>
+        <div class="tabbar"><div class="tab"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab on"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Shows the best day to share, the payment mix, a collector leaderboard and the average gift.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Goal forecast</b><span>insight detail</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Goal forecast</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card">
+            <div class="tiny">Projected by 24 Oct</div>
+            <div class="num" style="font-size:34px">21,300<span class="c">.00</span></div>
+            <span class="tag pos mt4">On track · 106% of goal</span>
+            <svg viewBox="0 0 320 130" style="width:100%;height:130px;margin-top:14px"><line x1="0" y1="26" x2="320" y2="26" stroke="#0B0D12" stroke-dasharray="4 4" stroke-width="1"/><text x="0" y="18" font-size="10" fill="#8A8F9C" font-family="Inter">Goal 20,000</text><path d="M0 120 L40 112 L80 104 L120 90 L160 78 L200 60" fill="none" stroke="#5B4FF7" stroke-width="2.4" stroke-linecap="round"/><path d="M200 60 L240 46 L280 32 L320 20" fill="none" stroke="#5B4FF7" stroke-width="2.4" stroke-dasharray="5 5" stroke-linecap="round"/><circle cx="200" cy="60" r="4.5" fill="#5B4FF7"/><text x="200" y="124" text-anchor="middle" font-size="10" fill="#4A5060" font-family="Inter">Today</text><line x1="200" y1="66" x2="200" y2="112" stroke="#D0D4DB" stroke-dasharray="2 3"/></svg>
+          </div>
+          <div class="note brand"><div class="ic sm solid"><svg class="i sm"><use href="#i-bolt"/></svg></div><div><b>Share on Friday evening</b>Your last two Friday shares brought in GHS 1,900 by Sunday.</div></div>
+          <div class="btn"><svg class="i"><use href="#i-share"/></svg>Share jar now</div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ COLLECTORS ============ -->
+<section class="section" id="collectors">
+  <div class="section-head"><span class="num">07</span><h2>Collectors</h2><p>Your team, with what each person brought in and who still hasn't accepted.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Team</b><span>collectors</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Team</div><div class="ib box"><svg class="i"><use href="#i-plus"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <div class="cap" style="padding:0 4px">ACTIVE · 3</div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a1">AM</div><div class="grow"><div class="t">Ama Mensah</div><div class="s">61 payments</div></div><div class="e"><div><div class="num" style="font-size:15px">6,120.00</div><span class="tag dark">Owner</span></div></div></div>
+            <div class="li"><div class="av a2">YA</div><div class="grow"><div class="t">Yaw Adjei</div><div class="s">47 payments</div></div><div class="e"><div><div class="num" style="font-size:15px">3,980.00</div><span class="tag gray">Collector</span></div></div></div>
+            <div class="li"><div class="av a3">KA</div><div class="grow"><div class="t">Kwame Asante</div><div class="s">40 payments</div></div><div class="e"><div><div class="num" style="font-size:15px">2,380.00</div><span class="tag gray">Collector</span></div></div></div>
+          </div>
+          <div class="cap" style="padding:0 4px">INVITED · 2</div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a4">EB</div><div class="grow"><div class="t">Efua Boateng</div><div class="s">2 days ago</div></div><div class="e"><span class="btn fill xs">Remind</span></div></div>
+            <div class="li"><div class="av a5">NO</div><div class="grow"><div class="t">Nana Owusu</div><div class="s">Today</div></div><div class="e"><span class="btn fill xs">Remind</span></div></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Invite</b><span>search</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Invite collectors</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="search w" style="box-shadow:inset 0 0 0 2px var(--brand);color:var(--ink)"><svg class="i"><use href="#i-search"/></svg>kofi</div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a2">KB</div><div class="grow"><div class="t">Kofi Boateng</div><div class="s">@kofib · 024 ••• 8812</div></div><span class="cb on"><svg class="i xs"><use href="#i-check"/></svg></span></div>
+            <div class="li"><div class="av a3">KO</div><div class="grow"><div class="t">Kofi Owusu</div><div class="s">@kofi.owusu · 020 ••• 1190</div></div><span class="cb"></span></div>
+            <div class="li"><div class="av a5">KA</div><div class="grow"><div class="t">Kofi Amoah</div><div class="s">@kamoah · 054 ••• 3321</div></div><span class="cb"></span></div>
+          </div>
+          <div class="note white"><svg class="i muted"><use href="#i-info"/></svg><span>Collectors can take payments for this jar. They can't move money out.</span></div>
+        </div>
+        <div class="foot"><div class="btn">Invite 1 person</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PAYOUTS ============ -->
+<section class="section" id="payouts">
+  <div class="section-head"><span class="num">08</span><h2>Payouts</h2><p>Transfers work like a banking app: choose an amount, review the fee and the destination, confirm with a code, then track it.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Transfer · amount</b><span>/withdraw</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Transfer</div><div class="sp"></div></div>
+        <div class="content" style="gap:10px">
+          <div class="card fill row" style="padding:12px 14px"><div class="thumb" style="width:32px;height:32px;border-radius:9px"><img src="../mobile_app/assets/images/onboarding/image2.png" alt=""></div><div class="grow"><div class="tiny">From</div><div class="h3" style="font-size:14px">Wedding · 9,860.00 available</div></div></div>
+          <div class="center" style="padding-top:14px"><div class="num" style="font-size:56px"><span class="cur">GHS</span>9,860</div><span class="chip mt8" style="height:30px">Use all</span></div>
+          <div class="card fill row" style="padding:12px 14px;margin-top:6px"><span class="ic sm momo">MTN</span><div class="grow"><div class="tiny">To</div><div class="h3" style="font-size:14px">Ama Mensah · ••• 4567</div></div><svg class="i sm muted"><use href="#i-down"/></svg></div>
+        </div>
+        <div class="keypad" style="padding:0 24px 4px"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>.</div><div>0</div><div><svg class="i lg"><use href="#i-backspace"/></svg></div></div>
+        <div class="foot" style="padding-top:4px"><div class="btn">Review</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">You can now transfer part of the balance, not only all of it.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Transfer · review</b><span>confirm</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Review transfer</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="center" style="padding:10px 0"><div class="tiny">You'll receive</div><div class="num" style="font-size:42px"><span class="cur">GHS</span>9,761<span class="c">.40</span></div></div>
+          <div class="card p0">
+            <div class="kv"><span>Amount</span><b>GHS 9,860.00</b></div>
+            <div class="kv"><span>Fee · 1%</span><b>− GHS 98.60</b></div>
+            <div class="kv"><span>To</span><b>MTN MoMo · 024 ••• 4567</b></div>
+            <div class="kv"><span>Name</span><b>AMA MENSAH</b></div>
+            <div class="kv"><span>Arrives</span><b>Usually within minutes</b></div>
+          </div>
+          <div class="tiny" style="padding:0 4px">Cash and card payments still clearing aren't included.</div>
+        </div>
+        <div class="foot"><div class="btn">Confirm with code</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Transfer · status</b><span>tracking</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="sp"></div><div class="t"></div><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div></div>
+        <div class="content p20" style="gap:14px;padding-top:24px">
+          <div class="ic xl brand"><svg class="i xl"><use href="#i-send"/></svg></div>
+          <div class="stack s4"><div class="h1">Transfer on its way</div><div class="num" style="font-size:32px">9,761<span class="c">.40</span></div><div class="small">to MTN MoMo ••• 4567</div></div>
+          <div class="steps mt8">
+            <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div><div class="small" style="color:var(--ink)">Requested</div><div class="tiny">10:58</div></div></div>
+            <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div><div class="small" style="color:var(--ink)">Sent by Hogapay</div><div class="tiny">10:58</div></div></div>
+            <div class="stp"><span class="d cur">3</span><div><div class="small" style="color:var(--ink);font-weight:600">Arriving in your wallet</div><div class="tiny">We'll notify you</div></div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Done</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Balance</b><span>breakdown sheet</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Wedding</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sh-h"><div class="h2">Balance explained</div><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div></div>
+          <div class="stacked"><i style="flex:48;background:#FFCB05"></i><i style="flex:14;background:#E30613"></i><i style="flex:26;background:#2E7CF6"></i><i style="flex:12;background:#0F9F61"></i></div>
+          <div class="card fill p0">
+            <div class="kv"><span>Collected</span><b>GHS 12,480.00</b></div>
+            <div class="kv"><span>Transferred</span><b>− GHS 2,000.00</b></div>
+            <div class="kv"><span>Clearing (card)</span><b class="warn">− GHS 640.00</b></div>
+            <div class="kv"><span>Cash (already with you)</span><b>− GHS 1,500.00</b></div>
+            <div class="kv"><span style="color:var(--ink);font-weight:600">Available to transfer</span><b class="num" style="font-size:16px">GHS 9,860.00</b></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">A running subtraction shows exactly how the available amount is worked out.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Payout accounts</b><span>/withdrawal_accounts</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Payout accounts</div><div class="ib box"><svg class="i"><use href="#i-plus"/></svg></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card p0 list">
+            <div class="li"><span class="ic momo">MTN</span><div class="grow"><div class="t">Ama Mensah</div><div class="s">MoMo · 024 ••• 4567</div></div><span class="tag dark">Default</span></div>
+            <div class="li"><span class="ic info"><svg class="i"><use href="#i-bank"/></svg></span><div class="grow"><div class="t">Savings</div><div class="s">GCB Bank · ••• 2210</div></div><svg class="i sm chev"><use href="#i-chev"/></svg></div>
+            <div class="li"><span class="ic tel">T</span><div class="grow"><div class="t">Church account</div><div class="s">Telecel Cash · 020 ••• 7781</div></div><svg class="i sm chev"><use href="#i-chev"/></svg></div>
+          </div>
+          <div class="tiny" style="padding:0 4px">Tap an account to rename it, make it the default, or remove it.</div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Add account</b><span>pushed page</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Add account</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="seg"><div class="on">Mobile money</div><div>Bank</div></div>
+          <div class="group">
+            <div class="fl"><span class="lb">Network</span><span class="v"><span class="ic sm momo" style="width:22px;height:22px;border-radius:6px;font-size:7px">MTN</span>MTN MoMo<span class="end"><svg class="i sm"><use href="#i-down"/></svg></span></span></div>
+            <div class="fl on"><span class="lb">Number</span><span class="v">024 123 4567</span></div>
+          </div>
+          <div class="card row" style="padding:12px 14px;background:var(--pos-soft)"><span class="ic sm pos" style="background:#fff"><svg class="i sm"><use href="#i-check"/></svg></span><div><div class="tiny">Registered to</div><div class="h3" style="font-size:14px">AMA MENSAH</div></div></div>
+          <div class="fl"><span class="lb">Nickname (optional)</span><span class="v"><span class="ph">Personal, Church…</span></span></div>
+          <div class="card p0 list"><div class="li"><div class="t">Make default</div><div class="e"><span class="tg on"></span></div></div></div>
+        </div>
+        <div class="foot"><div class="btn">Save account</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ VERIFICATION ============ -->
+<section class="section" id="verify">
+  <div class="section-head"><span class="num">09</span><h2>Verification</h2><p>Personal accounts verify an ID. Organizations verify the business. Each is a checklist with a clear status.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Verify ID</b><span>/kycView · personal</span></div>
+      <div class="phone"><div class="screen white"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib fill"><svg class="i"><use href="#i-close"/></svg></div><div class="t"></div><div class="sp"></div></div>
+        <div class="content p20" style="gap:16px">
+          <div class="ic xl info"><svg class="i xl"><use href="#i-shield"/></svg></div>
+          <div class="stack s6"><div class="h1">Verify your ID to start collecting</div><p class="body">Required by Bank of Ghana rules for payment apps.</p></div>
+          <div class="card fill p0 list">
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-card"/></svg></div><div><div class="t" style="font-size:14px">Ghana Card or passport</div></div></div>
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-camera"/></svg></div><div><div class="t" style="font-size:14px">A quick selfie</div></div></div>
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-clock"/></svg></div><div><div class="t" style="font-size:14px">Review within 24 hours</div></div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Start · about 3 min</div><div class="row tiny" style="justify-content:center;gap:6px"><svg class="i xs"><use href="#i-lock"/></svg>Encrypted and handled by our ID partner</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>ID status</b><span>/kycView · in review</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Verification</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card">
+            <div class="between"><div class="h3">Identity check</div><span class="tag warn">In review</span></div>
+            <div class="steps mt16">
+              <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div class="small" style="color:var(--ink)">Ghana Card uploaded</div></div>
+              <div class="stp"><span class="d done"><svg class="i xs"><use href="#i-check"/></svg></span><div class="small" style="color:var(--ink)">Selfie matched</div></div>
+              <div class="stp"><span class="d cur">3</span><div><div class="small" style="color:var(--ink);font-weight:600">Manual review</div><div class="tiny">Usually under 24 hours</div></div></div>
+            </div>
+          </div>
+          <div class="note white"><svg class="i muted"><use href="#i-info"/></svg><span>You can set up jars now. Payments open as soon as you're approved.</span></div>
+          <div class="card row" style="background:var(--pos-soft)"><div class="ic pos" style="background:#fff"><svg class="i"><use href="#i-shield"/></svg></div><div><div class="h3" style="font-size:14px">When approved</div><div class="tiny">Your status changes to "Verified" here and on your profile.</div></div></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Business verification</b><span>/businessKyb</span></div>
+      <div class="phone" style="height:840px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Business verification</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card">
+            <div class="between"><div class="h3">2 of 4 complete</div><span class="tiny">2–3 day review</span></div>
+            <div class="bar mt8"><i style="width:50%"></i></div>
+          </div>
+          <div class="fl on"><span class="lb">Registered business name</span><span class="v">Grace Chapel International</span></div>
+          <div class="cap" style="padding:2px 4px 0">DOCUMENTS</div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic pos"><svg class="i"><use href="#i-check"/></svg></div><div class="grow"><div class="t" style="font-size:14px">Certificate of registration</div><div class="s">certificate.pdf</div></div><span class="link" style="font-size:13px">Replace</span></div>
+            <div class="li"><div class="ic"><svg class="i"><use href="#i-file"/></svg></div><div class="grow"><div class="t" style="font-size:14px">Proof of address</div><div class="s">Under 3 months old</div></div><span class="btn fill xs">Upload</span></div>
+          </div>
+          <div class="cap" style="padding:2px 4px 0">DIRECTORS</div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a2">SO</div><div class="grow"><div class="t" style="font-size:14px">Rev. Samuel Ofori</div><div class="s">ID front ✓ · back missing</div></div><span class="tag warn">1 left</span></div>
+            <div class="li"><svg class="i sm brand"><use href="#i-plus"/></svg><div class="t brand" style="font-size:14px">Add director</div></div>
+          </div>
+          <div class="note info"><svg class="i" style="color:var(--info)"><use href="#i-info"/></svg><span>Organizations don't need personal ID checks. This is the only step.</span></div>
+        </div>
+        <div class="foot edge"><div class="btn off">Submit for review</div></div><div class="home-ind"></div>
+      </div></div>
+      <p class="shot-note">Documents and directors are list rows with status, not a long form. Submit unlocks at 4 of 4.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Business · action needed</b><span>rejected</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-close"/></svg></div><div class="t">Business verification</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="note neg"><svg class="i neg"><use href="#i-alert"/></svg><div><b>1 document needs fixing</b>Proof of address is older than 3 months.</div></div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic pos"><svg class="i"><use href="#i-check"/></svg></div><div class="grow"><div class="t" style="font-size:14px">Certificate of registration</div><div class="s">Accepted</div></div></div>
+            <div class="li"><div class="ic neg"><svg class="i"><use href="#i-close"/></svg></div><div class="grow"><div class="t" style="font-size:14px">Proof of address</div><div class="s neg">Upload a newer one</div></div><span class="btn xs">Replace</span></div>
+            <div class="li"><div class="ic pos"><svg class="i"><use href="#i-check"/></svg></div><div class="grow"><div class="t" style="font-size:14px">Directors (1)</div><div class="s">Accepted</div></div></div>
+          </div>
+        </div>
+        <div class="foot"><div class="btn">Resubmit</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PROFILE ============ -->
+<section class="section" id="profile">
+  <div class="section-head"><span class="num">10</span><h2>Profile</h2><p>Account, security and app settings in grouped lists, with verification status at the top.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Profile</b><span>tab · Profile</span></div>
+      <div class="phone" style="height:1230px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="bigtitle grow" style="padding-left:4px">Profile</div></div>
+        <div class="content" style="gap:12px">
+          <div class="card row" style="padding:16px"><div class="av lg"><img src="../mobile_app/assets/images/onboarding/image5.png" alt=""></div><div class="grow"><div class="h2">Ama Mensah</div><div class="tiny mt2">@amamensah</div><div class="row mt8" style="gap:4px"><span class="tag pos">ID verified</span><span class="tag gray">Personal</span></div></div><svg class="i sm chev" style="color:var(--faint)"><use href="#i-chev"/></svg></div>
+          <div class="card row" style="padding:14px;background:var(--brand);color:#fff"><div class="ic" style="background:rgba(255,255,255,.16);color:#fff"><svg class="i"><use href="#i-gift"/></svg></div><div class="grow"><div class="h3" style="font-size:14px">Invite friends, earn GHS 5</div><div style="font-size:12px;opacity:.75">GHS 15.00 earned so far</div></div><svg class="i sm"><use href="#i-chev"/></svg></div>
+          <div class="cap" style="padding:4px 4px 0">ACCOUNT</div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-user"/></svg></div><div class="t">Personal details</div><svg class="i sm chev e"><use href="#i-chev"/></svg></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-wallet"/></svg></div><div class="t">Payout accounts</div><div class="e"><span class="tiny">3</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-building"/></svg></div><div class="t">Upgrade to organization</div><svg class="i sm chev e"><use href="#i-chev"/></svg></div>
+          </div>
+          <div class="cap" style="padding:4px 4px 0">SECURITY</div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-phone"/></svg></div><div class="t">Phone number</div><div class="e"><span class="tiny">024 ••• 4567</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-lock"/></svg></div><div class="t">Face ID to open app</div><div class="e"><span class="tg on"></span></div></div>
+          </div>
+          <div class="cap" style="padding:4px 4px 0">APP</div>
+          <div class="card p0 list">
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-globe"/></svg></div><div class="t">Language</div><div class="e"><span class="tiny">English</span><svg class="i sm chev"><use href="#i-chev"/></svg></div></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-bell"/></svg></div><div class="t">Notifications</div><svg class="i sm chev e"><use href="#i-chev"/></svg></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-help"/></svg></div><div class="t">Help &amp; contact</div><svg class="i sm chev e"><use href="#i-chev"/></svg></div>
+            <div class="li"><div class="ic sm"><svg class="i sm"><use href="#i-file"/></svg></div><div class="t">Legal</div><svg class="i sm chev e"><use href="#i-chev"/></svg></div>
+          </div>
+          <div class="card p0 list"><div class="li"><div class="t">Log out</div></div><div class="li"><div class="t neg">Close account</div></div></div>
+          <p class="tiny center">Hogapay 0.16.125</p>
+        </div>
+        <div class="tabbar"><div class="tab"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab on"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Personal details</b><span>/personal_details</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Personal details</div><span class="link" style="width:40px">Save</span></div>
+        <div class="content" style="gap:12px">
+          <div class="group">
+            <div class="fl ro"><span class="lb">Full name</span><span class="v">Ama Mensah<span class="end"><svg class="i sm"><use href="#i-lock"/></svg></span></span></div>
+            <div class="fl ro"><span class="lb">Username</span><span class="v">@amamensah<span class="end"><svg class="i sm"><use href="#i-lock"/></svg></span></span></div>
+          </div>
+          <div class="help">Name is locked after ID verification. <span class="link" style="font-size:12px">Request a change</span></div>
+          <div class="group">
+            <div class="fl on"><span class="lb">Email</span><span class="v">ama.mensah@gmail.com</span></div>
+            <div class="fl"><span class="lb">Country</span><span class="v">🇬🇭 Ghana<span class="end"><svg class="i sm"><use href="#i-down"/></svg></span></span></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Language</b><span>/language_settings</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Language</div><div class="sp"></div></div>
+        <div class="content"><div class="card p0 list">
+          <div class="li"><span style="font-size:20px">🇬🇧</span><div class="t">English</div><div class="e"><span class="rd on"></span></div></div>
+          <div class="li"><span style="font-size:20px">🇫🇷</span><div class="t">Français</div><div class="e"><span class="rd"></span></div></div>
+        </div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Close account</b><span>flow</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Close account</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="h1" style="padding:0 4px">Why are you leaving?</div>
+          <div class="card p0 list">
+            <div class="li"><div class="t" style="font-size:14px">I don't need it anymore</div><div class="e"><span class="rd"></span></div></div>
+            <div class="li"><div class="t" style="font-size:14px">Fees are too high</div><div class="e"><span class="rd on"></span></div></div>
+            <div class="li"><div class="t" style="font-size:14px">Problems with payments</div><div class="e"><span class="rd"></span></div></div>
+            <div class="li"><div class="t" style="font-size:14px">Security concerns</div><div class="e"><span class="rd"></span></div></div>
+            <div class="li"><div class="t" style="font-size:14px">Something else</div><div class="e"><span class="rd"></span></div></div>
+          </div>
+          <div class="note neg"><svg class="i neg"><use href="#i-alert"/></svg><span>You still have <b style="display:inline">GHS 9,860.00</b> in jars. Transfer it first.</span></div>
+        </div>
+        <div class="foot"><div class="btn" style="background:var(--neg)">Close account</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ INBOX & REFERRAL ============ -->
+<section class="section" id="inbox">
+  <div class="section-head"><span class="num">11</span><h2>Inbox &amp; referral</h2><p>The bell opens an inbox split into "Action needed" and "Updates". Referral earnings look like a small account.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Inbox</b><span>/notifications</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Inbox</div><span class="link" style="width:40px;font-size:13px">Read</span></div>
+        <div class="content" style="gap:12px">
+          <div class="tabs"><div class="on">Action needed · 2</div><div>Updates</div></div>
+          <div class="card">
+            <div class="row" style="align-items:flex-start"><div class="ic brand"><svg class="i"><use href="#i-users"/></svg></div><div class="grow"><div class="small" style="color:var(--ink)"><b>Rev. Ofori</b> invited you to collect for <b>Easter Convention</b></div><div class="tiny mt2">2 h ago</div></div></div>
+            <div class="row mt12" style="padding-left:50px"><span class="btn xs">View</span><span class="btn fill xs">Decline</span></div>
+          </div>
+          <div class="card">
+            <div class="row" style="align-items:flex-start"><div class="ic warn"><svg class="i"><use href="#i-send"/></svg></div><div class="grow"><div class="small" style="color:var(--ink)">Approve a <b>GHS 5,000</b> transfer from Youth Camp</div><div class="tiny mt2">1 of 2 approvals · 5 h ago</div></div></div>
+            <div class="row mt12" style="padding-left:50px"><span class="btn xs">Review</span></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Jar invitation</b><span>sheet</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Inbox</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="row"><div class="thumb" style="width:56px;height:56px"><img src="../mobile_app/assets/images/onboarding/image8.png" alt=""></div><div><div class="h2">Easter Convention</div><div class="tiny mt2">Church · GHS 31,900 raised</div></div></div>
+          <div class="card fill p0">
+            <div class="kv"><span>Organizer</span><b>Grace Chapel Intl.</b></div>
+            <div class="kv"><span>Status</span><b><span class="tag pos">Verified business</span></b></div>
+            <div class="kv"><span>Your role</span><b>Collector</b></div>
+          </div>
+          <div class="tiny">Only accept if you know this organizer. <span class="link" style="font-size:12px">Report</span></div>
+          <div class="row"><div class="btn sec">Decline</div><div class="btn">Accept</div></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Referral</b><span>/referral</span></div>
+      <div class="phone" style="height:820px"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="ib box"><svg class="i"><use href="#i-back"/></svg></div><div class="t">Invite &amp; earn</div><div class="sp"></div></div>
+        <div class="content" style="gap:12px">
+          <div class="card dark" style="padding:18px">
+            <div style="font-size:12px;opacity:.6">Referral balance</div>
+            <div class="num" style="font-size:36px;color:#fff">15<span style="color:rgba(255,255,255,.4)">.00</span></div>
+            <div style="font-size:12px;opacity:.6">GHS 42.50 earned in total</div>
+            <div class="btn mt16" style="background:#fff;color:var(--ink)">Withdraw</div>
+          </div>
+          <div class="card row" style="padding:14px"><div class="grow"><div class="tiny">Your code</div><div class="num" style="font-size:22px;letter-spacing:2px">AMA24</div></div><div class="ib fill"><svg class="i"><use href="#i-copy"/></svg></div><div class="ib" style="background:var(--ink);color:#fff"><svg class="i"><use href="#i-share"/></svg></div></div>
+          <div class="card">
+            <div class="h3">How you earn</div>
+            <div class="steps mt12">
+              <div class="stp"><span class="d">1</span><div class="small">Friend signs up with your code</div></div>
+              <div class="stp"><span class="d">2</span><div class="small">Their jar gets its first payment: you get <b style="color:var(--ink)">GHS 5</b></div></div>
+              <div class="stp"><span class="d">3</span><div class="small">Then <b style="color:var(--ink)">20%</b> of our fees on their jars</div></div>
+            </div>
+          </div>
+          <div class="cap" style="padding:2px 4px 0">EARNINGS</div>
+          <div class="card p0 list">
+            <div class="li"><div class="av a2">KB</div><div><div class="t">Kofi Boateng</div><div class="s">First payment bonus</div></div><div class="e num pos" style="font-size:15px">+5.00</div></div>
+            <div class="li"><div class="av a3">EA</div><div><div class="t">Esi Appiah</div><div class="s">20% of fees · Sep</div></div><div class="e num pos" style="font-size:15px">+10.00</div></div>
+          </div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ FEEDBACK ============ -->
+<section class="section" id="feedback">
+  <div class="section-head"><span class="num">12</span><h2>Feedback</h2><p>Toasts, sheets, and loading and error states, all in the same style.</p></div>
+  <div class="board">
+
+    <div class="shot"><div class="shot-label"><b>Toasts</b><span>snackbars</span></div>
+      <div class="stack" style="background:var(--bg);border-radius:28px;padding:18px">
+        <div class="toast"><span class="ti" style="background:var(--pos)"><svg class="i xs"><use href="#i-check"/></svg></span>Payment recorded<span style="margin-left:auto;opacity:.6">Undo</span></div>
+        <div class="toast"><span class="ti" style="background:var(--neg)"><svg class="i xs"><use href="#i-close"/></svg></span>Payment failed. Try again.</div>
+        <div class="toast"><span class="ti" style="background:var(--warn)"><svg class="i xs"><use href="#i-clock"/></svg></span>Your ID is still in review</div>
+        <div class="toast"><span class="ti" style="background:var(--brand)"><svg class="i xs"><use href="#i-copy"/></svg></span>Link copied</div>
+      </div>
+      <p class="shot-note">Ink-black toasts with a coloured status square. Undo where it makes sense.</p>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>About jar</b><span>info sheet · collectors</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Harvest</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="row"><div class="thumb" style="width:56px;height:56px"><img src="../mobile_app/assets/images/onboarding/image8.png" alt=""></div><div><div class="h2">Grace Chapel Harvest</div><div class="tiny mt2">Church · you're a collector</div></div></div>
+          <p class="small">Annual harvest thanksgiving. Funds go to the new children's wing.</p>
+          <div class="card fill p0"><div class="kv"><span>Organizer</span><b>Rev. Samuel Ofori</b></div><div class="kv"><span>Pays out to</span><b>GCB Bank ••• 0912</b></div></div>
+          <div class="row"><div class="btn sec"><svg class="i"><use href="#i-flag"/></svg>Report</div><div class="btn danger">Leave jar</div></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Add photo</b><span>uploader sheet</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div><div class="content"><div class="bigtitle">Jar settings</div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="h2">Add photo</div>
+          <div class="card fill p0 list">
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-camera"/></svg></div><div class="t">Take photo</div></div>
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-image"/></svg></div><div class="t">Choose from library</div></div>
+            <div class="li"><div class="ic sm" style="background:#fff"><svg class="i sm"><use href="#i-file"/></svg></div><div class="t">Upload file</div></div>
+          </div>
+          <div class="card outline row" style="padding:10px 12px"><div class="thumb" style="width:36px;height:36px;border-radius:9px"><img src="../mobile_app/assets/images/onboarding/image3.png" alt=""></div><div class="grow"><div class="tiny">IMG_2041.jpg · 70%</div><div class="bar mt4"><i style="width:70%"></i></div></div></div>
+        </div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+    <div class="shot"><div class="shot-label"><b>Loading &amp; error</b><span>any list</span></div>
+      <div class="phone"><div class="screen"><div class="island"></div><div class="status"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+        <div class="nav"><div class="bigtitle grow" style="padding-left:4px">Activity</div></div>
+        <div class="content" style="gap:12px">
+          <div class="card"><div class="skel" style="height:10px;width:30%"></div><div class="skel mt8" style="height:24px;width:60%"></div></div>
+          <div class="card p0 list">
+            <div class="li"><div class="skel" style="width:40px;height:40px;border-radius:12px"></div><div class="grow"><div class="skel" style="height:10px;width:55%"></div><div class="skel mt8" style="height:8px;width:30%"></div></div></div>
+            <div class="li"><div class="skel" style="width:40px;height:40px;border-radius:12px"></div><div class="grow"><div class="skel" style="height:10px;width:45%"></div><div class="skel mt8" style="height:8px;width:25%"></div></div></div>
+          </div>
+          <div class="card center stack" style="align-items:center;padding:22px"><div class="ic lg neg"><svg class="i lg"><use href="#i-alert"/></svg></div><div class="h3">Couldn't load activity</div><div class="tiny">Check your connection.</div><span class="btn sm mt4">Try again</span></div>
+        </div>
+        <div class="tabbar"><div class="tab"><svg class="i lg"><use href="#i-home"/></svg>Home</div><div class="tab"><svg class="i lg"><use href="#i-jar"/></svg>Jars</div><div class="tab on"><svg class="i lg"><use href="#i-activity"/></svg>Activity</div><div class="tab"><svg class="i lg"><use href="#i-chart"/></svg>Insights</div><div class="tab"><svg class="i lg"><use href="#i-user"/></svg>Profile</div></div><div class="home-ind"></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+</div>
+
+<script>
+// Draws a decorative QR-like pattern (not a scannable code) for the Request screen.
+(function () {
+  var el = document.getElementById('qr');
+  if (!el) return;
+  var n = 21, seed = 7;
+  function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  function finder(r, c) {
+    var corners = [[0, 0], [0, n - 7], [n - 7, 0]];
+    for (var k = 0; k < 3; k++) {
+      var y = r - corners[k][0], x = c - corners[k][1];
+      if (y >= 0 && y < 7 && x >= 0 && x < 7) {
+        return y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4) ? 1 : 0;
+      }
+      if (y >= -1 && y <= 7 && x >= -1 && x <= 7) return 0;
+    }
+    return -1;
+  }
+  var html = '';
+  for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+    var f = finder(r, c);
+    var on = f === -1 ? rnd() > 0.52 : f === 1;
+    html += on ? '<i></i>' : '<span></span>';
+  }
+  el.innerHTML = html;
+})();
+</script>
+</body>
+</html>
