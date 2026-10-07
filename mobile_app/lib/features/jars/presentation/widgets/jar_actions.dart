@@ -8,6 +8,7 @@ import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
@@ -172,6 +173,34 @@ class JarActions {
   /// payout account (Home's get-started order).
   static bool needsSetup(BuildContext context) =>
       needsVerification(context) || needsPayoutAccount(context);
+
+  /// Whether all four onboarding steps are done: verified, profile photo,
+  /// payout account and a jar of the user's own. Null while jars still load.
+  /// Home, Jars, Activity and Insights stay locked until this is true.
+  static bool? onboardingComplete(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return false;
+    final user = authState.user;
+    if (user.photo == null || needsSetup(context)) return false;
+    final JarListState jarList;
+    try {
+      jarList = context.read<JarListBloc>().state;
+    } catch (_) {
+      return true; // not provided (e.g. widget tests): don't block
+    }
+    if (jarList is! JarListLoaded) return null;
+    return jarList.jars.groups.any(
+      (g) => g.jars.any((j) => j.creator.id == user.id),
+    );
+  }
+
+  /// Rebuild [context] when anything [onboardingComplete] reads changes.
+  static void watchOnboarding(BuildContext context) {
+    watchSetup(context);
+    try {
+      context.watch<JarListBloc>();
+    } catch (_) {}
+  }
 
   static void openPayoutAccounts(BuildContext context) =>
       context.push(AppRoutes.withdrawalAccounts);
