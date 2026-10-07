@@ -150,7 +150,7 @@
     --muted: 35 36% 92%;
     --muted-foreground: 218 6% 56%; /* #8B8F96 */
 
-    --accent: 75 88% 73%; /* #D9F57A lime */
+    --accent: 35 36% 92%; /* hover fill, same as secondary */
     --accent-foreground: 213 25% 14%;
 
     --destructive: 4 76% 58%; /* #E5483D */
@@ -240,9 +240,30 @@
     box-shadow: inset 0 -2px 0 hsl(var(--foreground));
   }
 
-  .dashboard-theme main [class*='rounded'][class*='text-xs'][class*='font-semibold'][class*='px-2'] {
-    border-radius: 7px;
+  /* v4 radii: cards 16, dialogs 20, inputs/buttons 12, chips/menus 10, tags 7 */
+  .dashboard-theme .rounded { border-radius: 12px; }
+  .dashboard-theme .rounded-sm { border-radius: 8px; }
+  .dashboard-theme .rounded-md { border-radius: 11px; }
+  .dashboard-theme .rounded-lg { border-radius: 14px; }
+  .dashboard-theme .rounded-xl { border-radius: 16px; }
+  .dashboard-theme [role='dialog'] {
+    border-radius: 20px;
+    background-color: hsl(var(--background));
+    box-shadow: 0 24px 60px -20px rgba(27, 35, 46, 0.35);
   }
+  .dashboard-theme [data-radix-popper-content-wrapper] > * {
+    border-radius: 12px;
+    box-shadow: 0 12px 32px -12px rgba(27, 35, 46, 0.25);
+  }
+  .dashboard-theme input:not([type='checkbox']):not([type='radio']),
+  .dashboard-theme textarea,
+  .dashboard-theme [role='combobox'] {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border));
+    border-radius: 12px;
+  }
+  .dashboard-theme button[class*='bg-primary'] { font-weight: 600; }
+
   .dashboard-theme h1,
   .dashboard-theme h2,
   .dashboard-theme h3,

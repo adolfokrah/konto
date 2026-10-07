@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <div className="flex items-center gap-2">
             <img src="/logo_icon.png" alt="" className="h-9 w-9 rounded-[10px]" />
             <span className="font-chillax text-xl font-semibold tracking-tight">Hogapay</span>
-            <span className="rounded-[5px] bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-accent-foreground">
+            <span className="rounded-[5px] bg-[#D9F57A] px-1.5 py-0.5 text-[10px] font-semibold text-[#1B232E]">
               Admin
             </span>
           </div>
