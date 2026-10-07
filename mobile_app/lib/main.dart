@@ -5,6 +5,7 @@ import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.da
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/kyc_bloc.dart';
 import 'package:Hoga/features/business_kyb/logic/bloc/business_kyb_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:Hoga/features/contribution/logic/bloc/export_contributions_bloc.dart';
 import 'package:flutter/services.dart';
@@ -61,7 +62,8 @@ void main() async {
 
   try {
     await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     debugPrint('Firebase init failed: $e');
   }
@@ -97,14 +99,22 @@ void main() async {
           options.replay.onErrorSampleRate =
               1.0; // Still capture all error sessions
         } else {
-          // Staging: Higher sampling for testing
-          options.debug = true;
+          // Staging: Higher sampling for testing. Sentry's own verbose logs
+          // stay off; they flood the console.
+          options.debug = false;
           options.tracesSampleRate = 1.0; // Capture 100% for testing
           options.profilesSampleRate = 1.0;
           options.replay.sessionSampleRate =
               1.0; // Capture all sessions in staging
           options.replay.onErrorSampleRate = 1.0;
           options.enableLogs = true;
+        }
+
+        // Local debug builds: no session replay. It can't read its own frames
+        // there and logs "[Session Replay] Failed to render video" nonstop.
+        if (kDebugMode) {
+          options.replay.sessionSampleRate = 0.0;
+          options.replay.onErrorSampleRate = 0.0;
         }
 
         // Common settings for production and staging
@@ -289,9 +299,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 localeResolutionCallback: (locale, supportedLocales) {
                   // If we already have a resolvedLocale, use that.
                   if (resolvedLocale != null) {
-                    getIt<TranslationService>().updateLocale(
-                      resolvedLocale,
-                    );
+                    getIt<TranslationService>().updateLocale(resolvedLocale);
                     return resolvedLocale;
                   }
                   // Else use system provided locale if supported
