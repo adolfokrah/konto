@@ -1,10 +1,14 @@
 import type { BasePayload } from 'payload'
 import { emailService } from '@/utilities/emailService'
-import { sendSMS } from '@/utilities/sms'
+import { isLocalDevSms, sendSMS } from '@/utilities/sms'
 
 const OTP_VALIDITY_MINUTES = 5
 
+/** Fixed code while developing locally, since no SMS goes out. */
+export const DEV_OTP_CODE = '123456'
+
 export function generateOTPCode(): string {
+  if (isLocalDevSms()) return DEV_OTP_CODE
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 

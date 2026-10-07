@@ -206,5 +206,29 @@ export const getSmsClient = (): SMSClient => {
  * Shorthand helper.
  * await sendSMS(["233xxxxxxxxx"], "Hello!")
  */
-export const sendSMS = (to: string | string[], message: string, skipInvalid = false) =>
-  getSmsClient().send({ to, message, skipInvalid })
+/**
+ * Local development (`next dev`) never sends real SMS: messages are logged
+ * instead, and OTP codes are always 123456 (see utilities/otp.ts).
+ * Set SMS_SEND_IN_DEV=true to send for real while developing.
+ */
+export const isLocalDevSms = () =>
+  process.env.NODE_ENV === 'development' && process.env.SMS_SEND_IN_DEV !== 'true'
+
+export const sendSMS = async (
+  to: string | string[],
+  message: string,
+  skipInvalid = false,
+): Promise<SendSMSResult> => {
+  if (isLocalDevSms()) {
+    const recipients = Array.isArray(to) ? to : [to]
+    console.log(`[dev] SMS not sent to ${recipients.join(', ')}: ${message}`)
+    return {
+      success: true,
+      message: 'Skipped in local development',
+      recipients,
+      sent: 0,
+      failed: 0,
+    }
+  }
+  return getSmsClient().send({ to, message, skipInvalid })
+}

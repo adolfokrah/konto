@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { getJarSummary } from './endpoints/get-jar-summary'
+import { getJarInsights } from './endpoints/get-jar-insights'
 import { getUserJars } from './endpoints/get-user-jars'
 import { acceptDeclineInvite } from './endpoints/accept-decline-invite'
 import { leaveJar } from './endpoints/leave-jar'
@@ -396,6 +397,11 @@ export const Jars: CollectionConfig = {
       method: 'get',
       path: '/:id/summary',
       handler: getJarSummary,
+    },
+    {
+      method: 'get',
+      path: '/:id/insights',
+      handler: getJarInsights,
     },
     {
       method: 'get',
