@@ -759,7 +759,7 @@ class ContributionView extends StatelessWidget {
                                                 Navigator.of(context).pop();
 
                                                 // Navigate to contributions list
-                                                context.push(
+                                                context.go(
                                                   AppRoutes.contributionsList,
                                                 );
                                               } else {

@@ -6,6 +6,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String otp = '/otp';
   static const String jarDetail = '/jar_detail';
+  static const String jars = '/jars';
   static const String contributionRequest = '/request_contribution';
   static const String addContribution = '/add_contribution';
   static const String saveContribution = '/save_contribution';

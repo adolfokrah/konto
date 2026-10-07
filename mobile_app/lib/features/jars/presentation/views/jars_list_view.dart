@@ -22,7 +22,11 @@ import 'package:go_router/go_router.dart';
 import 'package:Hoga/route.dart';
 
 class JarsListView extends StatefulWidget {
-  const JarsListView({super.key});
+  /// Shown as the Jars tab (full screen, no blur or close button) rather than
+  /// the old full-screen switcher dialog.
+  final bool asTab;
+
+  const JarsListView({super.key, this.asTab = false});
 
   /// Show the jars list as a modal with blur background
   static Future<void> showModal(BuildContext context) {
@@ -59,6 +63,7 @@ class _JarsListViewState extends State<JarsListView> {
   void initState() {
     super.initState();
     _loadExpansionState();
+    if (widget.asTab) context.read<JarListBloc>().add(LoadJarList());
   }
 
   Future<void> _loadExpansionState() async {
@@ -121,11 +126,15 @@ class _JarsListViewState extends State<JarsListView> {
             : Theme.of(context).colorScheme.onPrimary;
 
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      filter: ImageFilter.blur(
+        sigmaX: widget.asTab ? 0 : 10,
+        sigmaY: widget.asTab ? 0 : 10,
+      ),
       child: Scaffold(
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface.withValues(alpha: 0.6),
+        backgroundColor:
+            widget.asTab
+                ? Theme.of(context).colorScheme.surface
+                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacingS),
           child: Column(
@@ -136,14 +145,17 @@ class _JarsListViewState extends State<JarsListView> {
               const SizedBox(height: AppSpacing.spacingM),
               Row(
                 children: [
-                  AppIconButton(
-                    onPressed: () {
-                      HapticUtils.heavy();
-                      context.pop();
-                    },
-                    icon: Icons.close,
-                    size: const Size(40, 40),
-                  ),
+                  if (widget.asTab)
+                    Text(localizations.jars, style: TextStyles.headingOne)
+                  else
+                    AppIconButton(
+                      onPressed: () {
+                        HapticUtils.heavy();
+                        context.pop();
+                      },
+                      icon: Icons.close,
+                      size: const Size(40, 40),
+                    ),
                   const Spacer(),
                   AppIconButton(
                     onPressed: () {
@@ -474,11 +486,15 @@ class _JarsListViewState extends State<JarsListView> {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacingXs),
       child: InkWell(
         onTap: () {
-          if (context.canPop()) context.pop();
           HapticUtils.heavy();
           context.read<JarSummaryBloc>().add(
             SetCurrentJarRequested(jarId: jar.id),
           );
+          if (widget.asTab) {
+            context.go(AppRoutes.jarDetail);
+          } else if (context.canPop()) {
+            context.pop();
+          }
         },
         child: Row(
           children: [

@@ -1022,7 +1022,7 @@ class _JarDetailViewState extends State<JarDetailView> {
                                 } catch (_) {
                                   // Bloc not found in context; ignore.
                                 }
-                                context.push(AppRoutes.contributionsList);
+                                context.go(AppRoutes.contributionsList);
                               },
                               child: Text(
                                 localizations.seeAll,

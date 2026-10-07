@@ -10,6 +10,8 @@ import 'package:Hoga/features/authentication/presentation/views/login_view.dart'
 import 'package:Hoga/features/authentication/presentation/views/register_view.dart';
 import 'package:Hoga/features/verification/presentation/pages/otp_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_detail_view.dart';
+import 'package:Hoga/features/jars/presentation/views/jars_list_view.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_goal_view.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_info_view.dart';
@@ -99,13 +101,50 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/otp',
         builder: (context, state) => const OtpView(),
       ),
+      // Signed-in tabs. Screens pushed from here (add contribution, jar settings…)
+      // are top-level routes, so they cover the tab bar.
+      StatefulShellRoute.indexedStack(
+        builder:
+            (context, state, navigationShell) =>
+                MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/jar_detail',
+                builder: (context, state) => const JarDetailView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/jars',
+                builder: (context, state) => const JarsListView(asTab: true),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/contributions_list',
+                builder: (context, state) => const ContributionsListView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/user_account_view',
+                builder: (context, state) => const UserAccountView(),
+              ),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: '/walkthrough',
         builder: (context, state) => const WalkThrough(),
-      ),
-      GoRoute(
-        path: '/jar_detail',
-        builder: (context, state) => const JarDetailView(),
       ),
       GoRoute(
         path: '/request_contribution',
@@ -148,10 +187,6 @@ GoRouter createRouter(AuthBloc authBloc) {
         builder: (context, state) => const JarNameEditView(),
       ),
       GoRoute(
-        path: '/user_account_view',
-        builder: (context, state) => const UserAccountView(),
-      ),
-      GoRoute(
         path: '/personal_details',
         builder: (context, state) => const PersonalDetailsView(),
       ),
@@ -169,10 +204,6 @@ GoRouter createRouter(AuthBloc authBloc) {
           final provider = state.uri.queryParameters['provider'] ?? 'mtn';
           return AwaitMomoPaymentView(provider: provider);
         },
-      ),
-      GoRoute(
-        path: '/contributions_list',
-        builder: (context, state) => const ContributionsListView(),
       ),
       GoRoute(
         path: '/theme_settings',
