@@ -97,7 +97,7 @@ export default async function PushNotificationsPage({ searchParams }: Props) {
       </div>
 
       <TableCard
-        title="All push campaigns"
+        title="Push campaigns"
         description={
           <>
             {campaignsResult.totalDocs} campaign{campaignsResult.totalDocs !== 1 ? 's' : ''} found

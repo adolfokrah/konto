@@ -95,7 +95,7 @@ export default async function SmsPage({ searchParams }: Props) {
       </div>
 
       <TableCard
-        title="All sms campaigns"
+        title="SMS campaigns"
         description={
           <>
             {result.totalDocs} campaign{result.totalDocs !== 1 ? 's' : ''} found

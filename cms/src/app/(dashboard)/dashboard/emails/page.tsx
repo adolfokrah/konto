@@ -246,14 +246,14 @@ export default async function EmailsPage({ searchParams }: Props) {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-3.5rem-2rem)] lg:h-[calc(100vh-3.5rem-3rem)] max-h-full overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div className="flex h-[calc(100vh-60px-2rem)] max-h-full gap-3 overflow-hidden lg:h-[calc(100vh-60px-3rem)]">
         {/* ── Nav sidebar ── */}
-        <aside className="flex w-52 shrink-0 flex-col border-r">
+        <aside className="flex w-44 shrink-0 flex-col">
           <AdminOnly>
-            <div className="p-3">
+            <div className="pb-3">
               <Link
                 href={`?tab=${tab}&compose=1`}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-2.5 text-[13px] font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#1B232E] text-[13.5px] font-semibold text-white transition-opacity hover:opacity-90"
               >
                 <Plus className="h-4 w-4" />
                 Compose
@@ -261,21 +261,21 @@ export default async function EmailsPage({ searchParams }: Props) {
             </div>
           </AdminOnly>
 
-          <nav className="flex-1 space-y-0.5 px-2 pb-3">
+          <nav className="flex-1 space-y-0.5 pb-3">
             {folders.map((f) => (
               <Link
                 key={f.id}
                 href={`?tab=${f.id}`}
-                className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                className={`flex h-9 items-center gap-2.5 rounded-[10px] px-3 text-[13px] transition-colors ${
                   tab === f.id
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'bg-[#D9F57A] font-semibold text-[#1B232E]'
+                    : 'font-medium text-foreground hover:bg-secondary'
                 }`}
               >
                 <f.icon className="h-4 w-4 shrink-0" />
                 <span className="flex-1">{f.label}</span>
                 {f.unread > 0 ? (
-                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground tabular-nums">
+                  <span className="rounded-md bg-[#1B232E] px-1.5 py-px text-[10.5px] font-semibold tabular-nums text-[#D9F57A]">
                     {f.unread}
                   </span>
                 ) : f.count > 0 ? (
@@ -287,7 +287,7 @@ export default async function EmailsPage({ searchParams }: Props) {
             ))}
           </nav>
 
-          <div className="border-t p-3 space-y-1">
+          <div className="space-y-1 pt-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
               Receiving at
             </p>
@@ -300,11 +300,11 @@ export default async function EmailsPage({ searchParams }: Props) {
         {/* ── Email list ── */}
         <div
           className={cn(
-            'flex flex-col border-r overflow-hidden',
+            'flex flex-col overflow-hidden rounded-2xl bg-card',
             selectedEmail ? 'w-72 shrink-0' : 'flex-1',
           )}
         >
-          <div className="flex items-center gap-2 border-b px-3 py-2 shrink-0">
+          <div className="flex shrink-0 items-center gap-2 p-3">
             <div className="flex-1">
               <EmailSearchInput tab={tab} defaultValue={search} />
             </div>
@@ -367,7 +367,7 @@ export default async function EmailsPage({ searchParams }: Props) {
             }}
           />
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-2xl bg-card text-muted-foreground">
             <Inbox className="h-10 w-10 opacity-10" />
             <p className="text-sm">Select a conversation</p>
           </div>

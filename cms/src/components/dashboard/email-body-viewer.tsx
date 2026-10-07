@@ -10,10 +10,11 @@ type Props = {
 // Strip quoted reply text from plain-text bodies
 function stripQuotedText(raw: string): string {
   const lines = raw.split('\n')
-  const quoteStart = lines.findIndex((line) =>
-    /^-{2,}\s*On .+ wrote\s*-{2,}$/i.test(line.trim()) ||
-    /^On .+wrote:$/i.test(line.trim()) ||
-    /^>{1,}/.test(line.trim())
+  const quoteStart = lines.findIndex(
+    (line) =>
+      /^-{2,}\s*On .+ wrote\s*-{2,}$/i.test(line.trim()) ||
+      /^On .+wrote:$/i.test(line.trim()) ||
+      /^>{1,}/.test(line.trim()),
   )
   if (quoteStart > 0) return lines.slice(0, quoteStart).join('\n').trimEnd()
   return raw

@@ -19,14 +19,24 @@ export type ThreadMessage = {
   isRead: boolean
   createdAt: string
   resendEmailId?: string | null
-  linkedUser: { id: string; firstName: string; lastName: string; email: string; photoUrl?: string | null } | null
+  linkedUser: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+    photoUrl?: string | null
+  } | null
   attachments?: { filename: string; contentType?: string | null }[]
 }
 
 function extractName(addr: string): string {
   const m = addr.match(/^([^<]+)</)
   const raw = m ? m[1].trim() : addr.split('@')[0]
-  return raw.replace(/[._-]/g, ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+  return raw
+    .replace(/[._-]/g, ' ')
+    .split(' ')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ')
 }
 
 function extractEmail(addr: string): string {
@@ -49,7 +59,10 @@ function getColor(addr: string, colorMap: Map<string, string>): string {
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
-    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   })
 }
 
@@ -57,7 +70,15 @@ function isImage(contentType?: string | null) {
   return !!(contentType && contentType.startsWith('image/'))
 }
 
-function AttachmentList({ attachments, resendEmailId, direction }: { attachments: ThreadMessage['attachments']; resendEmailId?: string | null; direction: string }) {
+function AttachmentList({
+  attachments,
+  resendEmailId,
+  direction,
+}: {
+  attachments: ThreadMessage['attachments']
+  resendEmailId?: string | null
+  direction: string
+}) {
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
 
@@ -71,10 +92,12 @@ function AttachmentList({ attachments, resendEmailId, direction }: { attachments
       ? `/api/email-attachment?emailId=${encodeURIComponent(resendEmailId)}&index=${idx}&direction=${direction}${filename ? `&filename=${encodeURIComponent(filename)}` : ''}`
       : null
 
-  const imageViewerImages = images.map((att) => ({
-    url: attUrl(attachments.indexOf(att), att.filename) ?? '',
-    alt: att.filename,
-  })).filter((img) => img.url)
+  const imageViewerImages = images
+    .map((att) => ({
+      url: attUrl(attachments.indexOf(att), att.filename) ?? '',
+      alt: att.filename,
+    }))
+    .filter((img) => img.url)
 
   return (
     <div className="mt-4 space-y-3">
@@ -90,7 +113,10 @@ function AttachmentList({ attachments, resendEmailId, direction }: { attachments
                 <button
                   key={i}
                   type="button"
-                  onClick={() => { setViewerIndex(i); setViewerOpen(true) }}
+                  onClick={() => {
+                    setViewerIndex(i)
+                    setViewerOpen(true)
+                  }}
                   className="block text-left"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -98,7 +124,9 @@ function AttachmentList({ attachments, resendEmailId, direction }: { attachments
                     src={url}
                     alt={att.filename}
                     className="max-h-64 max-w-xs rounded-lg border border-gray-200 object-contain shadow-sm transition-opacity hover:opacity-90 cursor-zoom-in"
-                    onError={(e) => { (e.currentTarget.closest('button') as HTMLElement | null)?.remove() }}
+                    onError={(e) => {
+                      ;(e.currentTarget.closest('button') as HTMLElement | null)?.remove()
+                    }}
                   />
                   <p className="mt-1 text-[10px] text-gray-400 truncate max-w-xs">{att.filename}</p>
                 </button>
@@ -150,12 +178,18 @@ function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<str
       <div className="flex items-start gap-3 mb-4">
         {msg.direction === 'inbound' && msg.linkedUser?.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={msg.linkedUser.photoUrl} alt={name} className="h-9 w-9 shrink-0 rounded-full object-cover mt-0.5" />
+          <img
+            src={msg.linkedUser.photoUrl}
+            alt={name}
+            className="h-9 w-9 shrink-0 rounded-full object-cover mt-0.5"
+          />
         ) : (
-          <span className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white mt-0.5',
-            getColor(msg.from, colorMap),
-          )}>
+          <span
+            className={cn(
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white mt-0.5',
+              getColor(msg.from, colorMap),
+            )}
+          >
             {getInitials(msg.from)}
           </span>
         )}
@@ -169,7 +203,9 @@ function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<str
             )}
           </div>
           <p className="text-xs text-gray-400 mt-0.5">
-            <span className="text-gray-300">From</span>{'  '}{email}
+            <span className="text-gray-300">From</span>
+            {'  '}
+            {email}
           </p>
           <p className="text-xs text-gray-400">{formatDate(msg.createdAt)}</p>
         </div>
@@ -179,7 +215,11 @@ function MessageBlock({ msg, colorMap }: { msg: ThreadMessage; colorMap: Map<str
       <EmailBodyViewer html={msg.bodyHtml} text={msg.bodyText} />
 
       {/* Attachments */}
-      <AttachmentList attachments={msg.attachments} resendEmailId={msg.resendEmailId} direction={msg.direction} />
+      <AttachmentList
+        attachments={msg.attachments}
+        resendEmailId={msg.resendEmailId}
+        direction={msg.direction}
+      />
 
       {msg.linkedUser && (
         <div className="mt-4 pt-3 border-t border-gray-100">
@@ -200,7 +240,7 @@ export function EmailThreadView({ messages }: { messages: ThreadMessage[] }) {
   const colorMap = buildColorMap(messages)
   return (
     <div className="divide-y divide-gray-100">
-      {messages.map(msg => (
+      {messages.map((msg) => (
         <MessageBlock key={msg.id} msg={msg} colorMap={colorMap} />
       ))}
     </div>

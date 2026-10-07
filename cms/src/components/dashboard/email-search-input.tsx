@@ -36,11 +36,16 @@ export function EmailSearchInput({ tab, defaultValue = '' }: Props) {
   }
 
   // Cleanup on unmount
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    },
+    [],
+  )
 
   return (
     <div className="relative flex items-center">
-      <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       <input
         ref={inputRef}
         value={value}
@@ -53,7 +58,7 @@ export function EmailSearchInput({ tab, defaultValue = '' }: Props) {
           if (e.key === 'Escape') handleClear()
         }}
         placeholder="Search…"
-        className="h-8 w-full rounded-full border bg-muted/50 pl-8 pr-7 text-xs placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+        className="h-10 w-full rounded-xl !border-0 !bg-secondary pl-8 pr-7 text-[13.5px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#1B232E]"
       />
       {value && (
         <button

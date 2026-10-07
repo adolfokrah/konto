@@ -24,23 +24,25 @@ export function EmailThreadPanel({
   replyBox,
   sidebarProps,
 }: Props) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  // Closed by default so the reading pane keeps its width (v4 three-pane inbox).
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <>
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-card">
         {/* Header */}
-        <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-6 py-3.5 shrink-0">
-          <h1 className="flex-1 truncate text-sm font-semibold text-gray-900">{subject}</h1>
+        <div className="flex shrink-0 items-center gap-3 px-5 pb-2 pt-4">
+          <h1 className="flex-1 truncate font-chillax text-[20px] font-semibold text-[#1B232E]">
+            {subject}
+          </h1>
           <div className="flex items-center gap-2 shrink-0">
             {isActive && (
-              <span className="flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Active
+              <span className="flex h-[22px] items-center gap-1.5 rounded-[7px] bg-[#EAF2FF] px-2 text-[11.5px] font-semibold text-[#2E7CF6]">
+                Inbox
               </span>
             )}
             {messageCount > 1 && (
-              <span className="rounded border border-gray-200 bg-gray-50 px-1.5 py-px text-[10px] font-medium text-gray-400 tabular-nums">
+              <span className="rounded-md bg-secondary px-1.5 py-px text-[10.5px] font-medium tabular-nums text-muted-foreground">
                 {messageCount}
               </span>
             )}
@@ -61,11 +63,15 @@ export function EmailThreadPanel({
         </div>
 
         {/* Thread body */}
-        <div className="flex-1 overflow-y-auto bg-white">{body}</div>
+        <div className="flex-1 overflow-y-auto">{body}</div>
 
         {/* Reply box */}
         {replyBox && (
-          <div className="shrink-0 border-t border-gray-200 bg-white">{replyBox}</div>
+          <div className="shrink-0 p-4 pt-2">
+            <div className="overflow-hidden rounded-[14px] shadow-[inset_0_0_0_1px_hsl(var(--border))]">
+              {replyBox}
+            </div>
+          </div>
         )}
       </div>
 
