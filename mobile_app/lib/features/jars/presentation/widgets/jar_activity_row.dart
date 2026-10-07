@@ -40,9 +40,10 @@ class JarActivityRow extends StatelessWidget {
     if (c.isRefund) {
       return const DsIconTile(Icons.undo_rounded, tone: DsTone.pending);
     }
+    // The payment method decides the icon; the provider is only used for
+    // mobile money (cash records can carry a leftover provider). Same rule
+    // as Activity's PaymentMethodTile.
     final method = (c.paymentMethod ?? '').toLowerCase();
-    final network = DsNetworkLogo.fromProvider(c.mobileMoneyProvider);
-    if (network != null) return DsNetworkLogo(network);
     switch (method) {
       case 'cash':
         return const DsIconTile(Icons.payments_outlined, tone: DsTone.positive);
@@ -53,6 +54,8 @@ class JarActivityRow extends StatelessWidget {
       case 'bank-transfer':
         return const DsIconTile(Icons.account_balance_outlined);
       case 'mobile-money':
+        final network = DsNetworkLogo.fromProvider(c.mobileMoneyProvider);
+        if (network != null) return DsNetworkLogo(network);
         return const DsIconTile(Icons.phone_android_rounded, tone: DsTone.lime);
       default:
         return const DsIconTile(Icons.savings_outlined);
