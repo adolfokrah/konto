@@ -346,7 +346,9 @@ class _RegisterViewState extends State<RegisterView> {
                             AuthField(
                               key: const Key('firstName'),
                               label: 'First name',
-                              keyboardType: TextInputType.name,
+                              keyboardType:
+                                  TextInputType
+                                      .text, // .name = number pad on iOS
                               textCapitalization: TextCapitalization.words,
                               controller: _firstNameController,
                               onChanged: (_) => setState(() {}),
@@ -354,7 +356,9 @@ class _RegisterViewState extends State<RegisterView> {
                             AuthField(
                               key: const Key('lastName'),
                               label: 'Last name',
-                              keyboardType: TextInputType.name,
+                              keyboardType:
+                                  TextInputType
+                                      .text, // .name = number pad on iOS
                               textCapitalization: TextCapitalization.words,
                               controller: _lastNameController,
                               onChanged: (_) => setState(() {}),

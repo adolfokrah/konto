@@ -782,6 +782,7 @@ class CollectField extends StatelessWidget {
   final TextEditingController controller;
   final String? hint;
   final TextInputType keyboardType;
+  final TextCapitalization textCapitalization;
   final Widget? trailing;
   final int maxLines;
   final bool grouped;
@@ -792,6 +793,7 @@ class CollectField extends StatelessWidget {
     required this.controller,
     this.hint,
     this.keyboardType = TextInputType.text,
+    this.textCapitalization = TextCapitalization.none,
     this.trailing,
     this.maxLines = 1,
     this.grouped = false,
@@ -812,6 +814,7 @@ class CollectField extends StatelessWidget {
                 TextField(
                   controller: controller,
                   keyboardType: keyboardType,
+                  textCapitalization: textCapitalization,
                   maxLines: maxLines,
                   cursorColor: AppColors.navy,
                   style: DsText.rowTitle.copyWith(fontSize: 15.5),

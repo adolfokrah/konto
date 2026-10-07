@@ -379,6 +379,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
     Map<String, String> paymentMethodMap,
   ) {
     final phoneField = CollectField(
+      key: const ValueKey('payer_phone'),
       controller: _phoneController,
       grouped: true,
       label: _isMomo ? "Payer's number" : 'Phone (optional, for a receipt)',
@@ -386,11 +387,14 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       keyboardType: TextInputType.phone,
     );
     final nameField = CollectField(
+      key: const ValueKey('payer_name'),
       controller: _nameController,
       grouped: true,
       label: _isMomo ? 'Name on wallet' : 'Name',
       hint: 'Full name',
-      keyboardType: TextInputType.name,
+      // Not TextInputType.name: on iOS that opens the number/name pad.
+      keyboardType: TextInputType.text,
+      textCapitalization: TextCapitalization.words,
     );
 
     return Column(
