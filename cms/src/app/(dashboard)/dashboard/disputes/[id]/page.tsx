@@ -3,7 +3,7 @@ import configPromise from '@payload-config'
 import { headers as getHeaders } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowLeftRight, Container, CreditCard, User } from 'lucide-react'
+import { ArrowLeftRight, Container, CreditCard, User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -41,12 +41,12 @@ function Row({
 }) {
   if (!value && value !== 0) return null
   return (
-    <div className="flex items-start justify-between py-2">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-3 py-1.5 text-[12.5px]">
+      <span className="flex items-center gap-2 text-muted-foreground">
         {icon}
         {label}
       </span>
-      <span className="text-sm font-medium text-right max-w-[60%]">{value}</span>
+      <span className="min-w-0 break-words font-medium">{value}</span>
     </div>
   )
 }
@@ -61,6 +61,15 @@ function formatDate(d: string) {
     minute: '2-digit',
   })
 }
+
+const shortDate = (d: string) =>
+  new Date(d).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
 export default async function DisputeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -85,32 +94,31 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
   const tx = typeof d.transaction === 'object' && d.transaction ? d.transaction : null
   const jar = tx && typeof tx.jar === 'object' ? tx.jar : null
   const evidence: any[] = d.evidence ?? []
+  const raisedByName = raisedBy
+    ? [raisedBy.firstName, raisedBy.lastName].filter(Boolean).join(' ') || raisedBy.email
+    : 'Unknown'
+  const firstLine = String(d.description ?? '')
+    .split('\n')[0]
+    .trim()
+  const title = firstLine.length > 70 ? `${firstLine.slice(0, 67)}…` : firstLine || 'Dispute'
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Back */}
-      <Link
-        href="/dashboard/disputes"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Disputes
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Dispute</h1>
-          <p className="text-xs text-muted-foreground font-mono mt-0.5">{d.id}</p>
-        </div>
-        <Badge variant="outline" className={cn('ml-2', statusStyles[d.status])}>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h1 className="font-chillax text-[26px] font-semibold leading-tight tracking-tight">
+          {title}
+        </h1>
+        <Badge variant="outline" className={cn(statusStyles[d.status])}>
           {statusLabel[d.status] ?? d.status}
         </Badge>
       </div>
+      <p className="-mt-2 text-[12.5px] text-muted-foreground">
+        Raised by {raisedByName} · {shortDate(d.createdAt)}
+      </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-3 lg:col-span-2">
           {/* Dispute Info */}
           <Card>
             <CardHeader>
@@ -188,7 +196,7 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                   label="ID"
                   value={
                     <Link
-                      href={`/dashboard/transactions?id=${tx.id}`}
+                      href={`/dashboard/transactions/${tx.id}`}
                       className="font-mono text-xs hover:underline"
                     >
                       {tx.id}
@@ -243,7 +251,7 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Right column — status management */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Update Status</CardTitle>

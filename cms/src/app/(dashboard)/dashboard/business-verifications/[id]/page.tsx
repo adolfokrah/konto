@@ -3,7 +3,7 @@ import configPromise from '@payload-config'
 import { headers as getHeaders } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Building2, FileText, User, Users } from 'lucide-react'
+import { Building2, FileText, User, Users } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { BusinessVerificationStatusBadge } from '@/components/dashboard/business-verification-status-badge'
@@ -27,12 +27,12 @@ function Row({
 }) {
   if (!value && value !== 0) return null
   return (
-    <div className="flex items-start justify-between py-2">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-3 py-1.5 text-[12.5px]">
+      <span className="flex items-center gap-2 text-muted-foreground">
         {icon}
         {label}
       </span>
-      <span className="text-sm font-medium text-right max-w-[60%]">{value}</span>
+      <span className="min-w-0 break-words font-medium">{value}</span>
     </div>
   )
 }
@@ -57,13 +57,22 @@ function DocLink({ doc, label }: { doc: any; label: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:underline"
+      className="inline-flex items-center gap-1.5 text-[13px] font-semibold underline decoration-[#D9F57A] decoration-2 underline-offset-4"
     >
       <FileText className="h-3.5 w-3.5" />
       {label}
     </a>
   )
 }
+
+const shortDate = (d: string) =>
+  new Date(d).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
 export default async function BusinessVerificationDetailPage({
   params,
@@ -93,28 +102,35 @@ export default async function BusinessVerificationDetailPage({
   const statusHistory: any[] = Array.isArray(d.statusHistory) ? d.statusHistory : []
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Back */}
-      <Link
-        href="/dashboard/business-verifications"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Business Verifications
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">{d.businessName || 'Business Verification'}</h1>
-          <p className="text-xs text-muted-foreground font-mono mt-0.5">{d.id}</p>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] bg-[#1B232E]">
+          <Building2 className="h-6 w-6 text-[#D9F57A]" />
+        </span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-chillax text-[26px] font-semibold leading-tight tracking-tight">
+              {d.businessName || 'Business verification'}
+            </h1>
+            <BusinessVerificationStatusBadge status={d.status} />
+          </div>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+            Submitted by{' '}
+            {user ? (
+              <Link href={`/dashboard/users/${user.id}`} className="hover:underline">
+                {[user.firstName, user.lastName].filter(Boolean).join(' ') || user.email}
+              </Link>
+            ) : (
+              'Unknown'
+            )}{' '}
+            · {shortDate(d.createdAt)}
+          </p>
         </div>
-        <BusinessVerificationStatusBadge status={d.status} className="ml-2" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-3 lg:col-span-2">
           {/* Business Info */}
           <Card>
             <CardHeader>
@@ -225,7 +241,7 @@ export default async function BusinessVerificationDetailPage({
         </div>
 
         {/* Right column — status management */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Update Status</CardTitle>
