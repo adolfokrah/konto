@@ -64,14 +64,18 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   int _resendCountdown = 30;
   final TextEditingController _codeController = TextEditingController();
 
+  /// Checking the code or signing in: the keypad is locked and an overlay
+  /// says what's happening (set from the blocs in build).
+  bool _busy = false;
+
   void _typeDigit(String d) {
-    if (_confirming || _codeController.text.length >= 6) return;
+    if (_busy || _codeController.text.length >= 6) return;
     _codeController.text = _codeController.text + d;
   }
 
   void _backspace() {
     final t = _codeController.text;
-    if (_confirming || t.isEmpty) return;
+    if (_busy || t.isEmpty) return;
     _codeController.text = t.substring(0, t.length - 1);
   }
 
@@ -210,6 +214,17 @@ class _OtpViewContentState extends State<_OtpViewContent> {
 
   @override
   Widget build(BuildContext context) {
+    final verifying =
+        context.watch<VerificationBloc>().state is VerificationVerifying;
+    final signingIn = context.watch<AuthBloc>().state is AuthLoading;
+    _busy = _confirming || verifying || signingIn;
+    final busyLabel =
+        signingIn
+            ? (widget.isRegistering == true
+                ? 'Creating your account…'
+                : 'Signing you in…')
+            : 'Checking your code…';
+
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const AuthTopBar(),
@@ -265,100 +280,129 @@ class _OtpViewContentState extends State<_OtpViewContent> {
             },
           ),
         ],
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AuthHeader(
-                        title: 'Enter the code',
-                        subtitleWidget: _sentTo(),
-                      ),
-                      const SizedBox(height: 24),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AuthHeader(
+                            title: 'Enter the code',
+                            subtitleWidget: _sentTo(),
+                          ),
+                          const SizedBox(height: 24),
 
-                      // OTP Input
-                      AppOtpInput(
-                        length: 6,
-                        controller: _codeController,
-                        useSystemKeyboard: false,
-                        hasError: _error != null,
-                        enabled: !_confirming,
-                        onChanged: (_) {
-                          if (_error != null) setState(() => _error = null);
-                        },
-                        onCompleted: _handleOtpCompleted,
-                      ),
+                          // OTP Input
+                          AppOtpInput(
+                            length: 6,
+                            controller: _codeController,
+                            useSystemKeyboard: false,
+                            hasError: _error != null,
+                            enabled: !_busy,
+                            onChanged: (_) {
+                              if (_error != null) setState(() => _error = null);
+                            },
+                            onCompleted: _handleOtpCompleted,
+                          ),
 
-                      if (_error != null) ...[
-                        const SizedBox(height: 14),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 2),
-                              child: Icon(
-                                Icons.error_outline_rounded,
-                                size: 16,
-                                color: AppColors.negative,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                _error!,
-                                style: DsText.small.copyWith(
-                                  color: AppColors.negative,
-                                  fontWeight: FontWeight.w600,
+                          if (_error != null) ...[
+                            const SizedBox(height: 14),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 2),
+                                  child: Icon(
+                                    Icons.error_outline_rounded,
+                                    size: 16,
+                                    color: AppColors.negative,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    _error!,
+                                    style: DsText.small.copyWith(
+                                      color: AppColors.negative,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                      ],
 
-                      const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                      // Resend code section
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text("Didn't get it?", style: DsText.small),
-                          ),
-                          if (_canResend)
-                            DsLink('Resend code', onTap: _handleResend)
-                          else
-                            Text(
-                              'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
-                              style: DsText.small.copyWith(
-                                color: AppColors.muted,
+                          // Resend code section
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Didn't get it?",
+                                  style: DsText.small,
+                                ),
                               ),
-                            ),
+                              if (_canResend)
+                                DsLink('Resend code', onTap: _handleResend)
+                              else
+                                Text(
+                                  'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
+                                  style: DsText.small.copyWith(
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
-
-                      if (_confirming) ...[
-                        const SizedBox(height: 24),
-                        const Center(
-                          child: SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: AppColors.navy,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
+                  AuthKeypad(onDigit: _typeDigit, onBackspace: _backspace),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            if (_busy) _BusyOverlay(label: busyLabel),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Covers the code screen while the code is checked and the user signed in,
+/// so it never looks stuck.
+class _BusyOverlay extends StatelessWidget {
+  final String label;
+  const _BusyOverlay({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: AppColors.cream.withValues(alpha: 0.8),
+        alignment: Alignment.center,
+        child: DsCard(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.navy,
                 ),
               ),
-              AuthKeypad(onDigit: _typeDigit, onBackspace: _backspace),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
+              Text(label, style: DsText.rowTitle),
             ],
           ),
         ),
