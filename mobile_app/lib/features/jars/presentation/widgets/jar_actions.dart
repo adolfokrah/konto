@@ -17,6 +17,10 @@ import 'package:Hoga/route.dart';
 class JarActions {
   JarActions._();
 
+  /// Request and Transfer icons, shared so Home and the jar screen match.
+  static const IconData requestIcon = Icons.south_west_rounded;
+  static const IconData transferIcon = Icons.north_east_rounded;
+
   /// Verification gate by account type: individuals need personal KYC;
   /// organizations need business verification (KYB) only. Returns true if
   /// allowed; otherwise shows a message, routes to the right screen, and

@@ -47,13 +47,15 @@ class AppSnackBar {
                 color: color,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: Colors.white, size: 16),
+              child: Icon(icon, color: AppColors.onPrimaryWhite, size: 16),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: TextStyles.titleRegularM.copyWith(color: Colors.white),
+                style: TextStyles.titleRegularM.copyWith(
+                  color: AppColors.onPrimaryWhite,
+                ),
               ),
             ),
           ],
@@ -67,7 +69,7 @@ class AppSnackBar {
             actionLabel != null
                 ? SnackBarAction(
                   label: actionLabel,
-                  textColor: Colors.white,
+                  textColor: AppColors.onPrimaryWhite,
                   onPressed: onActionPressed ?? () {},
                 )
                 : null,
@@ -218,14 +220,18 @@ class AppSnackBar {
                           color: color,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(icon, color: Colors.white, size: 16),
+                        child: Icon(
+                          icon,
+                          color: AppColors.onPrimaryWhite,
+                          size: 16,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           message,
                           style: TextStyles.titleRegularM.copyWith(
-                            color: Colors.white,
+                            color: AppColors.onPrimaryWhite,
                           ),
                         ),
                       ),
@@ -237,7 +243,7 @@ class AppSnackBar {
                           },
                           child: Text(
                             actionLabel,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.onPrimaryWhite),
                           ),
                         ),
                     ],

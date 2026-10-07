@@ -97,6 +97,7 @@ class _JarInfoViewState extends State<JarInfoView> {
     required String confirmText,
     Color? confirmColor,
     String cancelText = 'Cancel',
+    bool confirmEnabled = true,
     List<Widget> extra = const [],
   }) {
     return showModalBottomSheet<bool>(
@@ -119,7 +120,8 @@ class _JarInfoViewState extends State<JarInfoView> {
               JarPrimaryButton(
                 label: confirmText,
                 color: confirmColor,
-                onTap: () => Navigator.of(ctx).pop(true),
+                onTap:
+                    confirmEnabled ? () => Navigator.of(ctx).pop(true) : null,
               ),
               const SizedBox(height: 6),
               JarGhostButton(
@@ -162,7 +164,10 @@ class _JarInfoViewState extends State<JarInfoView> {
 
   Future<void> _confirmBreak(JarSummaryModel jarData) async {
     final available = jarData.balanceBreakDown.totalAmountTobeTransferred;
+    final clearing = jarData.balanceBreakDown.upcomingBalance;
     final cur = jarData.currency.toUpperCase();
+    // Breaking is only allowed once nothing is left to transfer or clear.
+    final hasBalance = available > 0 || clearing > 0;
     final ok = await _confirmSheet(
       icon: Icons.heart_broken_outlined,
       tone: DsTone.negative,
@@ -172,24 +177,23 @@ class _JarInfoViewState extends State<JarInfoView> {
       confirmText: 'Break jar',
       confirmColor: AppColors.negative,
       cancelText: 'Keep it open',
+      confirmEnabled: !hasBalance,
       extra: [
-        if (available > 0) ...[
-          JarFillList(
-            children: [
-              DsKeyValue(
-                'Still available',
-                _money(available, cur),
-                strong: true,
-              ),
-            ],
-          ),
+        // Always show what's left, even when it's nothing (mockup).
+        JarFillList(
+          children: [
+            DsKeyValue('Still available', _money(available, cur), strong: true),
+            if (clearing > 0)
+              DsKeyValue('Still clearing', _money(clearing, cur)),
+          ],
+        ),
+        if (hasBalance)
           const DsNote(
             tone: DsTone.pending,
-            icon: Icons.error_outline_rounded,
+            icon: Icons.warning_amber_rounded,
             text:
-                'Transfer the balance first, or it stays here until you contact support.',
+                'Transfer what\'s available and wait for clearing to finish. You can break the jar once both are 0.',
           ),
-        ],
       ],
     );
     if (ok != true || !mounted) return;
@@ -272,7 +276,7 @@ class _JarInfoViewState extends State<JarInfoView> {
       child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
         builder: (context, state) {
           if (state is JarSummaryLoading) {
-            return const Scaffold(
+            return Scaffold(
               backgroundColor: AppColors.cream,
               appBar: JarTopBar(title: 'Jar settings'),
               body: JarSettingsSkeleton(),
@@ -434,13 +438,19 @@ class _JarInfoViewState extends State<JarInfoView> {
                 ],
               ),
             ),
-            if (canRename) ...[
-              const SizedBox(width: 8),
-              _XsButton(
-                label: 'Edit',
-                onTap: () => context.push(AppRoutes.jarNameEdit),
-              ),
-            ],
+            const SizedBox(width: 8),
+            // Always shown (mockup); the name locks once money comes in.
+            _XsButton(
+              label: 'Edit',
+              onTap:
+                  canRename
+                      ? () => context.push(AppRoutes.jarNameEdit)
+                      : () => AppSnackBar.showInfo(
+                        context,
+                        message:
+                            "The name can't change once a jar has contributions.",
+                      ),
+            ),
           ],
         ),
       ),
@@ -604,7 +614,7 @@ class _XsButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Supreme',
               fontWeight: FontWeight.w700,
               fontSize: 12.5,
@@ -664,7 +674,7 @@ class _JarClosedView extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 12),
-                  const Text('Jar broken', style: DsText.title),
+                  Text('Jar broken', style: DsText.title),
                   const SizedBox(height: 12),
                   Text.rich(
                     TextSpan(
@@ -673,7 +683,7 @@ class _JarClosedView extends StatelessWidget {
                         TextSpan(text: '$name raised '),
                         TextSpan(
                           text: raised,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w700,
                             color: AppColors.navy,
                           ),

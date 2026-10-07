@@ -190,8 +190,6 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     required bool canEdit,
   }) {
     final localizations = AppLocalizations.of(context)!;
-    final locked =
-        user.kycStatus == 'in_review' || user.kycStatus == 'verified';
     final countryOptions = AppSelectOptions.getCountryOptions(localizations);
     final countryLabel =
         countryOptions
@@ -201,16 +199,18 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
     final usernameLocked = _hasExistingUsername || !canEdit;
 
     return [
-      // Show warning only when critical fields are changed and KYC is none
-      if (!locked && _hasChangedCriticalFields()) ...[
-        DsNote(
-          tone: DsTone.pending,
-          icon: Icons.warning_amber_rounded,
-          title: 'Name changes need a new ID check',
-          text: localizations.reVerificationWarning,
-        ),
-        const SizedBox(height: 12),
-      ],
+      // Always tell the user up front that name or country changes mean
+      // re-verifying; turn it into a warning once they actually change one.
+      DsNote(
+        tone: _hasChangedCriticalFields() ? DsTone.pending : DsTone.info,
+        icon:
+            _hasChangedCriticalFields()
+                ? Icons.warning_amber_rounded
+                : Icons.info_outline_rounded,
+        title: 'Changes need a new ID check',
+        text: localizations.reVerificationWarning,
+      ),
+      const SizedBox(height: 12),
       if (canEdit) ...[
         AccFieldGroup(
           children: [

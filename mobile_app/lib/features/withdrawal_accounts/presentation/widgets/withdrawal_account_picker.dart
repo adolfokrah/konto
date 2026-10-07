@@ -112,8 +112,7 @@ class WithdrawalAccountPicker {
                     child: Column(
                       children: [
                         for (var i = 0; i < accounts.length; i++) ...[
-                          if (i > 0)
-                            const Divider(height: 1, color: AppColors.line),
+                          if (i > 0) Divider(height: 1, color: AppColors.line),
                           _buildRow(
                             accounts[i],
                             accounts[i].id == currentId,
@@ -131,7 +130,7 @@ class WithdrawalAccountPicker {
               ),
               AppButton(
                 text: 'Add account',
-                icon: const Icon(Icons.add_rounded, color: AppColors.navy),
+                icon: Icon(Icons.add_rounded, color: AppColors.navy),
                 backgroundColor: AppColors.cream,
                 textColor: AppColors.navy,
                 onPressed: () async {

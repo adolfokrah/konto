@@ -256,7 +256,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               }
 
               if (state is BusinessKybLoadingStatus) {
-                return const Scaffold(
+                return Scaffold(
                   backgroundColor: AppColors.cream,
                   appBar: AuthTopBar(
                     close: true,
@@ -360,7 +360,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
             ],
           ),
           const SizedBox(height: 14),
-          const Text(
+          Text(
             "You'll need the certificate of registration, proof of address "
             "and directors' IDs.",
             style: DsText.caption,
@@ -424,7 +424,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Your organization page',
                               style: DsText.caption,
                             ),
@@ -453,7 +453,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                               message: 'Link copied',
                             );
                           },
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: 40,
                             height: 40,
                             child: Icon(
@@ -480,7 +480,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
               builder:
                   (context) => AppButton.filled(
                     text: 'Share organization page',
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.ios_share_rounded,
                       size: 18,
                       color: AppColors.surfaceWhite,
@@ -595,7 +595,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                         style: DsText.section.copyWith(fontSize: 16),
                       ),
                     ),
-                    const Text('2–3 day review', style: DsText.caption),
+                    Text('2–3 day review', style: DsText.caption),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -650,11 +650,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.add_rounded,
-                        size: 20,
-                        color: AppColors.navy,
-                      ),
+                      Icon(Icons.add_rounded, size: 20, color: AppColors.navy),
                       const SizedBox(width: 10),
                       Text(
                         'Add director',
@@ -733,7 +729,7 @@ class _BusinessKybViewState extends State<BusinessKybView> {
         leading: Container(
           width: 40,
           height: 40,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.limeSoft,
             shape: BoxShape.circle,
           ),

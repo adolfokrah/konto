@@ -72,7 +72,7 @@ class _StartView extends StatelessWidget {
     final busy = state is KycInProgress;
     return Scaffold(
       backgroundColor: AppColors.surfaceWhite,
-      appBar: const AuthTopBar(close: true, background: AppColors.surfaceWhite),
+      appBar: AuthTopBar(close: true, background: AppColors.surfaceWhite),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         child: Column(
@@ -94,7 +94,7 @@ class _StartView extends StatelessWidget {
                 color: AppColors.fill,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   _NeedRow(Icons.badge_outlined, 'Ghana Card or passport'),
                   Divider(height: 1, color: AppColors.line),
@@ -130,7 +130,7 @@ class _StartView extends StatelessWidget {
             text: busy ? 'Processing...' : 'Start · about 3 min',
             isLoading: busy,
           ),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
@@ -200,7 +200,7 @@ class _InReviewView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: Text('Identity check', style: DsText.section),
@@ -239,7 +239,7 @@ class _InReviewView extends StatelessWidget {
                     color: AppColors.surfaceWhite,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.verified_user_outlined,
                     color: AppColors.positive,
                     size: 20,
@@ -257,7 +257,7 @@ class _InReviewView extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Your status changes to "Verified" here and on your profile.',
                         style: DsText.caption,
                       ),

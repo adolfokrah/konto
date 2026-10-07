@@ -451,11 +451,7 @@ class _JarCreateViewState extends State<JarCreateView> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                const Icon(
-                  Icons.search_rounded,
-                  size: 20,
-                  color: AppColors.muted,
-                ),
+                Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -644,7 +640,7 @@ class _JarCreateViewState extends State<JarCreateView> {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 20,
               color: AppColors.muted,
@@ -776,7 +772,7 @@ class _JarCreateViewState extends State<JarCreateView> {
                 value: _currencyValue(),
                 onTap: _openCurrencyPicker,
               ),
-              const Divider(height: 1, color: AppColors.line),
+              Divider(height: 1, color: AppColors.line),
               _groupField(
                 label: 'Payout account',
                 value: _payoutValue(),
@@ -860,7 +856,7 @@ class _JarCreateViewState extends State<JarCreateView> {
             on ? null : Border.all(color: const Color(0xFFD0D4DB), width: 2),
       ),
       child:
-          on ? const Icon(Icons.check, size: 14, color: AppColors.lime) : null,
+          on ? Icon(Icons.check, size: 14, color: AppColors.limeOnInk) : null,
     );
   }
 
@@ -1093,7 +1089,7 @@ class _PhotoSlot extends StatelessWidget {
             Container(
               color: AppColors.surfaceWhite.withValues(alpha: 0.6),
               alignment: Alignment.center,
-              child: const SizedBox(
+              child: SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
@@ -1115,7 +1111,7 @@ class _PhotoSlot extends StatelessWidget {
                     color: AppColors.surfaceWhite,
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close_rounded,
                     size: 13,
                     color: AppColors.navy,

@@ -10,6 +10,8 @@ import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/enums/app_theme.dart' as theme_enum;
+import 'package:Hoga/core/theme/theme_controller.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
@@ -137,9 +139,7 @@ class _HomeViewState extends State<HomeView> {
     final eligible =
         action == _HomeAction.transfer
             ? jars
-                .where(
-                  (j) => j.creator.id == userId && !j.isClosed && !j.isFrozen,
-                )
+                .where((j) => j.creator.id == userId && j.canTransfer)
                 .toList()
             : jars.where((j) => j.canCollect).toList();
     if (eligible.isEmpty) {
@@ -343,7 +343,7 @@ class _HomeViewState extends State<HomeView> {
         note: noPaymentsYet ? 'Waiting for the first payment' : null,
       ),
       const SizedBox(height: 14),
-      _quickActions(context, jars, userId, collectorOnly, noPaymentsYet),
+      _quickActions(context, jars, userId, collectorOnly),
       const SizedBox(height: 18),
       if (activeJars.isNotEmpty) ...[
         DsSectionHeader(
@@ -445,9 +445,10 @@ class _HomeViewState extends State<HomeView> {
     List<JarListItem> jars,
     String? userId,
     bool collectorOnly,
-    bool noPaymentsYet,
   ) {
-    final canTransfer = !collectorOnly && !noPaymentsYet;
+    final canTransfer = jars.any(
+      (j) => j.creator.id == userId && j.canTransfer,
+    );
     final tiles = <Widget>[
       DsQuickAction(
         key: const Key('home_collect_button'),
@@ -458,14 +459,14 @@ class _HomeViewState extends State<HomeView> {
       ),
       DsQuickAction(
         key: const Key('home_request_button'),
-        icon: Icons.qr_code_2_rounded,
+        icon: JarActions.requestIcon,
         label: 'Request',
         onTap: () => _runAction(_HomeAction.request, jars, userId),
       ),
       if (!collectorOnly)
         DsQuickAction(
           key: const Key('home_transfer_button'),
-          icon: Icons.north_east_rounded,
+          icon: JarActions.transferIcon,
           label: 'Transfer',
           onTap:
               canTransfer
@@ -641,7 +642,7 @@ class _HomeHeader extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: () => context.go(AppRoutes.userAccountView),
-          child: const UserAvatarSmall(
+          child: UserAvatarSmall(
             radius: 20,
             backgroundColor: AppColors.surfaceWhite,
           ),
@@ -662,8 +663,34 @@ class _HomeHeader extends StatelessWidget {
             ],
           ),
         ),
+        const _HomeThemeSwitch(),
+        const SizedBox(width: 8),
         const _HomeBell(),
       ],
+    );
+  }
+}
+
+/// Flips the app between light and dark. Shows a moon in light mode and a
+/// sun in dark mode, and saves the choice to the account.
+class _HomeThemeSwitch extends StatelessWidget {
+  const _HomeThemeSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = AppColors.isDark;
+    return JarNavButton(
+      key: const Key('theme_switch_button'),
+      icon: dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+      onTap: () {
+        HapticUtils.light();
+        final next =
+            dark ? theme_enum.AppTheme.light : theme_enum.AppTheme.dark;
+        themeOverride.value = next;
+        context.read<UserAccountBloc>().add(
+          UpdatePersonalDetails(appTheme: next),
+        );
+      },
     );
   }
 }

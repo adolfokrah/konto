@@ -279,7 +279,7 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dim = Colors.white.withValues(alpha: 0.6);
+    final dim = AppColors.onPrimaryWhite.withValues(alpha: 0.6);
     return DsCard(
       color: AppColors.navy,
       padding: const EdgeInsets.all(18),
@@ -316,7 +316,7 @@ class _BalanceCard extends StatelessWidget {
             AppButton.filled(
               text: 'Withdraw',
               backgroundColor: AppColors.lime,
-              textColor: AppColors.navy,
+              textColor: AppColors.onLime,
               isLoading: withdrawing,
               onPressed: onWithdraw,
             ),
@@ -350,11 +350,11 @@ class _CodeCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Your code', style: DsText.caption),
+                Text('Your code', style: DsText.caption),
                 const SizedBox(height: 2),
                 Text(
                   code,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Chillax',
                     fontWeight: FontWeight.w600,
                     fontSize: 22,
@@ -373,7 +373,7 @@ class _CodeCard extends StatelessWidget {
                   icon: Icons.ios_share_rounded,
                   size: 40,
                   background: AppColors.navy,
-                  foreground: AppColors.lime,
+                  foreground: AppColors.limeOnInk,
                   onTap: () => onShare(ctx),
                 ),
           ),
@@ -401,7 +401,7 @@ class _HowYouEarnCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('How you earn', style: AccText.h3),
+          Text('How you earn', style: AccText.h3),
           const SizedBox(height: 12),
           for (var i = 0; i < _steps.length; i++)
             Padding(
@@ -413,13 +413,13 @@ class _HowYouEarnCard extends StatelessWidget {
                     width: 24,
                     height: 24,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.fill,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '${i + 1}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Supreme',
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -564,7 +564,7 @@ class _WithdrawSheet extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 "You'll receive",
                 style: DsText.caption,
                 textAlign: TextAlign.center,
@@ -572,7 +572,7 @@ class _WithdrawSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Center(child: DsMoney(balance, size: 44)),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'No fee on referral earnings',
                 style: DsText.caption,
                 textAlign: TextAlign.center,
@@ -596,7 +596,7 @@ class _WithdrawSheet extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('To', style: DsText.caption),
+                            Text('To', style: DsText.caption),
                             Text(
                               '${payoutAccountTitle(destination)} · ${payoutMaskedNumber(destination)}',
                               style: AccText.h3.copyWith(fontSize: 14),

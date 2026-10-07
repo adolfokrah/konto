@@ -300,7 +300,7 @@ class _InboxTabs extends StatelessWidget {
     }
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.line)),
       ),
       child: Row(
@@ -519,14 +519,14 @@ class _UpdateRow extends StatelessWidget {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.navy,
                   shape: BoxShape.circle,
                 ),
               ),
             ] else if (isPayout) ...[
               const SizedBox(width: 6),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
                 color: AppColors.faint,

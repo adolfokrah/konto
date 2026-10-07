@@ -140,6 +140,9 @@ class JarListItem {
   final String updatedAt;
   final double totalContributions;
 
+  /// Money the owner can transfer out now. Always 0 for jars you only collect for.
+  final double availableBalance;
+
   const JarListItem({
     required this.id,
     required this.name,
@@ -159,6 +162,7 @@ class JarListItem {
     required this.createdAt,
     required this.updatedAt,
     required this.totalContributions,
+    this.availableBalance = 0,
   });
 
   bool get isSealed => status == 'sealed';
@@ -167,6 +171,9 @@ class JarListItem {
 
   /// Open for new payments.
   bool get canCollect => !isClosed && !isSealed && !isFrozen;
+
+  /// Has money the owner can transfer out.
+  bool get canTransfer => !isClosed && !isFrozen && availableBalance > 0;
 
   factory JarListItem.fromJson(Map<String, dynamic> json) {
     return JarListItem(
@@ -200,6 +207,7 @@ class JarListItem {
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
       totalContributions: (json['totalContributions'] ?? 0).toDouble(),
+      availableBalance: (json['availableBalance'] ?? 0).toDouble(),
     );
   }
 
@@ -224,6 +232,7 @@ class JarListItem {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'totalContributions': totalContributions,
+      'availableBalance': availableBalance,
     };
   }
 }

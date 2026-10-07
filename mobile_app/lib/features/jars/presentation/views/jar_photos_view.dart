@@ -138,70 +138,96 @@ class _JarPhotosViewState extends State<JarPhotosView> {
                         ),
                       ],
                     )
-                    : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                    : Stack(
                       children: [
-                        const DsGroupLabel('Cover'),
-                        const SizedBox(height: 12),
-                        _Cover(imageUrl: coverUrl, onChange: _changeCover),
-                        const SizedBox(height: 12),
-                        DsGroupLabel(
-                          'More photos · ${photos.length} of ${JarPhotosView.maxPhotos}',
+                        ListView(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                          children: [
+                            const DsGroupLabel('Cover'),
+                            const SizedBox(height: 12),
+                            _Cover(imageUrl: coverUrl, onChange: _changeCover),
+                            const SizedBox(height: 12),
+                            DsGroupLabel(
+                              'More photos · ${photos.length} of ${JarPhotosView.maxPhotos}',
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              height: 100,
+                              child: ReorderableListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                buildDefaultDragHandles: false,
+                                proxyDecorator:
+                                    (child, _, __) => Material(
+                                      color: Colors.transparent,
+                                      child: child,
+                                    ),
+                                itemCount: photos.length,
+                                onReorder: (oldIndex, newIndex) {
+                                  if (newIndex > oldIndex) newIndex--;
+                                  final next = [...photos];
+                                  next.insert(
+                                    newIndex,
+                                    next.removeAt(oldIndex),
+                                  );
+                                  _savePhotos(jarData.id, next);
+                                },
+                                itemBuilder: (context, i) {
+                                  final photo = photos[i];
+                                  return ReorderableDelayedDragStartListener(
+                                    key: ValueKey(photo.id),
+                                    index: i,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _PhotoTile(
+                                        imageUrl:
+                                            photo.url != null
+                                                ? '${BackendConfig.imageBaseUrl}${photo.url}'
+                                                : null,
+                                        onRemove:
+                                            () => _savePhotos(
+                                              jarData.id,
+                                              [...photos]..removeAt(i),
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                footer:
+                                    photos.length < JarPhotosView.maxPhotos
+                                        ? _AddTile(
+                                          onTap:
+                                              () => _addPhotos(photos.length),
+                                        )
+                                        : null,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Text(
+                                'Photos show on your contribution page. Hold and drag to reorder.',
+                                style: DsText.caption,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 100,
-                          child: ReorderableListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            buildDefaultDragHandles: false,
-                            proxyDecorator:
-                                (child, _, __) => Material(
-                                  color: Colors.transparent,
-                                  child: child,
-                                ),
-                            itemCount: photos.length,
-                            onReorder: (oldIndex, newIndex) {
-                              if (newIndex > oldIndex) newIndex--;
-                              final next = [...photos];
-                              next.insert(newIndex, next.removeAt(oldIndex));
-                              _savePhotos(jarData.id, next);
-                            },
-                            itemBuilder: (context, i) {
-                              final photo = photos[i];
-                              return ReorderableDelayedDragStartListener(
-                                key: ValueKey(photo.id),
-                                index: i,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: _PhotoTile(
-                                    imageUrl:
-                                        photo.url != null
-                                            ? '${BackendConfig.imageBaseUrl}${photo.url}'
-                                            : null,
-                                    onRemove:
-                                        () => _savePhotos(
-                                          jarData.id,
-                                          [...photos]..removeAt(i),
-                                        ),
-                                  ),
-                                ),
-                              );
-                            },
-                            footer:
-                                photos.length < JarPhotosView.maxPhotos
-                                    ? _AddTile(
-                                      onTap: () => _addPhotos(photos.length),
-                                    )
-                                    : null,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            'Photos show on your contribution page. Hold and drag to reorder.',
-                            style: DsText.caption,
-                          ),
+                        // Busy overlay while chosen photos upload and save.
+                        BlocBuilder<MediaBloc, MediaState>(
+                          builder: (context, media) {
+                            return BlocBuilder<UpdateJarBloc, UpdateJarState>(
+                              builder: (context, update) {
+                                final busy =
+                                    media is MediaLoading ||
+                                    update is UpdateJarInProgress;
+                                if (!busy) return const SizedBox.shrink();
+                                return const JarBusyOverlay(
+                                  label: 'Updating photos…',
+                                );
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -220,7 +246,7 @@ class _Cover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const fallback = Center(
+    final fallback = Center(
       child: Icon(Icons.image_outlined, size: 40, color: AppColors.muted),
     );
     return Container(
@@ -264,7 +290,7 @@ class _PhotoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const fallback = Center(
+    final fallback = Center(
       child: Icon(Icons.image_outlined, color: AppColors.muted),
     );
     return Container(
@@ -298,7 +324,7 @@ class _PhotoTile extends StatelessWidget {
                   color: AppColors.surfaceWhite,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.close_rounded,
                   size: 14,
                   color: AppColors.navy,
@@ -328,7 +354,7 @@ class _AddTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFD0D4DB), width: 1.5),
         ),
-        child: const Icon(Icons.add_rounded, size: 26, color: AppColors.muted),
+        child: Icon(Icons.add_rounded, size: 26, color: AppColors.muted),
       ),
     );
   }

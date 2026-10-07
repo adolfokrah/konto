@@ -118,18 +118,18 @@ class _TabButton extends StatelessWidget {
                 size: 22,
                 color:
                     selected
-                        ? AppColors.navy
+                        ? AppColors.onLime
                         : AppColors.cream.withValues(alpha: 0.6),
               ),
               if (selected) ...[
                 const SizedBox(width: 6),
                 Text(
                   spec.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Supreme',
                     fontWeight: FontWeight.w700,
                     fontSize: 13.5,
-                    color: AppColors.navy,
+                    color: AppColors.onLime,
                   ),
                 ),
               ],

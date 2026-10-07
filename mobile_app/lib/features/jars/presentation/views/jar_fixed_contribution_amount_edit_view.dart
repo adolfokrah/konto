@@ -45,7 +45,7 @@ class _JarFixedContributionAmountEditViewState
       child: BlocBuilder<JarSummaryBloc, JarSummaryState>(
         builder: (context, state) {
           if (state is! JarSummaryLoaded) {
-            return const Scaffold(
+            return Scaffold(
               backgroundColor: AppColors.cream,
               appBar: JarTopBar(title: 'Fixed amount'),
               body: SizedBox.shrink(),

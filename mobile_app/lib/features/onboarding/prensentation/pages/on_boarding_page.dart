@@ -372,7 +372,7 @@ class _CreateHero extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Text('Wedding jar', style: DsText.caption),
+                          Text('Wedding jar', style: DsText.caption),
                         ],
                       ),
                     ),
@@ -383,7 +383,7 @@ class _CreateHero extends StatelessWidget {
                 const SizedBox(height: 8),
                 const DsProgress(0.62),
                 const SizedBox(height: 4),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('62% of goal', style: DsText.caption),
@@ -448,7 +448,7 @@ class _GiveHero extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Organizer', style: DsText.caption),
+                    Text('Organizer', style: DsText.caption),
                     Text(
                       'Verified',
                       style: DsText.rowTitle.copyWith(
@@ -477,7 +477,7 @@ class _GiveHero extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('MoMo prompt', style: DsText.caption),
+                          Text('MoMo prompt', style: DsText.caption),
                           Text(
                             'Pay GHS 203.90 to Hogapay?',
                             style: DsText.rowTitle.copyWith(
@@ -571,7 +571,7 @@ class _TrackHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('This week', style: DsText.caption),
+                Text('This week', style: DsText.caption),
                 const SizedBox(height: 2),
                 Row(
                   children: [
@@ -622,7 +622,7 @@ class _TrackHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.line),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 _MiniRow(
                   leading: DsNetworkLogo(DsNetwork.mtn, size: 32),

@@ -74,7 +74,7 @@ class _AddContributionViewState extends State<AddContributionView> {
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
-          return const Scaffold(backgroundColor: AppColors.surfaceWhite);
+          return Scaffold(backgroundColor: AppColors.surfaceWhite);
         }
         final jarData = state.jarData;
         final fixed = jarData.isFixedContribution;
@@ -212,7 +212,7 @@ class _AmountDisplay extends StatelessWidget {
     final grouped = DsMoney.group(double.tryParse(whole) ?? 0);
 
     const size = 64.0;
-    const main = TextStyle(
+    final main = TextStyle(
       fontFamily: 'Chillax',
       fontWeight: FontWeight.w600,
       fontSize: size,
@@ -226,7 +226,7 @@ class _AmountDisplay extends StatelessWidget {
         children: [
           TextSpan(
             text: '$currency ',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Supreme',
               fontWeight: FontWeight.w500,
               fontSize: size * 0.42,
@@ -278,14 +278,14 @@ class _Keypad extends StatelessWidget {
                 child: Center(
                   child:
                       k == '<'
-                          ? const Icon(
+                          ? Icon(
                             Icons.backspace_outlined,
                             size: 22,
                             color: AppColors.navy,
                           )
                           : Text(
                             k,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Chillax',
                               fontWeight: FontWeight.w500,
                               fontSize: 25,

@@ -100,7 +100,7 @@ class JarCompletionAlert extends StatelessWidget {
               ),
               if (onTap != null) ...[
                 const SizedBox(width: 8),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
                   color: AppColors.faint,

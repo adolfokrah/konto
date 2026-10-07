@@ -74,7 +74,7 @@ class JarGoalCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+            Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           ],
         ),
       );
@@ -121,7 +121,7 @@ class JarGoalCard extends StatelessWidget {
             children: [
               Text(
                 '${pct >= 100 ? 100 : pct.floor()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Chillax',
                   fontWeight: FontWeight.w600,
                   fontSize: 20,
@@ -146,7 +146,7 @@ class JarGoalCard extends StatelessWidget {
                   TextSpan(
                     text:
                         '${currency.toUpperCase()} ${DsMoney.group(forecast)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.navy,
                       fontWeight: FontWeight.w700,
                     ),

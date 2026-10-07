@@ -266,7 +266,7 @@ class _JarDetailViewState extends State<JarDetailView> {
           if (jarData != null) ...[
             JarNavButton(
               key: const Key('request_button_qr_code'),
-              icon: Icons.ios_share_rounded,
+              icon: Icons.qr_code_2_rounded,
               onTap: blocked ? null : () => _request(context, jarData),
             ),
             const SizedBox(width: 8),
@@ -704,10 +704,7 @@ class _JarDetailViewState extends State<JarDetailView> {
     final broken = jarData.status == JarStatus.broken;
     final blocked = sealed || frozen || broken;
     final b = jarData.balanceBreakDown;
-    final transferable =
-        !frozen &&
-        !broken &&
-        (b.totalAmountTobeTransferred > 0 || b.upcomingBalance > 0);
+    final transferable = !frozen && !broken && b.totalAmountTobeTransferred > 0;
 
     final collect = DsQuickAction(
       key: const Key('contribute_button'),
@@ -718,7 +715,7 @@ class _JarDetailViewState extends State<JarDetailView> {
     );
     final request = DsQuickAction(
       key: const Key('request_button'),
-      icon: Icons.qr_code_2_rounded,
+      icon: JarActions.requestIcon,
       label: l.request,
       onTap: blocked ? null : () => _request(context, jarData),
     );
@@ -740,7 +737,7 @@ class _JarDetailViewState extends State<JarDetailView> {
         request,
         DsQuickAction(
           key: const Key('withdraw_button'),
-          icon: Icons.send_rounded,
+          icon: JarActions.transferIcon,
           label: 'Transfer',
           primary: sealed,
           onTap: transferable ? () => _handleWithdraw(context, jarData) : null,

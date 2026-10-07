@@ -15,7 +15,7 @@ export 'package:Hoga/core/widgets/ds/ds_skeleton.dart';
 // ---------------------------------------------------------------- type
 
 class DsText {
-  static const display = TextStyle(
+  static TextStyle get display => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 30,
@@ -23,7 +23,7 @@ class DsText {
     letterSpacing: -0.5,
     color: AppColors.navy,
   );
-  static const title = TextStyle(
+  static TextStyle get title => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 26,
@@ -31,37 +31,34 @@ class DsText {
     letterSpacing: -0.4,
     color: AppColors.navy,
   );
-  static const section = TextStyle(
+  static TextStyle get section => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 17,
     letterSpacing: -0.1,
     color: AppColors.navy,
   );
-  static const body = TextStyle(
+  static TextStyle get body => TextStyle(
     fontFamily: 'Supreme',
     fontSize: 15,
     height: 1.5,
     color: AppColors.ink2,
   );
-  static const rowTitle = TextStyle(
+  static TextStyle get rowTitle => TextStyle(
     fontFamily: 'Supreme',
     fontSize: 15,
     fontWeight: FontWeight.w500,
     color: AppColors.navy,
   );
-  static const small = TextStyle(
+  static TextStyle get small => TextStyle(
     fontFamily: 'Supreme',
     fontSize: 13.5,
     height: 1.45,
     color: AppColors.ink2,
   );
-  static const caption = TextStyle(
-    fontFamily: 'Supreme',
-    fontSize: 12,
-    color: AppColors.muted,
-  );
-  static const overline = TextStyle(
+  static TextStyle get caption =>
+      TextStyle(fontFamily: 'Supreme', fontSize: 12, color: AppColors.muted);
+  static TextStyle get overline => TextStyle(
     fontFamily: 'Supreme',
     fontSize: 12,
     fontWeight: FontWeight.w700,
@@ -78,7 +75,7 @@ class DsMoney extends StatelessWidget {
   final double amount;
   final String? currency;
   final double size;
-  final Color color;
+  final Color? color;
   final bool signed;
 
   const DsMoney(
@@ -86,7 +83,7 @@ class DsMoney extends StatelessWidget {
     super.key,
     this.currency = 'GHS',
     this.size = 40,
-    this.color = AppColors.navy,
+    this.color,
     this.signed = false,
   });
 
@@ -113,7 +110,7 @@ class DsMoney extends StatelessWidget {
       fontSize: size,
       letterSpacing: -0.4,
       height: 1.1,
-      color: color,
+      color: color ?? AppColors.navy,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     return Text.rich(
@@ -149,7 +146,7 @@ class DsMoney extends StatelessWidget {
 class DsCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
-  final Color color;
+  final Color? color;
   final VoidCallback? onTap;
   final BoxBorder? border;
 
@@ -157,7 +154,7 @@ class DsCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
-    this.color = AppColors.surfaceWhite,
+    this.color,
     this.onTap,
     this.border,
   });
@@ -167,7 +164,7 @@ class DsCard extends StatelessWidget {
     final box = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? AppColors.surfaceWhite,
         border: border,
         borderRadius: BorderRadius.circular(AppRadius.radiusCard),
       ),
@@ -195,7 +192,7 @@ class DsListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var i = 0; i < children.length; i++) {
-      if (i > 0) rows.add(const Divider(height: 1, color: AppColors.line));
+      if (i > 0) rows.add(Divider(height: 1, color: AppColors.line));
       rows.add(children[i]);
     }
     return Container(
@@ -284,7 +281,7 @@ class DsRow extends StatelessWidget {
               if (trailing != null) ...[const SizedBox(width: 8), trailing!],
               if (chevron) ...[
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
                   color: AppColors.faint,
@@ -389,7 +386,7 @@ class DsLink extends StatelessWidget {
     onTap: onTap,
     child: Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Supreme',
         fontWeight: FontWeight.w700,
         fontSize: 14,
@@ -465,7 +462,7 @@ class DsIconTile extends StatelessWidget {
         tone == DsTone.lime
             ? (AppColors.limeSoft, AppColors.navy)
             : tone == DsTone.dark
-            ? (AppColors.navy, AppColors.lime)
+            ? (AppColors.navy, AppColors.limeOnInk)
             : DsTag.colors(tone);
     return Container(
       width: size,
@@ -584,7 +581,7 @@ class DsQuickAction extends StatelessWidget {
                 Icon(
                   icon,
                   size: 22,
-                  color: primary ? AppColors.lime : AppColors.navy,
+                  color: primary ? AppColors.limeOnInk : AppColors.navy,
                 ),
                 const SizedBox(height: 7),
                 Text(
@@ -667,7 +664,7 @@ class DsNote extends StatelessWidget {
               ),
             ),
             if (onTap != null)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 6, top: 2),
                 child: Icon(Icons.chevron_right_rounded, color: AppColors.navy),
               ),
@@ -815,8 +812,11 @@ class DsProgress extends StatelessWidget {
       child: LinearProgressIndicator(
         value: value.clamp(0, 1),
         minHeight: height,
-        backgroundColor: onDark ? Colors.white24 : AppColors.fill,
-        color: onDark ? AppColors.lime : AppColors.navy,
+        backgroundColor:
+            onDark
+                ? AppColors.onPrimaryWhite.withValues(alpha: 0.14)
+                : AppColors.fill,
+        color: onDark ? AppColors.limeOnInk : AppColors.navy,
       ),
     );
   }
@@ -855,10 +855,10 @@ class DsSteps extends StatelessWidget {
                       alignment: Alignment.center,
                       child:
                           i < current
-                              ? const Icon(
+                              ? Icon(
                                 Icons.check,
                                 size: 15,
-                                color: Colors.white,
+                                color: AppColors.onPrimaryWhite,
                               )
                               : Text(
                                 '${i + 1}',
@@ -868,7 +868,7 @@ class DsSteps extends StatelessWidget {
                                   fontSize: 12,
                                   color:
                                       i == current
-                                          ? AppColors.lime
+                                          ? AppColors.limeOnInk
                                           : AppColors.ink2,
                                 ),
                               ),

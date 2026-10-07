@@ -16,7 +16,7 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 
 /// Base colour of a block on the cream canvas.
-const Color _baseOnCanvas = AppColors.fill;
+Color get _baseOnCanvas => AppColors.fill;
 
 /// Base colour of a block inside a white card: lighter than [AppColors.fill]
 /// so it reads as the same tone on white.
@@ -391,7 +391,7 @@ class DsSkeletonListCard extends StatelessWidget {
     final children = <Widget>[];
     for (var i = 0; i < rows; i++) {
       if (i > 0) {
-        children.add(const Divider(height: 1, color: AppColors.line));
+        children.add(Divider(height: 1, color: AppColors.line));
       }
       children.add(
         DsSkeletonRow(
@@ -431,7 +431,7 @@ class DsSkeletonKeyValueCard extends StatelessWidget {
     final children = <Widget>[];
     for (var i = 0; i < rows; i++) {
       if (i > 0) {
-        children.add(const Divider(height: 1, color: AppColors.line));
+        children.add(Divider(height: 1, color: AppColors.line));
       }
       children.add(
         SizedBox(

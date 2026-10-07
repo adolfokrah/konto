@@ -45,7 +45,7 @@ class _CollectorsViewState extends State<CollectorsView> {
     return BlocBuilder<JarSummaryBloc, JarSummaryState>(
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.cream,
             appBar: CollectTopBar(title: 'Team'),
             body: DsSkeletonPage(
@@ -104,7 +104,7 @@ class _CollectorsViewState extends State<CollectorsView> {
                       Positioned.fill(
                         child: Container(
                           color: AppColors.cream.withValues(alpha: 0.6),
-                          child: const Center(
+                          child: Center(
                             child: CircularProgressIndicator(
                               color: AppColors.navy,
                             ),
@@ -299,7 +299,7 @@ class _CollectorsViewState extends State<CollectorsView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 "Collectors share their own link and take MoMo or cash for this jar. They can't move money out.",
                 style: DsText.small,
                 textAlign: TextAlign.center,
@@ -473,14 +473,14 @@ class _CollectorsViewState extends State<CollectorsView> {
               child: Column(
                 children: [
                   for (var i = 0; i < actions.length; i++) ...[
-                    if (i > 0) const Divider(height: 1, color: AppColors.line),
+                    if (i > 0) Divider(height: 1, color: AppColors.line),
                     actions[i],
                   ],
                 ],
               ),
             ),
             if (!isPending)
-              const Text(
+              Text(
                 'Their past payments stay in the jar.',
                 style: DsText.caption,
               ),

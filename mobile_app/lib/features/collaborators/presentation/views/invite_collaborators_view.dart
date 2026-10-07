@@ -132,7 +132,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
     final count = _selectedCollectors.length;
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.cream,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -148,7 +148,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                   icon: Icons.close_rounded,
                   onTap: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Invite collectors',
                     textAlign: TextAlign.center,

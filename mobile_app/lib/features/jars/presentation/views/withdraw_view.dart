@@ -251,7 +251,7 @@ class _WithdrawViewState extends State<WithdrawView> {
             child: DsIconTile(Icons.send_rounded, tone: DsTone.lime, size: 72),
           ),
           const SizedBox(height: 14),
-          const Text('Transfer on its way', style: DsText.title),
+          Text('Transfer on its way', style: DsText.title),
           const SizedBox(height: 4),
           DsMoney(_sentAmount ?? 0, currency: null, size: 32),
           if (account != null) ...[
@@ -390,7 +390,7 @@ class _WithdrawViewState extends State<WithdrawView> {
       content = [
         fromCard,
         const SizedBox(height: 22),
-        const Text(
+        Text(
           'You\'ll receive',
           style: DsText.caption,
           textAlign: TextAlign.center,
@@ -418,7 +418,7 @@ class _WithdrawViewState extends State<WithdrawView> {
           ],
         ),
         const SizedBox(height: 10),
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'The full available balance is transferred. Cash and card '

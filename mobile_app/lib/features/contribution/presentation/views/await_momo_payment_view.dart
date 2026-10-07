@@ -501,7 +501,7 @@ class _AwaitMomoPaymentViewState extends State<AwaitMomoPaymentView> {
       child: Column(
         children: [
           for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0) const Divider(height: 1, color: AppColors.line),
+            if (i > 0) Divider(height: 1, color: AppColors.line),
             rows[i],
           ],
         ],

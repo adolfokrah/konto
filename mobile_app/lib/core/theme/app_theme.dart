@@ -5,9 +5,12 @@ import '../constants/app_radius.dart';
 import 'text_styles.dart';
 
 class AppTheme {
-  /// The app is light-only (redesign): navy, cream and lime, Chillax + Supreme.
-  static ThemeData get lightTheme {
-    const scheme = AppColors.lightColorScheme;
+  /// Navy, cream and lime, Chillax + Supreme. Built from the active
+  /// AppColors palette, so call AppColors.setBrightness first.
+  static ThemeData get current {
+    final dark = AppColors.isDark;
+    final scheme =
+        dark ? AppColors.darkColorScheme : AppColors.lightColorScheme;
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
@@ -19,12 +22,12 @@ class AppTheme {
       ),
       fontFamily: 'Supreme',
       splashFactory: InkSparkle.splashFactory,
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.line,
         thickness: 1,
         space: 1,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.cream,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.navy,
@@ -33,11 +36,12 @@ class AppTheme {
         centerTitle: true,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark, // dark icons on cream
-          statusBarBrightness: Brightness.light, // iOS
+          // Icons contrast with the canvas: dark on cream, light on dark
+          statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: dark ? Brightness.dark : Brightness.light, // iOS
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surfaceWhite,
         surfaceTintColor: Colors.transparent,
         modalBackgroundColor: AppColors.surfaceWhite,
@@ -75,7 +79,7 @@ class AppTheme {
           (s) =>
               s.contains(WidgetState.selected)
                   ? AppColors.navy
-                  : const Color(0xFFDDD5CA),
+                  : (dark ? AppColors.beige : const Color(0xFFDDD5CA)),
         ),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
@@ -83,22 +87,24 @@ class AppTheme {
         fillColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected) ? AppColors.navy : null,
         ),
-        checkColor: WidgetStateProperty.all(AppColors.lime),
+        checkColor: WidgetStateProperty.all(
+          dark ? AppColors.onLime : AppColors.lime,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.all(AppColors.navy),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         color: AppColors.navy,
         linearTrackColor: AppColors.fill,
       ),
-      snackBarTheme: const SnackBarThemeData(
+      snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.navy,
         contentTextStyle: TextStyle(color: AppColors.surfaceWhite),
         behavior: SnackBarBehavior.floating,
       ),
-      textSelectionTheme: const TextSelectionThemeData(
+      textSelectionTheme: TextSelectionThemeData(
         cursorColor: AppColors.navy,
         selectionHandleColor: AppColors.navy,
         selectionColor: AppColors.lime,
@@ -107,23 +113,6 @@ class AppTheme {
         waitDuration: Duration(milliseconds: 2000),
         showDuration: Duration(milliseconds: 1000),
         triggerMode: TooltipTriggerMode.longPress,
-      ),
-    );
-  }
-
-  /// Kept for reference; the app no longer uses a dark theme.
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: AppColors.darkColorScheme,
-      textTheme: AppTextStyles.textTheme,
-      fontFamily: 'Supreme',
-      appBarTheme: const AppBarTheme(
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
-        ),
       ),
     );
   }

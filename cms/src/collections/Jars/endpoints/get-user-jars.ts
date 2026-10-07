@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+import { getJarBalance } from '@/utilities/getJarBalance'
 
 export const getUserJars = async (req: PayloadRequest) => {
   if (!req.user) {
@@ -109,6 +110,13 @@ export const getUserJars = async (req: PayloadRequest) => {
         0,
       )
 
+      // Money the owner can transfer out now. Collectors can't transfer, so
+      // their jars skip the lookup.
+      const isOwner = jar.creator.id === req.user!.id
+      const availableBalance = isOwner
+        ? Number((await getJarBalance(req.payload, jar.id)).balance.toFixed(2))
+        : 0
+
       // Add jar with essential data for the mobile app
       groups[groupId].jars.push({
         id: jar.id,
@@ -143,6 +151,7 @@ export const getUserJars = async (req: PayloadRequest) => {
         createdAt: jar.createdAt,
         updatedAt: jar.updatedAt,
         totalContributions: jarTotalContributions,
+        availableBalance,
       })
 
       groups[groupId].totalJars += 1

@@ -194,7 +194,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
   Widget _sentTo() {
     final phone = widget.phoneNumber ?? '';
     if (phone.isEmpty) {
-      return const Text(
+      return Text(
         'We sent a 6 digit code to your email and phone number',
         style: DsText.body,
       );
@@ -205,7 +205,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
       children: [
         Text('Sent to $code $phone', style: DsText.body),
         if (widget.isRegistering != null && context.canPop()) ...[
-          const Text(' · ', style: DsText.body),
+          Text(' · ', style: DsText.body),
           DsLink('Change', onTap: () => context.pop()),
         ],
       ],
@@ -315,7 +315,7 @@ class _OtpViewContentState extends State<_OtpViewContent> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.only(top: 2),
                                   child: Icon(
                                     Icons.error_outline_rounded,
@@ -393,7 +393,7 @@ class _BusyOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(

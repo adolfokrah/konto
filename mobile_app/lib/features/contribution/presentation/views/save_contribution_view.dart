@@ -390,7 +390,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
       key: const ValueKey('payer_name'),
       controller: _nameController,
       grouped: true,
-      label: _isMomo ? 'Name on wallet' : 'Name',
+      label: "Contributor's name",
       hint: 'Full name',
       // Not TextInputType.name: on iOS that opens the number/name pad.
       keyboardType: TextInputType.text,
@@ -679,7 +679,7 @@ class _SaveContributionViewState extends State<SaveContributionView> {
                   .toList(),
           onChanged: (v) => setState(() => _customFieldSelectValues[key] = v),
           // Mockup list row: label above the answer, chevron on the right.
-          suffixIcon: const Icon(
+          suffixIcon: Icon(
             Icons.chevron_right_rounded,
             size: 20,
             color: AppColors.faint,

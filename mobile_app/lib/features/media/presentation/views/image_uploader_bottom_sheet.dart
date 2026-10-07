@@ -153,7 +153,7 @@ class _ImageUploaderBottomSheetState extends State<ImageUploaderBottomSheet> {
                                 ImageSource.camera,
                               ),
                         ),
-                        const Divider(height: 1, color: AppColors.line),
+                        Divider(height: 1, color: AppColors.line),
                         _buildOptionTile(
                           context,
                           icon: Icons.image_outlined,
@@ -165,7 +165,7 @@ class _ImageUploaderBottomSheetState extends State<ImageUploaderBottomSheet> {
                               ),
                         ),
                         if (allowFiles) ...[
-                          const Divider(height: 1, color: AppColors.line),
+                          Divider(height: 1, color: AppColors.line),
                           _buildOptionTile(
                             context,
                             icon: Icons.insert_drive_file_outlined,
@@ -204,13 +204,13 @@ class _ImageUploaderBottomSheetState extends State<ImageUploaderBottomSheet> {
                                   File(_picked!.path),
                                   fit: BoxFit.cover,
                                   errorBuilder:
-                                      (_, __, ___) => const Icon(
+                                      (_, __, ___) => Icon(
                                         Icons.image_outlined,
                                         size: 18,
                                         color: AppColors.navy,
                                       ),
                                 )
-                                : const Icon(
+                                : Icon(
                                   Icons.insert_drive_file_outlined,
                                   size: 18,
                                   color: AppColors.navy,
@@ -232,7 +232,7 @@ class _ImageUploaderBottomSheetState extends State<ImageUploaderBottomSheet> {
                             const SizedBox(height: 4),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(6),
-                              child: const LinearProgressIndicator(
+                              child: LinearProgressIndicator(
                                 minHeight: 6,
                                 backgroundColor: AppColors.cream,
                                 color: AppColors.navy,

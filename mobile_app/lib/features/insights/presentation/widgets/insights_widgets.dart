@@ -40,7 +40,7 @@ class InsightsJarChip extends StatelessWidget {
       color: AppColors.surfaceWhite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(color: AppColors.line),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
@@ -65,7 +65,7 @@ class InsightsJarChip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 18,
                 color: AppColors.navy,
@@ -187,7 +187,7 @@ class InsightsPlaceholderBars extends StatelessWidget {
                   heightFactor: heights[i],
                   alignment: Alignment.bottomCenter,
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.beige,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(6),
@@ -233,12 +233,12 @@ class InsightsMethodMix extends StatelessWidget {
             height: 12,
             child:
                 total <= 0
-                    ? const ColoredBox(color: AppColors.fill)
+                    ? ColoredBox(color: AppColors.fill)
                     : Row(
                       children: [
                         for (var i = 0; i < mix.length; i++) ...[
                           if (i > 0)
-                            const SizedBox(
+                            SizedBox(
                               width: 2,
                               child: ColoredBox(color: AppColors.surfaceWhite),
                             ),
@@ -346,11 +346,8 @@ class _ForecastPainter extends CustomPainter {
 
   _ForecastPainter({required this.forecast, required this.goalLabel});
 
-  static const _labelStyle = TextStyle(
-    fontFamily: 'Supreme',
-    fontSize: 10,
-    color: AppColors.muted,
-  );
+  static TextStyle get _labelStyle =>
+      TextStyle(fontFamily: 'Supreme', fontSize: 10, color: AppColors.muted);
 
   void _dashed(Canvas canvas, Offset a, Offset b, Paint p, double dash) {
     final d = b - a;

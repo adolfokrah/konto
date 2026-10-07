@@ -208,8 +208,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!isFirst)
-            const Divider(height: 1, thickness: 1, color: AppColors.line),
+          if (!isFirst) Divider(height: 1, thickness: 1, color: AppColors.line),
           child,
         ],
       ),
@@ -259,7 +258,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
                         : widget.maxHeight)
                 : null,
         constraints: BoxConstraints(maxHeight: maxHeight),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppRadius.radiusSheet),
@@ -301,7 +300,7 @@ class _GenericPickerContentState<T> extends State<_GenericPickerContent<T>> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () => Navigator.pop(context),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
                         child: Icon(
@@ -364,7 +363,7 @@ class _PickerSearchState extends State<_PickerSearch> {
       padding: const EdgeInsets.only(left: 12),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
+          Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -398,11 +397,7 @@ class _PickerSearchState extends State<_PickerSearch> {
                 setState(() {});
                 widget.onChanged('');
               },
-              icon: const Icon(
-                Icons.close_rounded,
-                size: 18,
-                color: AppColors.muted,
-              ),
+              icon: Icon(Icons.close_rounded, size: 18, color: AppColors.muted),
             ),
         ],
       ),
