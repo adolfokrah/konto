@@ -66,8 +66,11 @@ const pageGroups: Record<string, string> = {
 }
 
 const pageTitlePrefixes: Array<[string, string]> = [
-  ['/dashboard/users/', 'User Detail'],
-  ['/dashboard/jars/', 'Jar Detail'],
+  ['/dashboard/users/', 'User detail'],
+  ['/dashboard/jars/', 'Jar detail'],
+  ['/dashboard/transactions/', 'Transaction detail'],
+  ['/dashboard/disputes/', 'Dispute detail'],
+  ['/dashboard/business-verifications/', 'Business verification'],
   ['/dashboard/push-notifications/', 'Push Notifications'],
   ['/dashboard/sms/', 'SMS'],
 ]
