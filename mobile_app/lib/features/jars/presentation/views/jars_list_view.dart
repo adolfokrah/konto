@@ -173,7 +173,7 @@ class _JarsListViewState extends State<JarsListView> {
       JarListInitial() => Center(
         child: Text(localizations.tapToLoadYourJars, style: DsText.small),
       ),
-      JarListLoading() => const JarLoading(),
+      JarListLoading() => const JarsListSkeleton(),
       JarListError(message: final message) => Center(
         child: DsEmptyState(
           icon: Icons.error_outline,
@@ -278,7 +278,7 @@ class _JarsListViewState extends State<JarsListView> {
     final tabs = <(String, List<JarListItem>)>[
       ('Active · ${active.length}', active),
       ('Sealed · ${sealed.length}', sealed),
-      if (closed.isNotEmpty) ('Closed · ${closed.length}', closed),
+      if (closed.isNotEmpty) ('Broken · ${closed.length}', closed),
     ];
     final tab = _tab < tabs.length ? _tab : 0;
     final jars = widget.asTab ? tabs[tab].$2 : allJars;

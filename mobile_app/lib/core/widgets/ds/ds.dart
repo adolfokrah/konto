@@ -10,6 +10,8 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/sheet_surface.dart';
 
+export 'package:Hoga/core/widgets/ds/ds_skeleton.dart';
+
 // ---------------------------------------------------------------- type
 
 class DsText {

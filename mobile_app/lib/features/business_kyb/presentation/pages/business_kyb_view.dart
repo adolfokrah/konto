@@ -262,8 +262,27 @@ class _BusinessKybViewState extends State<BusinessKybView> {
                     close: true,
                     title: 'Business verification',
                   ),
-                  body: Center(
-                    child: CircularProgressIndicator(color: AppColors.navy),
+                  body: DsSkeletonPage(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    children: [
+                      DsSkeletonCard(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            DsSkeletonCircle(size: 56),
+                            SizedBox(height: 14),
+                            DsSkeletonLine(width: 170, height: 16),
+                            SizedBox(height: 10),
+                            DsSkeletonLine(width: 230, height: 11),
+                            SizedBox(height: 6),
+                            DsSkeletonLine(width: 190, height: 11),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      DsSkeletonLabel(),
+                      DsSkeletonListCard(rows: 3, trailing: false),
+                    ],
                   ),
                 );
               }

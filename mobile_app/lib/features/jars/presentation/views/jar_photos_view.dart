@@ -118,7 +118,26 @@ class _JarPhotosViewState extends State<JarPhotosView> {
             ),
             body:
                 jarData == null
-                    ? const JarLoading()
+                    ? const DsSkeletonPage(
+                      padding: EdgeInsets.fromLTRB(16, 4, 16, 32),
+                      children: [
+                        DsSkeletonLabel(width: 50),
+                        SizedBox(height: 2),
+                        DsSkeletonBox(height: 170, radius: 20),
+                        SizedBox(height: 16),
+                        DsSkeletonLabel(width: 120),
+                        SizedBox(height: 2),
+                        Row(
+                          children: [
+                            DsSkeletonBox(width: 100, height: 100, radius: 16),
+                            SizedBox(width: 8),
+                            DsSkeletonBox(width: 100, height: 100, radius: 16),
+                            SizedBox(width: 8),
+                            DsSkeletonBox(width: 100, height: 100, radius: 16),
+                          ],
+                        ),
+                      ],
+                    )
                     : ListView(
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                       children: [

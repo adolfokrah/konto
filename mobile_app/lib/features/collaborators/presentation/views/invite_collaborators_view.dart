@@ -216,8 +216,11 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                     ),
                   );
                 } else if (state is CollectorsLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppColors.navy),
+                  return const DsSkeletonPage(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    children: [
+                      DsSkeletonListCard(rows: 3, circleLeading: true),
+                    ],
                   );
                 } else if (state is CollectorsLoaded) {
                   if (state.collectors.isEmpty) {

@@ -34,6 +34,9 @@ class CollaboratorsProvider extends BaseApiProvider {
             {
               'lastName': {'contains': query},
             },
+            {
+              'username': {'contains': query.replaceFirst('@', '')},
+            },
           ],
         },
       };

@@ -240,8 +240,10 @@ class _JarDetailViewState extends State<JarDetailView> {
   /// Back, share and settings (mockup jar screen).
   Widget _buildHeader(BuildContext context, JarSummaryState state) {
     final jarData = state is JarSummaryLoaded ? state.jarData : null;
+    final broken = jarData?.status == JarStatus.broken;
     final blocked =
         jarData == null ||
+        broken ||
         jarData.status == JarStatus.sealed ||
         jarData.status == JarStatus.frozen;
 
@@ -274,8 +276,11 @@ class _JarDetailViewState extends State<JarDetailView> {
                   jarData.isCreator
                       ? Icons.settings_outlined
                       : Icons.info_outline_rounded,
+              // A broken jar is read-only: no settings.
               onTap:
-                  jarData.isCreator
+                  broken
+                      ? null
+                      : jarData.isCreator
                       ? () => context.push(AppRoutes.jarInfo)
                       : () => _showCollectorInfo(context, jarData),
             ),
@@ -289,10 +294,7 @@ class _JarDetailViewState extends State<JarDetailView> {
     final localizations = AppLocalizations.of(context)!;
 
     if (state is JarSummaryLoading) {
-      return const SliverFillRemaining(
-        hasScrollBody: false,
-        child: JarLoading(),
-      );
+      return const SliverToBoxAdapter(child: JarDetailSkeleton());
     } else if (state is JarSummaryError) {
       return SliverFillRemaining(
         hasScrollBody: false,
@@ -358,11 +360,20 @@ class _JarDetailViewState extends State<JarDetailView> {
     final localizations = AppLocalizations.of(context)!;
     final sealed = jarData.status == JarStatus.sealed;
     final frozen = jarData.status == JarStatus.frozen;
-    final blocked = sealed || frozen;
+    final broken = jarData.status == JarStatus.broken;
+    final blocked = sealed || frozen || broken;
     final b = jarData.balanceBreakDown;
 
     final children = <Widget>[
       _identityRow(context, jarData, isCreator),
+      if (broken)
+        const DsNote(
+          tone: DsTone.neutral,
+          icon: Icons.block_rounded,
+          title: 'This jar is broken',
+          text:
+              'It no longer takes payments, transfers or collectors. Its statement stays here.',
+        ),
       if (frozen)
         DsNote(
           tone: DsTone.negative,
@@ -490,7 +501,7 @@ class _JarDetailViewState extends State<JarDetailView> {
         JarStatus.open => const DsTag('Open', tone: DsTone.positive),
         JarStatus.sealed => const DsTag('Sealed'),
         JarStatus.frozen => const DsTag('Frozen', tone: DsTone.negative),
-        JarStatus.broken => const DsTag('Closed'),
+        JarStatus.broken => const DsTag('Broken'),
       };
     }
 
@@ -565,7 +576,8 @@ class _JarDetailViewState extends State<JarDetailView> {
     final cur = jarData.currency;
     final blocked =
         jarData.status == JarStatus.sealed ||
-        jarData.status == JarStatus.frozen;
+        jarData.status == JarStatus.frozen ||
+        jarData.status == JarStatus.broken;
     final points = jarData.chartData ?? const <double>[];
     final hasChart = points.length >= 2 && points.any((p) => p > 0);
 
@@ -685,16 +697,20 @@ class _JarDetailViewState extends State<JarDetailView> {
     final l = AppLocalizations.of(context)!;
     final sealed = jarData.status == JarStatus.sealed;
     final frozen = jarData.status == JarStatus.frozen;
-    final blocked = sealed || frozen;
+    // Broken jars are read-only: every action is off.
+    final broken = jarData.status == JarStatus.broken;
+    final blocked = sealed || frozen || broken;
     final b = jarData.balanceBreakDown;
     final transferable =
-        !frozen && (b.totalAmountTobeTransferred > 0 || b.upcomingBalance > 0);
+        !frozen &&
+        !broken &&
+        (b.totalAmountTobeTransferred > 0 || b.upcomingBalance > 0);
 
     final collect = DsQuickAction(
       key: const Key('contribute_button'),
       icon: Icons.add_rounded,
       label: 'Collect',
-      primary: !sealed,
+      primary: !sealed && !broken,
       onTap: blocked ? null : () => _contribute(context, jarData),
     );
     final request = DsQuickAction(
@@ -712,7 +728,7 @@ class _JarDetailViewState extends State<JarDetailView> {
         DsQuickAction(
           icon: Icons.info_outline_rounded,
           label: l.about,
-          onTap: () => _showCollectorInfo(context, jarData),
+          onTap: broken ? null : () => _showCollectorInfo(context, jarData),
         ),
       ];
     } else {
@@ -737,7 +753,7 @@ class _JarDetailViewState extends State<JarDetailView> {
             key: const Key('team_button'),
             icon: Icons.group_outlined,
             label: 'Team',
-            onTap: frozen ? null : () => CollectorsView.show(context),
+            onTap: frozen || broken ? null : () => CollectorsView.show(context),
           ),
       ];
     }

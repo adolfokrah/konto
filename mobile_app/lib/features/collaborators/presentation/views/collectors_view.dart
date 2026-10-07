@@ -48,8 +48,12 @@ class _CollectorsViewState extends State<CollectorsView> {
           return const Scaffold(
             backgroundColor: AppColors.cream,
             appBar: CollectTopBar(title: 'Team'),
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.navy),
+            body: DsSkeletonPage(
+              padding: EdgeInsets.fromLTRB(16, 4, 16, 24),
+              children: [
+                DsSkeletonLabel(),
+                DsSkeletonListCard(rows: 4, circleLeading: true),
+              ],
             ),
           );
         }

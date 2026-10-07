@@ -33,7 +33,62 @@ class JarBalanceBreakdown extends StatelessWidget {
       builder: (context, state) {
         if (state is! JarSummaryLoaded) {
           return const JarSheetFrame(
-            children: [SizedBox(height: 120, child: JarLoading())],
+            children: [
+              DsSkeleton(
+                onWhite: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DsSkeletonLine(width: 160, height: 18),
+                    SizedBox(height: 14),
+                    DsSkeletonLine(height: 11),
+                    SizedBox(height: 6),
+                    DsSkeletonLine(width: 220, height: 11),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 110, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 90, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 130, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DsSkeletonLine(width: 100, height: 11),
+                          DsSkeletonLine(width: 80, height: 13),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         }
 

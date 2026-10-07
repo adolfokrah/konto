@@ -143,10 +143,10 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
                       // Email and country stay editable after ID checks, so
                       // Save is always there (mockup).
                       JarBarLink(
-                          localizations.save,
-                          loading: isLoading,
-                          onTap: _handleUpdateAccount,
-                        ),
+                        localizations.save,
+                        loading: isLoading,
+                        onTap: _handleUpdateAccount,
+                      ),
                     ],
                   ),
                   body: ListView(
@@ -163,9 +163,20 @@ class _PersonalDetailsViewState extends State<PersonalDetailsView> {
           }
 
           // Show loading or error state
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.navy),
+          return Scaffold(
+            backgroundColor: AppColors.cream,
+            appBar: JarTopBar(
+              title: AppLocalizations.of(context)!.personalDetails,
+            ),
+            body: const DsSkeletonPage(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                DsSkeletonLabel(),
+                DsSkeletonListCard(rows: 3, leading: false, trailing: false),
+                SizedBox(height: 20),
+                DsSkeletonLabel(width: 90),
+                DsSkeletonListCard(rows: 2, leading: false, trailing: false),
+              ],
             ),
           );
         },

@@ -96,9 +96,7 @@ class ContributionView extends StatelessWidget {
         final localizations = AppLocalizations.of(context)!;
         Widget body;
         if (state is FetchContributionLoading) {
-          body = const Center(
-            child: CircularProgressIndicator(color: AppColors.navy),
-          );
+          body = const ContributionDetailSkeleton();
         } else if (state is FetchContributionError) {
           body = Center(
             child: DsEmptyState(
@@ -115,6 +113,7 @@ class ContributionView extends StatelessWidget {
                 return const Scaffold(
                   backgroundColor: AppColors.cream,
                   appBar: CollectTopBar(),
+                  body: ContributionDetailSkeleton(),
                 );
               }
               return _ContributionDetail(
@@ -134,6 +133,28 @@ class ContributionView extends StatelessWidget {
       },
     );
   }
+}
+
+/// Payment detail while it loads: avatar, name, big amount, status tag,
+/// then the details card.
+class ContributionDetailSkeleton extends StatelessWidget {
+  const ContributionDetailSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
+    children: [
+      Center(child: DsSkeletonCircle(size: 56)),
+      SizedBox(height: 12),
+      Center(child: DsSkeletonLine(width: 140, height: 13)),
+      SizedBox(height: 12),
+      Center(child: DsSkeletonLine(width: 200, height: 40)),
+      SizedBox(height: 12),
+      Center(child: DsSkeletonLine(width: 70, height: 22)),
+      SizedBox(height: 24),
+      DsSkeletonKeyValueCard(rows: 5),
+    ],
+  );
 }
 
 /// "055 ••• 6543" for phone numbers, "••• 2210" for account numbers.

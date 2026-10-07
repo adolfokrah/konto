@@ -405,7 +405,9 @@ class _ContributionsListViewState extends State<ContributionsListView> {
         title: jar.name,
         subtitle: [
           jar.creator.id == userId ? 'Owner' : 'Collector',
-          if (!jar.isActive) 'Closed',
+          if (jar.isSealed) 'Sealed',
+          if (jar.isFrozen) 'Frozen',
+          if (jar.isClosed) 'Broken',
         ].join(' · '),
         trailing: DsRadio(selected: !_allJars && jar.id == currentId),
         onTap: onTap,
@@ -723,12 +725,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       },
       builder: (context, state) {
         if (state is ContributionsListLoading && _currentPage == 1) {
-          return const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.navy),
-            ),
-          );
+          return const SliverToBoxAdapter(child: _ActivitySkeleton());
         }
 
         if (state is ContributionsListError) {
@@ -1192,4 +1189,37 @@ class _ActivityEmpty extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Activity first load: day caps with a card of payment rows under each.
+class _ActivitySkeleton extends StatelessWidget {
+  const _ActivitySkeleton();
+
+  static Widget _day(double width, int rows) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            DsSkeletonLine(width: width, height: 10),
+            const DsSkeletonLine(width: 60, height: 10),
+          ],
+        ),
+      ),
+      DsSkeletonListCard(rows: rows, circleLeading: true),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) => DsSkeleton(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [_day(60, 4), const SizedBox(height: 12), _day(90, 2)],
+      ),
+    ),
+  );
 }

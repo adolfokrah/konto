@@ -171,8 +171,12 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
   Widget _buildBody(BuildContext context, WithdrawalAccountsState state) {
     if (state.status == WithdrawalAccountsStatus.loading &&
         state.accounts.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.navy),
+      return const DsSkeletonPage(
+        children: [
+          DsSkeletonListCard(rows: 2),
+          SizedBox(height: 12),
+          DsSkeletonLine(width: 240, height: 10),
+        ],
       );
     }
 

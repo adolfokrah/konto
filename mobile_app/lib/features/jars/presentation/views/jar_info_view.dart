@@ -166,10 +166,10 @@ class _JarInfoViewState extends State<JarInfoView> {
     final ok = await _confirmSheet(
       icon: Icons.heart_broken_outlined,
       tone: DsTone.negative,
-      title: 'Close this jar for good?',
+      title: 'Break this jar for good?',
       message:
           'Nobody can pay into it again and it can\'t be reopened. Its history stays in Activity.',
-      confirmText: 'Close jar',
+      confirmText: 'Break jar',
       confirmColor: AppColors.negative,
       cancelText: 'Keep it open',
       extra: [
@@ -275,7 +275,7 @@ class _JarInfoViewState extends State<JarInfoView> {
             return const Scaffold(
               backgroundColor: AppColors.cream,
               appBar: JarTopBar(title: 'Jar settings'),
-              body: JarLoading(),
+              body: JarSettingsSkeleton(),
             );
           }
 
@@ -572,7 +572,7 @@ class _JarInfoViewState extends State<JarInfoView> {
                 onTap: () => _confirmSealOrReopen(jarData),
               ),
               DsRow(
-                title: 'Close jar',
+                title: 'Break jar',
                 titleColor: AppColors.negative,
                 onTap: () => _confirmBreak(jarData),
               ),
@@ -664,7 +664,7 @@ class _JarClosedView extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 12),
-                  const Text('Jar closed', style: DsText.title),
+                  const Text('Jar broken', style: DsText.title),
                   const SizedBox(height: 12),
                   Text.rich(
                     TextSpan(

@@ -1,4 +1,5 @@
 import 'package:Hoga/core/constants/app_colors.dart';
+import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/notifications/logic/bloc/jar_invite_action_bloc.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
@@ -118,8 +119,29 @@ class _NotficiationsListViewState extends State<NotficiationsListView> {
               return _buildLoaded(context, state.notifications);
             }
             // Initial / loading state
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.navy),
+            return const DsSkeletonPage(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: DsSkeletonBox(
+                        height: 38,
+                        radius: AppRadius.radiusL,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: DsSkeletonBox(
+                        height: 38,
+                        radius: AppRadius.radiusL,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                DsSkeletonListCard(rows: 5, circleLeading: true),
+              ],
             );
           },
         ),

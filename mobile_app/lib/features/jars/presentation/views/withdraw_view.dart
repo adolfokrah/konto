@@ -437,7 +437,35 @@ class _WithdrawViewState extends State<WithdrawView> {
       ),
       body:
           _isLoadingSettings
-              ? const JarLoading()
+              ? const DsSkeletonPage(
+                children: [
+                  DsSkeletonCard(
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        DsSkeletonBox(width: 32, height: 32, radius: 10),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              DsSkeletonLine(width: 40, height: 10),
+                              SizedBox(height: 6),
+                              DsSkeletonLine(width: 180, height: 12),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 22),
+                  Center(child: DsSkeletonLine(width: 90, height: 11)),
+                  SizedBox(height: 10),
+                  Center(child: DsSkeletonLine(width: 200, height: 40)),
+                  SizedBox(height: 22),
+                  DsSkeletonKeyValueCard(rows: 4),
+                ],
+              )
               : ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 children: content,

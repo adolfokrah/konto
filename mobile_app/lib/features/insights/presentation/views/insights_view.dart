@@ -249,10 +249,70 @@ class _InsightsBodyState extends State<_InsightsBody> {
     ];
   }
 
-  Widget _loading() => const Padding(
-    padding: EdgeInsets.symmetric(vertical: 80),
-    child: Center(
-      child: CircularProgressIndicator(color: AppColors.navy, strokeWidth: 2.5),
+  /// First load: period tabs, total + weekday bars, a breakdown card and the
+  /// two stat tiles.
+  Widget _loading() => DsSkeleton(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const DsSkeletonBox(height: 40, radius: 12),
+        const SizedBox(height: 12),
+        DsSkeletonCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const DsSkeletonLine(width: 150, height: 10),
+              const SizedBox(height: 10),
+              const DsSkeletonLine(width: 180, height: 30),
+              const SizedBox(height: 18),
+              SizedBox(
+                height: 110,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (final h in const [
+                      0.45,
+                      0.7,
+                      0.35,
+                      0.9,
+                      0.55,
+                      0.8,
+                      0.4,
+                    ])
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: DsSkeletonBox(height: 110 * h, radius: 8),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        const DsSkeletonCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DsSkeletonLine(width: 120, height: 14),
+              SizedBox(height: 14),
+              DsSkeletonLine(height: 10),
+              SizedBox(height: 10),
+              DsSkeletonLine(width: 200, height: 10),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Row(
+          children: [
+            Expanded(child: DsSkeletonCard()),
+            SizedBox(width: 8),
+            Expanded(child: DsSkeletonCard()),
+          ],
+        ),
+      ],
     ),
   );
 

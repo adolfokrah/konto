@@ -231,6 +231,18 @@ class _ReferralContentState extends State<_ReferralContent> {
                   const SizedBox(height: 12),
                 ],
                 const _HowYouEarnCard(),
+                if (loading && bonuses.isEmpty) ...[
+                  const SizedBox(height: 16),
+                  const DsSkeleton(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        DsSkeletonLabel(),
+                        DsSkeletonListCard(rows: 3),
+                      ],
+                    ),
+                  ),
+                ],
                 if (bonuses.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   const DsGroupLabel('Earnings'),
@@ -281,13 +293,12 @@ class _BalanceCard extends StatelessWidget {
           const SizedBox(height: 4),
           if (loading)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.lime,
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: DsSkeleton(
+                child: DsSkeletonLine(
+                  width: 170,
+                  height: 32,
+                  color: Color(0x26FFFFFF),
                 ),
               ),
             )

@@ -117,10 +117,34 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
     if (_isLoading) {
       return const AccSheet(
         children: [
-          SizedBox(
-            height: 180,
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.navy),
+          DsSkeleton(
+            onWhite: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    DsSkeletonBox(width: 56, height: 56, radius: 16),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DsSkeletonLine(width: 160, height: 16),
+                          SizedBox(height: 8),
+                          DsSkeletonLine(width: 110, height: 11),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                DsSkeletonLine(height: 11),
+                SizedBox(height: 6),
+                DsSkeletonLine(width: 220, height: 11),
+                SizedBox(height: 20),
+                DsSkeletonBox(height: 52, radius: 14),
+              ],
             ),
           ),
         ],

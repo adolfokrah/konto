@@ -73,7 +73,16 @@ class JarCustomFieldsView extends StatelessWidget {
             body: Builder(
               builder: (context) {
                 if (state is! JarSummaryLoaded) {
-                  return const JarLoading();
+                  return const DsSkeletonPage(
+                    padding: EdgeInsets.fromLTRB(16, 4, 16, 32),
+                    children: [
+                      DsSkeletonLine(height: 11),
+                      SizedBox(height: 6),
+                      DsSkeletonLine(width: 220, height: 11),
+                      SizedBox(height: 16),
+                      DsSkeletonListCard(rows: 3, trailing: false),
+                    ],
+                  );
                 }
 
                 if (fields.isEmpty) {

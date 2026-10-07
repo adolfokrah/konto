@@ -130,11 +130,16 @@ class JarActions {
   }
 
   /// "Which jar?" sheet. Returns the picked jar, or null when dismissed.
+  ///
+  /// [asAction]: rows lead straight into an action (Collect, Request,
+  /// Transfer), so they show a chevron and nothing is pre-selected — one tap
+  /// picks the jar. Otherwise rows show radios with [selectedId] ticked.
   static Future<JarListItem?> pickJar(
     BuildContext context, {
     required String title,
     required List<JarListItem> jars,
     String? selectedId,
+    bool asAction = false,
   }) async {
     final authState = context.read<AuthBloc>().state;
     final userId = authState is AuthAuthenticated ? authState.user.id : null;
@@ -147,9 +152,10 @@ class JarActions {
           jar.creator.id == userId ? 'Owner' : 'Collector',
           if (jar.isSealed) 'Sealed',
           if (jar.isFrozen) 'Frozen',
-          if (jar.isClosed) 'Closed',
+          if (jar.isClosed) 'Broken',
         ].join(' · '),
-        trailing: DsRadio(selected: selected),
+        trailing: asAction ? null : DsRadio(selected: selected),
+        chevron: asAction,
         onTap: onTap,
       );
     }
@@ -159,7 +165,9 @@ class JarActions {
       context,
       title: title,
       selectedValue:
-          selectedId != null && jars.any((j) => j.id == selectedId)
+          asAction
+              ? ''
+              : selectedId != null && jars.any((j) => j.id == selectedId)
               ? selectedId
               : jars.first.id,
       items: jars,

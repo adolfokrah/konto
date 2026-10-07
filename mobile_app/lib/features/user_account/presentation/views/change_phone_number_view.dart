@@ -176,8 +176,16 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
         return Scaffold(
           backgroundColor: AppColors.cream,
           appBar: JarTopBar(title: localizations.phoneNumber),
-          body: const Center(
-            child: CircularProgressIndicator(color: AppColors.navy),
+          body: const DsSkeletonPage(
+            children: [
+              DsSkeletonLine(height: 11),
+              SizedBox(height: 6),
+              DsSkeletonLine(width: 200, height: 11),
+              SizedBox(height: 20),
+              DsSkeletonBox(height: 52, radius: 14),
+              SizedBox(height: 16),
+              DsSkeletonCard(height: 56),
+            ],
           ),
         );
       },

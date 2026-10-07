@@ -56,9 +56,7 @@ class UserAccountView extends StatelessWidget {
           builder: (context, state) {
             // Show loading indicator during logout
             if (state is AuthLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.navy),
-              );
+              return const SafeArea(bottom: false, child: _ProfileSkeleton());
             }
             if (state is AuthAuthenticated) {
               return _buildAccountView(context, state.user);
@@ -577,4 +575,50 @@ class _VersionLabel extends StatelessWidget {
       },
     );
   }
+}
+
+/// Profile while the account loads: title, user card, referral card and
+/// grouped rows.
+class _ProfileSkeleton extends StatelessWidget {
+  const _ProfileSkeleton();
+
+  @override
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    padding: EdgeInsets.fromLTRB(16, 12, 16, 28),
+    children: [
+      Padding(
+        padding: EdgeInsets.fromLTRB(4, 4, 4, 14),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: DsSkeletonHeader(width: 110),
+        ),
+      ),
+      DsSkeletonCard(
+        child: Row(
+          children: [
+            DsSkeletonCircle(size: 56),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DsSkeletonLine(width: 150, height: 16),
+                  SizedBox(height: 8),
+                  DsSkeletonLine(width: 110, height: 11),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      SizedBox(height: 12),
+      DsSkeletonCard(height: 72),
+      SizedBox(height: 20),
+      DsSkeletonLabel(),
+      DsSkeletonListCard(rows: 3, trailing: false),
+      SizedBox(height: 20),
+      DsSkeletonLabel(width: 90),
+      DsSkeletonListCard(rows: 2, trailing: false),
+    ],
+  );
 }

@@ -898,12 +898,225 @@ class JarBusyOverlay extends StatelessWidget {
   }
 }
 
-/// Plain centred spinner on the cream background.
+// ---------------------------------------------------------------- skeletons
+
+/// Generic first-load skeleton for a jar screen: a header card, a group
+/// label and a card of rows. Prefer a screen-specific skeleton below.
 class JarLoading extends StatelessWidget {
   const JarLoading({super.key});
 
   @override
-  Widget build(BuildContext context) => const Center(
-    child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.navy),
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    children: [
+      DsSkeletonCard(height: 96),
+      SizedBox(height: 18),
+      DsSkeletonLabel(),
+      DsSkeletonListCard(rows: 4),
+    ],
+  );
+}
+
+/// Jar screen (dashboard) first load: identity row, balance card, quick
+/// actions, statement rows. Sits under the jar header.
+class JarDetailSkeleton extends StatelessWidget {
+  const JarDetailSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    padding: EdgeInsets.fromLTRB(16, 10, 16, 32),
+    children: [
+      Row(
+        children: [
+          DsSkeletonBox(width: 56, height: 56, radius: 16),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DsSkeletonLine(width: 160, height: 18),
+                SizedBox(height: 8),
+                DsSkeletonLine(width: 60, height: 12),
+              ],
+            ),
+          ),
+        ],
+      ),
+      SizedBox(height: 16),
+      DsSkeletonCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DsSkeletonLine(width: 90, height: 10),
+            SizedBox(height: 10),
+            DsSkeletonLine(width: 200, height: 34),
+            SizedBox(height: 14),
+            DsSkeletonLine(width: 140, height: 10),
+          ],
+        ),
+      ),
+      SizedBox(height: 12),
+      _QuickActionsSkeleton(count: 3),
+      SizedBox(height: 18),
+      DsSkeletonLabel(width: 90),
+      DsSkeletonListCard(rows: 4, circleLeading: true),
+    ],
+  );
+}
+
+/// Jars tab / sheet first load: search box, group tabs, list of jars.
+/// Sits under the "Jars" title row.
+class JarsListSkeleton extends StatelessWidget {
+  const JarsListSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+    children: [
+      DsSkeletonCard(
+        height: 44,
+        padding: EdgeInsets.symmetric(horizontal: 14),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: DsSkeletonLine(width: 130, height: 12),
+        ),
+      ),
+      SizedBox(height: 12),
+      Row(
+        children: [
+          DsSkeletonBox(width: 64, height: 34, radius: AppRadius.radiusL),
+          SizedBox(width: 8),
+          DsSkeletonBox(width: 84, height: 34, radius: AppRadius.radiusL),
+          SizedBox(width: 8),
+          DsSkeletonBox(width: 72, height: 34, radius: AppRadius.radiusL),
+        ],
+      ),
+      SizedBox(height: 16),
+      DsSkeletonListCard(rows: 5),
+    ],
+  );
+}
+
+/// Home first load (below the greeting header): total, quick actions,
+/// jar cards, recent activity. Use as a single child of Home's ListView.
+class HomeSkeleton extends StatelessWidget {
+  const HomeSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DsSkeleton(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(4, 6, 4, 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DsSkeletonLine(width: 110, height: 11),
+              SizedBox(height: 10),
+              DsSkeletonLine(width: 230, height: 40),
+              SizedBox(height: 10),
+              DsSkeletonLine(width: 54, height: 22),
+            ],
+          ),
+        ),
+        SizedBox(height: 14),
+        _QuickActionsSkeleton(count: 3),
+        SizedBox(height: 18),
+        DsSkeletonLabel(width: 80),
+        SizedBox(
+          height: 168,
+          child: ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.centerLeft,
+              maxWidth: double.infinity,
+              child: Row(
+                children: [
+                  DsSkeletonCard(height: 168, child: SizedBox(width: 188)),
+                  SizedBox(width: 10),
+                  DsSkeletonCard(height: 168, child: SizedBox(width: 188)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 18),
+        DsSkeletonLabel(width: 110),
+        DsSkeletonListCard(rows: 3, circleLeading: true),
+      ],
+    ),
+  );
+}
+
+/// Recent-activity card while the current jar loads (Home).
+class JarActivitySkeleton extends StatelessWidget {
+  final int rows;
+  const JarActivitySkeleton({super.key, this.rows = 3});
+
+  @override
+  Widget build(BuildContext context) =>
+      DsSkeleton(child: DsSkeletonListCard(rows: rows, circleLeading: true));
+}
+
+/// Jar settings first load: jar header card, then grouped setting rows.
+class JarSettingsSkeleton extends StatelessWidget {
+  const JarSettingsSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DsSkeletonPage(
+    padding: EdgeInsets.fromLTRB(16, 4, 16, 32),
+    children: [
+      DsSkeletonCard(
+        child: Row(
+          children: [
+            DsSkeletonBox(width: 64, height: 64, radius: 16),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DsSkeletonLine(width: 150, height: 16),
+                  SizedBox(height: 8),
+                  DsSkeletonLine(width: 90, height: 11),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      SizedBox(height: 20),
+      DsSkeletonLabel(),
+      DsSkeletonListCard(rows: 3, leading: false),
+      SizedBox(height: 20),
+      DsSkeletonLabel(width: 90),
+      DsSkeletonListCard(rows: 4, leading: false),
+    ],
+  );
+}
+
+/// Row of quick-action tiles (76 high), like `DsQuickAction`s.
+class _QuickActionsSkeleton extends StatelessWidget {
+  final int count;
+  const _QuickActionsSkeleton({required this.count});
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < count; i++) ...[
+        if (i > 0) const SizedBox(width: 8),
+        const Expanded(
+          child: DsSkeletonCard(
+            height: 76,
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Column(
+              children: [
+                DsSkeletonCircle(size: 24),
+                SizedBox(height: 9),
+                DsSkeletonLine(width: 44, height: 10),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ],
   );
 }

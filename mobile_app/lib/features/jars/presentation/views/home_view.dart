@@ -147,10 +147,6 @@ class _HomeViewState extends State<HomeView> {
     }
 
     final summaryBloc = context.read<JarSummaryBloc>();
-    final current =
-        summaryBloc.state is JarSummaryLoaded
-            ? (summaryBloc.state as JarSummaryLoaded).jarData.id
-            : null;
 
     JarListItem? picked;
     if (eligible.length == 1) {
@@ -164,7 +160,7 @@ class _HomeViewState extends State<HomeView> {
           _HomeAction.transfer => 'Transfer from',
         },
         jars: eligible,
-        selectedId: current,
+        asAction: true,
       );
     }
     if (picked == null || !mounted) return;
@@ -272,10 +268,7 @@ class _HomeViewState extends State<HomeView> {
   List<Widget> _body(BuildContext context, JarListState state, User? user) {
     if (state is JarListInitial ||
         (state is JarListLoading && _lastJars == null)) {
-      return const [
-        SizedBox(height: 120),
-        Center(child: CircularProgressIndicator(color: AppColors.navy)),
-      ];
+      return const [HomeSkeleton()];
     }
     if (state is JarListError && _lastJars == null) {
       return [
@@ -394,7 +387,7 @@ class _HomeViewState extends State<HomeView> {
         const SizedBox(height: 18),
         DsSectionHeader(
           sealedJars.any((j) => j.isClosed)
-              ? 'Sealed & closed jars'
+              ? 'Sealed & broken jars'
               : 'Sealed jars',
           action: 'All',
           onAction: () => context.go(AppRoutes.jars),
@@ -502,14 +495,7 @@ class _HomeViewState extends State<HomeView> {
                 child: Text(jar.name, style: DsText.caption),
               ),
             if (state is JarSummaryLoading)
-              const DsCard(
-                child: SizedBox(
-                  height: 80,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.navy),
-                  ),
-                ),
-              )
+              const JarActivitySkeleton()
             else if (items.isEmpty)
               DsCard(
                 padding: EdgeInsets.zero,
@@ -611,7 +597,7 @@ class _HomeViewState extends State<HomeView> {
       ),
       const SizedBox(height: 18),
       DsSectionHeader(
-        'Closed jars',
+        'Broken jars',
         action: 'All',
         onAction: () => context.go(AppRoutes.jars),
       ),
@@ -623,7 +609,7 @@ class _HomeViewState extends State<HomeView> {
               title: jar.name,
               subtitle:
                   '${jar.currency.toUpperCase()} ${_short(jar.totalContributions)}',
-              trailing: const DsTag('Closed'),
+              trailing: const DsTag('Broken'),
               onTap: () => _openJar(jar),
             ),
         ],
@@ -780,7 +766,7 @@ class _TotalBlock extends StatelessWidget {
 
 /// Sealed / Frozen when the jar isn't open, otherwise the user's role.
 Widget _statusTag(JarListItem jar, bool isOwner) {
-  if (jar.isClosed) return const DsTag('Closed');
+  if (jar.isClosed) return const DsTag('Broken');
   if (jar.isFrozen) return const DsTag('Frozen', tone: DsTone.negative);
   if (jar.isSealed) return const DsTag('Sealed', tone: DsTone.pending);
   return DsTag(isOwner ? 'Owner' : 'Collector');
