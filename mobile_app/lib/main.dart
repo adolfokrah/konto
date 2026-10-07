@@ -320,11 +320,18 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
                 // Add builder to handle Android navigation bar overlay
                 builder: (context, child) {
-                  return SafeArea(
-                    bottom:
-                        Theme.of(context).platform == TargetPlatform.android,
-                    top: false,
-                    child: child ?? Container(),
+                  // Tap anywhere outside a field to close the keyboard. iOS
+                  // number and phone keyboards have no return key, so this is
+                  // the only way out. Buttons and fields still get their taps.
+                  return GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                    child: SafeArea(
+                      bottom:
+                          Theme.of(context).platform == TargetPlatform.android,
+                      top: false,
+                      child: child ?? Container(),
+                    ),
                   );
                 },
               );
