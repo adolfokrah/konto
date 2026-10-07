@@ -25,7 +25,11 @@ class _JarNameEditViewState extends State<JarNameEditView> {
   @override
   void initState() {
     super.initState();
-    _textController.addListener(() => setState(() {}));
+    // The initial value is seeded from the jar inside build(); skip that
+    // notification so setState isn't called during build.
+    _textController.addListener(() {
+      if (_initialized) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
     );

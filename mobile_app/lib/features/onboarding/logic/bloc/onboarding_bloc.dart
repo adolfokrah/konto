@@ -27,8 +27,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       try {
         print('🔄 OnboardingBloc: Checking onboarding status...');
         final onboardingCompleted =
-            await _walkthroughRepository
-                .checkWalkthroughStatus();
+            await _walkthroughRepository.checkWalkthroughStatus();
         print('🔄 OnboardingBloc: Onboarding completed: $onboardingCompleted');
         if (onboardingCompleted) {
           print('✅ OnboardingBloc: Emitting OnboardingCompleted');

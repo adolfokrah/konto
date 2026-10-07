@@ -26,7 +26,11 @@ class _JarDescriptionEditViewState extends State<JarDescriptionEditView> {
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    _textController.addListener(() => setState(() {}));
+    // The initial value is seeded from the jar inside build(); skip that
+    // notification so setState isn't called during build.
+    _textController.addListener(() {
+      if (_isInitialized) setState(() {});
+    });
     _focusNode = FocusNode();
 
     // Auto focus the text field when the page opens

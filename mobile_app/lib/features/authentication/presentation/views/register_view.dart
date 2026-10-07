@@ -38,6 +38,9 @@ class _RegisterViewState extends State<RegisterView> {
   // 'individual' collects after KYC; 'organization' also needs business verification.
   String _accountType = 'individual';
 
+  /// 0 = who you're collecting for, 1 = about you.
+  int _step = 0;
+
   @override
   void initState() {
     super.initState();
@@ -145,7 +148,7 @@ class _RegisterViewState extends State<RegisterView> {
           _usernameController.text,
           _phoneNumber,
         ].where((v) => v.trim().isNotEmpty).length;
-    return 0.5 + 0.5 * filled / 5;
+    return _step == 0 ? 0.5 : 0.5 + 0.5 * filled / 5;
   }
 
   static const _linkStyle = TextStyle(
@@ -216,220 +219,249 @@ class _RegisterViewState extends State<RegisterView> {
           },
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.cream,
-        appBar: AuthTopBar(progress: _progress),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const AuthHeader(
-                      title: 'Who are you collecting for?',
-                      subtitle:
-                          'This sets how you get verified. You can upgrade later.',
-                    ),
-                    const SizedBox(height: 18),
-                    AuthChoiceCard(
-                      key: const Key('accountType'),
-                      icon: Icons.person_outline_rounded,
-                      title: 'Personal',
-                      description:
-                          'Weddings, funerals, birthdays and family causes',
-                      tags: const ['Ghana Card', '~3 min'],
-                      selected: _accountType == 'individual',
-                      onTap: () => setState(() => _accountType = 'individual'),
-                    ),
-                    const SizedBox(height: 10),
-                    AuthChoiceCard(
-                      key: const Key('accountType_organization'),
-                      icon: Icons.account_balance_outlined,
-                      title: 'Organization',
-                      description:
-                          'Churches, schools, associations, businesses',
-                      tags: const ['Business docs', '2–3 days'],
-                      selected: _accountType == 'organization',
-                      onTap:
-                          () => setState(() => _accountType = 'organization'),
-                    ),
-                    const SizedBox(height: 28),
-                    Text('About you', style: DsText.title.copyWith(fontSize: 22)),
-                    const SizedBox(height: 12),
-                    AuthFieldGroup(
-                      children: [
-                        AuthField(
-                          key: const Key('firstName'),
-                          label: 'First name',
-                          keyboardType: TextInputType.name,
-                          textCapitalization: TextCapitalization.words,
-                          controller: _firstNameController,
-                          onChanged: (_) => setState(() {}),
+      child: PopScope(
+        // Back on "About you" returns to the account type, not out of sign-up.
+        canPop: _step == 0,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && _step == 1) setState(() => _step = 0);
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.cream,
+          appBar: AuthTopBar(
+            progress: _progress,
+            onBack: _step == 1 ? () => setState(() => _step = 0) : null,
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_step == 0) ...[
+                        const AuthHeader(
+                          title: 'Who are you collecting for?',
+                          subtitle:
+                              'This sets how you get verified. You can upgrade later.',
                         ),
-                        AuthField(
-                          key: const Key('lastName'),
-                          label: 'Last name',
-                          keyboardType: TextInputType.name,
-                          textCapitalization: TextCapitalization.words,
-                          controller: _lastNameController,
-                          onChanged: (_) => setState(() {}),
+                        const SizedBox(height: 18),
+                        AuthChoiceCard(
+                          key: const Key('accountType'),
+                          icon: Icons.person_outline_rounded,
+                          title: 'Personal',
+                          description:
+                              'Weddings, funerals, birthdays and family causes',
+                          tags: const ['Ghana Card', '~3 min'],
+                          selected: _accountType == 'individual',
+                          onTap:
+                              () => setState(() => _accountType = 'individual'),
                         ),
-                      ],
-                    ),
-                    const AuthHelp('As on your Ghana Card or ID'),
-                    const SizedBox(height: 14),
-                    AuthFieldGroup(
-                      children: [
-                        AuthField(
-                          key: const Key('email'),
-                          label: localizations.email,
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          onChanged: (_) => setState(() {}),
+                        const SizedBox(height: 10),
+                        AuthChoiceCard(
+                          key: const Key('accountType_organization'),
+                          icon: Icons.account_balance_outlined,
+                          title: 'Organization',
+                          description:
+                              'Churches, schools, associations, businesses',
+                          tags: const ['Business docs', '2–3 days'],
+                          selected: _accountType == 'organization',
+                          onTap:
+                              () =>
+                                  setState(() => _accountType = 'organization'),
                         ),
-                        AuthField(
-                          key: const Key('username'),
-                          label: 'Username',
-                          prefixText: '@',
-                          keyboardType: TextInputType.text,
-                          controller: _usernameController,
+                      ] else ...[
+                        const AuthHeader(
+                          title: 'About you',
+                          subtitle: 'Use your name as it appears on your ID.',
+                        ),
+                        const SizedBox(height: 18),
+                        AuthFieldGroup(
+                          children: [
+                            AuthField(
+                              key: const Key('firstName'),
+                              label: 'First name',
+                              keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.words,
+                              controller: _firstNameController,
+                              onChanged: (_) => setState(() {}),
+                            ),
+                            AuthField(
+                              key: const Key('lastName'),
+                              label: 'Last name',
+                              keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.words,
+                              controller: _lastNameController,
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ],
+                        ),
+                        const AuthHelp('As on your Ghana Card or ID'),
+                        const SizedBox(height: 14),
+                        AuthFieldGroup(
+                          children: [
+                            AuthField(
+                              key: const Key('email'),
+                              label: localizations.email,
+                              keyboardType: TextInputType.emailAddress,
+                              controller: _emailController,
+                              onChanged: (_) => setState(() {}),
+                            ),
+                            AuthField(
+                              key: const Key('username'),
+                              label: 'Username',
+                              prefixText: '@',
+                              keyboardType: TextInputType.text,
+                              controller: _usernameController,
+                              onChanged: (value) {
+                                // Convert to lowercase for case-insensitive username
+                                final cursorPosition =
+                                    _usernameController.selection.baseOffset;
+                                _usernameController.value = TextEditingValue(
+                                  text: value.toLowerCase(),
+                                  selection: TextSelection.collapsed(
+                                    offset: cursorPosition,
+                                  ),
+                                );
+                                setState(() {});
+                              },
+                            ),
+                          ],
+                        ),
+                        const AuthHelp(
+                          'Your username identifies you or your organization. It can\'t be changed once set.',
+                        ),
+                        const SizedBox(height: 14),
+                        SelectInput<String>(
+                          key: const Key('country'),
+                          label: localizations.country,
+                          options: AppSelectOptions.getCountryOptions(
+                            localizations,
+                          ),
+                          value: _selectedCountry,
                           onChanged: (value) {
-                            // Convert to lowercase for case-insensitive username
-                            final cursorPosition =
-                                _usernameController.selection.baseOffset;
-                            _usernameController.value = TextEditingValue(
-                              text: value.toLowerCase(),
-                              selection: TextSelection.collapsed(
-                                offset: cursorPosition,
-                              ),
-                            );
-                            setState(() {});
+                            setState(() {
+                              _selectedCountry = value;
+                            });
                           },
                         ),
-                      ],
-                    ),
-                    const AuthHelp(
-                      'Your username identifies you or your organization. It can\'t be changed once set.',
-                    ),
-                    const SizedBox(height: 14),
-                    SelectInput<String>(
-                      key: const Key('country'),
-                      label: localizations.country,
-                      options: AppSelectOptions.getCountryOptions(localizations),
-                      value: _selectedCountry,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCountry = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    NumberInput(
-                      key: const Key('phoneNumber'),
-                      selectedCountry: _selectedPhoneCountry,
-                      countryCode: _countryCode,
-                      phoneNumber: _phoneNumber, // Pre-fill with passed phone number
-                      placeholder: localizations.phoneNumberPlaceholder,
-                      onCountryChanged: (country, code) {
-                        setState(() {
-                          _selectedPhoneCountry = country;
-                          _countryCode = code;
-                        });
-                      },
-                      onPhoneNumberChanged: (phoneNumber) {
-                        setState(() {
-                          _phoneNumber = phoneNumber;
-                        });
-                      },
-                    ),
-                    const AuthHelp(
-                      'Enter your number without the leading 0. e.g. 241234567',
-                    ),
-                    const SizedBox(height: 14),
-                    AuthField(
-                      key: const Key('referralCode'),
-                      label: 'Referral code (optional)',
-                      hintText: 'e.g. KOFI24',
-                      standalone: true,
-                      keyboardType: TextInputType.text,
-                      controller: _referralCodeController,
-                      onChanged: (value) {
-                        final upper = value.toUpperCase();
-                        final cursor =
-                            _referralCodeController.selection.baseOffset;
-                        _referralCodeController.value = TextEditingValue(
-                          text: upper,
-                          selection: TextSelection.collapsed(offset: cursor),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                        const SizedBox(height: 10),
+                        NumberInput(
+                          key: const Key('phoneNumber'),
+                          selectedCountry: _selectedPhoneCountry,
+                          countryCode: _countryCode,
+                          phoneNumber:
+                              _phoneNumber, // Pre-fill with passed phone number
+                          placeholder: localizations.phoneNumberPlaceholder,
+                          onCountryChanged: (country, code) {
+                            setState(() {
+                              _selectedPhoneCountry = country;
+                              _countryCode = code;
+                            });
+                          },
+                          onPhoneNumberChanged: (phoneNumber) {
+                            setState(() {
+                              _phoneNumber = phoneNumber;
+                            });
+                          },
+                        ),
+                        const AuthHelp(
+                          'Enter your number without the leading 0. e.g. 241234567',
+                        ),
+                        const SizedBox(height: 14),
+                        AuthField(
+                          key: const Key('referralCode'),
+                          label: 'Referral code (optional)',
+                          hintText: 'e.g. KOFI24',
+                          standalone: true,
+                          keyboardType: TextInputType.text,
+                          controller: _referralCodeController,
+                          onChanged: (value) {
+                            final upper = value.toUpperCase();
+                            final cursor =
+                                _referralCodeController.selection.baseOffset;
+                            _referralCodeController.value = TextEditingValue(
+                              text: upper,
+                              selection: TextSelection.collapsed(
+                                offset: cursor,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
 
-                    // Terms & Conditions Section
-                    RichText(
-                      textAlign: TextAlign.left,
-                      text: TextSpan(
-                        style: DsText.caption,
-                        children: [
-                          TextSpan(text: localizations.bySigningUpYouAgree),
-                          TextSpan(
-                            text: localizations.termsAndConditions,
-                            style: _linkStyle,
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    UrlLauncherUtils.launch(AppLinks.terms);
-                                  },
+                        // Terms & Conditions Section
+                        RichText(
+                          textAlign: TextAlign.left,
+                          text: TextSpan(
+                            style: DsText.caption,
+                            children: [
+                              TextSpan(text: localizations.bySigningUpYouAgree),
+                              TextSpan(
+                                text: localizations.termsAndConditions,
+                                style: _linkStyle,
+                                recognizer:
+                                    TapGestureRecognizer()
+                                      ..onTap = () {
+                                        UrlLauncherUtils.launch(AppLinks.terms);
+                                      },
+                              ),
+                              TextSpan(text: localizations.and),
+                              TextSpan(
+                                text: localizations.privacyPolicy,
+                                style: _linkStyle,
+                                recognizer:
+                                    TapGestureRecognizer()
+                                      ..onTap = () {
+                                        UrlLauncherUtils.launch(
+                                          AppLinks.privacy,
+                                        );
+                                      },
+                              ),
+                            ],
                           ),
-                          TextSpan(text: localizations.and),
-                          TextSpan(
-                            text: localizations.privacyPolicy,
-                            style: _linkStyle,
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    UrlLauncherUtils.launch(AppLinks.privacy);
-                                  },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Action Buttons Section
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                return AuthFooter(
-                  children: [
-                    AppButton.filled(
-                      text: localizations.createAccount,
-                      isLoading: state is AuthLoading,
-                      onPressed:
-                          state is AuthLoading
-                              ? null
-                              : () {
-                                _handleCreateAccount(context);
-                              },
-                    ),
-                    AppButton.outlined(
-                      key: const Key('login_button'),
-                      text: 'I have an account',
-                      onPressed: () {
-                        if (state is AuthLoading) return;
-                        // Handle login navigation
-                        context.pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
+              // Action Buttons Section
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  return AuthFooter(
+                    children: [
+                      AppButton.filled(
+                        key: const Key('register_continue'),
+                        text: localizations.continueText,
+                        isLoading: state is AuthLoading,
+                        onPressed:
+                            state is AuthLoading
+                                ? null
+                                : () {
+                                  if (_step == 0) {
+                                    setState(() => _step = 1);
+                                  } else {
+                                    _handleCreateAccount(context);
+                                  }
+                                },
+                      ),
+                      if (_step == 0)
+                        AppButton.outlined(
+                          key: const Key('login_button'),
+                          text: 'I have an account',
+                          onPressed: () {
+                            if (state is AuthLoading) return;
+                            context.pop();
+                          },
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

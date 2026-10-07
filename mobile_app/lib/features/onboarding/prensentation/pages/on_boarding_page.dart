@@ -96,54 +96,101 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                 ),
               ),
             ),
+            // Only the visuals swipe; each hero scales and fades with the drag.
             Expanded(
               child: PageView.builder(
                 controller: _controller,
                 itemCount: _pages.length,
                 onPageChanged: (p) => setState(() => _page = p),
                 itemBuilder: (context, index) {
-                  final (title, body) = _pages[index];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                width: 358,
-                                height: 380,
-                                child: switch (index) {
-                                  0 => const _CreateHero(),
-                                  1 => const _GiveHero(),
-                                  _ => const _TrackHero(),
-                                },
-                              ),
-                            ),
+                  return AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      final page =
+                          _controller.hasClients &&
+                                  _controller.position.haveDimensions
+                              ? (_controller.page ?? _page.toDouble())
+                              : _page.toDouble();
+                      final delta = (page - index).abs().clamp(0.0, 1.0);
+                      return Opacity(
+                        opacity: 1 - delta * 0.6,
+                        child: Transform.scale(
+                          scale: 1 - delta * 0.08,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: SizedBox(
+                            width: 358,
+                            height: 380,
+                            child: switch (index) {
+                              0 => const _CreateHero(),
+                              1 => const _GiveHero(),
+                              _ => const _TrackHero(),
+                            },
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _PagerDots(count: _pages.length, current: _page),
-                            const SizedBox(height: 14),
-                            Text(
-                              title,
-                              style: DsText.display.copyWith(fontSize: 29),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(body, style: DsText.body),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   );
                 },
+              ),
+            ),
+            // Indicator follows the swipe; copy tweens in when the page settles.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _PagerDots(controller: _controller, count: _pages.length),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: 150,
+                    width: double.infinity,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 380),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      layoutBuilder:
+                          (current, previous) => Stack(
+                            alignment: Alignment.topLeft,
+                            children: [
+                              ...previous,
+                              if (current != null) current,
+                            ],
+                          ),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.18),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Column(
+                        key: ValueKey(_page),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _pages[_page].$1,
+                            style: DsText.display.copyWith(fontSize: 29),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(_pages[_page].$2, style: DsText.body),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -183,35 +230,45 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
 }
 
 class _PagerDots extends StatelessWidget {
+  final PageController controller;
   final int count;
-  final int current;
-  const _PagerDots({required this.count, required this.current});
+  const _PagerDots({required this.controller, required this.count});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (var i = 0; i < count; i++)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(right: 6),
-            width: i == current ? 22 : 7,
-            height: 7,
-            decoration: BoxDecoration(
-              color: i == current ? AppColors.navy : AppColors.beige,
-              borderRadius: BorderRadius.circular(7),
-            ),
-          ),
-      ],
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final page =
+            controller.hasClients && controller.position.haveDimensions
+                ? (controller.page ?? 0)
+                : 0.0;
+        return Row(
+          children: [
+            for (var i = 0; i < count; i++)
+              Builder(
+                builder: (context) {
+                  // 0 when far, 1 when this dot's page is centred
+                  final t = (1 - (page - i).abs()).clamp(0.0, 1.0);
+                  return Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    width: 7 + 17 * t,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: Color.lerp(AppColors.beige, AppColors.navy, t),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                  );
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 }
 
 // ---------------------------------------------------------------- heroes
-
-const _lift = [
-  BoxShadow(color: Color(0x1F1B232E), blurRadius: 30, offset: Offset(0, 12)),
-];
 
 /// Photo in a white frame, like a print in a scrapbook.
 class _Photo extends StatelessWidget {
@@ -226,7 +283,6 @@ class _Photo extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: framed ? _lift : null,
       ),
       padding: EdgeInsets.all(framed ? 4 : 0),
       child: ClipRRect(
@@ -259,7 +315,7 @@ class _FloatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: _lift,
+        border: Border.all(color: AppColors.line),
       ),
       child: child,
     );
@@ -556,7 +612,8 @@ class _TrackHero extends StatelessWidget {
                             alignment: Alignment.bottomCenter,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: i == 5 ? AppColors.navy : AppColors.beige,
+                                color:
+                                    i == 5 ? AppColors.navy : AppColors.beige,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ),
@@ -578,7 +635,7 @@ class _TrackHero extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceWhite,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: _lift,
+              border: Border.all(color: AppColors.line),
             ),
             child: const Column(
               children: [

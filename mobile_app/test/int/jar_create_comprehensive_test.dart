@@ -11,6 +11,7 @@ import 'package:Hoga/features/jars/logic/bloc/jar_create/jar_create_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/presentation/views/jar_create_view.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/media/logic/bloc/media_bloc.dart';
 import 'package:Hoga/features/user_account/logic/bloc/user_account_bloc.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
@@ -205,6 +206,12 @@ void main() {
     );
   }
 
+  // Redesigned jar name input (JarBareInput wraps a plain TextField).
+  Finder nameField() => find.descendant(
+    of: find.byType(JarBareInput),
+    matching: find.byType(TextField),
+  );
+
   group('Jar Create View Comprehensive Tests', () {
     setUp(() async {
       await ensureAuthentication();
@@ -221,10 +228,10 @@ void main() {
 
       // Verify the form elements are present
       expect(find.byType(JarCreateView), findsOneWidget);
-      expect(
-        find.byType(TextFormField),
-        findsAtLeastNWidgets(1),
-      ); // At least name field
+      // Redesigned form: "New jar" header, name field and Create button
+      expect(find.byType(JarTopBar), findsOneWidget);
+      expect(nameField(), findsOneWidget); // At least name field
+      expect(find.byType(JarPrimaryButton), findsOneWidget);
 
       print('✅ Initial jar creation form displayed correctly');
     });
@@ -237,13 +244,13 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      // Find text fields and try to interact with them
-      final textFields = find.byType(TextFormField);
-      if (textFields.evaluate().isNotEmpty) {
-        // Fill in the first text field (likely jar name)
-        await tester.enterText(textFields.first, 'Test Jar');
-        await tester.pumpAndSettle();
-      }
+      // Fill in the jar name field
+      await tester.enterText(nameField(), 'Test Jar');
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(nameField()).controller?.text,
+        equals('Test Jar'),
+      );
 
       print('✅ Form interaction works correctly');
     });
@@ -255,18 +262,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill in jar name if field exists
-      final textFields = find.byType(TextFormField);
-      if (textFields.evaluate().isNotEmpty) {
-        await tester.enterText(textFields.first, 'Submit Test Jar');
-        await tester.pumpAndSettle();
-      }
+      await tester.enterText(nameField(), 'Submit Test Jar');
+      await tester.pumpAndSettle();
 
       // Look for and tap submit button
-      final submitButtons = find.byType(ElevatedButton);
-      if (submitButtons.evaluate().isNotEmpty) {
-        await tester.tap(submitButtons.first, warnIfMissed: false);
-        await tester.pumpAndSettle();
-      }
+      final submitButton = find.byType(JarPrimaryButton);
+      expect(submitButton, findsOneWidget);
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
 
       print('✅ Form submission handled');
     });
@@ -280,18 +283,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill in jar name if field exists
-      final textFields = find.byType(TextFormField);
-      if (textFields.evaluate().isNotEmpty) {
-        await tester.enterText(textFields.first, 'Failed Jar');
-        await tester.pumpAndSettle();
-      }
+      await tester.enterText(nameField(), 'Failed Jar');
+      await tester.pumpAndSettle();
 
       // Try to submit
-      final submitButtons = find.byType(ElevatedButton);
-      if (submitButtons.evaluate().isNotEmpty) {
-        await tester.tap(submitButtons.first, warnIfMissed: false);
-        await tester.pumpAndSettle();
-      }
+      final submitButton = find.byType(JarPrimaryButton);
+      expect(submitButton, findsOneWidget);
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
 
       print('✅ API failure handled gracefully');
     });
@@ -302,12 +301,14 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      // Look for back button
-      final backButtons = find.byType(BackButton);
-      if (backButtons.evaluate().isNotEmpty) {
-        await tester.tap(backButtons.first, warnIfMissed: false);
-        await tester.pumpAndSettle();
-      }
+      // Redesigned header has a close (back) nav button
+      final backButton = find.descendant(
+        of: find.byType(JarTopBar),
+        matching: find.byType(JarNavButton),
+      );
+      expect(backButton, findsOneWidget);
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
 
       print('✅ Back navigation works');
     });

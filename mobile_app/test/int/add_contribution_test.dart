@@ -15,8 +15,8 @@ import 'package:Hoga/features/authentication/data/models/user.dart';
 import 'package:Hoga/core/enums/app_language.dart';
 import 'package:Hoga/core/enums/app_theme.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
-import 'package:Hoga/core/widgets/text_input.dart';
-import 'package:Hoga/core/widgets/select_input.dart';
+import 'package:Hoga/core/widgets/button.dart';
+import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import '../lib/test_setup.dart';
@@ -37,7 +37,7 @@ void main() {
     );
     await prefs.setString(
       'konto_user_data',
-      '{"id": "test-user-123", "email": "test@example.com", "firstName": "Test", "lastName": "User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified"}',
+      '{"id": "test-user-123", "email": "test@example.com", "firstName": "Test", "lastName": "User", "phoneNumber": "+1234567890", "countryCode": "US", "country": "United States", "kycStatus": "verified", "createdAt": "2024-01-01T00:00:00.000Z", "updatedAt": "2024-01-01T00:00:00.000Z"}',
     );
   });
 
@@ -88,6 +88,13 @@ void main() {
                 (context, state) => Scaffold(
                   appBar: AppBar(title: const Text('Add Contribution')),
                   body: const Center(child: Text('Add Contribution View')),
+                ),
+          ),
+          GoRoute(
+            path: '/await_momo_payment',
+            builder:
+                (context, state) => const Scaffold(
+                  body: Center(child: Text('Await Momo Payment View')),
                 ),
           ),
           GoRoute(
@@ -178,6 +185,44 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    // The redesigned payer step renders its inputs as CollectField rows.
+    // Mobile money order: phone, contributor name. Cash order: name, phone.
+    Finder fieldAt(int index) => find.descendant(
+      of: find.byType(CollectField).at(index),
+      matching: find.byType(TextField),
+    );
+
+    // Payment method is now a "Mobile Money | Cash" segmented control.
+    Future<void> selectCash(WidgetTester tester) async {
+      await tester.tap(
+        find.descendant(
+          of: find.byType(CollectSegment<String>),
+          matching: find.text('Cash'),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Mobile money goes through an in-page review step before submitting.
+    Future<void> openReview(WidgetTester tester) async {
+      final reviewButton = find.widgetWithText(AppButton, 'Review');
+      await tester.ensureVisible(reviewButton);
+      await tester.pumpAndSettle();
+      await tester.tap(reviewButton);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> fillMomoPayer(
+      WidgetTester tester, {
+      String phone = '0241234567',
+      String name = 'John Doe',
+    }) async {
+      await tester.enterText(fieldAt(0), phone);
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldAt(1), name);
+      await tester.pumpAndSettle();
+    }
+
     testWidgets('should successfully submit mobile money contribution', (
       WidgetTester tester,
     ) async {
@@ -189,7 +234,8 @@ void main() {
           data: {
             'success': true,
             'message': 'Contribution added successfully',
-            'data': {
+            // The repository reads the created transaction from `doc`.
+            'doc': {
               'id': 'contribution-123',
               'jarId': 'test-jar-123',
               'contributor': 'John Doe',
@@ -211,24 +257,22 @@ void main() {
       expect(find.byType(AppBar), findsOneWidget);
       expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
 
-      // Fill in contributor name
-      final nameFields = find.byType(AppTextInput);
-      await tester.enterText(nameFields.first, 'John Doe');
-      await tester.pumpAndSettle();
+      // Fill in phone number and contributor name (mobile money is default)
+      await fillMomoPayer(tester);
 
-      // Fill in phone number (for mobile money)
-      if (nameFields.evaluate().length > 1) {
-        await tester.enterText(nameFields.at(1), '0241234567');
-        await tester.pumpAndSettle();
-      }
-
-      // Submit the form
+      // Review step shows the summary and the request button
+      await openReview(tester);
+      expect(find.text('Total due to pay'), findsOneWidget);
       final submitButton = find.byKey(const Key('submit_contribution_button'));
+      expect(submitButton, findsOneWidget);
+      expect(find.textContaining('Request · USD'), findsOneWidget);
+
+      // Submit the request
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      // Verify that the submission was attempted (we'll check for SnackBar or navigation change)
-      // Note: Success messages are shown in SnackBar which may not be immediately testable
+      // Successful mobile money request moves on to the await-payment screen
+      expect(find.text('Await Momo Payment View'), findsOneWidget);
     });
 
     testWidgets('should handle cash contribution submission', (
@@ -242,7 +286,8 @@ void main() {
           data: {
             'success': true,
             'message': 'Contribution added successfully',
-            'data': {
+            // The repository reads the created transaction from `doc`.
+            'doc': {
               'id': 'contribution-124',
               'jarId': 'test-jar-123',
               'contributor': 'Jane Smith',
@@ -260,18 +305,13 @@ void main() {
       await navigateToSaveContribution(tester, amount: '50.0');
 
       // Select Cash payment method
-      final paymentMethodSelector = find.byType(SelectInput<String>).first;
-      await tester.tap(paymentMethodSelector);
-      await tester.pumpAndSettle();
+      await selectCash(tester);
 
-      // Find and select Cash option
-      final cashOption = find.text('Cash').last;
-      await tester.tap(cashOption);
-      await tester.pumpAndSettle();
+      // Cash has no review step: the save button is shown directly
+      expect(find.widgetWithText(AppButton, 'Review'), findsNothing);
 
-      // Fill in contributor name
-      final nameFields = find.byType(AppTextInput);
-      await tester.enterText(nameFields.first, 'Jane Smith');
+      // Fill in contributor name (first field for cash)
+      await tester.enterText(fieldAt(0), 'Jane Smith');
       await tester.pumpAndSettle();
 
       // Submit the form
@@ -281,7 +321,8 @@ void main() {
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      // Verify that the submission was completed (success messages are in SnackBar)
+      // Cash contributions return to the jar detail
+      expect(find.text('Jar Detail View'), findsOneWidget);
     });
 
     testWidgets(
@@ -306,15 +347,15 @@ void main() {
         // Verify the save contribution view is loaded with proper data
         expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
 
-        // Leave contributor name empty and try to find the submit button
-        final submitButton = find.byKey(const Key('submit_contribution_button'));
-        await tester.ensureVisible(submitButton); // Scroll button into view
-        await tester.pumpAndSettle();
-        await tester.tap(submitButton);
-        await tester.pumpAndSettle();
+        // Leave contributor name empty and try to continue to review
+        await openReview(tester);
 
-        // Verify validation error message appears
+        // Verify validation error message appears and we stay on the form
         expect(find.text('Please enter contributor name'), findsOneWidget);
+        expect(
+          find.byKey(const Key('submit_contribution_button')),
+          findsNothing,
+        );
       },
     );
 
@@ -328,25 +369,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Fill contributor name but leave phone number empty for mobile money
-        final nameFields = find.byType(AppTextInput);
-        // For mobile money: first field is phone, second field is contributor name
-        final contributorNameField = nameFields.at(
-          1,
-        ); // Second field is contributor name
-        await tester.enterText(contributorNameField, 'John Doe');
-        await tester.pumpAndSettle();
+        // (mobile money order: phone first, contributor name second)
+        await fillMomoPayer(tester, phone: '');
 
-        // Ensure mobile money phone number field is empty (first field for mobile money)
-        final phoneField = nameFields.first; // First field is phone number
-        await tester.enterText(phoneField, ''); // Clear phone field
-        await tester.pumpAndSettle();
-
-        // Submit without entering phone number (Mobile Money is default)
-        final submitButton = find.byKey(const Key('submit_contribution_button'));
-        await tester.ensureVisible(submitButton); // Scroll button into view
-        await tester.pumpAndSettle();
-        await tester.tap(submitButton);
-        await tester.pumpAndSettle();
+        // Try to continue without a phone number (Mobile Money is default)
+        await openReview(tester);
 
         // Wait a bit longer for the SnackBar to appear
         await tester.pump(const Duration(milliseconds: 500));
@@ -384,19 +411,11 @@ void main() {
       await navigateToSaveContribution(tester);
       await tester.pumpAndSettle();
 
-      // Fill in required fields with correct field order
-      final nameFields = find.byType(AppTextInput);
-      // For mobile money: first field is phone number, second field is contributor name
-      final phoneField = nameFields.first; // Phone number field
-      final nameField = nameFields.at(1); // Contributor name field
+      // Fill in required fields (mobile money: phone, then contributor name)
+      await fillMomoPayer(tester);
 
-      await tester.enterText(phoneField, '0241234567');
-      await tester.pumpAndSettle();
-
-      await tester.enterText(nameField, 'John Doe');
-      await tester.pumpAndSettle();
-
-      // Submit the form
+      // Review, then send the request
+      await openReview(tester);
       final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
@@ -408,9 +427,11 @@ void main() {
       // For API error test, verify that the form is still present (submission failed)
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
+      // The review summary (which replaced the old "Amount" breakdown) stays up.
       expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
-      expect(find.text('Amount'), findsOneWidget);
+      expect(find.text('Total due to pay'), findsOneWidget);
       expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+      expect(find.text('Await Momo Payment View'), findsNothing);
     });
 
     testWidgets('should handle network error gracefully', (
@@ -433,19 +454,11 @@ void main() {
       await navigateToSaveContribution(tester);
       await tester.pumpAndSettle();
 
-      // Fill in required fields with correct field order
-      final nameFields = find.byType(AppTextInput);
-      // For mobile money: first field is phone number, second field is contributor name
-      final phoneField = nameFields.first; // Phone number field
-      final nameField = nameFields.at(1); // Contributor name field
+      // Fill in required fields (mobile money: phone, then contributor name)
+      await fillMomoPayer(tester);
 
-      await tester.enterText(phoneField, '0241234567');
-      await tester.pumpAndSettle();
-
-      await tester.enterText(nameField, 'John Doe');
-      await tester.pumpAndSettle();
-
-      // Submit the form
+      // Review, then send the request
+      await openReview(tester);
       final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
@@ -457,9 +470,11 @@ void main() {
       // For network error test, verify that the form is still present (submission failed)
       // and button is available for retry. Error messages are shown in SnackBars which
       // are difficult to test reliably in integration tests.
+      // The review summary (which replaced the old "Amount" breakdown) stays up.
       expect(find.byKey(const Key('submit_contribution_button')), findsOneWidget);
-      expect(find.text('Amount'), findsOneWidget);
+      expect(find.text('Total due to pay'), findsOneWidget);
       expect(find.text('₵ 100.00'), findsWidgets); // Multiple instances due to fee breakdown
+      expect(find.text('Await Momo Payment View'), findsNothing);
     });
 
     testWidgets('should show loading state during submission', (
@@ -481,19 +496,11 @@ void main() {
       await navigateToSaveContribution(tester);
       await tester.pumpAndSettle();
 
-      // Fill in required fields with correct field order
-      final nameFields = find.byType(AppTextInput);
-      // For mobile money: first field is phone number, second field is contributor name
-      final phoneField = nameFields.first; // Phone number field
-      final nameField = nameFields.at(1); // Contributor name field
+      // Fill in required fields (mobile money: phone, then contributor name)
+      await fillMomoPayer(tester);
 
-      await tester.enterText(phoneField, '0241234567');
-      await tester.pumpAndSettle();
-
-      await tester.enterText(nameField, 'John Doe');
-      await tester.pumpAndSettle();
-
-      // Submit the form
+      // Review, then send the request
+      await openReview(tester);
       final submitButton = find.byKey(const Key('submit_contribution_button'));
       await tester.tap(submitButton);
 
@@ -534,7 +541,8 @@ void main() {
             data: {
               'success': true,
               'message': 'Contribution added successfully',
-              'data': {
+              // The repository reads the created transaction from `doc`.
+              'doc': {
                 'id': 'contribution-123',
                 'jarId': 'test-jar-123',
                 'contributor': 'John Doe',
@@ -640,8 +648,18 @@ void main() {
                       BlocProvider.value(value: getIt<JarSummaryReloadBloc>()),
                       BlocProvider.value(value: getIt<AddContributionBloc>()),
                       BlocProvider.value(value: getIt<WithdrawalAccountsBloc>()),
+                      // Provided app-wide in main.dart; read by the momo flow.
+                      BlocProvider.value(value: getIt<MomoPaymentBloc>()),
+                      BlocProvider.value(value: getIt<AuthBloc>()),
                     ],
                     child: const SaveContributionView(),
+                  ),
+            ),
+            GoRoute(
+              path: '/await_momo_payment',
+              builder:
+                  (context, state) => const Scaffold(
+                    body: Center(child: Text('Await Momo Payment View')),
                   ),
             ),
           ],
@@ -668,17 +686,11 @@ void main() {
           findsWidgets, // Multiple instances due to fee breakdown
         );
 
-        // Fill in contributor details
-        final nameFields = find.byType(AppTextInput);
-        await tester.enterText(nameFields.first, 'John Doe');
-        await tester.pumpAndSettle();
+        // Fill in contributor details (mobile money: phone, then name)
+        await fillMomoPayer(tester);
 
-        if (nameFields.evaluate().length > 1) {
-          await tester.enterText(nameFields.at(1), '0241234567');
-          await tester.pumpAndSettle();
-        }
-
-        // Submit the contribution
+        // Review, then submit the contribution
+        await openReview(tester);
         final submitButton = find.byKey(const Key('submit_contribution_button'));
         await tester.tap(submitButton);
         await tester.pumpAndSettle();
@@ -688,7 +700,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify that the contribution was submitted successfully
+        // (mobile money success moves on to the await-payment screen).
         // Note: Jar summary reload verification is complex in test environment due to navigation handling
+        expect(find.text('Await Momo Payment View'), findsOneWidget);
 
         // Clear the mocked endpoints
         MockInterceptor.clearOverrides();
@@ -711,7 +725,8 @@ void main() {
             data: {
               'success': true,
               'message': 'Contribution added successfully',
-              'data': {
+              // The repository reads the created transaction from `doc`.
+              'doc': {
                 'id': 'contribution-124',
                 'amountContributed': contributionAmount,
                 'paymentStatus': 'completed',
@@ -779,23 +794,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select Cash payment method to test different payment flow
-        final paymentMethodSelector = find.byType(SelectInput<String>).first;
-        await tester.tap(paymentMethodSelector);
-        await tester.pumpAndSettle();
-
-        // Find and select Cash option - be more defensive about finding it
-        final cashOptions = find.text('Cash');
-        if (cashOptions.evaluate().isNotEmpty) {
-          await tester.tap(cashOptions.last);
-          await tester.pumpAndSettle();
-        }
+        await selectCash(tester);
 
         // Fill in required fields - for Cash, only contributor name is needed
-        final nameFields = find.byType(AppTextInput);
-        if (nameFields.evaluate().isNotEmpty) {
-          await tester.enterText(nameFields.first, 'Jane Smith');
-          await tester.pumpAndSettle();
-        }
+        await tester.enterText(fieldAt(0), 'Jane Smith');
+        await tester.pumpAndSettle();
 
         // Submit the form
         final submitButton = find.byKey(const Key('submit_contribution_button'));

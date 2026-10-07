@@ -6,7 +6,7 @@ import 'package:Hoga/core/widgets/ds/ds.dart';
 import 'package:Hoga/features/authentication/presentation/widgets/auth_widgets.dart';
 import 'package:Hoga/core/utils/phone_validation_utils.dart';
 import 'package:Hoga/core/widgets/button.dart';
-import 'package:Hoga/core/widgets/number_input.dart';
+import 'package:Hoga/core/widgets/number_country_picker.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
 import 'package:Hoga/features/verification/logic/bloc/verification_bloc.dart';
@@ -26,6 +26,52 @@ class _LoginViewState extends State<LoginView> {
   String _countryCode = '+233';
   String _selectedCountry = 'Ghana';
   bool _navigatedToOtp = false;
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController.addListener(() {
+      final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+      if (digits != _phoneNumber) setState(() => _phoneNumber = digits);
+    });
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _typeDigit(String d) {
+    final t = _phoneController.text;
+    if (t.replaceAll(RegExp(r'\D'), '').length >= 10) return;
+    _phoneController.value = TextEditingValue(
+      text: t + d,
+      selection: TextSelection.collapsed(offset: t.length + 1),
+    );
+  }
+
+  void _backspace() {
+    final t = _phoneController.text;
+    if (t.isEmpty) return;
+    _phoneController.value = TextEditingValue(
+      text: t.substring(0, t.length - 1),
+      selection: TextSelection.collapsed(offset: t.length - 1),
+    );
+  }
+
+  void _pickCountry() {
+    NumberCountryPicker.showCountryPickerDialog(
+      context,
+      selectedCountryCode: _countryCode,
+      onCountrySelected:
+          (country) => setState(() {
+            _selectedCountry = country.name;
+            _countryCode = country.code;
+          }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,32 +144,19 @@ class _LoginViewState extends State<LoginView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AuthHeader(
-                          title: localizations.login,
-                          subtitle: localizations.loginSubtitle.replaceAll(
-                            '\n',
-                            ' ',
-                          ),
+                        const AuthHeader(
+                          title: "What's your number?",
+                          subtitle:
+                              "We'll text you a 6-digit code. New or returning, it's the same step.",
                         ),
-                        const SizedBox(height: 24),
-                        NumberInput(
-                          selectedCountry: _selectedCountry,
+                        const SizedBox(height: 20),
+                        AuthPhoneRow(
                           countryCode: _countryCode,
-                          placeholder: localizations.phoneNumber,
-                          textFieldKey: const Key('phone_number'),
-                          onCountryChanged: (country, code) {
-                            setState(() {
-                              _selectedCountry = country;
-                              _countryCode = code;
-                            });
-                          },
-                          onPhoneNumberChanged: (phoneNumber) {
-                            setState(() {
-                              _phoneNumber = phoneNumber;
-                            });
-                          },
+                          controller: _phoneController,
+                          onCountryTap: _pickCountry,
+                          fieldKey: const Key('phone_number'),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         const Row(
                           children: [
                             Icon(
@@ -144,10 +177,14 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
+                AuthKeypad(onDigit: _typeDigit, onBackspace: _backspace),
                 AuthFooter(
                   children: [
                     AppButton(
-                      text: loading ? localizations.checking : localizations.login,
+                      text:
+                          loading
+                              ? localizations.checking
+                              : localizations.continueText,
                       variant: ButtonVariant.fill,
                       key: const Key('login_button'),
                       onPressed:
@@ -185,13 +222,6 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                 );
                               },
-                    ),
-                    AppButton(
-                      text: localizations.createAccount,
-                      variant: ButtonVariant.outline,
-                      onPressed: () {
-                        context.push(AppRoutes.register);
-                      },
                     ),
                   ],
                 ),

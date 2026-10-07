@@ -4,6 +4,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:Hoga/core/widgets/number_country_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
@@ -206,10 +208,7 @@ class AuthChoiceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: DsText.section.copyWith(fontSize: 16),
-                    ),
+                    Text(title, style: DsText.section.copyWith(fontSize: 16)),
                     const SizedBox(height: 2),
                     Text(description, style: DsText.small),
                     const SizedBox(height: 8),
@@ -386,4 +385,160 @@ class AuthHelp extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
     child: Text(text, style: DsText.caption.copyWith(color: color)),
   );
+}
+
+// ---------------------------------------------------------------- phone + keypad
+
+/// Country tile + "Phone number" field side by side (mockup: Phone number).
+/// The field uses the in-app [AuthKeypad]; the system keyboard is suppressed.
+class AuthPhoneRow extends StatelessWidget {
+  final String countryCode;
+  final TextEditingController controller;
+  final VoidCallback onCountryTap;
+  final Key? fieldKey;
+
+  const AuthPhoneRow({
+    super.key,
+    required this.countryCode,
+    required this.controller,
+    required this.onCountryTap,
+    this.fieldKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final flag =
+        NumberCountryPicker.getCountryByCode(countryCode)?.flag ?? '🇬🇭';
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: onCountryTap,
+          child: Container(
+            width: 104,
+            constraints: const BoxConstraints(minHeight: 58),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Country', style: DsText.caption),
+                const SizedBox(height: 2),
+                Text(
+                  '$flag $countryCode',
+                  style: DsText.rowTitle.copyWith(fontSize: 15.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 58),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.navy, width: 2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Phone number', style: DsText.caption),
+                TextField(
+                  key: fieldKey,
+                  controller: controller,
+                  keyboardType: TextInputType.none,
+                  showCursor: true,
+                  autofocus: true,
+                  cursorColor: AppColors.navy,
+                  style: DsText.rowTitle.copyWith(fontSize: 15.5),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 2),
+                    hintText: '24 123 4567',
+                    hintStyle: TextStyle(color: AppColors.faint),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Numeric keypad from the mockups (1–9, 0, backspace; optional decimal).
+class AuthKeypad extends StatelessWidget {
+  final ValueChanged<String> onDigit;
+  final VoidCallback onBackspace;
+  final bool decimal;
+
+  const AuthKeypad({
+    super.key,
+    required this.onDigit,
+    required this.onBackspace,
+    this.decimal = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget key(Widget child, VoidCallback? onTap) => Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap:
+            onTap == null
+                ? null
+                : () {
+                  HapticFeedback.selectionClick();
+                  onTap();
+                },
+        child: SizedBox(height: 54, child: Center(child: child)),
+      ),
+    );
+    Text digit(String d) => Text(
+      d,
+      style: const TextStyle(
+        fontFamily: 'Chillax',
+        fontWeight: FontWeight.w500,
+        fontSize: 25,
+        color: AppColors.navy,
+      ),
+    );
+    final rows = [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final r in rows)
+            Row(children: [for (final d in r) key(digit(d), () => onDigit(d))]),
+          Row(
+            children: [
+              decimal
+                  ? key(digit('.'), () => onDigit('.'))
+                  : key(const SizedBox(), null),
+              key(digit('0'), () => onDigit('0')),
+              key(
+                const Icon(Icons.backspace_outlined, color: AppColors.navy),
+                onBackspace,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
