@@ -61,6 +61,11 @@ class JarInsights {
   final int? changePct;
   final String currency;
   final int paymentsCount;
+
+  /// Completed payouts in the same window (money out). Not part of any
+  /// other figure or the 5-payment threshold.
+  final double transferredOut;
+  final int transfersCount;
   final int paymentsCountAllTime;
 
   /// Totals Mon..Sun.
@@ -87,6 +92,8 @@ class JarInsights {
     this.changePct,
     required this.currency,
     required this.paymentsCount,
+    this.transferredOut = 0,
+    this.transfersCount = 0,
     required this.paymentsCountAllTime,
     required this.byWeekday,
     this.bestWeekdayIndex,
@@ -119,6 +126,8 @@ class JarInsights {
       changePct: json['changePct'] == null ? null : _toInt(json['changePct']),
       currency: (json['currency']?.toString() ?? 'GHS').toUpperCase(),
       paymentsCount: _toInt(json['paymentsCount']),
+      transferredOut: _toDouble(json['transferredOut']),
+      transfersCount: _toInt(json['transfersCount']),
       paymentsCountAllTime: _toInt(
         json['paymentsCountAllTime'] ?? json['paymentsCount'],
       ),

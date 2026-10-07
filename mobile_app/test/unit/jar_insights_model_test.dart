@@ -106,4 +106,23 @@ void main() {
       );
     });
   });
+
+  test('reads money out, defaulting to zero for older servers', () {
+    final withPayouts = JarInsights.fromJson({
+      'period': 'all',
+      'total': 139,
+      'paymentsCount': 5,
+      'paymentsCountAllTime': 5,
+      'transferredOut': 15,
+      'transfersCount': 1,
+    });
+    expect(withPayouts.transferredOut, 15);
+    expect(withPayouts.transfersCount, 1);
+    // Payouts never count toward the 5-payment threshold.
+    expect(withPayouts.hasEnoughData, isTrue);
+
+    final older = JarInsights.fromJson({'period': 'all', 'total': 10});
+    expect(older.transferredOut, 0);
+    expect(older.transfersCount, 0);
+  });
 }

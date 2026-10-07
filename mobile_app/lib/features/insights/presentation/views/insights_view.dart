@@ -423,6 +423,30 @@ class _InsightsBodyState extends State<_InsightsBody> {
                         Text(_periodLabel(insights), style: DsText.caption),
                         const SizedBox(height: 2),
                         DsMoney(insights.total, currency: null, size: 30),
+                        const SizedBox(height: 4),
+                        // Money out over the same period, beside money in.
+                        Text.rich(
+                          key: const Key('insights_transferred_out'),
+                          TextSpan(
+                            style: DsText.caption,
+                            children: [
+                              const TextSpan(text: 'Transferred out '),
+                              TextSpan(
+                                text:
+                                    '${insights.currency.toUpperCase()} ${NumberFormat('#,##0.00').format(insights.transferredOut)}',
+                                style: const TextStyle(
+                                  color: AppColors.navy,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (insights.transfersCount > 0)
+                                TextSpan(
+                                  text:
+                                      ' · ${insights.transfersCount} ${insights.transfersCount == 1 ? 'transfer' : 'transfers'}',
+                                ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

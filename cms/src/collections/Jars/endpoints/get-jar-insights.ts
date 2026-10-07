@@ -254,6 +254,31 @@ export const getJarInsights = async (req: PayloadRequest) => {
     jarCreatedAt: new Date(jar.createdAt),
   })
 
+  // Money out over the same window: completed payouts (stored as negative
+  // amountContributed). Shown beside "Collected"; never part of the other
+  // figures or the 5-payment threshold.
+  const { start, end } = periodWindows(period, new Date(), new Date(jar.createdAt))
+  const payouts = await req.payload.find({
+    collection: 'transactions',
+    where: {
+      jar: { equals: jar.id },
+      type: { equals: 'payout' },
+      paymentStatus: { equals: 'completed' },
+      createdAt: { greater_than_equal: start.toISOString(), less_than_equal: end.toISOString() },
+    },
+    depth: 0,
+    pagination: false,
+    overrideAccess: true,
+    select: { amountContributed: true },
+  })
+  const transferredOut =
+    Math.round(
+      payouts.docs.reduce(
+        (sum: number, tx: any) => sum + Math.abs(Number(tx.amountContributed) || 0),
+        0,
+      ) * 100,
+    ) / 100
+
   // Fill collector names from the users collection (snapshot may be missing).
   const missing = insights.topCollectors.filter((c) => !c.name).map((c) => c.id)
   if (missing.length > 0) {
@@ -279,6 +304,8 @@ export const getJarInsights = async (req: PayloadRequest) => {
     message: 'Jar insights retrieved successfully',
     data: {
       ...insights,
+      transferredOut,
+      transfersCount: payouts.docs.length,
       currency: jar.currency ?? 'GHS',
       goalAmount: jar.goalAmount ?? null,
       deadline: jar.deadline ?? null,
