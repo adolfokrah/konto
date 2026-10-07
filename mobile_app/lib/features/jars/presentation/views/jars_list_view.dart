@@ -14,6 +14,7 @@ import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -65,7 +66,7 @@ class _JarsListViewState extends State<JarsListView> {
 
   void _createJar() {
     HapticUtils.heavy();
-    context.push(AppRoutes.jarCreate);
+    JarActions.createJar(context);
   }
 
   @override
@@ -192,6 +193,16 @@ class _JarsListViewState extends State<JarsListView> {
   }
 
   Widget _buildEmpty(AppLocalizations localizations) {
+    // New users verify first (same order as Home's get-started list).
+    context.watch<AuthBloc>();
+    if (JarActions.needsVerification(context)) {
+      return const Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: VerifyFirstCard(),
+        ),
+      );
+    }
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),

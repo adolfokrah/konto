@@ -196,13 +196,17 @@ class _InsightsBodyState extends State<_InsightsBody> {
       ];
     }
     if (summary is JarSummaryInitial) {
+      context.watch<AuthBloc>();
+      if (JarActions.needsVerification(context)) {
+        return [const VerifyFirstCard()];
+      }
       return [
         DsEmptyState(
           icon: Icons.insights_rounded,
           title: 'No jar yet',
           message: 'Create a jar to see how it\'s doing.',
           actionLabel: 'Create jar',
-          onAction: () => context.push(AppRoutes.jarCreate),
+          onAction: () => JarActions.createJar(context),
         ),
       ];
     }

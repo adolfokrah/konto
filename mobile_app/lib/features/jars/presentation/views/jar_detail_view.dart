@@ -337,16 +337,19 @@ class _JarDetailViewState extends State<JarDetailView> {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: DsCard(
-            child: DsEmptyState(
-              icon: Icons.savings_outlined,
-              tone: DsTone.lime,
-              title: localizations.createNewJar,
-              message: localizations.createNewJarMessage,
-              actionLabel: localizations.createNewJar,
-              onAction: () => context.push(AppRoutes.jarCreate),
-            ),
-          ),
+          child:
+              JarActions.needsVerification(context)
+                  ? const VerifyFirstCard()
+                  : DsCard(
+                    child: DsEmptyState(
+                      icon: Icons.savings_outlined,
+                      tone: DsTone.lime,
+                      title: localizations.createNewJar,
+                      message: localizations.createNewJarMessage,
+                      actionLabel: localizations.createNewJar,
+                      onAction: () => JarActions.createJar(context),
+                    ),
+                  ),
         ),
       ),
     );

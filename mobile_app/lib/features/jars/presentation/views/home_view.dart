@@ -377,17 +377,20 @@ class _HomeViewState extends State<HomeView> {
       ],
       if (collectorOnly) ...[
         const SizedBox(height: 14),
-        DsCard(
-          child: DsEmptyState(
-            icon: Icons.savings_outlined,
-            tone: DsTone.lime,
-            title: 'No jars of your own',
-            message:
-                'Start a jar for your own cause and money goes straight to your account.',
-            actionLabel: 'Create a jar',
-            onAction: () => context.push(AppRoutes.jarCreate),
+        if (JarActions.needsVerification(context))
+          const VerifyFirstCard()
+        else
+          DsCard(
+            child: DsEmptyState(
+              icon: Icons.savings_outlined,
+              tone: DsTone.lime,
+              title: 'No jars of your own',
+              message:
+                  'Start a jar for your own cause and money goes straight to your account.',
+              actionLabel: 'Create a jar',
+              onAction: () => JarActions.createJar(context),
+            ),
           ),
-        ),
       ],
       const SizedBox(height: 18),
       _recentActivity(context, jars, userId),
@@ -460,7 +463,7 @@ class _HomeViewState extends State<HomeView> {
         key: const Key('home_new_jar_button'),
         icon: Icons.savings_outlined,
         label: 'New jar',
-        onTap: () => context.push(AppRoutes.jarCreate),
+        onTap: () => JarActions.createJar(context),
       ),
       if (collectorOnly)
         DsQuickAction(
@@ -567,7 +570,7 @@ class _HomeViewState extends State<HomeView> {
               'Create your first jar',
               subtitle: 'Takes two minutes',
               done: false,
-              onStart: () => context.push(AppRoutes.jarCreate),
+              onStart: () => JarActions.createJar(context),
             ),
             _Step(
               'Add a payout account',
@@ -600,7 +603,7 @@ class _HomeViewState extends State<HomeView> {
           message:
               'Your last jar, ${jars.first.name}, raised ${jars.first.currency.toUpperCase()} ${_short(jars.first.totalContributions)}.',
           actionLabel: 'New jar',
-          onAction: () => context.push(AppRoutes.jarCreate),
+          onAction: () => JarActions.createJar(context),
         ),
       ),
       const SizedBox(height: 18),

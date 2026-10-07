@@ -122,6 +122,53 @@ class JarActions {
     );
   }
 
+  /// Whether the signed-in user still has to verify (KYC for individuals,
+  /// KYB for organizations) before creating a jar. Matches the Home
+  /// get-started order: verify your ID, then create your first jar.
+  static bool needsVerification(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return false;
+    final user = authState.user;
+    return user.isOrganization
+        ? user.kybStatus != 'approved'
+        : user.kycStatus != 'verified';
+  }
+
+  /// Whether that verification has been submitted and is being reviewed.
+  static bool verificationInReview(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return false;
+    final user = authState.user;
+    return user.isOrganization
+        ? (user.kybStatus == 'in_review' || user.kybStatus == 'pending')
+        : user.kycStatus == 'in_review';
+  }
+
+  static void openVerification(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final isOrg =
+        authState is AuthAuthenticated && authState.user.isOrganization;
+    context.push(isOrg ? AppRoutes.businessKyb : AppRoutes.kycView);
+  }
+
+  /// Every "Create jar" / "New jar" entry point goes through here so a new
+  /// user verifies first instead of starting a jar they can't collect into.
+  static void createJar(BuildContext context) {
+    if (needsVerification(context)) {
+      AppSnackBar.show(
+        context,
+        message:
+            verificationInReview(context)
+                ? 'Your verification is being reviewed. You can create a jar once it\'s approved.'
+                : 'Verify your ID first. Then you can create your first jar.',
+        type: SnackBarType.info,
+      );
+      openVerification(context);
+      return;
+    }
+    context.push(AppRoutes.jarCreate);
+  }
+
   /// Thumbnail URL for a jar in the jars list, or null when it has none.
   static String? imageUrl(JarListItem jar) {
     final url = jar.image?.url;
@@ -181,5 +228,45 @@ class JarActions {
       searchResultBuilder: row,
     );
     return choice;
+  }
+}
+
+/// Empty state used where a "Create jar" button would be, while the user
+/// still has to verify: points to verification instead.
+class VerifyFirstCard extends StatelessWidget {
+  const VerifyFirstCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final isOrg =
+        authState is AuthAuthenticated && authState.user.isOrganization;
+    if (JarActions.verificationInReview(context)) {
+      return DsCard(
+        child: DsEmptyState(
+          icon: Icons.hourglass_top_rounded,
+          tone: DsTone.pending,
+          title:
+              isOrg
+                  ? 'Your business is being reviewed'
+                  : 'Your ID is being checked',
+          message:
+              'We\'ll let you know when it\'s done. Then you can create your first jar.',
+        ),
+      );
+    }
+    return DsCard(
+      child: DsEmptyState(
+        icon: Icons.verified_user_outlined,
+        tone: DsTone.lime,
+        title: isOrg ? 'Verify your business first' : 'Verify your ID first',
+        message:
+            isOrg
+                ? 'Jars collect money, so we check your business before you create one.'
+                : 'Jars collect money, so we check your ID before you create one. It takes about 3 minutes.',
+        actionLabel: isOrg ? 'Verify business' : 'Verify ID',
+        onAction: () => JarActions.openVerification(context),
+      ),
+    );
   }
 }
