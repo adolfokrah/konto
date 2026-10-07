@@ -26,7 +26,10 @@ export function ComposeEmailForm({ prefill }: Props) {
 
   // Parse prefilled "to" string into initial chips
   const initialChips = prefill?.to
-    ? prefill.to.split(/[\n,]+/).map(e => e.trim()).filter(Boolean)
+    ? prefill.to
+        .split(/[\n,]+/)
+        .map((e) => e.trim())
+        .filter(Boolean)
     : []
 
   const [toChips, setToChips] = useState<string[]>(initialChips)
@@ -37,19 +40,22 @@ export function ComposeEmailForm({ prefill }: Props) {
 
   const addChip = (value: string) => {
     const v = value.trim()
-    if (v && !toChips.includes(v)) setToChips(prev => [...prev, v])
+    if (v && !toChips.includes(v)) setToChips((prev) => [...prev, v])
     setToInput('')
   }
 
-  const removeChip = (chip: string) => setToChips(prev => prev.filter(c => c !== chip))
+  const removeChip = (chip: string) => setToChips((prev) => prev.filter((c) => c !== chip))
 
   const handleToKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === 'Enter' || e.key === ',' || e.key === ' ' || e.key === 'Tab') && toInput.trim()) {
+    if (
+      (e.key === 'Enter' || e.key === ',' || e.key === ' ' || e.key === 'Tab') &&
+      toInput.trim()
+    ) {
       e.preventDefault()
       addChip(toInput)
     }
     if (e.key === 'Backspace' && !toInput && toChips.length > 0) {
-      setToChips(prev => prev.slice(0, -1))
+      setToChips((prev) => prev.slice(0, -1))
     }
   }
 
@@ -102,11 +108,25 @@ export function ComposeEmailForm({ prefill }: Props) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground" onClick={() => router.back()}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground"
+            onClick={() => router.back()}
+          >
             Discard
           </Button>
-          <Button onClick={handleSend} disabled={!valid || sending} size="sm" className="h-8 gap-1.5 text-xs">
-            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+          <Button
+            onClick={handleSend}
+            disabled={!valid || sending}
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+          >
+            {sending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
             Send
           </Button>
         </div>

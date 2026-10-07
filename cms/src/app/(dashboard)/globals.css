@@ -508,3 +508,17 @@
 .dashboard-theme main .text-sm.text-muted-foreground:is(div) {
   font-size: 11.5px;
 }
+
+/* v4 switch: ink track with lime thumb when on */
+.dashboard-theme button[role='switch'][data-state='checked'] {
+  background-color: #1b232e;
+}
+.dashboard-theme button[role='switch'][data-state='unchecked'] {
+  background-color: #e2d9cb;
+}
+.dashboard-theme button[role='switch'] > span {
+  background-color: #fff;
+}
+.dashboard-theme button[role='switch'][data-state='checked'] > span {
+  background-color: #d9f57a;
+}

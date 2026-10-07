@@ -1,8 +1,5 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { ComposeSmsForm } from '@/components/dashboard/compose-sms-form'
 import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -59,17 +56,5 @@ export default async function ComposeSmsPage({ searchParams }: Props) {
     } catch {}
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/sms">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        </Link>
-      </div>
-      <ComposeSmsForm prefill={prefill} />
-    </div>
-  )
+  return <ComposeSmsForm prefill={prefill} />
 }

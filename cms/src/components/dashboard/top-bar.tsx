@@ -38,7 +38,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/referrals': 'Referrals',
   '/dashboard/referral-bonuses': 'Referral Bonuses',
   '/dashboard/push-notifications': 'Push Notifications',
-  '/dashboard/push-notifications/compose': 'New Campaign',
+  '/dashboard/push-notifications/compose': 'New campaign',
   '/dashboard/sms': 'SMS',
   '/dashboard/sms/compose': 'New SMS',
   '/dashboard/emails': 'Emails',
