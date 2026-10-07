@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:Hoga/features/contribution/presentation/widgets/export_to_pdf.dart';
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/filter_options.dart';
@@ -358,7 +359,9 @@ class _ContributionsListViewState extends State<ContributionsListView> {
               slivers: [
                 SliverToBoxAdapter(child: _buildHeader(localizations)),
                 _buildSliverContributionsList(localizations),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: MainShell.scrollBottom(context)),
+                ),
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -295,7 +296,7 @@ class _JarsListViewState extends State<JarsListView> {
     final jars = widget.asTab ? tabs[tab].$2 : allJars;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+      padding: EdgeInsets.fromLTRB(16, 0, 16, MainShell.scrollBottom(context)),
       children: [
         _searchField(localizations, jarList.totalJarCount),
         const SizedBox(height: 12),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -257,7 +258,12 @@ class _HomeViewState extends State<HomeView> {
                           onRefresh: _onRefresh,
                           child: ListView(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+                            padding: EdgeInsets.fromLTRB(
+                              16,
+                              4,
+                              16,
+                              MainShell.scrollBottom(context),
+                            ),
                             children: _body(context, listState, user),
                           ),
                         ),

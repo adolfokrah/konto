@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -144,7 +145,12 @@ class _InsightsBodyState extends State<_InsightsBody> {
                 onRefresh: _refresh,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    12,
+                    20,
+                    MainShell.scrollBottom(context),
+                  ),
                   children: [
                     _header(jar),
                     const SizedBox(height: 16),

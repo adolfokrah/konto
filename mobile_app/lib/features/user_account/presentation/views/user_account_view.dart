@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
@@ -73,7 +74,12 @@ class UserAccountView extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          MainShell.scrollBottom(context),
+        ),
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(4, 4, 4, 14),

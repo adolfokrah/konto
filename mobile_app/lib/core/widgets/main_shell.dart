@@ -13,6 +13,11 @@ class MainShell extends StatelessWidget {
 
   const MainShell({super.key, required this.navigationShell});
 
+  /// Bottom padding for a tab's scroll view so its last item clears the
+  /// floating bar (the shell adds the bar's height to the bottom inset).
+  static double scrollBottom(BuildContext context) =>
+      MediaQuery.paddingOf(context).bottom + 24;
+
   static const _tabs = [
     _TabSpec('Home', Icons.home_outlined, Icons.home_rounded),
     _TabSpec('Jars', Icons.savings_outlined, Icons.savings_rounded),
@@ -32,7 +37,11 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // extendBody: tab content scrolls under the capsule, so the bar floats.
+    // Tabs pad their lists with [MainShell.scrollBottom].
     return Scaffold(
+      extendBody: true,
+      backgroundColor: AppColors.cream,
       body: navigationShell,
       bottomNavigationBar: SafeArea(
         top: false,
