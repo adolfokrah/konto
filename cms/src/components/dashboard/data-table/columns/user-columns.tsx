@@ -42,11 +42,11 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     header: 'Name',
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-7 w-7">
           {row.original.photoUrl && (
             <AvatarImage src={row.original.photoUrl} alt={row.original.firstName} />
           )}
-          <AvatarFallback className="text-xs">
+          <AvatarFallback className="text-[11px]" tint={row.original.id}>
             {row.original.firstName?.charAt(0)}
             {row.original.lastName?.charAt(0)}
           </AvatarFallback>
@@ -92,14 +92,7 @@ export const userColumns: ColumnDef<UserRow, any>[] = [
     header: 'Account',
     size: 120,
     cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className={cn(
-          row.original.accountType === 'organization'
-            ? 'bg-blue-100 text-blue-800 border-blue-200'
-            : 'bg-gray-100 text-gray-800 border-gray-200',
-        )}
-      >
+      <Badge variant={row.original.accountType === 'organization' ? 'dark' : 'gray'}>
         {accountTypeLabels[row.original.accountType] || row.original.accountType}
       </Badge>
     ),

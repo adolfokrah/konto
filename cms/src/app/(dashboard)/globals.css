@@ -220,6 +220,38 @@
   .dashboard-theme main .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+  /* Tables: hairline rows, no column rules, compact pager */
+  .dashboard-theme main thead tr,
+  .dashboard-theme main tbody tr {
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .dashboard-theme main tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .dashboard-theme main thead th {
+    background-color: hsl(var(--card));
+  }
+  .dashboard-theme main th > div,
+  .dashboard-theme main th button {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+  }
+  .dashboard-theme main table + div,
+  .dashboard-theme main table ~ div {
+    font-size: 11.5px;
+  }
+  .dashboard-theme main table ~ div p,
+  .dashboard-theme main table ~ div .text-sm {
+    font-size: 11.5px;
+  }
+  .dashboard-theme main table ~ div button[class*='h-8'] {
+    height: 30px;
+    width: 30px;
+    border-radius: 9px;
+    background: hsl(var(--card));
+  }
   .dashboard-theme [role='tablist'] {
     background: transparent;
     border-bottom: 1px solid hsl(var(--border));
