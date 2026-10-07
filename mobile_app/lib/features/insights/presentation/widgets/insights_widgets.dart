@@ -84,27 +84,36 @@ class InsightsWeekdayBars extends StatelessWidget {
   final int? highlight;
   final double height;
 
+  /// One label per bar. Defaults to Mon..Sun (the weekday split); the
+  /// period timeline passes its own (days, weeks or months).
+  final List<String>? labels;
+
   const InsightsWeekdayBars({
     super.key,
     required this.values,
     this.highlight,
     this.height = 120,
+    this.labels,
   });
 
   @override
   Widget build(BuildContext context) {
     final max = values.fold<double>(0, (m, v) => v > m ? v : m);
+    final names = labels ?? insightsWeekdayShort;
+    final count = labels?.length ?? 7;
+    // Tighter gaps when there are many bars (e.g. 12 months).
+    final gap = count > 8 ? 4.0 : 8.0;
     return SizedBox(
       height: height,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          for (var i = 0; i < 7; i++) ...[
-            if (i > 0) const SizedBox(width: 8),
+          for (var i = 0; i < count; i++) ...[
+            if (i > 0) SizedBox(width: gap),
             Expanded(
               child: Semantics(
                 label:
-                    '${insightsWeekdayLong[i]}: ${DsMoney.group(i < values.length ? values[i] : 0)}',
+                    '${labels != null ? names[i] : insightsWeekdayLong[i]}: ${DsMoney.group(i < values.length ? values[i] : 0)}',
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -139,7 +148,10 @@ class InsightsWeekdayBars extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      insightsWeekdayShort[i],
+                      names[i],
+                      maxLines: 1,
+                      overflow: TextOverflow.visible,
+                      softWrap: false,
                       style: DsText.caption.copyWith(fontSize: 10.5),
                     ),
                   ],

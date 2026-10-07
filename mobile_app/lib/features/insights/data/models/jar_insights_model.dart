@@ -71,6 +71,10 @@ class JarInsights {
   /// Totals Mon..Sun.
   final List<double> byWeekday;
 
+  /// Money in over the period for the chart: per day (week), per week
+  /// (month), or per day / week / month (all time). Empty from older servers.
+  final List<({String label, double amount})> timeline;
+
   /// 0 = Monday.
   final int? bestWeekdayIndex;
   final double? bestWeekdayMultiple;
@@ -96,6 +100,7 @@ class JarInsights {
     this.transfersCount = 0,
     required this.paymentsCountAllTime,
     required this.byWeekday,
+    this.timeline = const [],
     this.bestWeekdayIndex,
     this.bestWeekdayMultiple,
     required this.methodMix,
@@ -131,6 +136,14 @@ class JarInsights {
       paymentsCountAllTime: _toInt(
         json['paymentsCountAllTime'] ?? json['paymentsCount'],
       ),
+      timeline: [
+        for (final b in (json['timeline'] as List? ?? const []))
+          if (b is Map)
+            (
+              label: b['label']?.toString() ?? '',
+              amount: _toDouble(b['amount']),
+            ),
+      ],
       byWeekday:
           weekdays != null && weekdays.length == 7
               ? weekdays

@@ -125,4 +125,18 @@ void main() {
     expect(older.transferredOut, 0);
     expect(older.transfersCount, 0);
   });
+
+  test('reads the period timeline for the chart', () {
+    final insights = JarInsights.fromJson({
+      'period': 'month',
+      'total': 170,
+      'timeline': [
+        {'label': '1-7', 'start': '2025-10-01T00:00:00.000Z', 'amount': 20},
+        {'label': '8-14', 'start': '2025-10-08T00:00:00.000Z', 'amount': 150},
+      ],
+    });
+    expect(insights.timeline.map((b) => b.label), ['1-7', '8-14']);
+    expect(insights.timeline.map((b) => b.amount), [20, 150]);
+    expect(JarInsights.fromJson({'period': 'week'}).timeline, isEmpty);
+  });
 }

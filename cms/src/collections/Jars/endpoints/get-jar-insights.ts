@@ -71,6 +71,87 @@ export function periodWindows(
   return { start: jarCreatedAt, end, prevStart: null, prevEnd: null }
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+export type TimelineBucket = { label: string; start: string; amount: number }
+
+/**
+ * Money in over time for the chart, sized to the period: Week = one bar per
+ * day; Month = one bar per week of the month (1-7, 8-14, ...); All time = per
+ * day for jars up to 14 days old, per week up to ~3 months, else per month
+ * (last 12). Days are UTC, like the rest of insights.
+ */
+export function timelineBuckets(
+  txs: InsightTx[],
+  period: InsightsPeriod,
+  start: Date,
+  end: Date,
+): TimelineBucket[] {
+  const dayStart = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+  const edges: { label: string; from: number }[] = []
+  const firstDay = dayStart(start)
+  const lastDay = dayStart(end)
+  const ageDays = Math.floor((lastDay - firstDay) / DAY) + 1
+
+  if (period === 'week' || (period === 'all' && ageDays <= 14)) {
+    for (let d = firstDay; d <= lastDay; d += DAY) {
+      const date = new Date(d)
+      edges.push({
+        label: period === 'week' ? WEEKDAYS[date.getUTCDay()] : String(date.getUTCDate()),
+        from: d,
+      })
+    }
+  } else if (period === 'month') {
+    // Whole month, so the chart keeps its shape early in the month.
+    const monthEnd = Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0)
+    const lastDate = new Date(monthEnd).getUTCDate()
+    for (let d = firstDay; d <= monthEnd; d += 7 * DAY) {
+      const a = new Date(d).getUTCDate()
+      const b = Math.min(a + 6, lastDate)
+      edges.push({ label: a === b ? String(a) : `${a}-${b}`, from: d })
+    }
+  } else if (ageDays <= 92) {
+    for (let d = firstDay; d <= lastDay; d += 7 * DAY) {
+      const date = new Date(d)
+      edges.push({ label: `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`, from: d })
+    }
+  } else {
+    const endMonth = new Date(lastDay)
+    let y = start.getUTCFullYear()
+    let m = start.getUTCMonth()
+    const months: { y: number; m: number }[] = []
+    while (
+      y < endMonth.getUTCFullYear() ||
+      (y === endMonth.getUTCFullYear() && m <= endMonth.getUTCMonth())
+    ) {
+      months.push({ y, m })
+      m++
+      if (m > 11) {
+        m = 0
+        y++
+      }
+    }
+    for (const { y: yy, m: mm } of months.slice(-12)) {
+      edges.push({ label: MONTHS[mm], from: Date.UTC(yy, mm, 1) })
+    }
+  }
+
+  const buckets = edges.map((e) => ({
+    label: e.label,
+    start: new Date(e.from).toISOString(),
+    amount: 0,
+  }))
+  for (const tx of txs) {
+    const time = new Date(tx.createdAt).getTime()
+    if (time < edges[0].from || time > end.getTime()) continue
+    let i = edges.length - 1
+    while (i > 0 && time < edges[i].from) i--
+    buckets[i].amount += Number(tx.amountContributed ?? 0)
+  }
+  return buckets.map((b) => ({ ...b, amount: Math.round(b.amount * 100) / 100 }))
+}
+
 export function computeJarInsights(
   txs: InsightTx[],
   opts: { period: InsightsPeriod; now: Date; jarCreatedAt: Date },
@@ -154,6 +235,7 @@ export function computeJarInsights(
     changePct,
     paymentsCount: inRange.length,
     byWeekday: byWeekday.map(round2),
+    timeline: timelineBuckets(inRange, period, start, end),
     bestWeekday,
     methodMix,
     topCollectors,

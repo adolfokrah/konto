@@ -374,6 +374,18 @@ class _InsightsBodyState extends State<_InsightsBody> {
     );
   }
 
+  /// Index of the biggest bar, or null when nothing came in.
+  int? _peak(List<({String label, double amount})> timeline) {
+    int? best;
+    for (var i = 0; i < timeline.length; i++) {
+      if (timeline[i].amount > 0 &&
+          (best == null || timeline[i].amount > timeline[best].amount)) {
+        best = i;
+      }
+    }
+    return best;
+  }
+
   String _periodLabel(JarInsights insights) {
     switch (insights.period) {
       case InsightsPeriod.week:
@@ -458,7 +470,20 @@ class _InsightsBodyState extends State<_InsightsBody> {
                 ],
               ),
               const SizedBox(height: 16),
-              InsightsWeekdayBars(values: insights.byWeekday, highlight: best),
+              // Bars follow the period (days, weeks or months); the weekday
+              // split stays as the sentence below.
+              if (insights.timeline.isNotEmpty)
+                InsightsWeekdayBars(
+                  key: const Key('insights_timeline'),
+                  values: [for (final b in insights.timeline) b.amount],
+                  labels: [for (final b in insights.timeline) b.label],
+                  highlight: _peak(insights.timeline),
+                )
+              else
+                InsightsWeekdayBars(
+                  values: insights.byWeekday,
+                  highlight: best,
+                ),
               if (best != null && multiple != null) ...[
                 const SizedBox(height: 12),
                 Text.rich(

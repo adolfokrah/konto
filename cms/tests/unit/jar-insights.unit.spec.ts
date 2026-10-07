@@ -80,3 +80,38 @@ describe('computeJarInsights', () => {
     expect(empty.averageGift).toBe(0)
   })
 })
+
+describe('insights timeline', () => {
+  const txs = [
+    tx('2025-10-15T09:00:00Z', 100), // Wed (today)
+    tx('2025-10-13T09:00:00Z', 50), // Mon
+    tx('2025-10-02T09:00:00Z', 20), // earlier this month
+    tx('2025-09-05T09:00:00Z', 10), // last month
+  ]
+
+  it('week: one bar per day for the last 7 days', () => {
+    const { timeline } = computeJarInsights(txs, { period: 'week', now, jarCreatedAt: created })
+    expect(timeline.map((b) => b.label)).toEqual(['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed'])
+    expect(timeline.map((b) => b.amount)).toEqual([0, 0, 0, 0, 50, 0, 100])
+  })
+
+  it('month: one bar per week, covering the whole month', () => {
+    const { timeline } = computeJarInsights(txs, { period: 'month', now, jarCreatedAt: created })
+    expect(timeline.map((b) => b.label)).toEqual(['1-7', '8-14', '15-21', '22-28', '29-31'])
+    expect(timeline.map((b) => b.amount)).toEqual([20, 50, 100, 0, 0])
+  })
+
+  it('all time: weekly for a jar under ~3 months, adding up to the total', () => {
+    const insights = computeJarInsights(txs, { period: 'all', now, jarCreatedAt: created })
+    const sum = insights.timeline.reduce((s, b) => s + b.amount, 0)
+    expect(insights.timeline[0].label).toBe('1 Sep')
+    expect(sum).toBe(insights.total)
+  })
+
+  it('all time: monthly (last 12) for older jars', () => {
+    const old = new Date('2024-01-10T00:00:00Z')
+    const { timeline } = computeJarInsights(txs, { period: 'all', now, jarCreatedAt: old })
+    expect(timeline).toHaveLength(12)
+    expect(timeline[timeline.length - 1].label).toBe('Oct')
+  })
+})
